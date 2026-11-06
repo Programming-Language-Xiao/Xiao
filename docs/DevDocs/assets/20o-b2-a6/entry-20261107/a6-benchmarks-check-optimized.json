@@ -1,0 +1,35 @@
+{
+  "name": "a6-benchmarks-check-optimized",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "check",
+    "--locked",
+    "--manifest-path",
+    "tests/benchmarks/Cargo.toml"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a6-resources\\20261107-3b09bfb18950\\source",
+  "started_utc": "2026-11-06T20:51:17.603932+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "a6-benchmarks-check-optimized.log",
+  "pid": 12616,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/677f8c931c20a4d22ea99977e298998be87b8c3a6c0c1eae96f8c4468a0012c1.json",
+    "raw_tree_sha256": "677f8c931c20a4d22ea99977e298998be87b8c3a6c0c1eae96f8c4468a0012c1",
+    "utf8_lf_tree_sha256": "49f626eb6f44c52c26b8c0ac43c424922e4765c68fc9add2ae092e7c00665381",
+    "files": 1027
+  },
+  "source_after": {
+    "manifest": "source-manifests/677f8c931c20a4d22ea99977e298998be87b8c3a6c0c1eae96f8c4468a0012c1.json",
+    "raw_tree_sha256": "677f8c931c20a4d22ea99977e298998be87b8c3a6c0c1eae96f8c4468a0012c1",
+    "utf8_lf_tree_sha256": "49f626eb6f44c52c26b8c0ac43c424922e4765c68fc9add2ae092e7c00665381",
+    "files": 1027
+  },
+  "source_unchanged": true,
+  "runner_sha256": "38d63c18723d6d491dd5652fd538a31480400e8edc97cc5c8980889a67a422c8",
+  "finished_utc": "2026-11-06T20:51:26.343656+00:00",
+  "duration_seconds": 8.734,
+  "sha256": "9ae1aab8c2c9c7a84a1649322de5a5e7f89f5cdd7ea2a8af119ee8498f9bd516"
+}

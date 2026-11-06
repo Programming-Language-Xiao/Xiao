@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "gh",
+    "run",
+    "rerun",
+    "42300734964",
+    "--failed"
+  ],
+  "started_utc": "2026-11-06T22:15:37.118326+00:00",
+  "exit_code": 0,
+  "code_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+  "reason": "首轮仅既有22C排队取消测试失败，原件已封存；只重跑失败作业，不改产品、断言或阈值。",
+  "network": "继承Git现有HTTP代理，仅子进程"
+}

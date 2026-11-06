@@ -1,0 +1,23 @@
+    Checking xiao-codegen-llvm v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-codegen-llvm)
+    Checking xiao-bytecode v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-bytecode)
+    Checking xiao-runtime v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-runtime)
+    Checking xiao-doc-coverage-rust v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-doc-coverage-rust)
+    Checking xiao-artifacts v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-artifacts)
+    Checking xiao-vm v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-vm)
+    Checking xiao-package v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-package)
+    Checking xiao-xar v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-xar)
+    Checking xiao-driver v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-driver)
+    Checking xiao-optimizer v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-optimizer)
+    Checking xiao-types v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-types)
+error: manual `Range::contains` implementation
+  --> crates\xiao-driver\tests\20o_b2_a_performance_protocol.rs:13:21
+   |
+13 |             assert!(elapsed >= 0.1 && elapsed < 0.3);
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: use: `(0.1..0.3).contains(&elapsed)`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#manual_range_contains
+   = note: `-D clippy::manual-range-contains` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::manual_range_contains)]`
+
+error: could not compile `xiao-driver` (test "20o_b2_a_performance_protocol") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

@@ -1,0 +1,24 @@
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-runtime)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18.92s
+     Running tests\20o_b2_a_contract.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\20o_b2_a_contract-653011b00e0feb46.exe)
+
+running 13 tests
+test a5_assignments_and_constants_keep_the_declared_numeric_value ... ok
+test a5_conversion_language_preserves_values_and_promotion ... ok
+test a5_decimal_language_preserves_frozen_scales ... ok
+test a5_integer_language_uses_exact_runtime_arithmetic ... ok
+test a5_complete_numeric_language_matrix_matches_independent_golden ... ok
+test a5_encoded_numeric_matrix_matches_all_existing_carriers ... ok
+test a5_language_values_match_native_golden_outputs ... ignored, 需要本任务新Runtime与显式LLVM/平台链接器
+test a5_portable_numeric_payloads_cannot_bypass_admission ... ok
+test a5_preserves_existing_function_type_boundaries ... ok
+test a5_static_invalid_numeric_combinations_remain_rejected ... ok
+test a5_language_errors_remain_recoverable_and_observable ... ok
+test a5_language_carriers_preserve_numeric_types_and_values ... ok
+test a5_complete_vm_entry_covers_resources_and_portable_replay ... ok
+
+test result: ok. 12 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 8.03s
+

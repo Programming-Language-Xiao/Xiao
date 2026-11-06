@@ -1,0 +1,8 @@
+{
+  "decision": "A6-CI时限",
+  "answer": "仅A6手动模式40分钟（推荐）",
+  "interaction_id": "[\"request_user_input_async\",\"call_785f56f91a3f45429d9d3b36399eff6b\",0]",
+  "scope": "仅workflow_dispatch且b2_a_perf=true的VM/原生作业40分钟；默认20、B1 F10 60、函数10/2秒和64MiB不变。",
+  "proposal": "ci-timeout-proposal.json",
+  "source": "本会话星崽实际文本答复；不以预选或时间经过替代授权。"
+}

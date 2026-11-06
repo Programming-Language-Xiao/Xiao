@@ -1,0 +1,39 @@
+{
+  "name": "a6-exact-size-and-cast-tests",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-runtime",
+    "--lib",
+    "value::"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a6-resources\\20261107-3b09bfb18950\\source",
+  "started_utc": "2026-11-06T20:54:26.820570+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "a6-exact-size-and-cast-tests.log",
+  "pid": 62112,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/01e762bf3875fb7dc0523eb92ace3a53d2169ed892b879e4da21dfa9d48b5dca.json",
+    "raw_tree_sha256": "01e762bf3875fb7dc0523eb92ace3a53d2169ed892b879e4da21dfa9d48b5dca",
+    "utf8_lf_tree_sha256": "bd8fc8bf3a05557bb6e90d12f34d816ef52b086c2a219b9a5d9c48a51ed86c04",
+    "files": 1027
+  },
+  "source_after": {
+    "manifest": "source-manifests/01e762bf3875fb7dc0523eb92ace3a53d2169ed892b879e4da21dfa9d48b5dca.json",
+    "raw_tree_sha256": "01e762bf3875fb7dc0523eb92ace3a53d2169ed892b879e4da21dfa9d48b5dca",
+    "utf8_lf_tree_sha256": "bd8fc8bf3a05557bb6e90d12f34d816ef52b086c2a219b9a5d9c48a51ed86c04",
+    "files": 1027
+  },
+  "source_unchanged": true,
+  "runner_sha256": "38d63c18723d6d491dd5652fd538a31480400e8edc97cc5c8980889a67a422c8",
+  "finished_utc": "2026-11-06T20:54:39.042417+00:00",
+  "duration_seconds": 12.218,
+  "sha256": "1331ce2ce820c219f4648966f7fcfb8374fefefc8a58598e64b6ae6d4fcc2c11"
+}

@@ -1,0 +1,5 @@
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-runtime)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-driver)
+    Finished `release` profile [optimized] target(s) in 1m 43s

@@ -1,0 +1,3 @@
+B2-A6-ARTIFACTS D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\run-temp\xiao-b2-a6-61056-1793990956257344300
+B2-A6-PERF case=lint.add profile=n optimization=0 median=Some(0.0010491848214285713) peak=Some(618496) ratio=None result=passed
+B2-A6-PERF case=lint.add profile=n optimization=3 median=Some(0.0010673802083333334) peak=Some(606208) ratio=None result=passed

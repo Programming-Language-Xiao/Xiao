@@ -1,0 +1,13 @@
+{
+  "closed": false,
+  "code_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+  "run_id": 42300734964,
+  "job_id": 128177526738,
+  "run_attempt": 1,
+  "test": "queued_task_cancel_never_runs_body_and_wait_is_027",
+  "case": "queued task cancellation / wait 027",
+  "log": "ci/e7bf-linux-default-first/job.log",
+  "log_sha256": "49c098b9467f90466ad7719618ce38cc26fe83b4f32c94c1d694762fe3b2c5d4",
+  "jobs": "ci/e7bf-linux-default-first/jobs.json",
+  "scope": "既有22C时序测试失败；同提交只重跑失败作业，不改测试、调度/取消语义或阈值，后续绿色不关闭。"
+}

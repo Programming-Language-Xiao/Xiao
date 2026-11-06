@@ -1,0 +1,126 @@
+{
+  "code_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+  "scope": "每行覆盖本后端/优化级别全部77规模；不包含B1旧721条",
+  "rows": [
+    {
+      "role": "local-vm",
+      "target": "x86_64-pc-windows-msvc",
+      "backend": "vm",
+      "optimization": 0,
+      "records": 77,
+      "batches": 385,
+      "maximum_median_seconds": 0.0944334,
+      "maximum_resident_increment_bytes": 8765440,
+      "maximum_linear_ratio": 1.910542577269212,
+      "maximum_superlinear_ratio": 3.1315352061722965
+    },
+    {
+      "role": "local-native",
+      "target": "x86_64-pc-windows-msvc",
+      "backend": "native",
+      "optimization": 0,
+      "records": 77,
+      "batches": 385,
+      "maximum_median_seconds": 0.0952048,
+      "maximum_resident_increment_bytes": 2093056,
+      "maximum_linear_ratio": 1.9927270006553182,
+      "maximum_superlinear_ratio": 3.254489699483791
+    },
+    {
+      "role": "local-native",
+      "target": "x86_64-pc-windows-msvc",
+      "backend": "native",
+      "optimization": 3,
+      "records": 77,
+      "batches": 385,
+      "maximum_median_seconds": 0.0873382,
+      "maximum_resident_increment_bytes": 1900544,
+      "maximum_linear_ratio": 2.004802631578947,
+      "maximum_superlinear_ratio": 3.1206793864890647
+    },
+    {
+      "role": "ci-macos",
+      "target": "aarch64-apple-darwin",
+      "backend": "native",
+      "optimization": 0,
+      "records": 77,
+      "batches": 385,
+      "maximum_median_seconds": 0.06524,
+      "maximum_resident_increment_bytes": 3637248,
+      "maximum_linear_ratio": 2.3096718437356367,
+      "maximum_superlinear_ratio": 3.440273312707227
+    },
+    {
+      "role": "ci-macos",
+      "target": "aarch64-apple-darwin",
+      "backend": "native",
+      "optimization": 3,
+      "records": 77,
+      "batches": 385,
+      "maximum_median_seconds": 0.066491,
+      "maximum_resident_increment_bytes": 3637248,
+      "maximum_linear_ratio": 2.5025246395106087,
+      "maximum_superlinear_ratio": 3.4845714879585796
+    },
+    {
+      "role": "ci-vm",
+      "target": "x86_64-unknown-linux-gnu",
+      "backend": "vm",
+      "optimization": 0,
+      "records": 77,
+      "batches": 385,
+      "maximum_median_seconds": 0.04842740266666667,
+      "maximum_resident_increment_bytes": 6172672,
+      "maximum_linear_ratio": 1.970567697488407,
+      "maximum_superlinear_ratio": 3.0636353536097904
+    },
+    {
+      "role": "ci-windows",
+      "target": "x86_64-pc-windows-msvc",
+      "backend": "native",
+      "optimization": 0,
+      "records": 77,
+      "batches": 385,
+      "maximum_median_seconds": 0.049822,
+      "maximum_resident_increment_bytes": 2002944,
+      "maximum_linear_ratio": 2.0134866422728623,
+      "maximum_superlinear_ratio": 2.9759431271007766
+    },
+    {
+      "role": "ci-windows",
+      "target": "x86_64-pc-windows-msvc",
+      "backend": "native",
+      "optimization": 3,
+      "records": 77,
+      "batches": 385,
+      "maximum_median_seconds": 0.049704500000000006,
+      "maximum_resident_increment_bytes": 2015232,
+      "maximum_linear_ratio": 1.9997307380526865,
+      "maximum_superlinear_ratio": 2.985955366489622
+    },
+    {
+      "role": "ci-linux",
+      "target": "x86_64-unknown-linux-gnu",
+      "backend": "native",
+      "optimization": 0,
+      "records": 77,
+      "batches": 385,
+      "maximum_median_seconds": 0.057411298,
+      "maximum_resident_increment_bytes": 2191360,
+      "maximum_linear_ratio": 1.9931175424128538,
+      "maximum_superlinear_ratio": 3.049070067559572
+    },
+    {
+      "role": "ci-linux",
+      "target": "x86_64-unknown-linux-gnu",
+      "backend": "native",
+      "optimization": 3,
+      "records": 77,
+      "batches": 385,
+      "maximum_median_seconds": 0.05733438,
+      "maximum_resident_increment_bytes": 1867776,
+      "maximum_linear_ratio": 2.0101903183414986,
+      "maximum_superlinear_ratio": 3.0368471003692346
+    }
+  ]
+}

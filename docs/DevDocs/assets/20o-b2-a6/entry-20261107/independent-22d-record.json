@@ -1,0 +1,13 @@
+{
+  "closed": false,
+  "code_commit": "fb215262a4bcb8827c0d9a64eae4b69748edcfe4",
+  "run_id": 42289944485,
+  "job_id": 128140430506,
+  "run_attempt": 1,
+  "test": "native_concurrency_vm_native_differential_matches_from_same_ir",
+  "case": "xcon-bounded-string-success",
+  "assertion": "VM/native 完整释放对象顺序",
+  "log": "ci/final-default/job-128140430506.log",
+  "log_sha256": "3b53703d359c5c10279af1f538845066bbb9aee47bec12b8f151252915e07663",
+  "scope": "既有22D释放顺序债务；本批不改排序、断言、IR释放语义；后续绿色不关闭。"
+}

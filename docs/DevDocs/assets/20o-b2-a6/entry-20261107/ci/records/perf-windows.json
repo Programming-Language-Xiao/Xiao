@@ -1,0 +1,13 @@
+{
+  "run_id": 42300906257,
+  "run_attempt": 1,
+  "job_id": 128178269369,
+  "job_name": "Native differential regression (Windows)",
+  "code_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+  "conclusion": "success",
+  "aggregate_job_id": 128178269369,
+  "aggregate_run_attempt": 1,
+  "execution_retained": false,
+  "log": "ci/decimal-performance/job-128178269369.log",
+  "log_sha256": "b3586ca226d04e845347b05bb918956054fbd634507d3bb227bc30c94d147180"
+}

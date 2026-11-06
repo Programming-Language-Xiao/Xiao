@@ -1,0 +1,21 @@
+{
+  "status": "confirmed",
+  "scope": "仅手动b2_a_perf模式的既有VM与三平台原生作业；不改函数预算、默认20分钟、B1 F10 60分钟或并发策略。",
+  "actual_local_cold_build_seconds": {
+    "runtime": 67.078,
+    "measurement_tool": 285.641
+  },
+  "historical_native_job_seconds": {
+    "windows": 990,
+    "macos": 1069
+  },
+  "current_minutes": 20,
+  "proposed_b2_a_minutes": 40,
+  "instruction": "20o-b2-a-implementation-plan.md §5.1：若新测量需修改作业时限，先请星崽另行裁定。",
+  "old_expression": "${{ github.event_name == 'workflow_dispatch' && inputs.b1_f10 && 60 || 20 }}",
+  "proposed_expression": "${{ github.event_name == 'workflow_dispatch' && inputs.b1_f10 && 60 || github.event_name == 'workflow_dispatch' && inputs.b2_a_perf && 40 || 20 }}",
+  "locations": [
+    "jobs.workspace-default-tests.timeout-minutes",
+    "jobs.native-regression.timeout-minutes"
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "effective": [
+    "a6-resources-decimal",
+    "a6-packages-decimal",
+    "a6-driver-unit-decimal",
+    "a6-language-decimal",
+    "a6-b1-contract-decimal",
+    "a6-b1-resources-decimal",
+    "a6-b1-vm-exact-decimal",
+    "a6-b1-native-exact-decimal",
+    "a6-a1-vm-exact-decimal",
+    "a6-a1-native-exact-decimal",
+    "a6-workspace-check-decimal",
+    "a6-benchmarks-check-decimal",
+    "a6-clippy-decimal",
+    "a6-rustfmt-decimal",
+    "a6-docs-closeout",
+    "a6-b1-guards-decimal",
+    "a6-selection-decimal",
+    "a6-actionlint-decimal"
+  ],
+  "exact_targets": {
+    "a6-b1-vm-exact-decimal": "b1_capabilities_have_vm_golden_outputs",
+    "a6-b1-native-exact-decimal": "b1_capabilities_match_native_golden_outputs",
+    "a6-a1-vm-exact-decimal": "a1_numeric_values_and_errors_have_vm_golden_outputs",
+    "a6-a1-native-exact-decimal": "a1_numeric_values_and_errors_match_native_golden_outputs"
+  },
+  "test_counts": {
+    "a6-resources-decimal": [
+      [
+        3,
+        0
+      ],
+      [
+        8,
+        0
+      ]
+    ],
+    "a6-driver-unit-decimal": [
+      [
+        64,
+        1
+      ]
+    ],
+    "a6-language-decimal": [
+      [
+        12,
+        1
+      ]
+    ],
+    "a6-b1-contract-decimal": [
+      [
+        9,
+        0
+      ]
+    ],
+    "a6-b1-resources-decimal": [
+      [
+        17,
+        0
+      ]
+    ],
+    "a6-b1-vm-exact-decimal": [
+      [
+        1,
+        0
+      ]
+    ],
+    "a6-b1-native-exact-decimal": [
+      [
+        1,
+        0
+      ]
+    ],
+    "a6-a1-vm-exact-decimal": [
+      [
+        1,
+        0
+      ]
+    ],
+    "a6-a1-native-exact-decimal": [
+      [
+        1,
+        0
+      ]
+    ]
+  },
+  "scope_note": "功能、性能与代码CI固定有界十进制加减修复后的e7bf7a49；此前快照只作历史。",
+  "boundary_scope": [
+    "core/rust",
+    "stdlib",
+    "tests/fixtures",
+    "tests/benchmarks",
+    ".github/workflows",
+    ".cargo",
+    "tools",
+    "cli/ts",
+    "docs/UseDocs",
+    "docs/module-registry.json",
+    "package.json",
+    "bun.lock",
+    ".gitattributes"
+  ]
+}

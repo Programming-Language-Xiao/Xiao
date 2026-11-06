@@ -1,0 +1,9 @@
+    Checking xiao-runtime v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-runtime)
+    Checking xiao-bytecode v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-bytecode)
+    Checking xiao-diagnostics v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-diagnostics)
+    Checking xiao-doc-coverage-rust v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-doc-coverage-rust)
+    Checking xiao-platform v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-platform)
+    Checking xiao-vm v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-vm)
+    Checking xiao-xar v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-xar)
+    Checking xiao-driver v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-driver)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 7.24s

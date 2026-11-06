@@ -1,0 +1,19 @@
+{
+  "code_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+  "results": {
+    "local-vm": {
+      "passed": true,
+      "backend": "vm",
+      "records": 77,
+      "independent_batches": 385,
+      "full_catalog": true
+    },
+    "local-native": {
+      "passed": true,
+      "backend": "native",
+      "records": 154,
+      "independent_batches": 770,
+      "full_catalog": true
+    }
+  }
+}

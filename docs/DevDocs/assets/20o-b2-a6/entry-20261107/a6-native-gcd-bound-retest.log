@@ -1,0 +1,3 @@
+B2-A6-ARTIFACTS D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\run-temp\xiao-b2-a6-7212-1793992631288638000
+B2-A6-PERF case=lfloat.nonterminating-gcd profile=maximum optimization=0 median=Some(4.4353557) peak=Some(4116480) ratio=None result=failed
+B2-A6-PERF case=lfloat.nonterminating-gcd profile=maximum optimization=3 median=Some(4.7090473) peak=Some(4100096) ratio=None result=failed

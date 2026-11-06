@@ -1,0 +1,13 @@
+{
+  "run_id": 42300734964,
+  "run_attempt": 1,
+  "job_id": 128177526623,
+  "job_name": "Rust workspace default tests (Linux)",
+  "code_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+  "conclusion": "success",
+  "aggregate_job_id": 128186467982,
+  "aggregate_run_attempt": 2,
+  "execution_retained": true,
+  "log": "ci/decimal-default-retry/job-128177526623.log",
+  "log_sha256": "601205d8777ed46acc55253a61afc26ef6b5ac5c997bab88ccb850cc4cb6cf74"
+}

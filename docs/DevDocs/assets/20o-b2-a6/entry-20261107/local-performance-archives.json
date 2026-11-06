@@ -1,0 +1,84 @@
+{
+  "archives": [
+    {
+      "archive": "docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\performance-archives\\local-vm.zip",
+      "sha256": "558af6a84f7bef71effaa3e2f098b48d61b6026d5b312f0eb2a151f1f97b6bcf",
+      "bytes": 1078110,
+      "members": 1158,
+      "report_complete": true,
+      "report_passed": true
+    },
+    {
+      "archive": "docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\performance-archives\\local-native.zip",
+      "sha256": "f556bb1723847dba9f3ac129333576bfa8990b1891eae3c86c060cf0e225d84a",
+      "bytes": 5061609,
+      "members": 2318,
+      "report_complete": true,
+      "report_passed": true
+    },
+    {
+      "archive": "docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\performance-archives\\intermediate-vm-full.zip",
+      "sha256": "182b4eaa8f0499b69b52cf522cba5bf63eb305386d8bbe14c7e3e7428a77af04",
+      "bytes": 1077744,
+      "members": 1158,
+      "report_complete": true,
+      "report_passed": true
+    },
+    {
+      "archive": "docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\performance-archives\\intermediate-native-full.zip",
+      "sha256": "2eebc7e897353e1f16454b56c435a491a73979e1e410fab313f92ca167bb9263",
+      "bytes": 5063140,
+      "members": 2318,
+      "report_complete": true,
+      "report_passed": true
+    },
+    {
+      "archive": "docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\performance-archives\\historical-native-add-bool-width.zip",
+      "sha256": "025a99ab92eb3387f5552efd0536d9f6e23790bcf7cefd5ced8212a2f0ddcff3",
+      "bytes": 1183287,
+      "members": 38,
+      "report_complete": true,
+      "report_passed": true
+    },
+    {
+      "archive": "docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\performance-archives\\historical-native-add-first.zip",
+      "sha256": "75c21e6a0ed9e8769eeb898b3d0be3cf5c65afad9593ecf837da9189c09c4631",
+      "bytes": 1173346,
+      "members": 14,
+      "report_complete": true,
+      "report_passed": false
+    },
+    {
+      "archive": "docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\performance-archives\\historical-native-gcd-bound-retest.zip",
+      "sha256": "b8378ff1e0af88cd9c9943a5058f4a0dfe5105f41da3d49fdc1e50bcfdf61d86",
+      "bytes": 1404467,
+      "members": 38,
+      "report_complete": true,
+      "report_passed": false
+    },
+    {
+      "archive": "docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\performance-archives\\historical-vm-add-first.zip",
+      "sha256": "9ed6129bf483c21cbd81d425df268a1b3f6a0df0f45e63eaae81f95819408d14",
+      "bytes": 43864,
+      "members": 18,
+      "report_complete": true,
+      "report_passed": true
+    },
+    {
+      "archive": "docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\performance-archives\\historical-vm-gcd-bound-retest.zip",
+      "sha256": "44a99086be1453c6731fb5a38b4fb01e70f9f3f746875ac3d00333ed914e850f",
+      "bytes": 211237,
+      "members": 18,
+      "report_complete": true,
+      "report_passed": true
+    },
+    {
+      "archive": "docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\performance-archives\\historical-vm-maximum-first.zip",
+      "sha256": "e8ee387fdcf7cb0f071abe11885897bbedb335185e2188b044fe29efd04b7598",
+      "bytes": 724887,
+      "members": 351,
+      "report_complete": true,
+      "report_passed": false
+    }
+  ]
+}

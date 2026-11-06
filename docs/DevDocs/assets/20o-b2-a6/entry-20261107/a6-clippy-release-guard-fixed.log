@@ -1,0 +1,11 @@
+    Checking xiao-driver v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-driver)
+    Checking xiao-types v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-types)
+    Checking xiao-syntax v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-syntax)
+    Checking xiao-config v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-config)
+    Checking xiao-i18n v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-i18n)
+    Checking xiao-lock v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-lock)
+    Checking xiao-standard-library v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-standard-library)
+    Checking xiao-platform v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-platform)
+    Checking xiao-source v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-source)
+    Checking xiao-runtime-abi v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-runtime-abi)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.42s

@@ -1,0 +1,70 @@
+{
+  "passed": true,
+  "report": "D:\\project\\Xiao\\.a6-resources\\20261107-3b09bfb18950\\vm-decimal.json",
+  "cases": [
+    {
+      "case": "abi-boundary",
+      "passed": true,
+      "exit_code": 1,
+      "expected_error": "版本边界不符",
+      "actual_stderr": "版本边界不符\r\n",
+      "actual_stdout": ""
+    },
+    {
+      "case": "missing-scale",
+      "passed": true,
+      "exit_code": 1,
+      "expected_error": "实际负载、优化或规模缺项/重复",
+      "actual_stderr": "实际负载、优化或规模缺项/重复\r\n",
+      "actual_stdout": ""
+    },
+    {
+      "case": "missing-batch",
+      "passed": true,
+      "exit_code": 1,
+      "expected_error": "失败、缺批或不可验证规模",
+      "actual_stderr": "失败、缺批或不可验证规模\r\n",
+      "actual_stdout": ""
+    },
+    {
+      "case": "missing-pid",
+      "passed": true,
+      "exit_code": 1,
+      "expected_error": "缺少真实PID或未完成校准",
+      "actual_stderr": "缺少真实PID或未完成校准\r\n",
+      "actual_stdout": ""
+    },
+    {
+      "case": "wrong-rss-unit",
+      "passed": true,
+      "exit_code": 1,
+      "expected_error": "OS原始内存值或单位不符",
+      "actual_stderr": "OS原始内存值或单位不符\r\n",
+      "actual_stdout": ""
+    },
+    {
+      "case": "false-median",
+      "passed": true,
+      "exit_code": 1,
+      "expected_error": "五批归一化中位数/保守峰值重算不符",
+      "actual_stderr": "五批归一化中位数/保守峰值重算不符\r\n",
+      "actual_stdout": ""
+    },
+    {
+      "case": "false-peak",
+      "passed": true,
+      "exit_code": 1,
+      "expected_error": "单PID OS峰值增量重算不符",
+      "actual_stderr": "单PID OS峰值增量重算不符\r\n",
+      "actual_stdout": ""
+    },
+    {
+      "case": "subset-as-full",
+      "passed": true,
+      "exit_code": 1,
+      "expected_error": "子集不可当作全量A6验收",
+      "actual_stderr": "子集不可当作全量A6验收\r\n",
+      "actual_stdout": ""
+    }
+  ]
+}

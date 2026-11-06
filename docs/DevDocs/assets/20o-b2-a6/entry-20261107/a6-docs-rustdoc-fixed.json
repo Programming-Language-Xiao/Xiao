@@ -1,0 +1,32 @@
+{
+  "name": "a6-docs-rustdoc-fixed",
+  "argv": [
+    "bun",
+    "tools/repo-check/src/cli.ts",
+    "all"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a6-resources\\20261107-3b09bfb18950\\source",
+  "started_utc": "2026-11-06T19:55:48.527422+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "a6-docs-rustdoc-fixed.log",
+  "pid": 31440,
+  "exit_code": 1,
+  "source_before": {
+    "manifest": "source-manifests/d8904da4b57473f6e1603f28f78ea67e6fe3317e5179dc182cbe9213515ad6a1.json",
+    "raw_tree_sha256": "d8904da4b57473f6e1603f28f78ea67e6fe3317e5179dc182cbe9213515ad6a1",
+    "utf8_lf_tree_sha256": "41fdbb9626895d3f2a4e6da5e904f43ee69a2fc44de4383d13ceffe9ab747c0a",
+    "files": 1027
+  },
+  "source_after": {
+    "manifest": "source-manifests/d8904da4b57473f6e1603f28f78ea67e6fe3317e5179dc182cbe9213515ad6a1.json",
+    "raw_tree_sha256": "d8904da4b57473f6e1603f28f78ea67e6fe3317e5179dc182cbe9213515ad6a1",
+    "utf8_lf_tree_sha256": "41fdbb9626895d3f2a4e6da5e904f43ee69a2fc44de4383d13ceffe9ab747c0a",
+    "files": 1027
+  },
+  "source_unchanged": true,
+  "runner_sha256": "38d63c18723d6d491dd5652fd538a31480400e8edc97cc5c8980889a67a422c8",
+  "finished_utc": "2026-11-06T19:56:28.035846+00:00",
+  "duration_seconds": 39.515,
+  "sha256": "b53b943cfd62935e1978b38d8ef809702968c4a9b2e1bceb8a57da75429ff042"
+}

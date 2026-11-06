@@ -1,0 +1,1630 @@
+﻿2026-11-06T19:59:04.4867408Z Current runner version: '2.338.2'
+2026-11-06T19:59:04.4892568Z ##[group]Runner Image Provisioner
+2026-11-06T19:59:04.4893450Z Hosted Compute Agent
+2026-11-06T19:59:04.4894036Z Version: 20261028.624
+2026-11-06T19:59:04.4894633Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-06T19:59:04.4895386Z Build Date: 2026-10-28T21:51:42Z
+2026-11-06T19:59:04.4896026Z Worker ID: {3c767f42-73a9-4ab7-9b0c-b617d5ff8341}
+2026-11-06T19:59:04.4896703Z Region: westus3
+2026-11-06T19:59:04.4897211Z Cloud: Azure
+2026-11-06T19:59:04.4897697Z ##[endgroup]
+2026-11-06T19:59:04.4899172Z ##[group]Operating System
+2026-11-06T19:59:04.4899756Z Ubuntu
+2026-11-06T19:59:04.4900681Z 24.04.5
+2026-11-06T19:59:04.4901240Z LTS
+2026-11-06T19:59:04.4901685Z ##[endgroup]
+2026-11-06T19:59:04.4902637Z ##[group]Runner Image
+2026-11-06T19:59:04.4903197Z Image: ubuntu-24.04
+2026-11-06T19:59:04.4903737Z Version: 20261101.360.1
+2026-11-06T19:59:04.4904948Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-06T19:59:04.4906392Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+2026-11-06T19:59:04.4907267Z ##[endgroup]
+2026-11-06T19:59:04.4908391Z ##[group]GITHUB_TOKEN Permissions
+2026-11-06T19:59:04.4910994Z Contents: read
+2026-11-06T19:59:04.4911627Z Metadata: read
+2026-11-06T19:59:04.4912156Z ##[endgroup]
+2026-11-06T19:59:04.4914398Z Secret source: Actions
+2026-11-06T19:59:04.4915346Z Cache mode: write
+2026-11-06T19:59:04.4915999Z Prepare workflow directory
+2026-11-06T19:59:04.5456947Z Prepare all required actions
+2026-11-06T19:59:04.5506902Z Getting action download info
+2026-11-06T19:59:04.8648175Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-11-06T19:59:04.9728895Z Download action repository 'dtolnay/rust-toolchain@1.96.0' (SHA:d86e0fa8f147d6539442c26a61ebba8becc19489)
+2026-11-06T19:59:05.2085267Z Download action repository 'Swatinem/rust-cache@v2' (SHA:d1527c8f67ef9af357290475d4af4b0fab8f12e0)
+2026-11-06T19:59:05.9103400Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+2026-11-06T19:59:06.1205478Z Complete job name: Rust workspace default tests (Linux)
+2026-11-06T19:59:06.2101766Z ##[group]Run actions/checkout@v7
+2026-11-06T19:59:06.2102725Z with:
+2026-11-06T19:59:06.2103276Z   repository: Programming-Language-Xiao/Xiao
+2026-11-06T19:59:06.2107716Z   token: ***
+2026-11-06T19:59:06.2108210Z   ssh-strict: true
+2026-11-06T19:59:06.2108710Z   ssh-user: git
+2026-11-06T19:59:06.2109218Z   persist-credentials: true
+2026-11-06T19:59:06.2109769Z   clean: true
+2026-11-06T19:59:06.2110434Z   sparse-checkout-cone-mode: true
+2026-11-06T19:59:06.2111030Z   fetch-depth: 1
+2026-11-06T19:59:06.2111522Z   fetch-tags: false
+2026-11-06T19:59:06.2112027Z   show-progress: true
+2026-11-06T19:59:06.2112545Z   lfs: false
+2026-11-06T19:59:06.2113020Z   submodules: false
+2026-11-06T19:59:06.2113523Z   set-safe-directory: true
+2026-11-06T19:59:06.2114112Z   allow-unsafe-pr-checkout: false
+2026-11-06T19:59:06.2114977Z env:
+2026-11-06T19:59:06.2115459Z   XIAO_B1_F10: 0
+2026-11-06T19:59:06.2115947Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:06.2116443Z ##[endgroup]
+2026-11-06T19:59:06.4625103Z Syncing repository: Programming-Language-Xiao/Xiao
+2026-11-06T19:59:06.4628293Z ##[group]Getting Git version info
+2026-11-06T19:59:06.4629107Z Working directory is '/home/runner/work/Xiao/Xiao'
+2026-11-06T19:59:06.4631071Z [command]/usr/bin/git version
+2026-11-06T19:59:06.4702009Z git version 2.56.0
+2026-11-06T19:59:06.4723249Z ##[endgroup]
+2026-11-06T19:59:06.4739519Z Temporarily overriding HOME='/home/runner/work/_temp/5384c94a-435b-4a76-ae18-0ee2235d1b1b' before making global git config changes
+2026-11-06T19:59:06.4742730Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-06T19:59:06.4745645Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Xiao/Xiao
+2026-11-06T19:59:06.4803176Z Deleting the contents of '/home/runner/work/Xiao/Xiao'
+2026-11-06T19:59:06.4813981Z ##[group]Determining repository object format
+2026-11-06T19:59:06.4816241Z ##[endgroup]
+2026-11-06T19:59:06.4818084Z ##[group]Initializing the repository
+2026-11-06T19:59:06.4819764Z [command]/usr/bin/git init /home/runner/work/Xiao/Xiao
+2026-11-06T19:59:06.4914474Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-06T19:59:06.4916797Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-06T19:59:06.4918758Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-06T19:59:06.4920539Z hint: call:
+2026-11-06T19:59:06.4921537Z hint:
+2026-11-06T19:59:06.4922662Z hint: 	git config --global init.defaultBranch <name>
+2026-11-06T19:59:06.4923955Z hint:
+2026-11-06T19:59:06.4925295Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-06T19:59:06.4927345Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-06T19:59:06.4929018Z hint:
+2026-11-06T19:59:06.4930014Z hint: 	git branch -m <name>
+2026-11-06T19:59:06.4931227Z hint:
+2026-11-06T19:59:06.4932631Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-06T19:59:06.4934741Z Initialized empty Git repository in /home/runner/work/Xiao/Xiao/.git/
+2026-11-06T19:59:06.4938451Z [command]/usr/bin/git remote add origin https://github.com/Programming-Language-Xiao/Xiao
+2026-11-06T19:59:06.4986257Z ##[endgroup]
+2026-11-06T19:59:06.4988050Z ##[group]Disabling automatic garbage collection
+2026-11-06T19:59:06.4989505Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-06T19:59:06.5021162Z ##[endgroup]
+2026-11-06T19:59:06.5023378Z ##[group]Setting up auth
+2026-11-06T19:59:06.5024582Z Removing SSH command configuration
+2026-11-06T19:59:06.5026250Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-06T19:59:06.5075854Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-06T19:59:06.5456858Z Removing HTTP extra header
+2026-11-06T19:59:06.5461707Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-06T19:59:06.5514485Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-06T19:59:06.5751777Z Removing includeIf entries pointing to credentials config files
+2026-11-06T19:59:06.5757133Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-06T19:59:06.5791100Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-06T19:59:06.6006701Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-3ea8273d-ba6f-4e26-b1d8-26ab54b150ad.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-06T19:59:06.6044855Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/Xiao/Xiao/.git.path /home/runner/work/_temp/git-credentials-3ea8273d-ba6f-4e26-b1d8-26ab54b150ad.config
+2026-11-06T19:59:06.6074109Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/Xiao/Xiao/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-3ea8273d-ba6f-4e26-b1d8-26ab54b150ad.config
+2026-11-06T19:59:06.6104823Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-3ea8273d-ba6f-4e26-b1d8-26ab54b150ad.config
+2026-11-06T19:59:06.6137673Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-3ea8273d-ba6f-4e26-b1d8-26ab54b150ad.config
+2026-11-06T19:59:06.6167264Z ##[endgroup]
+2026-11-06T19:59:06.6168833Z ##[group]Fetching the repository
+2026-11-06T19:59:06.6175885Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +1be17d117a2d17b4d46f5c26d3cee214d1cc4bfd:refs/remotes/origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T19:59:07.6253746Z From https://github.com/Programming-Language-Xiao/Xiao
+2026-11-06T19:59:07.6258526Z  * [new ref]         1be17d117a2d17b4d46f5c26d3cee214d1cc4bfd -> origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T19:59:07.6266327Z [command]/usr/bin/git branch --list --remote origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T19:59:07.6291503Z   origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T19:59:07.6298783Z [command]/usr/bin/git rev-parse refs/remotes/origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T19:59:07.6322833Z 1be17d117a2d17b4d46f5c26d3cee214d1cc4bfd
+2026-11-06T19:59:07.6327746Z ##[endgroup]
+2026-11-06T19:59:07.6330281Z ##[group]Determining the checkout info
+2026-11-06T19:59:07.6332772Z ##[endgroup]
+2026-11-06T19:59:07.6334359Z [command]/usr/bin/git sparse-checkout disable
+2026-11-06T19:59:07.6389048Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-06T19:59:07.6422274Z ##[group]Checking out the ref
+2026-11-06T19:59:07.6428125Z [command]/usr/bin/git checkout --progress --force -B codex/b2-a6-resources-20261107-3b09bfb18950 refs/remotes/origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T19:59:07.8523674Z Switched to a new branch 'codex/b2-a6-resources-20261107-3b09bfb18950'
+2026-11-06T19:59:07.8527599Z branch 'codex/b2-a6-resources-20261107-3b09bfb18950' set up to track 'origin/codex/b2-a6-resources-20261107-3b09bfb18950'.
+2026-11-06T19:59:07.8542171Z ##[endgroup]
+2026-11-06T19:59:07.8588996Z [command]/usr/bin/git log -1 --format=%H
+2026-11-06T19:59:07.8615567Z 1be17d117a2d17b4d46f5c26d3cee214d1cc4bfd
+2026-11-06T19:59:07.8873110Z ##[group]Run python tools/gates/b2-a6-selection.py
+2026-11-06T19:59:07.8874760Z [36;1mpython tools/gates/b2-a6-selection.py[0m
+2026-11-06T19:59:07.8894215Z shell: /usr/bin/bash -e {0}
+2026-11-06T19:59:07.8895258Z env:
+2026-11-06T19:59:07.8896042Z   XIAO_B1_F10: 0
+2026-11-06T19:59:07.8896916Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:07.8897777Z ##[endgroup]
+2026-11-06T19:59:07.9209012Z {"measurement_mode": "b2-a6"}
+2026-11-06T19:59:07.9722831Z ##[group]Run dtolnay/rust-toolchain@1.96.0
+2026-11-06T19:59:07.9723923Z with:
+2026-11-06T19:59:07.9724667Z env:
+2026-11-06T19:59:07.9725392Z   XIAO_B1_F10: 0
+2026-11-06T19:59:07.9726165Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:07.9726951Z ##[endgroup]
+2026-11-06T19:59:07.9813426Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-11-06T19:59:07.9883435Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-11-06T19:59:07.9884602Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-11-06T19:59:07.9886394Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-11-06T19:59:07.9888354Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-11-06T19:59:07.9889511Z [36;1m  exit 1[0m
+2026-11-06T19:59:07.9890861Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-11-06T19:59:07.9892369Z [36;1m  if [[ Linux == macOS ]]; then[0m
+2026-11-06T19:59:07.9894287Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-11-06T19:59:07.9896100Z [36;1m  else[0m
+2026-11-06T19:59:07.9897549Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-11-06T19:59:07.9899194Z [36;1m  fi[0m
+2026-11-06T19:59:07.9900375Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-11-06T19:59:07.9902258Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-11-06T19:59:07.9903903Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-11-06T19:59:07.9905956Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-11-06T19:59:07.9907750Z [36;1melse[0m
+2026-11-06T19:59:07.9908539Z [36;1m  delimiter=EOF[0m
+2026-11-06T19:59:07.9909697Z [36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done[0m
+2026-11-06T19:59:07.9911588Z [36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT[0m
+2026-11-06T19:59:07.9913117Z [36;1mfi[0m
+2026-11-06T19:59:07.9930586Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T19:59:07.9931804Z env:
+2026-11-06T19:59:07.9932542Z   XIAO_B1_F10: 0
+2026-11-06T19:59:07.9933331Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:07.9934130Z   toolchain: 1.96.0
+2026-11-06T19:59:07.9934910Z ##[endgroup]
+2026-11-06T19:59:08.0019029Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=20]
+2026-11-06T19:59:08.0028291Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+2026-11-06T19:59:08.0069604Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+2026-11-06T19:59:08.0071362Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+2026-11-06T19:59:08.0087198Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T19:59:08.0088395Z env:
+2026-11-06T19:59:08.0089123Z   XIAO_B1_F10: 0
+2026-11-06T19:59:08.0089903Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:08.0090968Z ##[endgroup]
+2026-11-06T19:59:08.0153985Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=12]
+2026-11-06T19:59:08.0160484Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+2026-11-06T19:59:08.0208748Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-11-06T19:59:08.0210023Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-11-06T19:59:08.0212711Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+2026-11-06T19:59:08.0215202Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+2026-11-06T19:59:08.0216266Z [36;1mfi[0m
+2026-11-06T19:59:08.0231941Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T19:59:08.0233148Z env:
+2026-11-06T19:59:08.0233886Z   XIAO_B1_F10: 0
+2026-11-06T19:59:08.0234770Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:08.0235629Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T19:59:08.0236589Z ##[endgroup]
+2026-11-06T19:59:08.0294091Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=13]
+2026-11-06T19:59:08.0300508Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+2026-11-06T19:59:08.0313816Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-11-06T19:59:08.0331573Z ##[start-action display=rustup toolchain install 1.96.0;id=__dtolnay_rust-toolchain.__run_4]
+2026-11-06T19:59:08.0368938Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+2026-11-06T19:59:08.0371241Z [36;1mset -f  # split targets and components on commas and whitespace, without glob expansion[0m
+2026-11-06T19:59:08.0372786Z [36;1mflags=()[0m
+2026-11-06T19:59:08.0373774Z [36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done[0m
+2026-11-06T19:59:08.0375217Z [36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done[0m
+2026-11-06T19:59:08.0376936Z [36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi[0m
+2026-11-06T19:59:08.0378400Z [36;1mlog=$(mktemp)[0m
+2026-11-06T19:59:08.0379256Z [36;1mtrap 'rm -f "$log"' EXIT[0m
+2026-11-06T19:59:08.0380275Z [36;1mfor attempt in 1 2 3 4 5; do[0m
+2026-11-06T19:59:08.0382216Z [36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then[0m
+2026-11-06T19:59:08.0384304Z [36;1m    break[0m
+2026-11-06T19:59:08.0385083Z [36;1m  else[0m
+2026-11-06T19:59:08.0385850Z [36;1m    status=$?[0m
+2026-11-06T19:59:08.0386658Z [36;1m  fi[0m
+2026-11-06T19:59:08.0387698Z [36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \[0m
+2026-11-06T19:59:08.0389595Z [36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then[0m
+2026-11-06T19:59:08.0391318Z [36;1m    exit "$status"[0m
+2026-11-06T19:59:08.0392170Z [36;1m  fi[0m
+2026-11-06T19:59:08.0393420Z [36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2[0m
+2026-11-06T19:59:08.0394905Z [36;1m  sleep 30[0m
+2026-11-06T19:59:08.0395696Z [36;1mdone[0m
+2026-11-06T19:59:08.0410920Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T19:59:08.0412080Z env:
+2026-11-06T19:59:08.0412781Z   XIAO_B1_F10: 0
+2026-11-06T19:59:08.0413538Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:08.0499945Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T19:59:08.0501717Z   toolchain: 1.96.0
+2026-11-06T19:59:08.0502962Z   targets: 
+2026-11-06T19:59:08.0503981Z   components: 
+2026-11-06T19:59:08.0505191Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-11-06T19:59:08.0506422Z ##[endgroup]
+2026-11-06T19:59:08.0941365Z info: syncing channel updates for 1.96.0-x86_64-unknown-linux-gnu
+2026-11-06T19:59:08.2626368Z info: latest update on 2026-05-28 for version 1.96.0 (ac68faa20 2026-05-25)
+2026-11-06T19:59:08.2628192Z info: downloading 3 components
+2026-11-06T19:59:16.7770455Z 
+2026-11-06T19:59:16.7829498Z   1.96.0-x86_64-unknown-linux-gnu installed - rustc 1.96.0 (ac68faa20 2026-05-25)
+2026-11-06T19:59:16.7830235Z 
+2026-11-06T19:59:16.7945800Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=8761]
+2026-11-06T19:59:16.7952038Z ##[start-action display=rustup default 1.96.0;id=__dtolnay_rust-toolchain.__run_5]
+2026-11-06T19:59:16.7968025Z ##[group]Run rustup default "$toolchain" --force-non-host
+2026-11-06T19:59:16.7968444Z [36;1mrustup default "$toolchain" --force-non-host[0m
+2026-11-06T19:59:16.7981461Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T19:59:16.7981812Z env:
+2026-11-06T19:59:16.7982024Z   XIAO_B1_F10: 0
+2026-11-06T19:59:16.7982390Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:16.7982626Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T19:59:16.7982883Z   toolchain: 1.96.0
+2026-11-06T19:59:16.7983095Z ##[endgroup]
+2026-11-06T19:59:16.8055069Z info: using existing install for 1.96.0-x86_64-unknown-linux-gnu
+2026-11-06T19:59:16.8061991Z info: default toolchain set to 1.96.0-x86_64-unknown-linux-gnu
+2026-11-06T19:59:16.8062435Z 
+2026-11-06T19:59:16.8123509Z   1.96.0-x86_64-unknown-linux-gnu unchanged - rustc 1.96.0 (ac68faa20 2026-05-25)
+2026-11-06T19:59:16.8124276Z 
+2026-11-06T19:59:16.8137209Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=18]
+2026-11-06T19:59:16.8140850Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+2026-11-06T19:59:16.8156281Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-11-06T19:59:16.8157130Z [36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-11-06T19:59:16.8157783Z [36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-11-06T19:59:16.8158289Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-11-06T19:59:16.8170958Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T19:59:16.8171314Z env:
+2026-11-06T19:59:16.8171528Z   XIAO_B1_F10: 0
+2026-11-06T19:59:16.8171747Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:16.8172001Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T19:59:16.8172266Z   toolchain: 1.96.0
+2026-11-06T19:59:16.8172476Z ##[endgroup]
+2026-11-06T19:59:16.8440349Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=29]
+2026-11-06T19:59:16.8442952Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+2026-11-06T19:59:16.8458841Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-11-06T19:59:16.8459234Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-11-06T19:59:16.8459566Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-11-06T19:59:16.8459869Z [36;1mfi[0m
+2026-11-06T19:59:16.8472588Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T19:59:16.8472944Z env:
+2026-11-06T19:59:16.8473161Z   XIAO_B1_F10: 0
+2026-11-06T19:59:16.8473380Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:16.8473604Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T19:59:16.8473855Z ##[endgroup]
+2026-11-06T19:59:16.8510484Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=6]
+2026-11-06T19:59:16.8512668Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+2026-11-06T19:59:16.8527758Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-11-06T19:59:16.8528139Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-11-06T19:59:16.8528499Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-11-06T19:59:16.8528800Z [36;1mfi[0m
+2026-11-06T19:59:16.8540640Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T19:59:16.8541004Z env:
+2026-11-06T19:59:16.8541217Z   XIAO_B1_F10: 0
+2026-11-06T19:59:16.8541425Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:16.8541667Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T19:59:16.8541934Z   CARGO_INCREMENTAL: 0
+2026-11-06T19:59:16.8542156Z ##[endgroup]
+2026-11-06T19:59:16.8577940Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=6]
+2026-11-06T19:59:16.8581451Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+2026-11-06T19:59:16.8596853Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-11-06T19:59:16.8597402Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-11-06T19:59:16.8598237Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-11-06T19:59:16.8598953Z [36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-11-06T19:59:16.8599520Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-11-06T19:59:16.8600303Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-11-06T19:59:16.8600815Z [36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-11-06T19:59:16.8601369Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-11-06T19:59:16.8601863Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-11-06T19:59:16.8602227Z [36;1m  fi[0m
+2026-11-06T19:59:16.8602423Z [36;1mfi[0m
+2026-11-06T19:59:16.8613781Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T19:59:16.8614114Z env:
+2026-11-06T19:59:16.8614324Z   XIAO_B1_F10: 0
+2026-11-06T19:59:16.8614534Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:16.8614769Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T19:59:16.8615027Z   CARGO_INCREMENTAL: 0
+2026-11-06T19:59:16.8615255Z   CARGO_TERM_COLOR: always
+2026-11-06T19:59:16.8615505Z   toolchain: 1.96.0
+2026-11-06T19:59:16.8615725Z ##[endgroup]
+2026-11-06T19:59:16.8860483Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=27]
+2026-11-06T19:59:16.8864158Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+2026-11-06T19:59:16.8879976Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-11-06T19:59:16.8881199Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-11-06T19:59:16.8881811Z [36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-11-06T19:59:16.8882298Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-11-06T19:59:16.8882604Z [36;1mfi[0m
+2026-11-06T19:59:16.8895144Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T19:59:16.8895482Z env:
+2026-11-06T19:59:16.8895684Z   XIAO_B1_F10: 0
+2026-11-06T19:59:16.8895906Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:16.8896134Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T19:59:16.8896385Z   CARGO_INCREMENTAL: 0
+2026-11-06T19:59:16.8896615Z   CARGO_TERM_COLOR: always
+2026-11-06T19:59:16.8896848Z   toolchain: 1.96.0
+2026-11-06T19:59:16.8897065Z ##[endgroup]
+2026-11-06T19:59:16.9037820Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=17]
+2026-11-06T19:59:16.9042527Z ##[start-action display=rustc +1.96.0 --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+2026-11-06T19:59:16.9057754Z ##[group]Run rustc +"$toolchain" --version --verbose
+2026-11-06T19:59:16.9058136Z [36;1mrustc +"$toolchain" --version --verbose[0m
+2026-11-06T19:59:16.9071384Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T19:59:16.9071719Z env:
+2026-11-06T19:59:16.9071922Z   XIAO_B1_F10: 0
+2026-11-06T19:59:16.9072130Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:16.9072356Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T19:59:16.9072614Z   CARGO_INCREMENTAL: 0
+2026-11-06T19:59:16.9072837Z   CARGO_TERM_COLOR: always
+2026-11-06T19:59:16.9073061Z   toolchain: 1.96.0
+2026-11-06T19:59:16.9073269Z ##[endgroup]
+2026-11-06T19:59:16.9198462Z rustc 1.96.0 (ac68faa20 2026-05-25)
+2026-11-06T19:59:16.9198949Z binary: rustc
+2026-11-06T19:59:16.9199245Z commit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96
+2026-11-06T19:59:16.9199579Z commit-date: 2026-05-25
+2026-11-06T19:59:16.9199837Z host: x86_64-unknown-linux-gnu
+2026-11-06T19:59:16.9200264Z release: 1.96.0
+2026-11-06T19:59:16.9200556Z LLVM version: 22.1.2
+2026-11-06T19:59:16.9214197Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=17]
+2026-11-06T19:59:16.9268532Z ##[group]Run python tools/gates/controlled-cargo.py --install
+2026-11-06T19:59:16.9268988Z [36;1mpython tools/gates/controlled-cargo.py --install[0m
+2026-11-06T19:59:16.9281650Z shell: /usr/bin/bash -e {0}
+2026-11-06T19:59:16.9281927Z env:
+2026-11-06T19:59:16.9282126Z   XIAO_B1_F10: 0
+2026-11-06T19:59:16.9282336Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:16.9282567Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T19:59:16.9282821Z   CARGO_INCREMENTAL: 0
+2026-11-06T19:59:16.9283045Z   CARGO_TERM_COLOR: always
+2026-11-06T19:59:16.9283276Z ##[endgroup]
+2026-11-06T19:59:16.9614664Z {"cargo_control_directory": "/home/runner/work/_temp/xiao-controlled-cargo-8e3b8d77ec834c898bf7e12da258ddeb", "delegate": "/home/runner/.cargo/bin/cargo", "scope": "\u4ec5\u5f53\u524dCI\u4f5c\u4e1a\u540e\u7eed\u6b65\u9aa4\uff1b\u4e0d\u6539\u5168\u5c40\u73af\u5883\u6216Cargo\u914d\u7f6e"}
+2026-11-06T19:59:16.9744927Z ##[group]Run Swatinem/rust-cache@v2
+2026-11-06T19:59:16.9745218Z with:
+2026-11-06T19:59:16.9745453Z   workspaces: core/rust -> core/rust/target
+2026-11-06T19:59:16.9745736Z   prefix-key: v0-rust
+2026-11-06T19:59:16.9745964Z   add-job-id-key: true
+2026-11-06T19:59:16.9746206Z   add-rust-environment-hash-key: true
+2026-11-06T19:59:16.9746471Z   cache-targets: true
+2026-11-06T19:59:16.9746816Z   cache-all-crates: false
+2026-11-06T19:59:16.9747077Z   cache-workspace-crates: false
+2026-11-06T19:59:16.9747323Z   save-if: true
+2026-11-06T19:59:16.9747540Z   cache-provider: github
+2026-11-06T19:59:16.9747776Z   cache-bin: true
+2026-11-06T19:59:16.9747999Z   lookup-only: false
+2026-11-06T19:59:16.9748214Z   cmd-format: {0}
+2026-11-06T19:59:16.9748408Z env:
+2026-11-06T19:59:16.9748595Z   XIAO_B1_F10: 0
+2026-11-06T19:59:16.9748800Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:16.9749019Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T19:59:16.9749399Z   CARGO_INCREMENTAL: 0
+2026-11-06T19:59:16.9749666Z   CARGO_TERM_COLOR: always
+2026-11-06T19:59:16.9749894Z ##[endgroup]
+2026-11-06T19:59:18.4264960Z ##[group]Cache Configuration
+2026-11-06T19:59:18.4265471Z Cache Provider:
+2026-11-06T19:59:18.4265771Z     github
+2026-11-06T19:59:18.4266071Z Workspaces:
+2026-11-06T19:59:18.4266442Z     /home/runner/work/Xiao/Xiao/core/rust
+2026-11-06T19:59:18.4266931Z Cache Paths:
+2026-11-06T19:59:18.4267254Z     /home/runner/.cargo/bin
+2026-11-06T19:59:18.4267604Z     /home/runner/.cargo/.crates.toml
+2026-11-06T19:59:18.4268027Z     /home/runner/.cargo/.crates2.json
+2026-11-06T19:59:18.4268472Z     /home/runner/.cargo/registry
+2026-11-06T19:59:18.4268883Z     /home/runner/.cargo/git
+2026-11-06T19:59:18.4269387Z     /home/runner/work/Xiao/Xiao/core/rust/core/rust/target
+2026-11-06T19:59:18.4269868Z Restore Key:
+2026-11-06T19:59:18.4270829Z     v0-rust-workspace-default-tests-Linux-x64-ae49ceb1
+2026-11-06T19:59:18.4271388Z Cache Key:
+2026-11-06T19:59:18.4271804Z     v0-rust-workspace-default-tests-Linux-x64-ae49ceb1-9c3daf80
+2026-11-06T19:59:18.4272362Z .. Prefix:
+2026-11-06T19:59:18.4272691Z   - v0-rust-workspace-default-tests-Linux-x64
+2026-11-06T19:59:18.4273135Z .. Environment considered:
+2026-11-06T19:59:18.4273498Z   - Rust Versions:
+2026-11-06T19:59:18.4274019Z     - 1.96.0 x86_64-unknown-linux-gnu ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96
+2026-11-06T19:59:18.4274772Z     - 1.99.1 x86_64-unknown-linux-gnu 58cf8f9c35b355199727627d07ae34a4e2846d67
+2026-11-06T19:59:18.4275388Z   - CARGO_HOME
+2026-11-06T19:59:18.4275718Z   - CARGO_INCREMENTAL
+2026-11-06T19:59:18.4276067Z   - CARGO_TERM_COLOR
+2026-11-06T19:59:18.4276421Z .. Lockfiles considered:
+2026-11-06T19:59:18.4276893Z   - /home/runner/work/Xiao/Xiao/.cargo/config.toml
+2026-11-06T19:59:18.4277499Z   - /home/runner/work/Xiao/Xiao/core/rust/Cargo.lock
+2026-11-06T19:59:18.4278225Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-artifacts/Cargo.toml
+2026-11-06T19:59:18.4279078Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-bytecode/Cargo.toml
+2026-11-06T19:59:18.4279900Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-codegen-llvm/Cargo.toml
+2026-11-06T19:59:18.4280887Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-config/Cargo.toml
+2026-11-06T19:59:18.4291423Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-diagnostics/Cargo.toml
+2026-11-06T19:59:18.4300264Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-doc-coverage-rust/Cargo.toml
+2026-11-06T19:59:18.4301089Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-driver/Cargo.toml
+2026-11-06T19:59:18.4301765Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-i18n/Cargo.toml
+2026-11-06T19:59:18.4302498Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-intrinsics/Cargo.toml
+2026-11-06T19:59:18.4303225Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-ir/Cargo.toml
+2026-11-06T19:59:18.4303930Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-lifetime/Cargo.toml
+2026-11-06T19:59:18.4304808Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-lock/Cargo.toml
+2026-11-06T19:59:18.4305902Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-modules/Cargo.toml
+2026-11-06T19:59:18.4306816Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-optimizer/Cargo.toml
+2026-11-06T19:59:18.4307739Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-package/Cargo.toml
+2026-11-06T19:59:18.4308469Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-platform/Cargo.toml
+2026-11-06T19:59:18.4309200Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-runtime-abi/Cargo.toml
+2026-11-06T19:59:18.4309948Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-runtime/Cargo.toml
+2026-11-06T19:59:18.4310797Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-source/Cargo.toml
+2026-11-06T19:59:18.4311676Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-standard-library/Cargo.toml
+2026-11-06T19:59:18.4312388Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-syntax/Cargo.toml
+2026-11-06T19:59:18.4313051Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-types/Cargo.toml
+2026-11-06T19:59:18.4313482Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-vm/Cargo.toml
+2026-11-06T19:59:18.4313896Z   - /home/runner/work/Xiao/Xiao/core/rust/crates/xiao-xar/Cargo.toml
+2026-11-06T19:59:18.4314299Z   - /home/runner/work/Xiao/Xiao/core/rust/rust-toolchain.toml
+2026-11-06T19:59:18.4314931Z ##[endgroup]
+2026-11-06T19:59:18.4315049Z 
+2026-11-06T19:59:18.4315147Z ... Restoring cache ...
+2026-11-06T19:59:18.6600496Z Cache hit for restore-key: v0-rust-workspace-default-tests-Linux-x64-ae49ceb1-c72467b0
+2026-11-06T19:59:19.8023416Z Received 16929950 of 16929950 (100.0%), 17.8 MBs/sec
+2026-11-06T19:59:19.8023889Z Cache Size: ~16 MB (16929950 B)
+2026-11-06T19:59:19.8050196Z [command]/usr/bin/tar -xf /home/runner/work/_temp/f97c6234-0a5a-46e2-80d1-f9a072dd36cc/cache.tzst -P -C /home/runner/work/Xiao/Xiao --use-compress-program unzstd
+2026-11-06T19:59:19.8673497Z Cache restored successfully
+2026-11-06T19:59:19.8684197Z Restored from cache key "v0-rust-workspace-default-tests-Linux-x64-ae49ceb1-c72467b0" full match: false.
+2026-11-06T19:59:19.8772672Z ##[group]Run ./tools/gates/b1-probe-guards.ps1
+2026-11-06T19:59:19.8773077Z [36;1m./tools/gates/b1-probe-guards.ps1[0m
+2026-11-06T19:59:19.8786899Z shell: /usr/bin/pwsh -command ". '{0}'"
+2026-11-06T19:59:19.8787195Z env:
+2026-11-06T19:59:19.8787399Z   XIAO_B1_F10: 0
+2026-11-06T19:59:19.8787612Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:19.8787849Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T19:59:19.8788122Z   CARGO_INCREMENTAL: 0
+2026-11-06T19:59:19.8788353Z   CARGO_TERM_COLOR: always
+2026-11-06T19:59:19.8788591Z   CACHE_ON_FAILURE: false
+2026-11-06T19:59:19.8788823Z ##[endgroup]
+2026-11-06T19:59:21.1842908Z B1-GUARDS path=default passed=7 total=7
+2026-11-06T19:59:21.2204142Z B1-GUARDS path=Linux passed=7 total=7
+2026-11-06T19:59:21.2531519Z B1-GUARDS path=macOS passed=7 total=7
+2026-11-06T19:59:26.7021956Z B1-GUARDS path=Windows passed=7 total=7
+2026-11-06T19:59:26.7053103Z B1-GUARDS passed=28 total=28; 仅验证计数脚本，不是 VM/native 三平台执行证据。
+2026-11-06T19:59:26.7532352Z ##[group]Run rustc -Vv
+2026-11-06T19:59:26.7532653Z [36;1mrustc -Vv[0m
+2026-11-06T19:59:26.7532870Z [36;1mlscpu[0m
+2026-11-06T19:59:26.7533381Z [36;1mcargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_a_resources --test 20o_b2_a_performance_protocol[0m
+2026-11-06T19:59:26.7534067Z [36;1mcargo build --manifest-path core/rust/Cargo.toml --release -p xiao-runtime[0m
+2026-11-06T19:59:26.7534623Z [36;1mexport XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"[0m
+2026-11-06T19:59:26.7535549Z [36;1mcargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --example b2_numeric_performance -- --backend vm --case all --profile all --artifact-root b2-a6-vm-artifacts --output b2-a6-vm.json[0m
+2026-11-06T19:59:26.7549688Z shell: /usr/bin/bash -e {0}
+2026-11-06T19:59:26.7549975Z env:
+2026-11-06T19:59:26.7550386Z   XIAO_B1_F10: 0
+2026-11-06T19:59:26.7550672Z   XIAO_B2_A_PERF: 1
+2026-11-06T19:59:26.7550955Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T19:59:26.7551218Z   CARGO_INCREMENTAL: 0
+2026-11-06T19:59:26.7551447Z   CARGO_TERM_COLOR: always
+2026-11-06T19:59:26.7551685Z   CACHE_ON_FAILURE: false
+2026-11-06T19:59:26.7551924Z ##[endgroup]
+2026-11-06T19:59:26.7682066Z rustc 1.96.0 (ac68faa20 2026-05-25)
+2026-11-06T19:59:26.7682592Z binary: rustc
+2026-11-06T19:59:26.7683040Z commit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96
+2026-11-06T19:59:26.7683612Z commit-date: 2026-05-25
+2026-11-06T19:59:26.7684017Z host: x86_64-unknown-linux-gnu
+2026-11-06T19:59:26.7684462Z release: 1.96.0
+2026-11-06T19:59:26.7685233Z LLVM version: 22.1.2
+2026-11-06T19:59:26.7719521Z Architecture:                            x86_64
+2026-11-06T19:59:26.7720350Z CPU op-mode(s):                          32-bit, 64-bit
+2026-11-06T19:59:26.7720864Z Address sizes:                           46 bits physical, 57 bits virtual
+2026-11-06T19:59:26.7721255Z Byte Order:                              Little Endian
+2026-11-06T19:59:26.7721828Z CPU(s):                                  4
+2026-11-06T19:59:26.7722129Z On-line CPU(s) list:                     0-3
+2026-11-06T19:59:26.7722452Z Vendor ID:                               GenuineIntel
+2026-11-06T19:59:26.7722898Z Model name:                              Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz
+2026-11-06T19:59:26.7723468Z CPU family:                              6
+2026-11-06T19:59:26.7723918Z Model:                                   106
+2026-11-06T19:59:26.7724345Z Thread(s) per core:                      2
+2026-11-06T19:59:26.7724776Z Core(s) per socket:                      2
+2026-11-06T19:59:26.7725263Z Socket(s):                               1
+2026-11-06T19:59:26.7725722Z Stepping:                                6
+2026-11-06T19:59:26.7726202Z CPU(s) scaling MHz:                      125%
+2026-11-06T19:59:26.7726709Z CPU max MHz:                             2800.0000
+2026-11-06T19:59:26.7727187Z CPU min MHz:                             800.0000
+2026-11-06T19:59:26.7727519Z BogoMIPS:                                5586.87
+2026-11-06T19:59:26.7730021Z Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves vnmi avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq la57 rdpid fsrm arch_capabilities
+2026-11-06T19:59:26.7732707Z Virtualization:                          VT-x
+2026-11-06T19:59:26.7733024Z Hypervisor vendor:                       Microsoft
+2026-11-06T19:59:26.7733553Z Virtualization type:                     full
+2026-11-06T19:59:26.7733900Z L1d cache:                               96 KiB (2 instances)
+2026-11-06T19:59:26.7734256Z L1i cache:                               64 KiB (2 instances)
+2026-11-06T19:59:26.7734600Z L2 cache:                                2.5 MiB (2 instances)
+2026-11-06T19:59:26.7734946Z L3 cache:                                48 MiB (1 instance)
+2026-11-06T19:59:26.7735267Z NUMA node(s):                            1
+2026-11-06T19:59:26.7735558Z NUMA node0 CPU(s):                       0-3
+2026-11-06T19:59:26.7735885Z Vulnerability Gather data sampling:      Not affected
+2026-11-06T19:59:26.7736234Z Vulnerability Ghostwrite:                Not affected
+2026-11-06T19:59:26.7736670Z Vulnerability Indirect target selection: Mitigation; Aligned branch/return thunks
+2026-11-06T19:59:26.7737114Z Vulnerability Itlb multihit:             Not affected
+2026-11-06T19:59:26.7737445Z Vulnerability L1tf:                      Not affected
+2026-11-06T19:59:26.7737783Z Vulnerability Mds:                       Not affected
+2026-11-06T19:59:26.7738125Z Vulnerability Meltdown:                  Not affected
+2026-11-06T19:59:26.7738649Z Vulnerability Mmio stale data:           Vulnerable: Clear CPU buffers attempted, no microcode; SMT Host state unknown
+2026-11-06T19:59:26.7739166Z Vulnerability Old microcode:             Not affected
+2026-11-06T19:59:26.7739517Z Vulnerability Reg file data sampling:    Not affected
+2026-11-06T19:59:26.7739860Z Vulnerability Retbleed:                  Vulnerable
+2026-11-06T19:59:26.7740900Z Vulnerability Spec rstack overflow:      Not affected
+2026-11-06T19:59:26.7741461Z Vulnerability Spec store bypass:         Vulnerable
+2026-11-06T19:59:26.7742254Z Vulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+2026-11-06T19:59:26.7743096Z Vulnerability Spectre v2:                Mitigation; Retpolines; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Retpoline
+2026-11-06T19:59:26.7743811Z Vulnerability Srbds:                     Not affected
+2026-11-06T19:59:26.7744141Z Vulnerability Tsa:                       Not affected
+2026-11-06T19:59:26.7744473Z Vulnerability Tsx async abort:           Not affected
+2026-11-06T19:59:26.7744810Z Vulnerability Vmscape:                   Not affected
+2026-11-06T19:59:26.8024339Z F7-CARGO command=test locked=true removed=0
+2026-11-06T19:59:26.8361025Z [1m[92m    Updating[0m crates.io index
+2026-11-06T19:59:26.9257032Z [1m[92m Downloading[0m crates ...
+2026-11-06T19:59:27.1199584Z [1m[92m  Downloaded[0m bigdecimal v0.4.11
+2026-11-06T19:59:27.1234149Z [1m[92m  Downloaded[0m num-integer v0.1.47
+2026-11-06T19:59:27.1245333Z [1m[92m  Downloaded[0m autocfg v1.5.1
+2026-11-06T19:59:27.1269150Z [1m[92m  Downloaded[0m num-bigint v0.4.8
+2026-11-06T19:59:27.1301429Z [1m[92m  Downloaded[0m num-traits v0.2.19
+2026-11-06T19:59:27.1320848Z [1m[92m  Downloaded[0m libm v0.2.16
+2026-11-06T19:59:27.1673408Z [1m[92m   Compiling[0m proc-macro2 v1.0.107
+2026-11-06T19:59:27.1674323Z [1m[92m   Compiling[0m quote v1.0.47
+2026-11-06T19:59:27.1675150Z [1m[92m   Compiling[0m cfg-if v1.0.5
+2026-11-06T19:59:27.1675797Z [1m[92m   Compiling[0m serde_core v1.0.229
+2026-11-06T19:59:27.1906326Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+2026-11-06T19:59:27.2511728Z [1m[92m   Compiling[0m itoa v1.0.18
+2026-11-06T19:59:27.3181989Z [1m[92m   Compiling[0m zmij v1.0.23
+2026-11-06T19:59:27.3766284Z [1m[92m   Compiling[0m serde v1.0.229
+2026-11-06T19:59:27.4717375Z [1m[92m   Compiling[0m version_check v0.9.5
+2026-11-06T19:59:27.7161607Z [1m[92m   Compiling[0m generic-array v0.14.7
+2026-11-06T19:59:27.7851592Z [1m[92m   Compiling[0m memchr v2.8.3
+2026-11-06T19:59:28.0456410Z [1m[92m   Compiling[0m syn v3.0.5
+2026-11-06T19:59:28.0871325Z [1m[92m   Compiling[0m typenum v1.20.1
+2026-11-06T19:59:28.3762022Z [1m[92m   Compiling[0m serde_json v1.0.151
+2026-11-06T19:59:28.4612421Z [1m[92m   Compiling[0m xiao-runtime-abi v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-runtime-abi)
+2026-11-06T19:59:28.5911382Z [1m[92m   Compiling[0m cpufeatures v0.2.17
+2026-11-06T19:59:28.6923373Z [1m[92m   Compiling[0m xiao-source v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-source)
+2026-11-06T19:59:28.8191410Z [1m[92m   Compiling[0m libc v0.2.189
+2026-11-06T19:59:29.3192204Z [1m[92m   Compiling[0m block-buffer v0.10.4
+2026-11-06T19:59:29.3851615Z [1m[92m   Compiling[0m crypto-common v0.1.7
+2026-11-06T19:59:29.4411504Z [1m[92m   Compiling[0m digest v0.10.7
+2026-11-06T19:59:29.5853334Z [1m[92m   Compiling[0m sha2 v0.10.9
+2026-11-06T19:59:30.0391747Z [1m[92m   Compiling[0m autocfg v1.5.1
+2026-11-06T19:59:30.3632379Z [1m[92m   Compiling[0m shlex v2.0.1
+2026-11-06T19:59:30.3811528Z [1m[92m   Compiling[0m serde_derive v1.0.229
+2026-11-06T19:59:30.4794620Z [1m[92m   Compiling[0m find-msvc-tools v0.1.14
+2026-11-06T19:59:30.6611623Z [1m[92m   Compiling[0m cc v1.5.1
+2026-11-06T19:59:30.9124688Z [1m[92m   Compiling[0m num-traits v0.2.19
+2026-11-06T19:59:30.9972799Z [1m[92m   Compiling[0m libm v0.2.16
+2026-11-06T19:59:31.1473897Z [1m[92m   Compiling[0m zeroize v1.9.0
+2026-11-06T19:59:31.2535272Z [1m[92m   Compiling[0m rustls-pki-types v1.15.1
+2026-11-06T19:59:31.6741601Z [1m[92m   Compiling[0m num-integer v0.1.47
+2026-11-06T19:59:31.6981431Z [1m[92m   Compiling[0m bigdecimal v0.4.11
+2026-11-06T19:59:31.8221487Z [1m[92m   Compiling[0m getrandom v0.2.17
+2026-11-06T19:59:31.9351718Z [1m[92m   Compiling[0m httparse v1.10.1
+2026-11-06T19:59:31.9532178Z [1m[92m   Compiling[0m untrusted v0.9.0
+2026-11-06T19:59:32.0071564Z [1m[92m   Compiling[0m num-bigint v0.4.8
+2026-11-06T19:59:32.1629736Z [1m[92m   Compiling[0m ring v0.17.14
+2026-11-06T19:59:33.3781542Z [1m[92m   Compiling[0m log v0.4.34
+2026-11-06T19:59:33.4121505Z [1m[92m   Compiling[0m crc32fast v1.5.2
+2026-11-06T19:59:33.4841453Z [1m[92m   Compiling[0m bytes v1.12.1
+2026-11-06T19:59:33.5251880Z [1m[92m   Compiling[0m rustls v0.23.45
+2026-11-06T19:59:33.7802289Z [1m[92m   Compiling[0m xiao-i18n v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-i18n)
+2026-11-06T19:59:33.9533123Z [1m[92m   Compiling[0m xiao-intrinsics v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-intrinsics)
+2026-11-06T19:59:34.4992404Z [1m[92m   Compiling[0m xiao-diagnostics v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-diagnostics)
+2026-11-06T19:59:35.0082216Z [1m[92m   Compiling[0m xiao-syntax v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-syntax)
+2026-11-06T19:59:35.1868381Z [1m[92m   Compiling[0m xiao-standard-library v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-standard-library)
+2026-11-06T19:59:35.2617827Z [1m[92m   Compiling[0m http v1.5.0
+2026-11-06T19:59:35.3050408Z [1m[92m   Compiling[0m xiao-lock v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-lock)
+2026-11-06T19:59:35.6861903Z [1m[92m   Compiling[0m xiao-types v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-types)
+2026-11-06T19:59:35.8712000Z [1m[92m   Compiling[0m xiao-modules v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-modules)
+2026-11-06T19:59:36.1512391Z [1m[92m   Compiling[0m once_cell v1.21.4
+2026-11-06T19:59:36.3031418Z [1m[92m   Compiling[0m base64 v0.23.1
+2026-11-06T19:59:36.5784933Z [1m[92m   Compiling[0m adler2 v2.0.1
+2026-11-06T19:59:36.6334784Z [1m[92m   Compiling[0m simd-adler32 v0.3.10
+2026-11-06T19:59:36.7591577Z [1m[92m   Compiling[0m subtle v2.6.1
+2026-11-06T19:59:36.8381424Z [1m[92m   Compiling[0m miniz_oxide v0.9.1
+2026-11-06T19:59:37.1861647Z [1m[92m   Compiling[0m ureq-proto v0.6.4
+2026-11-06T19:59:37.4320582Z [1m[92m   Compiling[0m xiao-lifetime v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-lifetime)
+2026-11-06T19:59:37.8152350Z [1m[92m   Compiling[0m rustls-webpki v0.103.15
+2026-11-06T19:59:37.8652061Z [1m[92m   Compiling[0m xiao-config v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-config)
+2026-11-06T19:59:38.6873114Z [1m[92m   Compiling[0m xiao-ir v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-ir)
+2026-11-06T19:59:39.4523600Z [1m[92m   Compiling[0m webpki-roots v1.0.9
+2026-11-06T19:59:39.5178777Z [1m[92m   Compiling[0m filetime v0.2.29
+2026-11-06T19:59:39.6351370Z [1m[92m   Compiling[0m utf8-zero v0.8.1
+2026-11-06T19:59:39.7250264Z [1m[92m   Compiling[0m percent-encoding v2.3.2
+2026-11-06T19:59:39.8381673Z [1m[92m   Compiling[0m tar v0.4.46
+2026-11-06T19:59:39.9842313Z [1m[92m   Compiling[0m xiao-runtime v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-runtime)
+2026-11-06T19:59:40.6891559Z [1m[92m   Compiling[0m flate2 v1.1.10
+2026-11-06T19:59:41.5924546Z [1m[92m   Compiling[0m xiao-optimizer v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-optimizer)
+2026-11-06T19:59:42.9501963Z [1m[92m   Compiling[0m xiao-bytecode v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-bytecode)
+2026-11-06T19:59:44.0352438Z [1m[92m   Compiling[0m xiao-codegen-llvm v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-codegen-llvm)
+2026-11-06T19:59:45.2221727Z [1m[92m   Compiling[0m xiao-vm v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-vm)
+2026-11-06T19:59:46.1702052Z [1m[92m   Compiling[0m xiao-artifacts v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-artifacts)
+2026-11-06T19:59:47.0733995Z [1m[92m   Compiling[0m ureq v3.4.2
+2026-11-06T19:59:47.4581852Z [1m[92m   Compiling[0m xiao-xar v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-xar)
+2026-11-06T19:59:48.6341956Z [1m[92m   Compiling[0m xiao-package v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-package)
+2026-11-06T19:59:50.6614192Z [1m[92m   Compiling[0m xiao-driver v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-driver)
+2026-11-06T19:59:55.4284134Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 28.61s
+2026-11-06T19:59:55.4337449Z [1m[92m     Running[0m tests/20o_b2_a_performance_protocol.rs (core/rust/target/debug/deps/20o_b2_a_performance_protocol-a02f827f524132d6)
+2026-11-06T19:59:55.4345799Z 
+2026-11-06T19:59:55.4345945Z running 3 tests
+2026-11-06T19:59:55.4349126Z test calibration_stop_conditions_follow_the_frozen_protocol ... ok
+2026-11-06T19:59:55.4349812Z test quantized_clock_calibration_retains_real_batches ... ok
+2026-11-06T19:59:55.4350377Z test invalid_clock_samples_are_rejected ... ok
+2026-11-06T19:59:55.4350627Z 
+2026-11-06T19:59:55.4351026Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-06T19:59:55.4351408Z 
+2026-11-06T19:59:55.4351927Z [1m[92m     Running[0m tests/20o_b2_a_resources.rs (core/rust/target/debug/deps/20o_b2_a_resources-52dd60defd8e01e1)
+2026-11-06T19:59:55.4360449Z 
+2026-11-06T19:59:55.4360630Z running 8 tests
+2026-11-06T19:59:55.4371388Z test controlled_allocation_failure_is_distinct_from_numeric_limit ... ok
+2026-11-06T19:59:55.4372539Z test abi_semantic_failures_preserve_owned_out_and_inputs ... ok
+2026-11-06T19:59:55.4420927Z test mixed_error_priority_is_stable_at_the_language_entry ... ok
+2026-11-06T19:59:55.4424048Z test admission_boundaries_and_error_order_preserve_inputs ... ok
+2026-11-06T19:59:55.4425027Z test successful_abi_replacement_releases_old_out_without_clearing_pending ... ok
+2026-11-06T19:59:55.6288695Z test quotient_remainder_and_nontermination_have_independent_budgets ... ok
+2026-11-06T19:59:55.7085074Z test power_and_conversion_limits_do_not_expand_unbounded_values ... ok
+2026-11-06T19:59:55.7280032Z test actual_results_accept_strong_cancellation_and_balanced_products ... ok
+2026-11-06T19:59:55.7280581Z 
+2026-11-06T19:59:55.7280849Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+2026-11-06T19:59:55.7281171Z 
+2026-11-06T19:59:55.7663694Z F7-CARGO command=build locked=true removed=0
+2026-11-06T19:59:55.8110172Z [1m[92m   Compiling[0m serde_core v1.0.229
+2026-11-06T19:59:55.8110932Z [1m[92m   Compiling[0m proc-macro2 v1.0.107
+2026-11-06T19:59:55.8113331Z [1m[92m   Compiling[0m zmij v1.0.23
+2026-11-06T19:59:55.8113884Z [1m[92m   Compiling[0m quote v1.0.47
+2026-11-06T19:59:55.9266807Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+2026-11-06T19:59:55.9454801Z [1m[92m   Compiling[0m serde_json v1.0.151
+2026-11-06T19:59:55.9544459Z [1m[92m   Compiling[0m version_check v0.9.5
+2026-11-06T19:59:55.9851841Z [1m[92m   Compiling[0m serde v1.0.229
+2026-11-06T19:59:56.0161716Z [1m[92m   Compiling[0m typenum v1.20.1
+2026-11-06T19:59:56.1598349Z [1m[92m   Compiling[0m autocfg v1.5.1
+2026-11-06T19:59:56.1721740Z [1m[92m   Compiling[0m generic-array v0.14.7
+2026-11-06T19:59:56.6162924Z [1m[92m   Compiling[0m syn v3.0.5
+2026-11-06T19:59:57.3761695Z [1m[92m   Compiling[0m block-buffer v0.10.4
+2026-11-06T19:59:57.4703046Z [1m[92m   Compiling[0m crypto-common v0.1.7
+2026-11-06T19:59:58.0861565Z [1m[92m   Compiling[0m digest v0.10.7
+2026-11-06T19:59:58.2751634Z [1m[92m   Compiling[0m cpufeatures v0.2.17
+2026-11-06T19:59:58.3011679Z [1m[92m   Compiling[0m memchr v2.8.3
+2026-11-06T19:59:58.7931840Z [1m[92m   Compiling[0m itoa v1.0.18
+2026-11-06T19:59:58.9451423Z [1m[92m   Compiling[0m cfg-if v1.0.5
+2026-11-06T19:59:58.9660540Z [1m[92m   Compiling[0m serde_derive v1.0.229
+2026-11-06T19:59:58.9721226Z [1m[92m   Compiling[0m sha2 v0.10.9
+2026-11-06T20:00:00.2337115Z [1m[92m   Compiling[0m num-traits v0.2.19
+2026-11-06T20:00:00.3298872Z [1m[92m   Compiling[0m xiao-runtime-abi v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-runtime-abi)
+2026-11-06T20:00:00.5532077Z [1m[92m   Compiling[0m xiao-source v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-source)
+2026-11-06T20:00:00.7439427Z [1m[92m   Compiling[0m libm v0.2.16
+2026-11-06T20:00:00.9131589Z [1m[92m   Compiling[0m bigdecimal v0.4.11
+2026-11-06T20:00:01.0351423Z [1m[92m   Compiling[0m libc v0.2.189
+2026-11-06T20:00:01.6361574Z [1m[92m   Compiling[0m num-integer v0.1.47
+2026-11-06T20:00:02.6351685Z [1m[92m   Compiling[0m xiao-i18n v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-i18n)
+2026-11-06T20:00:02.6952246Z [1m[92m   Compiling[0m xiao-intrinsics v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-intrinsics)
+2026-11-06T20:00:03.4153984Z [1m[92m   Compiling[0m xiao-diagnostics v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-diagnostics)
+2026-11-06T20:00:03.4687956Z [1m[92m   Compiling[0m num-bigint v0.4.8
+2026-11-06T20:00:04.6212133Z [1m[92m   Compiling[0m xiao-syntax v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-syntax)
+2026-11-06T20:00:06.1933038Z [1m[92m   Compiling[0m xiao-types v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-types)
+2026-11-06T20:00:08.8222048Z [1m[92m   Compiling[0m xiao-lifetime v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-lifetime)
+2026-11-06T20:00:18.9347749Z [1m[92m   Compiling[0m xiao-runtime v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-runtime)
+2026-11-06T20:00:26.6921919Z [1m[92m    Finished[0m `release` profile [optimized] target(s) in 30.91s
+2026-11-06T20:00:26.7340449Z F7-CARGO command=run locked=true removed=0
+2026-11-06T20:00:26.7887708Z [1m[92m   Compiling[0m serde_json v1.0.151
+2026-11-06T20:00:26.7905102Z [1m[92m   Compiling[0m find-msvc-tools v0.1.14
+2026-11-06T20:00:26.7906300Z [1m[92m   Compiling[0m shlex v2.0.1
+2026-11-06T20:00:26.7907171Z [1m[92m   Compiling[0m zeroize v1.9.0
+2026-11-06T20:00:26.9094751Z [1m[92m   Compiling[0m cc v1.5.1
+2026-11-06T20:00:26.9251637Z [1m[92m   Compiling[0m rustls-pki-types v1.15.1
+2026-11-06T20:00:26.9656802Z [1m[92m   Compiling[0m getrandom v0.2.17
+2026-11-06T20:00:27.1214789Z [1m[92m   Compiling[0m untrusted v0.9.0
+2026-11-06T20:00:27.1816248Z [1m[92m   Compiling[0m httparse v1.10.1
+2026-11-06T20:00:27.3783677Z [1m[92m   Compiling[0m xiao-standard-library v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-standard-library)
+2026-11-06T20:00:27.5096715Z [1m[92m   Compiling[0m rustls v0.23.45
+2026-11-06T20:00:27.5738984Z [1m[92m   Compiling[0m crc32fast v1.5.2
+2026-11-06T20:00:27.6992030Z [1m[92m   Compiling[0m log v0.4.34
+2026-11-06T20:00:27.8761757Z [1m[92m   Compiling[0m bytes v1.12.1
+2026-11-06T20:00:28.2672236Z [1m[92m   Compiling[0m xiao-i18n v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-i18n)
+2026-11-06T20:00:28.4371234Z [1m[92m   Compiling[0m ring v0.17.14
+2026-11-06T20:00:28.8240886Z [1m[92m   Compiling[0m http v1.5.0
+2026-11-06T20:00:31.0338792Z [1m[92m   Compiling[0m xiao-diagnostics v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-diagnostics)
+2026-11-06T20:00:31.0701912Z [1m[92m   Compiling[0m xiao-lock v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-lock)
+2026-11-06T20:00:32.4416930Z [1m[92m   Compiling[0m xiao-syntax v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-syntax)
+2026-11-06T20:00:33.7977863Z [1m[92m   Compiling[0m xiao-types v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-types)
+2026-11-06T20:00:35.3602048Z [1m[92m   Compiling[0m xiao-modules v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-modules)
+2026-11-06T20:00:37.5311948Z [1m[92m   Compiling[0m xiao-lifetime v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-lifetime)
+2026-11-06T20:00:42.9911893Z [1m[92m   Compiling[0m xiao-ir v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-ir)
+2026-11-06T20:00:43.6641849Z [1m[92m   Compiling[0m rustls-webpki v0.103.15
+2026-11-06T20:00:46.6661589Z [1m[92m   Compiling[0m adler2 v2.0.1
+2026-11-06T20:00:46.7521553Z [1m[92m   Compiling[0m simd-adler32 v0.3.10
+2026-11-06T20:00:47.7517849Z [1m[92m   Compiling[0m xiao-optimizer v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-optimizer)
+2026-11-06T20:00:48.1801664Z [1m[92m   Compiling[0m once_cell v1.21.4
+2026-11-06T20:00:48.3681475Z [1m[92m   Compiling[0m subtle v2.6.1
+2026-11-06T20:00:48.4736228Z [1m[92m   Compiling[0m base64 v0.23.1
+2026-11-06T20:00:49.0262022Z [1m[92m   Compiling[0m xiao-bytecode v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-bytecode)
+2026-11-06T20:00:52.1351704Z [1m[92m   Compiling[0m ureq-proto v0.6.4
+2026-11-06T20:00:56.2202449Z [1m[92m   Compiling[0m xiao-runtime v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-runtime)
+2026-11-06T20:01:19.1391672Z [1m[92m   Compiling[0m miniz_oxide v0.9.1
+2026-11-06T20:01:20.9721968Z [1m[92m   Compiling[0m xiao-config v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-config)
+2026-11-06T20:01:22.0491512Z [1m[92m   Compiling[0m webpki-roots v1.0.9
+2026-11-06T20:01:22.1160321Z [1m[92m   Compiling[0m filetime v0.2.29
+2026-11-06T20:01:22.2356369Z [1m[92m   Compiling[0m utf8-zero v0.8.1
+2026-11-06T20:01:22.2738609Z [1m[92m   Compiling[0m percent-encoding v2.3.2
+2026-11-06T20:01:22.3721557Z [1m[92m   Compiling[0m ureq v3.4.2
+2026-11-06T20:01:22.4892068Z [1m[92m   Compiling[0m xiao-vm v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-vm)
+2026-11-06T20:01:25.5701630Z [1m[92m   Compiling[0m tar v0.4.46
+2026-11-06T20:01:26.1461842Z [1m[92m   Compiling[0m flate2 v1.1.10
+2026-11-06T20:01:26.7181684Z [1m[92m   Compiling[0m xiao-artifacts v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-artifacts)
+2026-11-06T20:01:28.6772417Z [1m[92m   Compiling[0m xiao-codegen-llvm v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-codegen-llvm)
+2026-11-06T20:01:31.9731942Z [1m[92m   Compiling[0m xiao-package v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-package)
+2026-11-06T20:01:32.0284383Z [1m[92m   Compiling[0m xiao-xar v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-xar)
+2026-11-06T20:01:38.8642351Z [1m[92m   Compiling[0m xiao-driver v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-driver)
+2026-11-06T20:02:20.2900729Z [1m[92m    Finished[0m `release` profile [optimized] target(s) in 1m 53s
+2026-11-06T20:02:20.2941324Z [1m[92m     Running[0m `core/rust/target/release/examples/b2_numeric_performance --backend vm --case all --profile all --artifact-root b2-a6-vm-artifacts --output b2-a6-vm.json`
+2026-11-06T20:02:20.3843455Z B2-A6-ARTIFACTS /home/runner/work/Xiao/Xiao/b2-a6-vm-artifacts
+2026-11-06T20:02:21.2266903Z B2-A6-PERF case=lint.add profile=n optimization=0 median=Some(0.0004534432857142857) peak=Some(2228224) ratio=None result=passed
+2026-11-06T20:02:22.1028243Z B2-A6-PERF case=lint.add profile=2n optimization=0 median=Some(0.00121217509375) peak=Some(2400256) ratio=Some(2.673267268343214) result=passed
+2026-11-06T20:02:23.1161067Z B2-A6-PERF case=lint.add profile=maximum optimization=0 median=Some(0.010667059199999999) peak=Some(2297856) ratio=None result=passed
+2026-11-06T20:02:23.8324647Z B2-A6-PERF case=lint.subtract profile=n optimization=0 median=Some(0.00045260293303571426) peak=Some(2203648) ratio=None result=passed
+2026-11-06T20:02:24.7012034Z B2-A6-PERF case=lint.subtract profile=2n optimization=0 median=Some(0.0012009414583333334) peak=Some(2297856) ratio=Some(2.653410684456543) result=passed
+2026-11-06T20:02:25.7078744Z B2-A6-PERF case=lint.subtract profile=maximum optimization=0 median=Some(0.0105099575) peak=Some(2310144) ratio=None result=passed
+2026-11-06T20:02:26.5069542Z B2-A6-PERF case=lint.multiply profile=n optimization=0 median=Some(0.000851061453125) peak=Some(2301952) ratio=None result=passed
+2026-11-06T20:02:27.4989652Z B2-A6-PERF case=lint.multiply profile=2n optimization=0 median=Some(0.0023662708125) peak=Some(2338816) ratio=Some(2.7803759691046106) result=passed
+2026-11-06T20:02:28.3697344Z B2-A6-PERF case=lint.multiply profile=maximum optimization=0 median=Some(0.006807688466666667) peak=Some(2306048) ratio=None result=passed
+2026-11-06T20:02:29.4035306Z B2-A6-PERF case=lfloat.cancel profile=n optimization=0 median=Some(0.00016750884505208335) peak=Some(2256896) ratio=None result=passed
+2026-11-06T20:02:31.0733743Z B2-A6-PERF case=lfloat.cancel profile=2n optimization=0 median=Some(0.0004385981741071429) peak=Some(2244608) ratio=Some(2.6183582960695) result=passed
+2026-11-06T20:02:32.1579236Z B2-A6-PERF case=lfloat.cancel profile=maximum optimization=0 median=Some(0.00366131234375) peak=Some(2269184) ratio=None result=passed
+2026-11-06T20:02:32.9527322Z B2-A6-PERF case=lfloat.multiply profile=n optimization=0 median=Some(0.000855729125) peak=Some(2215936) ratio=None result=passed
+2026-11-06T20:02:33.9253020Z B2-A6-PERF case=lfloat.multiply profile=2n optimization=0 median=Some(0.002370323) peak=Some(2199552) ratio=Some(2.769945454410004) result=passed
+2026-11-06T20:02:34.7507467Z B2-A6-PERF case=lfloat.multiply profile=maximum optimization=0 median=Some(0.006848681666666666) peak=Some(2297856) ratio=None result=passed
+2026-11-06T20:02:35.5554897Z B2-A6-PERF case=lfloat.floor profile=n optimization=0 median=Some(0.0013080643625000001) peak=Some(2367488) ratio=None result=passed
+2026-11-06T20:02:36.6183355Z B2-A6-PERF case=lfloat.floor profile=2n optimization=0 median=Some(0.0035566559375) peak=Some(2256896) ratio=Some(2.7190221211305263) result=passed
+2026-11-06T20:02:37.4222952Z B2-A6-PERF case=lfloat.floor profile=maximum optimization=0 median=Some(0.0101234524) peak=Some(2396160) ratio=None result=passed
+2026-11-06T20:02:38.1467411Z B2-A6-PERF case=lfloat.modular profile=n optimization=0 median=Some(0.0006982919027777777) peak=Some(2211840) ratio=None result=passed
+2026-11-06T20:02:38.9907660Z B2-A6-PERF case=lfloat.modular profile=2n optimization=0 median=Some(0.00119786425) peak=Some(2256896) ratio=Some(1.7154205071474309) result=passed
+2026-11-06T20:02:39.7302112Z B2-A6-PERF case=lfloat.modular profile=maximum optimization=0 median=Some(0.0067014916) peak=Some(2334720) ratio=None result=passed
+2026-11-06T20:02:40.7843951Z B2-A6-PERF case=lfloat.remainder-cancel profile=n optimization=0 median=Some(0.00022895148046875) peak=Some(2322432) ratio=None result=passed
+2026-11-06T20:02:41.5210754Z B2-A6-PERF case=lfloat.remainder-cancel profile=2n optimization=0 median=Some(0.0005990407215909091) peak=Some(2273280) ratio=Some(2.616452710261785) result=passed
+2026-11-06T20:02:42.8983999Z B2-A6-PERF case=lfloat.remainder-cancel profile=maximum optimization=0 median=Some(0.0048442674375) peak=Some(2228224) ratio=None result=passed
+2026-11-06T20:02:44.3455604Z B2-A6-PERF case=lfloat.finite-division profile=n optimization=0 median=Some(0.000326385984375) peak=Some(2277376) ratio=None result=passed
+2026-11-06T20:02:45.1314851Z B2-A6-PERF case=lfloat.finite-division profile=2n optimization=0 median=Some(0.000850012984375) peak=Some(2269184) ratio=Some(2.604318276725941) result=passed
+2026-11-06T20:02:46.1830524Z B2-A6-PERF case=lfloat.finite-division profile=maximum optimization=0 median=Some(0.011334624555555554) peak=Some(2199552) ratio=None result=passed
+2026-11-06T20:02:47.0534865Z B2-A6-PERF case=lfloat.nonterminating-gcd profile=n optimization=0 median=Some(0.001744308859375) peak=Some(2310144) ratio=None result=passed
+2026-11-06T20:02:48.6081957Z B2-A6-PERF case=lfloat.nonterminating-gcd profile=2n optimization=0 median=Some(0.00558188365625) peak=Some(2260992) ratio=Some(3.200054638402762) result=passed
+2026-11-06T20:02:49.5163240Z B2-A6-PERF case=lfloat.nonterminating-gcd profile=maximum optimization=0 median=Some(0.072692077) peak=Some(2256896) ratio=None result=passed
+2026-11-06T20:02:50.7641331Z B2-A6-PERF case=lint.power profile=n optimization=0 median=Some(0.0002759012890625) peak=Some(2330624) ratio=None result=passed
+2026-11-06T20:02:51.5153064Z B2-A6-PERF case=lint.power profile=2n optimization=0 median=Some(0.0007181041597222222) peak=Some(2367488) ratio=Some(2.602757537532019) result=passed
+2026-11-06T20:02:52.4080696Z B2-A6-PERF case=lint.power profile=maximum optimization=0 median=Some(0.009387728545454546) peak=Some(2363392) ratio=None result=passed
+2026-11-06T20:02:53.1684251Z B2-A6-PERF case=lfloat.power profile=n optimization=0 median=Some(0.0009203851875) peak=Some(2244608) ratio=None result=passed
+2026-11-06T20:02:54.1859500Z B2-A6-PERF case=lfloat.power profile=2n optimization=0 median=Some(0.0025342993958333334) peak=Some(2187264) ratio=Some(2.753520406730072) result=passed
+2026-11-06T20:02:55.2513413Z B2-A6-PERF case=lfloat.power profile=maximum optimization=0 median=Some(0.01002599) peak=Some(2363392) ratio=None result=passed
+2026-11-06T20:02:56.0964567Z B2-A6-PERF case=text.parse profile=n optimization=0 median=Some(0.0001054404033203125) peak=Some(2363392) ratio=None result=passed
+2026-11-06T20:02:57.3569607Z B2-A6-PERF case=text.parse profile=2n optimization=0 median=Some(0.000276985560546875) peak=Some(2367488) ratio=Some(2.626939501601046) result=passed
+2026-11-06T20:02:58.4440970Z B2-A6-PERF case=text.parse profile=maximum optimization=0 median=Some(0.0024919692708333333) peak=Some(2281472) ratio=None result=passed
+2026-11-06T20:02:59.2889621Z B2-A6-PERF case=lfloat.format profile=n optimization=0 median=Some(0.0001063733388671875) peak=Some(2363392) ratio=None result=passed
+2026-11-06T20:03:00.5379160Z B2-A6-PERF case=lfloat.format profile=2n optimization=0 median=Some(0.0002774400546875) peak=Some(2265088) ratio=Some(2.6081728527286145) result=passed
+2026-11-06T20:03:01.5466962Z B2-A6-PERF case=lfloat.format profile=maximum optimization=0 median=Some(0.0025282231041666666) peak=Some(2306048) ratio=None result=passed
+2026-11-06T20:03:02.7640992Z B2-A6-PERF case=lint.to-decimal profile=n optimization=0 median=Some(0.000267485396484375) peak=Some(2310144) ratio=None result=passed
+2026-11-06T20:03:03.5124940Z B2-A6-PERF case=lint.to-decimal profile=2n optimization=0 median=Some(0.0007089111111111111) peak=Some(2367488) ratio=Some(2.6502796804180737) result=passed
+2026-11-06T20:03:05.3242455Z B2-A6-PERF case=lint.to-decimal profile=maximum optimization=0 median=Some(0.0060038475) peak=Some(2220032) ratio=None result=passed
+2026-11-06T20:03:06.5781666Z B2-A6-PERF case=lfloat.to-integer profile=n optimization=0 median=Some(0.000276352525390625) peak=Some(2174976) ratio=None result=passed
+2026-11-06T20:03:07.5237678Z B2-A6-PERF case=lfloat.to-integer profile=2n optimization=0 median=Some(0.00072688602734375) peak=Some(2220032) ratio=Some(2.6302854526706234) result=passed
+2026-11-06T20:03:09.3580193Z B2-A6-PERF case=lfloat.to-integer profile=maximum optimization=0 median=Some(0.00607756984375) peak=Some(2203648) ratio=None result=passed
+2026-11-06T20:03:10.3136148Z B2-A6-PERF case=lfloat.to-int-truncate profile=n optimization=0 median=Some(0.00015193292057291666) peak=Some(2301952) ratio=None result=passed
+2026-11-06T20:03:11.0180512Z B2-A6-PERF case=lfloat.to-int-truncate profile=2n optimization=0 median=Some(0.00039861467578125) peak=Some(2306048) ratio=Some(2.623622808527163) result=passed
+2026-11-06T20:03:12.0105139Z B2-A6-PERF case=lfloat.to-int-truncate profile=maximum optimization=0 median=Some(0.00328692915625) peak=Some(2306048) ratio=None result=passed
+2026-11-06T20:03:12.7951334Z B2-A6-PERF case=lfloat.to-float-subnormal profile=n optimization=0 median=Some(0.0008628055234375) peak=Some(2310144) ratio=None result=passed
+2026-11-06T20:03:13.6734202Z B2-A6-PERF case=lfloat.to-float-subnormal profile=2n optimization=0 median=Some(0.0021644517916666666) peak=Some(2215936) ratio=Some(2.5086206947810012) result=passed
+2026-11-06T20:03:14.5754537Z B2-A6-PERF case=lfloat.to-float-subnormal profile=maximum optimization=0 median=Some(0.016244540999999998) peak=Some(2322432) ratio=None result=passed
+2026-11-06T20:03:16.2895526Z B2-A6-PERF case=lfloat.to-sfloat-subnormal profile=n optimization=0 median=Some(0.00077316274609375) peak=Some(2273280) ratio=None result=passed
+2026-11-06T20:03:18.1289370Z B2-A6-PERF case=lfloat.to-sfloat-subnormal profile=2n optimization=0 median=Some(0.0020612453333333333) peak=Some(2363392) ratio=Some(2.6659915312104245) result=passed
+2026-11-06T20:03:19.0052968Z B2-A6-PERF case=lfloat.to-sfloat-subnormal profile=maximum optimization=0 median=Some(0.015613358714285713) peak=Some(2310144) ratio=None result=passed
+2026-11-06T20:03:19.7631780Z B2-A6-PERF case=float.to-decimal profile=maximum optimization=0 median=Some(4.5989651041666666e-5) peak=Some(2195456) ratio=None result=passed
+2026-11-06T20:03:20.5831071Z B2-A6-PERF case=sfloat.to-decimal profile=maximum optimization=0 median=Some(6.22483544921875e-6) peak=Some(2322432) ratio=None result=passed
+2026-11-06T20:03:22.1074489Z B2-A6-PERF case=identity.compare profile=n optimization=0 median=Some(0.00034617895703125) peak=Some(2334720) ratio=None result=passed
+2026-11-06T20:03:22.8557363Z B2-A6-PERF case=identity.compare profile=2n optimization=0 median=Some(0.0009007588482142857) peak=Some(2334720) ratio=Some(2.6020034722473704) result=passed
+2026-11-06T20:03:23.6312906Z B2-A6-PERF case=identity.compare profile=maximum optimization=0 median=Some(0.007374144) peak=Some(2301952) ratio=None result=passed
+2026-11-06T20:03:24.3857821Z B2-A6-PERF case=identity.hash-set profile=n optimization=0 median=Some(4.635831640625e-5) peak=Some(2240512) ratio=None result=passed
+2026-11-06T20:03:25.2275079Z B2-A6-PERF case=identity.hash-set profile=2n optimization=0 median=Some(8.7300675e-5) peak=Some(2248704) ratio=Some(1.8831718182981763) result=passed
+2026-11-06T20:03:26.7347792Z B2-A6-PERF case=identity.hash-set profile=maximum optimization=0 median=Some(0.000337402076171875) peak=Some(2306048) ratio=None result=passed
+2026-11-06T20:03:27.6006748Z B2-A6-PERF case=carrier.tuple profile=n optimization=0 median=Some(0.0001080373720703125) peak=Some(2330624) ratio=None result=passed
+2026-11-06T20:03:28.8632476Z B2-A6-PERF case=carrier.tuple profile=2n optimization=0 median=Some(0.00027878396484375) peak=Some(2310144) ratio=Some(2.5804400782935812) result=passed
+2026-11-06T20:03:29.8473929Z B2-A6-PERF case=carrier.tuple profile=maximum optimization=0 median=Some(0.0024299898333333333) peak=Some(2306048) ratio=None result=passed
+2026-11-06T20:03:30.5651871Z B2-A6-PERF case=lfloat.add profile=n optimization=0 median=Some(0.00045936896874999996) peak=Some(2297856) ratio=None result=passed
+2026-11-06T20:03:31.4324232Z B2-A6-PERF case=lfloat.add profile=2n optimization=0 median=Some(0.0012184143854166668) peak=Some(2220032) ratio=Some(2.652365458494342) result=passed
+2026-11-06T20:03:32.3480784Z B2-A6-PERF case=lfloat.add profile=maximum optimization=0 median=Some(0.0106995732) peak=Some(2220032) ratio=None result=passed
+2026-11-06T20:03:33.3177607Z B2-A6-PERF case=carrier.thread-xcon profile=n optimization=0 median=Some(0.00316317728125) peak=Some(5906432) ratio=None result=passed
+2026-11-06T20:03:34.8424058Z B2-A6-PERF case=carrier.thread-xcon profile=2n optimization=0 median=Some(0.005492637) peak=Some(5996544) ratio=Some(1.7364303393799863) result=passed
+2026-11-06T20:03:35.7327439Z B2-A6-PERF case=carrier.thread-xcon profile=maximum optimization=0 median=Some(0.009786532272727274) peak=Some(6389760) ratio=None result=passed
+2026-11-06T20:03:36.9185594Z B2-A6-PERF case=carrier.pool-cycle-xcon profile=n optimization=0 median=Some(0.0030571898125) peak=Some(6070272) ratio=None result=passed
+2026-11-06T20:03:37.9616330Z B2-A6-PERF case=carrier.pool-cycle-xcon profile=2n optimization=0 median=Some(0.00345005159375) peak=Some(6000640) ratio=Some(1.1285042164028212) result=passed
+2026-11-06T20:03:39.0090826Z B2-A6-PERF case=carrier.pool-cycle-xcon profile=maximum optimization=0 median=Some(0.00791004753846154) peak=Some(6422528) ratio=None result=passed
+2026-11-06T20:03:39.0611666Z ##[group]Run actions/upload-artifact@v7
+2026-11-06T20:03:39.0611948Z with:
+2026-11-06T20:03:39.0612159Z   name: b2-a6-vm-Linux-42284346088-1
+2026-11-06T20:03:39.0612445Z   path: b2-a6-vm.json
+b2-a6-vm-artifacts
+
+2026-11-06T20:03:39.0612736Z   if-no-files-found: warn
+2026-11-06T20:03:39.0612968Z   compression-level: 6
+2026-11-06T20:03:39.0613187Z   overwrite: false
+2026-11-06T20:03:39.0613404Z   include-hidden-files: false
+2026-11-06T20:03:39.0613645Z   archive: true
+2026-11-06T20:03:39.0613839Z env:
+2026-11-06T20:03:39.0614025Z   XIAO_B1_F10: 0
+2026-11-06T20:03:39.0614228Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:03:39.0614446Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T20:03:39.0614705Z   CARGO_INCREMENTAL: 0
+2026-11-06T20:03:39.0614927Z   CARGO_TERM_COLOR: always
+2026-11-06T20:03:39.0615162Z   CACHE_ON_FAILURE: false
+2026-11-06T20:03:39.0615384Z ##[endgroup]
+2026-11-06T20:03:39.3374120Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-11-06T20:03:39.3375482Z The least common ancestor is /home/runner/work/Xiao/Xiao. This will be the root directory of the artifact
+2026-11-06T20:03:39.3376072Z With the provided path, there will be 1158 files uploaded
+2026-11-06T20:03:39.3376566Z Artifact name is valid!
+2026-11-06T20:03:39.3376809Z Root directory input is valid!
+2026-11-06T20:03:39.6760854Z Uploading artifact: b2-a6-vm-Linux-42284346088-1.zip
+2026-11-06T20:03:39.6797508Z Beginning upload of artifact content to blob storage
+2026-11-06T20:03:40.8015188Z Uploaded bytes 1103338
+2026-11-06T20:03:40.8612931Z Finished uploading artifact content to blob storage!
+2026-11-06T20:03:40.8613910Z SHA256 digest of uploaded artifact is fc567d596ec5d572d80da59121f81df2ee8b7fec92b0a09b4fe0d5b0418c78fc
+2026-11-06T20:03:40.8614508Z Finalizing artifact upload
+2026-11-06T20:03:41.4036913Z Artifact b2-a6-vm-Linux-42284346088-1 successfully finalized. Artifact ID 13536828056
+2026-11-06T20:03:41.4037937Z Artifact b2-a6-vm-Linux-42284346088-1 has been successfully uploaded! Final size is 1103338 bytes. Artifact ID is 13536828056
+2026-11-06T20:03:41.4042862Z Artifact download URL: https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42284346088/artifacts/13536828056
+2026-11-06T20:03:41.4216442Z ##[group]Run python tools/gates/b2-a6-selection.py --self-test
+2026-11-06T20:03:41.4216898Z [36;1mpython tools/gates/b2-a6-selection.py --self-test[0m
+2026-11-06T20:03:41.4229412Z shell: /usr/bin/bash -e {0}
+2026-11-06T20:03:41.4229715Z env:
+2026-11-06T20:03:41.4229932Z   XIAO_B1_F10: 0
+2026-11-06T20:03:41.4230550Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:03:41.4230801Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T20:03:41.4231086Z   CARGO_INCREMENTAL: 0
+2026-11-06T20:03:41.4231350Z   CARGO_TERM_COLOR: always
+2026-11-06T20:03:41.4231616Z   CACHE_ON_FAILURE: false
+2026-11-06T20:03:41.4231854Z ##[endgroup]
+2026-11-06T20:03:41.6083612Z {"passed": true, "cases": 6, "scope": "actual measurement-selection entry"}
+2026-11-06T20:03:41.6159456Z ##[group]Run cargo test --manifest-path core/rust/Cargo.toml --workspace -- --skip b1_capabilities_have_vm_golden_outputs
+2026-11-06T20:03:41.6160587Z [36;1mcargo test --manifest-path core/rust/Cargo.toml --workspace -- --skip b1_capabilities_have_vm_golden_outputs[0m
+2026-11-06T20:03:41.6173151Z shell: /usr/bin/bash -e {0}
+2026-11-06T20:03:41.6173434Z env:
+2026-11-06T20:03:41.6173637Z   XIAO_B1_F10: 0
+2026-11-06T20:03:41.6173891Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:03:41.6174127Z   CARGO_HOME: /home/runner/.cargo
+2026-11-06T20:03:41.6174394Z   CARGO_INCREMENTAL: 0
+2026-11-06T20:03:41.6174642Z   CARGO_TERM_COLOR: always
+2026-11-06T20:03:41.6174884Z   CACHE_ON_FAILURE: false
+2026-11-06T20:03:41.6175119Z ##[endgroup]
+2026-11-06T20:03:41.6513374Z F7-CARGO command=test locked=true removed=0
+2026-11-06T20:03:41.7554861Z [1m[92m   Compiling[0m proc-macro2 v1.0.107
+2026-11-06T20:03:41.7556345Z [1m[92m   Compiling[0m xiao-platform v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-platform)
+2026-11-06T20:03:41.7558894Z [1m[92m   Compiling[0m xiao-xar v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-xar)
+2026-11-06T20:03:41.7634692Z [1m[92m   Compiling[0m xiao-driver v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-driver)
+2026-11-06T20:03:42.8561423Z [1m[92m   Compiling[0m quote v1.0.47
+2026-11-06T20:03:43.0812481Z [1m[92m   Compiling[0m syn v2.0.119
+2026-11-06T20:03:44.0382207Z [1m[92m   Compiling[0m xiao-vm v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-vm)
+2026-11-06T20:03:46.2064289Z [1m[92m   Compiling[0m xiao-doc-coverage-rust v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-doc-coverage-rust)
+2026-11-06T20:03:46.4811901Z [1m[92m   Compiling[0m xiao-bytecode v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-bytecode)
+2026-11-06T20:04:01.5294278Z [1m[92m   Compiling[0m xiao-runtime v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-runtime)
+2026-11-06T20:04:02.4782413Z [1m[92m   Compiling[0m xiao-artifacts v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-artifacts)
+2026-11-06T20:04:02.5961960Z [1m[92m   Compiling[0m xiao-package v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-package)
+2026-11-06T20:04:09.4252329Z [1m[92m   Compiling[0m xiao-codegen-llvm v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-codegen-llvm)
+2026-11-06T20:04:11.9817405Z [1m[92m   Compiling[0m xiao-optimizer v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-optimizer)
+2026-11-06T20:04:12.3571900Z [1m[92m   Compiling[0m xiao-ir v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-ir)
+2026-11-06T20:04:13.8882441Z [1m[92m   Compiling[0m xiao-lifetime v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-lifetime)
+2026-11-06T20:04:14.7101249Z [1m[92m   Compiling[0m xiao-types v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-types)
+2026-11-06T20:04:15.5856494Z [1m[92m   Compiling[0m xiao-modules v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-modules)
+2026-11-06T20:04:16.3003192Z [1m[92m   Compiling[0m xiao-config v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-config)
+2026-11-06T20:04:17.4263494Z [1m[92m   Compiling[0m xiao-syntax v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-syntax)
+2026-11-06T20:04:19.1082024Z [1m[92m   Compiling[0m xiao-diagnostics v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-diagnostics)
+2026-11-06T20:04:19.3592078Z [1m[92m   Compiling[0m xiao-i18n v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-i18n)
+2026-11-06T20:04:19.5762478Z [1m[92m   Compiling[0m xiao-intrinsics v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-intrinsics)
+2026-11-06T20:04:20.3589648Z [1m[92m   Compiling[0m xiao-lock v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-lock)
+2026-11-06T20:04:20.4292005Z [1m[92m   Compiling[0m xiao-standard-library v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-standard-library)
+2026-11-06T20:04:20.5756151Z [1m[92m   Compiling[0m xiao-runtime-abi v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-runtime-abi)
+2026-11-06T20:04:20.7621298Z [1m[92m   Compiling[0m xiao-source v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-source)
+2026-11-06T20:04:21.0803384Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 39.42s
+2026-11-06T20:04:21.1264488Z [1m[92m     Running[0m unittests src/lib.rs (core/rust/target/debug/deps/xiao_artifacts-2c86c05068036f0e)
+2026-11-06T20:04:21.1276006Z 
+2026-11-06T20:04:21.1276573Z running 25 tests
+2026-11-06T20:04:21.1284908Z test tests::archive_index_entry_validation_is_symmetric ... ok
+2026-11-06T20:04:21.1285424Z test tests::archive_index_rejects_unknown_required_features ... ok
+2026-11-06T20:04:21.1285931Z test tests::archive_index_extended_metadata_round_trips_without_changing_old_fields ... ok
+2026-11-06T20:04:21.1286849Z test tests::archive_rejects_unknown_capabilities_and_overflowing_interface_version ... ok
+2026-11-06T20:04:21.1287916Z test tests::archive_requires_new_feature_and_version_fields ... ok
+2026-11-06T20:04:21.1288600Z test tests::archive_requirements_round_trip_is_canonical ... ok
+2026-11-06T20:04:21.1315908Z test tests::cleanup_plan_defers_invalid_object_isolation_until_apply ... ok
+2026-11-06T20:04:21.1332494Z test tests::cleanup_rechecks_references_added_after_plan_creation ... ok
+2026-11-06T20:04:21.1340736Z test tests::cleanup_reference_source_failure_is_conservative ... ok
+2026-11-06T20:04:21.1351606Z test tests::cleanup_archive_reference_protects_its_object ... ok
+2026-11-06T20:04:21.1352913Z test tests::cleanup_plan_protects_project_lock_references_and_apply_is_explicit ... ok
+2026-11-06T20:04:21.1365316Z test tests::cleanup_revalidates_and_quarantines_object_changed_after_plan ... ok
+2026-11-06T20:04:21.1378880Z test tests::conservative_reference_set_protects_objects_when_sources_are_unavailable ... ok
+2026-11-06T20:04:21.1380006Z test tests::corrupt_object_is_quarantined ... ok
+2026-11-06T20:04:21.1387580Z test tests::digest_and_sharded_xiaoc_object_are_deterministic ... ok
+2026-11-06T20:04:21.1389413Z test tests::indexes_round_trip_deterministically_and_reject_unknown_major ... ok
+2026-11-06T20:04:21.1403990Z test tests::index_store_commits_global_snapshot_atomically ... ok
+2026-11-06T20:04:21.1405465Z test tests::interrupted_object_write_cleans_temporary_input ... ok
+2026-11-06T20:04:21.1406343Z test tests::new_archive_feature_rejects_legacy_reader_without_changing_global_index ... ok
+2026-11-06T20:04:21.1412187Z test tests::global_index_can_rebuild_from_verified_objects_and_query_both_directions ... ok
+2026-11-06T20:04:21.1416800Z test tests::scan_quarantines_objects_with_invalid_names_or_shards ... ok
+2026-11-06T20:04:21.1423642Z test tests::xiaoc_validation_comes_from_authoritative_codec ... ok
+2026-11-06T20:04:21.1424559Z test tests::indexes_remain_readable_while_their_write_locks_are_held ... ok
+2026-11-06T20:04:21.1438655Z test tests::objects_are_read_only_and_hash_collisions_quarantine_both_inputs ... ok
+2026-11-06T20:04:21.1460822Z test tests::seeded_index_mutations_never_panic_and_are_rejected_without_io_errors ... ok
+2026-11-06T20:04:21.1461367Z 
+2026-11-06T20:04:21.1461644Z test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+2026-11-06T20:04:21.1462021Z 
+2026-11-06T20:04:21.1465071Z [1m[92m     Running[0m unittests src/lib.rs (core/rust/target/debug/deps/xiao_bytecode-0e00dc79de86f1d4)
+2026-11-06T20:04:21.1478054Z 
+2026-11-06T20:04:21.1478455Z running 32 tests
+2026-11-06T20:04:21.1493455Z test encode::tests::bad_references_and_fixed_width_overflow_are_rejected ... ok
+2026-11-06T20:04:21.1495454Z test encode::tests::check_expected_type_round_trips_in_both_widths ... ok
+2026-11-06T20:04:21.1496397Z test encode::tests::damaged_inputs_are_rejected_structurally ... ok
+2026-11-06T20:04:21.1501705Z test encode::tests::all_opcodes_and_abi_fields_round_trip_in_both_widths ... ok
+2026-11-06T20:04:21.1502913Z test encode::tests::fixed_width_reports_the_overflowing_handler_binding ... ok
+2026-11-06T20:04:21.1504578Z test encode::tests::resource_constant_is_rejected_with_fatal_identity_at_encode_boundary ... ok
+2026-11-06T20:04:21.1505839Z test encode::tests::scalar_and_release_tags_have_one_bidirectional_mapping ... ok
+2026-11-06T20:04:21.1506984Z test encode::tests::set_tags_have_explicit_bidirectional_mapping ... ok
+2026-11-06T20:04:21.1508048Z test liveness::tests::does_not_invent_fallthrough_and_tracks_explicit_branch ... ok
+2026-11-06T20:04:21.1509192Z test encode::tests::unsigned_and_signed_leb128_cover_integer_boundaries ... ok
+2026-11-06T20:04:21.1510527Z test liveness::tests::protected_blocks_keep_handler_inputs_live ... ok
+2026-11-06T20:04:21.1511565Z test liveness::tests::release_plan_is_an_indirect_register_use ... ok
+2026-11-06T20:04:21.1512937Z test lower::expr::tests::unresolved_type_variables_keep_set_only_operators_and_membership_lowerable ... ok
+2026-11-06T20:04:21.1514271Z test optimize::tests::o0_skips_semantic_passes_without_claiming_optimization ... ok
+2026-11-06T20:04:21.1516778Z test optimize::tests::optimization_pipeline_preserves_observable_operation_families ... ok
+2026-11-06T20:04:21.1517996Z test optimize::tests::standard_passes_report_snapshots_and_skip_reasons ... ok
+2026-11-06T20:04:21.1525781Z test optimize::tests::unreachable_block_pass_remaps_targets_and_keeps_execution_blocks ... ok
+2026-11-06T20:04:21.1527055Z test optimize::tests::unreachable_protected_region_is_kept_for_handler_remapping ... ok
+2026-11-06T20:04:21.1528261Z test sig::tests::intrinsic_id_round_trips_full_u32_through_two_u16_slots ... ok
+2026-11-06T20:04:21.1529346Z test sig::tests::zero_intrinsic_id_is_preserved_for_validator_rejection ... ok
+2026-11-06T20:04:21.1532286Z test verify::tests::finally_subroutine_cannot_fall_through_into_continuation ... ok
+2026-11-06T20:04:21.1533439Z test verify::tests::production_entry_distinguishes_known_unsupported ... ok
+2026-11-06T20:04:21.1534628Z test verify::tests::production_entry_rejects_resource_constant_boundary ... ok
+2026-11-06T20:04:21.1535803Z test verify::tests::production_entry_rejects_unsupported_as_internal_error ... ok
+2026-11-06T20:04:21.1537227Z test verify::tests::program_level_categories_are_not_used_for_function_validation ... ok
+2026-11-06T20:04:21.1538517Z test xiaoc::tests::inferred_concurrency_types_require_abi_features_before_vm_load ... ok
+2026-11-06T20:04:21.1548100Z test xiaoc::tests::rejects_truncation_overlap_unknown_required_and_compression ... ok
+2026-11-06T20:04:21.1549474Z test xiaoc::tests::round_trip_is_deterministic_and_variable_length_header_is_supported ... ok
+2026-11-06T20:04:21.1550906Z test xiaoc::tests::runtime_requirements_reject_unknown_features_and_old_abi ... ok
+2026-11-06T20:04:21.1573369Z test xiaoc::tests::malformed_random_bytes_never_panic ... ok
+2026-11-06T20:04:21.1671199Z test encode::tests::module_dependency_direction_is_acyclic ... ok
+2026-11-06T20:04:21.4301556Z test encode::tests::concurrency_plans_round_trip_in_both_widths ... ok
+2026-11-06T20:04:21.4301906Z 
+2026-11-06T20:04:21.4302196Z test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+2026-11-06T20:04:21.4302565Z 
+2026-11-06T20:04:21.4306827Z [1m[92m     Running[0m unittests src/bin/xiaoc-check.rs (core/rust/target/debug/deps/xiaoc_check-1aae7e0f50b8e6ac)
+2026-11-06T20:04:21.4318476Z 
+2026-11-06T20:04:21.4318741Z running 0 tests
+2026-11-06T20:04:21.4319029Z 
+2026-11-06T20:04:21.4319467Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-06T20:04:21.4319816Z 
+2026-11-06T20:04:21.4320692Z [1m[92m     Running[0m tests/b0_a_api.rs (core/rust/target/debug/deps/b0_a_api-57819f7e1029a014)
+2026-11-06T20:04:21.4334706Z 
+2026-11-06T20:04:21.4335248Z running 1 test
+2026-11-06T20:04:21.4356222Z test root_and_research_paths_share_the_production_verifier ... ok
+2026-11-06T20:04:21.4356828Z 
+2026-11-06T20:04:21.4357131Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-06T20:04:21.4357542Z 
+2026-11-06T20:04:21.4360033Z [1m[92m     Running[0m tests/fuzz_xiaoc.rs (core/rust/target/debug/deps/fuzz_xiaoc-58de037ed41618c7)
+2026-11-06T20:04:21.4370654Z 
+2026-11-06T20:04:21.4371234Z running 2 tests
+2026-11-06T20:04:21.4406474Z test base_xiaoc_decodes ... ok
+2026-11-06T20:04:21.4427569Z test seeded_xiaoc_mutations_never_panic_and_are_rejected_with_stable_codes ... ok
+2026-11-06T20:04:21.4428201Z 
+2026-11-06T20:04:21.4428601Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-11-06T20:04:21.4429217Z 
+2026-11-06T20:04:21.4432243Z [1m[92m     Running[0m tests/r2_tac.rs (core/rust/target/debug/deps/r2_tac-f7e8ae2bd50bc9bf)
+2026-11-06T20:04:21.4444236Z 
+2026-11-06T20:04:21.4444396Z running 27 tests
+2026-11-06T20:04:21.4471300Z test decodes_string_literals_like_the_type_layer ... ok
+2026-11-06T20:04:21.4472048Z test assigns_register_classes ... ok
+2026-11-06T20:04:21.4481617Z test encodes_program_using_set_operation ... ok
+2026-11-06T20:04:21.4482635Z test consumes_runtime_checks_for_set_compound_assignment ... ok
+2026-11-06T20:04:21.4501182Z test encodes_try_finally_handler ... ok
+2026-11-06T20:04:21.4506764Z test keeps_quote_characters_inside_string_literals ... ok
+2026-11-06T20:04:21.4533188Z test lowers_exact_index_with_signed_step ... ok
+2026-11-06T20:04:21.4550828Z test keeps_register_classes_local_to_each_function ... ok
+2026-11-06T20:04:21.4561452Z test lowers_advanced_selector_plan ... ok
+2026-11-06T20:04:21.4562225Z test lowers_container_literals ... ok
+2026-11-06T20:04:21.4576782Z test lowers_functions_separately ... ok
+2026-11-06T20:04:21.4577516Z test lowers_exception_handlers_and_finally_subroutine ... ok
+2026-11-06T20:04:21.4591348Z test lowers_scalar_arithmetic ... ok
+2026-11-06T20:04:21.4601272Z test lowers_for_iteration_cfg ... ok
+2026-11-06T20:04:21.4631001Z test lowers_string_boolean_runtime_check ... ok
+2026-11-06T20:04:21.4640931Z test lowers_set_checks_for_both_operands ... ok
+2026-11-06T20:04:21.4641819Z test nested_set_operation_does_not_bind_check_to_selector_source ... ok
+2026-11-06T20:04:21.4642999Z test promotes_cross_width_operands ... ok
+2026-11-06T20:04:21.4643712Z test references_existing_release_plans ... ok
+2026-11-06T20:04:21.4659631Z test set_instructions_have_no_jump_targets ... ok
+2026-11-06T20:04:21.4660995Z test rebuilds_control_flow_blocks ... ok
+2026-11-06T20:04:21.4681423Z test shares_the_escape_table_with_the_type_layer ... ok
+2026-11-06T20:04:21.4682188Z test separates_backticked_from_plain_bindings ... ok
+2026-11-06T20:04:21.4682986Z test releases_temporary_heap_values ... ok
+2026-11-06T20:04:21.4697893Z test unary_minus_keeps_float_width ... ok
+2026-11-06T20:04:21.4699156Z test unary_not_compares_against_false ... ok
+2026-11-06T20:04:21.4699633Z test synthesizes_call_signatures ... ok
+2026-11-06T20:04:21.4699933Z 
+2026-11-06T20:04:21.4700514Z test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+2026-11-06T20:04:21.4701063Z 
+2026-11-06T20:04:21.4705482Z [1m[92m     Running[0m unittests src/lib.rs (core/rust/target/debug/deps/xiao_codegen_llvm-6466eaae6fd4d897)
+2026-11-06T20:04:21.4715230Z 
+2026-11-06T20:04:21.4715401Z running 55 tests
+2026-11-06T20:04:21.4718047Z test artifact::tests::composition_keeps_declared_and_observed_components_separate ... ok
+2026-11-06T20:04:21.4719062Z test artifact::tests::keeps_unclassified_runtime_symbols_visible ... ok
+2026-11-06T20:04:21.4722448Z test artifact::tests::maps_runtime_symbols_to_declared_component_names ... ok
+2026-11-06T20:04:21.4723890Z test artifact::tests::normalizes_macho_leading_underscore_without_touching_other_symbols ... ok
+2026-11-06T20:04:21.4724848Z test artifact::tests::parses_arm64_slice_from_fat_macho ... ok
+2026-11-06T20:04:21.4725652Z test artifact::tests::dynamic_artifact_reports_runtime_dependency_fact ... ok
+2026-11-06T20:04:21.4726463Z test artifact::tests::parses_controlled_elf_symbols ... ok
+2026-11-06T20:04:21.4727286Z test artifact::tests::declared_runtime_component_is_observable_for_each_format ... ok
+2026-11-06T20:04:21.4728358Z test artifact::tests::debug_symbol_is_required_only_for_debug_artifacts ... ok
+2026-11-06T20:04:21.4729510Z test artifact::tests::parses_controlled_pe_coff_symbols ... ok
+2026-11-06T20:04:21.4731825Z test artifact::tests::parses_fat_macho_slice_with_independent_endianness ... ok
+2026-11-06T20:04:21.4732853Z test artifact::tests::parses_controlled_macho_symbols_and_normalizes_prefix ... ok
+2026-11-06T20:04:21.4733815Z test artifact::tests::rejects_byte_offset_that_cannot_fit_usize ... ok
+2026-11-06T20:04:21.4734729Z test artifact::tests::pe_symbol_table_status_reflects_actual_coff_table ... ok
+2026-11-06T20:04:21.4735854Z test artifact::tests::static_artifact_with_runtime_dependency_is_rejected ... ok
+2026-11-06T20:04:21.4737198Z test artifact::tests::stripped_symbol_tables_are_not_accepted_as_trimming_evidence ... ok
+2026-11-06T20:04:21.4738482Z test artifact::tests::symbol_table_comparison_never_equates_unavailable_reports ... ok
+2026-11-06T20:04:21.4739695Z test artifact::tests::static_artifact_with_runtime_symbol_is_rejected ... ok
+2026-11-06T20:04:21.4740973Z test baseline::tests::rejects_non_finite_samples_and_exposes_noise_gate ... ok
+2026-11-06T20:04:21.4742012Z test baseline::tests::median_and_noise_are_stable ... ok
+2026-11-06T20:04:21.4743026Z test artifact::tests::verifies_release_debug_and_stripped_modes_independently ... ok
+2026-11-06T20:04:21.4744135Z test baseline::tests::rejects_uncontrolled_sample_shapes ... ok
+2026-11-06T20:04:21.4745585Z test dynamic::release::storage_tests::only_literal_alloca_counts_can_move_to_entry ... ok
+2026-11-06T20:04:21.4746610Z test native_concurrency::tests::duplicate_spans_are_rejected ... ok
+2026-11-06T20:04:21.4747651Z test native_concurrency::tests::metadata_must_match_one_typed_call_and_cannot_intercept_another_module ... ok
+2026-11-06T20:04:21.4748830Z test native_concurrency::tests::module_concurrency_is_rejected_structurally ... ok
+2026-11-06T20:04:21.4749858Z test native_concurrency::tests::orphan_concurrency_facts_are_rejected ... ok
+2026-11-06T20:04:21.4750981Z test native_concurrency::tests::unknown_operation_is_fail_closed ... ok
+2026-11-06T20:04:21.4752372Z test native_concurrency::tests::plan_indexes_ir_calls_without_name_resolution ... ok
+2026-11-06T20:04:21.4753387Z test native_metadata::tests::native_metadata_does_not_scan_for_magic ... ok
+2026-11-06T20:04:21.4754268Z test native_metadata::tests::native_metadata_codec_is_bounded_and_exact ... ok
+2026-11-06T20:04:21.4755251Z test native_metadata::tests::native_metadata_emission_uses_the_declared_target ... ok
+2026-11-06T20:04:21.4756302Z test native_metadata::tests::native_metadata_requirements_reject_incompatible_inputs ... ok
+2026-11-06T20:04:21.4757435Z test optimization::tests::extension_switches_are_explicitly_rejected_until_frozen ... ok
+2026-11-06T20:04:21.4758582Z test optimization::tests::runtime_report_explains_retained_and_removed_components ... ok
+2026-11-06T20:04:21.4759526Z test optimization::tests::plan_keeps_extensions_off_and_fingerprint_stable ... ok
+2026-11-06T20:04:21.4760501Z test reproducible::tests::binary_layout_whitelist_is_explicit ... ok
+2026-11-06T20:04:21.4761054Z test reproducible::tests::normalizes_debug_paths_in_place_and_records_offsets ... ok
+2026-11-06T20:04:21.4761540Z test reproducible::tests::normalizes_elf_gnu_build_id ... ok
+2026-11-06T20:04:21.4761965Z test reproducible::tests::normalizes_paths_times_and_symbol_order ... ok
+2026-11-06T20:04:21.4762433Z test reproducible::tests::normalizes_pe_debug_directory_timestamp ... ok
+2026-11-06T20:04:21.4762924Z test reproducible::tests::records_unix_and_windows_path_fields_separately ... ok
+2026-11-06T20:04:21.4763424Z test reproducible::tests::normalizes_pe_timestamp_and_records_the_field ... ok
+2026-11-06T20:04:21.4763919Z test target::tests::controlled_targets_validate_equally ... ok
+2026-11-06T20:04:21.4764365Z test target::tests::host_target_architecture_matches_compile_time_target ... ok
+2026-11-06T20:04:21.4764836Z test target::tests::invalid_fixed_width_and_format_are_rejected ... ok
+2026-11-06T20:04:21.4765454Z test toolchain::tests::normalizes_case_insensitive_windows_tokens ... ok
+2026-11-06T20:04:21.4765923Z test toolchain::tests::parses_windows_native_static_libraries ... ok
+2026-11-06T20:04:21.4766372Z test toolchain::tests::preserves_unix_native_static_libraries ... ok
+2026-11-06T20:04:21.4766835Z test toolchain::tests::rejects_missing_native_static_library_marker ... ok
+2026-11-06T20:04:21.4767303Z test toolchain::tests::posix_startup_shim_waits_for_readiness ... ok
+2026-11-06T20:04:21.4767760Z test toolchain::tests::startup_shim_embeds_only_diagnostics_basename ... ok
+2026-11-06T20:04:21.4768280Z test toolchain::tests::windows_startup_shim_opens_console_and_waits_for_readiness ... ok
+2026-11-06T20:04:21.4768782Z test toolchain::tests::native_library_list_is_fingerprinted ... ok
+2026-11-06T20:04:21.4999147Z test dynamic::architecture_tests::module_dependency_direction_is_acyclic ... ok
+2026-11-06T20:04:21.4999680Z 
+2026-11-06T20:04:21.5000017Z test result: ok. 55 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+2026-11-06T20:04:21.5000621Z 
+2026-11-06T20:04:21.5002959Z [1m[92m     Running[0m tests/15e_ci_gated.rs (core/rust/target/debug/deps/15e_ci_gated-7814085508108698)
+2026-11-06T20:04:21.5014051Z 
+2026-11-06T20:04:21.5014472Z running 5 tests
+2026-11-06T20:04:21.5016398Z test ci_performance_baseline_is_platform_scoped ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+2026-11-06T20:04:21.5018209Z test real_artifact_reproducibility_is_byte_comparable ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+2026-11-06T20:04:21.5019725Z test real_artifact_strip_modes_all_optimization_levels ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH / XIAO_STRIP；准备方式见 10D §4
+2026-11-06T20:04:21.5021235Z test real_debug_activation_survives_all_optimization_levels ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+2026-11-06T20:04:21.5022826Z test real_symbol_table_and_debug_path_evidence ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+2026-11-06T20:04:21.5023403Z 
+2026-11-06T20:04:21.5023661Z test result: ok. 0 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-06T20:04:21.5023997Z 
+2026-11-06T20:04:21.5024314Z [1m[92m     Running[0m tests/n0_a.rs (core/rust/target/debug/deps/n0_a-df83678475a8ad53)
+2026-11-06T20:04:21.5026845Z 
+2026-11-06T20:04:21.5027008Z running 23 tests
+2026-11-06T20:04:21.5043468Z test debug_startup_shim_precedes_user_entry ... ok
+2026-11-06T20:04:21.5044201Z test emits_checked_integer_arithmetic ... ok
+2026-11-06T20:04:21.5060903Z test emits_terminated_elif_false_path ... ok
+2026-11-06T20:04:21.5061948Z test entry_observation_is_explicit ... ok
+2026-11-06T20:04:21.5062529Z test lowers_boolean_equality ... ok
+2026-11-06T20:04:21.5063092Z test lowers_float_power_with_valid_intrinsic_signature ... ok
+2026-11-06T20:04:21.5063899Z test lowers_constant_integer_power_with_checked_multiplication ... ok
+2026-11-06T20:04:21.5075971Z test lowers_float_and_bool_scalars ... ok
+2026-11-06T20:04:21.5076619Z test lowers_integer_division_to_float ... ok
+2026-11-06T20:04:21.5077179Z test lowers_runtime_values_with_abi ... ok
+2026-11-06T20:04:21.5077918Z test accepts_fixed_named_and_rejects_expanded_arguments ... ok
+2026-11-06T20:04:21.5079180Z test optional_corrupt_llvm_is_rejected ... ignored, 需要 XIAO_CLANG；准备方式见 10D §4
+2026-11-06T20:04:21.5080849Z test optional_entry_observation_tracks_runtime_branch ... ignored, 需要 XIAO_CLANG 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+2026-11-06T20:04:21.5091971Z test optional_external_access_violation_remains_fatal ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+2026-11-06T20:04:21.5097905Z test optional_external_illegal_instruction_remains_fatal ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+2026-11-06T20:04:21.5099661Z test optional_real_llvm_round_trip ... ignored, 需要 XIAO_CLANG（可选 XIAO_LLVM_AS）与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+2026-11-06T20:04:21.5101393Z test optional_static_numeric_failure_boundaries_match_runtime_contract ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+2026-11-06T20:04:21.5103278Z test optional_static_overflow_uses_recoverable_runtime_report ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+2026-11-06T20:04:21.5104301Z test missing_toolchain_is_structured ... ok
+2026-11-06T20:04:21.5104653Z test lowers_scalar_calls_and_control_flow ... ok
+2026-11-06T20:04:21.5106146Z [1m[92m     Running[0m tests/n0_b_dynamic.rs (core/rust/target/debug/deps/n0_b_dynamic-0283e0e02b4d51bf)
+2026-11-06T20:04:21.5106708Z test ordinary_static_artifact_does_not_activate_diagnostics ... ok
+2026-11-06T20:04:21.5107176Z test lowers_logical_and_rejects_identity_in_raw_ir ... ok
+2026-11-06T20:04:21.5107546Z test respects_declared_scalar_width ... ok
+2026-11-06T20:04:21.5107737Z 
+2026-11-06T20:04:21.5107986Z test result: ok. 16 passed; 0 failed; 7 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-11-06T20:04:21.5108314Z 
+2026-11-06T20:04:21.5115429Z 
+2026-11-06T20:04:21.5115571Z running 28 tests
+2026-11-06T20:04:21.5132900Z test accepts_identity_dynamic_cast ... ok
+2026-11-06T20:04:21.5133798Z test decodes_string_escapes_before_llvm_emission ... ok
+2026-11-06T20:04:21.5136485Z test debug_dynamic_artifact_activates_diagnostic_session ... ok
+2026-11-06T20:04:21.5137503Z test dynamic_dictionary_member_reports_table_type_mismatch ... ok
+2026-11-06T20:04:21.5148444Z test emits_sysv_runtime_value_layout ... ok
+2026-11-06T20:04:21.5162008Z test dynamic_entry_observation_is_explicit ... ok
+2026-11-06T20:04:21.5162850Z test emits_complete_table_descriptor ... ok
+2026-11-06T20:04:21.5163662Z test emits_windows_indirect_runtime_abi_calls ... ok
+2026-11-06T20:04:21.5171831Z test dynamic_table_member_uses_value_pointer_and_valid_payload_index ... ok
+2026-11-06T20:04:21.5172638Z test fatal_error_intrinsic_is_still_rejected ... ok
+2026-11-06T20:04:21.5181109Z test function_body_dynamic_condition_has_closed_labels ... ok
+2026-11-06T20:04:21.5207351Z test lowers_dictionary_with_runtime_component ... ok
+2026-11-06T20:04:21.5208108Z test function_error_constructor_borrows_parameter_slots ... ok
+2026-11-06T20:04:21.5217605Z test lowers_dynamic_boolean_if ... ok
+2026-11-06T20:04:21.5218264Z test lowers_array_and_preserves_runtime_components ... ok
+2026-11-06T20:04:21.5218901Z test lowers_empty_singleton_declaration ... ok
+2026-11-06T20:04:21.5231284Z test lowers_dynamic_error_constructor_arguments_to_runtime_abi ... ok
+2026-11-06T20:04:21.5231968Z test lowers_input_intrinsic_to_runtime_abi ... ok
+2026-11-06T20:04:21.5235184Z test lowers_non_identity_dynamic_cast ... ok
+2026-11-06T20:04:21.5247037Z test lowers_print_intrinsic_to_runtime_abi ... ok
+2026-11-06T20:04:21.5253667Z test lowers_non_text_error_constructor_argument_to_runtime_check ... ok
+2026-11-06T20:04:21.5254559Z test lowers_runtime_check_to_abi ... ok
+2026-11-06T20:04:21.5256056Z test optional_llvm_accepts_dynamic_table_module ... ignored, 需要 XIAO_LLVM_AS 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+2026-11-06T20:04:21.5266430Z test lowers_error_constructor_intrinsics_to_runtime_abi ... ok
+2026-11-06T20:04:21.5266978Z test lowers_str_intrinsic_to_runtime_cast ... ok
+2026-11-06T20:04:21.5267384Z test ordinary_dynamic_artifact_does_not_activate_diagnostics ... ok
+2026-11-06T20:04:21.5267797Z test rejects_table_declaration_without_signature ... ok
+2026-11-06T20:04:21.5273782Z test rejects_table_constructor_arguments_until_init_abi_exists ... ok
+2026-11-06T20:04:21.5274135Z 
+2026-11-06T20:04:21.5274385Z test result: ok. 27 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.02s
+2026-11-06T20:04:21.5274710Z 
+2026-11-06T20:04:21.5278123Z [1m[92m     Running[0m tests/n0_c_errors.rs (core/rust/target/debug/deps/n0_c_errors-40b364f2c5f0ffeb)
+2026-11-06T20:04:21.5288174Z 
+2026-11-06T20:04:21.5288325Z running 6 tests
+2026-11-06T20:04:21.5290403Z test optional_llvm_accepts_error_path_module ... ignored, 需要 XIAO_LLVM_AS；准备方式见 10D §4
+2026-11-06T20:04:21.5291394Z test optional_stackrestore_runtime_probe ... ignored, 需要真实 clang；准备方式见 10D §4
+2026-11-06T20:04:21.5306682Z test rejects_fatal_catch_type ... ok
+2026-11-06T20:04:21.5321312Z test lowers_recoverable_error_path ... ok
+2026-11-06T20:04:21.5353923Z test emits_language_context_and_release_trace_hooks ... ok
+2026-11-06T20:04:21.5401999Z test lowers_nonlocal_control_exits_through_cleanup_chain ... ok
+2026-11-06T20:04:21.5402507Z 
+2026-11-06T20:04:21.5402766Z test result: ok. 4 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-11-06T20:04:21.5403124Z 
+2026-11-06T20:04:21.5405400Z [1m[92m     Running[0m tests/stdlib_bindings.rs (core/rust/target/debug/deps/stdlib_bindings-d93b6c0bf698d386)
+2026-11-06T20:04:21.5415917Z 
+2026-11-06T20:04:21.5416141Z running 2 tests
+2026-11-06T20:04:21.5453686Z test missing_selected_body_cannot_fall_back_to_another_module ... ok
+2026-11-06T20:04:21.5660891Z test imports_and_internal_calls_keep_all_real_module_definitions ... ok
+2026-11-06T20:04:21.5661336Z 
+2026-11-06T20:04:21.5661635Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+2026-11-06T20:04:21.5661977Z 
+2026-11-06T20:04:21.5664418Z [1m[92m     Running[0m unittests src/lib.rs (core/rust/target/debug/deps/xiao_config-8b27a8dcd93d11e5)
+2026-11-06T20:04:21.5674302Z 
+2026-11-06T20:04:21.5674459Z running 8 tests
+2026-11-06T20:04:21.5678788Z test parser::tests::rejects_colon_dictionary_separator ... ok
+2026-11-06T20:04:21.5680815Z test parser::tests::rejects_executable_values ... ok
+2026-11-06T20:04:21.5681676Z test validation::tests::accepts_optimization_configuration_fields ... ok
+2026-11-06T20:04:21.5682666Z test parser::tests::parses_static_project_config ... ok
+2026-11-06T20:04:21.5683564Z test validation::tests::rejects_invalid_optimization_level ... ok
+2026-11-06T20:04:21.5684407Z test validation::tests::rejects_unknown_project_field ... ok
+2026-11-06T20:04:21.5685123Z [1m[92m     Running[0m tests/d05_config.rs (core/rust/target/debug/deps/d05_config-471b8ba859f8c9ba)
+2026-11-06T20:04:21.5685800Z test validation::tests::requires_project_identity_for_project_entry ... ok
+2026-11-06T20:04:21.5686478Z test validation::tests::rejects_unsafe_export_path ... ok
+2026-11-06T20:04:21.5686768Z 
+2026-11-06T20:04:21.5687003Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-06T20:04:21.5687334Z 
+2026-11-06T20:04:21.5693966Z 
+2026-11-06T20:04:21.5694127Z running 13 tests
+2026-11-06T20:04:21.5697788Z test accepts_explicit_resource_mapping ... ok
+2026-11-06T20:04:21.5698554Z test accepts_multiline_arrays ... ok
+2026-11-06T20:04:21.5699446Z test canonical_fingerprint_input_distinguishes_order_and_value_types ... ok
+2026-11-06T20:04:21.5700527Z test canonical_fingerprint_input_is_stable_and_span_free ... ok
+2026-11-06T20:04:21.5701361Z test accepts_optimization_table ... ok
+2026-11-06T20:04:21.5701906Z test malformed_inputs_do_not_panic ... ok
+2026-11-06T20:04:21.5702448Z test normalizes_relative_export_path ... ok
+2026-11-06T20:04:21.5703003Z test preserves_recursive_static_values ... ok
+2026-11-06T20:04:21.5704423Z test rejects_executable_constructs ... ok
+2026-11-06T20:04:21.5704947Z test rejects_duplicate_keys_and_tables ... ok
+2026-11-06T20:04:21.5705476Z test rejects_unknown_schema_nodes ... ok
+2026-11-06T20:04:21.5705980Z test rejects_unsafe_resource_paths ... ok
+2026-11-06T20:04:21.5706581Z test validates_project_identity_and_exports ... ok
+2026-11-06T20:04:21.5706974Z 
+2026-11-06T20:04:21.5707400Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-06T20:04:21.5707985Z 
+2026-11-06T20:04:21.5708756Z [1m[92m     Running[0m tests/spec_snapshots.rs (core/rust/target/debug/deps/spec_snapshots-6c8e6d4024b258e6)
+2026-11-06T20:04:21.5715908Z 
+2026-11-06T20:04:21.5716083Z running 1 test
+2026-11-06T20:04:21.5723039Z test config_spec_snapshots_are_executed ... ok
+2026-11-06T20:04:21.5723271Z 
+2026-11-06T20:04:21.5723522Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-06T20:04:21.5723840Z 
+2026-11-06T20:04:21.5725703Z [1m[92m     Running[0m unittests src/lib.rs (core/rust/target/debug/deps/xiao_diagnostics-899c25945db8d39e)
+2026-11-06T20:04:21.5733554Z 
+2026-11-06T20:04:21.5733726Z running 18 tests
+2026-11-06T20:04:21.5737094Z test tests::accumulator_uses_first_error_as_primary ... ok
+2026-11-06T20:04:21.5737643Z test tests::builds_error_with_span ... ok
+2026-11-06T20:04:21.5738186Z test tests::container_errors_keep_stable_identity ... ok
+2026-11-06T20:04:21.5738810Z test tests::distinguishes_fatal_report ... ok
+2026-11-06T20:04:21.5739685Z test tests::division_by_zero_keeps_operator_identity ... ok
+2026-11-06T20:04:21.5740777Z test tests::error_type_registry_is_finite_and_shared ... ok
+2026-11-06T20:04:21.5741648Z test tests::keeps_error_context_and_stack ... ok
+2026-11-06T20:04:21.5792275Z test tests::localized_report_uses_catalog_and_preserves_default_text ... ok
+2026-11-06T20:04:21.5803910Z test tests::preserves_backend_location ... ok
+2026-11-06T20:04:21.5805131Z test tests::numeric_foundation_errors_have_distinct_identity_and_catalog_entries ... ok
+2026-11-06T20:04:21.5806186Z test tests::preserves_language_independent_params ... ok
+2026-11-06T20:04:21.5806979Z test tests::reports_suppressed_without_replacing_primary ... ok
+2026-11-06T20:04:21.5807714Z test tests::builtin_localized_facade_preserves_report_identity ... ok
+2026-11-06T20:04:21.5808656Z test window::tests::diagnostic_frame_round_trips ... ok
+2026-11-06T20:04:21.5809290Z test window::tests::fatal_events_use_fatal_level ... ok
+2026-11-06T20:04:21.5810203Z test window::tests::activation_is_persistent_and_absent_for_release_shape ... ok
+2026-11-06T20:04:21.5811134Z test window::tests::oversized_frame_is_rejected_before_allocation ... ok
+2026-11-06T20:04:21.5811981Z test tests::localized_report_keeps_runtime_reason_parameter ... ok
+2026-11-06T20:04:21.5812247Z 
+2026-11-06T20:04:21.5812496Z test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-11-06T20:04:21.5812823Z 
+2026-11-06T20:04:21.5813991Z [1m[92m     Running[0m unittests src/bin/xiao-diagnostics.rs (core/rust/target/debug/deps/xiao_diagnostics-fb8eee7e5b9287e4)
+2026-11-06T20:04:21.5821777Z 
+2026-11-06T20:04:21.5821953Z running 8 tests
+2026-11-06T20:04:21.5824653Z test tests::connected_mode_requires_endpoint_and_token ... ok
+2026-11-06T20:04:21.5825418Z test tests::hold_duration_defaults_and_rejects_invalid_values ... ok
+2026-11-06T20:04:21.5826273Z test tests::invalid_parent_pid_is_rejected ... ok
+2026-11-06T20:04:21.5826937Z test tests::locale_argument_is_normalized ... ok
+2026-11-06T20:04:21.5827624Z test tests::standalone_arguments_accept_ready_file ... ok
+2026-11-06T20:04:21.5828291Z test tests::standalone_arguments_accept_parent_pid ... ok
+2026-11-06T20:04:21.5828885Z test tests::zero_parent_pid_is_rejected ... ok
+2026-11-06T20:04:21.5829379Z test tests::standalone_arguments_allow_missing_parent_for_manual_preview ... ok
+2026-11-06T20:04:21.5829688Z 
+2026-11-06T20:04:21.5829931Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-06T20:04:21.5830732Z 
+2026-11-06T20:04:21.5831227Z [1m[92m     Running[0m unittests src/lib.rs (core/rust/target/debug/deps/xiao_doc_coverage_rust-2c9af7e8463e0d12)
+2026-11-06T20:04:21.5837380Z 
+2026-11-06T20:04:21.5837558Z running 7 tests
+2026-11-06T20:04:21.5839962Z test tests::outline_defaults_to_false ... ok
+2026-11-06T20:04:21.5845221Z test tests::parses_public_and_private_items ... ok
+2026-11-06T20:04:21.5845704Z test tests::declaration_end_line_uses_full_item_span ... ok
+2026-11-06T20:04:21.5846146Z test tests::outline_lines_match_line_and_end_line ... ok
+2026-11-06T20:04:21.5846746Z test tests::declaration_head_covers_common_shapes ... ok
+2026-11-06T20:04:21.5847192Z test tests::rejects_unsupported_protocol_version ... ok
+2026-11-06T20:04:21.5847587Z test tests::reports_parse_errors ... ok
+2026-11-06T20:04:21.5847828Z 
+2026-11-06T20:04:21.5848415Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-06T20:04:21.5848956Z 
+2026-11-06T20:04:21.5850472Z [1m[92m     Running[0m unittests src/main.rs (core/rust/target/debug/deps/xiao_doc_coverage_rust-b1ed845245b5f9d3)
+2026-11-06T20:04:21.5857327Z 
+2026-11-06T20:04:21.5857504Z running 0 tests
+2026-11-06T20:04:21.5857727Z 
+2026-11-06T20:04:21.5858137Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-06T20:04:21.5859140Z [1m[92m     Running[0m unittests src/lib.rs (core/rust/target/debug/deps/xiao_driver-3f84b29db9c082f6)
+2026-11-06T20:04:21.5859495Z 
+2026-11-06T20:04:21.5876289Z 
+2026-11-06T20:04:21.5876488Z running 65 tests
+2026-11-06T20:04:21.5880279Z test compatibility::tests::matrix_contains_no_unfrozen_migration_claim ... ok
+2026-11-06T20:04:21.5881359Z test compatibility::tests::matrix_is_generated_from_current_versions_and_has_every_axis ... ok
+2026-11-06T20:04:21.5882511Z test compatibility::tests::standard_library_identity_is_parallel_to_existing_compatibility_versions ... ok
+2026-11-06T20:04:21.5883830Z test diagnostics::tests::missing_terminal_renderer_is_an_explicit_startup_failure ... ok
+2026-11-06T20:04:21.5884821Z test diagnostics::tests::disconnected_window_does_not_change_event_handling ... ok
+2026-11-06T20:04:21.5885708Z test diagnostics::tests::focus_rules_match_module_and_source ... ok
+2026-11-06T20:04:21.5886608Z test diagnostics::tests::persistent_diagnostic_logs_redact_sensitive_payloads ... ok
+2026-11-06T20:04:21.5887448Z test diagnostics::tests::real_terminal_session_is_environment_gated ... ignored, 需要真实终端模拟器；准备方式见 10D §4.2
+2026-11-06T20:04:21.5888176Z test diagnostics::tests::runtime_events_keep_required_structured_identity ... ok
+2026-11-06T20:04:21.5889024Z test diagnostics::tests::terminal_candidates_forward_locale ... ok
+2026-11-06T20:04:21.5890435Z test diagnostics::tests::unwritable_log_target_is_reported_without_startup_failure ... ok
+2026-11-06T20:04:21.5891387Z test module_loader::tests::removed_standard_library_module_is_not_loadable ... ok
+2026-11-06T20:04:21.5892572Z test diagnostics::tests::terminal_candidates_have_stable_platform_order ... ok
+2026-11-06T20:04:21.5899162Z test protocol::package_view::tests::duplicate_roots_are_rejected ... ok
+2026-11-06T20:04:21.5902153Z test protocol::package_view::tests::active_and_global_views_do_not_leak ... ok
+2026-11-06T20:04:21.5911478Z test protocol::tests::artifact_runtime_facts_round_trip ... ok
+2026-11-06T20:04:21.5914502Z test protocol::tests::build_rejects_unknown_target_before_toolchain ... ok
+2026-11-06T20:04:21.5944142Z test diagnostics::tests::runtime_error_events_keep_localized_message_fields ... ok
+2026-11-06T20:04:21.5947590Z test protocol::tests::build_request_round_trips_toolchain_and_config_fields ... ok
+2026-11-06T20:04:21.5964723Z test protocol::package_view::tests::interface_query_does_not_execute_module ... ok
+2026-11-06T20:04:21.5987974Z test protocol::tests::cache_clean_protocol_deletes_unreferenced_objects ... ok
+2026-11-06T20:04:21.6022423Z test protocol::tests::cache_clean_protocol_reads_archive_references ... ok
+2026-11-06T20:04:21.6025191Z test protocol::tests::cache_list_returns_structured_result ... ok
+2026-11-06T20:04:21.6028859Z test protocol::tests::debug_build_requires_diagnostics_path ... ok
+2026-11-06T20:04:21.6029908Z test protocol::tests::diagnostics_component_is_staged_next_to_executable ... ok
+2026-11-06T20:04:21.6034111Z test protocol::tests::diagnostics_component_staging_distinguishes_existing_source ... ok
+2026-11-06T20:04:21.6038048Z test protocol::tests::environment_request_generates_stable_metadata ... ok
+2026-11-06T20:04:21.6039021Z test protocol::tests::frame_and_request_errors_keep_distinct_codes ... ok
+2026-11-06T20:04:21.6040712Z test protocol::tests::frame_uses_eight_byte_big_endian_payload_length ... ok
+2026-11-06T20:04:21.6041893Z test protocol::tests::hello_advertises_test_capability ... ok
+2026-11-06T20:04:21.6052280Z test protocol::architecture_tests::module_dependency_direction_is_acyclic ... ok
+2026-11-06T20:04:21.6061047Z test protocol::tests::cache_clean_protocol_reads_project_lock_from_directory ... ok
+2026-11-06T20:04:21.6062263Z test protocol::tests::read_frame_accepts_clean_eof_and_rejects_truncation ... ok
+2026-11-06T20:04:21.6063300Z test protocol::tests::read_frame_rejects_oversized_payload_before_allocating ... ok
+2026-11-06T20:04:21.6064272Z test protocol::tests::real_source_run_maps_cancel_to_artifact_rejected ... ok
+2026-11-06T20:04:21.6080223Z test protocol::tests::protocol_run_accepts_nonzero_optimization_level ... ok
+2026-11-06T20:04:21.6081370Z test protocol::tests::repl_packages_request_validates_environment_without_renaming_package_operation ... ok
+2026-11-06T20:04:21.6089812Z test protocol::tests::real_source_run_returns_structured_result_without_text_parsing ... ok
+2026-11-06T20:04:21.6100201Z test protocol::tests::cache_clean_protocol_rejects_broken_archive_before_deleting ... ok
+2026-11-06T20:04:21.6124054Z test protocol::tests::package_request_missing_lock_does_not_create_environment ... ok
+2026-11-06T20:04:21.6132286Z test protocol::tests::run_archive_honors_zero_timeout_before_reading_archive ... ok
+2026-11-06T20:04:21.6170877Z test protocol::tests::runtime_config_can_be_replaced ... ok
+2026-11-06T20:04:21.6172037Z test protocol::tests::runtime_config_freeze_is_deterministic_and_validated ... ok
+2026-11-06T20:04:21.6191109Z test protocol::tests::service_requires_hello_as_first_frame ... ok
+2026-11-06T20:04:21.6192074Z test protocol::tests::run_archive_missing_file_has_stable_error ... ok
+2026-11-06T20:04:21.6193040Z test protocol::tests::service_round_trips_hello_run_and_shutdown_frames ... ok
+2026-11-06T20:04:21.6228209Z test protocol::tests::run_locale_is_optional_and_does_not_change_machine_error_fields ... ok
+2026-11-06T20:04:21.6230858Z test protocol::tests::test_request_rejects_empty_case_list ... ok
+2026-11-06T20:04:21.6231693Z test protocol::tests::verify_missing_artifact_has_stable_error ... ok
+2026-11-06T20:04:21.6232474Z test protocol::tests::version_mismatch_is_machine_readable ... ok
+2026-11-06T20:04:21.6233416Z test run::tests::cancellation_and_zero_timeout_are_structured_control_errors ... ok
+2026-11-06T20:04:21.6237170Z test protocol::tests::test_locale_renders_diagnostics_inside_each_case ... ok
+2026-11-06T20:04:21.6238432Z test protocol::tests::test_request_preserves_case_order_and_aggregates_results ... ok
+2026-11-06T20:04:21.6321579Z test protocol::tests::run_locale_renders_known_message_and_preserves_missing_id_with_params ... ok
+2026-11-06T20:04:21.6351175Z test run::tests::corrupted_tac_is_rejected_before_execution ... ok
+2026-11-06T20:04:21.6380936Z test run::tests::frontend_failure_keeps_structured_diagnostics ... ok
+2026-11-06T20:04:21.6441437Z test run::tests::migrated_intrinsics_keep_existing_vm_semantics ... ok
+2026-11-06T20:04:21.6521939Z test run::tests::nonzero_optimization_levels_run_through_bytecode_pipeline ... ok
+2026-11-06T20:04:21.6556937Z test run::tests::print_intrinsic_reaches_vm_output_event ... ok
+2026-11-06T20:04:21.6611303Z test run::tests::removal_verification_print_contract_and_vm_binding ... ok
+2026-11-06T20:04:21.6612396Z test run::tests::runs_frontend_to_vm_without_an_entry_override ... ok
+2026-11-06T20:04:21.6631309Z test run::tests::structurally_invalid_tac_uses_internal_diagnostic ... ok
+2026-11-06T20:04:21.9293802Z test run::tests::concurrency_runtime_create_spawn_join_reaches_vm ... ok
+2026-11-06T20:04:22.0490614Z test run::tests::concurrency_shared_and_lock_reaches_vm ... ok
+2026-11-06T20:04:22.0496195Z test run::tests::concurrency_pool_submit_wait_shutdown_reaches_vm ... ok
+2026-11-06T20:04:22.0496499Z 
+2026-11-06T20:04:22.0496754Z test result: ok. 64 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.46s
+2026-11-06T20:04:22.0497081Z 
+2026-11-06T20:04:22.0511298Z [1m[92m     Running[0m unittests src/protocol_main.rs (core/rust/target/debug/deps/xiao_core-1dad9b062539aa96)
+2026-11-06T20:04:22.0519293Z 
+2026-11-06T20:04:22.0519499Z running 0 tests
+2026-11-06T20:04:22.0519710Z 
+2026-11-06T20:04:22.0520016Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-06T20:04:22.0520847Z 
+2026-11-06T20:04:22.0522010Z [1m[92m     Running[0m tests/18b_build_archive.rs (core/rust/target/debug/deps/18b_build_archive-eff9c80dfd18001c)
+2026-11-06T20:04:22.0538483Z 
+2026-11-06T20:04:22.0538688Z running 13 tests
+2026-11-06T20:04:22.0697748Z test debug_has_separate_symbols_and_explicit_output ... ok
+2026-11-06T20:04:22.0892034Z test config_uses_unique_main_and_packages_only_reachable_local_modules_and_resources ... ok
+2026-11-06T20:04:22.1156282Z test indexed_corrupt_hit_is_rejected_without_replacing_output ... ok
+2026-11-06T20:04:22.1331476Z test lockfile_uses_authoritative_validation_and_is_never_rewritten ... ok
+2026-11-06T20:04:22.1401890Z test missing_or_multiple_main_third_party_and_bad_resources_leave_no_archive ... ok
+2026-11-06T20:04:22.1591657Z test review_archive_output_cannot_corrupt_its_cache ... ok
+2026-11-06T20:04:23.5961293Z test archive_build_runs_set_methods_through_host_module ... ok
+2026-11-06T20:04:23.6801324Z test review_output_cannot_replace_any_archive_input ... ok
+2026-11-06T20:04:23.8102300Z test script_builds_runs_and_keeps_xiaoc_in_global_cache ... ok
+2026-11-06T20:04:24.0901521Z test review_mixed_known_and_unresolved_targets_cannot_omit_capabilities ... ok
+2026-11-06T20:04:27.7111847Z test imported_stdlib_functions_have_precise_capabilities ... ok
+2026-11-06T20:04:28.2383449Z test served_protocol_builds_runs_stdlib_and_keeps_repl_out_of_global_cache ... ok
+2026-11-06T20:04:28.5809425Z test closure_tracks_calls_keywords_reexports_and_empty_requirements ... ok
+2026-11-06T20:04:28.5809803Z 
+2026-11-06T20:04:28.5810289Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.53s
+2026-11-06T20:04:28.5810900Z 
+2026-11-06T20:04:28.5819100Z [1m[92m     Running[0m tests/20c_first_modules.rs (core/rust/target/debug/deps/20c_first_modules-97306919a936cc52)
+2026-11-06T20:04:28.5838031Z 
+2026-11-06T20:04:28.5838195Z running 15 tests
+2026-11-06T20:04:28.5862203Z test first_modules_match_native_results ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+2026-11-06T20:04:28.6941369Z test fixed_named_calls_preserve_argument_evaluation_and_binding ... ok
+2026-11-06T20:04:28.6981123Z test project_cannot_shadow_the_reserved_standard_library_namespace ... ok
+2026-11-06T20:04:28.7011752Z test removing_llvm_standard_library_function_binding_rejects_native_build ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+2026-11-06T20:04:28.7031439Z test set_remove_missing_native_matches_vm ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+2026-11-06T20:04:28.7337890Z test b1_release_edges_have_vm_golden_outputs ... ok
+2026-11-06T20:04:30.2291390Z test standard_library_import_requires_vm_loader_binding ... ok
+2026-11-06T20:04:30.4191525Z test helper_module_can_import_standard_library ... ok
+2026-11-06T20:04:32.9211552Z test std_aliases_preserve_imported_function_contracts ... ok
+2026-11-06T20:04:33.3091706Z test path_module_vm_result_and_removal_boundary_are_stable ... ok
+2026-11-06T20:04:33.3361733Z test string_indices_preserve_unicode_iteration_and_negative_bounds ... ok
+2026-11-06T20:04:34.8711362Z test std_alias_native_lowering_matches_the_canonical_capability_boundary ... ok
+2026-11-06T20:04:35.2358682Z test std_alias_archives_record_canonical_host_requirements ... ok
+2026-11-06T20:04:36.1945254Z test std_aliases_use_the_canonical_official_module ... ok
+2026-11-06T20:04:38.0708471Z test text_module_vm_result_and_removal_boundary_are_stable ... ok
+2026-11-06T20:04:38.0708803Z 
+2026-11-06T20:04:38.0709256Z test result: ok. 12 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 9.49s
+2026-11-06T20:04:38.0709586Z 
+2026-11-06T20:04:38.0730766Z [1m[92m     Running[0m tests/20d_first_api.rs (core/rust/target/debug/deps/20d_first_api-364ceb4b2a4c388f)
+2026-11-06T20:04:38.0744136Z 
+2026-11-06T20:04:38.0744333Z running 17 tests
+2026-11-06T20:04:38.0791083Z test filesystem_capability_bit_is_the_frozen_bit_zero ... ok
+2026-11-06T20:04:38.1141049Z test directory_cannot_be_passed_to_read_text_at_type_check ... ok
+2026-11-06T20:04:39.2484839Z test imported_resource_signatures_reject_invalid_argument_shapes ... ok
+2026-11-06T20:04:39.2512177Z test native_os_module_matches_vm_output ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+2026-11-06T20:04:39.4011424Z test imported_resource_interfaces_respect_scope_and_reassignment ... ok
+2026-11-06T20:04:40.2371284Z test imported_resource_signatures_preserve_type_boundaries ... ok
+2026-11-06T20:04:40.4001309Z test os_module_opens_reads_and_closes_file_in_vm ... ok
+2026-11-06T20:04:40.5401801Z test os_module_requires_filesystem_capability_before_open ... ok
+2026-11-06T20:04:40.5421417Z test resource_const_is_rejected_with_non_constant_diagnostic ... ok
+2026-11-06T20:04:40.5451181Z test resource_declarations_reject_ignored_path_constraints ... ok
+2026-11-06T20:04:40.5491051Z test resource_set_annotations_are_rejected_by_type_check ... ok
+2026-11-06T20:04:40.5522978Z test table_resource_constants_use_the_non_constant_diagnostic ... ok
+2026-11-06T20:04:40.5551379Z test vm_relative_path_child ... ignored, 由 vm_relative_paths_use_process_cwd 在隔离 cwd 中调用
+2026-11-06T20:04:40.5731328Z test resource_api_rejects_keyword_and_expanded_arguments_before_execution ... ok
+2026-11-06T20:04:41.7008883Z test vm_relative_paths_use_process_cwd ... ok
+2026-11-06T20:04:42.1424106Z test os_module_runtime_error_identities_are_stable_in_vm ... ok
+2026-11-06T20:04:43.8539681Z test imported_resource_calls_execute_in_vm_and_keep_native_boundary ... ok
+2026-11-06T20:04:43.8540406Z 
+2026-11-06T20:04:43.8540783Z test result: ok. 15 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 5.78s
+2026-11-06T20:04:43.8541299Z 
+2026-11-06T20:04:43.8551412Z [1m[92m     Running[0m tests/20d_process_api.rs (core/rust/target/debug/deps/20d_process_api-ffc4235997a9aee1)
+2026-11-06T20:04:43.8567276Z 
+2026-11-06T20:04:43.8567428Z running 18 tests
+2026-11-06T20:04:43.8581516Z test native_dynamic_resource_boundaries_match_vm ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组
+2026-11-06T20:04:43.8582643Z test native_process_api_matches_vm ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组
+2026-11-06T20:04:43.8583822Z test native_process_lifecycle_and_capability_have_no_hidden_host_effects ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组
+2026-11-06T20:04:43.8585032Z test native_process_spawn_rejects_implicit_shell ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组
+2026-11-06T20:04:43.8615194Z test process_container_and_constant_boundaries_are_executable ... ok
+2026-11-06T20:04:43.9040794Z test dynamic_resource_module_imports_keep_valid_processes ... ok
+2026-11-06T20:04:43.9838081Z test dynamic_resource_boundaries_validate_values_in_vm ... ok
+2026-11-06T20:04:45.0118632Z test process_missing_capability_does_not_start_a_child ... ok
+2026-11-06T20:04:45.0321256Z test process_close_and_drop_detach_without_waiting_or_killing ... ok
+2026-11-06T20:04:45.0552739Z test process_spawn_inherits_path_environment_cwd_and_standard_streams ... ok
+2026-11-06T20:04:45.0571569Z test process_vm_child ... ignored, 仅由父测试在隔离进程与 cwd 下调用
+2026-11-06T20:04:45.8981605Z test process_types_and_call_shapes_are_rejected_before_execution ... ok
+2026-11-06T20:04:46.1883352Z test process_table_fields_preserve_resource_kind ... ok
+2026-11-06T20:04:47.0321557Z test process_vm_maps_child_signal_or_exception_exit ... ok
+2026-11-06T20:04:47.1196229Z test resource_variadic_parameters_validate_each_value ... ok
+2026-11-06T20:04:47.2206840Z test process_vm_wait_caches_exit_code_and_preserves_kind ... ok
+2026-11-06T20:04:47.2766281Z test process_vm_error_identities_and_closed_alias_are_stable ... ok
+2026-11-06T20:04:47.2870995Z test process_spawn_rejects_implicit_shell_in_vm ... ok
+2026-11-06T20:04:47.2871503Z 
+2026-11-06T20:04:47.2871767Z test result: ok. 13 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 3.43s
+2026-11-06T20:04:47.2872112Z 
+2026-11-06T20:04:47.2878742Z [1m[92m     Running[0m tests/20e_archive_wiring.rs (core/rust/target/debug/deps/20e_archive_wiring-603bdb71021cf82e)
+2026-11-06T20:04:47.2894211Z 
+2026-11-06T20:04:47.2894376Z running 11 tests
+2026-11-06T20:04:47.2961363Z test builder_requires_metadata_and_rejects_official_module_objects ... ok
+2026-11-06T20:04:47.2971398Z test archive_error_messages_render_in_both_catalogs ... ok
+2026-11-06T20:04:47.3101193Z test archive_protocol_passes_capabilities_to_preflight ... ok
+2026-11-06T20:04:47.3111416Z test every_missing_capability_is_rejected_before_execution ... ok
+2026-11-06T20:04:47.3112645Z test builder_derives_requirements_and_keeps_official_objects_external ... ok
+2026-11-06T20:04:47.3113785Z test review_builder_rejects_relabelled_payload_language ... ok
+2026-11-06T20:04:47.3161213Z test runtime_keeps_the_same_request_capabilities ... ok
+2026-11-06T20:04:47.3184637Z test unknown_request_capabilities_are_validation_errors ... ok
+2026-11-06T20:04:47.3217752Z test incompatible_standard_library_is_rejected_before_execution ... ok
+2026-11-06T20:04:47.3252183Z test review_protocol_checks_context_before_corrupt_payload ... ok
+2026-11-06T20:04:47.3378686Z test review_protocol_context_precedes_diagnostic_start ... ok
+2026-11-06T20:04:47.3379179Z 
+2026-11-06T20:04:47.3379562Z test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+2026-11-06T20:04:47.3379892Z 
+2026-11-06T20:04:47.3384419Z [1m[92m     Running[0m tests/20f_container_parameters.rs (core/rust/target/debug/deps/20f_container_parameters-fd6a68352336a212)
+2026-11-06T20:04:47.3397282Z 
+2026-11-06T20:04:47.3397417Z running 10 tests
+2026-11-06T20:04:47.3430836Z test generic_recursive_call_keeps_rigid_signature ... ok
+2026-11-06T20:04:47.3450873Z test function_set_annotations_reject_unhashable_members ... ok
+2026-11-06T20:04:47.3490932Z test local_generic_scalar_function_has_multiple_instances ... ok
+2026-11-06T20:04:47.3491911Z test rigid_type_parameter_assignment_has_stable_diagnostic ... ok
+2026-11-06T20:04:47.3492778Z test rigid_type_parameter_condition_has_stable_diagnostic ... ok
+2026-11-06T20:04:47.3493570Z test rigid_type_parameter_return_has_stable_diagnostic ... ok
+2026-11-06T20:04:47.3494370Z test rigid_type_parameter_use_has_stable_diagnostic ... ok
+2026-11-06T20:04:47.3495151Z test local_generic_set_function_has_multiple_instances ... ok
+2026-11-06T20:04:47.8594323Z test official_set_module_supports_alias_and_empty_set ... ok
+2026-11-06T20:04:47.9475741Z test archive_closure_records_official_set_module ... ok
+2026-11-06T20:04:47.9476082Z 
+2026-11-06T20:04:47.9476392Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.61s
+2026-11-06T20:04:47.9476791Z 
+2026-11-06T20:04:47.9481104Z [1m[92m     Running[0m tests/20g_set_mutation.rs (core/rust/target/debug/deps/20g_set_mutation-61a1abf3c1556db9)
+2026-11-06T20:04:47.9494825Z 
+2026-11-06T20:04:47.9495044Z running 7 tests
+2026-11-06T20:04:47.9577581Z test native_set_snapshot_nonlocal_exit_is_lowerable ... ok
+2026-11-06T20:04:47.9721186Z test add_rejects_unhashable_element ... ok
+2026-11-06T20:04:49.0911130Z test remove_missing_element_is_catchable ... ok
+2026-11-06T20:04:49.1051322Z test mutation_and_readonly_wrappers_observe_shared_ordered_set ... ok
+2026-11-06T20:04:49.1541474Z test remove_missing_element_keeps_stable_uncaught_code ... ok
+2026-11-06T20:04:49.2272624Z test native_alias_calls_lower_to_canonical_functions ... ok
+2026-11-06T20:04:49.7837733Z test set_iteration_uses_snapshot ... ok
+2026-11-06T20:04:49.7838138Z 
+2026-11-06T20:04:49.7838578Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.83s
+2026-11-06T20:04:49.7839185Z 
+2026-11-06T20:04:49.7854903Z [1m[92m     Running[0m tests/20h_set_methods.rs (core/rust/target/debug/deps/20h_set_methods-e972dbc1fbfcf7b1)
+2026-11-06T20:04:49.7869457Z 
+2026-11-06T20:04:49.7869758Z running 10 tests
+2026-11-06T20:04:49.8071624Z test method_diagnostics_are_stable ... ok
+2026-11-06T20:04:50.3420966Z test default_values_can_call_set_methods ... ok
+2026-11-06T20:04:50.5820703Z test method_linking_isolated_from_user_function_names ... ok
+2026-11-06T20:04:50.8892508Z test method_receiver_is_evaluated_once ... ok
+2026-11-06T20:04:51.1741279Z test methods_match_set_module_semantics ... ok
+2026-11-06T20:04:51.2071154Z test external_standard_library_methods_use_module_loader ... ok
+2026-11-06T20:04:51.2185463Z test table_methods_do_not_expose_set_free_functions ... ok
+2026-11-06T20:04:51.2840620Z test explicit_set_import_and_user_method_name_remain_isolated ... ok
+2026-11-06T20:04:51.4657454Z test native_lowering_supports_set_methods_and_chains ... ok
+2026-11-06T20:04:51.5051929Z test table_method_named_add_remains_executable ... ok
+2026-11-06T20:04:51.5052214Z 
+2026-11-06T20:04:51.5052490Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.72s
+2026-11-06T20:04:51.5052841Z 
+2026-11-06T20:04:51.5062686Z [1m[92m     Running[0m tests/20i_indexing_and_text.rs (core/rust/target/debug/deps/20i_indexing_and_text-fda363abb7fa6a7e)
+2026-11-06T20:04:51.5076506Z 
+2026-11-06T20:04:51.5076695Z running 13 tests
+2026-11-06T20:04:51.5130587Z test expression_indices_can_call_index_producers ... ok
+2026-11-06T20:04:51.5211657Z test array_push_invalidates_table_member_array_length ... ok
+2026-11-06T20:04:51.5223160Z test expression_indices_cover_tuple_and_dict_column ... ok
+2026-11-06T20:04:51.5301832Z test array_annotations_and_push_preserve_shared_order ... ok
+2026-11-06T20:04:51.5302734Z test expression_indices_use_codepoints_and_array_positions ... ok
+2026-11-06T20:04:51.5319937Z test generic_array_annotations_infer_element_types ... ok
+2026-11-06T20:04:51.5327151Z test readonly_array_function_keeps_static_bounds_diagnostic ... ok
+2026-11-06T20:04:51.5331845Z test array_push_invalidates_fixed_length_after_direct_and_helper_calls ... ok
+2026-11-06T20:04:51.6212414Z test indexing_boundaries_keep_static_and_runtime_diagnostics ... ok
+2026-11-06T20:04:52.0842087Z test set_methods_inside_index_expressions_are_linked ... ok
+2026-11-06T20:04:52.3334713Z test native_lowering_accepts_expression_indices_and_array_push ... ok
+2026-11-06T20:04:52.6597210Z test text_find_slice_and_split_keep_frozen_boundaries ... ok
+2026-11-06T20:04:53.3698377Z test text_error_codes_are_stable ... ok
+2026-11-06T20:04:53.3698743Z 
+2026-11-06T20:04:53.3699012Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.86s
+2026-11-06T20:04:53.3699347Z 
+2026-11-06T20:04:53.3710355Z [1m[92m     Running[0m tests/20j_dynamic_dict_keys.rs (core/rust/target/debug/deps/20j_dynamic_dict_keys-f2dc9b9c34bc5b1d)
+2026-11-06T20:04:53.3725974Z 
+2026-11-06T20:04:53.3726124Z running 7 tests
+2026-11-06T20:04:53.3781038Z test dict_dynamic_key_type_errors_are_static ... ok
+2026-11-06T20:04:53.3800970Z test dict_column_without_key_name_uses_integer_position ... ok
+2026-11-06T20:04:53.3820836Z test missing_static_string_key_remains_a_type_error ... ok
+2026-11-06T20:04:53.3840980Z test missing_dynamic_key_is_runtime_015 ... ok
+2026-11-06T20:04:53.3841599Z test dict_table_uses_static_key_priority_then_dynamic_string_keys ... ok
+2026-11-06T20:04:53.3842090Z test dict_column_distinguishes_static_keys_dynamic_keys_and_positions ... ok
+2026-11-06T20:04:53.3845358Z test native_lowering_accepts_dynamic_dictionary_keys ... ok
+2026-11-06T20:04:53.3845760Z 
+2026-11-06T20:04:53.3846151Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-11-06T20:04:53.3846682Z 
+2026-11-06T20:04:53.3852820Z [1m[92m     Running[0m tests/20k_dict_write.rs (core/rust/target/debug/deps/20k_dict_write-828837100b47da79)
+2026-11-06T20:04:53.3865959Z 
+2026-11-06T20:04:53.3866096Z running 9 tests
+2026-11-06T20:04:53.3981118Z test generic_open_dict_annotation_infers_value_type ... ok
+2026-11-06T20:04:53.4031287Z test dynamic_dict_write_errors_keep_runtime_codes ... ok
+2026-11-06T20:04:53.4060758Z test dynamic_dict_table_and_column_writes_update_aliases ... ok
+2026-11-06T20:04:53.4086940Z test static_missing_dict_write_remains_type_error ... ok
+2026-11-06T20:04:53.4110787Z test open_dict_annotation_accepts_fixed_shape_values ... ok
+2026-11-06T20:04:54.0647781Z test native_lowering_emits_dynamic_dict_write_and_queries ... ok
+2026-11-06T20:04:54.3302357Z test stdlib_dict_queries_share_mutable_handles_and_order ... ok
+2026-11-06T20:04:54.3347999Z test stdlib_dict_remove_missing_key_is_015 ... ok
+2026-11-06T20:04:54.4375264Z test dict_remove_invalidates_fixed_key_shape ... ok
+2026-11-06T20:04:54.4375737Z 
+2026-11-06T20:04:54.4376105Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.05s
+2026-11-06T20:04:54.4376435Z 
+2026-11-06T20:04:54.4381528Z [1m[92m     Running[0m tests/20l_dict_methods.rs (core/rust/target/debug/deps/20l_dict_methods-8b5a3a6f44cd9d0f)
+2026-11-06T20:04:54.4398317Z 
+2026-11-06T20:04:54.4398900Z running 10 tests
+2026-11-06T20:04:54.4561133Z test dictionary_method_boundary_diagnostics_are_stable ... ok
+2026-11-06T20:04:54.9791493Z test dictionary_methods_preserve_aliases_and_missing_key_015 ... ok
+2026-11-06T20:04:54.9792699Z test dictionary_methods_link_without_explicit_import ... ok
+2026-11-06T20:04:54.9831289Z test modified_array_literal_bounds_use_runtime_017 ... ok
+2026-11-06T20:04:54.9951076Z test member_array_root_write_is_supported ... ok
+2026-11-06T20:04:55.3662535Z test external_standard_library_methods_use_module_loader ... ok
+2026-11-06T20:04:55.3781474Z test transitive_array_mutation_invalidates_fixed_length ... ok
+2026-11-06T20:04:55.5473820Z test native_lowering_links_dictionary_method_functions ... ok
+2026-11-06T20:04:55.5838932Z test dictionary_methods_match_free_functions_on_table_and_column ... ok
+2026-11-06T20:04:55.9840387Z test private_dictionary_actions_are_internal_and_lowered ... ok
+2026-11-06T20:04:55.9840994Z 
+2026-11-06T20:04:55.9841462Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.54s
+2026-11-06T20:04:55.9842197Z 
+2026-11-06T20:04:55.9852281Z [1m[92m     Running[0m tests/20m_text_and_path.rs (core/rust/target/debug/deps/20m_text_and_path-f4716d0ae39dac5f)
+2026-11-06T20:04:55.9869310Z 
+2026-11-06T20:04:55.9869516Z running 6 tests
+2026-11-06T20:04:55.9882362Z test text_path_candidates_match_native_golden_outputs ... ignored, 需要受控 LLVM、Runtime staticlib 和目标三元组；维护回归三平台执行
+2026-11-06T20:04:55.9884367Z test text_path_interfaces_match_native_golden_outputs ... ignored, 需要受控 LLVM、Runtime staticlib 和目标三元组；维护回归三平台执行
+2026-11-06T20:05:04.8041568Z test text_path_interfaces_require_loader_and_native_function_binding ... ok
+2026-11-06T20:05:07.0195388Z test text_path_candidates_have_vm_golden_outputs ... ok
+2026-11-06T20:05:07.4424778Z test text_path_interfaces_have_vm_golden_outputs ... ok
+2026-11-06T20:05:08.6670923Z test text_path_archives_replay_with_exact_host_module_requirements ... ok
+2026-11-06T20:05:08.6671559Z 
+2026-11-06T20:05:08.6672010Z test result: ok. 4 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 12.68s
+2026-11-06T20:05:08.6672612Z 
+2026-11-06T20:05:08.6682260Z [1m[92m     Running[0m tests/20o_b1_imp_contract.rs (core/rust/target/debug/deps/20o_b1_imp_contract-ba06d1c429054339)
+2026-11-06T20:05:08.6701805Z 
+2026-11-06T20:05:08.6701954Z running 9 tests
+2026-11-06T20:05:08.6745294Z test every_implemented_module_is_in_the_active_contract_matrix ... ok
+2026-11-06T20:05:08.6761244Z test product_tutorials_embed_the_executed_sources_and_match_registry ... ok
+2026-11-06T20:05:08.6765068Z test products_keep_the_official_namespace_out_of_ordinary_packages ... ok
+2026-11-06T20:05:11.7241825Z test colliding_public_names_keep_their_own_module_implementations ... ok
+2026-11-06T20:05:31.5691508Z test every_public_function_requires_its_real_implementation ... ok
+2026-11-06T20:05:50.3901502Z test public_calls_enforce_every_frozen_parameter_and_require_imports ... ok
+2026-11-06T20:06:08.6743637Z test products_execute_and_export_only_the_frozen_names has been running for over 60 seconds
+2026-11-06T20:06:08.6766162Z test products_replay_from_real_archives_without_bundled_library_bodies has been running for over 60 seconds
+2026-11-06T20:06:14.7670814Z test products_execute_and_export_only_the_frozen_names ... ok
+2026-11-06T20:06:25.2877987Z test products_replay_from_real_archives_without_bundled_library_bodies ... ok
+2026-11-06T20:06:31.5689653Z test public_std_aliases_execute_through_the_official_loader has been running for over 60 seconds
+2026-11-06T20:06:32.6505120Z test public_std_aliases_execute_through_the_official_loader ... ok
+2026-11-06T20:06:32.6505444Z 
+2026-11-06T20:06:32.6505775Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 83.98s
+2026-11-06T20:06:32.6506271Z 
+2026-11-06T20:06:32.6528417Z [1m[92m     Running[0m tests/20o_b1_imp_resources.rs (core/rust/target/debug/deps/20o_b1_imp_resources-0d97507b5c883993)
+2026-11-06T20:06:32.6543595Z 
+2026-11-06T20:06:32.6544062Z running 17 tests
+2026-11-06T20:07:09.7921521Z test base64_standard_accepts_the_frozen_maximum ... ok
+2026-11-06T20:07:10.6651439Z test base64_url_safe_accepts_the_frozen_maximum ... ok
+2026-11-06T20:07:12.2161439Z test csv_accepts_the_maximum_field_count ... ok
+2026-11-06T20:07:13.0431027Z test csv_accepts_the_maximum_ascii_record ... ok
+2026-11-06T20:07:23.9671759Z test csv_accepts_the_maximum_unicode_record ... ok
+2026-11-06T20:07:32.6571284Z test base64_checks_actual_decoded_size_after_the_last_quartet has been running for over 60 seconds
+2026-11-06T20:07:36.3841226Z test csv_accepts_the_maximum_quoted_record ... ok
+2026-11-06T20:07:40.6921570Z test base64_checks_actual_decoded_size_after_the_last_quartet ... ok
+2026-11-06T20:07:40.8071622Z test csv_parse_budget_and_syntax_priority_is_positional ... ok
+2026-11-06T20:07:41.6961622Z test fmt_checks_both_radix_bounds_and_padding_argument_domains ... ok
+2026-11-06T20:07:48.2881008Z test csv_accepts_the_maximum_multiline_record ... ok
+2026-11-06T20:08:04.4474340Z ##[error]The operation was canceled.
+2026-11-06T20:08:04.4780715Z Post job cleanup.
+2026-11-06T20:08:04.7251276Z [command]/usr/bin/git version
+2026-11-06T20:08:04.7252128Z git version 2.56.0
+2026-11-06T20:08:04.7714462Z Temporarily overriding HOME='/home/runner/work/_temp/2922401b-d298-4f93-b91c-dba01de1859c' before making global git config changes
+2026-11-06T20:08:04.7723071Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-06T20:08:04.8111571Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Xiao/Xiao
+2026-11-06T20:08:05.1232957Z Removing SSH command configuration
+2026-11-06T20:08:05.1233714Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-06T20:08:05.1235921Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-06T20:08:05.1237673Z Removing HTTP extra header
+2026-11-06T20:08:05.1238551Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-06T20:08:05.1241089Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-06T20:08:05.1243167Z Removing includeIf entries pointing to credentials config files
+2026-11-06T20:08:05.1244029Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-06T20:08:05.1244855Z includeif.gitdir:/home/runner/work/Xiao/Xiao/.git.path
+2026-11-06T20:08:05.1245594Z includeif.gitdir:/home/runner/work/Xiao/Xiao/.git/worktrees/*.path
+2026-11-06T20:08:05.1246304Z includeif.gitdir:/github/workspace/.git.path
+2026-11-06T20:08:05.1246944Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-06T20:08:05.1248378Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/Xiao/Xiao/.git.path
+2026-11-06T20:08:05.1249535Z /home/runner/work/_temp/git-credentials-3ea8273d-ba6f-4e26-b1d8-26ab54b150ad.config
+2026-11-06T20:08:05.1251792Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/Xiao/Xiao/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-3ea8273d\-ba6f\-4e26\-b1d8\-26ab54b150ad\.config
+2026-11-06T20:08:05.1253879Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/Xiao/Xiao/.git/worktrees/*.path
+2026-11-06T20:08:05.1254867Z /home/runner/work/_temp/git-credentials-3ea8273d-ba6f-4e26-b1d8-26ab54b150ad.config
+2026-11-06T20:08:05.1256724Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/Xiao/Xiao/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-3ea8273d\-ba6f\-4e26\-b1d8\-26ab54b150ad\.config
+2026-11-06T20:08:05.1258660Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-06T20:08:05.1259664Z /github/runner_temp/git-credentials-3ea8273d-ba6f-4e26-b1d8-26ab54b150ad.config
+2026-11-06T20:08:05.1261601Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-3ea8273d\-ba6f\-4e26\-b1d8\-26ab54b150ad\.config
+2026-11-06T20:08:05.1263417Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-06T20:08:05.1264539Z /github/runner_temp/git-credentials-3ea8273d-ba6f-4e26-b1d8-26ab54b150ad.config
+2026-11-06T20:08:05.1266181Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-3ea8273d\-ba6f\-4e26\-b1d8\-26ab54b150ad\.config
+2026-11-06T20:08:05.1268130Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-06T20:08:05.1269780Z Removing credentials config '/home/runner/work/_temp/git-credentials-3ea8273d-ba6f-4e26-b1d8-26ab54b150ad.config'
+2026-11-06T20:08:05.1417974Z Cleaning up orphan processes
+2026-11-06T20:08:05.1777622Z Terminate orphan process: pid (9328) (python)
+2026-11-06T20:08:05.1817673Z Terminate orphan process: pid (9329) (cargo)
+2026-11-06T20:08:05.1933543Z Terminate orphan process: pid (12866) (20o_b1_imp_resources-0d97507b5c883993)

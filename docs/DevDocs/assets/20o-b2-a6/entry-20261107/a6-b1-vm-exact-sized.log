@@ -1,0 +1,67 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.75s
+     Running tests\20o_b1_probe.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\20o_b1_probe-9ac581a1355ad52b.exe)
+
+running 1 test
+20O-B0-PROBE module=math backend=vm result=success
+20O-B0-PROBE module=hex backend=vm result=success
+20O-B0-PROBE module=base64 backend=vm result=success
+20O-B0-PROBE module=url backend=vm result=success
+20O-B0-PROBE module=csv backend=vm result=success
+20O-B0-PROBE module=fmt backend=vm result=success
+20O-B0-PROBE module=statistics backend=vm result=success
+20O-B1-FIX-A-PROBE case=math-extremes backend=vm result=success
+20O-B1-FIX-A-PROBE case=hex-all-bytes backend=vm result=success
+20O-B1-FIX-A-PROBE case=base64-tail-bits backend=vm result=success
+20O-B1-FIX-A-PROBE case=utf8-boundaries backend=vm result=success
+20O-B1-FIX-A-PROBE case=csv-budget backend=vm result=success
+20O-B1-FIX-A-PROBE case=fmt-int-min backend=vm result=success
+20O-B1-FIX-A-PROBE case=statistics-overflow backend=vm result=success
+20O-B1-FIX-B-PROBE case=default-and-custom backend=vm result=success
+20O-B1-FIX-B-PROBE case=nested-rethrow backend=vm result=success
+20O-B1-FIX-B-PROBE case=escape-lifetime backend=vm result=success
+20O-B1-FIX-B-PROBE case=pending-finally backend=vm result=success
+20O-B1-FIX-B-PROBE case=dynamic-types backend=vm result=success
+20O-B1-FIX-B-PROBE case=long-code backend=vm result=success
+20O-B1-FIX-B-PROBE case=abi-requirements backend=vm result=success
+20O-B1-IMP-PROBE case=math backend=vm result=success
+20O-B1-IMP-PROBE case=statistics backend=vm result=success
+20O-B1-IMP-PROBE case=fmt backend=vm result=success
+20O-B1-IMP-PROBE case=hex backend=vm result=success
+20O-B1-IMP-PROBE case=base64 backend=vm result=success
+test b1_capabilities_have_vm_golden_outputs has been running for over 60 seconds
+20O-B1-IMP-PROBE case=url backend=vm result=success
+20O-B1-IMP-PROBE case=csv backend=vm result=success
+20O-B1-IMP-PROBE case=aliases backend=vm result=success
+20O-B1-IMP-PROBE case=string-index backend=vm result=success
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=vm result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=vm result=success
+B2-A5-LANGUAGE case=a5_conversions backend=vm result=success
+B2-A5-LANGUAGE case=a5_carriers backend=vm result=success
+B2-A5-LANGUAGE case=a5_errors backend=vm result=success
+B2-A5-LANGUAGE case=a5_matrix backend=vm result=success
+B2-A5-LANGUAGE case=a5_bindings backend=vm result=success
+B2-A5-ERROR case=narrow backend=vm code=X06-RUNTIME-009 span=6..40 result=success
+B2-A5-ERROR case=syntax backend=vm code=X06-RUNTIME-012 span=6..20 result=success
+B2-A5-ERROR case=zero backend=vm code=X06-RUNTIME-013 span=21..30 result=success
+B2-A5-ERROR case=admission backend=vm code=X06-RUNTIME-033 span=6..24 result=success
+B2-A5-ERROR case=quotient backend=vm code=X06-RUNTIME-033 span=47..53 result=success
+B2-A5-ERROR case=nonterminating backend=vm code=X06-RUNTIME-034 span=15..24 result=success
+B2-A5-ERROR case=allocation backend=vm code=X06-RUNTIME-011 source_unchanged=true result=success
+B2-A5-REPLAY case=a5_integer_arithmetic format=xiaoc result=success
+B2-A5-REPLAY case=a5_integer_arithmetic format=xar artifact=\\?\D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\run-temp\xiao-b2-a5-replay-27668-1793999561591407700\a5_integer_arithmetic.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_decimal_arithmetic format=xiaoc result=success
+B2-A5-REPLAY case=a5_decimal_arithmetic format=xar artifact=\\?\D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\run-temp\xiao-b2-a5-replay-27668-1793999561591407700\a5_decimal_arithmetic.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_conversions format=xiaoc result=success
+B2-A5-REPLAY case=a5_conversions format=xar artifact=\\?\D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\run-temp\xiao-b2-a5-replay-27668-1793999561591407700\a5_conversions.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_carriers format=xar artifact=\\?\D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\run-temp\xiao-b2-a5-replay-27668-1793999561591407700\a5_carriers.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_errors format=xiaoc result=success
+B2-A5-REPLAY case=a5_errors format=xar artifact=\\?\D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\run-temp\xiao-b2-a5-replay-27668-1793999561591407700\a5_errors.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_matrix format=xiaoc result=success
+B2-A5-REPLAY case=a5_matrix format=xar artifact=\\?\D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\run-temp\xiao-b2-a5-replay-27668-1793999561591407700\a5_matrix.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_bindings format=xiaoc result=success
+B2-A5-REPLAY case=a5_bindings format=xar artifact=\\?\D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\run-temp\xiao-b2-a5-replay-27668-1793999561591407700\a5_bindings.xar source_removed=true result=success
+test b1_capabilities_have_vm_golden_outputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 85.28s
+

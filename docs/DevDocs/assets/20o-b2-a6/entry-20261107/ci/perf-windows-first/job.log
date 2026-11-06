@@ -1,0 +1,1303 @@
+﻿2026-11-06T21:04:52.2765012Z Current runner version: '2.338.2'
+2026-11-06T21:04:52.2801673Z ##[group]Runner Image Provisioner
+2026-11-06T21:04:52.2802980Z Hosted Compute Agent
+2026-11-06T21:04:52.2803879Z Version: 20261103.629
+2026-11-06T21:04:52.2804947Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-06T21:04:52.2806548Z Build Date: 2026-11-03T17:26:59Z
+2026-11-06T21:04:52.2807621Z Worker ID: {1dec6d1e-2551-4f2f-b439-fde9eb55bd34}
+2026-11-06T21:04:52.2809376Z Region: westus
+2026-11-06T21:04:52.2810263Z Cloud: Azure
+2026-11-06T21:04:52.2811186Z ##[endgroup]
+2026-11-06T21:04:52.2813518Z ##[group]Operating System
+2026-11-06T21:04:52.2814596Z Microsoft Windows Server 2025
+2026-11-06T21:04:52.2815670Z 10.0.26100
+2026-11-06T21:04:52.2816547Z Datacenter
+2026-11-06T21:04:52.2817404Z ##[endgroup]
+2026-11-06T21:04:52.2818372Z ##[group]Runner Image
+2026-11-06T21:04:52.2819357Z Image: windows-2025-vs2026
+2026-11-06T21:04:52.2820443Z Version: 20261103.298.1
+2026-11-06T21:04:52.2822993Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20261103.298/images/windows/Windows2025-VS2026-Readme.md
+2026-11-06T21:04:52.2826453Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20261103.298
+2026-11-06T21:04:52.2828152Z ##[endgroup]
+2026-11-06T21:04:52.2829988Z ##[group]GITHUB_TOKEN Permissions
+2026-11-06T21:04:52.2832665Z Contents: read
+2026-11-06T21:04:52.2833673Z Metadata: read
+2026-11-06T21:04:52.2834539Z ##[endgroup]
+2026-11-06T21:04:52.2837448Z Secret source: Actions
+2026-11-06T21:04:52.2838968Z Cache mode: write
+2026-11-06T21:04:52.2840115Z Prepare workflow directory
+2026-11-06T21:04:52.4922683Z Prepare all required actions
+2026-11-06T21:04:52.4981366Z Getting action download info
+2026-11-06T21:04:52.8703258Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-11-06T21:04:52.9986571Z Download action repository 'dtolnay/rust-toolchain@1.96.0' (SHA:d86e0fa8f147d6539442c26a61ebba8becc19489)
+2026-11-06T21:04:53.2119534Z Download action repository 'Swatinem/rust-cache@v2' (SHA:d1527c8f67ef9af357290475d4af4b0fab8f12e0)
+2026-11-06T21:04:53.5943750Z Download action repository 'msys2/setup-msys2@v2' (SHA:ec48f7c5447b3140e2b088413ae3a55687bccb6e)
+2026-11-06T21:04:53.8824705Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+2026-11-06T21:04:54.3946550Z Complete job name: Native differential regression (Windows)
+2026-11-06T21:04:54.7007517Z ##[group]Run actions/checkout@v7
+2026-11-06T21:04:54.7008945Z with:
+2026-11-06T21:04:54.7009770Z   repository: Programming-Language-Xiao/Xiao
+2026-11-06T21:04:54.7017196Z   token: ***
+2026-11-06T21:04:54.7017932Z   ssh-strict: true
+2026-11-06T21:04:54.7018670Z   ssh-user: git
+2026-11-06T21:04:54.7019429Z   persist-credentials: true
+2026-11-06T21:04:54.7020807Z   clean: true
+2026-11-06T21:04:54.7021593Z   sparse-checkout-cone-mode: true
+2026-11-06T21:04:54.7022485Z   fetch-depth: 1
+2026-11-06T21:04:54.7023223Z   fetch-tags: false
+2026-11-06T21:04:54.7023994Z   show-progress: true
+2026-11-06T21:04:54.7024762Z   lfs: false
+2026-11-06T21:04:54.7025471Z   submodules: false
+2026-11-06T21:04:54.7026233Z   set-safe-directory: true
+2026-11-06T21:04:54.7027128Z   allow-unsafe-pr-checkout: false
+2026-11-06T21:04:54.7028283Z env:
+2026-11-06T21:04:54.7028967Z   XIAO_B1_F10: 0
+2026-11-06T21:04:54.7029692Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:04:54.7030412Z ##[endgroup]
+2026-11-06T21:04:54.8591777Z Syncing repository: Programming-Language-Xiao/Xiao
+2026-11-06T21:04:54.8594364Z ##[group]Getting Git version info
+2026-11-06T21:04:54.8595397Z Working directory is 'D:\a\Xiao\Xiao'
+2026-11-06T21:04:54.9537872Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-06T21:04:55.2510239Z git version 2.56.0.windows.4
+2026-11-06T21:04:55.2562446Z ##[endgroup]
+2026-11-06T21:04:55.2578514Z Temporarily overriding HOME='D:\a\_temp\79dee55b-b937-429d-939b-c8e7b065ab70' before making global git config changes
+2026-11-06T21:04:55.2582051Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-06T21:04:55.2588697Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\Xiao\Xiao
+2026-11-06T21:04:55.3484921Z Deleting the contents of 'D:\a\Xiao\Xiao'
+2026-11-06T21:04:55.3490946Z ##[group]Determining repository object format
+2026-11-06T21:04:55.3492814Z ##[endgroup]
+2026-11-06T21:04:55.3494150Z ##[group]Initializing the repository
+2026-11-06T21:04:55.3502907Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\Xiao\Xiao
+2026-11-06T21:04:55.4299357Z Initialized empty Git repository in D:/a/Xiao/Xiao/.git/
+2026-11-06T21:04:55.4348172Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/Programming-Language-Xiao/Xiao
+2026-11-06T21:04:55.5107989Z ##[endgroup]
+2026-11-06T21:04:55.5108586Z ##[group]Disabling automatic garbage collection
+2026-11-06T21:04:55.5117140Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-11-06T21:04:55.5526330Z ##[endgroup]
+2026-11-06T21:04:55.5527306Z ##[group]Setting up auth
+2026-11-06T21:04:55.5528381Z Removing SSH command configuration
+2026-11-06T21:04:55.5538480Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-06T21:04:55.5948572Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-06T21:04:56.9805642Z Removing HTTP extra header
+2026-11-06T21:04:56.9814241Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-06T21:04:57.0186506Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-06T21:04:57.5534283Z Removing includeIf entries pointing to credentials config files
+2026-11-06T21:04:57.5544267Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-06T21:04:57.5919580Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-06T21:04:58.1601728Z [command]"C:\Program Files\Git\bin\git.exe" config --file D:\a\_temp\git-credentials-ed6f7197-5dab-45ea-a2c8-b2444699e960.config http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-11-06T21:04:58.1980991Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/Xiao/Xiao/.git.path D:\a\_temp\git-credentials-ed6f7197-5dab-45ea-a2c8-b2444699e960.config
+2026-11-06T21:04:58.2378579Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/Xiao/Xiao/.git/worktrees/*.path D:\a\_temp\git-credentials-ed6f7197-5dab-45ea-a2c8-b2444699e960.config
+2026-11-06T21:04:58.2816301Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-ed6f7197-5dab-45ea-a2c8-b2444699e960.config
+2026-11-06T21:04:58.3201166Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-ed6f7197-5dab-45ea-a2c8-b2444699e960.config
+2026-11-06T21:04:58.3598720Z ##[endgroup]
+2026-11-06T21:04:58.3599617Z ##[group]Fetching the repository
+2026-11-06T21:04:58.3613617Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +29ae197a00fe1be716426062ecb8086b28621866:refs/remotes/origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T21:05:00.3612102Z From https://github.com/Programming-Language-Xiao/Xiao
+2026-11-06T21:05:00.3613221Z  * [new ref]         29ae197a00fe1be716426062ecb8086b28621866 -> origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T21:05:00.3670224Z [command]"C:\Program Files\Git\bin\git.exe" branch --list --remote origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T21:05:00.4125560Z   origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T21:05:00.4171715Z [command]"C:\Program Files\Git\bin\git.exe" rev-parse refs/remotes/origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T21:05:00.4604296Z 29ae197a00fe1be716426062ecb8086b28621866
+2026-11-06T21:05:00.4640028Z ##[endgroup]
+2026-11-06T21:05:00.4640745Z ##[group]Determining the checkout info
+2026-11-06T21:05:00.4641462Z ##[endgroup]
+2026-11-06T21:05:00.4652585Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-11-06T21:05:00.5137315Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-11-06T21:05:00.5576806Z ##[group]Checking out the ref
+2026-11-06T21:05:00.5587557Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B codex/b2-a6-resources-20261107-3b09bfb18950 refs/remotes/origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T21:05:01.5645748Z Switched to a new branch 'codex/b2-a6-resources-20261107-3b09bfb18950'
+2026-11-06T21:05:01.5738841Z branch 'codex/b2-a6-resources-20261107-3b09bfb18950' set up to track 'origin/codex/b2-a6-resources-20261107-3b09bfb18950'.
+2026-11-06T21:05:01.5802648Z ##[endgroup]
+2026-11-06T21:05:01.6391973Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-11-06T21:05:01.6775099Z 29ae197a00fe1be716426062ecb8086b28621866
+2026-11-06T21:05:01.7548565Z ##[group]Run python tools/gates/b2-a6-selection.py
+2026-11-06T21:05:01.7549041Z [36;1mpython tools/gates/b2-a6-selection.py[0m
+2026-11-06T21:05:01.8311320Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-06T21:05:01.8311802Z env:
+2026-11-06T21:05:01.8312100Z   XIAO_B1_F10: 0
+2026-11-06T21:05:01.8312342Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:01.8312578Z ##[endgroup]
+2026-11-06T21:05:03.0011652Z {"measurement_mode": "b2-a6"}
+2026-11-06T21:05:03.1886147Z ##[group]Run dtolnay/rust-toolchain@1.96.0
+2026-11-06T21:05:03.1886497Z with:
+2026-11-06T21:05:03.1886673Z env:
+2026-11-06T21:05:03.1886831Z   XIAO_B1_F10: 0
+2026-11-06T21:05:03.1887031Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:03.1887215Z ##[endgroup]
+2026-11-06T21:05:03.1994493Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-11-06T21:05:03.2204650Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-11-06T21:05:03.2204978Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-11-06T21:05:03.2205495Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-11-06T21:05:03.2206038Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-11-06T21:05:03.2206309Z [36;1m  exit 1[0m
+2026-11-06T21:05:03.2206620Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-11-06T21:05:03.2207016Z [36;1m  if [[ Windows == macOS ]]; then[0m
+2026-11-06T21:05:03.2207588Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-11-06T21:05:03.2208086Z [36;1m  else[0m
+2026-11-06T21:05:03.2208463Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-11-06T21:05:03.2208898Z [36;1m  fi[0m
+2026-11-06T21:05:03.2209172Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-11-06T21:05:03.2209680Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-11-06T21:05:03.2210156Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-11-06T21:05:03.2210667Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-11-06T21:05:03.2211155Z [36;1melse[0m
+2026-11-06T21:05:03.2211535Z [36;1m  delimiter=EOF[0m
+2026-11-06T21:05:03.2211828Z [36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done[0m
+2026-11-06T21:05:03.2212319Z [36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT[0m
+2026-11-06T21:05:03.2212720Z [36;1mfi[0m
+2026-11-06T21:05:03.2229191Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:05:03.2229587Z env:
+2026-11-06T21:05:03.2229752Z   XIAO_B1_F10: 0
+2026-11-06T21:05:03.2229928Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:03.2230107Z   toolchain: 1.96.0
+2026-11-06T21:05:03.2230283Z ##[endgroup]
+2026-11-06T21:05:03.3736583Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=174]
+2026-11-06T21:05:03.3764255Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+2026-11-06T21:05:03.3925171Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$USERPROFILE\.cargo"} >> $GITHUB_ENV
+2026-11-06T21:05:03.3925771Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$USERPROFILE\.cargo"} >> $GITHUB_ENV[0m
+2026-11-06T21:05:03.3940859Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:05:03.3941292Z env:
+2026-11-06T21:05:03.3941465Z   XIAO_B1_F10: 0
+2026-11-06T21:05:03.3941658Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:03.3941855Z ##[endgroup]
+2026-11-06T21:05:03.4347333Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=58]
+2026-11-06T21:05:03.4414966Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+2026-11-06T21:05:03.4442273Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-11-06T21:05:03.4467540Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+2026-11-06T21:05:03.4632560Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-11-06T21:05:03.4632934Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-11-06T21:05:03.4635746Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://win.rustup.rs/x86_64 --output 'D:\a\_temp\rustup-init.exe'[0m
+2026-11-06T21:05:03.4636711Z [36;1m  'D:\a\_temp\rustup-init.exe' --default-toolchain none --no-modify-path -y[0m
+2026-11-06T21:05:03.4637169Z [36;1m  echo "$CARGO_HOME\bin" >> $GITHUB_PATH[0m
+2026-11-06T21:05:03.4637560Z [36;1mfi[0m
+2026-11-06T21:05:03.4652790Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:05:03.4653183Z env:
+2026-11-06T21:05:03.4653348Z   XIAO_B1_F10: 0
+2026-11-06T21:05:03.4653523Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:03.4653729Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T21:05:03.4653982Z ##[endgroup]
+2026-11-06T21:05:03.5293141Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=success;conclusion=success;duration_ms=82]
+2026-11-06T21:05:03.5340380Z ##[start-action display=rustup toolchain install 1.96.0;id=__dtolnay_rust-toolchain.__run_4]
+2026-11-06T21:05:03.5519758Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+2026-11-06T21:05:03.5520598Z [36;1mset -f  # split targets and components on commas and whitespace, without glob expansion[0m
+2026-11-06T21:05:03.5521194Z [36;1mflags=()[0m
+2026-11-06T21:05:03.5521545Z [36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done[0m
+2026-11-06T21:05:03.5521953Z [36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done[0m
+2026-11-06T21:05:03.5522441Z [36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi[0m
+2026-11-06T21:05:03.5522840Z [36;1mlog=$(mktemp)[0m
+2026-11-06T21:05:03.5523047Z [36;1mtrap 'rm -f "$log"' EXIT[0m
+2026-11-06T21:05:03.5523283Z [36;1mfor attempt in 1 2 3 4 5; do[0m
+2026-11-06T21:05:03.5524073Z [36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then[0m
+2026-11-06T21:05:03.5524961Z [36;1m    break[0m
+2026-11-06T21:05:03.5525318Z [36;1m  else[0m
+2026-11-06T21:05:03.5525639Z [36;1m    status=$?[0m
+2026-11-06T21:05:03.5525860Z [36;1m  fi[0m
+2026-11-06T21:05:03.5526124Z [36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \[0m
+2026-11-06T21:05:03.5526653Z [36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then[0m
+2026-11-06T21:05:03.5527091Z [36;1m    exit "$status"[0m
+2026-11-06T21:05:03.5527286Z [36;1m  fi[0m
+2026-11-06T21:05:03.5527609Z [36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2[0m
+2026-11-06T21:05:03.5528189Z [36;1m  sleep 30[0m
+2026-11-06T21:05:03.5528376Z [36;1mdone[0m
+2026-11-06T21:05:03.5546757Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:05:03.5547141Z env:
+2026-11-06T21:05:03.5547306Z   XIAO_B1_F10: 0
+2026-11-06T21:05:03.5547500Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:03.5547710Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T21:05:03.5547968Z   toolchain: 1.96.0
+2026-11-06T21:05:03.5548141Z   targets: 
+2026-11-06T21:05:03.5548297Z   components: 
+2026-11-06T21:05:03.5548477Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-11-06T21:05:03.5548688Z ##[endgroup]
+2026-11-06T21:05:04.2490168Z info: syncing channel updates for 1.96.0-x86_64-pc-windows-msvc
+2026-11-06T21:05:04.7237773Z info: latest update on 2026-05-28 for version 1.96.0 (ac68faa20 2026-05-25)
+2026-11-06T21:05:04.7396049Z info: downloading 3 components
+2026-11-06T21:05:11.8045974Z 
+2026-11-06T21:05:12.4038554Z   1.96.0-x86_64-pc-windows-msvc installed - rustc 1.96.0 (ac68faa20 2026-05-25)
+2026-11-06T21:05:12.4039132Z 
+2026-11-06T21:05:12.4349981Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=8900]
+2026-11-06T21:05:12.4383583Z ##[start-action display=rustup default 1.96.0;id=__dtolnay_rust-toolchain.__run_5]
+2026-11-06T21:05:12.4542771Z ##[group]Run rustup default "$toolchain" --force-non-host
+2026-11-06T21:05:12.4543211Z [36;1mrustup default "$toolchain" --force-non-host[0m
+2026-11-06T21:05:12.4558860Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:05:12.4559244Z env:
+2026-11-06T21:05:12.4559409Z   XIAO_B1_F10: 0
+2026-11-06T21:05:12.4559587Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:12.4559790Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T21:05:12.4560036Z   toolchain: 1.96.0
+2026-11-06T21:05:12.4560213Z ##[endgroup]
+2026-11-06T21:05:12.5274571Z info: using existing install for 1.96.0-x86_64-pc-windows-msvc
+2026-11-06T21:05:12.5331011Z info: default toolchain set to 1.96.0-x86_64-pc-windows-msvc
+2026-11-06T21:05:12.5331437Z 
+2026-11-06T21:05:12.5530068Z   1.96.0-x86_64-pc-windows-msvc unchanged - rustc 1.96.0 (ac68faa20 2026-05-25)
+2026-11-06T21:05:12.5530528Z 
+2026-11-06T21:05:12.5607867Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=122]
+2026-11-06T21:05:12.5636394Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+2026-11-06T21:05:12.5789759Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-11-06T21:05:12.5790929Z [36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-11-06T21:05:12.5791795Z [36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-11-06T21:05:12.5792308Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-11-06T21:05:12.5807298Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:05:12.5807682Z env:
+2026-11-06T21:05:12.5807843Z   XIAO_B1_F10: 0
+2026-11-06T21:05:12.5808031Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:12.5808240Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T21:05:12.5809504Z   toolchain: 1.96.0
+2026-11-06T21:05:12.5809741Z ##[endgroup]
+2026-11-06T21:05:13.3679339Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=804]
+2026-11-06T21:05:13.3721322Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+2026-11-06T21:05:13.3880688Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-11-06T21:05:13.3881078Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-11-06T21:05:13.3881386Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-11-06T21:05:13.3881642Z [36;1mfi[0m
+2026-11-06T21:05:13.3898035Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:05:13.3898427Z env:
+2026-11-06T21:05:13.3898587Z   XIAO_B1_F10: 0
+2026-11-06T21:05:13.3898770Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:13.3898980Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T21:05:13.3899250Z ##[endgroup]
+2026-11-06T21:05:13.4318219Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=59]
+2026-11-06T21:05:13.4343119Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+2026-11-06T21:05:13.4507348Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-11-06T21:05:13.4507721Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-11-06T21:05:13.4508043Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-11-06T21:05:13.4508306Z [36;1mfi[0m
+2026-11-06T21:05:13.4524946Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:05:13.4525337Z env:
+2026-11-06T21:05:13.4525498Z   XIAO_B1_F10: 0
+2026-11-06T21:05:13.4525679Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:13.4525924Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T21:05:13.4526179Z   CARGO_INCREMENTAL: 0
+2026-11-06T21:05:13.4526370Z ##[endgroup]
+2026-11-06T21:05:13.4930426Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=58]
+2026-11-06T21:05:13.4958944Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+2026-11-06T21:05:13.5148989Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-11-06T21:05:13.5149503Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-11-06T21:05:13.5150134Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "D:\a\_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-11-06T21:05:13.5150826Z [36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-11-06T21:05:13.5151340Z [36;1m    touch "D:\a\_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-11-06T21:05:13.5151804Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-11-06T21:05:13.5152297Z [36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-11-06T21:05:13.5152849Z [36;1m    touch "D:\a\_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-11-06T21:05:13.5153307Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-11-06T21:05:13.5153625Z [36;1m  fi[0m
+2026-11-06T21:05:13.5153784Z [36;1mfi[0m
+2026-11-06T21:05:13.5170473Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:05:13.5170860Z env:
+2026-11-06T21:05:13.5171023Z   XIAO_B1_F10: 0
+2026-11-06T21:05:13.5171203Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:13.5171404Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T21:05:13.5171654Z   CARGO_INCREMENTAL: 0
+2026-11-06T21:05:13.5171846Z   CARGO_TERM_COLOR: always
+2026-11-06T21:05:13.5172045Z   toolchain: 1.96.0
+2026-11-06T21:05:13.5172218Z ##[endgroup]
+2026-11-06T21:05:13.6947098Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=198]
+2026-11-06T21:05:13.6994329Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+2026-11-06T21:05:13.7176718Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-11-06T21:05:13.7177460Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-11-06T21:05:13.7178086Z [36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-11-06T21:05:13.7178550Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-11-06T21:05:13.7178836Z [36;1mfi[0m
+2026-11-06T21:05:13.7194470Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:05:13.7194852Z env:
+2026-11-06T21:05:13.7195014Z   XIAO_B1_F10: 0
+2026-11-06T21:05:13.7195193Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:13.7195395Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T21:05:13.7195648Z   CARGO_INCREMENTAL: 0
+2026-11-06T21:05:13.7195869Z   CARGO_TERM_COLOR: always
+2026-11-06T21:05:13.7196075Z   toolchain: 1.96.0
+2026-11-06T21:05:13.7196250Z ##[endgroup]
+2026-11-06T21:05:13.8210977Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=121]
+2026-11-06T21:05:13.8242005Z ##[start-action display=rustc +1.96.0 --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+2026-11-06T21:05:13.8404002Z ##[group]Run rustc +"$toolchain" --version --verbose
+2026-11-06T21:05:13.8404345Z [36;1mrustc +"$toolchain" --version --verbose[0m
+2026-11-06T21:05:13.8419092Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:05:13.8419644Z env:
+2026-11-06T21:05:13.8419895Z   XIAO_B1_F10: 0
+2026-11-06T21:05:13.8420084Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:13.8420288Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T21:05:13.8420755Z   CARGO_INCREMENTAL: 0
+2026-11-06T21:05:13.8420961Z   CARGO_TERM_COLOR: always
+2026-11-06T21:05:13.8421170Z   toolchain: 1.96.0
+2026-11-06T21:05:13.8421566Z ##[endgroup]
+2026-11-06T21:05:13.9296065Z rustc 1.96.0 (ac68faa20 2026-05-25)
+2026-11-06T21:05:13.9296598Z binary: rustc
+2026-11-06T21:05:13.9297002Z commit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96
+2026-11-06T21:05:13.9297520Z commit-date: 2026-05-25
+2026-11-06T21:05:13.9297881Z host: x86_64-pc-windows-msvc
+2026-11-06T21:05:13.9298241Z release: 1.96.0
+2026-11-06T21:05:13.9299500Z LLVM version: 22.1.2
+2026-11-06T21:05:13.9415055Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=117]
+2026-11-06T21:05:13.9700897Z ##[group]Run python tools/gates/controlled-cargo.py --install
+2026-11-06T21:05:13.9701836Z [36;1mpython tools/gates/controlled-cargo.py --install[0m
+2026-11-06T21:05:13.9771823Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-06T21:05:13.9772158Z env:
+2026-11-06T21:05:13.9772320Z   XIAO_B1_F10: 0
+2026-11-06T21:05:13.9772502Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:13.9772722Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T21:05:13.9772994Z   CARGO_INCREMENTAL: 0
+2026-11-06T21:05:13.9773193Z   CARGO_TERM_COLOR: always
+2026-11-06T21:05:13.9773394Z ##[endgroup]
+2026-11-06T21:05:14.4336728Z {"cargo_control_directory": "D:\\a\\_temp\\xiao-controlled-cargo-fd7f3ae303e54dd39174797ebbeba0d2", "delegate": "C:\\Users\\runneradmin\\.cargo\\bin\\cargo.EXE", "scope": "\u4ec5\u5f53\u524dCI\u4f5c\u4e1a\u540e\u7eed\u6b65\u9aa4\uff1b\u4e0d\u6539\u5168\u5c40\u73af\u5883\u6216Cargo\u914d\u7f6e"}
+2026-11-06T21:05:14.5879196Z ##[group]Run Swatinem/rust-cache@v2
+2026-11-06T21:05:14.5879528Z with:
+2026-11-06T21:05:14.5879740Z   workspaces: core/rust -> core/rust/target
+2026-11-06T21:05:14.5880020Z   prefix-key: v0-rust
+2026-11-06T21:05:14.5880215Z   add-job-id-key: true
+2026-11-06T21:05:14.5880432Z   add-rust-environment-hash-key: true
+2026-11-06T21:05:14.5880673Z   cache-targets: true
+2026-11-06T21:05:14.5880866Z   cache-all-crates: false
+2026-11-06T21:05:14.5881077Z   cache-workspace-crates: false
+2026-11-06T21:05:14.5881522Z   save-if: true
+2026-11-06T21:05:14.5881698Z   cache-provider: github
+2026-11-06T21:05:14.5881893Z   cache-bin: true
+2026-11-06T21:05:14.5882068Z   lookup-only: false
+2026-11-06T21:05:14.5882251Z   cmd-format: {0}
+2026-11-06T21:05:14.5882417Z env:
+2026-11-06T21:05:14.5882570Z   XIAO_B1_F10: 0
+2026-11-06T21:05:14.5882733Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:14.5882929Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T21:05:14.5883171Z   CARGO_INCREMENTAL: 0
+2026-11-06T21:05:14.5883394Z   CARGO_TERM_COLOR: always
+2026-11-06T21:05:14.5883591Z ##[endgroup]
+2026-11-06T21:05:21.3984966Z ##[group]Cache Configuration
+2026-11-06T21:05:21.3985553Z Cache Provider:
+2026-11-06T21:05:21.3985834Z     github
+2026-11-06T21:05:21.3986094Z Workspaces:
+2026-11-06T21:05:21.3986382Z     D:\a\Xiao\Xiao\core\rust
+2026-11-06T21:05:21.3986695Z Cache Paths:
+2026-11-06T21:05:21.3986981Z     C:\Users\runneradmin\.cargo\bin
+2026-11-06T21:05:21.3987401Z     C:\Users\runneradmin\.cargo\.crates.toml
+2026-11-06T21:05:21.3987896Z     C:\Users\runneradmin\.cargo\.crates2.json
+2026-11-06T21:05:21.3988342Z     C:\Users\runneradmin\.cargo\registry
+2026-11-06T21:05:21.3988773Z     C:\Users\runneradmin\.cargo\git
+2026-11-06T21:05:21.3989196Z     D:\a\Xiao\Xiao\core\rust\core\rust\target
+2026-11-06T21:05:21.3989612Z Restore Key:
+2026-11-06T21:05:21.3989972Z     v0-rust-native-regression-Windows_NT-x64-41c3efe8
+2026-11-06T21:05:21.3990455Z Cache Key:
+2026-11-06T21:05:21.3990871Z     v0-rust-native-regression-Windows_NT-x64-41c3efe8-22a62547
+2026-11-06T21:05:21.3991406Z .. Prefix:
+2026-11-06T21:05:21.3991747Z   - v0-rust-native-regression-Windows_NT-x64
+2026-11-06T21:05:21.3992224Z .. Environment considered:
+2026-11-06T21:05:21.3992585Z   - Rust Versions:
+2026-11-06T21:05:21.3993088Z     - 1.96.0 x86_64-pc-windows-msvc ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96
+2026-11-06T21:05:21.3993890Z     - 1.99.1 x86_64-pc-windows-msvc 58cf8f9c35b355199727627d07ae34a4e2846d67
+2026-11-06T21:05:21.3994489Z   - CARGO_HOME
+2026-11-06T21:05:21.3994768Z   - CARGO_INCREMENTAL
+2026-11-06T21:05:21.3995087Z   - CARGO_TERM_COLOR
+2026-11-06T21:05:21.3995420Z .. Lockfiles considered:
+2026-11-06T21:05:21.3995794Z   - D:\a\Xiao\Xiao\.cargo\config.toml
+2026-11-06T21:05:21.3996217Z   - D:\a\Xiao\Xiao\core\rust\Cargo.lock
+2026-11-06T21:05:21.3996737Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-artifacts\Cargo.toml
+2026-11-06T21:05:21.3997368Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-bytecode\Cargo.toml
+2026-11-06T21:05:21.3998006Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm\Cargo.toml
+2026-11-06T21:05:21.3999044Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-config\Cargo.toml
+2026-11-06T21:05:21.3999665Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-diagnostics\Cargo.toml
+2026-11-06T21:05:21.4000335Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-doc-coverage-rust\Cargo.toml
+2026-11-06T21:05:21.4000993Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-driver\Cargo.toml
+2026-11-06T21:05:21.4001579Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-i18n\Cargo.toml
+2026-11-06T21:05:21.4002185Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-intrinsics\Cargo.toml
+2026-11-06T21:05:21.4002791Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-ir\Cargo.toml
+2026-11-06T21:05:21.4003360Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-lifetime\Cargo.toml
+2026-11-06T21:05:21.4003963Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-lock\Cargo.toml
+2026-11-06T21:05:21.4004546Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-modules\Cargo.toml
+2026-11-06T21:05:21.4008103Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-optimizer\Cargo.toml
+2026-11-06T21:05:21.4009538Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-package\Cargo.toml
+2026-11-06T21:05:21.4010130Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-platform\Cargo.toml
+2026-11-06T21:05:21.4010725Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-runtime-abi\Cargo.toml
+2026-11-06T21:05:21.4011264Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-runtime\Cargo.toml
+2026-11-06T21:05:21.4011782Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-source\Cargo.toml
+2026-11-06T21:05:21.4012625Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-standard-library\Cargo.toml
+2026-11-06T21:05:21.4013181Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-syntax\Cargo.toml
+2026-11-06T21:05:21.4013698Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-types\Cargo.toml
+2026-11-06T21:05:21.4014214Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-vm\Cargo.toml
+2026-11-06T21:05:21.4014685Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-xar\Cargo.toml
+2026-11-06T21:05:21.4015150Z   - D:\a\Xiao\Xiao\core\rust\rust-toolchain.toml
+2026-11-06T21:05:21.4015833Z ##[endgroup]
+2026-11-06T21:05:21.4016012Z 
+2026-11-06T21:05:21.4016955Z ... Restoring cache ...
+2026-11-06T21:05:21.7863606Z Cache hit for: v0-rust-native-regression-Windows_NT-x64-41c3efe8-22a62547
+2026-11-06T21:05:22.9735874Z Received 17492521 of 17492521 (100.0%), 18.4 MBs/sec
+2026-11-06T21:05:22.9737821Z Cache Size: ~17 MB (17492521 B)
+2026-11-06T21:05:22.9764508Z [command]"C:\Program Files\Git\usr\bin\tar.exe" -xf D:/a/_temp/a4299f8c-502a-4b38-a07d-36db203e036e/cache.tzst -P -C D:/a/Xiao/Xiao --force-local --use-compress-program "zstd -d"
+2026-11-06T21:05:23.6968468Z Cache restored successfully
+2026-11-06T21:05:23.6984785Z Restored from cache key "v0-rust-native-regression-Windows_NT-x64-41c3efe8-22a62547" full match: true.
+2026-11-06T21:05:23.7460351Z ##[group]Run msys2/setup-msys2@v2
+2026-11-06T21:05:23.7460676Z with:
+2026-11-06T21:05:23.7460857Z   msystem: UCRT64
+2026-11-06T21:05:23.7461264Z   update: true
+2026-11-06T21:05:23.7461558Z   install: mingw-w64-ucrt-x86_64-clang mingw-w64-ucrt-x86_64-llvm
+2026-11-06T21:05:23.7462054Z   path-type: minimal
+2026-11-06T21:05:23.7462435Z   release: true
+2026-11-06T21:05:23.7462680Z   platform-check-severity: fatal
+2026-11-06T21:05:23.7462914Z   cache: true
+2026-11-06T21:05:23.7463084Z env:
+2026-11-06T21:05:23.7463237Z   XIAO_B1_F10: 0
+2026-11-06T21:05:23.7463412Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:05:23.7463619Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T21:05:23.7463902Z   CARGO_INCREMENTAL: 0
+2026-11-06T21:05:23.7464102Z   CARGO_TERM_COLOR: always
+2026-11-06T21:05:23.7464312Z   CACHE_ON_FAILURE: false
+2026-11-06T21:05:23.7464509Z ##[endgroup]
+2026-11-06T21:05:23.8990008Z ##[group]Downloading MSYS2...
+2026-11-06T21:05:24.6308461Z ##[endgroup]
+2026-11-06T21:05:24.6309955Z ##[group]Extracting MSYS2...
+2026-11-06T21:05:24.6327503Z [command]C:\hostedtoolcache\windows\msys2-installer\0.0.20260927\x64\base.exe -y
+2026-11-06T21:05:24.8563841Z 
+2026-11-06T21:05:24.8565202Z 7-Zip SFX 26.02 ZS v1.5.7 R1 (x64) : Copyright (c) 1999- Igor Pavlov, 2016- Tino Reichardt, 2022- Sergey G. Brester : 2026-06-27
+2026-11-06T21:05:24.8566106Z 
+2026-11-06T21:05:24.8566593Z Extracting archive: C:\hostedtoolcache\windows\msys2-installer\0.0.20260927\x64\base.exe
+2026-11-06T21:05:24.8568593Z --
+2026-11-06T21:05:24.8569538Z Path = C:\hostedtoolcache\windows\msys2-installer\0.0.20260927\x64\base.exe
+2026-11-06T21:05:24.8570642Z Type = 7z
+2026-11-06T21:05:24.8571144Z 
+2026-11-06T21:05:25.0546076Z   0%
+2026-11-06T21:05:25.0546437Z     
+2026-11-06T21:05:25.2578562Z   0% 638 - msys64\var\lib\pacman\local\libidn2-2.3.8-1
+2026-11-06T21:05:25.2579317Z                                                       
+2026-11-06T21:05:25.4618176Z   1% 1182 - msys64\usr\lib\terminfo\61\att510a
+2026-11-06T21:05:25.4618686Z                                               
+2026-11-06T21:05:25.6656281Z   1% 1693 - msys64\usr\lib\terminfo\64\dm2500
+2026-11-06T21:05:25.6656650Z                                              
+2026-11-06T21:05:25.8672862Z   1% 2125 - msys64\usr\lib\terminfo\6c\layer
+2026-11-06T21:05:25.8673208Z                                             
+2026-11-06T21:05:26.0709725Z   1% 2632 - msys64\usr\lib\terminfo\70\pt250
+2026-11-06T21:05:26.0710270Z                                             
+2026-11-06T21:05:26.2738320Z   2% 3151 - msys64\usr\lib\terminfo\76\vc303a
+2026-11-06T21:05:26.2739517Z                                              
+2026-11-06T21:05:26.4768567Z   2% 3664 - msys64\usr\lib\terminfo\78\xterm+sm+1005
+2026-11-06T21:05:26.4770535Z                                                     
+2026-11-06T21:05:26.6811747Z   2% 4178 - msys64\usr\share\bash-completion\completions-core\k3b.bash
+2026-11-06T21:05:26.6812604Z                                                                       
+2026-11-06T21:05:26.8835012Z   3% 4693 - msys64\usr\share\bash-completion\completions-fallback\delta.bash
+2026-11-06T21:05:26.8835844Z                                                                             
+2026-11-06T21:05:27.0862420Z   6% 5157 - msys64\usr\share\doc\xz\api\delta_8h.js
+2026-11-06T21:05:27.0863072Z                                                    
+2026-11-06T21:05:27.2900104Z   8% 5386 - msys64\usr\share\info\tar.info-3.gz
+2026-11-06T21:05:27.2900669Z                                                
+2026-11-06T21:05:27.4919628Z  17% 5748 - msys64\usr\share\locale\gl\LC_MESSAGES\pacman-scripts.mo
+2026-11-06T21:05:27.4920425Z                                                                     
+2026-11-06T21:05:27.6960834Z  26% 6078 - msys64\usr\share\locale\ro\LC_MESSAGES\pacman.mo
+2026-11-06T21:05:27.6961381Z                                                             
+2026-11-06T21:05:27.8998854Z  35% 6449 - msys64\usr\share\man\de\man1\xzdec.1.gz
+2026-11-06T21:05:27.9002861Z                                                    
+2026-11-06T21:05:28.1017014Z  36% 6936 - msys64\usr\share\man\man1\truncate.1.gz
+2026-11-06T21:05:28.1017737Z                                                    
+2026-11-06T21:05:28.3051600Z  36% 7424 - msys64\usr\share\man\man3\CURLOPT_RANDOM_FILE.3.gz
+2026-11-06T21:05:28.5081349Z                                                               
+2026-11-06T21:05:28.5082011Z  37% 7936 - msys64\usr\share\man\man3\in_wch.3x.gz
+2026-11-06T21:05:28.5082562Z                                                   
+2026-11-06T21:05:28.7115436Z  37% 8236 - msys64\usr\share\man\man3\menu_new.3x.gz
+2026-11-06T21:05:28.7116150Z                                                     
+2026-11-06T21:05:28.9153978Z  38% 8732 - msys64\usr\share\man\man3\winsnstr.3x.gz
+2026-11-06T21:05:28.9154697Z                                                     
+2026-11-06T21:05:29.1184502Z  44% 9200 - msys64\usr\share\terminfo\61\adm22
+2026-11-06T21:05:29.1184942Z                                               
+2026-11-06T21:05:29.3206628Z  44% 9719 - msys64\usr\share\terminfo\64\d430-unix-25
+2026-11-06T21:05:29.3207391Z                                                      
+2026-11-06T21:05:29.5232298Z  45% 10242 - msys64\usr\share\terminfo\69\ibmapa8c-c
+2026-11-06T21:05:29.5232773Z                                                     
+2026-11-06T21:05:29.7303255Z  45% 10765 - msys64\usr\share\terminfo\70\pccon+sgr+acs
+2026-11-06T21:05:29.7305672Z                                                        
+2026-11-06T21:05:29.9306161Z  45% 11287 - msys64\usr\share\terminfo\74\tvi920b-p-2p
+2026-11-06T21:05:29.9306668Z                                                       
+2026-11-06T21:05:30.1332285Z  45% 11493 - msys64\usr\share\terminfo\76\vt52-basic
+2026-11-06T21:05:30.1333514Z                                                     
+2026-11-06T21:05:30.3365641Z  45% 12005 - msys64\usr\share\zoneinfo\Africa\Maputo
+2026-11-06T21:05:30.3366435Z                                                     
+2026-11-06T21:05:30.5400259Z  46% 12540 - msys64\usr\share\zoneinfo\Pacific\Wallis
+2026-11-06T21:05:30.5401222Z                                                      
+2026-11-06T21:05:30.7425717Z  46% 13031 - msys64\usr\share\zoneinfo\posix\Europe\Warsaw
+2026-11-06T21:05:30.7426318Z                                                           
+2026-11-06T21:05:30.9458498Z  46% 13514 - msys64\usr\share\zoneinfo\right\Australia\Yancowinna
+2026-11-06T21:05:30.9459870Z                                                                  
+2026-11-06T21:05:31.1481793Z  47% 14008 - msys64\var\lib\pacman\local\pacman-6.1.0-25\mtree
+2026-11-06T21:05:31.1482865Z                                                               
+2026-11-06T21:05:31.3622020Z  56% 14286 - msys64\usr\bin\msys-crypt-2.dll
+2026-11-06T21:05:31.3622543Z                                             
+2026-11-06T21:05:31.5114264Z  77% 14362 - msys64\usr\bin\pacsort.exe
+2026-11-06T21:05:31.5115105Z                                        
+2026-11-06T21:05:31.5115641Z Everything is Ok
+2026-11-06T21:05:31.5139311Z ##[endgroup]
+2026-11-06T21:05:31.5139953Z ##[group]Disable Key Refresh...
+2026-11-06T21:05:31.5158205Z ##[endgroup]
+2026-11-06T21:05:31.5175883Z ##[group]Restoring package cache...
+2026-11-06T21:05:31.8381028Z Cache hit for restore-key: msys2-pkgs-upd:true-conf:9687bab7-files:167a4607d337cce1aec72cd11542b02b6088e68f43caa5e2b9c86b0019fe8be9
+2026-11-06T21:05:33.1221800Z Received 33554432 of 289416690 (11.6%), 32.0 MBs/sec
+2026-11-06T21:05:34.1386263Z Received 180355072 of 289416690 (62.3%), 85.3 MBs/sec
+2026-11-06T21:05:34.8430501Z Received 289416690 of 289416690 (100.0%), 101.4 MBs/sec
+2026-11-06T21:05:34.8435403Z Cache Size: ~276 MB (289416690 B)
+2026-11-06T21:05:34.8496898Z [command]"C:\Program Files\Git\usr\bin\tar.exe" -xf D:/a/_temp/3f119d1c-dd2e-4a45-9a7a-15f6e303f479/cache.tzst -P -C D:/a/Xiao/Xiao --force-local --use-compress-program "zstd -d"
+2026-11-06T21:05:35.3938660Z Cache restored successfully
+2026-11-06T21:05:35.4093456Z Cache restore for msys2-pkgs-upd:true-conf:9687bab7, got msys2-pkgs-upd:true-conf:9687bab7-files:167a4607d337cce1aec72cd11542b02b6088e68f43caa5e2b9c86b0019fe8be9
+2026-11-06T21:05:35.4095727Z Cache restore for msys2-pkgs-upd:true-conf:9687bab7, got msys2-pkgs-upd:true-conf:9687bab7-files:167a4607d337cce1aec72cd11542b02b6088e68f43caa5e2b9c86b0019fe8be9
+2026-11-06T21:05:35.4097440Z ##[endgroup]
+2026-11-06T21:05:35.4098054Z ##[group]Starting MSYS2 for the first time...
+2026-11-06T21:05:35.4913057Z [command]C:\Windows\system32\cmd.exe /D /S /C D:\a\_temp\setup-msys2\msys2.cmd -c "'uname' '-a'"
+2026-11-06T21:05:35.5583816Z [1;32mMSYS2 is starting for the first time. Executing the initial setup.[1;0m
+2026-11-06T21:05:35.6818710Z Copying skeleton files.
+2026-11-06T21:05:35.6819382Z These files are for the users to personalise their msys2 experience.
+2026-11-06T21:05:35.6819897Z 
+2026-11-06T21:05:35.6820155Z They will never be overwritten nor automatically updated.
+2026-11-06T21:05:35.6820614Z 
+2026-11-06T21:05:35.7441564Z './.bashrc' -> '/home/runneradmin/.bashrc'
+2026-11-06T21:05:35.7634250Z './.bash_profile' -> '/home/runneradmin/.bash_profile'
+2026-11-06T21:05:35.7830333Z './.profile' -> '/home/runneradmin/.profile'
+2026-11-06T21:05:35.8632800Z 'C:\Windows\system32\drivers\etc\hosts' -> '/etc/hosts'
+2026-11-06T21:05:35.9229707Z 'C:\Windows\system32\drivers\etc\protocol' -> '/etc/protocols'
+2026-11-06T21:05:35.9806686Z 'C:\Windows\system32\drivers\etc\services' -> '/etc/services'
+2026-11-06T21:05:36.0390820Z 'C:\Windows\system32\drivers\etc\networks' -> '/etc/networks'
+2026-11-06T21:05:36.2465402Z gpg: /etc/pacman.d/gnupg/trustdb.gpg: trustdb created
+2026-11-06T21:05:36.2553016Z gpg: no ultimately trusted keys found
+2026-11-06T21:05:36.5791841Z gpg: starting migration from earlier GnuPG versions
+2026-11-06T21:05:36.6419497Z gpg: porting secret keys from '/etc/pacman.d/gnupg/secring.gpg' to gpg-agent
+2026-11-06T21:05:36.6423283Z gpg: migration succeeded
+2026-11-06T21:05:36.6680687Z ==> Generating pacman master key. This may take some time.
+2026-11-06T21:05:36.6898353Z gpg: Generating pacman keyring master key...
+2026-11-06T21:05:37.9394282Z gpg: directory '/etc/pacman.d/gnupg/openpgp-revocs.d' created
+2026-11-06T21:05:37.9649070Z gpg: revocation certificate stored as '/etc/pacman.d/gnupg/openpgp-revocs.d/82EF8686EFF3F32EF20894638406D3A0C9F49C58.rev'
+2026-11-06T21:05:37.9650365Z gpg: Done
+2026-11-06T21:05:37.9841482Z ==> Updating trust database...
+2026-11-06T21:05:38.0425027Z gpg: marginals needed: 3  completes needed: 1  trust model: pgp
+2026-11-06T21:05:38.0425675Z gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+2026-11-06T21:05:38.1858563Z ==> Appending keys from msys2.gpg...
+2026-11-06T21:05:38.8416368Z ==> Locally signing trusted keys in keyring...
+2026-11-06T21:05:39.4166609Z   -> Locally signed 5 keys.
+2026-11-06T21:05:39.4333554Z ==> Importing owner trust values...
+2026-11-06T21:05:39.4550222Z gpg: setting ownertrust to 4
+2026-11-06T21:05:39.4550708Z gpg: setting ownertrust to 4
+2026-11-06T21:05:39.4551235Z gpg: setting ownertrust to 4
+2026-11-06T21:05:39.4551530Z gpg: setting ownertrust to 4
+2026-11-06T21:05:39.4551804Z gpg: setting ownertrust to 4
+2026-11-06T21:05:39.4856822Z ==> Disabling revoked keys in keyring...
+2026-11-06T21:05:39.7628855Z   -> Disabled 4 keys.
+2026-11-06T21:05:39.7798020Z ==> Updating trust database...
+2026-11-06T21:05:39.8229995Z gpg: marginals needed: 3  completes needed: 1  trust model: pgp
+2026-11-06T21:05:39.8260010Z gpg: depth: 0  valid:   1  signed:   5  trust: 0-, 0q, 0n, 0m, 0f, 1u
+2026-11-06T21:05:39.8301032Z gpg: depth: 1  valid:   5  signed:   7  trust: 0-, 0q, 0n, 5m, 0f, 0u
+2026-11-06T21:05:39.8316172Z gpg: depth: 2  valid:   4  signed:   2  trust: 4-, 0q, 0n, 0m, 0f, 0u
+2026-11-06T21:05:39.8319443Z gpg: next trustdb check due at 2027-02-10
+2026-11-06T21:05:39.8734430Z pacman-key (pacman) 6.1.0
+2026-11-06T21:05:39.8735551Z Copyright (c) 2010-2024 Pacman Development Team <pacman-dev@lists.archlinux.org>.
+2026-11-06T21:05:39.8736384Z 
+2026-11-06T21:05:39.8904341Z This is free software; see the source for copying conditions.
+2026-11-06T21:05:39.8905515Z There is NO WARRANTY, to the extent permitted by law.
+2026-11-06T21:05:40.1356604Z [1;32mInitial setup complete. MSYS2 is now ready to use.[1;0m
+2026-11-06T21:05:40.1549171Z MINGW64_NT-10.0-26100 runnervmm7ud1 3.6.10-c770e1b9.x86_64 2026-09-26 06:38 UTC x86_64 Msys
+2026-11-06T21:05:40.1602099Z ##[endgroup]
+2026-11-06T21:05:40.1602693Z ##[group]Disable CheckSpace...
+2026-11-06T21:05:40.2432985Z [command]C:\Windows\system32\cmd.exe /D /S /C D:\a\_temp\setup-msys2\msys2.cmd -c "'sed' '-i' 's/^CheckSpace/#CheckSpace/g' '/etc/pacman.conf'"
+2026-11-06T21:05:40.4671246Z ##[endgroup]
+2026-11-06T21:05:40.4671966Z ##[group]Updating packages...
+2026-11-06T21:05:40.5508627Z [command]C:\Windows\system32\cmd.exe /D /S /C D:\a\_temp\setup-msys2\msys2.cmd -c "'pacman' '--noconfirm' '-Syuu' '--overwrite' '*'"
+2026-11-06T21:05:41.3772657Z :: Synchronizing package databases...
+2026-11-06T21:05:42.7926301Z  clangarm64 downloading...
+2026-11-06T21:05:42.7927055Z  mingw32 downloading...
+2026-11-06T21:05:42.7927634Z  mingw64 downloading...
+2026-11-06T21:05:42.7928204Z  ucrt64 downloading...
+2026-11-06T21:05:42.7928750Z  clang64 downloading...
+2026-11-06T21:05:42.7929200Z  msys downloading...
+2026-11-06T21:05:43.3286262Z :: Starting core system upgrade...
+2026-11-06T21:05:43.5133735Z warning: terminate other MSYS2 programs before proceeding
+2026-11-06T21:05:43.5134406Z resolving dependencies...
+2026-11-06T21:05:43.5243259Z looking for conflicting packages...
+2026-11-06T21:05:43.5260734Z 
+2026-11-06T21:05:43.5261561Z Packages (4) bash-5.3.20-3  filesystem-2026.10.18-3  msys2-runtime-3.6.12-1  pacman-6.1.0-29
+2026-11-06T21:05:43.5262317Z 
+2026-11-06T21:05:43.5262463Z Total Installed Size:  54.05 MiB
+2026-11-06T21:05:43.5262805Z Net Upgrade Size:      -0.14 MiB
+2026-11-06T21:05:43.5263017Z 
+2026-11-06T21:05:43.5270275Z :: Proceed with installation? [Y/n] 
+2026-11-06T21:05:43.5270792Z checking keyring...
+2026-11-06T21:05:43.5842233Z checking package integrity...
+2026-11-06T21:05:44.3615098Z loading package files...
+2026-11-06T21:05:44.3706274Z checking for file conflicts...
+2026-11-06T21:05:44.3707509Z :: Processing package changes...
+2026-11-06T21:05:44.3707866Z upgrading bash...
+2026-11-06T21:05:44.5522653Z upgrading filesystem...
+2026-11-06T21:05:44.6105473Z upgrading msys2-runtime...
+2026-11-06T21:05:44.7858451Z upgrading pacman...
+2026-11-06T21:05:45.1974840Z :: To complete this update all MSYS2 processes including this terminal will be closed. Confirm to proceed [Y/n] 
+2026-11-06T21:05:45.4470305Z ##[endgroup]
+2026-11-06T21:05:45.4471067Z ##[group]Killing remaining tasks...
+2026-11-06T21:05:45.5357577Z [command]C:\Windows\system32\taskkill.exe /F /FI "MODULES eq msys-2.0.dll"
+2026-11-06T21:05:45.6920263Z 
+2026-11-06T21:05:45.6920903Z INFO: No tasks running with the specified criteria.
+2026-11-06T21:05:45.6957554Z ##[endgroup]
+2026-11-06T21:05:45.6957979Z ##[group]Final system upgrade...
+2026-11-06T21:05:45.7803204Z [command]C:\Windows\system32\cmd.exe /D /S /C D:\a\_temp\setup-msys2\msys2.cmd -c "'pacman' '--noconfirm' '-Syuu' '--overwrite' '*'"
+2026-11-06T21:05:46.5303410Z :: Synchronizing package databases...
+2026-11-06T21:05:47.4930909Z  clangarm64 downloading...
+2026-11-06T21:05:47.4931464Z  mingw32 downloading...
+2026-11-06T21:05:47.4931850Z  mingw64 downloading...
+2026-11-06T21:05:47.4932276Z  ucrt64 downloading...
+2026-11-06T21:05:47.4932714Z  clang64 downloading...
+2026-11-06T21:05:47.4933149Z  msys downloading...
+2026-11-06T21:05:48.0205356Z :: Starting core system upgrade...
+2026-11-06T21:05:48.1849155Z  there is nothing to do
+2026-11-06T21:05:48.1849697Z :: Starting full system upgrade...
+2026-11-06T21:05:48.2121629Z resolving dependencies...
+2026-11-06T21:05:48.2206419Z looking for conflicting packages...
+2026-11-06T21:05:48.2289502Z 
+2026-11-06T21:05:48.2292720Z Packages (23) brotli-1.2.1-1  bsdtar-3.8.11-1  ca-certificates-20260816-4  coreutils-9.0-1  curl-8.23.0-1  dash-0.5.13.5-1  file-5.48-2  gcc-libs-16.2.0-1  libcurl-8.23.0-1  libexpat-2.10.0-1  liblz4-1.11.0-1  libnghttp2-1.71.0-1  libnghttp3-1.19.0-1  libngtcp2-1.26.0-1  libopenssl-3.6.5-1  libpcre2_8-10.49-1  libpsl-0.23.2-2  libreadline-8.3.006-2  libsqlite-3.54.1-1  nano-9.3-1  openssl-3.6.5-1  tzcode-2026f-1  wget-1.25.0-5
+2026-11-06T21:05:48.2295256Z 
+2026-11-06T21:05:48.2295433Z Total Installed Size:  65.31 MiB
+2026-11-06T21:05:48.2295893Z Net Upgrade Size:       0.85 MiB
+2026-11-06T21:05:48.2296176Z 
+2026-11-06T21:05:48.2331772Z :: Proceed with installation? [Y/n] 
+2026-11-06T21:05:48.2332371Z checking keyring...
+2026-11-06T21:05:48.2870820Z checking package integrity...
+2026-11-06T21:05:51.1448833Z loading package files...
+2026-11-06T21:05:51.1967556Z checking for file conflicts...
+2026-11-06T21:05:51.2021961Z :: Running pre-transaction hooks...
+2026-11-06T21:05:51.2022597Z (1/1) Removing old entries from the info directory file...
+2026-11-06T21:05:51.3650856Z :: Processing package changes...
+2026-11-06T21:05:51.3651378Z upgrading gcc-libs...
+2026-11-06T21:05:51.3857946Z upgrading brotli...
+2026-11-06T21:05:51.3993120Z upgrading libexpat...
+2026-11-06T21:05:51.4044844Z upgrading liblz4...
+2026-11-06T21:05:51.4097175Z upgrading libopenssl...
+2026-11-06T21:05:51.4365023Z upgrading bsdtar...
+2026-11-06T21:05:51.4457501Z upgrading openssl...
+2026-11-06T21:05:51.5804649Z upgrading coreutils...
+2026-11-06T21:05:51.9554784Z upgrading libpcre2_8...
+2026-11-06T21:05:51.9614887Z upgrading ca-certificates...
+2026-11-06T21:05:52.5608001Z upgrading libnghttp3...
+2026-11-06T21:05:52.5683413Z upgrading libngtcp2...
+2026-11-06T21:05:52.5781025Z upgrading libnghttp2...
+2026-11-06T21:05:52.5856297Z upgrading libpsl...
+2026-11-06T21:05:52.6001458Z upgrading libcurl...
+2026-11-06T21:05:52.6073975Z upgrading curl...
+2026-11-06T21:05:53.1821682Z upgrading dash...
+2026-11-06T21:05:53.3001368Z upgrading file...
+2026-11-06T21:05:53.3452435Z upgrading libreadline...
+2026-11-06T21:05:53.3847455Z upgrading libsqlite...
+2026-11-06T21:05:53.3962238Z upgrading nano...
+2026-11-06T21:05:53.5238144Z upgrading tzcode...
+2026-11-06T21:05:55.8037521Z upgrading wget...
+2026-11-06T21:05:55.9362242Z :: Running post-transaction hooks...
+2026-11-06T21:05:55.9362886Z (1/1) Updating the info directory file...
+2026-11-06T21:05:56.3339919Z ##[endgroup]
+2026-11-06T21:05:56.3340407Z ##[group]Installing additional packages through pacman...
+2026-11-06T21:05:56.4177216Z [command]C:\Windows\system32\cmd.exe /D /S /C D:\a\_temp\setup-msys2\msys2.cmd -c "'pacman' '--noconfirm' '-S' '--needed' '--overwrite' '*' 'mingw-w64-ucrt-x86_64-clang' 'mingw-w64-ucrt-x86_64-llvm'"
+2026-11-06T21:05:57.2399224Z resolving dependencies...
+2026-11-06T21:05:57.2517094Z looking for conflicting packages...
+2026-11-06T21:05:57.2557042Z 
+2026-11-06T21:05:57.2566965Z Packages (27) mingw-w64-ucrt-x86_64-binutils-2.47-4  mingw-w64-ucrt-x86_64-cc-libs-16.2.0-6  mingw-w64-ucrt-x86_64-clang-libs-23.1.5-1  mingw-w64-ucrt-x86_64-crt-14.0.0.r598.ge3d18511f-1  mingw-w64-ucrt-x86_64-gcc-16.2.0-6  mingw-w64-ucrt-x86_64-gettext-runtime-1.0-1  mingw-w64-ucrt-x86_64-gmp-6.3.0-2  mingw-w64-ucrt-x86_64-headers-14.0.0.r598.ge3d18511f-1  mingw-w64-ucrt-x86_64-isl-0.28-1  mingw-w64-ucrt-x86_64-libffi-3.8.0-1  mingw-w64-ucrt-x86_64-libgcc-16.2.0-6  mingw-w64-ucrt-x86_64-libiconv-1.19.1-1  mingw-w64-ucrt-x86_64-libstdc++-16.2.0-6  mingw-w64-ucrt-x86_64-libwinpthread-14.0.0.r598.ge3d18511f-1  mingw-w64-ucrt-x86_64-libxml2-2.15.4-3  mingw-w64-ucrt-x86_64-lld-23.1.5-1  mingw-w64-ucrt-x86_64-llvm-libs-23.1.5-1  mingw-w64-ucrt-x86_64-llvm-tools-23.1.5-1  mingw-w64-ucrt-x86_64-mpc-1.4.1-1  mingw-w64-ucrt-x86_64-mpfr-4.2.2-3  mingw-w64-ucrt-x86_64-tzdata-2026f-1  mingw-w64-ucrt-x86_64-windows-default-manifest-20260815-1  mingw-w64-ucrt-x86_64-winpthreads-14.0.0.r598.ge3d18511f-1  mingw-w64-ucrt-x86_64-zlib-1.3.2-3  mingw-w64-ucrt-x86_64-zstd-1.5.7-2  mingw-w64-ucrt-x86_64-clang-23.1.5-1  mingw-w64-ucrt-x86_64-llvm-23.1.5-1
+2026-11-06T21:05:57.2574217Z 
+2026-11-06T21:05:57.2574398Z Total Installed Size:  1694.51 MiB
+2026-11-06T21:05:57.2574730Z 
+2026-11-06T21:05:57.2612807Z :: Proceed with installation? [Y/n] 
+2026-11-06T21:05:57.2613316Z checking keyring...
+2026-11-06T21:05:57.3096018Z checking package integrity...
+2026-11-06T21:06:06.9068120Z loading package files...
+2026-11-06T21:06:07.0103110Z checking for file conflicts...
+2026-11-06T21:06:07.4975478Z :: Processing package changes...
+2026-11-06T21:06:07.4976536Z installing mingw-w64-ucrt-x86_64-libwinpthread...
+2026-11-06T21:06:07.5033507Z installing mingw-w64-ucrt-x86_64-libgcc...
+2026-11-06T21:06:07.5096169Z installing mingw-w64-ucrt-x86_64-tzdata...
+2026-11-06T21:06:09.4672879Z installing mingw-w64-ucrt-x86_64-libstdc++...
+2026-11-06T21:06:09.4794207Z installing mingw-w64-ucrt-x86_64-cc-libs...
+2026-11-06T21:06:09.4821013Z installing mingw-w64-ucrt-x86_64-libffi...
+2026-11-06T21:06:09.4963834Z installing mingw-w64-ucrt-x86_64-libiconv...
+2026-11-06T21:06:09.5246251Z installing mingw-w64-ucrt-x86_64-zlib...
+2026-11-06T21:06:09.5349246Z installing mingw-w64-ucrt-x86_64-libxml2...
+2026-11-06T21:06:09.7080946Z Optional dependencies for mingw-w64-ucrt-x86_64-libxml2
+2026-11-06T21:06:09.7081855Z     mingw-w64-ucrt-x86_64-python: Python bindings
+2026-11-06T21:06:09.7082570Z installing mingw-w64-ucrt-x86_64-zstd...
+2026-11-06T21:06:09.7304587Z installing mingw-w64-ucrt-x86_64-llvm-libs...
+2026-11-06T21:06:10.0317132Z installing mingw-w64-ucrt-x86_64-clang-libs...
+2026-11-06T21:06:10.2265250Z installing mingw-w64-ucrt-x86_64-gettext-runtime...
+2026-11-06T21:06:10.3845124Z installing mingw-w64-ucrt-x86_64-binutils...
+2026-11-06T21:06:10.6336652Z installing mingw-w64-ucrt-x86_64-headers...
+2026-11-06T21:06:12.0323505Z installing mingw-w64-ucrt-x86_64-crt...
+2026-11-06T21:06:12.7577411Z installing mingw-w64-ucrt-x86_64-gmp...
+2026-11-06T21:06:12.7750551Z installing mingw-w64-ucrt-x86_64-isl...
+2026-11-06T21:06:12.8517361Z installing mingw-w64-ucrt-x86_64-mpfr...
+2026-11-06T21:06:12.8771162Z installing mingw-w64-ucrt-x86_64-mpc...
+2026-11-06T21:06:12.8851336Z installing mingw-w64-ucrt-x86_64-windows-default-manifest...
+2026-11-06T21:06:12.8885916Z installing mingw-w64-ucrt-x86_64-winpthreads...
+2026-11-06T21:06:12.9005439Z installing mingw-w64-ucrt-x86_64-gcc...
+2026-11-06T21:06:14.3476049Z Optional dependencies for mingw-w64-ucrt-x86_64-gcc
+2026-11-06T21:06:14.3476717Z     mingw-w64-ucrt-x86_64-libatomic
+2026-11-06T21:06:14.3477202Z     mingw-w64-ucrt-x86_64-libgomp: OpenMP
+2026-11-06T21:06:14.3477746Z     mingw-w64-ucrt-x86_64-libquadmath: Quad Math
+2026-11-06T21:06:14.3478308Z installing mingw-w64-ucrt-x86_64-clang...
+2026-11-06T21:06:16.0017942Z Optional dependencies for mingw-w64-ucrt-x86_64-clang
+2026-11-06T21:06:16.0018690Z     mingw-w64-ucrt-x86_64-llvm=23.1.5 [pending]
+2026-11-06T21:06:16.0019231Z installing mingw-w64-ucrt-x86_64-lld...
+2026-11-06T21:06:16.0712590Z installing mingw-w64-ucrt-x86_64-llvm-tools...
+2026-11-06T21:06:16.4121797Z installing mingw-w64-ucrt-x86_64-llvm...
+2026-11-06T21:06:19.5429946Z ##[endgroup]
+2026-11-06T21:06:19.5430364Z ##[group]Saving package cache...
+2026-11-06T21:06:19.6259453Z [command]C:\Windows\system32\cmd.exe /D /S /C D:\a\_temp\setup-msys2\msys2.cmd -c "'paccache' '-r' '-f' '-u' '-k0'"
+2026-11-06T21:06:20.4870862Z ==> no candidate packages found for pruning
+2026-11-06T21:06:20.5746915Z [command]C:\Windows\system32\cmd.exe /D /S /C D:\a\_temp\setup-msys2\msys2.cmd -c "'paccache' '-r' '-f' '-k1'"
+2026-11-06T21:06:20.8031749Z ==> no candidate packages found for pruning
+2026-11-06T21:06:21.6076324Z Cache unchanged, skipping save for msys2-pkgs-upd:true-conf:9687bab7-files:167a4607d337cce1aec72cd11542b02b6088e68f43caa5e2b9c86b0019fe8be9
+2026-11-06T21:06:21.6989241Z [command]C:\Windows\system32\cmd.exe /D /S /C D:\a\_temp\setup-msys2\msys2.cmd -c "'pacman' '--noconfirm' '-Scc'"
+2026-11-06T21:06:22.4004548Z 
+2026-11-06T21:06:22.4005224Z Cache directory: /var/cache/pacman/pkg/
+2026-11-06T21:06:22.4405274Z :: Do you want to remove ALL files from cache? [Y/n] 
+2026-11-06T21:06:22.4405928Z removing all files from cache...
+2026-11-06T21:06:22.4406248Z 
+2026-11-06T21:06:22.4406431Z Database directory: /var/lib/pacman/
+2026-11-06T21:06:22.4427945Z :: Do you want to remove unused repositories? [Y/n] 
+2026-11-06T21:06:22.4428571Z removing unused sync repositories...
+2026-11-06T21:06:22.4492446Z ##[endgroup]
+2026-11-06T21:06:22.4873690Z ##[group]Run $ErrorActionPreference = 'Stop'
+2026-11-06T21:06:22.4874208Z [36;1m$ErrorActionPreference = 'Stop'[0m
+2026-11-06T21:06:22.4874705Z [36;1m$vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'[0m
+2026-11-06T21:06:22.4875669Z [36;1m$installation = (& $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath | Select-Object -First 1)[0m
+2026-11-06T21:06:22.4876490Z [36;1mif (-not $installation) { throw 'MSVC installation missing' }[0m
+2026-11-06T21:06:22.4876958Z [36;1m$vcvars = Join-Path $installation 'VC/Auxiliary/Build/vcvars64.bat'[0m
+2026-11-06T21:06:22.4877359Z [36;1m$batch = '"' + $vcvars + '" >nul && set'[0m
+2026-11-06T21:06:22.4877659Z [36;1m$environment = & cmd.exe /d /s /c $batch[0m
+2026-11-06T21:06:22.4878002Z [36;1mif ($LASTEXITCODE -ne 0) { throw 'vcvars64 failed' }[0m
+2026-11-06T21:06:22.4878391Z [36;1mforeach ($line in $environment) {[0m
+2026-11-06T21:06:22.4878675Z [36;1m  $separator = $line.IndexOf('=')[0m
+2026-11-06T21:06:22.4878946Z [36;1m  if ($separator -gt 0) {[0m
+2026-11-06T21:06:22.4879393Z [36;1m    Set-Item -Path ('Env:' + $line.Substring(0, $separator)) -Value $line.Substring($separator + 1)[0m
+2026-11-06T21:06:22.4879850Z [36;1m  }[0m
+2026-11-06T21:06:22.4880035Z [36;1m}[0m
+2026-11-06T21:06:22.4880377Z [36;1m# Prepend the MSVC linker after importing vcvars; never resolve Git's link.exe.[0m
+2026-11-06T21:06:22.4880898Z [36;1m$linkerBin = Join-Path $env:VCToolsInstallDir 'bin/Hostx64/x64'[0m
+2026-11-06T21:06:22.4881396Z [36;1mif (-not (Test-Path "$linkerBin/link.exe")) { throw 'MSVC link.exe missing' }[0m
+2026-11-06T21:06:22.4881811Z [36;1m$env:PATH = "$linkerBin;$env:PATH"[0m
+2026-11-06T21:06:22.4882160Z [36;1m$llvmBin = Join-Path $env:XIAO_LLVM_ROOT 'ucrt64/bin'[0m
+2026-11-06T21:06:22.4882584Z [36;1mforeach ($tool in @('clang', 'llvm-as', 'llc', 'llvm-strip')) {[0m
+2026-11-06T21:06:22.4883075Z [36;1m  if (-not (Test-Path "$llvmBin/$tool.exe")) { throw "Missing LLVM tool: $tool" }[0m
+2026-11-06T21:06:22.4883457Z [36;1m}[0m
+2026-11-06T21:06:22.4883660Z [36;1m$env:XIAO_CLANG = "$llvmBin/clang.exe"[0m
+2026-11-06T21:06:22.4883980Z [36;1m$env:XIAO_LLVM_AS = "$llvmBin/llvm-as.exe"[0m
+2026-11-06T21:06:22.4884497Z [36;1m$env:XIAO_LLC = "$llvmBin/llc.exe"[0m
+2026-11-06T21:06:22.4884810Z [36;1m$env:XIAO_STRIP = "$llvmBin/llvm-strip.exe"[0m
+2026-11-06T21:06:22.4885294Z [36;1m$env:XIAO_TARGET_TRIPLE = ((& rustc -vV | Select-String '^host:').ToString().Split(':', 2)[1]).Trim()[0m
+2026-11-06T21:06:22.4885895Z [36;1mif ($LASTEXITCODE -ne 0) { throw 'rustc host probe failed' }[0m
+2026-11-06T21:06:22.4886383Z [36;1mcargo build --manifest-path core/rust/Cargo.toml --release -p xiao-runtime[0m
+2026-11-06T21:06:22.4886833Z [36;1mif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }[0m
+2026-11-06T21:06:22.4887267Z [36;1mcargo build --manifest-path core/rust/Cargo.toml -p xiao-diagnostics[0m
+2026-11-06T21:06:22.4887931Z [36;1mif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }[0m
+2026-11-06T21:06:22.4888408Z [36;1m$env:XIAO_RUNTIME_LIBRARY = Join-Path $pwd 'core/rust/target/release/xiao_runtime.lib'[0m
+2026-11-06T21:06:22.4889016Z [36;1m$env:XIAO_DIAGNOSTICS_PATH = Join-Path $pwd 'core/rust/target/debug/xiao-diagnostics.exe'[0m
+2026-11-06T21:06:22.4889479Z [36;1m$env:XIAO_DIAGNOSTICS_HOLD_MS = '0'[0m
+2026-11-06T21:06:22.4889906Z [36;1mforeach ($artifact in @($env:XIAO_RUNTIME_LIBRARY, $env:XIAO_DIAGNOSTICS_PATH)) {[0m
+2026-11-06T21:06:22.4890451Z [36;1m  if (-not (Test-Path $artifact)) { throw "Required artifact missing: $artifact" }[0m
+2026-11-06T21:06:22.4890844Z [36;1m}[0m
+2026-11-06T21:06:22.4891040Z [36;1mif ($env:XIAO_B2_A_PERF -eq '1') {[0m
+2026-11-06T21:06:22.4891621Z [36;1m  cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_a_resources --test 20o_b2_a_performance_protocol[0m
+2026-11-06T21:06:22.4894000Z [36;1m  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }[0m
+2026-11-06T21:06:22.4894399Z [36;1m  rustc -Vv[0m
+2026-11-06T21:06:22.4894775Z [36;1m  Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name[0m
+2026-11-06T21:06:22.4895832Z [36;1m  cargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --example b2_numeric_performance -- --backend native --case all --profile all --artifact-root b2-a6-native-artifacts --output b2-a6-native.json[0m
+2026-11-06T21:06:22.4896799Z [36;1m  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }[0m
+2026-11-06T21:06:22.4897106Z [36;1m}[0m
+2026-11-06T21:06:22.4897483Z [36;1mcargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime -p xiao-runtime-abi[0m
+2026-11-06T21:06:22.4897975Z [36;1mif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }[0m
+2026-11-06T21:06:22.4898298Z [36;1m# B1 在同一作业内先取精确证据；后续既有门禁继续按原断言执行。[0m
+2026-11-06T21:06:22.4899059Z [36;1m$b1Output = cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_probe -- --ignored b1_capabilities_match_native_golden_outputs --exact --nocapture 2>&1[0m
+2026-11-06T21:06:22.4899798Z [36;1m$b1Exit = $LASTEXITCODE[0m
+2026-11-06T21:06:22.4900109Z [36;1m$b1Output | ForEach-Object { Write-Output $_ }[0m
+2026-11-06T21:06:22.4900429Z [36;1mif ($b1Exit -ne 0) { exit $b1Exit }[0m
+2026-11-06T21:06:22.4900833Z [36;1m$b1Summaries = @($b1Output | Where-Object { $_ -match '^test result:' })[0m
+2026-11-06T21:06:22.4901460Z [36;1mif ($b1Summaries.Count -ne 1 -or $b1Summaries[0] -notmatch '^test result: ok\. 1 passed; 0 failed; 0 ignored;') {[0m
+2026-11-06T21:06:22.4902078Z [36;1m  throw 'B1 native probe must pass exactly one case without ignoring it'[0m
+2026-11-06T21:06:22.4902449Z [36;1m}[0m
+2026-11-06T21:06:22.4902776Z [36;1m# Windows runner 没有交互式终端，窗口握手和调试执行仅在 Linux/Xvfb 作业运行。[0m
+2026-11-06T21:06:22.4903128Z [36;1m# DNS 依赖和平台异常子进程由父用例驱动，两个平台都排除子测试本身。[0m
+2026-11-06T21:06:22.4903635Z [36;1mcargo test --manifest-path core/rust/Cargo.toml --workspace --no-fail-fast -- --ignored --nocapture `[0m
+2026-11-06T21:06:22.4904193Z [36;1m  --skip dns_resolution_failure_is_unavailable `[0m
+2026-11-06T21:06:22.4904514Z [36;1m  --skip platform_failure_child `[0m
+2026-11-06T21:06:22.4904852Z [36;1m  --skip real_terminal_session_is_environment_gated `[0m
+2026-11-06T21:06:22.4905390Z [36;1m  --skip native_table_methods_debug_execution_o0_o3 `[0m
+2026-11-06T21:06:22.4905756Z [36;1m  --skip native_concurrency_llvm_assembly_fixtures `[0m
+2026-11-06T21:06:22.4906144Z [36;1m  --skip native_concurrency_shared_c_layout_probe `[0m
+2026-11-06T21:06:22.4906563Z [36;1m  --skip public_native_concurrency_metadata_and_release_matrix `[0m
+2026-11-06T21:06:22.4907007Z [36;1m  --skip text_path_candidates_match_native_golden_outputs `[0m
+2026-11-06T21:06:22.4907417Z [36;1m  --skip text_path_interfaces_match_native_golden_outputs `[0m
+2026-11-06T21:06:22.4908056Z [36;1m  --skip b1_capabilities_match_native_golden_outputs `[0m
+2026-11-06T21:06:22.4908525Z [36;1m  --skip native_concurrency_vm_native_differential_matches_from_same_ir[0m
+2026-11-06T21:06:22.4908959Z [36;1mif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }[0m
+2026-11-06T21:06:22.4909455Z [36;1mcargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency[0m
+2026-11-06T21:06:22.4909961Z [36;1mif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }[0m
+2026-11-06T21:06:22.4910755Z [36;1mforeach ($testName in @('native_concurrency_llvm_assembly_fixtures', 'native_concurrency_shared_c_layout_probe', 'native_concurrency_vm_native_differential_matches_from_same_ir')) {[0m
+2026-11-06T21:06:22.4911891Z [36;1m  $testOutput = cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored $testName --exact --nocapture 2>&1[0m
+2026-11-06T21:06:22.4912560Z [36;1m  $testExit = $LASTEXITCODE[0m
+2026-11-06T21:06:22.4912867Z [36;1m  $testOutput | ForEach-Object { Write-Output $_ }[0m
+2026-11-06T21:06:22.4913952Z [36;1m  if ($testExit -ne 0) { exit $testExit }[0m
+2026-11-06T21:06:22.4914463Z [36;1m  if (($testOutput | Out-String) -notmatch 'test result: ok\. 1 passed; 0 failed;') {[0m
+2026-11-06T21:06:22.4915005Z [36;1m    throw "22D native test did not execute exactly one case: $testName"[0m
+2026-11-06T21:06:22.4915372Z [36;1m  }[0m
+2026-11-06T21:06:22.4915555Z [36;1m}[0m
+2026-11-06T21:06:22.4916279Z [36;1m$releaseOutput = cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22e_release -- --ignored public_native_concurrency_metadata_and_release_matrix --exact --nocapture 2>&1[0m
+2026-11-06T21:06:22.4917093Z [36;1m$releaseExit = $LASTEXITCODE[0m
+2026-11-06T21:06:22.4917411Z [36;1m$releaseOutput | ForEach-Object { Write-Output $_ }[0m
+2026-11-06T21:06:22.4917781Z [36;1mif ($releaseExit -ne 0) { exit $releaseExit }[0m
+2026-11-06T21:06:22.4918237Z [36;1mif (($releaseOutput | Out-String) -notmatch 'test result: ok\. 1 passed; 0 failed;') {[0m
+2026-11-06T21:06:22.4918750Z [36;1m  throw '22E native release case must execute exactly once'[0m
+2026-11-06T21:06:22.4919072Z [36;1m}[0m
+2026-11-06T21:06:22.4919562Z [36;1mforeach ($testName in @('text_path_candidates_match_native_golden_outputs', 'text_path_interfaces_match_native_golden_outputs')) {[0m
+2026-11-06T21:06:22.4920549Z [36;1m  $textPathOutput = cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20m_text_and_path -- --ignored $testName --exact --nocapture 2>&1[0m
+2026-11-06T21:06:22.4921219Z [36;1m  $textPathExit = $LASTEXITCODE[0m
+2026-11-06T21:06:22.4921556Z [36;1m  $textPathOutput | ForEach-Object { Write-Output $_ }[0m
+2026-11-06T21:06:22.4921937Z [36;1m  if ($textPathExit -ne 0) { exit $textPathExit }[0m
+2026-11-06T21:06:22.4922415Z [36;1m  if (($textPathOutput | Out-String) -notmatch 'test result: ok\. 1 passed; 0 failed;') {[0m
+2026-11-06T21:06:22.4922936Z [36;1m    throw "20M native test must execute exactly once: $testName"[0m
+2026-11-06T21:06:22.4923268Z [36;1m  }[0m
+2026-11-06T21:06:22.4923444Z [36;1m}[0m
+2026-11-06T21:06:22.4923629Z [36;1mif ($env:XIAO_B1_F10 -eq '1') {[0m
+2026-11-06T21:06:22.4923881Z [36;1m  rustc -Vv[0m
+2026-11-06T21:06:22.4924208Z [36;1m  Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name[0m
+2026-11-06T21:06:22.4925066Z [36;1m  cargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --example b1_library_performance -- --backend native --case all --phase all --output b1-f10-native.json[0m
+2026-11-06T21:06:22.4926351Z [36;1m  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }[0m
+2026-11-06T21:06:22.4926641Z [36;1m}[0m
+2026-11-06T21:06:22.4926830Z [36;1mexit $LASTEXITCODE[0m
+2026-11-06T21:06:22.5063472Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-06T21:06:22.5064072Z env:
+2026-11-06T21:06:22.5066779Z   XIAO_B1_F10: 0
+2026-11-06T21:06:22.5067059Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:06:22.5067383Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T21:06:22.5068306Z   CARGO_INCREMENTAL: 0
+2026-11-06T21:06:22.5070044Z   CARGO_TERM_COLOR: always
+2026-11-06T21:06:22.5070966Z   CACHE_ON_FAILURE: false
+2026-11-06T21:06:22.5071395Z   MSYSTEM: UCRT64
+2026-11-06T21:06:22.5073937Z   XIAO_LLVM_ROOT: D:\a\_temp\msys64
+2026-11-06T21:06:22.5074422Z ##[endgroup]
+2026-11-06T21:06:27.6259720Z F7-CARGO command=build locked=true removed=0
+2026-11-06T21:06:27.7356426Z [1m[92m    Updating[0m crates.io index
+2026-11-06T21:06:29.8071843Z [1m[92m   Compiling[0m serde_core v1.0.229
+2026-11-06T21:06:29.8072693Z [1m[92m   Compiling[0m proc-macro2 v1.0.107
+2026-11-06T21:06:29.8073850Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+2026-11-06T21:06:29.8075218Z [1m[92m   Compiling[0m zmij v1.0.23
+2026-11-06T21:06:29.9382788Z [1m[92m   Compiling[0m quote v1.0.47
+2026-11-06T21:06:31.6652307Z [1m[92m   Compiling[0m version_check v0.9.5
+2026-11-06T21:06:31.6693165Z [1m[92m   Compiling[0m serde_json v1.0.151
+2026-11-06T21:06:31.7306698Z [1m[92m   Compiling[0m serde v1.0.229
+2026-11-06T21:06:31.9912110Z [1m[92m   Compiling[0m typenum v1.20.1
+2026-11-06T21:06:32.2386260Z [1m[92m   Compiling[0m generic-array v0.14.7
+2026-11-06T21:06:32.2796720Z [1m[92m   Compiling[0m autocfg v1.5.1
+2026-11-06T21:06:33.2859394Z [1m[92m   Compiling[0m syn v3.0.5
+2026-11-06T21:06:34.4198374Z [1m[92m   Compiling[0m crypto-common v0.1.7
+2026-11-06T21:06:34.5905024Z [1m[92m   Compiling[0m block-buffer v0.10.4
+2026-11-06T21:06:35.8528189Z [1m[92m   Compiling[0m digest v0.10.7
+2026-11-06T21:06:36.2314152Z [1m[92m   Compiling[0m itoa v1.0.18
+2026-11-06T21:06:36.2418452Z [1m[92m   Compiling[0m cfg-if v1.0.5
+2026-11-06T21:06:36.3046713Z [1m[92m   Compiling[0m cpufeatures v0.2.17
+2026-11-06T21:06:36.3704148Z [1m[92m   Compiling[0m memchr v2.8.3
+2026-11-06T21:06:37.4642326Z [1m[92m   Compiling[0m sha2 v0.10.9
+2026-11-06T21:06:37.4867123Z [1m[92m   Compiling[0m serde_derive v1.0.229
+2026-11-06T21:06:39.3827491Z [1m[92m   Compiling[0m num-traits v0.2.19
+2026-11-06T21:06:39.6200949Z [1m[92m   Compiling[0m xiao-runtime-abi v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-runtime-abi)
+2026-11-06T21:06:40.1211088Z [1m[92m   Compiling[0m xiao-source v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-source)
+2026-11-06T21:06:41.1258599Z [1m[92m   Compiling[0m libm v0.2.16
+2026-11-06T21:06:41.5357657Z [1m[92m   Compiling[0m bigdecimal v0.4.11
+2026-11-06T21:06:41.8697679Z [1m[92m   Compiling[0m num-integer v0.1.47
+2026-11-06T21:06:42.2417316Z [1m[92m   Compiling[0m libc v0.2.189
+2026-11-06T21:06:42.8293088Z [1m[92m   Compiling[0m num-bigint v0.4.8
+2026-11-06T21:06:43.7716561Z [1m[92m   Compiling[0m xiao-intrinsics v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-intrinsics)
+2026-11-06T21:06:44.1713643Z [1m[92m   Compiling[0m xiao-i18n v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-i18n)
+2026-11-06T21:06:45.2367886Z [1m[92m   Compiling[0m xiao-diagnostics v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+2026-11-06T21:06:49.7554254Z [1m[92m   Compiling[0m xiao-syntax v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-syntax)
+2026-11-06T21:06:52.5844592Z [1m[92m   Compiling[0m xiao-types v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-types)
+2026-11-06T21:06:58.3141531Z [1m[92m   Compiling[0m xiao-lifetime v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+2026-11-06T21:07:15.8125889Z [1m[92m   Compiling[0m xiao-runtime v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-runtime)
+2026-11-06T21:07:31.2348458Z [1m[92m    Finished[0m `release` profile [optimized] target(s) in 1m 03s
+2026-11-06T21:07:31.3207649Z F7-CARGO command=build locked=true removed=0
+2026-11-06T21:07:31.4355140Z [1m[92m   Compiling[0m version_check v0.9.5
+2026-11-06T21:07:31.4355913Z [1m[92m   Compiling[0m proc-macro2 v1.0.107
+2026-11-06T21:07:31.4356519Z [1m[92m   Compiling[0m quote v1.0.47
+2026-11-06T21:07:31.4357250Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+2026-11-06T21:07:31.6386106Z [1m[92m   Compiling[0m typenum v1.20.1
+2026-11-06T21:07:31.8723819Z [1m[92m   Compiling[0m serde_core v1.0.229
+2026-11-06T21:07:31.9396632Z [1m[92m   Compiling[0m generic-array v0.14.7
+2026-11-06T21:07:32.3190173Z [1m[92m   Compiling[0m zmij v1.0.23
+2026-11-06T21:07:33.2079966Z [1m[92m   Compiling[0m syn v3.0.5
+2026-11-06T21:07:33.3307071Z [1m[92m   Compiling[0m serde v1.0.229
+2026-11-06T21:07:33.8513174Z [1m[92m   Compiling[0m serde_json v1.0.151
+2026-11-06T21:07:34.0691211Z [1m[92m   Compiling[0m block-buffer v0.10.4
+2026-11-06T21:07:34.1059190Z [1m[92m   Compiling[0m crypto-common v0.1.7
+2026-11-06T21:07:34.2267999Z [1m[92m   Compiling[0m digest v0.10.7
+2026-11-06T21:07:34.5164645Z [1m[92m   Compiling[0m itoa v1.0.18
+2026-11-06T21:07:34.7764031Z [1m[92m   Compiling[0m cfg-if v1.0.5
+2026-11-06T21:07:34.8212594Z [1m[92m   Compiling[0m cpufeatures v0.2.17
+2026-11-06T21:07:34.8337472Z [1m[92m   Compiling[0m memchr v2.8.3
+2026-11-06T21:07:34.9360120Z [1m[92m   Compiling[0m sha2 v0.10.9
+2026-11-06T21:07:35.5580871Z [1m[92m   Compiling[0m xiao-runtime-abi v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-runtime-abi)
+2026-11-06T21:07:35.9129234Z [1m[92m   Compiling[0m xiao-source v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-source)
+2026-11-06T21:07:37.0303843Z [1m[92m   Compiling[0m serde_derive v1.0.229
+2026-11-06T21:07:40.9339017Z [1m[92m   Compiling[0m xiao-i18n v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-i18n)
+2026-11-06T21:07:41.5238595Z [1m[92m   Compiling[0m xiao-diagnostics v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+2026-11-06T21:07:43.0849347Z [1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 11.73s
+2026-11-06T21:07:43.1752957Z F7-CARGO command=test locked=true removed=0
+2026-11-06T21:07:46.8405781Z [1m[92m   Compiling[0m serde_json v1.0.151
+2026-11-06T21:07:46.8416812Z [1m[92m   Compiling[0m autocfg v1.5.1
+2026-11-06T21:07:46.8418291Z [1m[92m   Compiling[0m xiao-intrinsics v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-intrinsics)
+2026-11-06T21:07:46.8419375Z [1m[92m   Compiling[0m find-msvc-tools v0.1.14
+2026-11-06T21:07:47.4436873Z [1m[92m   Compiling[0m shlex v2.0.1
+2026-11-06T21:07:47.8015648Z [1m[92m   Compiling[0m cc v1.5.1
+2026-11-06T21:07:48.2552423Z [1m[92m   Compiling[0m num-traits v0.2.19
+2026-11-06T21:07:48.3326958Z [1m[92m   Compiling[0m windows_x86_64_msvc v0.52.6
+2026-11-06T21:07:48.5820113Z [1m[92m   Compiling[0m libm v0.2.16
+2026-11-06T21:07:48.9689820Z [1m[92m   Compiling[0m xiao-i18n v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-i18n)
+2026-11-06T21:07:49.6080484Z [1m[92m   Compiling[0m zeroize v1.9.0
+2026-11-06T21:07:49.8667223Z [1m[92m   Compiling[0m xiao-diagnostics v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+2026-11-06T21:07:49.9930554Z [1m[92m   Compiling[0m num-integer v0.1.47
+2026-11-06T21:07:50.5276573Z [1m[92m   Compiling[0m rustls-pki-types v1.15.1
+2026-11-06T21:07:50.5609582Z [1m[92m   Compiling[0m ring v0.17.14
+2026-11-06T21:07:51.1968384Z [1m[92m   Compiling[0m xiao-syntax v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-syntax)
+2026-11-06T21:07:51.3050492Z [1m[92m   Compiling[0m bigdecimal v0.4.11
+2026-11-06T21:07:51.6066674Z [1m[92m   Compiling[0m getrandom v0.2.17
+2026-11-06T21:07:51.7196306Z [1m[92m   Compiling[0m untrusted v0.9.0
+2026-11-06T21:07:51.8294120Z [1m[92m   Compiling[0m libc v0.2.189
+2026-11-06T21:07:52.0517733Z [1m[92m   Compiling[0m httparse v1.10.1
+2026-11-06T21:07:52.2976378Z [1m[92m   Compiling[0m xiao-types v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-types)
+2026-11-06T21:07:52.5329855Z [1m[92m   Compiling[0m xiao-modules v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-modules)
+2026-11-06T21:07:55.0188583Z [1m[92m   Compiling[0m xiao-lifetime v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+2026-11-06T21:07:55.6292446Z [1m[92m   Compiling[0m num-bigint v0.4.8
+2026-11-06T21:07:58.1232463Z [1m[92m   Compiling[0m xiao-ir v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-ir)
+2026-11-06T21:07:58.3036136Z [1m[92m   Compiling[0m xiao-standard-library v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-standard-library)
+2026-11-06T21:07:58.4980503Z [1m[92m   Compiling[0m log v0.4.34
+2026-11-06T21:07:58.6705206Z [1m[92m   Compiling[0m crc32fast v1.5.2
+2026-11-06T21:07:58.7418914Z [1m[92m   Compiling[0m bytes v1.12.1
+2026-11-06T21:07:58.9737069Z [1m[92m   Compiling[0m rustls v0.23.45
+2026-11-06T21:07:59.8041390Z [1m[92m   Compiling[0m http v1.5.0
+2026-11-06T21:08:00.2031303Z [1m[92m   Compiling[0m rustls-webpki v0.103.15
+2026-11-06T21:08:01.3577912Z [1m[92m   Compiling[0m windows-targets v0.52.6
+2026-11-06T21:08:01.7213280Z [1m[92m   Compiling[0m xiao-lock v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-lock)
+2026-11-06T21:08:01.7713528Z [1m[92m   Compiling[0m simd-adler32 v0.3.10
+2026-11-06T21:08:01.9426031Z [1m[92m   Compiling[0m once_cell v1.21.4
+2026-11-06T21:08:02.0638163Z [1m[92m   Compiling[0m adler2 v2.0.1
+2026-11-06T21:08:02.1492784Z [1m[92m   Compiling[0m base64 v0.23.1
+2026-11-06T21:08:02.1866867Z [1m[92m   Compiling[0m subtle v2.6.1
+2026-11-06T21:08:02.1958403Z [1m[92m   Compiling[0m miniz_oxide v0.9.1
+2026-11-06T21:08:02.6973545Z [1m[92m   Compiling[0m ureq-proto v0.6.4
+2026-11-06T21:08:03.2907050Z [1m[92m   Compiling[0m xiao-optimizer v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+2026-11-06T21:08:03.9056011Z [1m[92m   Compiling[0m xiao-runtime v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-runtime)
+2026-11-06T21:08:05.6201207Z [1m[92m   Compiling[0m xiao-bytecode v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+2026-11-06T21:08:11.8903886Z [1m[92m   Compiling[0m windows-sys v0.52.0
+2026-11-06T21:08:13.0407050Z [1m[92m   Compiling[0m xiao-config v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-config)
+2026-11-06T21:08:13.1293822Z [1m[92m   Compiling[0m webpki-roots v1.0.9
+2026-11-06T21:08:13.2518197Z [1m[92m   Compiling[0m filetime v0.2.29
+2026-11-06T21:08:13.4443001Z [1m[92m   Compiling[0m utf8-zero v0.8.1
+2026-11-06T21:08:13.6216991Z [1m[92m   Compiling[0m percent-encoding v2.3.2
+2026-11-06T21:08:13.8540725Z [1m[92m   Compiling[0m ureq v3.4.2
+2026-11-06T21:08:13.9447042Z [1m[92m   Compiling[0m tar v0.4.46
+2026-11-06T21:08:14.1948263Z [1m[92m   Compiling[0m xiao-vm v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-vm)
+2026-11-06T21:08:14.6459378Z [1m[92m   Compiling[0m flate2 v1.1.10
+2026-11-06T21:08:15.2893469Z [1m[92m   Compiling[0m xiao-artifacts v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+2026-11-06T21:08:15.4525534Z [1m[92m   Compiling[0m xiao-codegen-llvm v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+2026-11-06T21:08:16.7958084Z [1m[92m   Compiling[0m xiao-xar v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-xar)
+2026-11-06T21:08:19.0063930Z [1m[92m   Compiling[0m xiao-package v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-package)
+2026-11-06T21:08:22.8400693Z [1m[92m   Compiling[0m xiao-driver v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-driver)
+2026-11-06T21:08:31.8342786Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 48.62s
+2026-11-06T21:08:31.8435160Z [1m[92m     Running[0m tests\20o_b2_a_performance_protocol.rs (core\rust\target\debug\deps\20o_b2_a_performance_protocol-b09fd76a093ab2c6.exe)
+2026-11-06T21:08:31.8565003Z 
+2026-11-06T21:08:31.8565462Z running 3 tests
+2026-11-06T21:08:31.8569868Z test calibration_stop_conditions_follow_the_frozen_protocol ... ok
+2026-11-06T21:08:31.8570517Z test quantized_clock_calibration_retains_real_batches ... ok
+2026-11-06T21:08:31.8702825Z test invalid_clock_samples_are_rejected ... ok
+2026-11-06T21:08:31.8703432Z 
+2026-11-06T21:08:31.8703982Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-11-06T21:08:31.8704503Z 
+2026-11-06T21:08:31.8727676Z [1m[92m     Running[0m tests\20o_b2_a_resources.rs (core\rust\target\debug\deps\20o_b2_a_resources-98f46c773e0a5fa8.exe)
+2026-11-06T21:08:31.8837132Z 
+2026-11-06T21:08:31.8837811Z running 8 tests
+2026-11-06T21:08:31.8857650Z test controlled_allocation_failure_is_distinct_from_numeric_limit ... ok
+2026-11-06T21:08:31.8860817Z test abi_semantic_failures_preserve_owned_out_and_inputs ... ok
+2026-11-06T21:08:31.8885602Z test mixed_error_priority_is_stable_at_the_language_entry ... ok
+2026-11-06T21:08:31.8905285Z test admission_boundaries_and_error_order_preserve_inputs ... ok
+2026-11-06T21:08:31.8910597Z test successful_abi_replacement_releases_old_out_without_clearing_pending ... ok
+2026-11-06T21:08:32.0114569Z test quotient_remainder_and_nontermination_have_independent_budgets ... ok
+2026-11-06T21:08:32.0793873Z test actual_results_accept_strong_cancellation_and_balanced_products ... ok
+2026-11-06T21:08:32.1013017Z test power_and_conversion_limits_do_not_expand_unbounded_values ... ok
+2026-11-06T21:08:32.1013568Z 
+2026-11-06T21:08:32.1013876Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+2026-11-06T21:08:32.1014272Z 
+2026-11-06T21:08:32.1672896Z rustc 1.96.0 (ac68faa20 2026-05-25)
+2026-11-06T21:08:32.1673364Z binary: rustc
+2026-11-06T21:08:32.1673709Z commit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96
+2026-11-06T21:08:32.1674110Z commit-date: 2026-05-25
+2026-11-06T21:08:32.1674628Z host: x86_64-pc-windows-msvc
+2026-11-06T21:08:32.1675185Z release: 1.96.0
+2026-11-06T21:08:32.1675723Z LLVM version: 22.1.2
+2026-11-06T21:08:33.4789287Z AMD EPYC 7763 64-Core Processor                
+2026-11-06T21:08:33.5432098Z F7-CARGO command=run locked=true removed=0
+2026-11-06T21:08:33.7321134Z [1m[92m   Compiling[0m serde_json v1.0.151
+2026-11-06T21:08:33.7337069Z [1m[92m   Compiling[0m find-msvc-tools v0.1.14
+2026-11-06T21:08:33.7341648Z [1m[92m   Compiling[0m shlex v2.0.1
+2026-11-06T21:08:33.7346968Z [1m[92m   Compiling[0m zeroize v1.9.0
+2026-11-06T21:08:33.9782340Z [1m[92m   Compiling[0m windows_x86_64_msvc v0.52.6
+2026-11-06T21:08:33.9811990Z [1m[92m   Compiling[0m rustls-pki-types v1.15.1
+2026-11-06T21:08:34.2691243Z [1m[92m   Compiling[0m getrandom v0.2.17
+2026-11-06T21:08:34.4504512Z [1m[92m   Compiling[0m cc v1.5.1
+2026-11-06T21:08:35.1823116Z [1m[92m   Compiling[0m httparse v1.10.1
+2026-11-06T21:08:35.6355021Z [1m[92m   Compiling[0m untrusted v0.9.0
+2026-11-06T21:08:35.8424085Z [1m[92m   Compiling[0m xiao-standard-library v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-standard-library)
+2026-11-06T21:08:35.9072592Z [1m[92m   Compiling[0m xiao-i18n v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-i18n)
+2026-11-06T21:08:36.1124097Z [1m[92m   Compiling[0m bytes v1.12.1
+2026-11-06T21:08:37.1192999Z [1m[92m   Compiling[0m xiao-diagnostics v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+2026-11-06T21:08:37.8528712Z [1m[92m   Compiling[0m ring v0.17.14
+2026-11-06T21:08:38.5887793Z [1m[92m   Compiling[0m xiao-syntax v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-syntax)
+2026-11-06T21:08:42.1457158Z [1m[92m   Compiling[0m xiao-types v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-types)
+2026-11-06T21:08:42.5843350Z [1m[92m   Compiling[0m xiao-modules v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-modules)
+2026-11-06T21:08:49.6001292Z [1m[92m   Compiling[0m xiao-lifetime v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+2026-11-06T21:08:54.3798875Z [1m[92m   Compiling[0m xiao-ir v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-ir)
+2026-11-06T21:09:01.1141800Z [1m[92m   Compiling[0m xiao-optimizer v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+2026-11-06T21:09:14.4666959Z [1m[92m   Compiling[0m rustls v0.23.45
+2026-11-06T21:09:15.2124732Z [1m[92m   Compiling[0m log v0.4.34
+2026-11-06T21:09:15.6080621Z [1m[92m   Compiling[0m crc32fast v1.5.2
+2026-11-06T21:09:16.8795073Z [1m[92m   Compiling[0m rustls-webpki v0.103.15
+2026-11-06T21:09:23.4048486Z [1m[92m   Compiling[0m xiao-bytecode v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+2026-11-06T21:09:26.0252244Z [1m[92m   Compiling[0m http v1.5.0
+2026-11-06T21:09:32.4206689Z [1m[92m   Compiling[0m xiao-lock v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-lock)
+2026-11-06T21:09:35.7365885Z [1m[92m   Compiling[0m windows-targets v0.52.6
+2026-11-06T21:09:36.6528177Z [1m[92m   Compiling[0m simd-adler32 v0.3.10
+2026-11-06T21:09:37.1017213Z [1m[92m   Compiling[0m subtle v2.6.1
+2026-11-06T21:09:37.6609929Z [1m[92m   Compiling[0m adler2 v2.0.1
+2026-11-06T21:09:38.1631476Z [1m[92m   Compiling[0m base64 v0.23.1
+2026-11-06T21:09:39.8460947Z [1m[92m   Compiling[0m once_cell v1.21.4
+2026-11-06T21:09:39.8799342Z [1m[92m   Compiling[0m ureq-proto v0.6.4
+2026-11-06T21:09:49.0537654Z [1m[92m   Compiling[0m miniz_oxide v0.9.1
+2026-11-06T21:09:54.5415286Z [1m[92m   Compiling[0m xiao-runtime v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-runtime)
+2026-11-06T21:10:36.0240721Z [1m[92m   Compiling[0m windows-sys v0.52.0
+2026-11-06T21:10:37.0194165Z [1m[92m   Compiling[0m xiao-config v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-config)
+2026-11-06T21:10:37.4243275Z [1m[92m   Compiling[0m webpki-roots v1.0.9
+2026-11-06T21:10:37.5555541Z [1m[92m   Compiling[0m filetime v0.2.29
+2026-11-06T21:10:37.7493898Z [1m[92m   Compiling[0m utf8-zero v0.8.1
+2026-11-06T21:10:38.0022503Z [1m[92m   Compiling[0m percent-encoding v2.3.2
+2026-11-06T21:10:38.3950002Z [1m[92m   Compiling[0m ureq v3.4.2
+2026-11-06T21:10:40.8947724Z [1m[92m   Compiling[0m tar v0.4.46
+2026-11-06T21:10:46.7866258Z [1m[92m   Compiling[0m flate2 v1.1.10
+2026-11-06T21:10:47.0390910Z [1m[92m   Compiling[0m xiao-artifacts v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+2026-11-06T21:10:47.7950784Z [1m[92m   Compiling[0m xiao-codegen-llvm v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+2026-11-06T21:10:50.2347736Z [1m[92m   Compiling[0m xiao-vm v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-vm)
+2026-11-06T21:10:57.6001339Z [1m[92m   Compiling[0m xiao-xar v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-xar)
+2026-11-06T21:10:57.6416791Z [1m[92m   Compiling[0m xiao-package v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-package)
+2026-11-06T21:11:11.2786115Z [1m[92m   Compiling[0m xiao-driver v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-driver)
+2026-11-06T21:12:35.3674004Z [1m[92m    Finished[0m `release` profile [optimized] target(s) in 4m 01s
+2026-11-06T21:12:35.3801223Z [1m[92m     Running[0m `core\rust\target\release\examples\b2_numeric_performance.exe --backend native --case all --profile all --artifact-root b2-a6-native-artifacts --output b2-a6-native.json`
+2026-11-06T21:12:35.6381637Z B2-A6-ARTIFACTS \\?\D:\a\Xiao\Xiao\b2-a6-native-artifacts
+2026-11-06T21:12:51.2916330Z B2-A6-PERF case=lint.add profile=n optimization=0 median=Some(0.000349375) peak=Some(720896) ratio=None result=passed
+2026-11-06T21:12:52.6036579Z B2-A6-PERF case=lint.add profile=2n optimization=0 median=Some(0.00086605234375) peak=Some(1019904) ratio=Some(2.478861806797853) result=passed
+2026-11-06T21:12:53.4886588Z B2-A6-PERF case=lint.add profile=maximum optimization=0 median=Some(0.00631365) peak=Some(1921024) ratio=None result=passed
+2026-11-06T21:12:55.0012643Z B2-A6-PERF case=lint.subtract profile=n optimization=0 median=Some(0.0003478236328125) peak=Some(757760) ratio=None result=passed
+2026-11-06T21:12:55.7367513Z B2-A6-PERF case=lint.subtract profile=2n optimization=0 median=Some(0.0009116169642857143) peak=Some(1048576) ratio=Some(2.6209172646331833) result=passed
+2026-11-06T21:12:56.7253196Z B2-A6-PERF case=lint.subtract profile=maximum optimization=0 median=Some(0.006593325) peak=Some(1998848) ratio=None result=passed
+2026-11-06T21:12:57.4455483Z B2-A6-PERF case=lint.multiply profile=n optimization=0 median=Some(0.0007273118055555555) peak=Some(909312) ratio=None result=passed
+2026-11-06T21:12:58.5501154Z B2-A6-PERF case=lint.multiply profile=2n optimization=0 median=Some(0.0019712859375) peak=Some(1421312) ratio=Some(2.7103725285941667) result=passed
+2026-11-06T21:12:59.9827930Z B2-A6-PERF case=lint.multiply profile=maximum optimization=0 median=Some(0.00499764375) peak=Some(1896448) ratio=None result=passed
+2026-11-06T21:13:00.7897685Z B2-A6-PERF case=lfloat.cancel profile=n optimization=0 median=Some(0.00010442080078125) peak=Some(487424) ratio=None result=passed
+2026-11-06T21:13:01.8739832Z B2-A6-PERF case=lfloat.cancel profile=2n optimization=0 median=Some(0.0002419609375) peak=Some(626688) ratio=Some(2.3171718248635282) result=passed
+2026-11-06T21:13:02.6525739Z B2-A6-PERF case=lfloat.cancel profile=maximum optimization=0 median=Some(0.00159184375) peak=Some(929792) ratio=None result=passed
+2026-11-06T21:13:03.3839832Z B2-A6-PERF case=lfloat.multiply profile=n optimization=0 median=Some(0.0007469923611111111) peak=Some(909312) ratio=None result=passed
+2026-11-06T21:13:04.3204474Z B2-A6-PERF case=lfloat.multiply profile=2n optimization=0 median=Some(0.0019476953125) peak=Some(1269760) ratio=Some(2.6073831727046146) result=passed
+2026-11-06T21:13:05.7537228Z B2-A6-PERF case=lfloat.multiply profile=maximum optimization=0 median=Some(0.0051769) peak=Some(1884160) ratio=None result=passed
+2026-11-06T21:13:06.5443661Z B2-A6-PERF case=lfloat.floor profile=n optimization=0 median=Some(0.00135652) peak=Some(954368) ratio=None result=passed
+2026-11-06T21:13:07.5860137Z B2-A6-PERF case=lfloat.floor profile=2n optimization=0 median=Some(0.003685490625) peak=Some(1294336) ratio=Some(2.71687157211099) result=passed
+2026-11-06T21:13:08.9156384Z B2-A6-PERF case=lfloat.floor profile=maximum optimization=0 median=Some(0.010032639999999999) peak=Some(2052096) ratio=None result=passed
+2026-11-06T21:13:10.1926749Z B2-A6-PERF case=lfloat.modular profile=n optimization=0 median=Some(0.0008443540178571429) peak=Some(983040) ratio=None result=passed
+2026-11-06T21:13:11.0213607Z B2-A6-PERF case=lfloat.modular profile=2n optimization=0 median=Some(0.0014423262500000002) peak=Some(1044480) ratio=Some(1.708200848810349) result=passed
+2026-11-06T21:13:12.6146381Z B2-A6-PERF case=lfloat.modular profile=maximum optimization=0 median=Some(0.006497421428571429) peak=Some(1875968) ratio=None result=passed
+2026-11-06T21:13:13.6697358Z B2-A6-PERF case=lfloat.remainder-cancel profile=n optimization=0 median=Some(0.00017743619791666667) peak=Some(770048) ratio=None result=passed
+2026-11-06T21:13:14.7246512Z B2-A6-PERF case=lfloat.remainder-cancel profile=2n optimization=0 median=Some(0.00046318870192307697) peak=Some(1015808) ratio=Some(2.610452136382085) result=passed
+2026-11-06T21:13:15.6545956Z B2-A6-PERF case=lfloat.remainder-cancel profile=maximum optimization=0 median=Some(0.003215690625) peak=Some(1523712) ratio=None result=passed
+2026-11-06T21:13:17.1439891Z B2-A6-PERF case=lfloat.finite-division profile=n optimization=0 median=Some(0.0003480546875) peak=Some(798720) ratio=None result=passed
+2026-11-06T21:13:17.8835999Z B2-A6-PERF case=lfloat.finite-division profile=2n optimization=0 median=Some(0.00084310546875) peak=Some(806912) ratio=Some(2.422336198962986) result=passed
+2026-11-06T21:13:18.6655840Z B2-A6-PERF case=lfloat.finite-division profile=maximum optimization=0 median=Some(0.01067796) peak=Some(1736704) ratio=None result=passed
+2026-11-06T21:13:19.4932021Z B2-A6-PERF case=lfloat.nonterminating-gcd profile=n optimization=0 median=Some(0.0017198234375) peak=Some(712704) ratio=None result=passed
+2026-11-06T21:13:20.9020029Z B2-A6-PERF case=lfloat.nonterminating-gcd profile=2n optimization=0 median=Some(0.00522285625) peak=Some(876544) ratio=Some(3.036856072616466) result=passed
+2026-11-06T21:13:21.6197444Z B2-A6-PERF case=lfloat.nonterminating-gcd profile=maximum optimization=0 median=Some(0.0594579) peak=Some(1294336) ratio=None result=passed
+2026-11-06T21:13:22.8969538Z B2-A6-PERF case=lint.power profile=n optimization=0 median=Some(0.0002832123046875) peak=Some(610304) ratio=None result=passed
+2026-11-06T21:13:23.6615314Z B2-A6-PERF case=lint.power profile=2n optimization=0 median=Some(0.0007912013888888889) peak=Some(724992) ratio=Some(2.7936688335696096) result=passed
+2026-11-06T21:13:25.1541250Z B2-A6-PERF case=lint.power profile=maximum optimization=0 median=Some(0.008469854545454545) peak=Some(1822720) ratio=None result=passed
+2026-11-06T21:13:25.8932245Z B2-A6-PERF case=lfloat.power profile=n optimization=0 median=Some(0.0009372767857142858) peak=Some(765952) ratio=None result=passed
+2026-11-06T21:13:26.8503923Z B2-A6-PERF case=lfloat.power profile=2n optimization=0 median=Some(0.0025138375) peak=Some(1118208) ratio=Some(2.682065253631817) result=passed
+2026-11-06T21:13:27.5902641Z B2-A6-PERF case=lfloat.power profile=maximum optimization=0 median=Some(0.009210527272727273) peak=Some(1789952) ratio=None result=passed
+2026-11-06T21:13:28.2564671Z B2-A6-PERF case=text.parse profile=n optimization=0 median=Some(2.638565104166667e-5) peak=Some(274432) ratio=None result=passed
+2026-11-06T21:13:28.9787185Z B2-A6-PERF case=text.parse profile=2n optimization=0 median=Some(5.1617333984375e-5) peak=Some(348160) ratio=Some(1.956265316435207) result=passed
+2026-11-06T21:13:30.3975132Z B2-A6-PERF case=text.parse profile=maximum optimization=0 median=Some(0.0003288931640625) peak=Some(581632) ratio=None result=passed
+2026-11-06T21:13:31.2379337Z B2-A6-PERF case=lfloat.format profile=n optimization=0 median=Some(3.339309895833333e-5) peak=Some(446464) ratio=None result=passed
+2026-11-06T21:13:32.3663494Z B2-A6-PERF case=lfloat.format profile=2n optimization=0 median=Some(6.521194661458333e-5) peak=Some(479232) ratio=Some(1.9528569868867929) result=passed
+2026-11-06T21:13:33.0853577Z B2-A6-PERF case=lfloat.format profile=maximum optimization=0 median=Some(0.0005997488636363637) peak=Some(774144) ratio=None result=passed
+2026-11-06T21:13:33.7901998Z B2-A6-PERF case=lint.to-decimal profile=n optimization=0 median=Some(5.0344189453125e-5) peak=Some(491520) ratio=None result=passed
+2026-11-06T21:13:34.5635540Z B2-A6-PERF case=lint.to-decimal profile=2n optimization=0 median=Some(9.87205078125e-5) peak=Some(581632) ratio=Some(1.960911654053299) result=passed
+2026-11-06T21:13:35.2869865Z B2-A6-PERF case=lint.to-decimal profile=maximum optimization=0 median=Some(0.00043772041666666667) peak=Some(999424) ratio=None result=passed
+2026-11-06T21:13:36.3745764Z B2-A6-PERF case=lfloat.to-integer profile=n optimization=0 median=Some(0.000240637109375) peak=Some(696320) ratio=None result=passed
+2026-11-06T21:13:37.1097626Z B2-A6-PERF case=lfloat.to-integer profile=2n optimization=0 median=Some(0.0006259335227272728) peak=Some(868352) ratio=Some(2.601151270279934) result=passed
+2026-11-06T21:13:38.4100901Z B2-A6-PERF case=lfloat.to-integer profile=maximum optimization=0 median=Some(0.00455505) peak=Some(1732608) ratio=None result=passed
+2026-11-06T21:13:39.3564315Z B2-A6-PERF case=lfloat.to-int-truncate profile=n optimization=0 median=Some(0.0002130537109375) peak=Some(819200) ratio=None result=passed
+2026-11-06T21:13:40.0572869Z B2-A6-PERF case=lfloat.to-int-truncate profile=2n optimization=0 median=Some(0.0005482286458333333) peak=Some(1060864) ratio=Some(2.5731945405736583) result=passed
+2026-11-06T21:13:41.1417419Z B2-A6-PERF case=lfloat.to-int-truncate profile=maximum optimization=0 median=Some(0.0037575) peak=Some(1781760) ratio=None result=passed
+2026-11-06T21:13:41.8862309Z B2-A6-PERF case=lfloat.to-float-subnormal profile=n optimization=0 median=Some(0.0010721541666666667) peak=Some(917504) ratio=None result=passed
+2026-11-06T21:13:42.8993247Z B2-A6-PERF case=lfloat.to-float-subnormal profile=2n optimization=0 median=Some(0.00267559375) peak=Some(1118208) ratio=Some(2.4955308044163425) result=passed
+2026-11-06T21:13:43.7404069Z B2-A6-PERF case=lfloat.to-float-subnormal profile=maximum optimization=0 median=Some(0.02026728) peak=Some(1597440) ratio=None result=passed
+2026-11-06T21:13:44.4948420Z B2-A6-PERF case=lfloat.to-sfloat-subnormal profile=n optimization=0 median=Some(0.0009558919642857143) peak=Some(815104) ratio=None result=passed
+2026-11-06T21:13:45.5111677Z B2-A6-PERF case=lfloat.to-sfloat-subnormal profile=2n optimization=0 median=Some(0.0026847312500000004) peak=Some(1130496) ratio=Some(2.8086136826206642) result=passed
+2026-11-06T21:13:47.1275707Z B2-A6-PERF case=lfloat.to-sfloat-subnormal profile=maximum optimization=0 median=Some(0.01939139) peak=Some(1769472) ratio=None result=passed
+2026-11-06T21:13:47.8572669Z B2-A6-PERF case=float.to-decimal profile=maximum optimization=0 median=Some(4.589513888888889e-5) peak=Some(372736) ratio=None result=passed
+2026-11-06T21:13:48.6170619Z B2-A6-PERF case=sfloat.to-decimal profile=maximum optimization=0 median=Some(4.4006103515625e-6) peak=Some(270336) ratio=None result=passed
+2026-11-06T21:13:49.3365335Z B2-A6-PERF case=identity.compare profile=n optimization=0 median=Some(5.107265625e-5) peak=Some(360448) ratio=None result=passed
+2026-11-06T21:13:50.3226606Z B2-A6-PERF case=identity.compare profile=2n optimization=0 median=Some(0.000101950390625) peak=Some(360448) ratio=Some(1.996183439646337) result=passed
+2026-11-06T21:13:51.2997820Z B2-A6-PERF case=identity.compare profile=maximum optimization=0 median=Some(0.0006319721153846153) peak=Some(425984) ratio=None result=passed
+2026-11-06T21:13:52.3301143Z B2-A6-PERF case=identity.hash-set profile=n optimization=0 median=Some(9.876028645833333e-5) peak=Some(368640) ratio=None result=passed
+2026-11-06T21:13:53.4496689Z B2-A6-PERF case=identity.hash-set profile=2n optimization=0 median=Some(0.00017852552083333332) peak=Some(372736) ratio=Some(1.8076650770818967) result=passed
+2026-11-06T21:13:54.4179782Z B2-A6-PERF case=identity.hash-set profile=maximum optimization=0 median=Some(0.0008818140625) peak=Some(466944) ratio=None result=passed
+2026-11-06T21:13:55.2185832Z B2-A6-PERF case=carrier.tuple profile=n optimization=0 median=Some(7.413652343749999e-5) peak=Some(307200) ratio=None result=passed
+2026-11-06T21:13:56.1037910Z B2-A6-PERF case=carrier.tuple profile=2n optimization=0 median=Some(0.00014512447916666666) peak=Some(405504) ratio=Some(1.9575301408490284) result=passed
+2026-11-06T21:13:56.8212589Z B2-A6-PERF case=carrier.tuple profile=maximum optimization=0 median=Some(0.0007220062500000001) peak=Some(671744) ratio=None result=passed
+2026-11-06T21:13:58.4022651Z B2-A6-PERF case=lfloat.add profile=n optimization=0 median=Some(0.000362865625) peak=Some(724992) ratio=None result=passed
+2026-11-06T21:13:59.1313341Z B2-A6-PERF case=lfloat.add profile=2n optimization=0 median=Some(0.0009106089285714286) peak=Some(942080) ratio=Some(2.509493503473713) result=passed
+2026-11-06T21:14:00.4545854Z B2-A6-PERF case=lfloat.add profile=maximum optimization=0 median=Some(0.0068221375) peak=Some(1847296) ratio=None result=passed
+2026-11-06T21:14:01.9818382Z B2-A6-PERF case=carrier.thread-xcon profile=n optimization=0 median=Some(0.013510364285714286) peak=Some(561152) ratio=None result=passed
+2026-11-06T21:14:03.2792712Z B2-A6-PERF case=carrier.thread-xcon profile=2n optimization=0 median=Some(0.013534307142857142) peak=Some(577536) ratio=Some(1.0017721844234928) result=passed
+2026-11-06T21:14:04.6247015Z B2-A6-PERF case=carrier.thread-xcon profile=maximum optimization=0 median=Some(0.0139220125) peak=Some(786432) ratio=None result=passed
+2026-11-06T21:14:05.9091370Z B2-A6-PERF case=carrier.pool-cycle-xcon profile=n optimization=0 median=Some(0.0002972107421875) peak=Some(815104) ratio=None result=passed
+2026-11-06T21:14:07.4536473Z B2-A6-PERF case=carrier.pool-cycle-xcon profile=2n optimization=0 median=Some(0.000362933984375) peak=Some(876544) ratio=Some(1.2211334681370214) result=passed
+2026-11-06T21:14:08.6471769Z B2-A6-PERF case=carrier.pool-cycle-xcon profile=maximum optimization=0 median=Some(0.001264230625) peak=Some(929792) ratio=None result=passed
+2026-11-06T21:14:10.1677692Z B2-A6-PERF case=lint.add profile=n optimization=3 median=Some(0.0003506080078125) peak=Some(720896) ratio=None result=passed
+2026-11-06T21:14:11.6730899Z B2-A6-PERF case=lint.add profile=2n optimization=3 median=Some(0.000866625) peak=Some(1019904) ratio=Some(2.4717775426950834) result=passed
+2026-11-06T21:14:12.7372197Z B2-A6-PERF case=lint.add profile=maximum optimization=3 median=Some(0.00633869375) peak=Some(1884160) ratio=None result=passed
+2026-11-06T21:14:14.2589557Z B2-A6-PERF case=lint.subtract profile=n optimization=3 median=Some(0.0003522626953125) peak=Some(757760) ratio=None result=passed
+2026-11-06T21:14:14.9913768Z B2-A6-PERF case=lint.subtract profile=2n optimization=3 median=Some(0.0009049803571428572) peak=Some(1044480) ratio=Some(2.569049658636232) result=passed
+2026-11-06T21:14:16.1917364Z B2-A6-PERF case=lint.subtract profile=maximum optimization=3 median=Some(0.006324075) peak=Some(1904640) ratio=None result=passed
+2026-11-06T21:14:16.9645400Z B2-A6-PERF case=lint.multiply profile=n optimization=3 median=Some(0.0007899423611111111) peak=Some(901120) ratio=None result=passed
+2026-11-06T21:14:17.9019713Z B2-A6-PERF case=lint.multiply profile=2n optimization=3 median=Some(0.0019279265625) peak=Some(1335296) ratio=Some(2.440591437314783) result=passed
+2026-11-06T21:14:19.3587471Z B2-A6-PERF case=lint.multiply profile=maximum optimization=3 median=Some(0.005088053125) peak=Some(1863680) ratio=None result=passed
+2026-11-06T21:14:20.3168641Z B2-A6-PERF case=lfloat.cancel profile=n optimization=3 median=Some(0.0001046568359375) peak=Some(532480) ratio=None result=passed
+2026-11-06T21:14:21.4102250Z B2-A6-PERF case=lfloat.cancel profile=2n optimization=3 median=Some(0.0002421662109375) peak=Some(618496) ratio=Some(2.3139072452192155) result=passed
+2026-11-06T21:14:22.1967430Z B2-A6-PERF case=lfloat.cancel profile=maximum optimization=3 median=Some(0.0015817609375) peak=Some(917504) ratio=None result=passed
+2026-11-06T21:14:22.9374026Z B2-A6-PERF case=lfloat.multiply profile=n optimization=3 median=Some(0.0007330472222222222) peak=Some(892928) ratio=None result=passed
+2026-11-06T21:14:23.8772859Z B2-A6-PERF case=lfloat.multiply profile=2n optimization=3 median=Some(0.00191790625) peak=Some(1249280) ratio=Some(2.616347476477565) result=passed
+2026-11-06T21:14:25.3155328Z B2-A6-PERF case=lfloat.multiply profile=maximum optimization=3 median=Some(0.005181759375) peak=Some(1851392) ratio=None result=passed
+2026-11-06T21:14:26.1238302Z B2-A6-PERF case=lfloat.floor profile=n optimization=3 median=Some(0.0013624087499999999) peak=Some(954368) ratio=None result=passed
+2026-11-06T21:14:27.1846862Z B2-A6-PERF case=lfloat.floor profile=2n optimization=3 median=Some(0.003658584375) peak=Some(1286144) ratio=Some(2.6853793877938616) result=passed
+2026-11-06T21:14:28.5109668Z B2-A6-PERF case=lfloat.floor profile=maximum optimization=3 median=Some(0.009784875) peak=Some(2031616) ratio=None result=passed
+2026-11-06T21:14:30.1658235Z B2-A6-PERF case=lfloat.modular profile=n optimization=3 median=Some(0.0008376165178571428) peak=Some(978944) ratio=None result=passed
+2026-11-06T21:14:31.0113731Z B2-A6-PERF case=lfloat.modular profile=2n optimization=3 median=Some(0.0014375775) peak=Some(1036288) ratio=Some(1.716271670092807) result=passed
+2026-11-06T21:14:32.4215318Z B2-A6-PERF case=lfloat.modular profile=maximum optimization=3 median=Some(0.006476853571428571) peak=Some(1863680) ratio=None result=passed
+2026-11-06T21:14:33.4760877Z B2-A6-PERF case=lfloat.remainder-cancel profile=n optimization=3 median=Some(0.00017463554687499998) peak=Some(761856) ratio=None result=passed
+2026-11-06T21:14:34.3583157Z B2-A6-PERF case=lfloat.remainder-cancel profile=2n optimization=3 median=Some(0.0004600232142857143) peak=Some(1011712) ratio=Some(2.634190017539717) result=passed
+2026-11-06T21:14:35.3038129Z B2-A6-PERF case=lfloat.remainder-cancel profile=maximum optimization=3 median=Some(0.003197440625) peak=Some(1515520) ratio=None result=passed
+2026-11-06T21:14:36.7821940Z B2-A6-PERF case=lfloat.finite-division profile=n optimization=3 median=Some(0.0003432095703125) peak=Some(798720) ratio=None result=passed
+2026-11-06T21:14:37.5333509Z B2-A6-PERF case=lfloat.finite-division profile=2n optimization=3 median=Some(0.00084126875) peak=Some(798720) ratio=Some(2.451180919092687) result=passed
+2026-11-06T21:14:38.3206356Z B2-A6-PERF case=lfloat.finite-division profile=maximum optimization=3 median=Some(0.01070399) peak=Some(1716224) ratio=None result=passed
+2026-11-06T21:14:39.1572458Z B2-A6-PERF case=lfloat.nonterminating-gcd profile=n optimization=3 median=Some(0.0017170421875) peak=Some(724992) ratio=None result=passed
+2026-11-06T21:14:40.5923684Z B2-A6-PERF case=lfloat.nonterminating-gcd profile=2n optimization=3 median=Some(0.005321953125) peak=Some(888832) ratio=Some(3.099488855744845) result=passed
+2026-11-06T21:14:41.3172557Z B2-A6-PERF case=lfloat.nonterminating-gcd profile=maximum optimization=3 median=Some(0.0593634) peak=Some(1294336) ratio=None result=passed
+2026-11-06T21:14:42.5703163Z B2-A6-PERF case=lint.power profile=n optimization=3 median=Some(0.000283107421875) peak=Some(610304) ratio=None result=passed
+2026-11-06T21:14:43.3314632Z B2-A6-PERF case=lint.power profile=2n optimization=3 median=Some(0.000777975) peak=Some(708608) ratio=Some(2.747985181199164) result=passed
+2026-11-06T21:14:44.8201853Z B2-A6-PERF case=lint.power profile=maximum optimization=3 median=Some(0.008490622727272728) peak=Some(1806336) ratio=None result=passed
+2026-11-06T21:14:45.5851607Z B2-A6-PERF case=lfloat.power profile=n optimization=3 median=Some(0.0009417794642857143) peak=Some(770048) ratio=None result=passed
+2026-11-06T21:14:46.5591227Z B2-A6-PERF case=lfloat.power profile=2n optimization=3 median=Some(0.0025330145833333336) peak=Some(1101824) ratio=Some(2.6896048166164674) result=passed
+2026-11-06T21:14:47.3122444Z B2-A6-PERF case=lfloat.power profile=maximum optimization=3 median=Some(0.009270236363636363) peak=Some(1777664) ratio=None result=passed
+2026-11-06T21:14:48.1951650Z B2-A6-PERF case=text.parse profile=n optimization=3 median=Some(2.561328125e-5) peak=Some(262144) ratio=None result=passed
+2026-11-06T21:14:48.9170870Z B2-A6-PERF case=text.parse profile=2n optimization=3 median=Some(5.0026123046875e-5) peak=Some(331776) ratio=Some(1.9531321488485587) result=passed
+2026-11-06T21:14:50.3134980Z B2-A6-PERF case=text.parse profile=maximum optimization=3 median=Some(0.0003176861328125) peak=Some(581632) ratio=None result=passed
+2026-11-06T21:14:51.0086005Z B2-A6-PERF case=lfloat.format profile=n optimization=3 median=Some(3.0940745192307694e-5) peak=Some(393216) ratio=None result=passed
+2026-11-06T21:14:51.9417155Z B2-A6-PERF case=lfloat.format profile=2n optimization=3 median=Some(6.0717187500000005e-5) peak=Some(483328) ratio=Some(1.962369914577725) result=passed
+2026-11-06T21:14:53.0673146Z B2-A6-PERF case=lfloat.format profile=maximum optimization=3 median=Some(0.000565340625) peak=Some(794624) ratio=None result=passed
+2026-11-06T21:14:53.8060705Z B2-A6-PERF case=lint.to-decimal profile=n optimization=3 median=Some(5.0251318359375e-5) peak=Some(487424) ratio=None result=passed
+2026-11-06T21:14:54.5872260Z B2-A6-PERF case=lint.to-decimal profile=2n optimization=3 median=Some(9.899619140625e-5) peak=Some(565248) ratio=Some(1.970021775314897) result=passed
+2026-11-06T21:14:55.3207509Z B2-A6-PERF case=lint.to-decimal profile=maximum optimization=3 median=Some(0.0004313104166666666) peak=Some(962560) ratio=None result=passed
+2026-11-06T21:14:56.4169051Z B2-A6-PERF case=lfloat.to-integer profile=n optimization=3 median=Some(0.0002393755859375) peak=Some(692224) ratio=None result=passed
+2026-11-06T21:14:57.6005500Z B2-A6-PERF case=lfloat.to-integer profile=2n optimization=3 median=Some(0.0008106861111111111) peak=Some(983040) ratio=Some(3.38666998113491) result=failed
+2026-11-06T21:14:58.8370935Z B2-A6-PERF case=lfloat.to-integer profile=maximum optimization=3 median=Some(0.0060929125) peak=Some(1695744) ratio=None result=passed
+2026-11-06T21:14:59.7844778Z B2-A6-PERF case=lfloat.to-int-truncate profile=n optimization=3 median=Some(0.00021058046875) peak=Some(815104) ratio=None result=passed
+2026-11-06T21:15:00.5858107Z B2-A6-PERF case=lfloat.to-int-truncate profile=2n optimization=3 median=Some(0.0005431630208333334) peak=Some(1069056) ratio=Some(2.579360868828598) result=passed
+2026-11-06T21:15:01.6683906Z B2-A6-PERF case=lfloat.to-int-truncate profile=maximum optimization=3 median=Some(0.003774934375) peak=Some(1773568) ratio=None result=passed
+2026-11-06T21:15:02.4168689Z B2-A6-PERF case=lfloat.to-float-subnormal profile=n optimization=3 median=Some(0.0010762104166666666) peak=Some(901120) ratio=None result=passed
+2026-11-06T21:15:03.4412249Z B2-A6-PERF case=lfloat.to-float-subnormal profile=2n optimization=3 median=Some(0.0026757979166666668) peak=Some(1097728) ratio=Some(2.4863148276843323) result=passed
+2026-11-06T21:15:04.2991687Z B2-A6-PERF case=lfloat.to-float-subnormal profile=maximum optimization=3 median=Some(0.02049098) peak=Some(1572864) ratio=None result=passed
+2026-11-06T21:15:05.0661191Z B2-A6-PERF case=lfloat.to-sfloat-subnormal profile=n optimization=3 median=Some(0.0009618205357142857) peak=Some(802816) ratio=None result=passed
+2026-11-06T21:15:06.2384618Z B2-A6-PERF case=lfloat.to-sfloat-subnormal profile=2n optimization=3 median=Some(0.0027064645833333335) peak=Some(1118208) ratio=Some(2.8138976896801298) result=passed
+2026-11-06T21:15:07.4783467Z B2-A6-PERF case=lfloat.to-sfloat-subnormal profile=maximum optimization=3 median=Some(0.02000728) peak=Some(1761280) ratio=None result=passed
+2026-11-06T21:15:08.2098701Z B2-A6-PERF case=float.to-decimal profile=maximum optimization=3 median=Some(4.567951388888889e-5) peak=Some(368640) ratio=None result=passed
+2026-11-06T21:15:08.9862741Z B2-A6-PERF case=sfloat.to-decimal profile=maximum optimization=3 median=Some(4.400146484375e-6) peak=Some(262144) ratio=None result=passed
+2026-11-06T21:15:09.7037051Z B2-A6-PERF case=identity.compare profile=n optimization=3 median=Some(4.920966796875e-5) peak=Some(356352) ratio=None result=passed
+2026-11-06T21:15:11.1053352Z B2-A6-PERF case=identity.compare profile=2n optimization=3 median=Some(9.733154296875e-5) peak=Some(393216) ratio=Some(1.977894730575285) result=passed
+2026-11-06T21:15:11.7963984Z B2-A6-PERF case=identity.compare profile=maximum optimization=3 median=Some(0.00045155267857142857) peak=Some(417792) ratio=None result=passed
+2026-11-06T21:15:12.5924247Z B2-A6-PERF case=identity.hash-set profile=n optimization=3 median=Some(8.50190625e-5) peak=Some(327680) ratio=None result=passed
+2026-11-06T21:15:13.6228286Z B2-A6-PERF case=identity.hash-set profile=2n optimization=3 median=Some(0.00016859453125) peak=Some(380928) ratio=Some(1.9830203520534) result=passed
+2026-11-06T21:15:14.3473023Z B2-A6-PERF case=identity.hash-set profile=maximum optimization=3 median=Some(0.00080794609375) peak=Some(450560) ratio=None result=passed
+2026-11-06T21:15:15.1359439Z B2-A6-PERF case=carrier.tuple profile=n optimization=3 median=Some(7.374095052083333e-5) peak=Some(315392) ratio=None result=passed
+2026-11-06T21:15:16.0048480Z B2-A6-PERF case=carrier.tuple profile=2n optimization=3 median=Some(0.00014013893229166668) peak=Some(401408) ratio=Some(1.9004221033477804) result=passed
+2026-11-06T21:15:16.7123529Z B2-A6-PERF case=carrier.tuple profile=maximum optimization=3 median=Some(0.0007000875) peak=Some(622592) ratio=None result=passed
+2026-11-06T21:15:18.2566530Z B2-A6-PERF case=lfloat.add profile=n optimization=3 median=Some(0.0003508388671875) peak=Some(704512) ratio=None result=passed
+2026-11-06T21:15:19.7636822Z B2-A6-PERF case=lfloat.add profile=2n optimization=3 median=Some(0.0008777477678571429) peak=Some(1015808) ratio=Some(2.5018544122366158) result=passed
+2026-11-06T21:15:21.0651827Z B2-A6-PERF case=lfloat.add profile=maximum optimization=3 median=Some(0.006581826666666667) peak=Some(1822720) ratio=None result=passed
+2026-11-06T21:15:22.5879518Z B2-A6-PERF case=carrier.thread-xcon profile=n optimization=3 median=Some(0.011266692857142857) peak=Some(536576) ratio=None result=passed
+2026-11-06T21:15:23.9490024Z B2-A6-PERF case=carrier.thread-xcon profile=2n optimization=3 median=Some(0.011138235714285714) peak=Some(548864) ratio=Some(0.9885985049485303) result=passed
+2026-11-06T21:15:25.3282097Z B2-A6-PERF case=carrier.thread-xcon profile=maximum optimization=3 median=Some(0.013464128571428572) peak=Some(745472) ratio=None result=passed
+2026-11-06T21:15:26.6178181Z B2-A6-PERF case=carrier.pool-cycle-xcon profile=n optimization=3 median=Some(0.0002939001953125) peak=Some(782336) ratio=None result=passed
+2026-11-06T21:15:28.1623878Z B2-A6-PERF case=carrier.pool-cycle-xcon profile=2n optimization=3 median=Some(0.0003541013671875) peak=Some(851968) ratio=Some(1.2048354265671344) result=passed
+2026-11-06T21:15:29.1974395Z B2-A6-PERF case=carrier.pool-cycle-xcon profile=maximum optimization=3 median=Some(0.00123916875) peak=Some(876544) ratio=None result=passed
+2026-11-06T21:15:29.3497484Z [1m[91merror[0m: process didn't exit successfully: `core\rust\target\release\examples\b2_numeric_performance.exe --backend native --case all --profile all --artifact-root b2-a6-native-artifacts --output b2-a6-native.json` (exit code: 1)
+2026-11-06T21:15:29.3939946Z ##[error]Process completed with exit code 1.
+2026-11-06T21:15:29.4383610Z ##[group]Run actions/upload-artifact@v7
+2026-11-06T21:15:29.4383955Z with:
+2026-11-06T21:15:29.4384182Z   name: b2-a6-native-Windows-42293669038-1
+2026-11-06T21:15:29.4384689Z   path: b2-a6-native.json
+b2-a6-native-artifacts
+
+2026-11-06T21:15:29.4385563Z   if-no-files-found: warn
+2026-11-06T21:15:29.4385810Z   compression-level: 6
+2026-11-06T21:15:29.4386035Z   overwrite: false
+2026-11-06T21:15:29.4386249Z   include-hidden-files: false
+2026-11-06T21:15:29.4386488Z   archive: true
+2026-11-06T21:15:29.4386700Z env:
+2026-11-06T21:15:29.4386875Z   XIAO_B1_F10: 0
+2026-11-06T21:15:29.4387067Z   XIAO_B2_A_PERF: 1
+2026-11-06T21:15:29.4387302Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T21:15:29.4387579Z   CARGO_INCREMENTAL: 0
+2026-11-06T21:15:29.4387786Z   CARGO_TERM_COLOR: always
+2026-11-06T21:15:29.4388007Z   CACHE_ON_FAILURE: false
+2026-11-06T21:15:29.4388224Z   MSYSTEM: UCRT64
+2026-11-06T21:15:29.4388411Z ##[endgroup]
+2026-11-06T21:15:30.1780393Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-11-06T21:15:30.1792044Z The least common ancestor is D:\a\Xiao\Xiao. This will be the root directory of the artifact
+2026-11-06T21:15:30.1792584Z With the provided path, there will be 2318 files uploaded
+2026-11-06T21:15:30.1793107Z Artifact name is valid!
+2026-11-06T21:15:30.1793341Z Root directory input is valid!
+2026-11-06T21:15:30.5938807Z Uploading artifact: b2-a6-native-Windows-42293669038-1.zip
+2026-11-06T21:15:30.5981497Z Beginning upload of artifact content to blob storage
+2026-11-06T21:15:33.7413957Z Uploaded bytes 5316605
+2026-11-06T21:15:33.8216079Z Finished uploading artifact content to blob storage!
+2026-11-06T21:15:33.8220253Z SHA256 digest of uploaded artifact is 87ce72148f8f0a22c8a46cfce45b8d7fe09a84ac803b5604c61ad6afe896d874
+2026-11-06T21:15:33.8221119Z Finalizing artifact upload
+2026-11-06T21:15:34.3818744Z Artifact b2-a6-native-Windows-42293669038-1 successfully finalized. Artifact ID 13541866449
+2026-11-06T21:15:34.3819869Z Artifact b2-a6-native-Windows-42293669038-1 has been successfully uploaded! Final size is 5316605 bytes. Artifact ID is 13541866449
+2026-11-06T21:15:34.3830176Z Artifact download URL: https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42293669038/artifacts/13541866449
+2026-11-06T21:15:34.4765800Z Post job cleanup.
+2026-11-06T21:15:34.6830145Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-06T21:15:34.7190059Z git version 2.56.0.windows.4
+2026-11-06T21:15:34.7264248Z Temporarily overriding HOME='D:\a\_temp\0eb5b915-7bad-4fef-8be8-9fa0b506d0f5' before making global git config changes
+2026-11-06T21:15:34.7265685Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-06T21:15:34.7275899Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\Xiao\Xiao
+2026-11-06T21:15:34.7677123Z Removing SSH command configuration
+2026-11-06T21:15:34.7688401Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-06T21:15:34.8100195Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-06T21:15:35.3702890Z Removing HTTP extra header
+2026-11-06T21:15:35.3713219Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-06T21:15:35.4135596Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-06T21:15:35.9825763Z Removing includeIf entries pointing to credentials config files
+2026-11-06T21:15:35.9837082Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-06T21:15:36.0188941Z includeif.gitdir:D:/a/Xiao/Xiao/.git.path
+2026-11-06T21:15:36.0189572Z includeif.gitdir:D:/a/Xiao/Xiao/.git/worktrees/*.path
+2026-11-06T21:15:36.0190199Z includeif.gitdir:/github/workspace/.git.path
+2026-11-06T21:15:36.0190877Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-06T21:15:36.0232883Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/Xiao/Xiao/.git.path
+2026-11-06T21:15:36.0579401Z D:\a\_temp\git-credentials-ed6f7197-5dab-45ea-a2c8-b2444699e960.config
+2026-11-06T21:15:36.0631343Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/Xiao/Xiao/.git.path D\:\\a\\_temp\\git\-credentials\-ed6f7197\-5dab\-45ea\-a2c8\-b2444699e960\.config
+2026-11-06T21:15:36.1030242Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/Xiao/Xiao/.git/worktrees/*.path
+2026-11-06T21:15:36.1379575Z D:\a\_temp\git-credentials-ed6f7197-5dab-45ea-a2c8-b2444699e960.config
+2026-11-06T21:15:36.1423614Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/Xiao/Xiao/.git/worktrees/*.path D\:\\a\\_temp\\git\-credentials\-ed6f7197\-5dab\-45ea\-a2c8\-b2444699e960\.config
+2026-11-06T21:15:36.1810451Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-06T21:15:36.2151999Z /github/runner_temp/git-credentials-ed6f7197-5dab-45ea-a2c8-b2444699e960.config
+2026-11-06T21:15:36.2195140Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-ed6f7197\-5dab\-45ea\-a2c8\-b2444699e960\.config
+2026-11-06T21:15:36.2587500Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-06T21:15:36.2933607Z /github/runner_temp/git-credentials-ed6f7197-5dab-45ea-a2c8-b2444699e960.config
+2026-11-06T21:15:36.2977395Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-ed6f7197\-5dab\-45ea\-a2c8\-b2444699e960\.config
+2026-11-06T21:15:36.3370761Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-06T21:15:36.8914902Z Removing credentials config 'D:\a\_temp\git-credentials-ed6f7197-5dab-45ea-a2c8-b2444699e960.config'
+2026-11-06T21:15:36.9127735Z Cleaning up orphan processes
+2026-11-06T21:15:36.9361184Z Terminate orphan process: pid (3992) (vctip)

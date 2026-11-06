@@ -1,0 +1,41 @@
+{
+  "run": 42282761266,
+  "calls": [
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/42282761266"
+      ],
+      "started_utc": "2026-11-06T19:59:30.106582+00:00",
+      "file": "run.json.request-1.stderr",
+      "bytes": 316,
+      "sha256": "55d7984d46252f33bc4b91b82d5def904f122e091afa5d3bb85daa86b3736b37",
+      "exit_code": 1
+    },
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/42282761266"
+      ],
+      "started_utc": "2026-11-06T19:59:30.106582+00:00",
+      "file": "run.json.request-2.stderr",
+      "bytes": 316,
+      "sha256": "55d7984d46252f33bc4b91b82d5def904f122e091afa5d3bb85daa86b3736b37",
+      "exit_code": 1
+    },
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/42282761266"
+      ],
+      "started_utc": "2026-11-06T19:59:30.106582+00:00",
+      "file": "run.json.request-3.stderr",
+      "bytes": 316,
+      "sha256": "55d7984d46252f33bc4b91b82d5def904f122e091afa5d3bb85daa86b3736b37",
+      "exit_code": 1
+    }
+  ]
+}

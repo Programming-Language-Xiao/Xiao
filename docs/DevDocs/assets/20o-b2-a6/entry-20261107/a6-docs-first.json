@@ -1,0 +1,32 @@
+{
+  "name": "a6-docs-first",
+  "argv": [
+    "bun",
+    "tools/repo-check/src/cli.ts",
+    "all"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a6-resources\\20261107-3b09bfb18950\\source",
+  "started_utc": "2026-11-06T19:44:34.154892+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "a6-docs-first.log",
+  "pid": 54096,
+  "exit_code": 1,
+  "source_before": {
+    "manifest": "source-manifests/7a6bf8ba1b437892aac068fb06213b72608769766d24ae4946935ba8c396824f.json",
+    "raw_tree_sha256": "7a6bf8ba1b437892aac068fb06213b72608769766d24ae4946935ba8c396824f",
+    "utf8_lf_tree_sha256": "7ba80fbc2e8ac3fa5e35288ec1dbe21160c4e5e4bd83768b82b7e8b6d809b1f6",
+    "files": 1027
+  },
+  "source_after": {
+    "manifest": "source-manifests/7a6bf8ba1b437892aac068fb06213b72608769766d24ae4946935ba8c396824f.json",
+    "raw_tree_sha256": "7a6bf8ba1b437892aac068fb06213b72608769766d24ae4946935ba8c396824f",
+    "utf8_lf_tree_sha256": "7ba80fbc2e8ac3fa5e35288ec1dbe21160c4e5e4bd83768b82b7e8b6d809b1f6",
+    "files": 1027
+  },
+  "source_unchanged": true,
+  "runner_sha256": "38d63c18723d6d491dd5652fd538a31480400e8edc97cc5c8980889a67a422c8",
+  "finished_utc": "2026-11-06T19:44:57.946604+00:00",
+  "duration_seconds": 23.797,
+  "sha256": "deb2d7258f7794824e659b8fea52af35a2fd82a716079fc3e28d1eac08b8011f"
+}

@@ -1,0 +1,1094 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.33s
+     Running unittests src\lib.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\xiao_bytecode-6e3b39ac66e0eae3.exe)
+
+running 32 tests
+test encode::tests::bad_references_and_fixed_width_overflow_are_rejected ... ok
+test encode::tests::check_expected_type_round_trips_in_both_widths ... ok
+test encode::tests::damaged_inputs_are_rejected_structurally ... ok
+test encode::tests::all_opcodes_and_abi_fields_round_trip_in_both_widths ... ok
+test encode::tests::fixed_width_reports_the_overflowing_handler_binding ... ok
+test encode::tests::resource_constant_is_rejected_with_fatal_identity_at_encode_boundary ... ok
+test encode::tests::scalar_and_release_tags_have_one_bidirectional_mapping ... ok
+test encode::tests::set_tags_have_explicit_bidirectional_mapping ... ok
+test encode::tests::unsigned_and_signed_leb128_cover_integer_boundaries ... ok
+test liveness::tests::does_not_invent_fallthrough_and_tracks_explicit_branch ... ok
+test liveness::tests::protected_blocks_keep_handler_inputs_live ... ok
+test liveness::tests::release_plan_is_an_indirect_register_use ... ok
+test lower::expr::tests::unresolved_type_variables_keep_set_only_operators_and_membership_lowerable ... ok
+test optimize::tests::o0_skips_semantic_passes_without_claiming_optimization ... ok
+test optimize::tests::standard_passes_report_snapshots_and_skip_reasons ... ok
+test optimize::tests::optimization_pipeline_preserves_observable_operation_families ... ok
+test optimize::tests::unreachable_block_pass_remaps_targets_and_keeps_execution_blocks ... ok
+test sig::tests::intrinsic_id_round_trips_full_u32_through_two_u16_slots ... ok
+test optimize::tests::unreachable_protected_region_is_kept_for_handler_remapping ... ok
+test sig::tests::zero_intrinsic_id_is_preserved_for_validator_rejection ... ok
+test verify::tests::finally_subroutine_cannot_fall_through_into_continuation ... ok
+test verify::tests::production_entry_distinguishes_known_unsupported ... ok
+test verify::tests::production_entry_rejects_resource_constant_boundary ... ok
+test verify::tests::production_entry_rejects_unsupported_as_internal_error ... ok
+test verify::tests::program_level_categories_are_not_used_for_function_validation ... ok
+test xiaoc::tests::inferred_concurrency_types_require_abi_features_before_vm_load ... ok
+test xiaoc::tests::malformed_random_bytes_never_panic ... ok
+test xiaoc::tests::rejects_truncation_overlap_unknown_required_and_compression ... ok
+test xiaoc::tests::runtime_requirements_reject_unknown_features_and_old_abi ... ok
+test xiaoc::tests::round_trip_is_deterministic_and_variable_length_header_is_supported ... ok
+test encode::tests::module_dependency_direction_is_acyclic ... ok
+test encode::tests::concurrency_plans_round_trip_in_both_widths ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+
+     Running unittests src\bin\xiaoc-check.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\xiaoc_check-97698d5d25984ce5.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\b0_a_api.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\b0_a_api-0b57dfcdfa932de8.exe)
+
+running 1 test
+test root_and_research_paths_share_the_production_verifier ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\fuzz_xiaoc.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\fuzz_xiaoc-acc35bf6c7b5995d.exe)
+
+running 2 tests
+test base_xiaoc_decodes ... ok
+test seeded_xiaoc_mutations_never_panic_and_are_rejected_with_stable_codes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\r2_tac.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\r2_tac-8127f9df877b1fb4.exe)
+
+running 27 tests
+test decodes_string_literals_like_the_type_layer ... ok
+test assigns_register_classes ... ok
+test encodes_program_using_set_operation ... ok
+test consumes_runtime_checks_for_set_compound_assignment ... ok
+test keeps_quote_characters_inside_string_literals ... ok
+test encodes_try_finally_handler ... ok
+test lowers_advanced_selector_plan ... ok
+test lowers_container_literals ... ok
+test keeps_register_classes_local_to_each_function ... ok
+test lowers_exact_index_with_signed_step ... ok
+test lowers_scalar_arithmetic ... ok
+test lowers_exception_handlers_and_finally_subroutine ... ok
+test lowers_functions_separately ... ok
+test lowers_for_iteration_cfg ... ok
+test lowers_string_boolean_runtime_check ... ok
+test promotes_cross_width_operands ... ok
+test lowers_set_checks_for_both_operands ... ok
+test nested_set_operation_does_not_bind_check_to_selector_source ... ok
+test references_existing_release_plans ... ok
+test set_instructions_have_no_jump_targets ... ok
+test separates_backticked_from_plain_bindings ... ok
+test rebuilds_control_flow_blocks ... ok
+test releases_temporary_heap_values ... ok
+test shares_the_escape_table_with_the_type_layer ... ok
+test unary_minus_keeps_float_width ... ok
+test unary_not_compares_against_false ... ok
+test synthesizes_call_signatures ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running unittests src\lib.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\xiao_codegen_llvm-a6bcce794c6aa5ee.exe)
+
+running 55 tests
+test artifact::tests::composition_keeps_declared_and_observed_components_separate ... ok
+test artifact::tests::keeps_unclassified_runtime_symbols_visible ... ok
+test artifact::tests::maps_runtime_symbols_to_declared_component_names ... ok
+test artifact::tests::normalizes_macho_leading_underscore_without_touching_other_symbols ... ok
+test artifact::tests::parses_arm64_slice_from_fat_macho ... ok
+test artifact::tests::parses_controlled_elf_symbols ... ok
+test artifact::tests::parses_controlled_macho_symbols_and_normalizes_prefix ... ok
+test artifact::tests::parses_controlled_pe_coff_symbols ... ok
+test artifact::tests::parses_fat_macho_slice_with_independent_endianness ... ok
+test artifact::tests::dynamic_artifact_reports_runtime_dependency_fact ... ok
+test artifact::tests::rejects_byte_offset_that_cannot_fit_usize ... ok
+test artifact::tests::declared_runtime_component_is_observable_for_each_format ... ok
+test artifact::tests::pe_symbol_table_status_reflects_actual_coff_table ... ok
+test artifact::tests::stripped_symbol_tables_are_not_accepted_as_trimming_evidence ... ok
+test artifact::tests::symbol_table_comparison_never_equates_unavailable_reports ... ok
+test artifact::tests::static_artifact_with_runtime_dependency_is_rejected ... ok
+test baseline::tests::median_and_noise_are_stable ... ok
+test artifact::tests::debug_symbol_is_required_only_for_debug_artifacts ... ok
+test baseline::tests::rejects_non_finite_samples_and_exposes_noise_gate ... ok
+test baseline::tests::rejects_uncontrolled_sample_shapes ... ok
+test dynamic::release::storage_tests::only_literal_alloca_counts_can_move_to_entry ... ok
+test artifact::tests::static_artifact_with_runtime_symbol_is_rejected ... ok
+test native_concurrency::tests::duplicate_spans_are_rejected ... ok
+test native_concurrency::tests::metadata_must_match_one_typed_call_and_cannot_intercept_another_module ... ok
+test native_concurrency::tests::module_concurrency_is_rejected_structurally ... ok
+test native_concurrency::tests::orphan_concurrency_facts_are_rejected ... ok
+test native_concurrency::tests::plan_indexes_ir_calls_without_name_resolution ... ok
+test native_concurrency::tests::unknown_operation_is_fail_closed ... ok
+test native_metadata::tests::native_metadata_codec_is_bounded_and_exact ... ok
+test native_metadata::tests::native_metadata_does_not_scan_for_magic ... ok
+test native_metadata::tests::native_metadata_requirements_reject_incompatible_inputs ... ok
+test native_metadata::tests::native_metadata_emission_uses_the_declared_target ... ok
+test optimization::tests::extension_switches_are_explicitly_rejected_until_frozen ... ok
+test optimization::tests::plan_keeps_extensions_off_and_fingerprint_stable ... ok
+test optimization::tests::runtime_report_explains_retained_and_removed_components ... ok
+test reproducible::tests::binary_layout_whitelist_is_explicit ... ok
+test reproducible::tests::normalizes_debug_paths_in_place_and_records_offsets ... ok
+test reproducible::tests::normalizes_elf_gnu_build_id ... ok
+test reproducible::tests::normalizes_paths_times_and_symbol_order ... ok
+test reproducible::tests::normalizes_pe_debug_directory_timestamp ... ok
+test reproducible::tests::normalizes_pe_timestamp_and_records_the_field ... ok
+test reproducible::tests::records_unix_and_windows_path_fields_separately ... ok
+test artifact::tests::verifies_release_debug_and_stripped_modes_independently ... ok
+test target::tests::controlled_targets_validate_equally ... ok
+test target::tests::host_target_architecture_matches_compile_time_target ... ok
+test target::tests::invalid_fixed_width_and_format_are_rejected ... ok
+test toolchain::tests::native_library_list_is_fingerprinted ... ok
+test toolchain::tests::normalizes_case_insensitive_windows_tokens ... ok
+test toolchain::tests::parses_windows_native_static_libraries ... ok
+test toolchain::tests::posix_startup_shim_waits_for_readiness ... ok
+test toolchain::tests::preserves_unix_native_static_libraries ... ok
+test toolchain::tests::rejects_missing_native_static_library_marker ... ok
+test toolchain::tests::startup_shim_embeds_only_diagnostics_basename ... ok
+test toolchain::tests::windows_startup_shim_opens_console_and_waits_for_readiness ... ok
+test dynamic::architecture_tests::module_dependency_direction_is_acyclic ... ok
+
+test result: ok. 55 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests\15e_ci_gated.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\15e_ci_gated-d671e60d5896a785.exe)
+
+running 5 tests
+test ci_performance_baseline_is_platform_scoped ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+test real_artifact_reproducibility_is_byte_comparable ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+test real_artifact_strip_modes_all_optimization_levels ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH / XIAO_STRIP；准备方式见 10D §4
+test real_debug_activation_survives_all_optimization_levels ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+test real_symbol_table_and_debug_path_evidence ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+
+test result: ok. 0 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\n0_a.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\n0_a-07b9c501c5be802a.exe)
+
+running 23 tests
+test debug_startup_shim_precedes_user_entry ... ok
+test emits_checked_integer_arithmetic ... ok
+test entry_observation_is_explicit ... ok
+test accepts_fixed_named_and_rejects_expanded_arguments ... ok
+test lowers_constant_integer_power_with_checked_multiplication ... ok
+test emits_terminated_elif_false_path ... ok
+test lowers_boolean_equality ... ok
+test lowers_float_and_bool_scalars ... ok
+test lowers_runtime_values_with_abi ... ok
+test lowers_float_power_with_valid_intrinsic_signature ... ok
+test missing_toolchain_is_structured ... ok
+test optional_corrupt_llvm_is_rejected ... ignored, 需要 XIAO_CLANG；准备方式见 10D §4
+test optional_entry_observation_tracks_runtime_branch ... ignored, 需要 XIAO_CLANG 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_external_access_violation_remains_fatal ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_external_illegal_instruction_remains_fatal ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_real_llvm_round_trip ... ignored, 需要 XIAO_CLANG（可选 XIAO_LLVM_AS）与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_static_numeric_failure_boundaries_match_runtime_contract ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_static_overflow_uses_recoverable_runtime_report ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test ordinary_static_artifact_does_not_activate_diagnostics ... ok
+test lowers_integer_division_to_float ... ok
+test lowers_scalar_calls_and_control_flow ... ok
+test lowers_logical_and_rejects_identity_in_raw_ir ... ok
+test respects_declared_scalar_width ... ok
+
+test result: ok. 16 passed; 0 failed; 7 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+     Running tests\n0_b_dynamic.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\n0_b_dynamic-d7c5e8992ef7c5f2.exe)
+
+running 28 tests
+test accepts_identity_dynamic_cast ... ok
+test debug_dynamic_artifact_activates_diagnostic_session ... ok
+test dynamic_entry_observation_is_explicit ... ok
+test emits_complete_table_descriptor ... ok
+test emits_sysv_runtime_value_layout ... ok
+test emits_windows_indirect_runtime_abi_calls ... ok
+test fatal_error_intrinsic_is_still_rejected ... ok
+test function_body_dynamic_condition_has_closed_labels ... ok
+test dynamic_table_member_uses_value_pointer_and_valid_payload_index ... ok
+test dynamic_dictionary_member_reports_table_type_mismatch ... ok
+test decodes_string_escapes_before_llvm_emission ... ok
+test function_error_constructor_borrows_parameter_slots ... ok
+test lowers_dictionary_with_runtime_component ... ok
+test lowers_array_and_preserves_runtime_components ... ok
+test lowers_dynamic_boolean_if ... ok
+test lowers_dynamic_error_constructor_arguments_to_runtime_abi ... ok
+test lowers_non_identity_dynamic_cast ... ok
+test lowers_empty_singleton_declaration ... ok
+test lowers_input_intrinsic_to_runtime_abi ... ok
+test lowers_runtime_check_to_abi ... ok
+test lowers_non_text_error_constructor_argument_to_runtime_check ... ok
+test optional_llvm_accepts_dynamic_table_module ... ignored, 需要 XIAO_LLVM_AS 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test ordinary_dynamic_artifact_does_not_activate_diagnostics ... ok
+test rejects_table_constructor_arguments_until_init_abi_exists ... ok
+test rejects_table_declaration_without_signature ... ok
+test lowers_print_intrinsic_to_runtime_abi ... ok
+test lowers_str_intrinsic_to_runtime_cast ... ok
+test lowers_error_constructor_intrinsics_to_runtime_abi ... ok
+
+test result: ok. 27 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+     Running tests\n0_c_errors.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\n0_c_errors-26d3f232229278d9.exe)
+
+running 6 tests
+test optional_llvm_accepts_error_path_module ... ignored, 需要 XIAO_LLVM_AS；准备方式见 10D §4
+test optional_stackrestore_runtime_probe ... ignored, 需要真实 clang；准备方式见 10D §4
+test rejects_fatal_catch_type ... ok
+test lowers_recoverable_error_path ... ok
+test emits_language_context_and_release_trace_hooks ... ok
+test lowers_nonlocal_control_exits_through_cleanup_chain ... ok
+
+test result: ok. 4 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\stdlib_bindings.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\stdlib_bindings-4f6aef6a063ac6e9.exe)
+
+running 2 tests
+test missing_selected_body_cannot_fall_back_to_another_module ... ok
+test imports_and_internal_calls_keep_all_real_module_definitions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running unittests src\lib.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\xiao_diagnostics-40b4235178321df9.exe)
+
+running 18 tests
+test tests::builds_error_with_span ... ok
+test tests::accumulator_uses_first_error_as_primary ... ok
+test tests::container_errors_keep_stable_identity ... ok
+test tests::distinguishes_fatal_report ... ok
+test tests::division_by_zero_keeps_operator_identity ... ok
+test tests::error_type_registry_is_finite_and_shared ... ok
+test tests::keeps_error_context_and_stack ... ok
+test tests::builtin_localized_facade_preserves_report_identity ... ok
+test tests::preserves_backend_location ... ok
+test tests::preserves_language_independent_params ... ok
+test tests::localized_report_keeps_runtime_reason_parameter ... ok
+test tests::reports_suppressed_without_replacing_primary ... ok
+test tests::numeric_foundation_errors_have_distinct_identity_and_catalog_entries ... ok
+test tests::localized_report_uses_catalog_and_preserves_default_text ... ok
+test window::tests::diagnostic_frame_round_trips ... ok
+test window::tests::fatal_events_use_fatal_level ... ok
+test window::tests::oversized_frame_is_rejected_before_allocation ... ok
+test window::tests::activation_is_persistent_and_absent_for_release_shape ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src\bin\xiao-diagnostics.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\xiao_diagnostics-f27a35a085806a31.exe)
+
+running 8 tests
+test tests::connected_mode_requires_endpoint_and_token ... ok
+test tests::locale_argument_is_normalized ... ok
+test tests::invalid_parent_pid_is_rejected ... ok
+test tests::hold_duration_defaults_and_rejects_invalid_values ... ok
+test tests::standalone_arguments_accept_parent_pid ... ok
+test tests::standalone_arguments_accept_ready_file ... ok
+test tests::standalone_arguments_allow_missing_parent_for_manual_preview ... ok
+test tests::zero_parent_pid_is_rejected ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\xiao_ir-9434b944ed94e884.exe)
+
+running 1 test
+test lower::tests::runtime_check_kind_bridge_is_exhaustive ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\fuzz_snapshots.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\fuzz_snapshots-a11be769036506e9.exe)
+
+running 3 tests
+test unsupported_version_is_reported_as_version_error ... ok
+test base_snapshot_parses_and_round_trips ... ok
+test seeded_ir_mutations_never_panic_and_are_rejected_with_typed_errors ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\r2_release_reconciliation.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\r2_release_reconciliation-ef0b54b2f63567dd.exe)
+
+running 8 tests
+test accepts_empty_plan_for_unused_exit ... ok
+test compares_by_order_not_by_index ... ok
+test rejects_changed_action_kind ... ok
+test accepts_replayed_plan ... ok
+test rejects_missing_release ... ok
+test rejects_reordered_release ... ok
+test rejects_unknown_exit_name ... ok
+test rejects_unknown_scope ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\structure_snapshots.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\structure_snapshots-78d4e3d3dcc57650.exe)
+
+running 1 test
+test ir_structure_snapshots_are_executed ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests\u0_ir.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\u0_ir-ec4b66e6f5198656.exe)
+
+running 12 tests
+test concurrency_types_lower_and_restore ... ok
+test carries_type_result_without_reinference ... ok
+test normalizes_dict_keys_consistently ... ok
+test lowers_complete_static_surface ... ok
+test normalizes_escaped_dict_keys ... ok
+test rejects_non_send_concurrency_handles ... ok
+test old_snapshot_without_concurrency_fields_is_compatible ... ok
+test validator_rejects_broken_control_flow ... ok
+test mirrors_table_interface_and_typed_receiver ... ok
+test resource_checks_require_valid_expected_kinds ... ok
+test verifies_boundary_facts_and_cleanup_order ... ok
+test snapshot_round_trip_and_version_guard ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src\lib.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\xiao_runtime-c1d545390c023a2f.exe)
+
+running 237 tests
+test abi::abi_concurrency::tests::completed_child_cancellation_uses_vm_error_normalization_and_keeps_cleanup_error ... ok
+test abi::abi_concurrency::tests::entry_close_drain_failure_preserves_primary_and_suppressed ... ok
+test abi::abi_concurrency::tests::detached_trampoline_failure_keeps_error_identity_and_runtime_id ... ok
+test abi::abi_concurrency::tests::lock_guard_rejects_cross_thread_use ... ok
+test abi::abi_concurrency::tests::native_blocked_lock_wait_is_cancelled_by_host_token ... ok
+test abi::abi_concurrency::tests::native_cleanup_checkpoint_defers_repeated_cancellation ... ok
+test abi::abi_concurrency::tests::native_error_checkpoint_preserves_primary_and_suppressed ... ok
+test abi::abi_concurrency::tests::native_error_frames_are_appended_during_unwind ... ok
+test abi::abi_concurrency::tests::native_external_cancellation_checks_safe_point_wait_and_lock_wait ... ok
+test abi::abi_concurrency::tests::native_finish_close_error_is_suppressed_under_primary ... ok
+test abi::abi_concurrency::tests::native_first_cancellation_inside_finally_is_delivered ... ok
+test abi::abi_concurrency::tests::join_rejects_shared_mut_result_owned_by_child_runtime ... ok
+test abi::abi_concurrency::tests::current_runtime_is_stable_and_child_uses_bound_runtime_context ... ok
+test abi::abi_concurrency::tests::native_shared_boundary_releases_every_transfer_alias ... ok
+test abi::abi_concurrency::tests::native_shared_mut_lock_round_trips_and_writes_value ... ok
+test abi::abi_concurrency::tests::native_trampoline_resets_worker_checkpoint_and_inherits_locale ... ok
+test abi::abi_concurrency::tests::public_release_reclaims_shared_box_and_boundaries_reject_thread_local_handles ... ok
+test abi::abi_concurrency::tests::native_xcon_maximum_depth_round_trips_through_trampoline ... ok
+test abi::abi_concurrency::tests::runtime_and_pool_values_use_opaque_concurrency_tag ... ok
+test abi::abi_concurrency::tests::shared_creation_rejects_a_closed_current_runtime ... ok
+test abi::abi_concurrency::tests::native_trampoline_spawn_join_round_trips_scalar_result ... ok
+test abi::abi_concurrency::tests::trampoline_error_identity_returns_to_joining_thread ... ok
+test abi::abi_concurrency::tests::unsupported_operation_is_explicitly_rejected ... ok
+test abi::abi_concurrency::tests::vm_release_trace_includes_concurrency_external_objects ... ok
+test abi::abi_io::tests::capability_context_rejects_stdin_before_input ... ok
+test abi::abi_concurrency::tests::wait_rejects_shared_mut_result_owned_by_pool_runtime ... ok
+test abi::abi_io::tests::capability_context_rejects_stdout_before_output ... ok
+test abi::abi_io::tests::removal_verification_input_wrapper_rejects_invalid_prompt_flag ... ok
+test abi::abi_io::tests::removal_verification_print_wrapper_rejects_null_nonempty_input ... ok
+none
+test abi::abi_io::tests::removal_verification_print_wrapper_writes_stdout_behavior ... ok
+test abi::abi_resource::tests::capability_is_checked_before_open_and_io_errors_keep_reason ... ok
+test abi::abi_resource::tests::every_entry_checks_capabilities_before_decoding_arguments ... ok
+test abi::abi_resource::tests::directory_open_validates_directory_and_non_utf8_is_rejected ... ok
+test abi::abi_resource::tests::process_abi_checks_capabilities_before_arguments ... ok
+test abi::abi_resource::tests::open_read_close_and_closed_alias_are_stable ... ok
+test abi::abi_resource::tests::process_abi_roundtrip_and_close_preserve_capability_and_alias_state ... ok
+test abi::abi_tables::tests::native_constructor_rejects_an_occupied_output_slot ... ok
+test abi::abi_tables::tests::native_descriptor_rejects_invalid_metadata_before_allocation ... ok
+test abi::abi_tables::tests::native_drop_failure_is_suppressed_by_existing_primary ... ok
+test abi::abi_tables::tests::native_drop_view_is_readonly_and_expires ... ok
+test abi::abi_tables::tests::native_fatal_skips_drop_and_ordinary_drop_error_is_reported ... ok
+test abi::abi_tables::tests::native_init_failure_preserves_cause_and_cleanup_error ... ok
+test abi::abi_tables::tests::native_method_rejects_wrong_signature_arguments_and_result ... ok
+test abi::abi_tables::tests::native_methods_copy_metadata_and_balance_borrowed_receiver ... ok
+test abi::error_code_tests::borrowed_view_survives_releasing_a_different_alias ... ok
+test abi::error_code_tests::copied_result_survives_source_release_and_copy_failure_keeps_alias ... ok
+test abi::error_code_tests::failure_statuses_preserve_both_output_fields_and_pending ... ok
+test abi::numeric_identity_tests::borrowed_value_restore_preserves_output_on_numeric_failure ... ok
+test abi::numeric_identity_tests::constructors_reject_semantic_payloads_through_existing_pending_errors ... ok
+test abi::numeric_identity_tests::frozen_numeric_errors_reuse_existing_runtime_status ... ok
+test abi::numeric_identity_tests::numeric_handles_restore_shared_identity_without_mutating_inputs ... ok
+test abi::tests::abi_compatibility_accepts_old_minor_and_rejects_unsupported_versions ... ok
+test abi::error_code_tests::success_borrows_exact_bytes_without_allocating_or_touching_pending ... ok
+test abi::tests::array_round_trip_copies_values ... ok
+test abi::tests::diagnostic_ready_failure_cleans_session_and_environment ... ok
+test abi::abi_concurrency::tests::retain_release_race_is_serialized_until_box_reclamation ... ok
+test abi::tests::dictionary_rejects_duplicate_keys ... ok
+test abi::tests::dynamic_member_type_error_releases_input_value ... ok
+test abi::tests::dynamic_operator_and_check_round_trip ... ok
+test abi::tests::error_take_rejects_weak_output_slot ... ok
+test abi::tests::error_value_constructor_preserves_identity ... ok
+test abi::tests::external_resource_round_trips_through_abi_tag ... ok
+test abi::tests::fatal_error_constructor_never_returns_recoverable_value ... ok
+test abi::tests::handle_outputs_replace_previous_owner ... ok
+test abi::tests::legacy_output_slots_replace_owned_values_and_preserve_on_failure ... ok
+test abi::tests::legacy_value_wrapper_rejects_wrong_handle_kind_with_none_sentinel ... ok
+test abi::tests::length_outputs_are_zeroed_on_invalid_handle ... ok
+test abi::tests::native_error_checkpoint_reset_discards_stale_entry_state ... ok
+test abi::tests::native_error_checkpoint_survives_successful_helper_return ... ok
+test abi::tests::native_random_seed_controls_a_persistent_sequence ... ok
+test abi::tests::numeric_error_abi_preserves_identity_and_span ... ok
+test abi::tests::diagnostic_ready_waits_for_delayed_hello ... ok
+test abi::tests::pending_fatal_error_is_not_replaced_by_runtime_error ... ok
+test abi::tests::pending_runtime_error_preserves_primary_and_suppresses_secondary ... ok
+test abi::tests::rejects_invalid_boolean_payload_on_copy ... ok
+test abi::tests::rejects_unknown_value_tag ... ok
+test abi::tests::resource_dynamic_checks_preserve_nominal_kinds_and_closed_values ... ok
+test abi::tests::diagnostic_session_forwards_events_and_closes ... ok
+test abi::tests::retain_keeps_same_box_and_balances_count ... ok
+test abi::tests::scalar_value_copy_preserves_payload ... ok
+test abi::tests::strong_release_leaves_weak_value_for_weak_entry ... ok
+test abi::tests::strong_value_copy_uses_runtime_counts ... ok
+test abi::tests::table_descriptor_rejects_empty_names ... ok
+test abi::tests::table_descriptor_rejects_unknown_metadata ... ok
+test abi::tests::table_descriptor_round_trip ... ok
+test abi::tests::value_copy_replaces_existing_owned_output ... ok
+test abi::tests::weak_release_rejects_strong_value ... ok
+test abi::tests::weak_upgrade_fails_after_last_strong_release ... ok
+test abi::tests::weak_value_rejects_non_table_target ... ok
+test concurrency::tests::cancellation_hook_registration_is_removed_when_task_finishes ... ok
+test concurrency::tests::lock_cancellation_wakes_waiting_thread ... ok
+test concurrency::tests::runtime_registry_maps_and_closes_static_labels ... ok
+test concurrency::tests::shared_counts_weak_upgrade_and_exact_drop ... ok
+test concurrency::tests::shared_header_layout_is_frozen ... ok
+test concurrency::tests::shared_lock_supports_mutation_and_cancellation ... ok
+test concurrency::tests::shared_lock_blocks_and_wakes_waiting_thread ... ok
+test concurrency::tests::shared_read_access_is_tag_restricted ... ok
+test containers::tests::hashability_allowlist_rejects_external_resources ... ok
+test crash::tests::process_exit_codes_preserve_normal_values_and_map_exceptions ... ok
+test crash::tests::windows_exception_classes_share_unix_exit_codes ... ok
+xiao-error class=recoverable code=X06-RUNTIME-009 message_id=runtime.user_error params={"message": Text("overflow")} span=4..9 exit_code=3
+error [X06-RUNTIME-009]: overflow
+at bytes 4..9
+test abi::tests::ordinary_error_report_does_not_activate_diagnostic_sink ... ok
+test memory::tests::native_release_trace_collects_child_thread_events ... ok
+test memory::tests::native_release_trace_keeps_recording_after_root_flush ... ok
+test memory::tests::peak_live_bytes_includes_objects_allocated_during_drop ... ok
+test memory::tests::release_trace_records_shared_runtime_events ... ok
+test memory::tests::releases_payload_on_last_strong_and_keeps_weak_header ... ok
+test scheduler::runtime_helpers::tests::current_runtime_reuses_root_and_registered_context ... ok
+test scheduler::tests::active_close_drains_queued_activity_with_single_worker ... ok
+test scheduler::tests::active_close_follower_leaves_owner_to_drain_other_activity ... ok
+test scheduler::tests::active_thread_close_drains_other_threads_before_returning ... ok
+test scheduler::tests::cancellation_at_completed_unreclaimed_position_returns_027 ... ok
+test scheduler::tests::cancellation_at_queued_position_skips_task_body ... ok
+test scheduler::tests::cancellation_at_running_position_waits_for_task_exit ... ok
+test scheduler::tests::cancellation_at_waiting_position_waits_for_task_exit ... ok
+test scheduler::tests::completed_task_cancellation_is_observed_by_public_wait_apis ... ok
+test scheduler::tests::cross_pool_shutdowns_do_not_deadlock ... ok
+test scheduler::tests::cross_runtime_pool_shutdown_is_rejected ... ok
+test scheduler::tests::cross_runtime_runtime_close_and_spawn_are_rejected ... ok
+test memory::tests::peak_live_bytes_counts_container_contents_per_run ... ok
+test scheduler::tests::default_submit_inherits_worker_cancellation_context ... ok
+test scheduler::tests::detached_errors_are_classified_and_reaped_concurrently ... ok
+test scheduler::tests::detached_reaper_queue_does_not_block_when_workers_are_busy ... ok
+test scheduler::tests::detached_thread_panic_is_reported_to_process_channel ... ok
+test scheduler::tests::external_pool_shutdown_and_worker_runtime_close_drain_queue ... ok
+test scheduler::tests::default_submit_from_external_thread_stops_on_runtime_close ... ok
+test scheduler::tests::large_pool_close_drains_many_queued_tasks ... ok
+test scheduler::tests::pool_shutdown_after_runtime_close_returns_runtime_closed ... ok
+test scheduler::tests::pool_shutdown_and_runtime_close_do_not_deadlock ... ok
+test scheduler::tests::queued_task_cancel_releases_slot_before_worker_is_free ... ok
+test scheduler::tests::runtime_close_and_independent_pool_shutdown_converge ... ok
+test scheduler::tests::runtime_close_is_reentrant_from_pool_worker ... ok
+test scheduler::tests::runtime_close_shuts_down_and_drains_owned_pools ... ok
+test scheduler::tests::full_queue_submission_has_cancellable_backpressure ... ok
+test scheduler::tests::runtime_close_stops_admission_and_drains_threads ... ok
+test scheduler::tests::runtime_spawn_cancel_and_join_are_wired ... ok
+test scheduler::tests::shutdown_drain_helper_handles_queued_runtime_close ... ok
+test scheduler::tests::task_owned_runtime_can_create_pool_and_spawn ... ok
+test scheduler::tests::task_panic_is_reported_without_killing_pool_worker ... ok
+test scheduler::tests::task_pool_validates_capacity_and_waits_tasks ... ok
+test scheduler::tests::two_active_runtime_closers_do_not_deadlock ... ok
+test scheduler::tests::two_pool_workers_can_close_same_pool_concurrently ... ok
+test scheduler::tests::wait_interruptible_checks_host_interrupt_after_receiving_result ... ok
+test scheduler::tests::wait_interruptible_checks_host_interrupt_on_disconnect ... ok
+test serialization::tests::xcon_decoder_rejects_noncanonical_set_and_dict_order ... ok
+test serialization::tests::xcon_rejects_reserved_tags_and_bad_headers ... ok
+test serialization::tests::xcon_round_trips_scalars_and_nested_values ... ok
+test serialization::tests::xcon_set_and_dict_encoding_is_deterministic ... ok
+test tables::tests::follows_construct_state_machine_and_checks_fields ... ok
+test tables::tests::init_failure_is_reported_and_object_is_released ... ok
+test tables::tests::scalar_fields_accept_widening_assignments ... ok
+test testing::tests::dispatches_recoverable_catch_by_type ... ok
+test testing::tests::executes_static_plan_in_order ... ok
+test testing::tests::keeps_fatal_outside_recoverable_catch ... ok
+test testing::tests::unwind_keeps_primary_and_suppresses_cleanup_errors ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_display_scales_and_identities_are_preserved ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_mixed_binary_inputs_are_lifted_exactly ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_order_is_numeric_and_exact ... ok
+test scheduler::tests::active_close_waits_for_queued_pool_activity ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_finite_division_matches_independent_small_reference ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_power_preserves_frozen_scales_and_domains ... ok
+test value::arithmetic::exact_division::gcd_tests::binary_gcd_matches_every_small_pair ... ok
+test value::arithmetic::exact_division::gcd_tests::binary_gcd_matches_wide_reference_and_common_shifts ... ok
+test abi::abi_concurrency::tests::malformed_xcon_never_enters_native_trampoline ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_floor_pairs_cover_all_signs ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_input_order_and_bool_parity_are_stable ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_small_rational_reference_covers_signs_and_scales ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_values_do_not_narrow_to_host_widths ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_division_errors_keep_the_frozen_order ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_exact_division_keeps_failure_identities_and_order ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_limits_and_cancellation_are_atomic ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_non_finite_precedes_operator_domain_after_inputs ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_power_bounds_preserve_fast_paths ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_remainder_does_not_materialize_the_quotient ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_dense_modulus_reaches_the_work_boundary ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_scale_limits_precede_expensive_construction ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_remainder_d_plus_one_boundary_is_checked_exactly ... ok
+test value::conversions::binary_tests::a4_binary32_does_not_round_through_binary64 ... ok
+test value::conversions::binary_tests::a4_binary_inputs_keep_actual_values_and_normalize_zero ... ok
+test value::arithmetic::resource_tests::arithmetic_high_precision_negation_checks_admission_before_zero ... ok
+test value::conversions::binary_tests::a4_binary_overflow_uses_the_rounded_result ... ok
+test value::conversions::binary_tests::a4_binary_rounding_uses_nearest_even_at_halfway_points ... ok
+test value::conversions::binary_tests::a4_binary_subnormal_and_signed_zero_boundaries_are_exact ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_work_limits_and_cancellation_keep_inputs_unchanged ... ok
+test value::conversions::resource_tests::a4_input_admission_precedes_range_checks_and_zero_shortcuts ... ok
+test value::conversions::resource_tests::a4_binary_limits_clip_only_unambiguous_extremes ... ok
+test value::conversions::binary_tests::a4_binary_round_trips_match_independent_ieee_bit_patterns ... ok
+test value::conversions::resource_tests::a4_non_finite_and_failed_conversions_preserve_the_frozen_errors ... ok
+test value::conversions::tests::a4_all_numeric_scalar_directions_use_the_frozen_matrix ... ok
+test value::conversions::resource_tests::a4_large_fractional_coefficients_can_truncate_to_bounded_integers ... ok
+test value::conversions::tests::a4_integer_widths_are_exact_and_range_checked ... ok
+test value::conversions::tests::a4_fractional_integer_conversions_truncate_toward_zero ... ok
+test value::conversions::tests::a4_text_round_trips_preserve_display_precision ... ok
+test value::conversions::tests::a4_strings_preserve_codepoints_and_decimal_syntax ... ok
+test value::language::tests::language_dynamic_arithmetic_uses_frozen_promotions ... ok
+test value::language::tests::language_input_budget_precedes_non_finite_promotion ... ok
+test value::language::tests::language_promotion_does_not_change_structural_equality ... ok
+test value::numeric::tests::deterministic_spelling_cases_have_one_runtime_identity ... ok
+test value::numeric::tests::frozen_decimal_display_vectors_round_trip ... ok
+test value::numeric::tests::numeric_identity_drives_sets_and_rust_hash_maps ... ok
+test value::numeric::tests::recoverable_errors_preserve_the_frozen_order ... ok
+test value::conversions::tests::a4_truncation_matches_independent_small_integer_reference ... ok
+test value::ops::tests::compares_numbers_and_strings ... ok
+test value::ops::tests::constructs_and_rejects_unicode_scalar_values ... ok
+test value::ops::tests::converts_between_bool_and_str ... ok
+test value::ops::tests::converts_numeric_widths_with_range_check ... ok
+test value::ops::tests::converts_single_codepoint_to_integer ... ok
+test value::ops::tests::division_by_zero_has_stable_identity ... ok
+test value::ops::tests::division_requires_float_operands ... ok
+test value::ops::tests::floor_division_pairs_with_remainder ... ok
+test value::ops::tests::high_precision_public_conversions_use_the_a4_kernel ... ok
+test value::ops::tests::integer_power_rejects_negative_exponent ... ok
+test value::ops::tests::negates_high_precision_text_without_narrowing ... ok
+test value::ops::tests::overflow_uses_stable_identity ... ok
+test value::ops::tests::rejects_cross_width_operands ... ok
+test value::ops::tests::string_equality_compares_content ... ok
+test value::ops::tests::supports_arithmetic_operators ... ok
+test value::string_index_tests::ascii_and_empty_strings_use_direct_byte_positions ... ok
+test value::string_index_tests::cached_indices_preserve_every_scalar_and_out_of_bounds ... ok
+test value::string_index_tests::shared_unicode_indices_stay_alive_and_are_accounted ... ok
+test value::tests::error_type_name_is_explicit ... ok
+test value::tests::error_values_keep_identity_semantics ... ok
+test value::tests::external_resource_aliases_share_identity_and_close_idempotently ... ok
+test value::tests::stores_and_reads_utf8_string ... ok
+test value::tests::supports_bool_parity_adjustment ... ok
+test vm_concurrency::numeric_identity_tests::xcon_numeric_identity_round_trips_through_the_existing_frame ... ok
+test vm_concurrency::numeric_identity_tests::xcon_numeric_payloads_are_checked_before_becoming_runtime_values ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_finite_division_and_power_exact_limits ... ok
+test vm_concurrency::tests::cancelled_task_disconnect_is_classified_as_027 ... ok
+test vm_concurrency::tests::completed_child_cancellation_keeps_noncatchable_variant ... ok
+test vm_concurrency::tests::owned_guard_keeps_allocation_alive_and_unlocks_after_alias_drop ... ok
+test vm_concurrency::tests::excessive_recursive_values_fail_before_unbounded_copy ... ok
+test vm_concurrency::tests::task_disconnect_without_cancellation_remains_028 ... ok
+test vm_concurrency::tests::transfer_bytes_are_validated_and_copy_values ... ok
+test vm_concurrency::tests::vm_detached_report_channel_is_bounded_and_counts_drops ... ok
+test vm_concurrency::tests::thread_consumption_is_shared_but_handles_are_not_hashable ... ok
+test value::numeric::tests::temporary_upstream_values_are_exact_and_bounded ... ok
+test value::conversions::resource_tests::a4_integer_result_limits_are_checked_before_materialization ... ok
+
+test result: ok. 237 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.93s
+
+     Running tests\b06_runtime.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\b06_runtime-45ba492a95d5660f.exe)
+
+running 9 tests
+test bool_arithmetic_is_strict_and_overflow_is_reported ... ok
+test driver_consumes_lifetime_release_plan ... ok
+test drop_failure_keeps_structured_identity ... ok
+test compiled_initializer_preserves_field_contracts ... ok
+test drop_view_is_borrowed_and_expires_after_callback ... ok
+test hashability_allowlist_preserves_all_existing_runtime_variants ... ok
+test runs_init_and_drop_with_static_signature ... ok
+test singleton_and_instance_kinds_are_not_interchangeable ... ok
+test weak_handle_survives_strong_release_but_cannot_upgrade ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\b1_string_bridge.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\b1_string_bridge-2d34f1474fa77cb4.exe)
+
+running 1 test
+test abi_string_reads_do_not_copy_the_entire_source ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\b2_a1_identity_allocations.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\b2_a1_identity_allocations-3ec90871c1d99613.exe)
+
+running 1 test
+test valid_numeric_eq_and_hash_do_not_allocate_or_release ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests\n0_c2_error_boundary.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\n0_c2_error_boundary-8da3b6a405e85d1c.exe)
+
+running 2 tests
+test platform_failure_child ... ignored, 由 platform_failure_report_is_machine_readable 在子进程中调用
+test platform_failure_report_is_machine_readable ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests\r2a_containers.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\r2a_containers-15b9a025ce7c6433.exe)
+
+running 17 tests
+test array_releases_every_element ... ok
+test container_type_names_are_stable ... ok
+test containers_compare_by_identity ... ok
+test dict_holds_and_releases_values ... ok
+test external_resource_alias_release_destroys_once ... ok
+test external_resource_container_boundaries_are_enforced ... ok
+test heterogeneous_set_members_are_discriminated_by_variant ... ok
+test scalar_hash_matches_equality ... ok
+test set_algebra_follows_operand_order ... ok
+test set_algebra_results_stay_deduplicated ... ok
+test set_deduplicates_and_releases_dropped_elements ... ok
+test set_empty_is_subset_of_everything_but_not_proper_of_itself ... ok
+test set_equality_is_unordered_mutual_inclusion ... ok
+test set_mutation_is_visible_through_aliases ... ok
+test set_rejects_unhashable_elements ... ok
+test set_subset_distinguishes_proper_from_equal ... ok
+test tuple_releases_every_element ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\xiao_types-bb988a8e60e995e1.exe)
+
+running 38 tests
+test concurrency::tests::candidate_a_accepts_scalars_and_safe_tuples ... ok
+test concurrency::tests::signatures_and_consumption_are_frozen ... ok
+test containers::tests::models_shapes_and_materialization ... ok
+test containers::tests::resolves_most_specific_constraint ... ok
+test conversion::tests::classifies_scalar_conversions ... ok
+test environment::tests::manages_scopes_and_mutability ... ok
+test materialization::tests::merges_constraints_by_path ... ok
+test numeric::tests::checks_boolean_arithmetic_and_ranges ... ok
+test numeric::tests::normalizes_decimal_zero_by_mantissa ... ok
+test numeric_text::tests::deterministic_numeric_identity_cases ... ok
+test numeric::tests::zero_lowering_preserves_runtime_budget_failures ... ok
+test numeric_text::tests::equal_decimal_spellings_share_identity ... ok
+test numeric_text::tests::syntax_is_complete_before_numeric_budgets ... ok
+test numeric_text::tests::coefficient_boundaries_preserve_display_precision ... ok
+test path_constraints::tests::rejects_set_member_paths ... ok
+test path_constraints::tests::reports_static_bounds ... ok
+test path_constraints::tests::resolves_nested_paths ... ok
+test selection_random::tests::reports_sampling_boundaries ... ok
+test selection_random::tests::samples_follow_modes ... ok
+test selection_random::tests::seeded_source_is_reproducible ... ok
+test selection_shape::tests::projects_heterogeneous_array ... ok
+test numeric_text::tests::zero_and_scales_have_independent_budget_checks ... ok
+test selection_shape::tests::repeats_dictionary_key_as_tuple ... ok
+test set_types::tests::classifies_hashability ... ok
+test set_types::tests::computes_static_set_operation_results ... ok
+test set_types::tests::distinguishes_empty_from_unknown_for_assignment ... ok
+test set_types::tests::formats_set_types ... ok
+test set_types::tests::keeps_set_member_types_invariant ... ok
+test set_types::tests::normalizes_heterogeneous_members ... ok
+test tables::tests::models_table_value_kinds_and_visibility ... ok
+test types::tests::displays_and_collects_type_variables ... ok
+test unify::tests::generalizes_and_instantiates ... ok
+test unify::tests::preserves_array_length_during_unification ... ok
+test unify::tests::preserves_empty_set_during_unification ... ok
+test unify::tests::rigid_variables_reject_concrete_bindings ... ok
+test unify::tests::unifies_set_member_unions ... ok
+test unify::tests::unifies_variables_and_rejects_recursive_types ... ok
+test checker::architecture_tests::module_dependency_direction_is_acyclic ... ok
+
+test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\c05_tables.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\c05_tables-e345968a781bbe01.exe)
+
+running 8 tests
+test diagnoses_dynamic_field_initializer ... ok
+test diagnoses_constructor_contracts ... ok
+test constructs_instance_table ... ok
+test diagnoses_private_member_access ... ok
+test diagnoses_invalid_member_writes ... ok
+test diagnoses_lifecycle_contracts ... ok
+test checks_method_defaults_keywords_and_forward_calls ... ok
+test registers_table_signature ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c0_containers.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\c0_containers-1b248de184054c0d.exe)
+
+running 15 tests
+test builds_path_constraint_materialization_plan ... ok
+test enforces_homogeneous_array_prefix ... ok
+test checks_exact_selectors ... ok
+test checks_dictionary_selectors ... ok
+test enforces_typed_dictionary_column_values ... ok
+test infers_structured_container_types ... ok
+test merges_later_path_constraints ... ok
+test parent_path_constrains_nested_array_elements ... ok
+test preserves_dictionary_column_order_for_assignment ... ok
+test public_path_api_is_stable ... ok
+test rejects_duplicate_dictionary_keys ... ok
+test rejects_incompatible_initialized_container_redeclaration ... ok
+test specific_path_overrides_parent_for_initialized_value ... ok
+test validates_constraints_on_container_assignment ... ok
+test validates_late_constraints_against_initialized_container ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c0c1_snapshots.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\c0c1_snapshots-928f9da0aa87cd3f.exe)
+
+running 4 tests
+test c0_valid_snapshot_is_stable ... ok
+test c0_error_snapshot_is_stable ... ok
+test c1_error_snapshot_is_stable ... ok
+test c1_valid_snapshot_is_stable ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c1_selectors.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\c1_selectors-442091b9ce38907a.exe)
+
+running 18 tests
+test defers_dynamic_selector_operands ... ok
+test checks_scalar_broadcast_assignment ... ok
+test checks_ordered_ranges_and_multiple_selection ... ok
+test checks_open_ranges_and_steps ... ok
+test dictionary_column_nonrandom_repetition_becomes_tuple ... ok
+test dictionary_column_repetition_becomes_tuple ... ok
+test excludes_descendants_of_exclusive_lower_boundary ... ok
+test expands_nested_ranges_and_projects_shape ... ok
+test invalid_broadcast_target_is_transactional ... ok
+test exposes_normalized_selection_paths ... ok
+test random_without_replacement_keeps_source_shape ... ok
+test records_random_modes_and_seed ... ok
+test rejects_invalid_random_seed ... ok
+test rejects_advanced_dictionary_table_selection ... ok
+test rejects_invalid_step_and_random_counts ... ok
+test rejects_range_through_dictionary_table ... ok
+test saturates_extremely_large_step ... ok
+test supports_negative_and_string_indices ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\c2a_sets.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\c2a_sets-4d329c16358b92b5.exe)
+
+running 9 tests
+test checks_set_constructor_arity ... ok
+test constrains_nested_set_members_without_indexing ... ok
+test checks_explicit_set_type ... ok
+test checks_membership ... ok
+test infers_scalar_set_types ... ok
+test records_dynamic_set_checks ... ok
+test rejects_invalid_set_elements ... ok
+test rejects_nested_set_indexing_without_plan ... ok
+test rejects_set_indexing ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c2a_snapshots.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\c2a_snapshots-8adefcf6e905b57d.exe)
+
+running 2 tests
+test valid_snapshot_is_stable ... ok
+test error_snapshot_is_stable ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c2b_heterogeneous_sets.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\c2b_heterogeneous_sets-d3d47c81894cf110.exe)
+
+running 7 tests
+test infers_heterogeneous_member_union ... ok
+test keeps_dynamic_tail_and_runtime_marks ... ok
+test checks_set_assignment_compatibility ... ok
+test isolates_static_equality_by_type ... ok
+test keeps_legacy_homogeneous_prefix_strict ... ok
+test preserves_explicit_union_on_binding ... ok
+test rejects_static_member_outside_union ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c2b_snapshots.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\c2b_snapshots-c861ebbd37566a2c.exe)
+
+running 2 tests
+test error_snapshot_is_stable ... ok
+test valid_snapshot_is_stable ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c2c_set_operations.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\c2c_set_operations-dad721eab5951b7d.exe)
+
+running 7 tests
+test infers_set_operation_result_types ... ok
+test propagates_dynamic_set_boundary ... ok
+test checks_set_comparisons ... ok
+test checks_set_compound_assignments ... ok
+test rejects_dynamic_set_operation_with_known_scalar ... ok
+test rejects_mixed_set_operations ... ok
+test represents_static_empty_intersection ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c2c_snapshots.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\c2c_snapshots-a2ca8bbe2602f401.exe)
+
+running 2 tests
+test error_snapshot_is_stable ... ok
+test valid_snapshot_is_stable ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\control_flow_snapshots.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\control_flow_snapshots-015c8f60ec7c031a.exe)
+
+running 1 test
+test error_control_flow_snapshots_are_executed ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\d19a_fixed_random.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\d19a_fixed_random-b45f2b4f7b07068e.exe)
+
+running 12 tests
+test error_boundaries_are_distinguished_and_consume_no_randomness ... ok
+test reseed_restarts_the_sequence ... ok
+test high_seed_bits_participate_in_the_fold ... ok
+test error_display_text_is_stable ... ok
+test same_seed_reproduces_and_different_seeds_diverge ... ok
+test seed_sequence_matches_independent_xorshift64_star ... ok
+test the_two_modes_consume_the_same_stream_differently ... ok
+test with_replacement_allows_counts_above_the_source_length ... ok
+test with_replacement_follows_the_expected_draw_order_and_may_repeat ... ok
+test without_replacement_follows_the_expected_draw_order ... ok
+test zero_and_folded_zero_seeds_use_the_fallback_state ... ok
+test zero_count_is_empty_even_for_an_empty_source ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\f04_functions.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\f04_functions-ab5d47f25345ab19.exe)
+
+running 18 tests
+test accepts_heterogeneous_iterables ... ok
+test checks_boolean_conditions ... ok
+test checks_backticked_function_call ... ok
+test checks_annotated_function_call ... ok
+test checks_direct_varargs_arguments ... ok
+test checks_loops_and_control_statements ... ok
+test diagnoses_function_call_and_return_errors ... ok
+test enforces_catch_recovery_boundaries ... ok
+test keeps_dynamic_raise_at_error_boundary ... ok
+test infers_function_types_from_later_calls ... ok
+test infers_recursive_and_forward_function_types ... ok
+test ordinary_dynamic_scalar_casts_skip_error_boundary_check ... ok
+test rejects_control_statements_outside_owner ... ok
+test preserves_function_binding_when_parameter_has_same_name ... ok
+test rejects_fatal_error_constructor ... ok
+test rejects_non_error_raise_value ... ok
+test rejects_unknown_error_type_name ... ok
+test rejects_unresolved_function_inference ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\i4a2_external_namespaces.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\i4a2_external_namespaces-34832248174db78d.exe)
+
+running 2 tests
+test rejects_unknown_package_member_using_existing_diagnostic ... ok
+test resolves_nested_package_members_without_running_code ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\s0_types.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\s0_types-fa7d0fd49937cf05.exe)
+
+running 15 tests
+test accepts_unbounded_integer_literal ... ok
+test checks_compile_time_constants ... ok
+test checks_literal_widths ... ok
+test checks_boolean_and_numeric_operations ... ok
+test distinguishes_backtick_name_from_boolean_constructor ... ok
+test folds_constants_and_reports_result_width_overflow ... ok
+test infers_and_locks_scalar_bindings ... ok
+test preserves_explicit_const_type ... ok
+test rejects_implicit_narrowing_without_runtime_marker ... ok
+test rejects_invalid_conversion_and_narrowing ... ok
+test rejects_invalid_boolean_and_arithmetic ... ok
+test rejects_invalid_static_boolean_conversion ... ok
+test reports_binding_errors ... ok
+test shares_conversion_matrix ... ok
+test supports_explicit_float_to_integer_truncation ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\xiao_vm-1ef20b256d3d3bfb.exe)
+
+running 35 tests
+test machine::hybrid::tests::spills_named_values_after_window_is_full ... ok
+test machine::hybrid::tests::separates_named_window_and_anonymous_eval_stack ... ok
+test machine::register::tests::pins_release_plan_values_in_frame_slots ... ok
+test machine::register::tests::gives_poly_and_none_dedicated_paths ... ok
+test machine::register::tests::reuses_non_overlapping_registers_deterministically ... ok
+test ops::tests::array_index_supports_negative_positions ... ok
+test ops::tests::array_index_out_of_bounds_is_stable ... ok
+test ops::tests::broadcast_is_transactional_and_supports_nested_paths ... ok
+test ops::tests::dict_column_supports_key_and_position ... ok
+test ops::tests::dict_key_lookup_is_stable ... ok
+test ops::tests::dynamic_random_boundaries_are_stable ... ok
+test ops::tests::dynamic_nested_range_preserves_boundary_shape ... ok
+test ops::tests::dynamic_range_applies_static_step ... ok
+test ops::tests::dynamic_step_boundaries_are_stable ... ok
+test ops::tests::nested_path_rejects_non_container_leaf ... ok
+test ops::tests::len_and_dynamic_index_cover_iterables ... ok
+test ops::tests::selector_keeps_dictionary_duplicate_order ... ok
+test ops::tests::selector_projects_dictionary_key_path ... ok
+test ops::tests::selector_projects_nested_arrays ... ok
+test ops::tests::set_hashability_error_identity ... ok
+test ops::tests::set_membership_uses_left_member_and_right_set_direction ... ok
+test ops::tests::set_operation_and_comparison_error_identities_are_stable ... ok
+test ops::tests::static_random_is_reproducible ... ok
+test ops::tests::string_index_returns_single_character ... ok
+test ops::tests::tuple_and_set_index_and_unsupported_source ... ok
+test semantics::constants::numeric_identity_tests::numeric_constants_restore_checked_runtime_values ... ok
+test semantics::exec::concurrent::tests::bounded_sink_does_not_replace_boundary_cleanup_with_detached_failure ... ok
+test semantics::constants::numeric_identity_tests::numeric_constants_reject_invalid_payloads_with_frozen_codes ... ok
+test semantics::exec::concurrent::tests::child_event_buffer_counts_drop_when_all_slots_are_priority ... ok
+test semantics::exec::concurrent::tests::detached_child_event_is_preserved_when_buffer_is_full ... ok
+test semantics::exec::concurrent::tests::dropped_queued_boundary_copies_follow_cleanup_order ... ok
+test semantics::exec::concurrent::tests::child_event_drops_are_reported_by_parent_sink ... ok
+test semantics::exec::concurrent::tests::vm_close_reports_non_owner_and_direct_ownership_is_not_transitive ... ok
+test semantics::exec::concurrent::tests::vm_exit_closes_owned_runtime_after_restoring_owner_context ... ok
+test semantics::exec::concurrent::tests::detached_child_event_overflow_returns_report_to_runtime_channel ... ok
+
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\b0_b_production.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\b0_b_production-9ec9464340f9ccfe.exe)
+
+running 9 tests
+test production_checkpoint_can_cancel_and_can_be_disabled ... ok
+test bounded_events_do_not_change_result_or_release_sequence ... ok
+test cancellation_interrupts_finally_subroutine ... ok
+test production_rejects_invalid_ir_before_vm ... ok
+test production_rejects_invalid_options_with_structured_fatal ... ok
+test cancellation_bypasses_catch_and_runs_cleanup_once ... ok
+test production_rejects_unverified_tac_before_entering_vm ... ok
+test production_fault_report_contains_source_span_and_identity ... ok
+test script_and_project_share_entry_zero ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\b0_e_checkpoint_performance.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\b0_e_checkpoint_performance-8d987ea927413072.exe)
+
+running 1 test
+test checkpoint_toggle_release_comparison ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.72s
+
+     Running tests\r2_iteration_values.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\r2_iteration_values-a1af200b01e10792.exe)
+
+running 2 tests
+test dynamic_index_executes_on_all_carriers ... ok
+test len_executes_on_all_carriers ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\r2_selector_values.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\r2_selector_values-b00f3ba601f5812f.exe)
+
+running 7 tests
+test random_selection_returns_observable_values ... ok
+test empty_selection_preserves_root_shape ... ok
+test dictionary_repetition_returns_ordered_tuple ... ok
+test selector_preserves_source_and_nested_shapes ... ok
+test selector_step_is_applied_per_item ... ok
+test selector_ranges_and_all_return_expected_values ... ok
+test selector_returns_exact_and_ordered_multi_values ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\r2_set_values.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\r2_set_values-2b0738a543fd4953.exe)
+
+running 6 tests
+test dynamic_set_values_pass_checks_and_execute ... ok
+test executes_set_comparisons_and_membership_direction ... ok
+test executes_all_set_algebras_on_all_carriers ... ok
+test repeated_runtime_set_elements_are_deduplicated ... ok
+test dynamic_set_checks_reject_non_set_and_unhashable_values ... ok
+test set_operation_reports_stable_error_for_non_set_operand ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\r2_stack.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\r2_stack-1754c70ba1eb530f.exe)
+
+running 55 tests
+test catch_binding_rethrow_preserves_error_identity ... ok
+test catch_rethrow_does_not_repeat_own_finally ... ok
+test catch_exit_runs_outer_finally_after_inner_finally ... ok
+test copying_between_bindings_keeps_the_source ... ok
+test catches_constructed_error_and_runs_finally ... ok
+test dynamic_conversion_check_has_stable_failure_code ... ok
+test dictionary_column_key_selector_is_executed ... ok
+test dynamic_boolean_condition_is_verified_and_recoverable ... ok
+test catch_control_exit_runs_own_finally ... ok
+test dynamic_selector_inputs_are_executed ... ok
+test dynamic_random_count_is_recoverable ... ok
+test dynamic_zero_step_is_recoverable ... ok
+test dynamic_random_seed_is_recoverable ... ok
+test errors_retain_vm_stack_and_bytecode_offset ... ok
+test errors_use_encoded_pc_mapping ... ok
+test executes_advanced_selector ... ok
+test executes_calls_and_loops ... ok
+test executes_scalar_arithmetic ... ok
+test executes_containers_and_exact_index ... ok
+test executes_random_seed_plan ... ok
+test executes_selector_broadcast_assignment ... ok
+test fatal_event_is_emitted_once_at_run_boundary ... ok
+test fatal_bypasses_handlers_and_cleanup ... ok
+test finally_break_cleanup_with_heap_values ... ok
+test fatal_with_heap_values_has_no_releases ... ok
+test executes_selector_ranges_steps_and_random ... ok
+test finally_failure_is_suppressed_on_primary_error ... ok
+test finally_failure_reaches_outer_catch ... ok
+test finally_raise_releases_active_scopes ... ok
+test finally_failure_on_normal_and_catch_paths_is_routed_once ... ok
+test finally_control_exit_is_dispatched_after_subroutine ... ok
+test finally_return_overrides_error_without_leaking_try_values ... ok
+test finally_return_releases_try_scope_value ... ok
+test loop_exit_does_not_reenter_finally_on_later_error ... ok
+test finally_runs_once_on_normal_and_return ... ok
+test moving_temporaries_into_bindings_still_works ... ok
+test loop_exits_run_finally_before_jump ... ok
+test machine_metrics_keep_independent_cost_axes ... ok
+test nested_finally_failure_does_not_repeat_outer_finally ... ok
+test nested_finally_return_releases_each_scope_once ... ok
+test nested_try_finally_runs_once_per_loop_iteration ... ok
+test nested_return_runs_finally_from_inner_to_outer ... ok
+test nested_try_inside_finally_is_routed_locally ... ok
+test overflow_is_recoverable ... ok
+test nested_unmatched_reaches_outer_catch_once ... ok
+test releases_heap_values_on_scope_exit ... ok
+test propagates_error_to_caller_handler ... ok
+test records_all_event_categories ... ok
+test returning_heap_string_survives_finally_cleanup ... ok
+test replacement_random_and_empty_selection_are_executed ... ok
+test research_module_stays_a_leaf ... ok
+test selects_first_matching_catch ... ok
+test stack_overflow_is_fatal ... ok
+test stack_map_points_follow_the_frozen_machine_division ... ok
+test string_boolean_check_has_stable_failure_code ... ok
+
+test result: ok. 55 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests\r2_table_values.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\r2_table_values-7d1ee4ce12c37a3c.exe)
+
+running 13 tests
+test drop_cannot_write_receiver ... ok
+test fatal_does_not_execute_drop ... ok
+test defaults_are_fresh_and_constants_are_visible ... ok
+test initialization_failure_rolls_back_and_preserves_errors ... ok
+test normal_drop_error_is_catchable ... ok
+test recursive_drop_obeys_call_depth ... ok
+test returned_instance_and_overwrite_release_exactly_once ... ok
+test singleton_and_drop_read_only_receiver ... ok
+test stable_function_ids_and_table_encoding_guards ... ok
+test singleton_defaults_and_declaration_order ... ok
+test uninitialized_field_read_is_rejected ... ok
+test unwind_keeps_primary_and_nested_drop_errors ... ok
+test constructs_instances_and_calls_methods ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s
+
+     Running tests\r2_vectors.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\r2_vectors-ca2cdac74e062f80.exe)
+
+running 8 tests
+test control_vectors_are_stable ... ok
+test container_vectors_are_stable ... ok
+test scalar_vectors_are_stable ... ok
+test selector_vectors_are_stable ... ok
+test error_vectors_are_stable ... ok
+test iteration_vectors_are_stable ... ok
+test sets_vectors_are_stable ... ok
+test table_vectors_are_stable ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.73s
+

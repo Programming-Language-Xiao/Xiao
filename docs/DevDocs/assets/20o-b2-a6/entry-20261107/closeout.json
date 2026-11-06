@@ -1,0 +1,89 @@
+{
+  "passed": true,
+  "scope": "A6资源与受控性能",
+  "code_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+  "functional_code_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+  "source_manifest": "source-manifests/b636235357d619e5f772a35f16c020685a54701919a02e03aa53a1ec6fbc4afe.json",
+  "functional_source_manifest": "source-manifests/b636235357d619e5f772a35f16c020685a54701919a02e03aa53a1ec6fbc4afe.json",
+  "abi": "1.18",
+  "codegen": 20,
+  "active_intrinsic_max": 32,
+  "cmath": "planned",
+  "numeric_tutorial_scope": "planned",
+  "a7_started": false,
+  "b1_721_executed": false,
+  "independent_debts_closed": false,
+  "independent_debt_record": "independent-22d-record.json",
+  "independent_debt_records": [
+    "independent-22d-record.json",
+    "independent-22c-record.json"
+  ],
+  "ci_runs": {
+    "workspace": "ci/decimal-workspace/run.json",
+    "default": "ci/decimal-default-retry/run.json",
+    "performance": "ci/decimal-performance/run.json"
+  },
+  "ci_jobs": {
+    "default": "ci/decimal-default-retry/jobs.json",
+    "performance": "ci/decimal-performance/jobs.json"
+  },
+  "ci_records": {
+    "default-vm": "ci/records/default-vm.json",
+    "default-windows": "ci/records/default-windows.json",
+    "default-linux": "ci/records/default-linux.json",
+    "default-macos": "ci/records/default-macos.json",
+    "perf-vm": "ci/records/perf-vm.json",
+    "perf-windows": "ci/records/perf-windows.json",
+    "perf-linux": "ci/records/perf-linux.json",
+    "perf-macos": "ci/records/perf-macos.json"
+  },
+  "ci_artifacts": "ci/decimal-performance/artifacts.json",
+  "performance": {
+    "local-vm": {
+      "archive": "performance-archives/local-vm-decimal.zip",
+      "sha256": "7cbf7a30169ee3bf202ea582a01d1ef9e71535724495fea1925fe31502b08944",
+      "report": "report.json",
+      "artifacts": "artifacts",
+      "backend": "vm"
+    },
+    "local-native": {
+      "archive": "performance-archives/local-native-decimal.zip",
+      "sha256": "8e4a6df828203725594aaaf161f8f2e7f4b432b201b7426484a2b50a3e3916af",
+      "report": "report.json",
+      "artifacts": "artifacts",
+      "backend": "native"
+    },
+    "ci-vm": {
+      "archive": "ci/decimal-performance/artifact-13544956252.zip",
+      "sha256": "4062e8d67dab54b75f806960575e1d4eac7376bc8af5e8491eace8d65f0bfae2",
+      "artifact_id": 13544956252,
+      "report": "b2-a6-vm.json",
+      "artifacts": "b2-a6-vm-artifacts",
+      "backend": "vm"
+    },
+    "ci-windows": {
+      "archive": "ci/decimal-performance/artifact-13544703071.zip",
+      "sha256": "1e3e27b5e675b911a9cd5b7463aebe5cfdd9a0f657cd25db4d31b6984b0d6092",
+      "artifact_id": 13544703071,
+      "report": "b2-a6-native.json",
+      "artifacts": "b2-a6-native-artifacts",
+      "backend": "native"
+    },
+    "ci-linux": {
+      "archive": "ci/decimal-performance/artifact-13544163628.zip",
+      "sha256": "5fe242344b7d38c71729d71bc1d64250f2d0d3ac2116aa2c9e62cc19be058b86",
+      "artifact_id": 13544163628,
+      "report": "b2-a6-native.json",
+      "artifacts": "b2-a6-native-artifacts",
+      "backend": "native"
+    },
+    "ci-macos": {
+      "archive": "ci/decimal-performance/artifact-13545965146.zip",
+      "sha256": "842e049f9d858a9c48ac0fc2bf523dfe4cf80538e1f49978a527ac66bd9f2507",
+      "artifact_id": 13545965146,
+      "report": "b2-a6-native.json",
+      "artifacts": "b2-a6-native-artifacts",
+      "backend": "native"
+    }
+  }
+}

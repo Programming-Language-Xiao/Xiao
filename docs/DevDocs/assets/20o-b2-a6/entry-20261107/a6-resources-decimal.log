@@ -1,0 +1,25 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.73s
+     Running tests\20o_b2_a_performance_protocol.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\20o_b2_a_performance_protocol-b09fd76a093ab2c6.exe)
+
+running 3 tests
+test calibration_stop_conditions_follow_the_frozen_protocol ... ok
+test invalid_clock_samples_are_rejected ... ok
+test quantized_clock_calibration_retains_real_batches ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\20o_b2_a_resources.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\20o_b2_a_resources-98f46c773e0a5fa8.exe)
+
+running 8 tests
+test controlled_allocation_failure_is_distinct_from_numeric_limit ... ok
+test abi_semantic_failures_preserve_owned_out_and_inputs ... ok
+test mixed_error_priority_is_stable_at_the_language_entry ... ok
+test admission_boundaries_and_error_order_preserve_inputs ... ok
+test successful_abi_replacement_releases_old_out_without_clearing_pending ... ok
+test quotient_remainder_and_nontermination_have_independent_budgets ... ok
+test actual_results_accept_strong_cancellation_and_balanced_products ... ok
+test power_and_conversion_limits_do_not_expand_unbounded_values ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+

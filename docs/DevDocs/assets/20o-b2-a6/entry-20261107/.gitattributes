@@ -1,0 +1,4 @@
+* -text
+# 原始执行/API记录保留CRLF、空行及尾部空白，不执行源码样式修整。
+*.log -whitespace
+*.json -whitespace

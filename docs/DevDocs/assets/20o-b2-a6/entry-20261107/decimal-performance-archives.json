@@ -1,0 +1,18 @@
+[
+  {
+    "archive": "docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\performance-archives\\local-vm-decimal.zip",
+    "sha256": "7cbf7a30169ee3bf202ea582a01d1ef9e71535724495fea1925fe31502b08944",
+    "bytes": 1078581,
+    "members": 1158,
+    "report_complete": true,
+    "report_passed": true
+  },
+  {
+    "archive": "docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\performance-archives\\local-native-decimal.zip",
+    "sha256": "8e4a6df828203725594aaaf161f8f2e7f4b432b201b7426484a2b50a3e3916af",
+    "bytes": 5092757,
+    "members": 2318,
+    "report_complete": true,
+    "report_passed": true
+  }
+]

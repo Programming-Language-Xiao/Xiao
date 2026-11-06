@@ -1,6 +1,6 @@
 # 20O-B2-A6. 资源、错误原子性与性能实施规划
 
-> **A6已按A-P1～A-P3进入实施；本页保留范围与退出门槛。**
+> **A6本批资源/错误/三平台性能已验收；本页保留范围与退出门槛。**
 > 入口为A5代码快照`f21715d3`及A5有效收口；实际命令与样本见[实施记录](20o-b2-a6-resource-performance-progress.md)，A7整批收口、B2-B/C后置。
 > A6只验收A1～A5已有的资源/错误/性能边界；不新增ABI/intrinsic，不实现`lfloat_divide`/`cmath`。
 > A0的`result.json`失败身份仍保留；A0只以`closeout.json`作为有效收口。
@@ -159,7 +159,7 @@ core/rust/crates/xiao-runtime/src/value/conversions/  A4转换
 core/rust/crates/xiao-runtime/src/value/language.rs   A5语言门面
 core/rust/crates/xiao-vm/...                         VM/承载
 core/rust/crates/xiao-codegen-llvm/...               LLVM/承载
-docs/DevDocs/assets/20o-b2-a6/entry-<date>/          A6证据（待建）
+docs/DevDocs/assets/20o-b2-a6/entry-<date>/          A6证据（已归档）
 ```
 
 本页规定已批准的A6边界，开工条目保留入口时点；实施和退出结论另记，不把规划要求当成已达标。

@@ -1,0 +1,36 @@
+    Checking xiao-runtime-abi v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-runtime-abi)
+    Checking xiao-source v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-source)
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-intrinsics)
+    Checking xiao-lock v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-lock)
+    Checking xiao-i18n v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-i18n)
+    Checking xiao-standard-library v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-standard-library)
+   Compiling proc-macro2 v1.0.107
+    Checking unicode-ident v1.0.24
+    Checking xiao-diagnostics v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-diagnostics)
+    Checking xiao-syntax v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-syntax)
+    Checking quote v1.0.47
+    Checking syn v2.0.119
+    Checking xiao-types v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-types)
+    Checking xiao-modules v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-modules)
+    Checking xiao-config v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-config)
+    Checking xiao-doc-coverage-rust v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-doc-coverage-rust)
+    Checking xiao-lifetime v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-lifetime)
+    Checking xiao-ir v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-ir)
+    Checking xiao-runtime v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-runtime)
+    Checking xiao-optimizer v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-optimizer)
+error: items after a test module
+   --> crates\xiao-runtime\src\value\arithmetic\exact_division.rs:49:1
+    |
+ 49 | mod gcd_tests {
+    | ^^^^^^^^^^^^^
+...
+100 | pub(super) fn divide(left: &Number, right: &Number) -> RuntimeResult<RuntimeValue> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#items_after_test_module
+    = note: `-D clippy::items-after-test-module` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::items_after_test_module)]`
+    = help: move the items to before the test module was defined
+
+error: could not compile `xiao-runtime` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

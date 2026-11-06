@@ -1,0 +1,57 @@
+[error] A0-PARSER-001 仓库 rust-adapter
+  Rust AST 适配器启动失败：Executable not found in $PATH: "D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\xiao-doc-coverage-rust.exe"
+  修复：确认 Rust 工具链可用，并先运行 cargo test -p xiao-doc-coverage-rust。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:194 function applyAssociation
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:203 function inspectAssociation
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:209 function windowsAssociation
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:243 function linuxAssociation
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:277 function darwinAssociation
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:309 function associationResult
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:313 function resolvePlatform
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:319 function resolveXiaoExecutable
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:329 function isExecutable
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:335 function readOptional
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:337 function atomicWrite
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:344 function requireCommand
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:349 function bestEffortCommand
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:351 function defaultCommandRunner
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:356 function associationUnavailable
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:359 function quoteWindows
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:360 function quoteDesktop
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。
+[warning] A0-COVERAGE-002 cli/ts/src/platform/file-association.ts:361 function quoteShell
+  声明缺少代码文档。
+  修复：在声明前添加实质性的 Rustdoc/JSDoc；UseDocs 不能替代它。

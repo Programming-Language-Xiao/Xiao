@@ -1,0 +1,876 @@
+{
+  "jobs": [
+    {
+      "id": 128163838029,
+      "run_id": 42296740190,
+      "workflow_name": "Xiao maintenance regression",
+      "head_branch": "codex/b1-imp-seven-libraries",
+      "run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/42296740190",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOURc-Qs8AAAAd1yj4TQ",
+      "head_sha": "a52c8d5c9964a58859634e22705e000738197189",
+      "url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/jobs/128163838029",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42296740190/job/128163838029",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-06T21:26:30Z",
+      "started_at": "2026-11-06T21:26:32Z",
+      "completed_at": "2026-11-06T21:27:22Z",
+      "name": "Deterministic parser and artifact security regression",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-06T21:26:33Z",
+          "completed_at": "2026-11-06T21:26:33Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-06T21:26:33Z",
+          "completed_at": "2026-11-06T21:26:35Z"
+        },
+        {
+          "name": "Setup Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-06T21:26:35Z",
+          "completed_at": "2026-11-06T21:26:43Z"
+        },
+        {
+          "name": "Configure locked Cargo and numeric environment",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-06T21:26:43Z",
+          "completed_at": "2026-11-06T21:26:43Z"
+        },
+        {
+          "name": "Cache Rust dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-06T21:26:43Z",
+          "completed_at": "2026-11-06T21:26:46Z"
+        },
+        {
+          "name": "Run parser and archive fuzz regressions",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-06T21:26:46Z",
+          "completed_at": "2026-11-06T21:27:09Z"
+        },
+        {
+          "name": "Run artifact and archive security boundaries",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-06T21:27:09Z",
+          "completed_at": "2026-11-06T21:27:19Z"
+        },
+        {
+          "name": "Post Cache Rust dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-06T21:27:19Z",
+          "completed_at": "2026-11-06T21:27:19Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-06T21:27:19Z",
+          "completed_at": "2026-11-06T21:27:19Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-11-06T21:27:19Z",
+          "completed_at": "2026-11-06T21:27:19Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/check-runs/128163838029",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_id": 1000001398,
+      "runner_name": "GitHub Actions 1000001398",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 128163838186,
+      "run_id": 42296740190,
+      "workflow_name": "Xiao maintenance regression",
+      "head_branch": "codex/b1-imp-seven-libraries",
+      "run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/42296740190",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOURc-Qs8AAAAd1yj46g",
+      "head_sha": "a52c8d5c9964a58859634e22705e000738197189",
+      "url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/jobs/128163838186",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42296740190/job/128163838186",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-06T21:26:30Z",
+      "started_at": "2026-11-06T21:26:31Z",
+      "completed_at": "2026-11-06T21:36:10Z",
+      "name": "Rust workspace default tests (Linux)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-06T21:26:32Z",
+          "completed_at": "2026-11-06T21:26:33Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-06T21:26:33Z",
+          "completed_at": "2026-11-06T21:26:35Z"
+        },
+        {
+          "name": "Validate controlled measurement selection",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-06T21:26:35Z",
+          "completed_at": "2026-11-06T21:26:35Z"
+        },
+        {
+          "name": "Setup Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-06T21:26:35Z",
+          "completed_at": "2026-11-06T21:26:43Z"
+        },
+        {
+          "name": "Configure locked Cargo and numeric environment",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-06T21:26:43Z",
+          "completed_at": "2026-11-06T21:26:43Z"
+        },
+        {
+          "name": "Cache Rust dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-06T21:26:43Z",
+          "completed_at": "2026-11-06T21:26:45Z"
+        },
+        {
+          "name": "Verify B1 exact-count guards",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-06T21:26:45Z",
+          "completed_at": "2026-11-06T21:26:56Z"
+        },
+        {
+          "name": "Measure controlled B2-A6 VM",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 8,
+          "started_at": "2026-11-06T21:26:56Z",
+          "completed_at": "2026-11-06T21:26:56Z"
+        },
+        {
+          "name": "Upload B2-A6 VM measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-11-06T21:26:56Z",
+          "completed_at": "2026-11-06T21:26:56Z"
+        },
+        {
+          "name": "Verify controlled measurement selection guards",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-06T21:26:56Z",
+          "completed_at": "2026-11-06T21:26:56Z"
+        },
+        {
+          "name": "Run default workspace tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-06T21:26:56Z",
+          "completed_at": "2026-11-06T21:34:31Z"
+        },
+        {
+          "name": "Run B1 VM probe exactly once",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-06T21:34:31Z",
+          "completed_at": "2026-11-06T21:35:30Z"
+        },
+        {
+          "name": "Run benchmark workspace tests and driver self-test",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-06T21:35:30Z",
+          "completed_at": "2026-11-06T21:36:08Z"
+        },
+        {
+          "name": "Measure controlled B1 VM F10",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14,
+          "started_at": "2026-11-06T21:36:08Z",
+          "completed_at": "2026-11-06T21:36:08Z"
+        },
+        {
+          "name": "Upload B1 VM measurement report",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-06T21:36:08Z",
+          "completed_at": "2026-11-06T21:36:08Z"
+        },
+        {
+          "name": "Post Cache Rust dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-11-06T21:36:08Z",
+          "completed_at": "2026-11-06T21:36:08Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-11-06T21:36:08Z",
+          "completed_at": "2026-11-06T21:36:08Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-11-06T21:36:08Z",
+          "completed_at": "2026-11-06T21:36:08Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/check-runs/128163838186",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_id": 1000001393,
+      "runner_name": "GitHub Actions 1000001393",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 128163838252,
+      "run_id": 42296740190,
+      "workflow_name": "Xiao maintenance regression",
+      "head_branch": "codex/b1-imp-seven-libraries",
+      "run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/42296740190",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOURc-Qs8AAAAd1yj5LA",
+      "head_sha": "a52c8d5c9964a58859634e22705e000738197189",
+      "url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/jobs/128163838252",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42296740190/job/128163838252",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-06T21:26:30Z",
+      "started_at": "2026-11-06T21:26:32Z",
+      "completed_at": "2026-11-06T21:44:04Z",
+      "name": "Native differential regression (macOS)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-06T21:26:32Z",
+          "completed_at": "2026-11-06T21:26:34Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-06T21:26:34Z",
+          "completed_at": "2026-11-06T21:26:36Z"
+        },
+        {
+          "name": "Validate controlled measurement selection",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-06T21:26:36Z",
+          "completed_at": "2026-11-06T21:26:38Z"
+        },
+        {
+          "name": "Setup Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-06T21:26:38Z",
+          "completed_at": "2026-11-06T21:26:49Z"
+        },
+        {
+          "name": "Configure locked Cargo and numeric environment",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-06T21:26:49Z",
+          "completed_at": "2026-11-06T21:26:50Z"
+        },
+        {
+          "name": "Cache Rust dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-06T21:26:50Z",
+          "completed_at": "2026-11-06T21:26:54Z"
+        },
+        {
+          "name": "Install Windows LLVM",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 7,
+          "started_at": "2026-11-06T21:26:54Z",
+          "completed_at": "2026-11-06T21:26:54Z"
+        },
+        {
+          "name": "Build runtime and run native gates",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 8,
+          "started_at": "2026-11-06T21:26:54Z",
+          "completed_at": "2026-11-06T21:26:54Z"
+        },
+        {
+          "name": "Build runtime and run Linux native gates",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-11-06T21:26:54Z",
+          "completed_at": "2026-11-06T21:26:54Z"
+        },
+        {
+          "name": "Build runtime and run macOS native gates",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-06T21:26:54Z",
+          "completed_at": "2026-11-06T21:43:51Z"
+        },
+        {
+          "name": "Upload B2-A6 native measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 11,
+          "started_at": "2026-11-06T21:43:51Z",
+          "completed_at": "2026-11-06T21:43:51Z"
+        },
+        {
+          "name": "Upload B1 native measurement report",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 12,
+          "started_at": "2026-11-06T21:43:51Z",
+          "completed_at": "2026-11-06T21:43:51Z"
+        },
+        {
+          "name": "Run 20D and 20E resource, process and archive fixtures (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13,
+          "started_at": "2026-11-06T21:43:51Z",
+          "completed_at": "2026-11-06T21:43:51Z"
+        },
+        {
+          "name": "Run 20D and 20E resource, process and archive fixtures (Linux and macOS)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-06T21:43:51Z",
+          "completed_at": "2026-11-06T21:43:58Z"
+        },
+        {
+          "name": "Post Cache Rust dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-06T21:43:58Z",
+          "completed_at": "2026-11-06T21:43:58Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-11-06T21:43:58Z",
+          "completed_at": "2026-11-06T21:43:58Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-11-06T21:43:58Z",
+          "completed_at": "2026-11-06T21:44:01Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/check-runs/128163838252",
+      "labels": [
+        "macos-15"
+      ],
+      "runner_id": 1000001392,
+      "runner_name": "GitHub Actions 1000001392",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 128163838326,
+      "run_id": 42296740190,
+      "workflow_name": "Xiao maintenance regression",
+      "head_branch": "codex/b1-imp-seven-libraries",
+      "run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/42296740190",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOURc-Qs8AAAAd1yj5dg",
+      "head_sha": "a52c8d5c9964a58859634e22705e000738197189",
+      "url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/jobs/128163838326",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42296740190/job/128163838326",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-06T21:26:30Z",
+      "started_at": "2026-11-06T21:26:32Z",
+      "completed_at": "2026-11-06T21:28:13Z",
+      "name": "Deterministic artifact size regression (Windows baseline)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-06T21:26:32Z",
+          "completed_at": "2026-11-06T21:26:34Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-06T21:26:34Z",
+          "completed_at": "2026-11-06T21:26:41Z"
+        },
+        {
+          "name": "Setup Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-06T21:26:41Z",
+          "completed_at": "2026-11-06T21:26:53Z"
+        },
+        {
+          "name": "Configure locked Cargo and numeric environment",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-06T21:26:53Z",
+          "completed_at": "2026-11-06T21:26:58Z"
+        },
+        {
+          "name": "Cache Rust dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-06T21:26:58Z",
+          "completed_at": "2026-11-06T21:27:07Z"
+        },
+        {
+          "name": "Check deterministic artifact size baseline",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-06T21:27:07Z",
+          "completed_at": "2026-11-06T21:28:09Z"
+        },
+        {
+          "name": "Post Cache Rust dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-06T21:28:09Z",
+          "completed_at": "2026-11-06T21:28:10Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-06T21:28:10Z",
+          "completed_at": "2026-11-06T21:28:12Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-06T21:28:12Z",
+          "completed_at": "2026-11-06T21:28:12Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/check-runs/128163838326",
+      "labels": [
+        "windows-2025"
+      ],
+      "runner_id": 1000001403,
+      "runner_name": "GitHub Actions 1000001403",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 128163838452,
+      "run_id": 42296740190,
+      "workflow_name": "Xiao maintenance regression",
+      "head_branch": "codex/b1-imp-seven-libraries",
+      "run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/42296740190",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOURc-Qs8AAAAd1yj59A",
+      "head_sha": "a52c8d5c9964a58859634e22705e000738197189",
+      "url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/jobs/128163838452",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42296740190/job/128163838452",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-06T21:26:30Z",
+      "started_at": "2026-11-06T21:26:32Z",
+      "completed_at": "2026-11-06T21:38:57Z",
+      "name": "Native differential regression (Windows)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-06T21:26:33Z",
+          "completed_at": "2026-11-06T21:26:35Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-06T21:26:35Z",
+          "completed_at": "2026-11-06T21:26:43Z"
+        },
+        {
+          "name": "Validate controlled measurement selection",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-06T21:26:43Z",
+          "completed_at": "2026-11-06T21:26:45Z"
+        },
+        {
+          "name": "Setup Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-06T21:26:45Z",
+          "completed_at": "2026-11-06T21:26:56Z"
+        },
+        {
+          "name": "Configure locked Cargo and numeric environment",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-06T21:26:56Z",
+          "completed_at": "2026-11-06T21:26:57Z"
+        },
+        {
+          "name": "Cache Rust dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-06T21:26:57Z",
+          "completed_at": "2026-11-06T21:27:07Z"
+        },
+        {
+          "name": "Install Windows LLVM",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-06T21:27:07Z",
+          "completed_at": "2026-11-06T21:27:56Z"
+        },
+        {
+          "name": "Build runtime and run native gates",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-06T21:27:56Z",
+          "completed_at": "2026-11-06T21:38:24Z"
+        },
+        {
+          "name": "Build runtime and run Linux native gates",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-11-06T21:38:24Z",
+          "completed_at": "2026-11-06T21:38:24Z"
+        },
+        {
+          "name": "Build runtime and run macOS native gates",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 10,
+          "started_at": "2026-11-06T21:38:24Z",
+          "completed_at": "2026-11-06T21:38:24Z"
+        },
+        {
+          "name": "Upload B2-A6 native measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 11,
+          "started_at": "2026-11-06T21:38:24Z",
+          "completed_at": "2026-11-06T21:38:24Z"
+        },
+        {
+          "name": "Upload B1 native measurement report",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 12,
+          "started_at": "2026-11-06T21:38:24Z",
+          "completed_at": "2026-11-06T21:38:24Z"
+        },
+        {
+          "name": "Run 20D and 20E resource, process and archive fixtures (Windows)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-06T21:38:24Z",
+          "completed_at": "2026-11-06T21:38:51Z"
+        },
+        {
+          "name": "Run 20D and 20E resource, process and archive fixtures (Linux and macOS)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14,
+          "started_at": "2026-11-06T21:38:51Z",
+          "completed_at": "2026-11-06T21:38:51Z"
+        },
+        {
+          "name": "Post Cache Rust dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-06T21:38:51Z",
+          "completed_at": "2026-11-06T21:38:52Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-11-06T21:38:52Z",
+          "completed_at": "2026-11-06T21:38:54Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-11-06T21:38:54Z",
+          "completed_at": "2026-11-06T21:38:54Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/check-runs/128163838452",
+      "labels": [
+        "windows-2025"
+      ],
+      "runner_id": 1000001404,
+      "runner_name": "GitHub Actions 1000001404",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 128163838471,
+      "run_id": 42296740190,
+      "workflow_name": "Xiao maintenance regression",
+      "head_branch": "codex/b1-imp-seven-libraries",
+      "run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/42296740190",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOURc-Qs8AAAAd1yj6Bw",
+      "head_sha": "a52c8d5c9964a58859634e22705e000738197189",
+      "url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/jobs/128163838471",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42296740190/job/128163838471",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-06T21:26:30Z",
+      "started_at": "2026-11-06T21:26:32Z",
+      "completed_at": "2026-11-06T21:37:19Z",
+      "name": "Native differential regression (Linux)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-06T21:26:33Z",
+          "completed_at": "2026-11-06T21:26:35Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-06T21:26:35Z",
+          "completed_at": "2026-11-06T21:26:37Z"
+        },
+        {
+          "name": "Validate controlled measurement selection",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-06T21:26:37Z",
+          "completed_at": "2026-11-06T21:26:42Z"
+        },
+        {
+          "name": "Setup Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-06T21:26:42Z",
+          "completed_at": "2026-11-06T21:26:50Z"
+        },
+        {
+          "name": "Configure locked Cargo and numeric environment",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-06T21:26:50Z",
+          "completed_at": "2026-11-06T21:26:51Z"
+        },
+        {
+          "name": "Cache Rust dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-06T21:26:51Z",
+          "completed_at": "2026-11-06T21:26:54Z"
+        },
+        {
+          "name": "Install Windows LLVM",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 7,
+          "started_at": "2026-11-06T21:26:54Z",
+          "completed_at": "2026-11-06T21:26:54Z"
+        },
+        {
+          "name": "Build runtime and run native gates",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 8,
+          "started_at": "2026-11-06T21:26:54Z",
+          "completed_at": "2026-11-06T21:26:54Z"
+        },
+        {
+          "name": "Build runtime and run Linux native gates",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-06T21:26:54Z",
+          "completed_at": "2026-11-06T21:37:07Z"
+        },
+        {
+          "name": "Build runtime and run macOS native gates",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 10,
+          "started_at": "2026-11-06T21:37:07Z",
+          "completed_at": "2026-11-06T21:37:07Z"
+        },
+        {
+          "name": "Upload B2-A6 native measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 11,
+          "started_at": "2026-11-06T21:37:07Z",
+          "completed_at": "2026-11-06T21:37:07Z"
+        },
+        {
+          "name": "Upload B1 native measurement report",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 12,
+          "started_at": "2026-11-06T21:37:07Z",
+          "completed_at": "2026-11-06T21:37:07Z"
+        },
+        {
+          "name": "Run 20D and 20E resource, process and archive fixtures (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13,
+          "started_at": "2026-11-06T21:37:07Z",
+          "completed_at": "2026-11-06T21:37:07Z"
+        },
+        {
+          "name": "Run 20D and 20E resource, process and archive fixtures (Linux and macOS)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-06T21:37:07Z",
+          "completed_at": "2026-11-06T21:37:17Z"
+        },
+        {
+          "name": "Post Cache Rust dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-06T21:37:17Z",
+          "completed_at": "2026-11-06T21:37:17Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-11-06T21:37:17Z",
+          "completed_at": "2026-11-06T21:37:17Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-11-06T21:37:17Z",
+          "completed_at": "2026-11-06T21:37:17Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/check-runs/128163838471",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_id": 1000001399,
+      "runner_name": "GitHub Actions 1000001399",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ]
+}

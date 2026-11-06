@@ -1,0 +1,38 @@
+{
+  "name": "a6-build-runtime-first",
+  "argv": [
+    "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "+1.96.0",
+    "build",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--release",
+    "-p",
+    "xiao-runtime"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a6-resources\\20261107-3b09bfb18950\\source",
+  "started_utc": "2026-11-06T18:39:56.697227+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "a6-build-runtime-first.log",
+  "pid": 38984,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/ca685f1bad773b7ccb2a2a4a53b042993f76ba89277efce56beba525230bf183.json",
+    "raw_tree_sha256": "ca685f1bad773b7ccb2a2a4a53b042993f76ba89277efce56beba525230bf183",
+    "utf8_lf_tree_sha256": "369b3f8fd888f595a60361240064db17ed4511037b4dbe0c156773cf9f3ca400",
+    "files": 1021
+  },
+  "source_after": {
+    "manifest": "source-manifests/ca685f1bad773b7ccb2a2a4a53b042993f76ba89277efce56beba525230bf183.json",
+    "raw_tree_sha256": "ca685f1bad773b7ccb2a2a4a53b042993f76ba89277efce56beba525230bf183",
+    "utf8_lf_tree_sha256": "369b3f8fd888f595a60361240064db17ed4511037b4dbe0c156773cf9f3ca400",
+    "files": 1021
+  },
+  "source_unchanged": true,
+  "runner_sha256": "38d63c18723d6d491dd5652fd538a31480400e8edc97cc5c8980889a67a422c8",
+  "finished_utc": "2026-11-06T18:41:03.767974+00:00",
+  "duration_seconds": 67.078,
+  "sha256": "a1cd158dd304537f44c4b9990c2cf5710585f57b2a16e8e5a2c9f8bd31c0b64f"
+}

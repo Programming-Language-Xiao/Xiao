@@ -1,0 +1,25 @@
+B2-A6-ARTIFACTS D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\run-temp\xiao-b2-a6-19860-1793991013569224700
+B2-A6-PERF case=lint.add profile=maximum optimization=0 median=Some(0.018115950000000002) peak=Some(7507968) ratio=None result=passed
+B2-A6-PERF case=lint.subtract profile=maximum optimization=0 median=Some(0.017608616666666667) peak=Some(7516160) ratio=None result=passed
+B2-A6-PERF case=lint.multiply profile=maximum optimization=0 median=Some(0.011410222222222223) peak=Some(7524352) ratio=None result=passed
+B2-A6-PERF case=lfloat.cancel profile=maximum optimization=0 median=Some(0.006208515625) peak=Some(7536640) ratio=None result=passed
+B2-A6-PERF case=lfloat.multiply profile=maximum optimization=0 median=Some(0.0114084) peak=Some(7520256) ratio=None result=passed
+B2-A6-PERF case=lfloat.floor profile=maximum optimization=0 median=Some(0.016933683333333335) peak=Some(7528448) ratio=None result=passed
+B2-A6-PERF case=lfloat.modular profile=maximum optimization=0 median=Some(0.0111435) peak=Some(7524352) ratio=None result=passed
+B2-A6-PERF case=lfloat.remainder-cancel profile=maximum optimization=0 median=Some(0.008054061538461539) peak=Some(7491584) ratio=None result=passed
+B2-A6-PERF case=lfloat.finite-division profile=maximum optimization=0 median=Some(0.01961672) peak=Some(7536640) ratio=None result=passed
+B2-A6-PERF case=lfloat.nonterminating-gcd profile=maximum optimization=0 median=None peak=None ratio=None result=failed
+B2-A6-PERF case=lint.power profile=maximum optimization=0 median=Some(0.015751185714285715) peak=Some(7512064) ratio=None result=passed
+B2-A6-PERF case=lfloat.power profile=maximum optimization=0 median=Some(0.0164854) peak=Some(7512064) ratio=None result=passed
+B2-A6-PERF case=text.parse profile=maximum optimization=0 median=Some(0.0040146375) peak=Some(7516160) ratio=None result=passed
+B2-A6-PERF case=lfloat.format profile=maximum optimization=0 median=Some(0.004407615625) peak=Some(7503872) ratio=None result=passed
+B2-A6-PERF case=lint.to-decimal profile=maximum optimization=0 median=Some(0.010086290000000001) peak=Some(7528448) ratio=None result=passed
+B2-A6-PERF case=lfloat.to-integer profile=maximum optimization=0 median=Some(0.010195659999999999) peak=Some(7520256) ratio=None result=passed
+B2-A6-PERF case=lfloat.to-int-truncate profile=maximum optimization=0 median=Some(0.005285853125) peak=Some(7520256) ratio=None result=passed
+B2-A6-PERF case=lfloat.to-float-subnormal profile=maximum optimization=0 median=Some(0.026621175) peak=Some(7495680) ratio=None result=passed
+B2-A6-PERF case=lfloat.to-sfloat-subnormal profile=maximum optimization=0 median=Some(0.025718675) peak=Some(7503872) ratio=None result=passed
+B2-A6-PERF case=float.to-decimal profile=maximum optimization=0 median=Some(8.0591484375e-5) peak=Some(7512064) ratio=None result=passed
+B2-A6-PERF case=sfloat.to-decimal profile=maximum optimization=0 median=Some(1.54714599609375e-5) peak=Some(7512064) ratio=None result=passed
+B2-A6-PERF case=identity.compare profile=maximum optimization=0 median=Some(0.0124495625) peak=Some(7516160) ratio=None result=passed
+B2-A6-PERF case=identity.hash-set profile=maximum optimization=0 median=Some(0.0004219854910714286) peak=Some(7503872) ratio=None result=passed
+B2-A6-PERF case=carrier.tuple profile=maximum optimization=0 median=Some(0.00422228125) peak=Some(7507968) ratio=None result=passed

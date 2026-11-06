@@ -1,0 +1,175 @@
+{
+  "run": 42290069834,
+  "collected_utc": "2026-11-06T21:01:36.954440+00:00",
+  "calls": [
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/42290069834"
+      ],
+      "started_utc": "2026-11-06T21:00:57.808709+00:00",
+      "file": "run.json",
+      "bytes": 13916,
+      "sha256": "d1cf7f3e197d5c357170c060b4917da54b18c4e17f56441ec507c4826daf172d",
+      "exit_code": 0,
+      "network": "existing git http.proxy; child only"
+    },
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/42290069834/attempts/1/jobs?per_page=100"
+      ],
+      "started_utc": "2026-11-06T21:00:58.816710+00:00",
+      "file": "attempt-1-jobs.json",
+      "bytes": 21074,
+      "sha256": "c8f0b8e096d992199c5004e25059c4dd684eebd6d059c24ceded2c4e8dae1012",
+      "exit_code": 0,
+      "network": "existing git http.proxy; child only"
+    },
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/jobs/128141024364/logs"
+      ],
+      "started_utc": "2026-11-06T21:01:00.161562+00:00",
+      "file": "job-128141024364.log",
+      "bytes": 98152,
+      "sha256": "6b0546c8fd28bd7f4c90ee383dbae736e2ce7b9701fc1c4db136df0db2f52e7b",
+      "exit_code": 0,
+      "network": "existing git http.proxy; child only"
+    },
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/jobs/128141024507/logs"
+      ],
+      "started_utc": "2026-11-06T21:01:02.972432+00:00",
+      "file": "job-128141024507.log",
+      "bytes": 46909,
+      "sha256": "422a9546af1d46a21ce3b699cd60cc309279378bcddc748db849864d79b36d4b",
+      "exit_code": 0,
+      "network": "existing git http.proxy; child only"
+    },
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/jobs/128141024672/logs"
+      ],
+      "started_utc": "2026-11-06T21:01:05.690436+00:00",
+      "file": "job-128141024672.log",
+      "bytes": 375506,
+      "sha256": "55b3add2317c488a03d2440494f7e73ebf334053ebb0658d9d557dd5fef167cb",
+      "exit_code": 0,
+      "network": "existing git http.proxy; child only"
+    },
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/jobs/128141024680/logs"
+      ],
+      "started_utc": "2026-11-06T21:01:08.864987+00:00",
+      "file": "job-128141024680.log",
+      "bytes": 337613,
+      "sha256": "ef867aadc49320b82baa2e1f50eb8da8d9aa5690f0a5ed12fa1bff8e67211182",
+      "exit_code": 0,
+      "network": "existing git http.proxy; child only"
+    },
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/jobs/128141024760/logs"
+      ],
+      "started_utc": "2026-11-06T21:01:11.959835+00:00",
+      "file": "job-128141024760.log",
+      "bytes": 57846,
+      "sha256": "00506a997bee48fee747c5b8633d262ec152f857897984963c463fb90a46fd0d",
+      "exit_code": 0,
+      "network": "existing git http.proxy; child only"
+    },
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/jobs/128141024792/logs"
+      ],
+      "started_utc": "2026-11-06T21:01:14.604644+00:00",
+      "file": "job-128141024792.log",
+      "bytes": 415756,
+      "sha256": "18fc7e52ee5199d78a0e9996c3b40461c2cc24a069dc1f0699378723e9418875",
+      "exit_code": 0,
+      "network": "existing git http.proxy; child only"
+    },
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/42290069834/artifacts?per_page=100"
+      ],
+      "started_utc": "2026-11-06T21:01:17.798994+00:00",
+      "file": "artifacts.json",
+      "bytes": 3073,
+      "sha256": "4391f085773db669955f86af62e78e7fd59964457b86478da44ab7617de798e2",
+      "exit_code": 0,
+      "network": "existing git http.proxy; child only"
+    },
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/artifacts/13540610257/zip"
+      ],
+      "started_utc": "2026-11-06T21:01:19.015506+00:00",
+      "file": "artifact-13540610257.zip",
+      "bytes": 7406074,
+      "sha256": "c23dbedce855779201acbec713bf6d02682af8fdbcd80f9716b404d464a7cb0a",
+      "exit_code": 0,
+      "network": "existing git http.proxy; child only"
+    },
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/artifacts/13540033457/zip"
+      ],
+      "started_utc": "2026-11-06T21:01:23.601127+00:00",
+      "file": "artifact-13540033457.zip",
+      "bytes": 5317552,
+      "sha256": "d7d178db44b36ae8003bdfd4de03c47558d78a6a4cc79fc45fac30836f6e963d",
+      "exit_code": 0,
+      "network": "existing git http.proxy; child only"
+    },
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/artifacts/13539463262/zip"
+      ],
+      "started_utc": "2026-11-06T21:01:28.081522+00:00",
+      "file": "artifact-13539463262.zip",
+      "bytes": 9629604,
+      "sha256": "7151dd8139e6c750f78284ce5a7080ceee2581a1410378fb3ebe586c058fae40",
+      "exit_code": 0,
+      "network": "existing git http.proxy; child only"
+    },
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/artifacts/13538894148/zip"
+      ],
+      "started_utc": "2026-11-06T21:01:33.486714+00:00",
+      "file": "artifact-13538894148.zip",
+      "bytes": 1105612,
+      "sha256": "204e455a501903a9d9c6d061d46bb65db8ca13b7ca2206950f943ec8a3629580",
+      "exit_code": 0,
+      "network": "existing git http.proxy; child only"
+    }
+  ]
+}

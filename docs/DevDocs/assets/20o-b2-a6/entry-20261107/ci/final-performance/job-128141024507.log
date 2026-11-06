@@ -1,0 +1,557 @@
+﻿2026-11-06T20:38:57.5974384Z Current runner version: '2.338.2'
+2026-11-06T20:38:57.6001397Z ##[group]Runner Image Provisioner
+2026-11-06T20:38:57.6002215Z Hosted Compute Agent
+2026-11-06T20:38:57.6002751Z Version: 20261103.629
+2026-11-06T20:38:57.6003395Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-06T20:38:57.6004129Z Build Date: 2026-11-03T17:26:59Z
+2026-11-06T20:38:57.6004782Z Worker ID: {caf2a7e2-5bdb-44bc-a07a-07763836a56d}
+2026-11-06T20:38:57.6005448Z Region: westus
+2026-11-06T20:38:57.6005945Z Cloud: Azure
+2026-11-06T20:38:57.6006452Z ##[endgroup]
+2026-11-06T20:38:57.6007778Z ##[group]Operating System
+2026-11-06T20:38:57.6008411Z Microsoft Windows Server 2025
+2026-11-06T20:38:57.6009008Z 10.0.26100
+2026-11-06T20:38:57.6009489Z Datacenter
+2026-11-06T20:38:57.6010049Z ##[endgroup]
+2026-11-06T20:38:57.6010831Z ##[group]Runner Image
+2026-11-06T20:38:57.6011414Z Image: windows-2025-vs2026
+2026-11-06T20:38:57.6012252Z Version: 20261103.298.1
+2026-11-06T20:38:57.6013760Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20261103.298/images/windows/Windows2025-VS2026-Readme.md
+2026-11-06T20:38:57.6015387Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20261103.298
+2026-11-06T20:38:57.6016347Z ##[endgroup]
+2026-11-06T20:38:57.6017406Z ##[group]GITHUB_TOKEN Permissions
+2026-11-06T20:38:57.6019313Z Contents: read
+2026-11-06T20:38:57.6019933Z Metadata: read
+2026-11-06T20:38:57.6020452Z ##[endgroup]
+2026-11-06T20:38:57.6022589Z Secret source: Actions
+2026-11-06T20:38:57.6023461Z Cache mode: write
+2026-11-06T20:38:57.6024169Z Prepare workflow directory
+2026-11-06T20:38:57.6651221Z Prepare all required actions
+2026-11-06T20:38:57.6704386Z Getting action download info
+2026-11-06T20:38:58.0251997Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-11-06T20:38:58.1728449Z Download action repository 'dtolnay/rust-toolchain@1.96.0' (SHA:d86e0fa8f147d6539442c26a61ebba8becc19489)
+2026-11-06T20:38:58.3806589Z Download action repository 'Swatinem/rust-cache@v2' (SHA:d1527c8f67ef9af357290475d4af4b0fab8f12e0)
+2026-11-06T20:38:58.9175366Z Complete job name: Deterministic artifact size regression (Windows baseline)
+2026-11-06T20:38:59.0750165Z ##[group]Run actions/checkout@v7
+2026-11-06T20:38:59.0751257Z with:
+2026-11-06T20:38:59.0751749Z   repository: Programming-Language-Xiao/Xiao
+2026-11-06T20:38:59.0756412Z   token: ***
+2026-11-06T20:38:59.0756877Z   ssh-strict: true
+2026-11-06T20:38:59.0757312Z   ssh-user: git
+2026-11-06T20:38:59.0757749Z   persist-credentials: true
+2026-11-06T20:38:59.0758243Z   clean: true
+2026-11-06T20:38:59.0758687Z   sparse-checkout-cone-mode: true
+2026-11-06T20:38:59.0759204Z   fetch-depth: 1
+2026-11-06T20:38:59.0759880Z   fetch-tags: false
+2026-11-06T20:38:59.0760347Z   show-progress: true
+2026-11-06T20:38:59.0760789Z   lfs: false
+2026-11-06T20:38:59.0761199Z   submodules: false
+2026-11-06T20:38:59.0761645Z   set-safe-directory: true
+2026-11-06T20:38:59.0762152Z   allow-unsafe-pr-checkout: false
+2026-11-06T20:38:59.0762970Z env:
+2026-11-06T20:38:59.0763394Z   XIAO_B1_F10: 0
+2026-11-06T20:38:59.0763820Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:38:59.0764246Z ##[endgroup]
+2026-11-06T20:38:59.2408774Z Syncing repository: Programming-Language-Xiao/Xiao
+2026-11-06T20:38:59.2410742Z ##[group]Getting Git version info
+2026-11-06T20:38:59.2411401Z Working directory is 'D:\a\Xiao\Xiao'
+2026-11-06T20:38:59.3349081Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-06T20:38:59.6301402Z git version 2.56.0.windows.4
+2026-11-06T20:38:59.6358578Z ##[endgroup]
+2026-11-06T20:38:59.6377245Z Temporarily overriding HOME='D:\a\_temp\03f7e6ea-77aa-4982-8ff5-ddb7e3c960c5' before making global git config changes
+2026-11-06T20:38:59.6380409Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-06T20:38:59.6388040Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\Xiao\Xiao
+2026-11-06T20:38:59.7185184Z Deleting the contents of 'D:\a\Xiao\Xiao'
+2026-11-06T20:38:59.7193238Z ##[group]Determining repository object format
+2026-11-06T20:38:59.7197083Z ##[endgroup]
+2026-11-06T20:38:59.7200401Z ##[group]Initializing the repository
+2026-11-06T20:38:59.7206911Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\Xiao\Xiao
+2026-11-06T20:38:59.8023099Z Initialized empty Git repository in D:/a/Xiao/Xiao/.git/
+2026-11-06T20:38:59.8072645Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/Programming-Language-Xiao/Xiao
+2026-11-06T20:38:59.8826282Z ##[endgroup]
+2026-11-06T20:38:59.8827410Z ##[group]Disabling automatic garbage collection
+2026-11-06T20:38:59.8835651Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-11-06T20:38:59.9234829Z ##[endgroup]
+2026-11-06T20:38:59.9236008Z ##[group]Setting up auth
+2026-11-06T20:38:59.9236893Z Removing SSH command configuration
+2026-11-06T20:38:59.9245998Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-06T20:38:59.9663575Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-06T20:39:01.4388970Z Removing HTTP extra header
+2026-11-06T20:39:01.4399150Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-06T20:39:01.4806289Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-06T20:39:02.0607421Z Removing includeIf entries pointing to credentials config files
+2026-11-06T20:39:02.0616951Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-06T20:39:02.1018418Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-06T20:39:02.7200402Z [command]"C:\Program Files\Git\bin\git.exe" config --file D:\a\_temp\git-credentials-90e34de2-5ec4-455b-a74a-78b9c3a26eba.config http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-11-06T20:39:02.7624581Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/Xiao/Xiao/.git.path D:\a\_temp\git-credentials-90e34de2-5ec4-455b-a74a-78b9c3a26eba.config
+2026-11-06T20:39:02.8033107Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/Xiao/Xiao/.git/worktrees/*.path D:\a\_temp\git-credentials-90e34de2-5ec4-455b-a74a-78b9c3a26eba.config
+2026-11-06T20:39:02.8473979Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-90e34de2-5ec4-455b-a74a-78b9c3a26eba.config
+2026-11-06T20:39:02.8895252Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-90e34de2-5ec4-455b-a74a-78b9c3a26eba.config
+2026-11-06T20:39:02.9302893Z ##[endgroup]
+2026-11-06T20:39:02.9303595Z ##[group]Fetching the repository
+2026-11-06T20:39:02.9316295Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +fb215262a4bcb8827c0d9a64eae4b69748edcfe4:refs/remotes/origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T20:39:06.3091749Z From https://github.com/Programming-Language-Xiao/Xiao
+2026-11-06T20:39:06.3092662Z  * [new ref]         fb215262a4bcb8827c0d9a64eae4b69748edcfe4 -> origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T20:39:06.3143871Z [command]"C:\Program Files\Git\bin\git.exe" branch --list --remote origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T20:39:06.3594228Z   origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T20:39:06.3640086Z [command]"C:\Program Files\Git\bin\git.exe" rev-parse refs/remotes/origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T20:39:06.4069120Z fb215262a4bcb8827c0d9a64eae4b69748edcfe4
+2026-11-06T20:39:06.4109324Z ##[endgroup]
+2026-11-06T20:39:06.4109757Z ##[group]Determining the checkout info
+2026-11-06T20:39:06.4110248Z ##[endgroup]
+2026-11-06T20:39:06.4118190Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-11-06T20:39:06.4619029Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-11-06T20:39:06.5035164Z ##[group]Checking out the ref
+2026-11-06T20:39:06.5048510Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B codex/b2-a6-resources-20261107-3b09bfb18950 refs/remotes/origin/codex/b2-a6-resources-20261107-3b09bfb18950
+2026-11-06T20:39:07.6457188Z Updating files:  99% (3175/3196)
+2026-11-06T20:39:07.6457760Z Updating files: 100% (3196/3196)
+2026-11-06T20:39:07.6459506Z Updating files: 100% (3196/3196), done.
+2026-11-06T20:39:07.6645499Z Switched to a new branch 'codex/b2-a6-resources-20261107-3b09bfb18950'
+2026-11-06T20:39:07.6741643Z branch 'codex/b2-a6-resources-20261107-3b09bfb18950' set up to track 'origin/codex/b2-a6-resources-20261107-3b09bfb18950'.
+2026-11-06T20:39:07.6808081Z ##[endgroup]
+2026-11-06T20:39:07.7342885Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-11-06T20:39:07.7717248Z fb215262a4bcb8827c0d9a64eae4b69748edcfe4
+2026-11-06T20:39:07.8361416Z ##[group]Run dtolnay/rust-toolchain@1.96.0
+2026-11-06T20:39:07.8361775Z with:
+2026-11-06T20:39:07.8361979Z   components: rustfmt
+2026-11-06T20:39:07.8362187Z env:
+2026-11-06T20:39:07.8362355Z   XIAO_B1_F10: 0
+2026-11-06T20:39:07.8362891Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:39:07.8363143Z ##[endgroup]
+2026-11-06T20:39:07.8429604Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-11-06T20:39:07.8622602Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-11-06T20:39:07.8623013Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-11-06T20:39:07.8624117Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-11-06T20:39:07.8624707Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-11-06T20:39:07.8625014Z [36;1m  exit 1[0m
+2026-11-06T20:39:07.8625352Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-11-06T20:39:07.8625811Z [36;1m  if [[ Windows == macOS ]]; then[0m
+2026-11-06T20:39:07.8626338Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-11-06T20:39:07.8626850Z [36;1m  else[0m
+2026-11-06T20:39:07.8627245Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-11-06T20:39:07.8627691Z [36;1m  fi[0m
+2026-11-06T20:39:07.8627981Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-11-06T20:39:07.8628501Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-11-06T20:39:07.8628951Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-11-06T20:39:07.8629459Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-11-06T20:39:07.8629942Z [36;1melse[0m
+2026-11-06T20:39:07.8630125Z [36;1m  delimiter=EOF[0m
+2026-11-06T20:39:07.8630421Z [36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done[0m
+2026-11-06T20:39:07.8630922Z [36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT[0m
+2026-11-06T20:39:07.8631329Z [36;1mfi[0m
+2026-11-06T20:39:07.8655063Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T20:39:07.8655468Z env:
+2026-11-06T20:39:07.8655895Z   XIAO_B1_F10: 0
+2026-11-06T20:39:07.8656149Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:39:07.8656361Z   toolchain: 1.96.0
+2026-11-06T20:39:07.8656539Z ##[endgroup]
+2026-11-06T20:39:08.0283501Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=185]
+2026-11-06T20:39:08.0288998Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+2026-11-06T20:39:08.0442602Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$USERPROFILE\.cargo"} >> $GITHUB_ENV
+2026-11-06T20:39:08.0443169Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$USERPROFILE\.cargo"} >> $GITHUB_ENV[0m
+2026-11-06T20:39:08.0461747Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T20:39:08.0462145Z env:
+2026-11-06T20:39:08.0462320Z   XIAO_B1_F10: 0
+2026-11-06T20:39:08.0462504Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:39:08.0462689Z ##[endgroup]
+2026-11-06T20:39:08.0904063Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=61]
+2026-11-06T20:39:08.0906819Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+2026-11-06T20:39:08.0916651Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-11-06T20:39:08.0919085Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+2026-11-06T20:39:08.1067906Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-11-06T20:39:08.1070210Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-11-06T20:39:08.1071072Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://win.rustup.rs/x86_64 --output 'D:\a\_temp\rustup-init.exe'[0m
+2026-11-06T20:39:08.1071990Z [36;1m  'D:\a\_temp\rustup-init.exe' --default-toolchain none --no-modify-path -y[0m
+2026-11-06T20:39:08.1072424Z [36;1m  echo "$CARGO_HOME\bin" >> $GITHUB_PATH[0m
+2026-11-06T20:39:08.1072694Z [36;1mfi[0m
+2026-11-06T20:39:08.1090255Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T20:39:08.1090663Z env:
+2026-11-06T20:39:08.1090851Z   XIAO_B1_F10: 0
+2026-11-06T20:39:08.1091041Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:39:08.1091257Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T20:39:08.1091528Z ##[endgroup]
+2026-11-06T20:39:08.1709296Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=success;conclusion=success;duration_ms=78]
+2026-11-06T20:39:08.1724500Z ##[start-action display=rustup toolchain install 1.96.0;id=__dtolnay_rust-toolchain.__run_4]
+2026-11-06T20:39:08.1865962Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+2026-11-06T20:39:08.1866650Z [36;1mset -f  # split targets and components on commas and whitespace, without glob expansion[0m
+2026-11-06T20:39:08.1867077Z [36;1mflags=()[0m
+2026-11-06T20:39:08.1867338Z [36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done[0m
+2026-11-06T20:39:08.1867747Z [36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done[0m
+2026-11-06T20:39:08.1868259Z [36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi[0m
+2026-11-06T20:39:08.1868665Z [36;1mlog=$(mktemp)[0m
+2026-11-06T20:39:08.1868884Z [36;1mtrap 'rm -f "$log"' EXIT[0m
+2026-11-06T20:39:08.1869125Z [36;1mfor attempt in 1 2 3 4 5; do[0m
+2026-11-06T20:39:08.1869697Z [36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then[0m
+2026-11-06T20:39:08.1870257Z [36;1m    break[0m
+2026-11-06T20:39:08.1870436Z [36;1m  else[0m
+2026-11-06T20:39:08.1870613Z [36;1m    status=$?[0m
+2026-11-06T20:39:08.1870804Z [36;1m  fi[0m
+2026-11-06T20:39:08.1871072Z [36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \[0m
+2026-11-06T20:39:08.1871610Z [36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then[0m
+2026-11-06T20:39:08.1872234Z [36;1m    exit "$status"[0m
+2026-11-06T20:39:08.1872440Z [36;1m  fi[0m
+2026-11-06T20:39:08.1872775Z [36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2[0m
+2026-11-06T20:39:08.1873180Z [36;1m  sleep 30[0m
+2026-11-06T20:39:08.1873368Z [36;1mdone[0m
+2026-11-06T20:39:08.1890842Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T20:39:08.1891245Z env:
+2026-11-06T20:39:08.1891433Z   XIAO_B1_F10: 0
+2026-11-06T20:39:08.1891624Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:39:08.1891847Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T20:39:08.1892108Z   toolchain: 1.96.0
+2026-11-06T20:39:08.1892292Z   targets: 
+2026-11-06T20:39:08.1892466Z   components: rustfmt
+2026-11-06T20:39:08.1892674Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-11-06T20:39:08.1892898Z ##[endgroup]
+2026-11-06T20:39:08.8485297Z info: syncing channel updates for 1.96.0-x86_64-pc-windows-msvc
+2026-11-06T20:39:09.3075786Z info: latest update on 2026-05-28 for version 1.96.0 (ac68faa20 2026-05-25)
+2026-11-06T20:39:09.3552655Z info: downloading 4 components
+2026-11-06T20:39:19.5118803Z 
+2026-11-06T20:39:19.5433641Z   1.96.0-x86_64-pc-windows-msvc installed - rustc 1.96.0 (ac68faa20 2026-05-25)
+2026-11-06T20:39:19.5434525Z 
+2026-11-06T20:39:19.6204588Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=11447]
+2026-11-06T20:39:19.6215087Z ##[start-action display=rustup default 1.96.0;id=__dtolnay_rust-toolchain.__run_5]
+2026-11-06T20:39:19.6372692Z ##[group]Run rustup default "$toolchain" --force-non-host
+2026-11-06T20:39:19.6373110Z [36;1mrustup default "$toolchain" --force-non-host[0m
+2026-11-06T20:39:19.6389976Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T20:39:19.6390371Z env:
+2026-11-06T20:39:19.6390547Z   XIAO_B1_F10: 0
+2026-11-06T20:39:19.6390731Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:39:19.6390939Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T20:39:19.6391214Z   toolchain: 1.96.0
+2026-11-06T20:39:19.6391396Z ##[endgroup]
+2026-11-06T20:39:19.7395117Z info: using existing install for 1.96.0-x86_64-pc-windows-msvc
+2026-11-06T20:39:19.7441729Z info: default toolchain set to 1.96.0-x86_64-pc-windows-msvc
+2026-11-06T20:39:19.7442061Z 
+2026-11-06T20:39:19.7667086Z   1.96.0-x86_64-pc-windows-msvc unchanged - rustc 1.96.0 (ac68faa20 2026-05-25)
+2026-11-06T20:39:19.7667466Z 
+2026-11-06T20:39:19.7751528Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=153]
+2026-11-06T20:39:19.7756890Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+2026-11-06T20:39:19.7905298Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-11-06T20:39:19.7906172Z [36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-11-06T20:39:19.7906868Z [36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-11-06T20:39:19.7907384Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-11-06T20:39:19.7926565Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T20:39:19.7926960Z env:
+2026-11-06T20:39:19.7927131Z   XIAO_B1_F10: 0
+2026-11-06T20:39:19.7927314Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:39:19.7946957Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T20:39:19.7947549Z   toolchain: 1.96.0
+2026-11-06T20:39:19.7947834Z ##[endgroup]
+2026-11-06T20:39:20.7826618Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=1006]
+2026-11-06T20:39:20.7830161Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+2026-11-06T20:39:20.7986774Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-11-06T20:39:20.7987995Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-11-06T20:39:20.7988335Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-11-06T20:39:20.7988619Z [36;1mfi[0m
+2026-11-06T20:39:20.8003976Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T20:39:20.8004379Z env:
+2026-11-06T20:39:20.8004553Z   XIAO_B1_F10: 0
+2026-11-06T20:39:20.8004748Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:39:20.8004964Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T20:39:20.8005241Z ##[endgroup]
+2026-11-06T20:39:20.8433850Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=60]
+2026-11-06T20:39:20.8436335Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+2026-11-06T20:39:20.8583753Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-11-06T20:39:20.8584139Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-11-06T20:39:20.8584462Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-11-06T20:39:20.8584750Z [36;1mfi[0m
+2026-11-06T20:39:20.8600444Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T20:39:20.8600846Z env:
+2026-11-06T20:39:20.8601014Z   XIAO_B1_F10: 0
+2026-11-06T20:39:20.8601199Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:39:20.8601410Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T20:39:20.8601676Z   CARGO_INCREMENTAL: 0
+2026-11-06T20:39:20.8601874Z ##[endgroup]
+2026-11-06T20:39:20.9051220Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=61]
+2026-11-06T20:39:20.9055571Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+2026-11-06T20:39:20.9205418Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-11-06T20:39:20.9205955Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-11-06T20:39:20.9206622Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "D:\a\_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-11-06T20:39:20.9207386Z [36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-11-06T20:39:20.9207914Z [36;1m    touch "D:\a\_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-11-06T20:39:20.9208390Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-11-06T20:39:20.9208906Z [36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-11-06T20:39:20.9209429Z [36;1m    touch "D:\a\_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-11-06T20:39:20.9209890Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-11-06T20:39:20.9210221Z [36;1m  fi[0m
+2026-11-06T20:39:20.9210397Z [36;1mfi[0m
+2026-11-06T20:39:20.9226053Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T20:39:20.9226454Z env:
+2026-11-06T20:39:20.9226632Z   XIAO_B1_F10: 0
+2026-11-06T20:39:20.9226817Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:39:20.9227025Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T20:39:20.9227288Z   CARGO_INCREMENTAL: 0
+2026-11-06T20:39:20.9227496Z   CARGO_TERM_COLOR: always
+2026-11-06T20:39:20.9227703Z   toolchain: 1.96.0
+2026-11-06T20:39:20.9227886Z ##[endgroup]
+2026-11-06T20:39:21.1326389Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=226]
+2026-11-06T20:39:21.1330516Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+2026-11-06T20:39:21.1475947Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-11-06T20:39:21.1476700Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-11-06T20:39:21.1477333Z [36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-11-06T20:39:21.1477976Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-11-06T20:39:21.1478652Z [36;1mfi[0m
+2026-11-06T20:39:21.1494025Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T20:39:21.1494434Z env:
+2026-11-06T20:39:21.1494605Z   XIAO_B1_F10: 0
+2026-11-06T20:39:21.1494791Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:39:21.1495006Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T20:39:21.1495289Z   CARGO_INCREMENTAL: 0
+2026-11-06T20:39:21.1495493Z   CARGO_TERM_COLOR: always
+2026-11-06T20:39:21.1495700Z   toolchain: 1.96.0
+2026-11-06T20:39:21.1495882Z ##[endgroup]
+2026-11-06T20:39:21.2585533Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=125]
+2026-11-06T20:39:21.2589840Z ##[start-action display=rustc +1.96.0 --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+2026-11-06T20:39:21.2726533Z ##[group]Run rustc +"$toolchain" --version --verbose
+2026-11-06T20:39:21.2726904Z [36;1mrustc +"$toolchain" --version --verbose[0m
+2026-11-06T20:39:21.2743420Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-06T20:39:21.2743818Z env:
+2026-11-06T20:39:21.2743994Z   XIAO_B1_F10: 0
+2026-11-06T20:39:21.2744178Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:39:21.2744387Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T20:39:21.2744646Z   CARGO_INCREMENTAL: 0
+2026-11-06T20:39:21.2744860Z   CARGO_TERM_COLOR: always
+2026-11-06T20:39:21.2745275Z   toolchain: 1.96.0
+2026-11-06T20:39:21.2745479Z ##[endgroup]
+2026-11-06T20:39:21.3655012Z rustc 1.96.0 (ac68faa20 2026-05-25)
+2026-11-06T20:39:21.3655523Z binary: rustc
+2026-11-06T20:39:21.3655951Z commit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96
+2026-11-06T20:39:21.3656493Z commit-date: 2026-05-25
+2026-11-06T20:39:21.3656867Z host: x86_64-pc-windows-msvc
+2026-11-06T20:39:21.3657252Z release: 1.96.0
+2026-11-06T20:39:21.3658781Z LLVM version: 22.1.2
+2026-11-06T20:39:21.3814081Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=122]
+2026-11-06T20:39:21.3995757Z ##[group]Run python tools/gates/controlled-cargo.py --install
+2026-11-06T20:39:21.3996285Z [36;1mpython tools/gates/controlled-cargo.py --install[0m
+2026-11-06T20:39:21.4664990Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-06T20:39:21.4665990Z env:
+2026-11-06T20:39:21.4666236Z   XIAO_B1_F10: 0
+2026-11-06T20:39:21.4666489Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:39:21.4666782Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T20:39:21.4667143Z   CARGO_INCREMENTAL: 0
+2026-11-06T20:39:21.4667427Z   CARGO_TERM_COLOR: always
+2026-11-06T20:39:21.4667708Z ##[endgroup]
+2026-11-06T20:39:22.7600905Z {"cargo_control_directory": "D:\\a\\_temp\\xiao-controlled-cargo-74f8162d32e24a5fbe3a838fc94efa6d", "delegate": "C:\\Users\\runneradmin\\.cargo\\bin\\cargo.EXE", "scope": "\u4ec5\u5f53\u524dCI\u4f5c\u4e1a\u540e\u7eed\u6b65\u9aa4\uff1b\u4e0d\u6539\u5168\u5c40\u73af\u5883\u6216Cargo\u914d\u7f6e"}
+2026-11-06T20:39:22.9271866Z ##[group]Run Swatinem/rust-cache@v2
+2026-11-06T20:39:22.9272214Z with:
+2026-11-06T20:39:22.9272439Z   workspaces: core/rust -> core/rust/target
+2026-11-06T20:39:22.9272728Z   prefix-key: v0-rust
+2026-11-06T20:39:22.9272938Z   add-job-id-key: true
+2026-11-06T20:39:22.9273164Z   add-rust-environment-hash-key: true
+2026-11-06T20:39:22.9273427Z   cache-targets: true
+2026-11-06T20:39:22.9273629Z   cache-all-crates: false
+2026-11-06T20:39:22.9273857Z   cache-workspace-crates: false
+2026-11-06T20:39:22.9274087Z   save-if: true
+2026-11-06T20:39:22.9274282Z   cache-provider: github
+2026-11-06T20:39:22.9274495Z   cache-bin: true
+2026-11-06T20:39:22.9274684Z   lookup-only: false
+2026-11-06T20:39:22.9274877Z   cmd-format: {0}
+2026-11-06T20:39:22.9275052Z env:
+2026-11-06T20:39:22.9275212Z   XIAO_B1_F10: 0
+2026-11-06T20:39:22.9275391Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:39:22.9275595Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T20:39:22.9276070Z   CARGO_INCREMENTAL: 0
+2026-11-06T20:39:22.9276309Z   CARGO_TERM_COLOR: always
+2026-11-06T20:39:22.9276516Z ##[endgroup]
+2026-11-06T20:39:30.6993270Z ##[group]Cache Configuration
+2026-11-06T20:39:30.6993703Z Cache Provider:
+2026-11-06T20:39:30.6993956Z     github
+2026-11-06T20:39:30.6994195Z Workspaces:
+2026-11-06T20:39:30.6994454Z     D:\a\Xiao\Xiao\core\rust
+2026-11-06T20:39:30.6994795Z Cache Paths:
+2026-11-06T20:39:30.6995075Z     C:\Users\runneradmin\.cargo\bin
+2026-11-06T20:39:30.6995474Z     C:\Users\runneradmin\.cargo\.crates.toml
+2026-11-06T20:39:30.6995909Z     C:\Users\runneradmin\.cargo\.crates2.json
+2026-11-06T20:39:30.6996709Z     C:\Users\runneradmin\.cargo\registry
+2026-11-06T20:39:30.6997132Z     C:\Users\runneradmin\.cargo\git
+2026-11-06T20:39:30.6997569Z     D:\a\Xiao\Xiao\core\rust\core\rust\target
+2026-11-06T20:39:30.6998025Z Restore Key:
+2026-11-06T20:39:30.6998379Z     v0-rust-deterministic-size-Windows_NT-x64-41c3efe8
+2026-11-06T20:39:30.6998909Z Cache Key:
+2026-11-06T20:39:30.6999346Z     v0-rust-deterministic-size-Windows_NT-x64-41c3efe8-22a62547
+2026-11-06T20:39:30.6999822Z .. Prefix:
+2026-11-06T20:39:30.7000140Z   - v0-rust-deterministic-size-Windows_NT-x64
+2026-11-06T20:39:30.7000646Z .. Environment considered:
+2026-11-06T20:39:30.7000997Z   - Rust Versions:
+2026-11-06T20:39:30.7001517Z     - 1.96.0 x86_64-pc-windows-msvc ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96
+2026-11-06T20:39:30.7002279Z     - 1.99.1 x86_64-pc-windows-msvc 58cf8f9c35b355199727627d07ae34a4e2846d67
+2026-11-06T20:39:30.7002813Z   - CARGO_HOME
+2026-11-06T20:39:30.7003095Z   - CARGO_INCREMENTAL
+2026-11-06T20:39:30.7003397Z   - CARGO_TERM_COLOR
+2026-11-06T20:39:30.7003705Z .. Lockfiles considered:
+2026-11-06T20:39:30.7004049Z   - D:\a\Xiao\Xiao\.cargo\config.toml
+2026-11-06T20:39:30.7004460Z   - D:\a\Xiao\Xiao\core\rust\Cargo.lock
+2026-11-06T20:39:30.7004956Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-artifacts\Cargo.toml
+2026-11-06T20:39:30.7005332Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-bytecode\Cargo.toml
+2026-11-06T20:39:30.7005721Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm\Cargo.toml
+2026-11-06T20:39:30.7006090Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-config\Cargo.toml
+2026-11-06T20:39:30.7006464Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-diagnostics\Cargo.toml
+2026-11-06T20:39:30.7006859Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-doc-coverage-rust\Cargo.toml
+2026-11-06T20:39:30.7007235Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-driver\Cargo.toml
+2026-11-06T20:39:30.7007569Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-i18n\Cargo.toml
+2026-11-06T20:39:30.7008093Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-intrinsics\Cargo.toml
+2026-11-06T20:39:30.7008582Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-ir\Cargo.toml
+2026-11-06T20:39:30.7008917Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-lifetime\Cargo.toml
+2026-11-06T20:39:30.7009263Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-lock\Cargo.toml
+2026-11-06T20:39:30.7009601Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-modules\Cargo.toml
+2026-11-06T20:39:30.7012551Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-optimizer\Cargo.toml
+2026-11-06T20:39:30.7013053Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-package\Cargo.toml
+2026-11-06T20:39:30.7013442Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-platform\Cargo.toml
+2026-11-06T20:39:30.7013820Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-runtime-abi\Cargo.toml
+2026-11-06T20:39:30.7014189Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-runtime\Cargo.toml
+2026-11-06T20:39:30.7014537Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-source\Cargo.toml
+2026-11-06T20:39:30.7014909Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-standard-library\Cargo.toml
+2026-11-06T20:39:30.7015296Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-syntax\Cargo.toml
+2026-11-06T20:39:30.7015636Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-types\Cargo.toml
+2026-11-06T20:39:30.7016043Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-vm\Cargo.toml
+2026-11-06T20:39:30.7017020Z   - D:\a\Xiao\Xiao\core\rust\crates\xiao-xar\Cargo.toml
+2026-11-06T20:39:30.7017603Z   - D:\a\Xiao\Xiao\core\rust\rust-toolchain.toml
+2026-11-06T20:39:30.7018070Z ##[endgroup]
+2026-11-06T20:39:30.7018171Z 
+2026-11-06T20:39:30.7018252Z ... Restoring cache ...
+2026-11-06T20:39:31.0797945Z Cache hit for: v0-rust-deterministic-size-Windows_NT-x64-41c3efe8-22a62547
+2026-11-06T20:39:32.3015425Z Received 17490403 of 17490403 (100.0%), 17.7 MBs/sec
+2026-11-06T20:39:32.3017300Z Cache Size: ~17 MB (17490403 B)
+2026-11-06T20:39:32.3074458Z [command]"C:\Program Files\Git\usr\bin\tar.exe" -xf D:/a/_temp/cf3dde8d-b503-4d98-8662-41657032824f/cache.tzst -P -C D:/a/Xiao/Xiao --force-local --use-compress-program "zstd -d"
+2026-11-06T20:39:33.0111441Z Cache restored successfully
+2026-11-06T20:39:33.0125862Z Restored from cache key "v0-rust-deterministic-size-Windows_NT-x64-41c3efe8-22a62547" full match: true.
+2026-11-06T20:39:33.0435059Z ##[group]Run cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test artifact_size_regression
+2026-11-06T20:39:33.0435973Z [36;1mcargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test artifact_size_regression[0m
+2026-11-06T20:39:33.0510065Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-06T20:39:33.0510437Z env:
+2026-11-06T20:39:33.0510628Z   XIAO_B1_F10: 0
+2026-11-06T20:39:33.0510831Z   XIAO_B2_A_PERF: 1
+2026-11-06T20:39:33.0511066Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-06T20:39:33.0511353Z   CARGO_INCREMENTAL: 0
+2026-11-06T20:39:33.0511576Z   CARGO_TERM_COLOR: always
+2026-11-06T20:39:33.0511805Z   CACHE_ON_FAILURE: false
+2026-11-06T20:39:33.0512032Z ##[endgroup]
+2026-11-06T20:39:33.6785244Z F7-CARGO command=test locked=true removed=0
+2026-11-06T20:39:33.7977386Z [1m[92m    Updating[0m crates.io index
+2026-11-06T20:39:41.3257788Z [1m[92m   Compiling[0m proc-macro2 v1.0.107
+2026-11-06T20:39:41.3258891Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+2026-11-06T20:39:41.3259514Z [1m[92m   Compiling[0m cfg-if v1.0.5
+2026-11-06T20:39:41.3260070Z [1m[92m   Compiling[0m quote v1.0.47
+2026-11-06T20:39:41.4300194Z [1m[92m   Compiling[0m serde_core v1.0.229
+2026-11-06T20:39:41.4618407Z [1m[92m   Compiling[0m itoa v1.0.18
+2026-11-06T20:39:41.6662768Z [1m[92m   Compiling[0m zmij v1.0.23
+2026-11-06T20:39:43.4522435Z [1m[92m   Compiling[0m version_check v0.9.5
+2026-11-06T20:39:43.4729137Z [1m[92m   Compiling[0m serde v1.0.229
+2026-11-06T20:39:43.9665438Z [1m[92m   Compiling[0m generic-array v0.14.7
+2026-11-06T20:39:44.3013433Z [1m[92m   Compiling[0m memchr v2.8.3
+2026-11-06T20:39:44.9512891Z [1m[92m   Compiling[0m syn v3.0.5
+2026-11-06T20:39:45.0266641Z [1m[92m   Compiling[0m typenum v1.20.1
+2026-11-06T20:39:45.5391266Z [1m[92m   Compiling[0m serde_json v1.0.151
+2026-11-06T20:39:45.8390306Z [1m[92m   Compiling[0m xiao-runtime-abi v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-runtime-abi)
+2026-11-06T20:39:46.0980305Z [1m[92m   Compiling[0m cpufeatures v0.2.17
+2026-11-06T20:39:46.4297840Z [1m[92m   Compiling[0m xiao-source v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-source)
+2026-11-06T20:39:46.6944269Z [1m[92m   Compiling[0m autocfg v1.5.1
+2026-11-06T20:39:47.3289655Z [1m[92m   Compiling[0m block-buffer v0.10.4
+2026-11-06T20:39:47.3480999Z [1m[92m   Compiling[0m crypto-common v0.1.7
+2026-11-06T20:39:47.4731824Z [1m[92m   Compiling[0m digest v0.10.7
+2026-11-06T20:39:47.7291091Z [1m[92m   Compiling[0m sha2 v0.10.9
+2026-11-06T20:39:48.3199948Z [1m[92m   Compiling[0m shlex v2.0.1
+2026-11-06T20:39:48.5710532Z [1m[92m   Compiling[0m find-msvc-tools v0.1.14
+2026-11-06T20:39:49.2724817Z [1m[92m   Compiling[0m serde_derive v1.0.229
+2026-11-06T20:39:49.3387067Z [1m[92m   Compiling[0m cc v1.5.1
+2026-11-06T20:39:49.7949776Z [1m[92m   Compiling[0m num-traits v0.2.19
+2026-11-06T20:39:50.0023743Z [1m[92m   Compiling[0m zeroize v1.9.0
+2026-11-06T20:39:50.2398854Z [1m[92m   Compiling[0m libm v0.2.16
+2026-11-06T20:39:50.6584026Z [1m[92m   Compiling[0m windows_x86_64_msvc v0.52.6
+2026-11-06T20:39:51.2710051Z [1m[92m   Compiling[0m rustls-pki-types v1.15.1
+2026-11-06T20:39:51.8337554Z [1m[92m   Compiling[0m num-integer v0.1.47
+2026-11-06T20:39:52.3930387Z [1m[92m   Compiling[0m bigdecimal v0.4.11
+2026-11-06T20:39:52.5341457Z [1m[92m   Compiling[0m getrandom v0.2.17
+2026-11-06T20:39:52.5997041Z [1m[92m   Compiling[0m ring v0.17.14
+2026-11-06T20:39:52.6916440Z [1m[92m   Compiling[0m httparse v1.10.1
+2026-11-06T20:39:52.8384553Z [1m[92m   Compiling[0m libc v0.2.189
+2026-11-06T20:39:53.1933864Z [1m[92m   Compiling[0m untrusted v0.9.0
+2026-11-06T20:39:53.4350002Z [1m[92m   Compiling[0m num-bigint v0.4.8
+2026-11-06T20:39:55.8000237Z [1m[92m   Compiling[0m bytes v1.12.1
+2026-11-06T20:39:55.9230143Z [1m[92m   Compiling[0m rustls v0.23.45
+2026-11-06T20:39:56.1275094Z [1m[92m   Compiling[0m crc32fast v1.5.2
+2026-11-06T20:39:56.4251231Z [1m[92m   Compiling[0m xiao-i18n v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-i18n)
+2026-11-06T20:39:56.4697374Z [1m[92m   Compiling[0m xiao-intrinsics v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-intrinsics)
+2026-11-06T20:39:56.8924938Z [1m[92m   Compiling[0m xiao-standard-library v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-standard-library)
+2026-11-06T20:39:57.0915363Z [1m[92m   Compiling[0m log v0.4.34
+2026-11-06T20:39:57.3614043Z [1m[92m   Compiling[0m xiao-diagnostics v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+2026-11-06T20:39:57.8685340Z [1m[92m   Compiling[0m http v1.5.0
+2026-11-06T20:39:58.1785300Z [1m[92m   Compiling[0m xiao-syntax v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-syntax)
+2026-11-06T20:39:59.5400683Z [1m[92m   Compiling[0m xiao-types v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-types)
+2026-11-06T20:39:59.5897301Z [1m[92m   Compiling[0m xiao-modules v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-modules)
+2026-11-06T20:40:00.2033874Z [1m[92m   Compiling[0m xiao-lock v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-lock)
+2026-11-06T20:40:00.7162237Z [1m[92m   Compiling[0m windows-targets v0.52.6
+2026-11-06T20:40:02.4003468Z [1m[92m   Compiling[0m rustls-webpki v0.103.15
+2026-11-06T20:40:02.4570193Z [1m[92m   Compiling[0m xiao-lifetime v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+2026-11-06T20:40:03.8162434Z [1m[92m   Compiling[0m xiao-ir v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-ir)
+2026-11-06T20:40:04.9104822Z [1m[92m   Compiling[0m base64 v0.23.1
+2026-11-06T20:40:05.5518394Z [1m[92m   Compiling[0m simd-adler32 v0.3.10
+2026-11-06T20:40:05.8946516Z [1m[92m   Compiling[0m adler2 v2.0.1
+2026-11-06T20:40:06.0390854Z [1m[92m   Compiling[0m once_cell v1.21.4
+2026-11-06T20:40:06.3376828Z [1m[92m   Compiling[0m subtle v2.6.1
+2026-11-06T20:40:06.6984521Z [1m[92m   Compiling[0m miniz_oxide v0.9.1
+2026-11-06T20:40:07.8940737Z [1m[92m   Compiling[0m ureq-proto v0.6.4
+2026-11-06T20:40:08.7469590Z [1m[92m   Compiling[0m xiao-runtime v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-runtime)
+2026-11-06T20:40:09.3556374Z [1m[92m   Compiling[0m windows-sys v0.52.0
+2026-11-06T20:40:10.8530046Z [1m[92m   Compiling[0m xiao-optimizer v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+2026-11-06T20:40:14.3498437Z [1m[92m   Compiling[0m xiao-bytecode v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+2026-11-06T20:40:18.2798369Z [1m[92m   Compiling[0m xiao-config v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-config)
+2026-11-06T20:40:19.9938624Z [1m[92m   Compiling[0m webpki-roots v1.0.9
+2026-11-06T20:40:20.1775083Z [1m[92m   Compiling[0m filetime v0.2.29
+2026-11-06T20:40:20.4594239Z [1m[92m   Compiling[0m percent-encoding v2.3.2
+2026-11-06T20:40:20.7037749Z [1m[92m   Compiling[0m utf8-zero v0.8.1
+2026-11-06T20:40:20.9014397Z [1m[92m   Compiling[0m ureq v3.4.2
+2026-11-06T20:40:21.0146787Z [1m[92m   Compiling[0m xiao-vm v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-vm)
+2026-11-06T20:40:21.8766892Z [1m[92m   Compiling[0m tar v0.4.46
+2026-11-06T20:40:23.2244748Z [1m[92m   Compiling[0m flate2 v1.1.10
+2026-11-06T20:40:23.4004028Z [1m[92m   Compiling[0m xiao-artifacts v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+2026-11-06T20:40:23.8936057Z [1m[92m   Compiling[0m xiao-codegen-llvm v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+2026-11-06T20:40:24.1516299Z [1m[92m   Compiling[0m xiao-xar v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-xar)
+2026-11-06T20:40:27.7690910Z [1m[92m   Compiling[0m xiao-package v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-package)
+2026-11-06T20:40:31.2884149Z [1m[92m   Compiling[0m xiao-driver v0.1.0 (D:\a\Xiao\Xiao\core\rust\crates\xiao-driver)
+2026-11-06T20:40:40.5861651Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1m 06s
+2026-11-06T20:40:40.5935944Z [1m[92m     Running[0m tests\artifact_size_regression.rs (core\rust\target\debug\deps\artifact_size_regression-cea06701e79845e1.exe)
+2026-11-06T20:40:40.6053773Z 
+2026-11-06T20:40:40.6054184Z running 2 tests
+2026-11-06T20:40:40.6068760Z test performance_report_hash_matches_baseline_file_bytes ... ok
+2026-11-06T20:40:40.6117213Z test deterministic_artifacts_do_not_grow_past_committed_baseline ... ok
+2026-11-06T20:40:40.6117789Z 
+2026-11-06T20:40:40.6118181Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-11-06T20:40:40.6118736Z 
+2026-11-06T20:40:40.7661944Z Post job cleanup.
+2026-11-06T20:40:40.9393661Z Cache up-to-date.
+2026-11-06T20:40:40.9747345Z Post job cleanup.
+2026-11-06T20:40:41.1865069Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-06T20:40:41.2279552Z git version 2.56.0.windows.4
+2026-11-06T20:40:41.2363217Z Temporarily overriding HOME='D:\a\_temp\fa36b233-810a-4a5e-a1c9-bf6bfddc84be' before making global git config changes
+2026-11-06T20:40:41.2364490Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-06T20:40:41.2376637Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\Xiao\Xiao
+2026-11-06T20:40:41.2798953Z Removing SSH command configuration
+2026-11-06T20:40:41.2810498Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-06T20:40:41.3232200Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-06T20:40:41.9521584Z Removing HTTP extra header
+2026-11-06T20:40:41.9533113Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-06T20:40:42.0067116Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-06T20:40:42.5886831Z Removing includeIf entries pointing to credentials config files
+2026-11-06T20:40:42.5898588Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-06T20:40:42.6253043Z includeif.gitdir:D:/a/Xiao/Xiao/.git.path
+2026-11-06T20:40:42.6253567Z includeif.gitdir:D:/a/Xiao/Xiao/.git/worktrees/*.path
+2026-11-06T20:40:42.6254863Z includeif.gitdir:/github/workspace/.git.path
+2026-11-06T20:40:42.6255434Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-06T20:40:42.6299172Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/Xiao/Xiao/.git.path
+2026-11-06T20:40:42.6645190Z D:\a\_temp\git-credentials-90e34de2-5ec4-455b-a74a-78b9c3a26eba.config
+2026-11-06T20:40:42.6699027Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/Xiao/Xiao/.git.path D\:\\a\\_temp\\git\-credentials\-90e34de2\-5ec4\-455b\-a74a\-78b9c3a26eba\.config
+2026-11-06T20:40:42.7100269Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/Xiao/Xiao/.git/worktrees/*.path
+2026-11-06T20:40:42.7457069Z D:\a\_temp\git-credentials-90e34de2-5ec4-455b-a74a-78b9c3a26eba.config
+2026-11-06T20:40:42.7505183Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/Xiao/Xiao/.git/worktrees/*.path D\:\\a\\_temp\\git\-credentials\-90e34de2\-5ec4\-455b\-a74a\-78b9c3a26eba\.config
+2026-11-06T20:40:42.7911450Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-06T20:40:42.8265204Z /github/runner_temp/git-credentials-90e34de2-5ec4-455b-a74a-78b9c3a26eba.config
+2026-11-06T20:40:42.8313803Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-90e34de2\-5ec4\-455b\-a74a\-78b9c3a26eba\.config
+2026-11-06T20:40:42.8708647Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-06T20:40:42.9051902Z /github/runner_temp/git-credentials-90e34de2-5ec4-455b-a74a-78b9c3a26eba.config
+2026-11-06T20:40:42.9099592Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-90e34de2\-5ec4\-455b\-a74a\-78b9c3a26eba\.config
+2026-11-06T20:40:42.9506621Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-06T20:40:43.5520257Z Removing credentials config 'D:\a\_temp\git-credentials-90e34de2-5ec4-455b-a74a-78b9c3a26eba.config'
+2026-11-06T20:40:43.5727367Z Cleaning up orphan processes
+2026-11-06T20:40:43.5982263Z Terminate orphan process: pid (3512) (vctip)

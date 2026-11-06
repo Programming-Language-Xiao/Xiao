@@ -1,0 +1,73 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.14s
+     Running unittests src\lib.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\xiao_driver-4e4d85f0d8a7e36b.exe)
+
+running 65 tests
+test compatibility::tests::standard_library_identity_is_parallel_to_existing_compatibility_versions ... ok
+test compatibility::tests::matrix_contains_no_unfrozen_migration_claim ... ok
+test compatibility::tests::matrix_is_generated_from_current_versions_and_has_every_axis ... ok
+test diagnostics::tests::disconnected_window_does_not_change_event_handling ... ok
+test diagnostics::tests::missing_terminal_renderer_is_an_explicit_startup_failure ... ok
+test diagnostics::tests::real_terminal_session_is_environment_gated ... ignored, 需要真实终端模拟器；准备方式见 10D §4.2
+test diagnostics::tests::persistent_diagnostic_logs_redact_sensitive_payloads ... ok
+test diagnostics::tests::runtime_events_keep_required_structured_identity ... ok
+test diagnostics::tests::terminal_candidates_forward_locale ... ok
+test diagnostics::tests::terminal_candidates_have_stable_platform_order ... ok
+test diagnostics::tests::focus_rules_match_module_and_source ... ok
+test diagnostics::tests::unwritable_log_target_is_reported_without_startup_failure ... ok
+test module_loader::tests::removed_standard_library_module_is_not_loadable ... ok
+test diagnostics::tests::runtime_error_events_keep_localized_message_fields ... ok
+test protocol::package_view::tests::duplicate_roots_are_rejected ... ok
+test protocol::tests::artifact_runtime_facts_round_trip ... ok
+test protocol::tests::build_rejects_unknown_target_before_toolchain ... ok
+test protocol::tests::build_request_round_trips_toolchain_and_config_fields ... ok
+test protocol::package_view::tests::active_and_global_views_do_not_leak ... ok
+test protocol::architecture_tests::module_dependency_direction_is_acyclic ... ok
+test protocol::package_view::tests::interface_query_does_not_execute_module ... ok
+test protocol::tests::cache_clean_protocol_deletes_unreferenced_objects ... ok
+test protocol::tests::cache_list_returns_structured_result ... ok
+test protocol::tests::debug_build_requires_diagnostics_path ... ok
+test protocol::tests::diagnostics_component_is_staged_next_to_executable ... ok
+test protocol::tests::diagnostics_component_staging_distinguishes_existing_source ... ok
+test protocol::tests::environment_request_generates_stable_metadata ... ok
+test protocol::tests::frame_and_request_errors_keep_distinct_codes ... ok
+test protocol::tests::frame_uses_eight_byte_big_endian_payload_length ... ok
+test protocol::tests::hello_advertises_test_capability ... ok
+test protocol::tests::cache_clean_protocol_reads_archive_references ... ok
+test protocol::tests::protocol_run_accepts_nonzero_optimization_level ... ok
+test protocol::tests::read_frame_accepts_clean_eof_and_rejects_truncation ... ok
+test protocol::tests::read_frame_rejects_oversized_payload_before_allocating ... ok
+test protocol::tests::real_source_run_maps_cancel_to_artifact_rejected ... ok
+test protocol::tests::real_source_run_returns_structured_result_without_text_parsing ... ok
+test protocol::tests::repl_packages_request_validates_environment_without_renaming_package_operation ... ok
+test protocol::tests::run_archive_honors_zero_timeout_before_reading_archive ... ok
+test protocol::tests::run_archive_missing_file_has_stable_error ... ok
+test protocol::tests::run_locale_is_optional_and_does_not_change_machine_error_fields ... ok
+test protocol::tests::cache_clean_protocol_reads_project_lock_from_directory ... ok
+test protocol::tests::run_locale_renders_known_message_and_preserves_missing_id_with_params ... ok
+test protocol::tests::runtime_config_freeze_is_deterministic_and_validated ... ok
+test protocol::tests::service_requires_hello_as_first_frame ... ok
+test protocol::tests::service_round_trips_hello_run_and_shutdown_frames ... ok
+test protocol::tests::runtime_config_can_be_replaced ... ok
+test protocol::tests::test_locale_renders_diagnostics_inside_each_case ... ok
+test protocol::tests::test_request_rejects_empty_case_list ... ok
+test protocol::tests::test_request_preserves_case_order_and_aggregates_results ... ok
+test protocol::tests::verify_missing_artifact_has_stable_error ... ok
+test protocol::tests::version_mismatch_is_machine_readable ... ok
+test run::tests::cancellation_and_zero_timeout_are_structured_control_errors ... ok
+test protocol::tests::cache_clean_protocol_rejects_broken_archive_before_deleting ... ok
+test protocol::tests::package_request_missing_lock_does_not_create_environment ... ok
+test run::tests::corrupted_tac_is_rejected_before_execution ... ok
+test run::tests::frontend_failure_keeps_structured_diagnostics ... ok
+test run::tests::migrated_intrinsics_keep_existing_vm_semantics ... ok
+test run::tests::nonzero_optimization_levels_run_through_bytecode_pipeline ... ok
+test run::tests::print_intrinsic_reaches_vm_output_event ... ok
+test run::tests::removal_verification_print_contract_and_vm_binding ... ok
+test run::tests::runs_frontend_to_vm_without_an_entry_override ... ok
+test run::tests::structurally_invalid_tac_uses_internal_diagnostic ... ok
+test run::tests::concurrency_shared_and_lock_reaches_vm ... ok
+test run::tests::concurrency_pool_submit_wait_shutdown_reaches_vm ... ok
+test run::tests::concurrency_runtime_create_spawn_join_reaches_vm ... ok
+
+test result: ok. 64 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.75s
+

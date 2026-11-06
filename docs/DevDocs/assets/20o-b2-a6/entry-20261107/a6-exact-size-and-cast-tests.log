@@ -1,0 +1,82 @@
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.02s
+     Running unittests src\lib.rs (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\cargo-target\debug\deps\xiao_runtime-c60947cb4f0f97f6.exe)
+
+running 74 tests
+test value::arithmetic::decimal_tests::arithmetic_decimal_order_is_numeric_and_exact ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_display_scales_and_identities_are_preserved ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_mixed_binary_inputs_are_lifted_exactly ... ok
+test value::arithmetic::decimal_tests::arithmetic_text_comparison_matches_integer_reference ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_finite_division_matches_independent_small_reference ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_power_preserves_frozen_scales_and_domains ... ok
+test value::arithmetic::exact_division::gcd_tests::binary_gcd_matches_every_small_pair ... ok
+test value::arithmetic::exact_division::gcd_tests::binary_gcd_matches_wide_reference_and_common_shifts ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_input_order_and_bool_parity_are_stable ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_floor_pairs_cover_all_signs ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_division_errors_keep_the_frozen_order ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_values_do_not_narrow_to_host_widths ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_small_rational_reference_covers_signs_and_scales ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_exact_division_keeps_failure_identities_and_order ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_power_bounds_preserve_fast_paths ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_non_finite_precedes_operator_domain_after_inputs ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_limits_and_cancellation_are_atomic ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_remainder_does_not_materialize_the_quotient ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_dense_modulus_reaches_the_work_boundary ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_scale_limits_precede_expensive_construction ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_remainder_d_plus_one_boundary_is_checked_exactly ... ok
+test value::arithmetic::resource_tests::arithmetic_high_precision_negation_checks_admission_before_zero ... ok
+test value::conversions::binary_tests::a4_binary32_does_not_round_through_binary64 ... ok
+test value::conversions::binary_tests::a4_binary_inputs_keep_actual_values_and_normalize_zero ... ok
+test value::conversions::binary_tests::a4_binary_overflow_uses_the_rounded_result ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_work_limits_and_cancellation_keep_inputs_unchanged ... ok
+test value::conversions::binary_tests::a4_binary_rounding_uses_nearest_even_at_halfway_points ... ok
+test value::arithmetic::resource_tests::arithmetic_known_alignment_lengths_match_independent_texts ... ok
+test value::conversions::binary_tests::a4_binary_subnormal_and_signed_zero_boundaries_are_exact ... ok
+test value::conversions::resource_tests::a4_input_admission_precedes_range_checks_and_zero_shortcuts ... ok
+test value::conversions::resource_tests::a4_integer_result_limits_are_checked_before_materialization ... ok
+test value::conversions::binary_tests::a4_binary_round_trips_match_independent_ieee_bit_patterns ... ok
+test value::conversions::resource_tests::a4_non_finite_and_failed_conversions_preserve_the_frozen_errors ... ok
+test value::conversions::tests::a4_all_numeric_scalar_directions_use_the_frozen_matrix ... ok
+test value::conversions::tests::a4_fractional_integer_conversions_truncate_toward_zero ... ok
+test value::conversions::tests::a4_integer_widths_are_exact_and_range_checked ... ok
+test value::conversions::tests::a4_strings_preserve_codepoints_and_decimal_syntax ... ok
+test value::conversions::tests::a4_text_round_trips_preserve_display_precision ... ok
+test value::conversions::tests::a4_truncation_matches_independent_small_integer_reference ... ok
+test value::language::tests::language_dynamic_arithmetic_uses_frozen_promotions ... ok
+test value::conversions::resource_tests::a4_large_fractional_coefficients_can_truncate_to_bounded_integers ... ok
+test value::language::tests::language_promotion_does_not_change_structural_equality ... ok
+test value::language::tests::language_input_budget_precedes_non_finite_promotion ... ok
+test value::numeric::tests::deterministic_spelling_cases_have_one_runtime_identity ... ok
+test value::numeric::tests::frozen_decimal_display_vectors_round_trip ... ok
+test value::numeric::tests::numeric_identity_drives_sets_and_rust_hash_maps ... ok
+test value::numeric::tests::recoverable_errors_preserve_the_frozen_order ... ok
+test value::conversions::resource_tests::a4_binary_limits_clip_only_unambiguous_extremes ... ok
+test value::ops::tests::compares_numbers_and_strings ... ok
+test value::ops::tests::constructs_and_rejects_unicode_scalar_values ... ok
+test value::ops::tests::converts_between_bool_and_str ... ok
+test value::ops::tests::converts_numeric_widths_with_range_check ... ok
+test value::ops::tests::converts_single_codepoint_to_integer ... ok
+test value::ops::tests::division_by_zero_has_stable_identity ... ok
+test value::ops::tests::division_requires_float_operands ... ok
+test value::ops::tests::floor_division_pairs_with_remainder ... ok
+test value::ops::tests::high_precision_public_conversions_use_the_a4_kernel ... ok
+test value::ops::tests::integer_power_rejects_negative_exponent ... ok
+test value::ops::tests::negates_high_precision_text_without_narrowing ... ok
+test value::ops::tests::overflow_uses_stable_identity ... ok
+test value::ops::tests::rejects_cross_width_operands ... ok
+test value::ops::tests::string_equality_compares_content ... ok
+test value::ops::tests::supports_arithmetic_operators ... ok
+test value::string_index_tests::ascii_and_empty_strings_use_direct_byte_positions ... ok
+test value::string_index_tests::cached_indices_preserve_every_scalar_and_out_of_bounds ... ok
+test value::string_index_tests::shared_unicode_indices_stay_alive_and_are_accounted ... ok
+test value::tests::error_type_name_is_explicit ... ok
+test value::tests::error_values_keep_identity_semantics ... ok
+test value::tests::external_resource_aliases_share_identity_and_close_idempotently ... ok
+test value::tests::stores_and_reads_utf8_string ... ok
+test value::tests::supports_bool_parity_adjustment ... ok
+test value::numeric::tests::temporary_upstream_values_are_exact_and_bounded ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_finite_division_and_power_exact_limits ... ok
+test value::numeric::tests::balanced_coefficients_match_independent_upstream_parser ... ok
+
+test result: ok. 74 passed; 0 failed; 0 ignored; 0 measured; 166 filtered out; finished in 1.64s
+

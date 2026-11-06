@@ -1,0 +1,26 @@
+    Checking xiao-vm v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-vm)
+    Checking xiao-driver v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-driver)
+    Checking xiao-bytecode v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-bytecode)
+    Checking xiao-types v0.1.0 (D:\project\Xiao\.a6-resources\20261107-3b09bfb18950\source\core\rust\crates\xiao-types)
+error: this assertion has a constant value
+  --> crates\xiao-driver\examples\numeric_perf\worker.rs:64:5
+   |
+64 |     assert!(!cfg!(debug_assertions), "A6测量必须使用release VM/Runtime");
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: consider moving this into a const block: `const { assert!(..) }`
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#assertions_on_constants
+   = note: `-D clippy::assertions-on-constants` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::assertions_on_constants)]`
+
+error: this assertion has a constant value
+  --> crates\xiao-driver\examples\b2_numeric_performance.rs:85:5
+   |
+85 |     assert!(!cfg!(debug_assertions), "A6必须使用release VM/Runtime");
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: consider moving this into a const block: `const { assert!(..) }`
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#assertions_on_constants
+
+error: could not compile `xiao-driver` (example "b2_numeric_performance") due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
