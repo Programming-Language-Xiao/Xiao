@@ -182,7 +182,7 @@ A2/A3只证明Runtime内核；A5必须另批完成类型/IR/TAC/VM/LLVM/语言�
 
 ## 七、交接
 
-A2/A3退出后下一入口是A4转换矩阵；A5再做类型/IR/TAC/VM/LLVM全链路与语言差分，A6资源/性能，A7整批收口。A5/A6/A7不得由A2/A3提前声明。
+A2/A3退出后下一入口是A4转换矩阵，执行规划见[A4转换矩阵实施规划](20o-b2-a4-conversions-plan.md)；A5再做类型/IR/TAC/VM/LLVM全链路与语言差分，A6资源/性能，A7整批收口。A5/A6/A7不得由A2/A3提前声明。
 
 新Agent先读：
 

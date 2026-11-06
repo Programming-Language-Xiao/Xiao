@@ -155,6 +155,8 @@ F-D签字正文和30项内容投影不改；规划批准也不使尚未执行的
 
 ### A4：转换矩阵
 
+执行规划见[A4转换矩阵实施规划](20o-b2-a4-conversions-plan.md)；A4只做Runtime转换，A5全链路后置。
+
 1. `int`/`sint` ↔ `lint`：精确或009范围错误；
 2. `lint`/`lfloat`→`str`按已冻十进制输出；`str`→`int`/`sint`/`lint`保留单码点契约；仅`str`→`lfloat`按F-11解析数值文本，恢复lint数值须显式经`lfloat`→`lint`，不新增直接数字字符串到lint入口；
 3. `float`/`sfloat` ↔ `lfloat`：实际二进制值、最近偶数、下溢/溢出和带符号零按F-8；
