@@ -28,3 +28,5 @@
 输入范围、实际命令和精确计数见[checks.json](assets/20o-b2-a6/entry-20261107/checks.json)；可复核原件/脚本见[证据入口](assets/20o-b2-a6/entry-20261107/README.md)。归档文件数以evidence.json的实际集合为准；正例stdout中的文件数记录的是该次执行时点，不将后续新增自审日志倒写进历史结果。
 
 代码CI只绑定上述产品快照。证据/文档收口提交的后续CI将单独登记，不用产品CI冒充文档提交，也不让CI回执无限自引用。
+
+后续回执：证据/文档提交`c937f338`的独立工作区CI`42308820256`已成功，实际作业ID和原始日志摘要见[documentation-ci-receipt.json](assets/20o-b2-a6/entry-20261107/documentation-ci-receipt.json)。本回执提交不递归追踪自身，不将产品CI替代文档CI。

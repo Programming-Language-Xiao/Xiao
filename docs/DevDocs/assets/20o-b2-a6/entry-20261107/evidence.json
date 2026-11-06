@@ -1022,6 +1022,16 @@
       "sha256": "fecede7c2157efe2f16c8c8b9dce94b0fb4dd384dca8207046c8bf7636eb0ffe"
     },
     {
+      "path": "a6-docs-ci-receipt.json",
+      "bytes": 1328,
+      "sha256": "bdaf83632796967e17fe8abcceb657dc580318c913e531b614e0b75363677b8c"
+    },
+    {
+      "path": "a6-docs-ci-receipt.log",
+      "bytes": 274738,
+      "sha256": "46021a87622e962c2b03a29aafaebaad4e11721a10a81f03f961e8f2aa78ea93"
+    },
+    {
       "path": "a6-docs-closeout.json",
       "bytes": 1324,
       "sha256": "3778dc7c2feb7e43105a83da479c860dcea808c66b32cdc66f6fca9de6396ad3"
@@ -2005,6 +2015,36 @@
       "path": "ci-truncated-launch-runs.json",
       "bytes": 69344,
       "sha256": "1bca69d36cfb19000820898d36608ac8b6e9ae5fd85ab9f79347ac211ea8d57e"
+    },
+    {
+      "path": "ci/closeout-workspace/artifacts.json",
+      "bytes": 32,
+      "sha256": "244563f989470892c537c9a4622920af0d228ee4528f7d00c64a06d6cd95856c"
+    },
+    {
+      "path": "ci/closeout-workspace/attempt-1-jobs.json",
+      "bytes": 2413,
+      "sha256": "488e7f8286b0a06e680a07daf5bd806d8635d9ee901eafbdef80a3b842563915"
+    },
+    {
+      "path": "ci/closeout-workspace/commands.json",
+      "bytes": 1801,
+      "sha256": "b918d7bf375b60b7b133085be936ad8a5925182af989fef24086ccc63669b937"
+    },
+    {
+      "path": "ci/closeout-workspace/job-128204917542.log",
+      "bytes": 776603,
+      "sha256": "55eb9b0c9e289dec9d51559417abf37eddbbc2ec0abe6e1450000cab5b8047c2"
+    },
+    {
+      "path": "ci/closeout-workspace/jobs.json",
+      "bytes": 3433,
+      "sha256": "bc3f3c3f50823806c8b174551970e44f8b67bea506e31986632fba6469fcd1d9"
+    },
+    {
+      "path": "ci/closeout-workspace/run.json",
+      "bytes": 13903,
+      "sha256": "521951f7afef1679d1e5328ac0145073021693dc8c0efb417d22d584abd54cbe"
     },
     {
       "path": "ci/decimal-default-retry/artifacts.json",
@@ -3187,6 +3227,11 @@
       "sha256": "8c7f3c9bca80301364aca97bc649be2f3d4db864909356d99e46554b436574b7"
     },
     {
+      "path": "documentation-ci-receipt.json",
+      "bytes": 543,
+      "sha256": "b493058625c2dd94edee60d10173a029c6382a0cf34f837e145c669bc393a212"
+    },
+    {
       "path": "entry-a5-audit.json",
       "bytes": 1396,
       "sha256": "12069db699efc16b9deefe1f1afa7119dda69838d2f4cdff0ed69676718e3136"
@@ -3617,5 +3662,5 @@
       "sha256": "95514456dba24e67ada7e339c629a0dcbec56191960a76e243460a1ac3683872"
     }
   ],
-  "file_count": 723
+  "file_count": 732
 }

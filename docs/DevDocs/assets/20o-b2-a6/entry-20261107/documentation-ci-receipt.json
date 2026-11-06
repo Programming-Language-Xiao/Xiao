@@ -1,0 +1,13 @@
+{
+  "scope": "证据/文档收口提交的独立CI；本回执提交不递归自引用",
+  "commit": "c937f338772d26d515765ab60c9bad9ff1154d77",
+  "run_id": 42308820256,
+  "run_attempt": 1,
+  "conclusion": "success",
+  "job_id": 128204917542,
+  "log": "ci/closeout-workspace/job-128204917542.log",
+  "log_sha256": "55eb9b0c9e289dec9d51559417abf37eddbbc2ec0abe6e1450000cab5b8047c2",
+  "product_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+  "api_run": "ci/closeout-workspace/run.json",
+  "api_jobs": "ci/closeout-workspace/jobs.json"
+}
