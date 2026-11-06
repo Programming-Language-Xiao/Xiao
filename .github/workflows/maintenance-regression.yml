@@ -11,6 +11,7 @@ on:
       - "docs/UseDocs/library/**"
       - "tools/gates/b1-probe-guards.ps1"
       - "tools/gates/controlled-cargo.py"
+      - "tools/gates/b2-a6-selection.py"
       - "stdlib/**"
       - ".gitattributes"
   pull_request:
@@ -23,6 +24,7 @@ on:
       - "docs/UseDocs/library/**"
       - "tools/gates/b1-probe-guards.ps1"
       - "tools/gates/controlled-cargo.py"
+      - "tools/gates/b2-a6-selection.py"
       - "stdlib/**"
       - ".gitattributes"
   workflow_dispatch:
@@ -31,9 +33,14 @@ on:
         description: "Run controlled B1 F10 measurements on VM and three native platforms"
         type: boolean
         default: false
+      b2_a_perf:
+        description: "Run controlled B2-A6 numeric measurements on release VM and three native platforms"
+        type: boolean
+        default: false
 
 env:
   XIAO_B1_F10: ${{ github.event_name == 'workflow_dispatch' && inputs.b1_f10 && '1' || '0' }}
+  XIAO_B2_A_PERF: ${{ github.event_name == 'workflow_dispatch' && inputs.b2_a_perf && '1' || '0' }}
 
 permissions:
   contents: read
@@ -46,10 +53,13 @@ jobs:
   workspace-default-tests:
     name: Rust workspace default tests (Linux)
     runs-on: ubuntu-24.04
-    timeout-minutes: ${{ github.event_name == 'workflow_dispatch' && inputs.b1_f10 && 60 || 20 }}
+    timeout-minutes: ${{ github.event_name == 'workflow_dispatch' && inputs.b1_f10 && 60 || github.event_name == 'workflow_dispatch' && inputs.b2_a_perf && 40 || 20 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      - name: Validate controlled measurement selection
+        run: python tools/gates/b2-a6-selection.py
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@1.96.0
@@ -65,6 +75,28 @@ jobs:
       - name: Verify B1 exact-count guards
         shell: pwsh
         run: ./tools/gates/b1-probe-guards.ps1
+
+      - name: Measure controlled B2-A6 VM
+        if: github.event_name == 'workflow_dispatch' && inputs.b2_a_perf
+        run: |
+          rustc -Vv
+          lscpu
+          cargo build --manifest-path core/rust/Cargo.toml --release -p xiao-runtime
+          export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
+          cargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --example b2_numeric_performance -- --backend vm --case all --profile all --artifact-root b2-a6-vm-artifacts --output b2-a6-vm.json
+
+      - name: Upload B2-A6 VM measurements
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.b2_a_perf
+        uses: actions/upload-artifact@v7
+        with:
+          name: b2-a6-vm-Linux-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            b2-a6-vm.json
+            b2-a6-vm-artifacts
+          if-no-files-found: warn
+
+      - name: Verify controlled measurement selection guards
+        run: python tools/gates/b2-a6-selection.py --self-test
 
       - name: Run default workspace tests
         run: cargo test --manifest-path core/rust/Cargo.toml --workspace -- --skip b1_capabilities_have_vm_golden_outputs
@@ -168,13 +200,16 @@ jobs:
           - name: macOS
             os: macos-15
     runs-on: ${{ matrix.os }}
-    timeout-minutes: ${{ github.event_name == 'workflow_dispatch' && inputs.b1_f10 && 60 || 20 }}
+    timeout-minutes: ${{ github.event_name == 'workflow_dispatch' && inputs.b1_f10 && 60 || github.event_name == 'workflow_dispatch' && inputs.b2_a_perf && 40 || 20 }}
     defaults:
       run:
         shell: pwsh
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+      - name: Validate controlled measurement selection
+        run: python tools/gates/b2-a6-selection.py
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@1.96.0
 
@@ -237,6 +272,14 @@ jobs:
           $env:XIAO_DIAGNOSTICS_HOLD_MS = '0'
           foreach ($artifact in @($env:XIAO_RUNTIME_LIBRARY, $env:XIAO_DIAGNOSTICS_PATH)) {
             if (-not (Test-Path $artifact)) { throw "Required artifact missing: $artifact" }
+          }
+          if ($env:XIAO_B2_A_PERF -eq '1') {
+            cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_a_resources --test 20o_b2_a_performance_protocol
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            rustc -Vv
+            Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name
+            cargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --example b2_numeric_performance -- --backend native --case all --profile all --artifact-root b2-a6-native-artifacts --output b2-a6-native.json
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime -p xiao-runtime-abi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -321,6 +364,11 @@ jobs:
           export XIAO_DIAGNOSTICS_HOLD_MS=0
           test -f "$XIAO_RUNTIME_LIBRARY"
           test -x "$XIAO_DIAGNOSTICS_PATH"
+          if [ "$XIAO_B2_A_PERF" = '1' ]; then
+            cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_a_resources --test 20o_b2_a_performance_protocol
+            rustc -Vv
+            cargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --example b2_numeric_performance -- --backend native --case all --profile all --artifact-root b2-a6-native-artifacts --output b2-a6-native.json
+          fi
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime -p xiao-runtime-abi
           # Xvfb/xterm 和诊断组件已就绪，Linux push 门真实执行终端握手与 O0–O3 调试矩阵。
           # 只排除外部 DNS 和由父用例驱动的平台异常子进程。
@@ -387,6 +435,11 @@ jobs:
           export XIAO_DIAGNOSTICS_HOLD_MS=0
           test -f "$XIAO_RUNTIME_LIBRARY"
           test -x "$XIAO_DIAGNOSTICS_PATH"
+          if [ "$XIAO_B2_A_PERF" = '1' ]; then
+            cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_a_resources --test 20o_b2_a_performance_protocol
+            rustc -Vv
+            cargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --example b2_numeric_performance -- --backend native --case all --profile all --artifact-root b2-a6-native-artifacts --output b2-a6-native.json
+          fi
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime -p xiao-runtime-abi
           # macOS runner 与 Windows 一样没有可交互终端；Linux/Xvfb 保留这两项执行证据。
           cargo test --manifest-path core/rust/Cargo.toml --workspace --no-fail-fast -- --ignored --nocapture \
@@ -430,6 +483,16 @@ jobs:
             sysctl -n machdep.cpu.brand_string
             cargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --example b1_library_performance -- --backend native --case all --phase all --output b1-f10-native.json
           fi
+
+      - name: Upload B2-A6 native measurements
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.b2_a_perf
+        uses: actions/upload-artifact@v7
+        with:
+          name: b2-a6-native-${{ matrix.name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            b2-a6-native.json
+            b2-a6-native-artifacts
+          if-no-files-found: warn
 
       - name: Upload B1 native measurement report
         if: always() && github.event_name == 'workflow_dispatch' && inputs.b1_f10
