@@ -16,6 +16,67 @@ REQUIRED = {'close-language-tests', 'close-package-tests', 'close-driver-unit-te
             'close-b1-contract', 'close-b1-resources', 'close-b1-vm-exact', 'close-b1-native-exact',
             'close-a1-vm-exact', 'close-a1-native-exact', 'close-workspace-check',
             'close-benchmarks-check', 'close-docs-closeout', 'close-b1-guards'}
+TEST_COUNTS = {'close-language-tests': 12, 'close-driver-unit-tests': 64,
+               'close-b1-contract': 9, 'close-b1-resources': 17,
+               'close-b1-vm-exact': 1, 'close-b1-native-exact': 1,
+               'close-a1-vm-exact': 1, 'close-a1-native-exact': 1}
+IGNORED_COUNTS = {'close-language-tests': 1, 'close-driver-unit-tests': 1}
+EXACT_TARGETS = {
+    'close-b1-vm-exact': 'b1_capabilities_have_vm_golden_outputs',
+    'close-b1-native-exact': 'b1_capabilities_match_native_golden_outputs',
+    'close-a1-vm-exact': 'a1_numeric_values_and_errors_have_vm_golden_outputs',
+    'close-a1-native-exact': 'a1_numeric_values_and_errors_match_native_golden_outputs',
+}
+MARKER_GROUPS = {'close-b1-vm-exact': 'vm', 'close-b1-native-exact': 'native'}
+
+
+def cargo_arguments():
+    manifest = ['--locked', '--manifest-path', 'core/rust/Cargo.toml']
+    driver = ['test', *manifest, '-p', 'xiao-driver', '--test']
+    return {
+        'close-language-tests': [*driver, '20o_b2_a_contract', '--', '--nocapture'],
+        'close-driver-unit-tests': ['test', *manifest, '-p', 'xiao-driver', '--lib'],
+        'close-b1-contract': [*driver, '20o_b1_imp_contract'],
+        'close-b1-resources': [*driver, '20o_b1_imp_resources'],
+        'close-b1-vm-exact': [*driver, '20o_b1_probe', '--', EXACT_TARGETS['close-b1-vm-exact'], '--exact', '--nocapture'],
+        'close-b1-native-exact': [*driver, '20o_b1_probe', '--', '--ignored', EXACT_TARGETS['close-b1-native-exact'], '--exact', '--nocapture'],
+        'close-a1-vm-exact': [*driver, '20o_b2_a1_identity', EXACT_TARGETS['close-a1-vm-exact'], '--', '--exact', '--nocapture'],
+        'close-a1-native-exact': [*driver, '20o_b2_a1_identity', EXACT_TARGETS['close-a1-native-exact'], '--', '--ignored', '--exact', '--nocapture'],
+        'close-clippy': ['clippy', *manifest, '--workspace', '--all-targets', '--', '-D', 'warnings'],
+        'close-runtime-release': ['build', *manifest, '--release', '-p', 'xiao-runtime'],
+        'close-doc-adapter': ['build', *manifest, '-p', 'xiao-doc-coverage-rust'],
+        'close-workspace-check': ['check', *manifest, '--workspace'],
+        'close-benchmarks-check': ['check', '--locked', '--manifest-path', 'tests/benchmarks/Cargo.toml'],
+        'close-package-tests': ['test', *manifest, '-p', 'xiao-types', '-p', 'xiao-ir',
+                                '-p', 'xiao-bytecode', '-p', 'xiao-runtime', '-p', 'xiao-vm',
+                                '-p', 'xiao-codegen-llvm', '-p', 'xiao-diagnostics', '--lib', '--tests'],
+    }
+
+
+def command(record, name, snapshot, changed_rust):
+    argv = record['argv']
+    require(isinstance(argv, list) and bool(argv) and all(isinstance(arg, str) for arg in argv), '实际命令不是参数数组：' + name)
+    executable = argv[0].replace('\\', '/').rsplit('/', 1)[-1].lower().removesuffix('.exe')
+    expected = cargo_arguments()
+    if name in expected:
+        require(executable == 'cargo' and argv[1:] == ['+1.96.0', *expected[name]], '实际Cargo命令与冻结执行点不符：' + name)
+    elif name == 'close-docs-closeout':
+        require(executable == 'bun' and argv[1:] == ['tools/repo-check/src/cli.ts', 'all'], '实际文档命令与冻结执行点不符')
+    elif name == 'close-rustfmt':
+        header = ['run', '1.96.0', 'rustfmt', '--check', '--edition', '2024', '--config', 'skip_children=true']
+        require(executable == 'rustup' and argv[1:9] == header, '实际格式命令与冻结执行点不符')
+        inputs = [arg.replace('\\', '/') for arg in argv[9:]]
+        require(len(inputs) == len(set(inputs)) and set(inputs) == changed_rust, '格式检查的完整Rust输入清单不符')
+    elif name == 'close-b1-guards':
+        require(executable == 'pwsh' and len(argv) == 8
+                and argv[1:5] == ['-NoProfile', '-File', 'tools/gates/b1-probe-guards.ps1', '-BashPath']
+                and argv[6] == '-ReportPath'
+                and argv[5].replace('\\', '/').rsplit('/', 1)[-1].lower() in {'bash', 'bash.exe'}, '实际守卫命令与冻结执行点不符')
+        output = Path(record['cwd'])/'docs/DevDocs/assets/20o-b2-a5/entry-20261106/close-b1-guards-report.json'
+        require(Path(argv[7]) == output, '守卫报告未写入原执行目录')
+    else:
+        require(False, '未登记的实际执行点：' + name)
+    require(record['cwd'] == snapshot['source_root'], '实际命令工作目录与源码输入不符：' + name)
 
 
 def expected_markers():
@@ -41,8 +102,9 @@ def require(condition, message):
 
 
 def path(name):
+    require(isinstance(name, str) and bool(name), '证据引用不是非空路径文本：' + str(name))
     result = (ROOT / name).resolve()
-    require(isinstance(name, str) and not Path(name).is_absolute()
+    require(not Path(name).is_absolute()
             and result.is_relative_to(ROOT.resolve()), '证据引用越界：' + str(name))
     return result
 
@@ -167,7 +229,11 @@ def main():
     snapshot = read(closeout['product_manifest'])
     source(snapshot, closeout['code_commit'])
     require(len(checks['effective']) == len(set(checks['effective'])) and set(checks['effective']) == set(closeout['effective_checks']) == REQUIRED, '有效检查清单缺项或重复')
+    require(checks['test_counts'] == closeout['exact_test_counts'] == TEST_COUNTS, '测试计数契约缺项或漂移')
+    require(checks['exact_targets'] == EXACT_TARGETS and checks['marker_groups'] == MARKER_GROUPS, '精确入口契约缺项或漂移')
     require(checks['markers'] == expected_markers(), 'A5标记精确清单漂移')
+    changed = subprocess.check_output(['cmd', '/c', 'git', 'diff', '--name-only', closeout['entry_commit'], closeout['code_commit'], '--', 'core/rust'], cwd=REPOSITORY).decode().splitlines()
+    changed_rust = {name for name in changed if name.endswith('.rs')}
     for name in checks['effective']:
         record = read(name + '.json')
         raw = path(record['log']).read_bytes()
@@ -175,12 +241,15 @@ def main():
         require(record['source_unchanged'] and record['source_before'] == record['source_after'], '执行期间源码变化：' + name)
         require(record['source_after']['utf8_lf_tree_sha256'] == snapshot['utf8_lf_tree_sha256'], '有效命令不属于最终产品输入：' + name)
         argv = record['argv']
-        if Path(argv[0]).name.lower() in {'cargo', 'cargo.exe'}:
-            require('--locked' in argv and '+1.96.0' in argv, 'Cargo未锁定工具/依赖：' + name)
+        command(record, name, snapshot, changed_rust)
         text = clean_log(raw)
         if name in checks['test_counts']:
             expected = checks['test_counts'][name]
-            require(re.search(r'^test result: ok\. ' + str(expected) + r' passed; 0 failed;', text, re.M) is not None, '实际测试计数不符：' + name)
+            summaries = [line for line in text.splitlines() if line.startswith('test result:')]
+            require(len(summaries) == 1 and re.match(r'^test result: ok\. ' + str(expected) + r' passed; 0 failed;', summaries[0]) is not None, '实际测试计数不符：' + name)
+            if name not in EXACT_TARGETS:
+                prefix = f'test result: ok. {expected} passed; 0 failed; {IGNORED_COUNTS.get(name, 0)} ignored;'
+                require(summaries[0].startswith(prefix), '实际测试忽略计数不符：' + name)
         if name in checks['exact_targets']:
             require('--exact' in argv, '实际命令未使用--exact：' + name)
             section = exact_section(text, checks['exact_targets'][name])

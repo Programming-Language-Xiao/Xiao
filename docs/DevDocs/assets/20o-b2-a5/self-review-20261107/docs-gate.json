@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "C:/Users/xiaoc/node_modules/bun/bin/bun.exe",
+    "tools/repo-check/src/cli.ts",
+    "all"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 64928,
+  "started_utc": "2026-11-06T16:29:55.649953+00:00",
+  "finished_utc": "2026-11-06T16:30:38.476732+00:00",
+  "duration_seconds": 42.828,
+  "exit_code": 0,
+  "environment_source": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\environment.json",
+  "removed_environment_names": [],
+  "product_changes_before": [],
+  "product_changes_after": [],
+  "log": "docs-gate.log",
+  "log_sha256": "37bc4eed410cdb95adf52828c8538174cf7a4431bdeeeac8491386cabe72560a"
+}

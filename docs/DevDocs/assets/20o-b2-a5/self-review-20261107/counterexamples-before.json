@@ -1,0 +1,72 @@
+{
+  "cases": [
+    {
+      "case": "positive",
+      "argv": [
+        "python",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\positive",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"passed\": true, \"scope\": \"A5语言全链路\", \"files\": 244, \"source_files\": 1011, \"code_commit\": \"f21715d38069923653438fce8a7f3f8445f49164\", \"checks\": 17, \"ci_platforms\": [\"vm\", \"windows\", \"linux\", \"macos\"]}\r\n",
+      "stderr": "",
+      "mutation_wrongly_accepted": false
+    },
+    {
+      "case": "missing-exact-contract",
+      "argv": [
+        "python",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\missing-exact-contract",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"passed\": true, \"scope\": \"A5语言全链路\", \"files\": 244, \"source_files\": 1011, \"code_commit\": \"f21715d38069923653438fce8a7f3f8445f49164\", \"checks\": 17, \"ci_platforms\": [\"vm\", \"windows\", \"linux\", \"macos\"]}\r\n",
+      "stderr": "",
+      "mutation_wrongly_accepted": true
+    },
+    {
+      "case": "missing-count-contract",
+      "argv": [
+        "python",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\missing-count-contract",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"passed\": true, \"scope\": \"A5语言全链路\", \"files\": 244, \"source_files\": 1011, \"code_commit\": \"f21715d38069923653438fce8a7f3f8445f49164\", \"checks\": 17, \"ci_platforms\": [\"vm\", \"windows\", \"linux\", \"macos\"]}\r\n",
+      "stderr": "",
+      "mutation_wrongly_accepted": true
+    },
+    {
+      "case": "runtime-command-substituted",
+      "argv": [
+        "python",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\runtime-command-substituted",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"passed\": true, \"scope\": \"A5语言全链路\", \"files\": 244, \"source_files\": 1011, \"code_commit\": \"f21715d38069923653438fce8a7f3f8445f49164\", \"checks\": 17, \"ci_platforms\": [\"vm\", \"windows\", \"linux\", \"macos\"]}\r\n",
+      "stderr": "",
+      "mutation_wrongly_accepted": true
+    }
+  ]
+}

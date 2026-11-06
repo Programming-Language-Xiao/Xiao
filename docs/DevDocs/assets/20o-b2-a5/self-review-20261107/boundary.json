@@ -1,0 +1,28 @@
+{
+  "entry_commit": "3dd492d16c6991c795b2fe91f0f4af9bda892e78",
+  "product_commit": "f21715d38069923653438fce8a7f3f8445f49164",
+  "command": [
+    "cmd",
+    "/c",
+    "git",
+    "diff",
+    "--name-only",
+    "3dd492d1",
+    "--",
+    "core/rust",
+    "stdlib",
+    "tests/fixtures",
+    "tests/benchmarks",
+    ".github/workflows",
+    ".cargo",
+    "tools",
+    "cli/ts",
+    "docs/UseDocs",
+    "docs/module-registry.json",
+    "package.json",
+    "bun.lock",
+    ".gitattributes"
+  ],
+  "changed_product_paths": [],
+  "note": "本轮只修A5证据审计与说明，不重写数值实现、ABI/intrinsic、性能预算或历史CI日志。"
+}

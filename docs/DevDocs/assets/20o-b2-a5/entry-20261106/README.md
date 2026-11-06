@@ -57,3 +57,7 @@ python -X utf8 docs/DevDocs/assets/20o-b2-a5/entry-20261106/audit.py
 完整产品重跑须另建任务根，检出f21715d3，重建新的target/Runtime/缓存，按每条记录中的argv替换新任务根；恢复run-step/pre-ci/regressions/fetch-ci脚本到scripts/目录，并准备对应environment.json。不得直接覆盖本归档的原始日志。只读审计使用历史固定Git对象，不要求未来HEAD仍与被测registry整文件相同。
 
 后续文档提交CI另登记，不冒称被代码运行覆盖。
+
+## 2026-11-07审计器修复
+
+只读审计已进一步固定计数、精确入口/标记组和各实际命令角色，原始执行记录不变。[新一轮自审](../self-review-20261107/README.md)保存旧工具原文、14项新旧对照及原9项重跑；本目录self-review的9案继续表示2026-11-06旧工具的历史执行，不能将其摘要冒充新版工具验证。

@@ -1,0 +1,542 @@
+{
+  "scope": "同一临时归档分别执行修复前后审计器；负例重新生成目录/日志摘要，要求具体契约拒绝。",
+  "temporary_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir",
+  "input_manifest_sha256": "3e62861e1e0df91a2292a81be7ab26880df9c49ef1972ae3664f5592c315939e",
+  "before_auditor_sha256": "cae56109aaccf8647e3d5006f02e25773faede49d349773cca793f79e742596d",
+  "after_auditor_sha256": "7d9628ee3eb72629b385e88072b129edf00a59697d9119f18583421488b62525",
+  "passed": true,
+  "cases": [
+    {
+      "case": "positive",
+      "expected_error": null,
+      "archive_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\positive",
+      "before": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\positive",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 0,
+        "actual_error": "",
+        "stdout_sha256": "0972002f41c69bfd6644c941a3a3b800697449af4bd89e11ebbbaf5866a09b0b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "after": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\positive",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 0,
+        "actual_error": "",
+        "stdout_sha256": "0972002f41c69bfd6644c941a3a3b800697449af4bd89e11ebbbaf5866a09b0b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "passed": true
+    },
+    {
+      "case": "missing-count-contract",
+      "expected_error": "测试计数契约缺项或漂移",
+      "archive_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\missing-count-contract",
+      "before": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\missing-count-contract",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 0,
+        "actual_error": "",
+        "stdout_sha256": "0972002f41c69bfd6644c941a3a3b800697449af4bd89e11ebbbaf5866a09b0b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "after": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\missing-count-contract",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "测试计数契约缺项或漂移",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "2c850999aff31b56249995302df22643426c712db13f3a94b7dca7344b856e81"
+      },
+      "passed": true
+    },
+    {
+      "case": "altered-count-contract",
+      "expected_error": "测试计数契约缺项或漂移",
+      "archive_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\altered-count-contract",
+      "before": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\altered-count-contract",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 0,
+        "actual_error": "",
+        "stdout_sha256": "0972002f41c69bfd6644c941a3a3b800697449af4bd89e11ebbbaf5866a09b0b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "after": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\altered-count-contract",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "测试计数契约缺项或漂移",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "2c850999aff31b56249995302df22643426c712db13f3a94b7dca7344b856e81"
+      },
+      "passed": true
+    },
+    {
+      "case": "missing-exact-contract",
+      "expected_error": "精确入口契约缺项或漂移",
+      "archive_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\missing-exact-contract",
+      "before": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\missing-exact-contract",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 0,
+        "actual_error": "",
+        "stdout_sha256": "0972002f41c69bfd6644c941a3a3b800697449af4bd89e11ebbbaf5866a09b0b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "after": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\missing-exact-contract",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "精确入口契约缺项或漂移",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "1f1cd125760249fa1a10f405fc0217df784beb47a7eef253170c6e09c73ea808"
+      },
+      "passed": true
+    },
+    {
+      "case": "missing-marker-group",
+      "expected_error": "精确入口契约缺项或漂移",
+      "archive_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\missing-marker-group",
+      "before": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\missing-marker-group",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 0,
+        "actual_error": "",
+        "stdout_sha256": "0972002f41c69bfd6644c941a3a3b800697449af4bd89e11ebbbaf5866a09b0b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "after": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\missing-marker-group",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "精确入口契约缺项或漂移",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "1f1cd125760249fa1a10f405fc0217df784beb47a7eef253170c6e09c73ea808"
+      },
+      "passed": true
+    },
+    {
+      "case": "missing-exact-argument",
+      "expected_error": "实际Cargo命令与冻结执行点不符：close-b1-vm-exact",
+      "archive_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\missing-exact-argument",
+      "before": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\missing-exact-argument",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "实际命令未使用--exact：close-b1-vm-exact",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "aa8a8c4df903fed51fd43b21b2102f9b2a9838546e5163dc23aa6f2a8faa804d"
+      },
+      "after": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\missing-exact-argument",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "实际Cargo命令与冻结执行点不符：close-b1-vm-exact",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "d17ee7f50082e90525c83c882d3d2f8c4446d9c01884a4055f1ce74fe0dbf391"
+      },
+      "passed": true
+    },
+    {
+      "case": "runtime-command-substituted",
+      "expected_error": "实际Cargo命令与冻结执行点不符：close-runtime-release",
+      "archive_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\runtime-command-substituted",
+      "before": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\runtime-command-substituted",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 0,
+        "actual_error": "",
+        "stdout_sha256": "0972002f41c69bfd6644c941a3a3b800697449af4bd89e11ebbbaf5866a09b0b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "after": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\runtime-command-substituted",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "实际Cargo命令与冻结执行点不符：close-runtime-release",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "b222b363e7a7ca2fde375072f40e6c8716fcd09c2c19f3f05d60ae5c623d543a"
+      },
+      "passed": true
+    },
+    {
+      "case": "runtime-check-instead-of-build",
+      "expected_error": "实际Cargo命令与冻结执行点不符：close-runtime-release",
+      "archive_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\runtime-check-instead-of-build",
+      "before": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\runtime-check-instead-of-build",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 0,
+        "actual_error": "",
+        "stdout_sha256": "0972002f41c69bfd6644c941a3a3b800697449af4bd89e11ebbbaf5866a09b0b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "after": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\runtime-check-instead-of-build",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "实际Cargo命令与冻结执行点不符：close-runtime-release",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "b222b363e7a7ca2fde375072f40e6c8716fcd09c2c19f3f05d60ae5c623d543a"
+      },
+      "passed": true
+    },
+    {
+      "case": "docs-subset-instead-of-all",
+      "expected_error": "实际文档命令与冻结执行点不符",
+      "archive_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\docs-subset-instead-of-all",
+      "before": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\docs-subset-instead-of-all",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 0,
+        "actual_error": "",
+        "stdout_sha256": "0972002f41c69bfd6644c941a3a3b800697449af4bd89e11ebbbaf5866a09b0b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "after": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\docs-subset-instead-of-all",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "实际文档命令与冻结执行点不符",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "0a7ac79491425d45968e0f793bf36151a20a9d833f6e223bc608bc0ebc8991f3"
+      },
+      "passed": true
+    },
+    {
+      "case": "rustfmt-input-omitted",
+      "expected_error": "格式检查的完整Rust输入清单不符",
+      "archive_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\rustfmt-input-omitted",
+      "before": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\rustfmt-input-omitted",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 0,
+        "actual_error": "",
+        "stdout_sha256": "0972002f41c69bfd6644c941a3a3b800697449af4bd89e11ebbbaf5866a09b0b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "after": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\rustfmt-input-omitted",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "格式检查的完整Rust输入清单不符",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "075ac44db9ac913d77a36052ba23beea8891c778e2d09cdc8556bd5d59457c19"
+      },
+      "passed": true
+    },
+    {
+      "case": "duplicate-local-summary",
+      "expected_error": "实际测试计数不符：close-b1-native-exact",
+      "archive_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\duplicate-local-summary",
+      "before": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\duplicate-local-summary",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 0,
+        "actual_error": "",
+        "stdout_sha256": "0972002f41c69bfd6644c941a3a3b800697449af4bd89e11ebbbaf5866a09b0b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "after": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\duplicate-local-summary",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "实际测试计数不符：close-b1-native-exact",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "bd12f551239f3b1f9b2e524b8166492c81c1a8aee01669d42f31800a5e433044"
+      },
+      "passed": true
+    },
+    {
+      "case": "null-log-reference",
+      "expected_error": "证据引用不是非空路径文本：None",
+      "archive_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\null-log-reference",
+      "before": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\null-log-reference",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "Traceback (most recent call last):\r\n  File \"D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py\", line 244, in <module>\r\n    main()\r\n  File \"D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py\", line 173, in main\r\n    raw = path(record['log']).read_bytes()\r\n          ^^^^^^^^^^^^^^^^^^^\r\n  File \"D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py\", line 44, in path\r\n    result = (ROOT / name).resolve()\r\n              ~~~~~^~~~~~\r\nTypeError: unsupported operand type(s) for /: 'WindowsPath' and 'NoneType'",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "5ea2f54c4b8f097883759046ddccc46514a3115288395ae6898b8a8b86f2595f"
+      },
+      "after": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\null-log-reference",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "证据引用不是非空路径文本：None",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "2d6022de23af27ae128334fe90d65a59dc5d20a904be41966beef6340511bcf0"
+      },
+      "passed": true
+    },
+    {
+      "case": "empty-command",
+      "expected_error": "实际命令不是参数数组：close-runtime-release",
+      "archive_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\empty-command",
+      "before": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\empty-command",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "Traceback (most recent call last):\r\n  File \"D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py\", line 244, in <module>\r\n    main()\r\n  File \"D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py\", line 178, in main\r\n    if Path(argv[0]).name.lower() in {'cargo', 'cargo.exe'}:\r\n            ~~~~^^^\r\nIndexError: list index out of range",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "37452b49800720eb1fceaf5532ede4afdbdd7e27a29d890e5592977b72b34ff8"
+      },
+      "after": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\empty-command",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "实际命令不是参数数组：close-runtime-release",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "68961b1c8484bf4b254a7b314453ca37f449fab7f1474d82fde31bdb63570bce"
+      },
+      "passed": true
+    },
+    {
+      "case": "wrong-source-directory",
+      "expected_error": "实际命令工作目录与源码输入不符：close-clippy",
+      "archive_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\wrong-source-directory",
+      "before": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\self-review-20261107\\audit-before.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\wrong-source-directory",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 0,
+        "actual_error": "",
+        "stdout_sha256": "0972002f41c69bfd6644c941a3a3b800697449af4bd89e11ebbbaf5866a09b0b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "after": {
+        "argv": [
+          "D:\\Programs\\Python\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+          "--archive-root",
+          "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\strict-audit-vzt2drir\\wrong-source-directory",
+          "--repository-root",
+          "D:\\project\\Xiao\\Xiao"
+        ],
+        "exit_code": 1,
+        "actual_error": "实际命令工作目录与源码输入不符：close-clippy",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "14517c9c192b1d4fc872f72c6ab8c810f501543d00c2640b773bce01d6f04768"
+      },
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,180 @@
+{
+  "scope": "只验证完整归档审计的正反例；不是新的产品或CI运行",
+  "temporary_root": "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\a5-audit-g1sl0uts",
+  "original_manifest_sha256": "3e62861e1e0df91a2292a81be7ab26880df9c49ef1972ae3664f5592c315939e",
+  "audit_sha256": "7d9628ee3eb72629b385e88072b129edf00a59697d9119f18583421488b62525",
+  "passed": true,
+  "cases": [
+    {
+      "case": "positive",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\a5-audit-g1sl0uts\\positive",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 0,
+      "expected_error": null,
+      "actual_error": "",
+      "passed": true,
+      "stdout_sha256": "0972002f41c69bfd6644c941a3a3b800697449af4bd89e11ebbbaf5866a09b0b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "missing-vm-marker",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\a5-audit-g1sl0uts\\missing-vm-marker",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 1,
+      "expected_error": "A5标记缺失或重复：B2-A5-LANGUAGE case=a5_bindings backend=vm",
+      "actual_error": "A5标记缺失或重复：B2-A5-LANGUAGE case=a5_bindings backend=vm",
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "f0c7877bcabdc18840f3060c5da9203895dfafd2eaa1f99bc1762c235e2f933b"
+    },
+    {
+      "case": "duplicate-native-marker",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\a5-audit-g1sl0uts\\duplicate-native-marker",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 1,
+      "expected_error": "A5标记缺失或重复：B2-A5-LANGUAGE case=a5_bindings backend=native optimization=0 artifact=",
+      "actual_error": "A5标记缺失或重复：B2-A5-LANGUAGE case=a5_bindings backend=native optimization=0 artifact=",
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "00ad7ea7c57da0b9b7a8afa9bfaf813aa9c68db5c9a842cffa913016420f5ab7"
+    },
+    {
+      "case": "ignored-native",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\a5-audit-g1sl0uts\\ignored-native",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 1,
+      "expected_error": "精确入口计数/忽略状态不符：b1_capabilities_match_native_golden_outputs",
+      "actual_error": "精确入口计数/忽略状态不符：b1_capabilities_match_native_golden_outputs",
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c3b4e5dfd058f62f68f393615c587dd3c0ac70f0b0f3a8b88008f4ae98f36ed6"
+    },
+    {
+      "case": "aggregate-job-id",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\a5-audit-g1sl0uts\\aggregate-job-id",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 1,
+      "expected_error": "实际日志作业被聚合作业ID替代或缺失",
+      "actual_error": "实际日志作业被聚合作业ID替代或缺失",
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "46e4e79a0c4ddd918581f4427fe8c34c7fcf31e8cd89bcd0849a8674d051795d"
+    },
+    {
+      "case": "mapped-job-id",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\a5-audit-g1sl0uts\\mapped-job-id",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 1,
+      "expected_error": "实际日志作业不是该次执行的原始作业",
+      "actual_error": "实际日志作业不是该次执行的原始作业",
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "883ffad7e38593f09875c4149b66fececa44538fcd46d152222602d497b1c1a4"
+    },
+    {
+      "case": "omitted-product-source",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\a5-audit-g1sl0uts\\omitted-product-source",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 1,
+      "expected_error": "完整源码清单缺项或重复",
+      "actual_error": "完整源码清单缺项或重复",
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "2eaaffb293274ecfc83b581b56c70b83ffd4b3f873de621127c7111b3e3bc59a"
+    },
+    {
+      "case": "omitted-clippy",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\a5-audit-g1sl0uts\\omitted-clippy",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 1,
+      "expected_error": "有效检查清单缺项或重复",
+      "actual_error": "有效检查清单缺项或重复",
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "475a7a1abd847e66b10dd95a80c7340350f58d85bff3924734cab26fe0b1a4b0"
+    },
+    {
+      "case": "omitted-macos",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\a5-audit-g1sl0uts\\omitted-macos",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 1,
+      "expected_error": "三平台/VM实际作业清单缺项",
+      "actual_error": "三平台/VM实际作业清单缺项",
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "bd0ac8d0551bf49d6596f094c25ce8b73d27b5eec61041ee6c32483c7cf6e1bc"
+    }
+  ]
+}

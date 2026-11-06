@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-a5\self-review-20261107\audit-before.py", line 244, in <module>
+    main()
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-a5\self-review-20261107\audit-before.py", line 178, in main
+    if Path(argv[0]).name.lower() in {'cargo', 'cargo.exe'}:
+            ~~~~^^^
+IndexError: list index out of range

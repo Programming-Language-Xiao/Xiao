@@ -9,8 +9,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 5875,
-      "sha256": "25a1c791f31b4154224ba6026f413836cdf9293009964c86ef4435b6d0d4507a"
+      "bytes": 6255,
+      "sha256": "14d36363284614054092b59249f8fd6bb6af622def95a9192612cbe19421d4f2"
     },
     {
       "path": "a5-binding-counterexample-before-fix.json",
@@ -289,8 +289,8 @@
     },
     {
       "path": "audit.py",
-      "bytes": 15239,
-      "sha256": "cae56109aaccf8647e3d5006f02e25773faede49d349773cca793f79e742596d"
+      "bytes": 20526,
+      "sha256": "7d9628ee3eb72629b385e88072b129edf00a59697d9119f18583421488b62525"
     },
     {
       "path": "bootstrap.json",

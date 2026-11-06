@@ -1,0 +1,73 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "positive",
+      "argv": [
+        "python",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\positive",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 0,
+      "expected_error": null,
+      "actual_error": "",
+      "passed": true
+    },
+    {
+      "case": "missing-exact-contract",
+      "argv": [
+        "python",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\missing-exact-contract",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 1,
+      "expected_error": "精确入口契约缺项或漂移",
+      "actual_error": "精确入口契约缺项或漂移",
+      "passed": true
+    },
+    {
+      "case": "missing-count-contract",
+      "argv": [
+        "python",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\missing-count-contract",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 1,
+      "expected_error": "测试计数契约缺项或漂移",
+      "actual_error": "测试计数契约缺项或漂移",
+      "passed": true
+    },
+    {
+      "case": "runtime-command-substituted",
+      "argv": [
+        "python",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a5-self-review\\20261107-08503c130a\\runtime-command-substituted",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 1,
+      "expected_error": "实际Cargo命令与冻结执行点不符：close-runtime-release",
+      "actual_error": "实际Cargo命令与冻结执行点不符：close-runtime-release",
+      "passed": true
+    }
+  ]
+}
