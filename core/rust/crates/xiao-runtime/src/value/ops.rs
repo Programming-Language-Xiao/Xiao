@@ -15,6 +15,7 @@ use xiao_syntax::ScalarType;
 use xiao_types::is_zero_decimal_mantissa;
 
 use super::RuntimeValue;
+use super::arithmetic::{self, Operation};
 use crate::errors::{RuntimeError, RuntimeResult};
 
 /// `str -> bool` 冻结接受的四个拼写。
@@ -86,11 +87,17 @@ impl RuntimeValue {
     /// 执行加法，包括字符串拼接和布尔整数调整。
     pub fn add(&self, other: &Self) -> RuntimeResult<Self> {
         if let Self::Bool(value) = self {
+            if let Self::Lint(text) = other {
+                return arithmetic::adjust_bool(*value, text).map(Self::Bool);
+            }
             return Ok(Self::Bool(boolean_parity(
                 *value,
                 integer_value(other)
                     .ok_or_else(|| RuntimeError::type_mismatch("int", other.type_name()))?,
             )));
+        }
+        if let Some(result) = arithmetic::binary(Operation::Add, self, other) {
+            return result;
         }
         if let (Self::Str(left), Self::Str(right)) = (self, other) {
             let mut value = left.to_string()?;
@@ -108,11 +115,17 @@ impl RuntimeValue {
     /// 执行减法，包括布尔整数调整。
     pub fn subtract(&self, other: &Self) -> RuntimeResult<Self> {
         if let Self::Bool(value) = self {
+            if let Self::Lint(text) = other {
+                return arithmetic::adjust_bool(*value, text).map(Self::Bool);
+            }
             return Ok(Self::Bool(boolean_parity(
                 *value,
                 integer_value(other)
                     .ok_or_else(|| RuntimeError::type_mismatch("int", other.type_name()))?,
             )));
+        }
+        if let Some(result) = arithmetic::binary(Operation::Subtract, self, other) {
+            return result;
         }
         match NumericPair::new(self, other)? {
             NumericPair::Int(left, right) => checked_int64(left, right, i64::checked_sub),
@@ -124,6 +137,9 @@ impl RuntimeValue {
 
     /// 执行乘法。
     pub fn multiply(&self, other: &Self) -> RuntimeResult<Self> {
+        if let Some(result) = arithmetic::binary(Operation::Multiply, self, other) {
+            return result;
+        }
         match NumericPair::new(self, other)? {
             NumericPair::Int(left, right) => checked_int64(left, right, i64::checked_mul),
             NumericPair::Sint(left, right) => checked_int32(left, right, i32::checked_mul),
@@ -134,6 +150,9 @@ impl RuntimeValue {
 
     /// 执行 `/`；静态结果类型是浮点，因此只接受同宽度浮点操作数。
     pub fn divide(&self, other: &Self) -> RuntimeResult<Self> {
+        if let Some(result) = arithmetic::binary(Operation::Divide, self, other) {
+            return result;
+        }
         match NumericPair::new(self, other)? {
             NumericPair::Float(left, right) => finite_float64(left / right),
             NumericPair::Sfloat(left, right) => finite_float32(left / right),
@@ -145,6 +164,9 @@ impl RuntimeValue {
 
     /// 执行整除 `//`，只接受同宽度整数；除数为零报告除零错误。
     pub fn floor_divide(&self, other: &Self) -> RuntimeResult<Self> {
+        if let Some(result) = arithmetic::binary(Operation::FloorDivide, self, other) {
+            return result;
+        }
         match NumericPair::new(self, other)? {
             NumericPair::Int(left, right) => Ok(Self::Int(floor_div_int64(left, right)?)),
             NumericPair::Sint(left, right) => Ok(Self::Sint(floor_div_int32(left, right)?)),
@@ -158,6 +180,9 @@ impl RuntimeValue {
     ///
     /// 结果符号跟随除数，与 `//` 保持 `左 = 商 * 右 + 余` 的一致性。
     pub fn remainder(&self, other: &Self) -> RuntimeResult<Self> {
+        if let Some(result) = arithmetic::binary(Operation::Remainder, self, other) {
+            return result;
+        }
         match NumericPair::new(self, other)? {
             NumericPair::Int(left, right) => Ok(Self::Int(floor_rem_int64(left, right)?)),
             NumericPair::Sint(left, right) => Ok(Self::Sint(floor_rem_int32(left, right)?)),
@@ -172,6 +197,9 @@ impl RuntimeValue {
     /// 整数底数的指数必须非负：负指数会得到整数无法表示的分数结果，而静态层
     /// 已经把它标成整数，因此这里明确拒绝而不是静默返回浮点。
     pub fn power(&self, other: &Self) -> RuntimeResult<Self> {
+        if let Some(result) = arithmetic::binary(Operation::Power, self, other) {
+            return result;
+        }
         match NumericPair::new(self, other)? {
             NumericPair::Int(left, right) => {
                 let exponent = non_negative_exponent(right)?;
@@ -192,21 +220,33 @@ impl RuntimeValue {
 
     /// 执行 `<`。
     pub fn less(&self, other: &Self) -> RuntimeResult<bool> {
+        if let Some(result) = arithmetic::compare(self, other) {
+            return result.map(|ordering| ordering.is_lt());
+        }
         self.compare(other, |value| value < 0.0, |left, right| left < right)
     }
 
     /// 执行 `<=`。
     pub fn less_equal(&self, other: &Self) -> RuntimeResult<bool> {
+        if let Some(result) = arithmetic::compare(self, other) {
+            return result.map(|ordering| ordering.is_le());
+        }
         self.compare(other, |value| value <= 0.0, |left, right| left <= right)
     }
 
     /// 执行 `>`。
     pub fn greater(&self, other: &Self) -> RuntimeResult<bool> {
+        if let Some(result) = arithmetic::compare(self, other) {
+            return result.map(|ordering| ordering.is_gt());
+        }
         self.compare(other, |value| value > 0.0, |left, right| left > right)
     }
 
     /// 执行 `>=`。
     pub fn greater_equal(&self, other: &Self) -> RuntimeResult<bool> {
+        if let Some(result) = arithmetic::compare(self, other) {
+            return result.map(|ordering| ordering.is_ge());
+        }
         self.compare(other, |value| value >= 0.0, |left, right| left >= right)
     }
 

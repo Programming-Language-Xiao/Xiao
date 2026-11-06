@@ -120,7 +120,7 @@ pub(crate) fn decimal_text(text: &str) -> RuntimeResult<String> {
 }
 
 /// 受控文本缓冲区失败沿现有ResourceError/011，不冒充数值预算033。
-fn allocation_error() -> RuntimeError {
+pub(crate) fn allocation_error() -> RuntimeError {
     RuntimeError::new(
         RuntimeErrorKind::Resource,
         ALLOCATION_CODE,
