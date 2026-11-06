@@ -246,3 +246,58 @@ fn a4_integer_decimal_text_cast_preserves_scale_and_input_kind() {
         assert!(matches!(value, RuntimeValue::Lint(ref text) if text == source));
     }
 }
+
+#[test]
+/// 文本截断对照独立i128除法，覆盖符号、补零、小于1、D及D+1。
+fn a4_text_truncation_matches_exact_integer_reference() {
+    for coefficient in -32_i128..=32 {
+        for scale in -6_i32..=6 {
+            let source = format!("{coefficient}e{}", -scale);
+            let value = decimal(&source);
+            let expected = if scale >= 0 {
+                coefficient / 10_i128.pow(scale as u32)
+            } else {
+                coefficient * 10_i128.pow((-scale) as u32)
+            };
+            assert_eq!(
+                value
+                    .convert_to(ScalarType::Lint)
+                    .unwrap()
+                    .display_text()
+                    .unwrap(),
+                expected.to_string()
+            );
+        }
+    }
+    for (source, expected) in [
+        ("-0.999", "0"),
+        ("1e-100000", "0"),
+        ("-1.999", "-1"),
+        ("12.3400e1", "123"),
+    ] {
+        assert_eq!(
+            decimal(source)
+                .convert_to(ScalarType::Lint)
+                .unwrap()
+                .display_text()
+                .unwrap(),
+            expected
+        );
+    }
+    let maximum = "1e".to_owned() + &(D - 1).to_string();
+    assert_eq!(
+        decimal(&maximum)
+            .convert_to(ScalarType::Lint)
+            .unwrap()
+            .display_text()
+            .unwrap(),
+        "1".to_owned() + &"0".repeat(D - 1)
+    );
+    assert_eq!(
+        decimal(&format!("1e{D}"))
+            .convert_to(ScalarType::Lint)
+            .unwrap_err()
+            .code(),
+        "X06-RUNTIME-033"
+    );
+}
