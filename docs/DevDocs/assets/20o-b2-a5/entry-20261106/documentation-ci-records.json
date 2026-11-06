@@ -1,5 +1,5 @@
 {
-  "scope": "文档证据5a856c30的实际CI；不冒称覆盖后续收口/回执提交。",
+  "scope": "分别记录证据提交5a856c30与收口提交ea23fe17的实际CI；本回执提交只登记已完成运行，不声称自己由这些运行覆盖。",
   "observed": [
     {
       "commit": "5a856c306f39a2571d668c0068bb9b527c325661",
@@ -7,6 +7,13 @@
       "name": "Xiao workspace gates",
       "conclusion": "success",
       "response": "ci-evidence-5a856c30.json"
+    },
+    {
+      "commit": "ea23fe171f67010c0f53795d79b07df03efb302c",
+      "run_id": 42243742890,
+      "name": "Xiao workspace gates",
+      "conclusion": "success",
+      "response": "ci-closeout-ea23fe17.json"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "scope": "本目录全部实际文件，清单不递归计自身",
-  "file_count": 243,
+  "file_count": 244,
   "files": [
     {
       "path": ".gitattributes",
@@ -331,6 +331,11 @@
       "path": "ci-attempt2-scheduling.json",
       "bytes": 35757,
       "sha256": "c82acb0e71adbc71f57f2e99a0332a84673f0317ac16ea1e8775fdf570cb22d9"
+    },
+    {
+      "path": "ci-closeout-ea23fe17.json",
+      "bytes": 13692,
+      "sha256": "203c870e4ca2ef0099c0b7f0671af08c4c97d0ca7563e8c8bc315dff29bb12ff"
     },
     {
       "path": "ci-evidence-5a856c30.json",
@@ -864,8 +869,8 @@
     },
     {
       "path": "documentation-ci-records.json",
-      "bytes": 332,
-      "sha256": "de91c2c1f5b0358447e4f21fe099e2686f1442c19269adf12bb20ddfa392db51"
+      "bytes": 622,
+      "sha256": "f0c5acc884b3894d25226f7fe5afc25f48cd774f29ae71c9ff228c8893a4ec3d"
     },
     {
       "path": "entry-a4-audit.json",
