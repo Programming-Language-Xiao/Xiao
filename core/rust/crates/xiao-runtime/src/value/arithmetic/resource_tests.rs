@@ -378,3 +378,47 @@ fn arithmetic_decimal_finite_division_and_power_exact_limits() {
         "X06-RUNTIME-033"
     );
 }
+
+#[test]
+/// 精确构造式的位数与独立文本对照，覆盖负号、W边界和零不扩张。
+fn arithmetic_known_alignment_lengths_match_independent_texts() {
+    use xiao_types::numeric_text::NUMERIC_WORK_DIGIT_LIMIT as W;
+    for coefficient in [-12345_i64, -1, 1, 12345] {
+        let original = coefficient.to_string();
+        let digits = original.trim_start_matches('-').len();
+        for zeros in [0, 1, 17, 128, 1024, 32768, W - digits] {
+            common::trace_start();
+            let actual =
+                common::align(&num_bigint::BigInt::from(coefficient), digits, zeros as u32)
+                    .unwrap();
+            let events = common::trace_finish();
+            let expected = original.clone() + &"0".repeat(zeros);
+            assert_eq!(actual.to_str_radix(10), expected);
+            for event in events {
+                if let Some(actual_digits) = event.actual {
+                    let expected_digits = if event.label == "power-ten" {
+                        zeros + 1
+                    } else {
+                        digits + zeros
+                    };
+                    assert_eq!(actual_digits, expected_digits);
+                    assert!(actual_digits <= W);
+                }
+            }
+        }
+        assert_eq!(
+            common::align(
+                &num_bigint::BigInt::from(coefficient),
+                digits,
+                (W - digits + 1) as u32
+            )
+            .unwrap_err()
+            .code(),
+            "X06-RUNTIME-033"
+        );
+    }
+    assert_eq!(
+        common::align(&num_bigint::BigInt::from(0), 1, 100000).unwrap(),
+        num_bigint::BigInt::from(0)
+    );
+}

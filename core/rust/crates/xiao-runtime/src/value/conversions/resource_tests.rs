@@ -220,3 +220,29 @@ fn a4_non_finite_and_failed_conversions_preserve_the_frozen_errors() {
         "X06-RUNTIME-011"
     );
 }
+
+#[test]
+/// lint→lfloat保持整数scale0和输入标签语法，不能把坏lint文本当小数接纳。
+fn a4_integer_decimal_text_cast_preserves_scale_and_input_kind() {
+    let largest = "9".repeat(D);
+    for (source, expected) in [
+        ("+00010", "10"),
+        ("1000", "1000"),
+        ("-0000", "0"),
+        (largest.as_str(), largest.as_str()),
+    ] {
+        let value = RuntimeValue::Lint(source.to_owned());
+        let result = value.convert_to(ScalarType::Lfloat).unwrap();
+        assert!(matches!(result, RuntimeValue::Lfloat(_)));
+        assert_eq!(result.display_text().unwrap(), expected);
+        assert!(matches!(value, RuntimeValue::Lint(ref text) if text == source));
+    }
+    for source in ["1.5", "1e3", "1_0"] {
+        let value = RuntimeValue::Lint(source.to_owned());
+        assert_eq!(
+            value.convert_to(ScalarType::Lfloat).unwrap_err().code(),
+            "X06-RUNTIME-012"
+        );
+        assert!(matches!(value, RuntimeValue::Lint(ref text) if text == source));
+    }
+}

@@ -58,7 +58,15 @@ fn extended_convert(
         (Float | Sfloat, Str) => ieee::check_finite(value)
             .and_then(|()| value.display_text())
             .and_then(RuntimeValue::new_string),
-        (Int | Sint | Lint | Float | Sfloat, Lfloat) => {
+        (Lint, Lfloat) => {
+            let RuntimeValue::Lint(text) = value else {
+                unreachable!("来源标签已由RuntimeValue确认")
+            };
+            // 整数文本到十进制文本保持系数与scale0，无需先转成二进制大整数。
+            numeric::validated_text(text, xiao_types::numeric_text::NumericTextKind::Integer)
+                .and_then(|_| RuntimeValue::new_lfloat(text))
+        }
+        (Int | Sint | Float | Sfloat, Lfloat) => {
             decimal::Decimal::from_value(value).and_then(decimal::Decimal::into_lfloat)
         }
         (Lint | Lfloat | Float | Sfloat, Lint) => integer::convert(value, target),

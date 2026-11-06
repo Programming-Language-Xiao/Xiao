@@ -139,8 +139,12 @@ pub(super) fn multiply(
 
 /// 有界10的幂，调用前先核对最终整数长度，禁止先展开巨型指数。
 pub(super) fn power_ten(exponent: u32) -> RuntimeResult<BigInt> {
-    check_work("power-ten", exponent as usize + 1)?;
-    checked_value("power-ten", BigInt::from(10).pow(exponent))
+    let digits = exponent as usize + 1;
+    check_work("power-ten", digits)?;
+    let value = BigInt::from(10).pow(exponent);
+    // 10^k恰有k+1位；直接使用精确构造式，避免为计位再做基数转换。
+    observe("power-ten", digits, Some(digits));
+    Ok(value)
 }
 
 /// 已知补零长度下的精确对齐，零不扩张。
@@ -148,13 +152,17 @@ pub(super) fn align(value: &BigInt, digits: usize, zeros: u32) -> RuntimeResult<
     if value.is_zero() {
         return Ok(BigInt::from(0));
     }
-    check_work("alignment", digits + zeros as usize)?;
+    let exact_digits = digits + zeros as usize;
+    check_work("alignment", exact_digits)?;
     if zeros == 0 {
         return Ok(value.clone());
     }
     let factor = power_ten(zeros)?;
     // 非零c乘10^k恰好增加k位，不能用d(c)+d(factor)松界抢拒边界。
-    checked_value("alignment", value * factor)
+    let aligned = value * factor;
+    // 非零系数补k个十进制零的实际长度就是d+k，符号不参与位数。
+    observe("alignment", exact_digits, Some(exact_digits));
+    Ok(aligned)
 }
 
 /// 一次整数长除后用有界乘减恢复余数，不重复长除法。
