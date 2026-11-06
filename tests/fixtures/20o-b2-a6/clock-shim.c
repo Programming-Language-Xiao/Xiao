@@ -1,5 +1,8 @@
 /* A6测量可执行文件专用；不进入Runtime，不新增生产ABI或intrinsic。 */
-#if !defined(_WIN32)
+#if defined(__APPLE__)
+/* macOS的rusage扩展字段需要Darwin可见性；严格POSIX会隐藏ru_maxrss。 */
+#define _DARWIN_C_SOURCE 1
+#elif !defined(_WIN32)
 #define _POSIX_C_SOURCE 200809L
 #endif
 #include <stdint.h>
