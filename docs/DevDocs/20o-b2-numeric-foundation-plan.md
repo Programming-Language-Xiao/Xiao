@@ -151,7 +151,7 @@ B2-A 预期**不新增 intrinsic、不改变 `XiaoValue` 标签或 C ABI**；若
 
 ### B2-A：`lint`/`lfloat` 基础
 
-执行规划见[B2-A数值运行时基础实施规划](20o-b2-a-implementation-plan.md)；[A0工作快照与基线记录](20o-b2-a0-baseline-plan.md)已保存Windows契约9/9、资源17/17、VM/原生精确点、workspace与28/28守卫的实际通过；A1规划见[A1依赖、适配层与值身份实施规划](20o-b2-a1-dependency-value-identity-plan.md)；A2/A3规划见[A2/A3算术实施规划](20o-b2-a2-a3-arithmetic-plan.md)；A4规划见[A4转换矩阵实施规划](20o-b2-a4-conversions-plan.md)；A5规划见[A5语言全链路实施规划](20o-b2-a5-language-integration-plan.md)。A0的Linux/macOS本地缺口保留；A1实施与平台证据独立登记；A2/A3内核已完成本批验收；A4转换内核已完成本批验收，A5语言全链路已完成本批验收，A6/A7未开始。
+执行规划见[B2-A数值运行时基础实施规划](20o-b2-a-implementation-plan.md)；[A0工作快照与基线记录](20o-b2-a0-baseline-plan.md)已保存Windows契约9/9、资源17/17、VM/原生精确点、workspace与28/28守卫的实际通过；A1规划见[A1依赖、适配层与值身份实施规划](20o-b2-a1-dependency-value-identity-plan.md)；A2/A3规划见[A2/A3算术实施规划](20o-b2-a2-a3-arithmetic-plan.md)；A4规划见[A4转换矩阵实施规划](20o-b2-a4-conversions-plan.md)；A5规划见[A5语言全链路实施规划](20o-b2-a5-language-integration-plan.md)；A6规划见[A6资源与性能实施规划](20o-b2-a6-resource-performance-plan.md)。A0的Linux/macOS本地缺口保留；A1实施与平台证据独立登记；A2/A3内核已完成本批验收；A4转换内核已完成本批验收，A5语言全链路已完成本批验收，A6/A7未开始。
 
 建议顺序：
 
