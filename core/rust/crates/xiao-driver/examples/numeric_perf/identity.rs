@@ -7,30 +7,43 @@ use std::path::{Path, PathBuf};
 /// 固定源码与依赖锁的逐文件内容摘要。
 #[derive(Clone, Debug, Serialize)]
 pub struct Identity {
+    /// 实际测量仓库的绝对路径。
     pub repository: String,
+    /// 源码、夹具与依赖锁的逐文件原始SHA-256。
     pub files: BTreeMap<String, String>,
+    /// 实际宿主目标三元组。
     pub target: String,
+    /// 编译器完整版本和宿主信息。
     pub rustc: String,
+    /// 实际Rust与LLVM工具文件摘要及版本。
     pub tools: BTreeMap<String, Tool>,
+    /// 显式注入的release Runtime静态库身份。
     pub runtime: Option<File>,
+    /// 本次新建测量进程使用的控制器文件身份。
     pub worker: File,
 }
 
 /// 实际磁盘文件身份，不使用文件名代替内容。
 #[derive(Clone, Debug, Serialize)]
 pub struct File {
+    /// 执行时实际读取文件的绝对路径。
     pub path: String,
+    /// 实际文件字节数。
     pub bytes: u64,
+    /// 原始文件内容的SHA-256。
     pub sha256: String,
 }
 
 /// 实际编译器文件及其完整版本输出；工具名不能代替二进制身份。
 #[derive(Clone, Debug, Serialize)]
 pub struct Tool {
+    /// 版本命令实际执行的工具二进制身份。
     pub file: File,
+    /// 工具完整版本输出，不从路径猜测版本。
     pub version: String,
 }
 
+/// 在实际二进制上查询版本，同时绑定它的内容。
 fn tool(path: &Path, version_argument: &str) -> Tool {
     let path = path.canonicalize().expect("测量工具路径必须存在");
     let output = std::process::Command::new(&path)
@@ -54,6 +67,7 @@ pub fn file(path: &Path) -> File {
     }
 }
 
+/// 按稳定路径顺序收集输入；排除构建目录、依赖目录和Git内部数据。
 fn walk(repository: &Path, path: &Path, files: &mut BTreeMap<String, String>) {
     if path.is_dir() {
         let mut children: Vec<_> = std::fs::read_dir(path)

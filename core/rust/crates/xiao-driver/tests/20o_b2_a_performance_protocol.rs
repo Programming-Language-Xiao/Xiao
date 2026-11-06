@@ -1,5 +1,6 @@
 //! 默认测试只核对测量协议，不在debug运行最大输入基准。
 
+/// 有界校准规则，不依赖真实时钟或产品实现。
 #[path = "../examples/numeric_perf/calibration.rs"]
 mod calibration;
 

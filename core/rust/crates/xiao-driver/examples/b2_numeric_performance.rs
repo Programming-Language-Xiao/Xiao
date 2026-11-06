@@ -1,19 +1,27 @@
 //! B2-A6独立进程测量：固定语言程序、一次预热、五批校准、中位数与OS保守峰值。
 
+/// 有界校准规则，不依赖真实时钟或产品实现。
 #[path = "numeric_perf/calibration.rs"]
 mod calibration;
+/// 固定输入族、独立黄金与完整语言程序生成。
 #[path = "numeric_perf/cases.rs"]
 mod cases;
+/// 实际源码、锁、Runtime与编译器内容身份。
 #[path = "numeric_perf/identity.rs"]
 mod identity;
+/// 平台OS当前驻留和历史峰值的可靠读数。
 #[path = "numeric_perf/memory.rs"]
 mod memory;
+/// 仅测量程序使用的原生构建与时钟shim链接。
 #[path = "numeric_perf/native.rs"]
 mod native;
+/// 新建测量进程、协议、看门狗及原始输出保存。
 #[path = "numeric_perf/process.rs"]
 mod process;
+/// 复用既有独占运行目录，避免旧产物覆盖。
 #[path = "perf/run_directory.rs"]
 mod run_directory;
+/// 只在完整语言调用标记间计时的release VM入口。
 #[path = "numeric_perf/worker.rs"]
 mod worker;
 
@@ -24,11 +32,17 @@ use xiao_driver::{FrontendCompiler, FrontendRequest};
 
 /// 本次选择、身份和产物集中保存，子集测量不能被误读为全量A6验收。
 struct Report {
+    /// 独占创建的本轮JSON报告。
     output: PathBuf,
+    /// 实际读取源码、工具和Runtime的固定身份。
     identity: identity::Identity,
+    /// vm或native，决定独立时间预算。
     backend: String,
+    /// 用户选择的负载；子集不能声明全量验收。
     selected_case: String,
+    /// 用户选择的规模；全量同时要求case和profile为all。
     selected_profile: String,
+    /// 本轮实际生成的源程序、字节码或原生文件身份。
     artifacts: Vec<identity::File>,
 }
 

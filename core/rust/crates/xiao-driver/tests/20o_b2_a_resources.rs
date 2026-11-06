@@ -181,6 +181,7 @@ fn mixed_error_priority_is_stable_at_the_language_entry() {
 /// 测试持有的拥有ABI值恰好归还一次。
 struct Owned(XiaoValue);
 impl Drop for Owned {
+    /// 测试结束归还当前值或清除本测试持有的挂起槽。
     fn drop(&mut self) {
         unsafe { xiao_runtime_value_release_strong(&mut self.0) }
     }
@@ -195,6 +196,7 @@ fn bytes(text: &str) -> XiaoAbiBytes {
 }
 
 impl Owned {
+    /// 用既有拥有构造入口建立独立ABI测试值。
     fn text(text: &str, kind: &str) -> Self {
         let mut handle = std::ptr::null_mut();
         assert_eq!(
@@ -211,6 +213,7 @@ impl Owned {
         };
         Self(value)
     }
+    /// 经既有转换和字符串复制通路观察值，不读取对象内部布局。
     fn display(&self) -> String {
         let mut text = Owned(XiaoValue::none());
         assert_eq!(
@@ -239,6 +242,7 @@ impl Owned {
 /// 只在测试边界清除挂起槽，不用该槽模拟error_code。
 struct Pending;
 impl Drop for Pending {
+    /// 测试结束归还当前值或清除本测试持有的挂起槽。
     fn drop(&mut self) {
         unsafe { xiao_runtime_error_clear() }
     }

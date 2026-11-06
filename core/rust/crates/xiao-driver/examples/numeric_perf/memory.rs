@@ -5,11 +5,17 @@ use serde::{Deserialize, Serialize};
 /// OS原始读数与明确的字节换算。
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Memory {
+    /// 平台OS驻留内存数据来源。
     pub method: String,
+    /// 原始读数单位，仅bytes或KiB。
     pub unit: String,
+    /// 同PID当前驻留量的原始读数。
     pub current_raw: u64,
+    /// 同PID历史驻留峰值的原始读数。
     pub peak_raw: u64,
+    /// 由明确原始单位换算的当前字节数。
     pub current_bytes: u64,
+    /// 由明确原始单位换算的峰值字节数。
     pub peak_bytes: u64,
 }
 
@@ -54,19 +60,27 @@ pub fn resident() -> Result<Memory, String> {
 /// WorkingSetSize与PeakWorkingSetSize的原始单位为字节。
 pub fn resident() -> Result<Memory, String> {
     #[repr(C)]
+    /// 与Windows PROCESS_MEMORY_COUNTERS布局匹配的只读计量结构。
     struct Counters {
+        /// 调用方提供的结构大小。
         cb: u32,
+        /// OS返回的页错误计数，本协议不作为内存值。
         faults: u32,
+        /// 当前进程历史峰值工作集字节数。
         peak: usize,
+        /// 当前进程工作集字节数。
         current: usize,
+        /// ABI其余计数字段，只用于维持既有系统结构布局。
         other: [usize; 6],
     }
     #[link(name = "kernel32")]
     unsafe extern "system" {
+        /// 获取当前进程伪句柄，不创建可关闭资源。
         fn GetCurrentProcess() -> *mut std::ffi::c_void;
     }
     #[link(name = "psapi")]
     unsafe extern "system" {
+        /// 读取当前进程工作集与历史峰值，失败返回零。
         fn GetProcessMemoryInfo(
             process: *mut std::ffi::c_void,
             counters: *mut Counters,
@@ -107,16 +121,25 @@ pub fn resident() -> Result<Memory, String> {
 /// resident_size当前值和getrusage历史峰值；macOS ru_maxrss为字节。
 pub fn resident() -> Result<Memory, String> {
     #[repr(C)]
+    /// 与macOS MACH_TASK_BASIC_INFO布局匹配的当前驻留视图。
     struct BasicInfo {
+        /// OS返回的虚拟地址空间量，不作为本协议RSS。
         virtual_size: u64,
+        /// 当前任务驻留字节数。
         resident_size: u64,
+        /// 系统结构中的驻留上界，峰值仍由getrusage读取。
         resident_size_max: u64,
+        /// 用户和系统时间字段，用于匹配系统结构布局。
         times: [i32; 4],
+        /// 系统调度策略字段，不参与数值测量。
         policy: i32,
+        /// 系统挂起计数字段，不参与数值测量。
         suspend_count: i32,
     }
     unsafe extern "C" {
+        /// 当前任务的Mach端口，由系统初始化。
         static mach_task_self_: u32;
+        /// 读取当前任务的基础内存结构，成功返回零。
         fn task_info(task: u32, flavor: i32, info: *mut i32, count: *mut u32) -> i32;
     }
     let mut info = BasicInfo {

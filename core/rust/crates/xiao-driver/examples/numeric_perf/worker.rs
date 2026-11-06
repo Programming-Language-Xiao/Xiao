@@ -12,9 +12,13 @@ pub fn emit(value: serde_json::Value) {
     std::io::stdout().flush().unwrap();
 }
 
+/// 将受控语言标记映射为计时窗口，不把打印文本计为数值结果。
 struct Sink {
+    /// 当前测量窗口起点，窗口结束后立即清空。
     started: Option<Instant>,
+    /// 当前进程是否已读取输入构造前的基线。
     baseline: bool,
+    /// 当前进程是否已完成唯一一次预热及黄金验证。
     warmed: bool,
 }
 

@@ -5,29 +5,45 @@ use serde::{Deserialize, Serialize};
 /// 一个固定输入族的规模。
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Profile {
+    /// 同输入族的n、2n或maximum规模标签。
     pub label: String,
+    /// 翻倍比较使用的实际输入维度。
     pub size: usize,
+    /// 是否为该路径的最大合法输入。
     pub maximum: bool,
+    /// 左实参的完整Xiao初始化表达式。
     pub left: String,
+    /// 右实参的完整Xiao初始化表达式。
     pub right: String,
+    /// 独立参考生成的结果初始化表达式。
     pub expected: String,
 }
 
 /// 同一路径的小规模、翻倍规模及最大合法输入。
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Case {
+    /// 固定负载标识，进入报告和进程配置。
     pub id: String,
+    /// 两个输入实参的Xiao数值类型。
     pub family: String,
+    /// 完整语言调用的结果类型。
     pub result: String,
+    /// 默认调用体的实际被测表达式。
     pub expression: String,
+    /// 需要控制流或承载时使用的完整函数体。
     pub body: Option<String>,
+    /// 冻结的linear或superlinear翻倍预算类别。
     pub complexity: String,
+    /// 规模数值的含义，防止跨输入族比较。
     pub dimension: String,
+    /// 同一路径的固定规模与独立黄金。
     pub profiles: Vec<Profile>,
 }
 
 #[derive(Deserialize)]
+/// 固定JSON目录的顶层容器，只接受其实际负载集合。
 struct Catalog {
+    /// 提交在仓库中的负载和规模。
     cases: Vec<Case>,
 }
 

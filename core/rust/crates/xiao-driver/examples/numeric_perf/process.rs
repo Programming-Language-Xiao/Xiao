@@ -10,39 +10,57 @@ use std::sync::mpsc::{Receiver, channel};
 use std::thread::JoinHandle;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
+/// 复用冻结校准上限，控制器和独立协议测试使用同一常量。
 pub use super::calibration::MAX_REPEAT;
 
 /// 一次实际批次的原始总耗时与OS读数。
 #[derive(Clone, Debug, Serialize)]
 pub struct Iteration {
+    /// 这一批实际执行的完整语言调用次数。
     pub repeats: usize,
+    /// 整个批次的原始单调钟总耗时。
     pub seconds: f64,
+    /// 批次结束时OS原始读数，缺失不能声称通过。
     pub memory: Option<Memory>,
 }
 
 /// 一个独立进程的一次预热、全部校准与正式样本。
 #[derive(Clone, Debug, Serialize)]
 pub struct Batch {
+    /// 实际新建的测量子进程ID。
     pub pid: u32,
+    /// 新建进程后的Unix纳秒时间，用于区分PID复用。
     pub started_unix_nanoseconds: u128,
+    /// 逐行原始协议输出文件，独占创建。
     pub stdout: String,
+    /// 实际子进程错误输出文件，独占创建。
     pub stderr: String,
+    /// Runtime初始化后、输入构造前的同PID读数。
     pub baseline: Option<Memory>,
+    /// 从repeat=1开始的全部实际校准样本。
     pub calibration: Vec<Iteration>,
+    /// 最后保留的校准批次，作为正式样本。
     pub sample: Iteration,
+    /// 进程OS高水位减当前驻留基线的保守字节增量。
     pub resident_increment_upper_bytes: Option<u64>,
+    /// 正式样本是否达到至少50ms。
     pub calibrated: bool,
 }
 
 /// 子进程拥有全部管道；任一失败都终止并回收进程，同时保留原始日志。
 struct Process {
+    /// 当前批次独占的实际OS子进程。
     child: Child,
+    /// 只发送规模和校准次数的协议输入。
     input: Option<ChildStdin>,
+    /// 原始stdout解析后的有界等待事件入口。
     events: Receiver<Result<serde_json::Value, String>>,
+    /// 回收前必须结束的stdout/stderr保存线程。
     readers: Vec<JoinHandle<()>>,
 }
 
 impl Drop for Process {
+    /// 任何错误路径都终止并回收子进程，再收齐原始管道日志。
     fn drop(&mut self) {
         self.input.take();
         if self.child.try_wait().ok().flatten().is_none() {
@@ -56,6 +74,7 @@ impl Drop for Process {
 }
 
 impl Process {
+    /// 在60秒看门狗内读取下一条声明的协议事件。
     fn event(&self, expected: &str) -> Result<serde_json::Value, String> {
         let value = self
             .events
@@ -66,6 +85,7 @@ impl Process {
         }
         Ok(value)
     }
+    /// 发送完整配置行并立即flush，避免管道缓冲影响等待。
     fn write(&mut self, text: &str) -> Result<(), String> {
         self.input
             .as_mut()
