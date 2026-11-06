@@ -1,0 +1,40 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.26s
+     Running tests\20o_b2_a_contract.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\20o_b2_a_contract-653011b00e0feb46.exe)
+
+running 10 tests
+B2-A5-LANGUAGE case=a5_conversions backend=vm result=success
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=vm result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=vm result=success
+test a5_conversion_language_preserves_values_and_promotion ... ok
+test a5_decimal_language_preserves_frozen_scales ... ok
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=vm result=success
+test a5_integer_language_uses_exact_runtime_arithmetic ... ok
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=vm result=success
+B2-A5-LANGUAGE case=a5_conversions backend=vm result=success
+B2-A5-LANGUAGE case=a5_errors backend=vm result=success
+test a5_language_errors_remain_recoverable_and_observable ... ok
+test a5_language_values_match_native_golden_outputs ... ignored, 需要本任务新Runtime与显式LLVM/平台链接器
+test a5_preserves_existing_function_type_boundaries ... ok
+test a5_static_invalid_numeric_combinations_remain_rejected ... ok
+B2-A5-LANGUAGE case=a5_matrix backend=vm result=success
+test a5_complete_numeric_language_matrix_matches_independent_golden ... ok
+B2-A5-LANGUAGE case=a5_carriers backend=vm result=success
+test a5_language_carriers_preserve_numeric_types_and_values ... ok
+B2-A5-LANGUAGE case=a5_carriers backend=vm result=success
+B2-A5-LANGUAGE case=a5_errors backend=vm result=success
+B2-A5-LANGUAGE case=a5_matrix backend=vm result=success
+
+thread 'a5_complete_vm_entry_covers_resources_and_portable_replay' (13704) panicked at crates\xiao-driver\tests\20o_b2_a_support\resources.rs:67:36:
+数值错误必须有源码位置
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test a5_complete_vm_entry_covers_resources_and_portable_replay ... FAILED
+
+failures:
+
+failures:
+    a5_complete_vm_entry_covers_resources_and_portable_replay
+
+test result: FAILED. 8 passed; 1 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.25s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b2_a_contract`

@@ -1,0 +1,23 @@
+{
+  "closed": false,
+  "scope": "既有22C队列任务取消的跨线程清理顺序；不修改测试、排序或IR释放语义。",
+  "code_commit": "f21715d38069923653438fce8a7f3f8445f49164",
+  "run_id": 42232824476,
+  "job_id": 127942746655,
+  "run_attempt": 1,
+  "test": "queued_task_cancel_never_runs_body_and_wait_is_027",
+  "source": "core/rust/crates/xiao-driver/tests/22c_vm_concurrency.rs:567",
+  "actual": [
+    34,
+    36
+  ],
+  "expected": [
+    36,
+    34
+  ],
+  "log": "ci-attempt1-macos.log",
+  "log_sha256": "df3f60b6fc75eae1a17590e6ae7ad9ac2e2f7515d4f8e9caf97eb432335e4aac",
+  "a5_standalone_native_markers": 26,
+  "b1_exact_reached": false,
+  "historical_match": "A4已登记同名测试及同一释放投影差异；本轮重现继续单独保留。"
+}

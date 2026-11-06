@@ -1,0 +1,211 @@
+{
+  "scope": "Windows本地A5最终原生精确入口，七份完整语料/六类错误位置/三类清理/一次受控011，各O0/O3；只记录实际产物，不保存旧可执行文件供复用。",
+  "code_commit": "f21715d38069923653438fce8a7f3f8445f49164",
+  "source_manifest": "source-manifests/2f58be0f0043a3c5c3c5c390bba3b560c82c4c178c6cdc779bbdd8a14712ece9.json",
+  "artifacts": [
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-native-57876-1793975026112106800\\a5_integer_arithmetic-o0.exe",
+      "bytes": 1221632,
+      "sha256": "df8ec5abfb4473dc0e740e8ad6d7f6a368c68d2dd9a2536a9bf37bd00e736fa9",
+      "marker": "B2-A5-LANGUAGE case=a5_integer_arithmetic backend=native optimization=0"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-native-57876-1793975026112106800\\a5_integer_arithmetic-o3.exe",
+      "bytes": 1218048,
+      "sha256": "fbfd771ea896966364c371d7531fa0f3df2ed734f1c7bf0348089d4ab107e87b",
+      "marker": "B2-A5-LANGUAGE case=a5_integer_arithmetic backend=native optimization=3"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-native-57876-1793975026112106800\\a5_decimal_arithmetic-o0.exe",
+      "bytes": 1223168,
+      "sha256": "d65ef0609a661128e3c51214053765fb0e531c6e56e834e5d80b5df809f3dbf1",
+      "marker": "B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=native optimization=0"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-native-57876-1793975026112106800\\a5_decimal_arithmetic-o3.exe",
+      "bytes": 1219072,
+      "sha256": "6eed35ee6e0d37eef86ba26f9bbaddf85ab872cba7a86ee09d18a1246817ad29",
+      "marker": "B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=native optimization=3"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-native-57876-1793975026112106800\\a5_conversions-o0.exe",
+      "bytes": 1220096,
+      "sha256": "d78e53c8a5e76185086ef9f6facc649dba904ec96b03efa344a2b5b6072c0bf5",
+      "marker": "B2-A5-LANGUAGE case=a5_conversions backend=native optimization=0"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-native-57876-1793975026112106800\\a5_conversions-o3.exe",
+      "bytes": 1216000,
+      "sha256": "28958dc6d0f8b8d556b9b70039c401f0f26591f0bf8055b3fa1021094af9ccca",
+      "marker": "B2-A5-LANGUAGE case=a5_conversions backend=native optimization=3"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-native-57876-1793975026112106800\\a5_carriers-o0.exe",
+      "bytes": 2322944,
+      "sha256": "33aee50be6a4342945f56c2dccb33ffa905df6852830e9b664004b08e49e22d9",
+      "marker": "B2-A5-LANGUAGE case=a5_carriers backend=native optimization=0"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-native-57876-1793975026112106800\\a5_carriers-o3.exe",
+      "bytes": 2146304,
+      "sha256": "cc8375c4870ef47ee6509a7068b2b72529edf3985a2fbce2c0e34189feee7282",
+      "marker": "B2-A5-LANGUAGE case=a5_carriers backend=native optimization=3"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-native-57876-1793975026112106800\\a5_errors-o0.exe",
+      "bytes": 1280000,
+      "sha256": "c1c3cb4b026d377e3da650daa410aa8d804f2fb3e22e6d892ea61e3982f3fe6b",
+      "marker": "B2-A5-LANGUAGE case=a5_errors backend=native optimization=0"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-native-57876-1793975026112106800\\a5_errors-o3.exe",
+      "bytes": 1269760,
+      "sha256": "293d6d552f494c49e876f901d828667043f17b04cd8d034fb9ed8eac9c82784d",
+      "marker": "B2-A5-LANGUAGE case=a5_errors backend=native optimization=3"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-native-57876-1793975026112106800\\a5_matrix-o0.exe",
+      "bytes": 1701888,
+      "sha256": "2598b35326e03cd81221993086767fc195c090dbcd2214d59d89d3a8e5d04b31",
+      "marker": "B2-A5-LANGUAGE case=a5_matrix backend=native optimization=0"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-native-57876-1793975026112106800\\a5_matrix-o3.exe",
+      "bytes": 1597952,
+      "sha256": "04779a8cb868a55d6ca93ee004af689aa15844235bd0189f0d9bbd50b8109c34",
+      "marker": "B2-A5-LANGUAGE case=a5_matrix backend=native optimization=3"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-native-57876-1793975026112106800\\a5_bindings-o0.exe",
+      "bytes": 1044992,
+      "sha256": "74db4ed77d93b43750addae6ddb1f73697bfcb956266b92369068b37d1bc3fd5",
+      "marker": "B2-A5-LANGUAGE case=a5_bindings backend=native optimization=0"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-native-57876-1793975026112106800\\a5_bindings-o3.exe",
+      "bytes": 1043456,
+      "sha256": "924e5dcefe2a497a7b747c48331a020fae84b850a0570d3a2be0e90e8216aef1",
+      "marker": "B2-A5-LANGUAGE case=a5_bindings backend=native optimization=3"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\narrow-o0.exe",
+      "bytes": 1036800,
+      "sha256": "8aad19074e5978a891682bcbb8dba77e63e371f31f8042c9343b522eca833395",
+      "marker": "B2-A5-ERROR case=narrow backend=native optimization=0 code=X06-RUNTIME-009"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\narrow-o3.exe",
+      "bytes": 1036288,
+      "sha256": "dff60871849b7110c582cc856da9b3d64bdbd4888408a0785ef92627025df77d",
+      "marker": "B2-A5-ERROR case=narrow backend=native optimization=3 code=X06-RUNTIME-009"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\syntax-o0.exe",
+      "bytes": 1036288,
+      "sha256": "ff285eabd66eac3b79bb9f807198dd8075c016cacf660f86a7314399dcad8159",
+      "marker": "B2-A5-ERROR case=syntax backend=native optimization=0 code=X06-RUNTIME-012"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\syntax-o3.exe",
+      "bytes": 1036288,
+      "sha256": "2ee8453508bb58e3d323ca46c5712560b1022677b7c4eb81061476b5a6387c50",
+      "marker": "B2-A5-ERROR case=syntax backend=native optimization=3 code=X06-RUNTIME-012"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\zero-o0.exe",
+      "bytes": 1224192,
+      "sha256": "45781ea7ae31296c4099e5ede658905e15e7d125c31203880e07d70edc48ed92",
+      "marker": "B2-A5-ERROR case=zero backend=native optimization=0 code=X06-RUNTIME-013"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\zero-o3.exe",
+      "bytes": 1223680,
+      "sha256": "6268e4d14afb317aa26d3ad5919631090aa7eacad94a84e067877a8213b93d3e",
+      "marker": "B2-A5-ERROR case=zero backend=native optimization=3 code=X06-RUNTIME-013"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\admission-o0.exe",
+      "bytes": 1036288,
+      "sha256": "00a6f6e6f3f749689b72600a4ccf1ff74bb43c57df1c8c9244278eee26e864b1",
+      "marker": "B2-A5-ERROR case=admission backend=native optimization=0 code=X06-RUNTIME-033"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\admission-o3.exe",
+      "bytes": 1036288,
+      "sha256": "1c5dd86f5b6a1b758353f299d16fa0f62848bf3ad6cd33cde8b9e4f65fdaadaa",
+      "marker": "B2-A5-ERROR case=admission backend=native optimization=3 code=X06-RUNTIME-033"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\quotient-o0.exe",
+      "bytes": 1225216,
+      "sha256": "a6e17eadb7b217b24298c55b8a8f367ff2b253672bcf4ebc6015a779c2722230",
+      "marker": "B2-A5-ERROR case=quotient backend=native optimization=0 code=X06-RUNTIME-033"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\quotient-o3.exe",
+      "bytes": 1225216,
+      "sha256": "82833abfddec361a0bfedbe02aaa1e332579a9883829ddcbd0cdbc7b1d1b8221",
+      "marker": "B2-A5-ERROR case=quotient backend=native optimization=3 code=X06-RUNTIME-033"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\nonterminating-o0.exe",
+      "bytes": 1213952,
+      "sha256": "b61e6bb10fbbe1093c8f5cf3274a855253a3c795434e697186b506e85b627d1c",
+      "marker": "B2-A5-ERROR case=nonterminating backend=native optimization=0 code=X06-RUNTIME-034"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\nonterminating-o3.exe",
+      "bytes": 1213440,
+      "sha256": "34af634f5093859d9a79a1728e80d2a83a4cdda2ed21ea1520531835a50373f5",
+      "marker": "B2-A5-ERROR case=nonterminating backend=native optimization=3 code=X06-RUNTIME-034"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\lifetime-cast-success-o0.exe",
+      "bytes": 1006592,
+      "sha256": "e3d56e1c19c7561ab4e6e4847db0ba6ecb1370699785b764b6842c8529df5ccc",
+      "marker": "B2-A5-CLEANUP case=cast-success optimization=0 temporary=once"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\lifetime-cast-success-o3.exe",
+      "bytes": 1006080,
+      "sha256": "23683ad3c866bbd1bdd2934e6fdff0f4215b0d670ce4ad1ca719eb87146b33a2",
+      "marker": "B2-A5-CLEANUP case=cast-success optimization=3 temporary=once"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\lifetime-cast-failure-o0.exe",
+      "bytes": 1033216,
+      "sha256": "7198dca161d47751347c82f06a9c32ef311087497224b3a30048c15ad791b65b",
+      "marker": "B2-A5-CLEANUP case=cast-failure optimization=0 temporary=once"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\lifetime-cast-failure-o3.exe",
+      "bytes": 1032704,
+      "sha256": "16fbd00e8406195c286b7c765a5920c5f0a56fab240a319977322c1934e381a1",
+      "marker": "B2-A5-CLEANUP case=cast-failure optimization=3 temporary=once"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\lifetime-right-failure-o0.exe",
+      "bytes": 1190400,
+      "sha256": "132faf322e281b7b4b889a3c3584a5e21c96ec122234187ef6d16dbe9b0a7c0d",
+      "marker": "B2-A5-CLEANUP case=right-failure optimization=0 temporary=once"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\lifetime-right-failure-o3.exe",
+      "bytes": 1189376,
+      "sha256": "210eaebae12e3145baa22fc3f4cf6a73602044b431dd3964c5d469d6ad471664",
+      "marker": "B2-A5-CLEANUP case=right-failure optimization=3 temporary=once"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\lifetime-allocation-o0.exe",
+      "bytes": 1068032,
+      "sha256": "a968c0df12c37c5a2dcb961d262e4dbe1866966f882db3069d5a2e7f64e97281",
+      "marker": "B2-A5-ALLOCATION optimization=0 code=X06-RUNTIME-011 out=unchanged source_unchanged=true"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\run-temp\\xiao-b2-a5-errors-57876-1793975052424794900\\lifetime-allocation-o3.exe",
+      "bytes": 1067008,
+      "sha256": "ec6a6c14f4f3cadc43333b767f1408aca9f39e2eb0c0f0a0ad60e19c4d455f66",
+      "marker": "B2-A5-ALLOCATION optimization=3 code=X06-RUNTIME-011 out=unchanged source_unchanged=true"
+    }
+  ]
+}

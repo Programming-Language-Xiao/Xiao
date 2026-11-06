@@ -1,0 +1,41 @@
+{
+  "name": "a5-vm-errors-and-replay-first",
+  "argv": [
+    "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b2_a_contract",
+    "--",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\source",
+  "started_utc": "2026-11-06T13:47:10.021132+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "a5-vm-errors-and-replay-first.log",
+  "pid": 44852,
+  "exit_code": 101,
+  "source_before": {
+    "manifest": "source-manifests/bf58caca1cbe44d6e4258a5301cd223373a50216fe355a946afc4a2a20adc4a8.json",
+    "raw_tree_sha256": "bf58caca1cbe44d6e4258a5301cd223373a50216fe355a946afc4a2a20adc4a8",
+    "utf8_lf_tree_sha256": "b265d63b44e65ebebbb2b8e1d80c26eb30c2c40133e55162d765fa63818206a9",
+    "files": 1008
+  },
+  "source_after": {
+    "manifest": "source-manifests/bf58caca1cbe44d6e4258a5301cd223373a50216fe355a946afc4a2a20adc4a8.json",
+    "raw_tree_sha256": "bf58caca1cbe44d6e4258a5301cd223373a50216fe355a946afc4a2a20adc4a8",
+    "utf8_lf_tree_sha256": "b265d63b44e65ebebbb2b8e1d80c26eb30c2c40133e55162d765fa63818206a9",
+    "files": 1008
+  },
+  "source_unchanged": true,
+  "runner_sha256": "282e4a24cf4f3e5e7cde8df38bb2255933256ad36d4dc65c86c4e0b819f2290f",
+  "finished_utc": "2026-11-06T13:47:15.579028+00:00",
+  "duration_seconds": 5.562,
+  "sha256": "e355873e30822098edbdd878358e694b58c3d2d0b4afb35266196a1bc8cea553"
+}

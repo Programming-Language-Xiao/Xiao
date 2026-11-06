@@ -1,0 +1,37 @@
+{
+  "name": "close-b1-guards",
+  "argv": [
+    "D:/Program Files/PowerShell/7/pwsh.exe",
+    "-NoProfile",
+    "-File",
+    "tools/gates/b1-probe-guards.ps1",
+    "-BashPath",
+    "D:/msys64/usr/bin/bash.exe",
+    "-ReportPath",
+    "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\source\\docs\\DevDocs\\assets\\20o-b2-a5\\entry-20261106\\close-b1-guards-report.json"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\source",
+  "started_utc": "2026-11-06T14:34:39.866758+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "close-b1-guards.log",
+  "pid": 63832,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/2f58be0f0043a3c5c3c5c390bba3b560c82c4c178c6cdc779bbdd8a14712ece9.json",
+    "raw_tree_sha256": "2f58be0f0043a3c5c3c5c390bba3b560c82c4c178c6cdc779bbdd8a14712ece9",
+    "utf8_lf_tree_sha256": "9140e710d94af85638df126a1552fc1d35b2b75b328dedf67d0647bb9c006068",
+    "files": 1011
+  },
+  "source_after": {
+    "manifest": "source-manifests/2f58be0f0043a3c5c3c5c390bba3b560c82c4c178c6cdc779bbdd8a14712ece9.json",
+    "raw_tree_sha256": "2f58be0f0043a3c5c3c5c390bba3b560c82c4c178c6cdc779bbdd8a14712ece9",
+    "utf8_lf_tree_sha256": "9140e710d94af85638df126a1552fc1d35b2b75b328dedf67d0647bb9c006068",
+    "files": 1011
+  },
+  "source_unchanged": true,
+  "runner_sha256": "282e4a24cf4f3e5e7cde8df38bb2255933256ad36d4dc65c86c4e0b819f2290f",
+  "finished_utc": "2026-11-06T14:34:56.860391+00:00",
+  "duration_seconds": 17.0,
+  "sha256": "f1989d9ff46131346568a5bd9d0e18fb3ac5efc7d3d6cf4ae0012862e3c5d579"
+}

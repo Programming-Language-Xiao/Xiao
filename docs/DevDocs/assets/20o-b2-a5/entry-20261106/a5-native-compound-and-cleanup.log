@@ -1,0 +1,47 @@
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-bytecode)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-vm)
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-artifacts)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-package)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.08s
+     Running tests\20o_b2_a_contract.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\20o_b2_a_contract-653011b00e0feb46.exe)
+
+running 1 test
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-48336-1793973193323984200\a5_integer_arithmetic-o0.exe result=success
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-48336-1793973193323984200\a5_integer_arithmetic-o3.exe result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-48336-1793973193323984200\a5_decimal_arithmetic-o0.exe result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-48336-1793973193323984200\a5_decimal_arithmetic-o3.exe result=success
+B2-A5-LANGUAGE case=a5_conversions backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-48336-1793973193323984200\a5_conversions-o0.exe result=success
+B2-A5-LANGUAGE case=a5_conversions backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-48336-1793973193323984200\a5_conversions-o3.exe result=success
+B2-A5-LANGUAGE case=a5_carriers backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-48336-1793973193323984200\a5_carriers-o0.exe result=success
+B2-A5-LANGUAGE case=a5_carriers backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-48336-1793973193323984200\a5_carriers-o3.exe result=success
+B2-A5-LANGUAGE case=a5_errors backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-48336-1793973193323984200\a5_errors-o0.exe result=success
+B2-A5-LANGUAGE case=a5_errors backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-48336-1793973193323984200\a5_errors-o3.exe result=success
+B2-A5-LANGUAGE case=a5_matrix backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-48336-1793973193323984200\a5_matrix-o0.exe result=success
+B2-A5-LANGUAGE case=a5_matrix backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-48336-1793973193323984200\a5_matrix-o3.exe result=success
+B2-A5-ERROR case=narrow backend=native optimization=0 code=X06-RUNTIME-009 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\narrow-o0.exe result=success
+B2-A5-ERROR case=narrow backend=native optimization=3 code=X06-RUNTIME-009 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\narrow-o3.exe result=success
+B2-A5-ERROR case=syntax backend=native optimization=0 code=X06-RUNTIME-012 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\syntax-o0.exe result=success
+B2-A5-ERROR case=syntax backend=native optimization=3 code=X06-RUNTIME-012 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\syntax-o3.exe result=success
+B2-A5-ERROR case=zero backend=native optimization=0 code=X06-RUNTIME-013 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\zero-o0.exe result=success
+B2-A5-ERROR case=zero backend=native optimization=3 code=X06-RUNTIME-013 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\zero-o3.exe result=success
+B2-A5-ERROR case=admission backend=native optimization=0 code=X06-RUNTIME-033 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\admission-o0.exe result=success
+B2-A5-ERROR case=admission backend=native optimization=3 code=X06-RUNTIME-033 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\admission-o3.exe result=success
+B2-A5-ERROR case=quotient backend=native optimization=0 code=X06-RUNTIME-033 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\quotient-o0.exe result=success
+B2-A5-ERROR case=quotient backend=native optimization=3 code=X06-RUNTIME-033 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\quotient-o3.exe result=success
+B2-A5-ERROR case=nonterminating backend=native optimization=0 code=X06-RUNTIME-034 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\nonterminating-o0.exe result=success
+B2-A5-ERROR case=nonterminating backend=native optimization=3 code=X06-RUNTIME-034 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\nonterminating-o3.exe result=success
+B2-A5-CLEANUP case=cast-success optimization=0 temporary=once source_unchanged=true artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\lifetime-cast-success-o0.exe result=success
+B2-A5-CLEANUP case=cast-success optimization=3 temporary=once source_unchanged=true artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\lifetime-cast-success-o3.exe result=success
+B2-A5-CLEANUP case=cast-failure optimization=0 temporary=once source_unchanged=true artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\lifetime-cast-failure-o0.exe result=success
+B2-A5-CLEANUP case=cast-failure optimization=3 temporary=once source_unchanged=true artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\lifetime-cast-failure-o3.exe result=success
+B2-A5-CLEANUP case=right-failure optimization=0 temporary=once source_unchanged=true artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\lifetime-right-failure-o0.exe result=success
+B2-A5-CLEANUP case=right-failure optimization=3 temporary=once source_unchanged=true artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\lifetime-right-failure-o3.exe result=success
+B2-A5-CLEANUP case=allocation optimization=0 temporary=once source_unchanged=true artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\lifetime-allocation-o0.exe result=success
+B2-A5-CLEANUP case=allocation optimization=3 temporary=once source_unchanged=true artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-errors-48336-1793973218479091300\lifetime-allocation-o3.exe result=success
+test a5_language_values_match_native_golden_outputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 43.40s
+

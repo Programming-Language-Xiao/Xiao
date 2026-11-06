@@ -1,0 +1,4 @@
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-types)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-lifetime)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-runtime)
+    Finished `release` profile [optimized] target(s) in 38.28s

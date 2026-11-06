@@ -1,0 +1,32 @@
+{
+  "name": "a5-docs-first",
+  "argv": [
+    "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+    "tools/repo-check/src/cli.ts",
+    "all"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\source",
+  "started_utc": "2026-11-06T13:56:35.580450+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "a5-docs-first.log",
+  "pid": 57608,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/9c61e47ebcaee7ad408f7c01191adad70946fc009c4ad16cd464cdc7a8f3f035.json",
+    "raw_tree_sha256": "9c61e47ebcaee7ad408f7c01191adad70946fc009c4ad16cd464cdc7a8f3f035",
+    "utf8_lf_tree_sha256": "03fd1888746fddf5d9b76e2fc2841f8d5a1ffadbfb83bbf350752038ddf824c2",
+    "files": 1009
+  },
+  "source_after": {
+    "manifest": "source-manifests/9c61e47ebcaee7ad408f7c01191adad70946fc009c4ad16cd464cdc7a8f3f035.json",
+    "raw_tree_sha256": "9c61e47ebcaee7ad408f7c01191adad70946fc009c4ad16cd464cdc7a8f3f035",
+    "utf8_lf_tree_sha256": "03fd1888746fddf5d9b76e2fc2841f8d5a1ffadbfb83bbf350752038ddf824c2",
+    "files": 1009
+  },
+  "source_unchanged": true,
+  "runner_sha256": "282e4a24cf4f3e5e7cde8df38bb2255933256ad36d4dc65c86c4e0b819f2290f",
+  "finished_utc": "2026-11-06T13:57:22.566565+00:00",
+  "duration_seconds": 46.985,
+  "sha256": "0f12ac746d7551ace4ff2249718f87c5fa5c5619a0a5efccbf096c0d3d301c57"
+}

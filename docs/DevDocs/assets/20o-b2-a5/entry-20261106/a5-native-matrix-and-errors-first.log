@@ -1,0 +1,29 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.37s
+     Running tests\20o_b2_a_contract.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\20o_b2_a_contract-653011b00e0feb46.exe)
+
+running 1 test
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-59656-1793973055779615100\a5_integer_arithmetic-o0.exe result=success
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-59656-1793973055779615100\a5_integer_arithmetic-o3.exe result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-59656-1793973055779615100\a5_decimal_arithmetic-o0.exe result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-59656-1793973055779615100\a5_decimal_arithmetic-o3.exe result=success
+B2-A5-LANGUAGE case=a5_conversions backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-59656-1793973055779615100\a5_conversions-o0.exe result=success
+B2-A5-LANGUAGE case=a5_conversions backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-59656-1793973055779615100\a5_conversions-o3.exe result=success
+B2-A5-LANGUAGE case=a5_carriers backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-59656-1793973055779615100\a5_carriers-o0.exe result=success
+B2-A5-LANGUAGE case=a5_carriers backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-59656-1793973055779615100\a5_carriers-o3.exe result=success
+B2-A5-LANGUAGE case=a5_errors backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-59656-1793973055779615100\a5_errors-o0.exe result=success
+B2-A5-LANGUAGE case=a5_errors backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-59656-1793973055779615100\a5_errors-o3.exe result=success
+
+thread 'a5_language_values_match_native_golden_outputs' (23644) panicked at crates\xiao-driver\tests\20o_b2_a_support\mod.rs:152:18:
+called `Result::unwrap()` on an `Err` value: Backend(Unsupported { feature: "动态扩展赋值", span: Some(IrSpan { start: 15961, end: 15974 }) })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test a5_language_values_match_native_golden_outputs ... FAILED
+
+failures:
+
+failures:
+    a5_language_values_match_native_golden_outputs
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 18.98s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b2_a_contract`

@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "gh",
+    "api",
+    "--method",
+    "POST",
+    "--include",
+    "repos/Programming-Language-Xiao/Xiao/actions/jobs/127942746655/rerun"
+  ],
+  "started_utc": "2026-11-06T14:46:43.045338+00:00",
+  "finished_utc": "2026-11-06T14:46:46.717447+00:00",
+  "exit_code": 0,
+  "code_commit": "f21715d38069923653438fce8a7f3f8445f49164",
+  "run_id": 42232824476,
+  "original_job_id": 127942746655,
+  "stdout_sha256": "1c43dc09897541ebec773fac48e5c9d5e3b2eef97aa4dc9c856a5360991a9ae8",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "scope": "只重跑同一提交失败的macOS作业，不修改源码或工作流。"
+}

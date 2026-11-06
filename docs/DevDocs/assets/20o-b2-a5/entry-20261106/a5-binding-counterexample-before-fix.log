@@ -1,0 +1,19 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.67s
+     Running tests\20o_b2_a_contract.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\20o_b2_a_contract-653011b00e0feb46.exe)
+
+running 1 test
+
+thread 'a5_assignments_and_constants_keep_the_declared_numeric_value' (56500) panicked at crates\xiao-driver\tests\20o_b2_a_support\mod.rs:71:62:
+called `Result::unwrap()` on an `Err` value: FrontendError { diagnostics: [Diagnostic { code: "X02-TYPE-004", message_id: "x02.type.assignment_mismatch", params: {"actual": Text("float"), "expected": Text("sfloat")}, severity: Error, span: Some(SourceSpan { start: 228, end: 233 }), message: "不能把 float 赋给已锁定的 sfloat" }] }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test a5_assignments_and_constants_keep_the_declared_numeric_value ... FAILED
+
+failures:
+
+failures:
+    a5_assignments_and_constants_keep_the_declared_numeric_value
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b2_a_contract`

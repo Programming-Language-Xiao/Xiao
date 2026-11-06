@@ -1,0 +1,42 @@
+{
+  "recorded_utc": "2026-11-06T14:30:23.811904+00:00",
+  "code_commit": "f21715d38069923653438fce8a7f3f8445f49164",
+  "paths": {
+    "RUSTC": {
+      "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+      "bytes": 111104,
+      "sha256": "acb138286bbe20c6cf3ec39a7e0a68c3fab0cd949baa2912cf466514d0d531ab"
+    },
+    "XIAO_CLANG": {
+      "path": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+      "bytes": 157296,
+      "sha256": "574047f1b98d62bea1da8ae9340fea1ef06d262c3186e1d72d87e5401166c833"
+    },
+    "XIAO_LLVM_AS": {
+      "path": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+      "bytes": 40741,
+      "sha256": "63f559db3d87798fa4f26923c4cd5839ddc41b40905d884ee341c74a8bd858e9"
+    },
+    "XIAO_LLC": {
+      "path": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+      "bytes": 211961,
+      "sha256": "df1409fabacdc625b2c2fefe50712de4ba140e07bf2bb4192101189498152869"
+    },
+    "XIAO_RUNTIME_LIBRARY": {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\cargo-target\\release\\xiao_runtime.lib",
+      "bytes": 27163106,
+      "sha256": "027fe22e5636d1447a7b173e7daefd99fa054b17203898cc94737f9fa1394558"
+    },
+    "XIAO_RUST_DOC_ADAPTER": {
+      "path": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\cargo-target\\debug\\xiao-doc-coverage-rust.exe",
+      "bytes": 2074112,
+      "sha256": "4105e1d14985f3d0c1af890293b1f9e9b8a22a9dc9752f6d45bb53e2c89853b5"
+    }
+  },
+  "rustc_verbose": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-pc-windows-msvc\nrelease: 1.96.0\nLLVM version: 22.1.2\n",
+  "clang_version": "clang version 22.1.2 (https://github.com/msys2/MINGW-packages 4f19d31560faf73257116b7c95f0b322ba83d720)\nTarget: x86_64-w64-windows-gnu\nThread model: posix\nInstalledDir: D:/msys64/ucrt64/bin\n",
+  "stdlib_root": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\source\\stdlib",
+  "runtime_build_record": "close-runtime-release.json",
+  "fresh_task_root": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf",
+  "scope": "本任务实际工具及最终release Runtime；不混用A4或B1缓存、Runtime或可执行文件。"
+}

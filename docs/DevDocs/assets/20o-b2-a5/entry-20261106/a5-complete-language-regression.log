@@ -1,0 +1,24 @@
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-bytecode)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-driver)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-vm)
+error[E0277]: `&mut ConstPool` is not an iterator
+   --> crates\xiao-driver\tests\20o_b2_a_contract.rs:175:25
+    |
+175 |         for constant in &mut program.constants {
+    |                         ^^^^^^^^^^^^^^^^^^^^^^ `&mut ConstPool` is not an iterator
+    |
+    = help: the trait `Iterator` is not implemented for `ConstPool`
+    = note: required for `&mut ConstPool` to implement `Iterator`
+    = note: required for `&mut ConstPool` to implement `IntoIterator`
+
+error[E0614]: type `TacConstant` cannot be dereferenced
+   --> crates\xiao-driver\tests\20o_b2_a_contract.rs:177:17
+    |
+177 |                 *constant = TacConstant::Lint(payload.clone());
+    |                 ^^^^^^^^^ can't be dereferenced
+
+Some errors have detailed explanations: E0277, E0614.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `xiao-driver` (test "20o_b2_a_contract") due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...

@@ -1,0 +1,50 @@
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.99s
+     Running tests\20o_b2_a_contract.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\20o_b2_a_contract-653011b00e0feb46.exe)
+
+running 10 tests
+B2-A5-LANGUAGE case=a5_conversions backend=vm result=success
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=vm result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=vm result=success
+test a5_conversion_language_preserves_values_and_promotion ... ok
+test a5_decimal_language_preserves_frozen_scales ... ok
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=vm result=success
+test a5_integer_language_uses_exact_runtime_arithmetic ... ok
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=vm result=success
+B2-A5-LANGUAGE case=a5_conversions backend=vm result=success
+B2-A5-LANGUAGE case=a5_errors backend=vm result=success
+test a5_language_errors_remain_recoverable_and_observable ... ok
+test a5_language_values_match_native_golden_outputs ... ignored, 需要本任务新Runtime与显式LLVM/平台链接器
+test a5_preserves_existing_function_type_boundaries ... ok
+test a5_static_invalid_numeric_combinations_remain_rejected ... ok
+B2-A5-LANGUAGE case=a5_matrix backend=vm result=success
+test a5_complete_numeric_language_matrix_matches_independent_golden ... ok
+B2-A5-LANGUAGE case=a5_carriers backend=vm result=success
+test a5_language_carriers_preserve_numeric_types_and_values ... ok
+B2-A5-LANGUAGE case=a5_carriers backend=vm result=success
+B2-A5-LANGUAGE case=a5_errors backend=vm result=success
+B2-A5-LANGUAGE case=a5_matrix backend=vm result=success
+B2-A5-ERROR case=narrow backend=vm code=X06-RUNTIME-009 span=6..40 result=success
+B2-A5-ERROR case=syntax backend=vm code=X06-RUNTIME-012 span=6..20 result=success
+B2-A5-ERROR case=zero backend=vm code=X06-RUNTIME-013 span=21..30 result=success
+B2-A5-ERROR case=admission backend=vm code=X06-RUNTIME-033 span=6..24 result=success
+B2-A5-ERROR case=quotient backend=vm code=X06-RUNTIME-033 span=47..53 result=success
+B2-A5-ERROR case=nonterminating backend=vm code=X06-RUNTIME-034 span=15..24 result=success
+B2-A5-ERROR case=allocation backend=vm code=X06-RUNTIME-011 source_unchanged=true result=success
+B2-A5-REPLAY case=a5_integer_arithmetic format=xiaoc result=success
+B2-A5-REPLAY case=a5_integer_arithmetic format=xar artifact=\\?\D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-replay-43032-1793972941867509300\a5_integer_arithmetic.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_decimal_arithmetic format=xiaoc result=success
+B2-A5-REPLAY case=a5_decimal_arithmetic format=xar artifact=\\?\D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-replay-43032-1793972941867509300\a5_decimal_arithmetic.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_conversions format=xiaoc result=success
+B2-A5-REPLAY case=a5_conversions format=xar artifact=\\?\D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-replay-43032-1793972941867509300\a5_conversions.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_carriers format=xar artifact=\\?\D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-replay-43032-1793972941867509300\a5_carriers.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_errors format=xiaoc result=success
+B2-A5-REPLAY case=a5_errors format=xar artifact=\\?\D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-replay-43032-1793972941867509300\a5_errors.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_matrix format=xiaoc result=success
+B2-A5-REPLAY case=a5_matrix format=xar artifact=\\?\D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-replay-43032-1793972941867509300\a5_matrix.xar source_removed=true result=success
+test a5_complete_vm_entry_covers_resources_and_portable_replay ... ok
+
+test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 7.51s
+
