@@ -1,0 +1,21 @@
+{
+  "carried_records": [
+    {
+      "source": "docs/DevDocs/assets/20o-b2-a6/entry-20261107/independent-22c-record.json",
+      "sha256": "4fd559b67ff91f93dc8da1506c69d13605becf951128949eda3365bc18dd1fb4",
+      "run_id": 42300734964,
+      "job_id": 128177526738,
+      "closed": false
+    },
+    {
+      "source": "docs/DevDocs/assets/20o-b2-a6/entry-20261107/independent-22d-record.json",
+      "sha256": "ebc8321ab4fdfce0bce431a9638e5da9c0ddcf2ab67f2d34903b3321b73d6762",
+      "run_id": 42289944485,
+      "job_id": 128140430506,
+      "closed": false
+    }
+  ],
+  "nineteen_eleven_twenty_two": "各自历史债务保持原归属，A7不修改或核销",
+  "new_a7_failures": [],
+  "a0_original_result_rewritten": false
+}

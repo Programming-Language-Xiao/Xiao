@@ -1,0 +1,1 @@
+{"passed": true, "scope": "B2-A内部1.18/20收口", "code_commit": "5749d6e0f277ba9aebf2bf8468e0c79a082e42a6", "product_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6", "checks": 25, "source_files": 1029, "files": 104, "platforms": ["windows", "linux", "macos"], "b1_entries": 20, "historical_stage_audits": 7, "b1_721_executed": false}

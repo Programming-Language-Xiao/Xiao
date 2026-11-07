@@ -1,0 +1,176 @@
+{
+  "passed": true,
+  "audit_sha256": "d326282a22a35b329a917a594e5b29f43a44d87e394215c7f7adfb965cf530b4",
+  "validator_sha256": "6a15094276a46fe7b8cd0bfee80b421076f125bd1072a1591e8a7e6753b58b7a",
+  "cases": [
+    {
+      "case": "valid",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source\\docs\\DevDocs\\assets\\20o-b2-a7\\entry-20261107\\audit.py",
+        "--archive-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\a7-audit-review-97fzm2bb\\valid",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source"
+      ],
+      "exit_code": 0,
+      "expected_error": null,
+      "actual_error": "",
+      "stdout": "valid.stdout.log",
+      "stderr": "valid.stderr.log",
+      "stdout_sha256": "08af05cf888dca2839c63f23abad53e80a3df25462ed7c5f1d8aa12b2d8070d1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "final-release",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source\\docs\\DevDocs\\assets\\20o-b2-a7\\entry-20261107\\audit.py",
+        "--archive-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\a7-audit-review-97fzm2bb\\final-release",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source"
+      ],
+      "exit_code": 1,
+      "expected_error": "A7后续范围或债务状态越界",
+      "actual_error": "A7后续范围或债务状态越界\r\n",
+      "stdout": "final-release.stdout.log",
+      "stderr": "final-release.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "03b7289e11031f6b1f9c82decdb9facd1af4c7873b40b10e4ad44cabc43d7249"
+    },
+    {
+      "case": "old-f10",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source\\docs\\DevDocs\\assets\\20o-b2-a7\\entry-20261107\\audit.py",
+        "--archive-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\a7-audit-review-97fzm2bb\\old-f10",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source"
+      ],
+      "exit_code": 1,
+      "expected_error": "A7后续范围或债务状态越界",
+      "actual_error": "A7后续范围或债务状态越界\r\n",
+      "stdout": "old-f10.stdout.log",
+      "stderr": "old-f10.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "03b7289e11031f6b1f9c82decdb9facd1af4c7873b40b10e4ad44cabc43d7249"
+    },
+    {
+      "case": "missing-check",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source\\docs\\DevDocs\\assets\\20o-b2-a7\\entry-20261107\\audit.py",
+        "--archive-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\a7-audit-review-97fzm2bb\\missing-check",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source"
+      ],
+      "exit_code": 1,
+      "expected_error": "A7有效检查清单缺项或重复",
+      "actual_error": "A7有效检查清单缺项或重复\r\n",
+      "stdout": "missing-check.stdout.log",
+      "stderr": "missing-check.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "0f0928f162ed9c34e0ed3c0a383b90da621b88d13d7b33264543049f9cada3bf"
+    },
+    {
+      "case": "unlocked",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source\\docs\\DevDocs\\assets\\20o-b2-a7\\entry-20261107\\audit.py",
+        "--archive-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\a7-audit-review-97fzm2bb\\unlocked",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source"
+      ],
+      "exit_code": 1,
+      "expected_error": "A7实际Cargo参数偏离冻结入口：b1-contract",
+      "actual_error": "A7实际Cargo参数偏离冻结入口：b1-contract\r\n",
+      "stdout": "unlocked.stdout.log",
+      "stderr": "unlocked.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "1dee9cd818afa4dd168496fff67d5158584498bf98967dc47c45090cbffa9ff2"
+    },
+    {
+      "case": "aggregate-job-id",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source\\docs\\DevDocs\\assets\\20o-b2-a7\\entry-20261107\\audit.py",
+        "--archive-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\a7-audit-review-97fzm2bb\\aggregate-job-id",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source"
+      ],
+      "exit_code": 1,
+      "expected_error": "实际日志作业被聚合作业ID替代或缺失",
+      "actual_error": "实际日志作业被聚合作业ID替代或缺失\r\n",
+      "stdout": "aggregate-job-id.stdout.log",
+      "stderr": "aggregate-job-id.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "46e4e79a0c4ddd918581f4427fe8c34c7fcf31e8cd89bcd0849a8674d051795d"
+    },
+    {
+      "case": "swapped-platforms",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source\\docs\\DevDocs\\assets\\20o-b2-a7\\entry-20261107\\audit.py",
+        "--archive-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\a7-audit-review-97fzm2bb\\swapped-platforms",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source"
+      ],
+      "exit_code": 1,
+      "expected_error": "A7平台角色与实际作业不符",
+      "actual_error": "A7平台角色与实际作业不符\r\n",
+      "stdout": "swapped-platforms.stdout.log",
+      "stderr": "swapped-platforms.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "5a66100f7bdb2b3a6e19691249e4a4b072fba23e9d2683d65f9d71914c8314a9"
+    },
+    {
+      "case": "maintenance-as-workspace",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source\\docs\\DevDocs\\assets\\20o-b2-a7\\entry-20261107\\audit.py",
+        "--archive-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\a7-audit-review-97fzm2bb\\maintenance-as-workspace",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source"
+      ],
+      "exit_code": 1,
+      "expected_error": "A7实际CI角色、触发方式或源码不符：workspace",
+      "actual_error": "A7实际CI角色、触发方式或源码不符：workspace\r\n",
+      "stdout": "maintenance-as-workspace.stdout.log",
+      "stderr": "maintenance-as-workspace.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "5c275a2237711746be2b44cfd0630b801e65b35eb898c9022163868946832a4d"
+    }
+  ],
+  "scope": "1正例/7反例；临时归档重建清单后核对实际错误全文"
+}

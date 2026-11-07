@@ -1,0 +1,6 @@
+* -text
+*.log -whitespace
+*.json -whitespace
+# 实际执行编排脚本原文保留末尾CRLF，不以样式修整改写。
+stage-audits.py -whitespace
+stage-boundary.py -whitespace

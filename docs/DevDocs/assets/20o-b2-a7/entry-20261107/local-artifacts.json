@@ -1,0 +1,249 @@
+{
+  "source_manifest": "source-manifests/319e0fdc24bd69888840f46d0c0a4b017f577c6d249ec89ede72473233613e16.json",
+  "runtime_build_record": "build-runtime.json",
+  "runtime": {
+    "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\cargo-target\\release\\xiao_runtime.lib",
+    "bytes": 27246162,
+    "sha256": "5c09a3ddb83cb92062fce7b26671514b397d9a60f2f59095aeac49e60d3fc4be"
+  },
+  "tools": {
+    "RUSTC": {
+      "file": {
+        "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+        "bytes": 111104,
+        "sha256": "acb138286bbe20c6cf3ec39a7e0a68c3fab0cd949baa2912cf466514d0d531ab"
+      },
+      "version": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-pc-windows-msvc\nrelease: 1.96.0\nLLVM version: 22.1.2\n"
+    },
+    "XIAO_CLANG": {
+      "file": {
+        "path": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+        "bytes": 157296,
+        "sha256": "574047f1b98d62bea1da8ae9340fea1ef06d262c3186e1d72d87e5401166c833"
+      },
+      "version": "clang version 22.1.2 (https://github.com/msys2/MINGW-packages 4f19d31560faf73257116b7c95f0b322ba83d720)\nTarget: x86_64-w64-windows-gnu\nThread model: posix\nInstalledDir: D:/msys64/ucrt64/bin\n"
+    },
+    "XIAO_LLVM_AS": {
+      "file": {
+        "path": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+        "bytes": 40741,
+        "sha256": "63f559db3d87798fa4f26923c4cd5839ddc41b40905d884ee341c74a8bd858e9"
+      },
+      "version": "LLVM (http://llvm.org/):\n  LLVM version 22.1.2\n  Optimized build.\n"
+    },
+    "XIAO_LLC": {
+      "file": {
+        "path": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+        "bytes": 211961,
+        "sha256": "df1409fabacdc625b2c2fefe50712de4ba140e07bf2bb4192101189498152869"
+      },
+      "version": "LLVM (http://llvm.org/):\n  LLVM version 22.1.2\n  Optimized build.\n  Default target: x86_64-w64-windows-gnu\n  Host CPU: znver5\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - AMD GCN GPUs\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv32be   - 32-bit big endian RISC-V\n    riscv64     - 64-bit RISC-V\n    riscv64be   - 64-bit big endian RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    spirv       - SPIR-V Logical\n    spirv32     - SPIR-V 32-bit\n    spirv64     - SPIR-V 64-bit\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore\n"
+    }
+  },
+  "fresh_target": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\cargo-target",
+  "source_root": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source",
+  "stdlib_root": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source\\stdlib",
+  "artifacts": [
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-native-68700-1794035223182022200\\a5_integer_arithmetic-o0.exe",
+      "bytes": 1246208,
+      "sha256": "14eea13ba898c55da80310cbdcc87073ece9fb2c2ac06fc6276028c776eda38c"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-native-68700-1794035223182022200\\a5_integer_arithmetic-o3.exe",
+      "bytes": 1242112,
+      "sha256": "bde94a55b96b26cf1c656aaf79e95017fd815d60c81639f9edb69cf13b14873a"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-native-68700-1794035223182022200\\a5_decimal_arithmetic-o0.exe",
+      "bytes": 1247744,
+      "sha256": "5a29e85b111822cdb7b74ae10f9e5dc5d700a9a229b3604245b043d4b1e3bf3f"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-native-68700-1794035223182022200\\a5_decimal_arithmetic-o3.exe",
+      "bytes": 1243136,
+      "sha256": "83da612d72d55a8fed55e4ba6506cc69c04d1fb188476a1558115335ba2e9f17"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-native-68700-1794035223182022200\\a5_conversions-o0.exe",
+      "bytes": 1244672,
+      "sha256": "e2a6dff5104d22cd186eb600533dfd36cdedf3903bd91330366862662f324fad"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-native-68700-1794035223182022200\\a5_conversions-o3.exe",
+      "bytes": 1241088,
+      "sha256": "cc4f150cf9a07103a68a6b270859baf0a62c03b4c5a5a230c31ca1c076507902"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-native-68700-1794035223182022200\\a5_carriers-o0.exe",
+      "bytes": 2346496,
+      "sha256": "57d941f3ed9e00b0c85b9454c3d74f731a352fc036cad24f291066a271244372"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-native-68700-1794035223182022200\\a5_carriers-o3.exe",
+      "bytes": 2169856,
+      "sha256": "9b6ef56f66a2287e70798141e1c8cd0f91445437ad7409cbb468e1c3f8c117de"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-native-68700-1794035223182022200\\a5_errors-o0.exe",
+      "bytes": 1304576,
+      "sha256": "0aeba4a58f72072c2319166faa0fcbbdd711ec04adb4c613c68cdedbb492caaf"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-native-68700-1794035223182022200\\a5_errors-o3.exe",
+      "bytes": 1293824,
+      "sha256": "cdf07ecdacdc24d98f2f75a9d6ce01ded2f2d8b80dfe4bb7ba7e259e2e83808e"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-native-68700-1794035223182022200\\a5_matrix-o0.exe",
+      "bytes": 1727488,
+      "sha256": "04204a36a8995cf3e691ce91752c238224adf6b1f823f1aca0c2a25c03b53a19"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-native-68700-1794035223182022200\\a5_matrix-o3.exe",
+      "bytes": 1622528,
+      "sha256": "cdcb1baee495a983d15c3252f30d3ee27876751e0f8f58f1c9891d3e6e2b3099"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-native-68700-1794035223182022200\\a5_bindings-o0.exe",
+      "bytes": 1063936,
+      "sha256": "6fd1a8e707e3d7235ab200042f8aa37f0d3a4c6e17ec58ad1d4a57fcb423cde5"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-native-68700-1794035223182022200\\a5_bindings-o3.exe",
+      "bytes": 1062400,
+      "sha256": "0a6171d6f4b2ae7c94315a0582b87a2908f7310391300731e751eb2d96c27903"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\narrow-o0.exe",
+      "bytes": 1052672,
+      "sha256": "0acd34d32592a0a7c50f2bd092294512dddcbda192b096a6e1f88a3d70a86ca8"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\narrow-o3.exe",
+      "bytes": 1052672,
+      "sha256": "1bd3085d0b9ad8b41710971a7f8b7c7181beed90916c81fefa0d820a485d4e68"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\syntax-o0.exe",
+      "bytes": 1052672,
+      "sha256": "3a6f7fc6ffb8739fb3900b3c575215bd413af4fa878ac6ce485a2cc3a0814af4"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\syntax-o3.exe",
+      "bytes": 1052672,
+      "sha256": "b758a5935ef688532d71bf0b5fb583fe041992c96db60c6248602b16ea1a2708"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\zero-o0.exe",
+      "bytes": 1248256,
+      "sha256": "bb5df1b8e3fd3bc171c679c9bd5571b5176bb848a4666afdd17d851174da1d64"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\zero-o3.exe",
+      "bytes": 1248256,
+      "sha256": "268f45ac76214c07d9478bf3922af8c3067525814c94683a14cdf76e2ebc8860"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\admission-o0.exe",
+      "bytes": 1052672,
+      "sha256": "f3a9e2a4a9497ede30e64de388d68e9e0a2516d2fd78c123914935e543191db2"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\admission-o3.exe",
+      "bytes": 1052672,
+      "sha256": "f1e36b6cd8dd2076c8eb5b9cf964af630891b21b95f0162695a5d2ddf1e0ee43"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\quotient-o0.exe",
+      "bytes": 1250304,
+      "sha256": "d522bb9334d24774519544e6a14700c99a0ab3a4e4321ff41a398483fa3526ed"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\quotient-o3.exe",
+      "bytes": 1250304,
+      "sha256": "b1599dd7447f19df74956c10d1c87a6d80d8ecb2cd1d236fd6dd4b0f1436607c"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\nonterminating-o0.exe",
+      "bytes": 1238016,
+      "sha256": "860b879ab411aa09d56242665b50cf89d3b8db473e9a132144cababc258e1f6c"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\nonterminating-o3.exe",
+      "bytes": 1238016,
+      "sha256": "c28c4b3a2367ef845300b2d1e48cfb02138ff4d4704aafec73ced085916b2fe3"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\lifetime-cast-success-o0.exe",
+      "bytes": 1022976,
+      "sha256": "3978557dd68d16d6635206b9ea6bbe3069437bdb23a89961ec28bf21a4f68fc6"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\lifetime-cast-success-o3.exe",
+      "bytes": 1022976,
+      "sha256": "7f1eb0c8096900221883a06c8b1ae9b69b01add344c766d8ad9547d4f65e743a"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\lifetime-cast-failure-o0.exe",
+      "bytes": 1050112,
+      "sha256": "35d43d440e5e1a5c177ae69bc4dbfec5211f7bae3d8a0de7d899be017295d6f7"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\lifetime-cast-failure-o3.exe",
+      "bytes": 1049600,
+      "sha256": "3f9f1211e2e46003c537ff735b625736bb8f6202e9e30920c4251103a719e0cd"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\lifetime-right-failure-o0.exe",
+      "bytes": 1214976,
+      "sha256": "61e4bb7716bea89ed4ff007870f558c37656a7ad1101a2842a7091adab039723"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\lifetime-right-failure-o3.exe",
+      "bytes": 1214464,
+      "sha256": "c98e68c117ad25e5dccee098a3ef3b2f124069bd75f9d943e97228814730edd3"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\lifetime-allocation-o0.exe",
+      "bytes": 1083904,
+      "sha256": "e08c1e5f327db714bf8d171e2ddbf14fe8c4e7a85fda419a6412cf5165ef31e7"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a5-errors-68700-1794035250635575500\\lifetime-allocation-o3.exe",
+      "bytes": 1083392,
+      "sha256": "3a1aff11c626d83b93c220f19eb5a87cd2d4b4815207bf8d9fbf3f736cac95c7"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a1-native-19128-1794035275819162100\\a1_identity-o0.exe",
+      "bytes": 1231872,
+      "sha256": "d926d9df3f324f6164e7264d7b839602c4901b22924003065351343e7ba473a1"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a1-native-19128-1794035275819162100\\a1_identity-o3.exe",
+      "bytes": 1230848,
+      "sha256": "4a24f3e3c50644da9a7b425afc0ce975dd017670d5713959f4890adb38067a1d"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a1-native-19128-1794035275819162100\\a1_admission_error-o0.exe",
+      "bytes": 1069056,
+      "sha256": "a248342f96e4cc65139d39e8ced1aaf17ff56e8dc5b44c09cb53cb50657afa8a"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a1-native-19128-1794035275819162100\\a1_admission_error-o3.exe",
+      "bytes": 1069056,
+      "sha256": "70bedffcf278b2384ebb3393bf8d9ac208cc847ed0e8702f3856510d6c7dc42d"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a1-native-19128-1794035275819162100\\a1_pending_finally-o0.exe",
+      "bytes": 1073152,
+      "sha256": "f786c714dbff64e5d4c753124e0c57f4b087ef3d275e6f0b0e3c8417b5f6d00a"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\run-temp\\xiao-b2-a1-native-19128-1794035275819162100\\a1_pending_finally-o3.exe",
+      "bytes": 1072640,
+      "sha256": "4da0a5327ac698c2720a4f007e258bffebd40316e16a779cce2fc7a07fdfd2d7"
+    }
+  ],
+  "note": "实际输出中标记的本轮产物；只保存身份不作为性能测量。"
+}

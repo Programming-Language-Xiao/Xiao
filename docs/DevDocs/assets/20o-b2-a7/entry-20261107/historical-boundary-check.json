@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "argv": [
+    "cmd",
+    "/c",
+    "git",
+    "diff",
+    "--exit-code",
+    "bf625d43",
+    "--",
+    "docs/DevDocs/assets/20o-b2-a0",
+    "docs/DevDocs/assets/20o-b2-a1",
+    "docs/DevDocs/assets/20o-b2-a2-a3",
+    "docs/DevDocs/assets/20o-b2-a4",
+    "docs/DevDocs/assets/20o-b2-a5",
+    "docs/DevDocs/assets/20o-b2-a6",
+    "docs/DevDocs/20o-b2-freeze-draft.md",
+    "stdlib",
+    "core/rust",
+    "docs/module-registry.json"
+  ],
+  "scope": "A7不得修改阶段原件、已签正文、B1/运行时产品或registry；工作树与入口逐字节相同",
+  "exit_code": 0,
+  "a7_changed_registry": false,
+  "signed_freeze_unchanged": true
+}

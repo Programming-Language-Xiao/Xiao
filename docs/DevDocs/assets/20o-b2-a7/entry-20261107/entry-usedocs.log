@@ -1,0 +1,3 @@
+[error] A0-DOCS-001 docs/UseDocs/library/README.md docs/UseDocs/library/README.md
+  链接锚点不存在：../language/basics/types/conversions.md#b2高精度基础规划中
+  修复：更新文档索引、页面元数据或模块登记后重新运行检查。

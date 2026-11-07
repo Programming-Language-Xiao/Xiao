@@ -1,0 +1,35 @@
+{
+  "name": "benchmarks-check",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "check",
+    "--locked",
+    "--manifest-path",
+    "tests/benchmarks/Cargo.toml"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source",
+  "started_utc": "2026-11-07T07:08:24.088136+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "benchmarks-check.log",
+  "pid": 23164,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/319e0fdc24bd69888840f46d0c0a4b017f577c6d249ec89ede72473233613e16.json",
+    "raw_tree_sha256": "319e0fdc24bd69888840f46d0c0a4b017f577c6d249ec89ede72473233613e16",
+    "utf8_lf_tree_sha256": "513c984252d0c2333d53a2f6f4ce6921eed506448a8f2628a69fe938639b287d",
+    "files": 1029
+  },
+  "source_after": {
+    "manifest": "source-manifests/319e0fdc24bd69888840f46d0c0a4b017f577c6d249ec89ede72473233613e16.json",
+    "raw_tree_sha256": "319e0fdc24bd69888840f46d0c0a4b017f577c6d249ec89ede72473233613e16",
+    "utf8_lf_tree_sha256": "513c984252d0c2333d53a2f6f4ce6921eed506448a8f2628a69fe938639b287d",
+    "files": 1029
+  },
+  "source_unchanged": true,
+  "runner_sha256": "d5499ff1a4e20ba5124199abe94d194a2e03ce39945775608b7899635170d4a7",
+  "finished_utc": "2026-11-07T07:08:53.247832+00:00",
+  "duration_seconds": 29.157,
+  "sha256": "58ee5f3a8def87188df0471aa4d4ee5820f0cf3fff714beb51c22ac8fbee285a"
+}

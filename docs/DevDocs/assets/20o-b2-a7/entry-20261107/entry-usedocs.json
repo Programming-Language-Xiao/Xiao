@@ -1,0 +1,32 @@
+{
+  "name": "entry-usedocs",
+  "argv": [
+    "bun",
+    "tools/repo-check/src/cli.ts",
+    "usedocs"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source",
+  "started_utc": "2026-11-07T06:48:10.109629+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "entry-usedocs.log",
+  "pid": 72796,
+  "exit_code": 1,
+  "source_before": {
+    "manifest": "source-manifests/405b4c82f940f1d25a36bd2383a45d4409038b2372709e0eae9e377d64c4282b.json",
+    "raw_tree_sha256": "405b4c82f940f1d25a36bd2383a45d4409038b2372709e0eae9e377d64c4282b",
+    "utf8_lf_tree_sha256": "41ccf5b87a0a1400559ea90639d2d163c3f6a8d2bed97c8a9bf207104ac0ceeb",
+    "files": 1029
+  },
+  "source_after": {
+    "manifest": "source-manifests/405b4c82f940f1d25a36bd2383a45d4409038b2372709e0eae9e377d64c4282b.json",
+    "raw_tree_sha256": "405b4c82f940f1d25a36bd2383a45d4409038b2372709e0eae9e377d64c4282b",
+    "utf8_lf_tree_sha256": "41ccf5b87a0a1400559ea90639d2d163c3f6a8d2bed97c8a9bf207104ac0ceeb",
+    "files": 1029
+  },
+  "source_unchanged": true,
+  "runner_sha256": "d5499ff1a4e20ba5124199abe94d194a2e03ce39945775608b7899635170d4a7",
+  "finished_utc": "2026-11-07T06:48:14.029932+00:00",
+  "duration_seconds": 3.922,
+  "sha256": "dae09f3fe0c82274769f46b4be997c2025553c3c13c4d41c9ced6a01ebfacb53"
+}

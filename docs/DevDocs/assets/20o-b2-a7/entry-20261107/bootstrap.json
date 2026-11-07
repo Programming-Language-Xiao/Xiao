@@ -1,0 +1,11 @@
+{
+  "entry_commit": "bf625d434ef2148a4987a80d64030cc229ff1807",
+  "entry_status": "",
+  "task_root": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e",
+  "source_root": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source",
+  "repository_root": "D:\\project\\Xiao\\Xiao",
+  "branch": "codex/b2-a7-closeout-20261107-2b465300b84e",
+  "created_utc": "2026-11-07T06:43:08.324020+00:00",
+  "product_baseline": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+  "scope": "A7文档/回归与B2-A内部1.18/20收口；不改产品/ABI/intrinsic/锁/测试/工作流，不跑旧721，B2-B/C后置。"
+}

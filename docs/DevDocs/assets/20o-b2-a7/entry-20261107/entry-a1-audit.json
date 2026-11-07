@@ -1,0 +1,33 @@
+{
+  "name": "entry-a1-audit",
+  "argv": [
+    "D:\\Programs\\Python\\Python312\\python.exe",
+    "-X",
+    "utf8",
+    "docs/DevDocs/assets/20o-b2-a1/entry-20261106/audit.py"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source",
+  "started_utc": "2026-11-07T06:47:48.045309+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "entry-a1-audit.log",
+  "pid": 75292,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/405b4c82f940f1d25a36bd2383a45d4409038b2372709e0eae9e377d64c4282b.json",
+    "raw_tree_sha256": "405b4c82f940f1d25a36bd2383a45d4409038b2372709e0eae9e377d64c4282b",
+    "utf8_lf_tree_sha256": "41ccf5b87a0a1400559ea90639d2d163c3f6a8d2bed97c8a9bf207104ac0ceeb",
+    "files": 1029
+  },
+  "source_after": {
+    "manifest": "source-manifests/405b4c82f940f1d25a36bd2383a45d4409038b2372709e0eae9e377d64c4282b.json",
+    "raw_tree_sha256": "405b4c82f940f1d25a36bd2383a45d4409038b2372709e0eae9e377d64c4282b",
+    "utf8_lf_tree_sha256": "41ccf5b87a0a1400559ea90639d2d163c3f6a8d2bed97c8a9bf207104ac0ceeb",
+    "files": 1029
+  },
+  "source_unchanged": true,
+  "runner_sha256": "d5499ff1a4e20ba5124199abe94d194a2e03ce39945775608b7899635170d4a7",
+  "finished_utc": "2026-11-07T06:47:50.029159+00:00",
+  "duration_seconds": 1.985,
+  "sha256": "c7a18d276d9ecf7431ee02786a7f5c56908400fac6a70eb1f09ba6e83688a41d"
+}

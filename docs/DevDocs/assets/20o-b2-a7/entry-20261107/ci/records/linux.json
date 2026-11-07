@@ -1,0 +1,13 @@
+{
+  "code_commit": "5749d6e0f277ba9aebf2bf8468e0c79a082e42a6",
+  "run_id": 42348812742,
+  "run_attempt": 1,
+  "job_id": 128332329770,
+  "job_name": "Native differential regression (Linux)",
+  "conclusion": "success",
+  "aggregate_job_id": 128332329770,
+  "aggregate_run_attempt": 1,
+  "execution_retained": false,
+  "log": "ci/maintenance/job-128332329770.log",
+  "log_sha256": "7197b067f8acba29cfd235b34c0e008b73f31f9e4d0f2dff3ed1e4d4d7b797ca"
+}

@@ -1,0 +1,13 @@
+{
+  "code_commit": "5749d6e0f277ba9aebf2bf8468e0c79a082e42a6",
+  "run_id": 42348812742,
+  "run_attempt": 1,
+  "job_id": 128332329696,
+  "job_name": "Native differential regression (macOS)",
+  "conclusion": "success",
+  "aggregate_job_id": 128332329696,
+  "aggregate_run_attempt": 1,
+  "execution_retained": false,
+  "log": "ci/maintenance/job-128332329696.log",
+  "log_sha256": "2c05a83066fa3d8a732dbc64a050e2119fbd1edd7a98ddc1ed924b435d1fcc84"
+}

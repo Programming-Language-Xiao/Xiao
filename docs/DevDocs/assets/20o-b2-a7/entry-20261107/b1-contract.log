@@ -1,0 +1,79 @@
+   Compiling serde_json v1.0.151
+   Compiling autocfg v1.5.1
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-intrinsics)
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling num-traits v0.2.19
+   Compiling cc v1.5.1
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-i18n)
+   Compiling libm v0.2.16
+   Compiling zeroize v1.9.0
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-diagnostics)
+   Compiling rustls-pki-types v1.15.1
+   Compiling ring v0.17.14
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-syntax)
+   Compiling num-integer v0.1.47
+   Compiling bigdecimal v0.4.11
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-types)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-modules)
+   Compiling getrandom v0.2.17
+   Compiling libc v0.2.189
+   Compiling httparse v1.10.1
+   Compiling untrusted v0.9.0
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-lifetime)
+   Compiling num-bigint v0.4.8
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-ir)
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-standard-library)
+   Compiling crc32fast v1.5.2
+   Compiling rustls v0.23.45
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-optimizer)
+   Compiling bytes v1.12.1
+   Compiling log v0.4.34
+   Compiling http v1.5.0
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-bytecode)
+   Compiling rustls-webpki v0.103.15
+   Compiling windows-targets v0.52.6
+   Compiling xiao-lock v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-lock)
+   Compiling simd-adler32 v0.3.10
+   Compiling base64 v0.23.1
+   Compiling adler2 v2.0.1
+   Compiling subtle v2.6.1
+   Compiling once_cell v1.21.4
+   Compiling ureq-proto v0.6.4
+   Compiling miniz_oxide v0.9.1
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-runtime)
+   Compiling windows-sys v0.52.0
+   Compiling xiao-config v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-config)
+   Compiling webpki-roots v1.0.9
+   Compiling filetime v0.2.29
+   Compiling percent-encoding v2.3.2
+   Compiling utf8-zero v0.8.1
+   Compiling ureq v3.4.2
+   Compiling tar v0.4.46
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-artifacts)
+   Compiling flate2 v1.1.10
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-vm)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-package)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 45.28s
+     Running tests\20o_b1_imp_contract.rs (D:\project\Xiao\.a7-closeout\20261107-2b465300b84e\cargo-target\debug\deps\20o_b1_imp_contract-ea94f1d890b4bc77.exe)
+
+running 9 tests
+test every_implemented_module_is_in_the_active_contract_matrix ... ok
+test product_tutorials_embed_the_executed_sources_and_match_registry ... ok
+test products_keep_the_official_namespace_out_of_ordinary_packages ... ok
+test colliding_public_names_keep_their_own_module_implementations ... ok
+test every_public_function_requires_its_real_implementation ... ok
+test public_calls_enforce_every_frozen_parameter_and_require_imports ... ok
+test products_execute_and_export_only_the_frozen_names has been running for over 60 seconds
+test products_replay_from_real_archives_without_bundled_library_bodies has been running for over 60 seconds
+test public_std_aliases_execute_through_the_official_loader has been running for over 60 seconds
+test products_execute_and_export_only_the_frozen_names ... ok
+test products_replay_from_real_archives_without_bundled_library_bodies ... ok
+test public_std_aliases_execute_through_the_official_loader ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 120.54s
+

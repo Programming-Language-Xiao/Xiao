@@ -5,7 +5,7 @@
 > `cmath` 仍为 planned，Runtime ABI 仍为 1.18、`CODEGEN_VERSION` 仍为 20。
 >
 > **F-A/F-B/F-C已完成，F-D已实际签字，B2联合冻结已生效。** B2-A规划已批准，A0～A7获准另批实施；
-> [A0 Windows本地基线](20o-b2-a0-baseline-plan.md)已实际通过，Linux/macOS本地未验证；后续A1～A4内核已完成本批验收，A5语言全链路已完成本批验收，A6资源/性能已完成本批验收，A7及B2-B/C后置。
+> [A0 Windows本地基线](20o-b2-a0-baseline-plan.md)已实际通过，Linux/macOS本地未验证；后续A1～A4内核已完成本批验收，A5语言全链路已完成本批验收，A6资源/性能与A7内部1.18/20收口已完成，B2-B/C未开始。
 
 ## 一、入口与当前事实
 
@@ -14,7 +14,7 @@
 | 冻结入口基线 | `0011f4c5`；工作区干净、已推送；当前签字状态见[F-D记录](20o-b2-freeze-d-signature-plan.md) |
 | B1-CLOSE | 七库 20/20、教程/registry verified；B1 旧 721 条 F10 已标历史 |
 | B1 复跑 | 默认当前 registry 会拒绝；`audit.ps1`/`validate-audit.ps1` 的 `-SourceRoot` 106b99c7 入口已取证并通过 |
-| B2-FREEZE | 30条全部confirmed，F-D已签字并激活联合冻结；B2-A规划已批准，A0 Windows基线已通过，A1已退出，cmath planned，B2-A整批未收口 |
+| B2-FREEZE | 30条全部confirmed，F-D已签字并激活联合冻结；B2-A规划已批准，A0 Windows基线已通过，A1已退出，cmath planned，B2-A内部范围已收口，B2-B/C未开始 |
 | 冻结入口 CI | 0011f4c5的`41644476014` workspace gates成功；仅代表当时的DevDocs/审计修复入口，后续运行另按提交登记 |
 | 文档门禁 | `check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 通过 |
 

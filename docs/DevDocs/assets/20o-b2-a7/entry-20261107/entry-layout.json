@@ -1,0 +1,32 @@
+{
+  "name": "entry-layout",
+  "argv": [
+    "bun",
+    "tools/repo-check/src/cli.ts",
+    "layout"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a7-closeout\\20261107-2b465300b84e\\source",
+  "started_utc": "2026-11-07T06:47:56.788583+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "entry-layout.log",
+  "pid": 65172,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/405b4c82f940f1d25a36bd2383a45d4409038b2372709e0eae9e377d64c4282b.json",
+    "raw_tree_sha256": "405b4c82f940f1d25a36bd2383a45d4409038b2372709e0eae9e377d64c4282b",
+    "utf8_lf_tree_sha256": "41ccf5b87a0a1400559ea90639d2d163c3f6a8d2bed97c8a9bf207104ac0ceeb",
+    "files": 1029
+  },
+  "source_after": {
+    "manifest": "source-manifests/405b4c82f940f1d25a36bd2383a45d4409038b2372709e0eae9e377d64c4282b.json",
+    "raw_tree_sha256": "405b4c82f940f1d25a36bd2383a45d4409038b2372709e0eae9e377d64c4282b",
+    "utf8_lf_tree_sha256": "41ccf5b87a0a1400559ea90639d2d163c3f6a8d2bed97c8a9bf207104ac0ceeb",
+    "files": 1029
+  },
+  "source_unchanged": true,
+  "runner_sha256": "d5499ff1a4e20ba5124199abe94d194a2e03ce39945775608b7899635170d4a7",
+  "finished_utc": "2026-11-07T06:48:09.431756+00:00",
+  "duration_seconds": 12.641,
+  "sha256": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
+}

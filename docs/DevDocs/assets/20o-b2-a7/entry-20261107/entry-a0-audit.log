@@ -1,0 +1,1 @@
+{"passed": true, "files": 82, "commands": 22, "tests": {"20o_b1_imp_contract": 9, "20o_b1_imp_resources": 17, "vm-exact": 1, "windows-native-exact": 1}, "guards": "28/28", "scope": "仅归档自洽性复核，非新产品运行"}
