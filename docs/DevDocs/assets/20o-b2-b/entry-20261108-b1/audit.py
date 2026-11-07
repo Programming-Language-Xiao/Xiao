@@ -12,6 +12,11 @@ ROOT = Path(__file__).resolve().parent
 SOURCE = ROOT.parents[4]
 BASELINE_COMMIT = "d08b8460"
 CODE_COMMIT = "35872782"
+PRODUCT_ROOTS = [
+    "core/rust", "stdlib", "tests/fixtures", "tests/benchmarks", ".github/workflows",
+    ".cargo", "tools", "cli/ts", "docs/UseDocs", "docs/module-registry.json",
+    "package.json", "bun.lock", ".gitattributes",
+]
 ALLOWED_CODE = {
     "core/rust/Cargo.toml",
     "core/rust/Cargo.lock",
@@ -196,6 +201,11 @@ def main():
         or self_negative.get("tampered_manifest_exit_code") != 1
         or self_negative.get("missing_gitattributes_exit_code") != 1
         or self_negative.get("passed") is not True
+        or self_negative.get("read_only") != {
+            "baseline": True,
+            "tampered_manifest": True,
+            "missing_gitattributes": True,
+        }
         or self_negative.get("tampered_manifest_output") != negative["expected_reason"]
         or self_negative.get("missing_gitattributes_output") != negative["missing_gitattributes_reason"]
     ):
@@ -240,9 +250,7 @@ def main():
     code = git("rev-parse", "--verify", CODE_COMMIT)[0]
     if not baseline or not code:
         fail("固定 Git 对象不存在")
-    code_paths = set(
-        git("diff", "--name-only", BASELINE_COMMIT, CODE_COMMIT, "--", "core/rust", "tests/benchmarks/Cargo.lock")
-    )
+    code_paths = set(git("diff", "--name-only", BASELINE_COMMIT, CODE_COMMIT, "--", *PRODUCT_ROOTS))
     if code_paths != ALLOWED_CODE:
         fail(f"固定 Git 对象的代码范围漂移：{sorted(code_paths ^ ALLOWED_CODE)}")
     protected = [

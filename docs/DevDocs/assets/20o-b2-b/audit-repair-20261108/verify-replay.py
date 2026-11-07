@@ -55,7 +55,7 @@ def main(source, output):
                 parsed = json.loads(text)
             except json.JSONDecodeError:
                 parsed = {}
-            passed = process.returncode == (0 if self_result else 1) and parsed.get("passed") is self_result
+            passed = process.returncode == (0 if self_result else 1) and parsed.get("passed") == bool(self_result)
             if self_result:
                 passed = passed and parsed["tampered_manifest_output"] == spec["expected_reason"]
                 passed = passed and parsed["missing_gitattributes_output"] == spec["missing_gitattributes_reason"]
@@ -65,7 +65,7 @@ def main(source, output):
             except json.JSONDecodeError:
                 parsed = {}
             passed = (process.returncode == 0 and parsed.get("passed") == parsed.get("total") == 18
-                      and parsed.get("files") == (48 if script.parent == b0 else 28))
+                      and parsed.get("files") == (50 if evidence == b0 else 28))
         records.append({"name": name, "argv": argv, "cwd": str(source), "python_mode": mode,
                         "exit_code": process.returncode, "output": text, "read_only": read_only,
                         "passed": passed and read_only})

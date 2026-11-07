@@ -77,5 +77,15 @@
   "product_changed": false,
   "registry_changed": false,
   "b2_b_product_started": false,
-  "b2_c_started": false
+  "b2_c_started": false,
+  "task_root": "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12",
+  "source_root": "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source",
+  "fresh_target": true,
+  "fresh_xiao_home": true,
+  "runtime_identity": {
+    "path": "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\cargo-target\\release\\xiao_runtime.lib",
+    "bytes": 27246162,
+    "sha256": "5c09a3ddb83cb92062fce7b26671514b397d9a60f2f59095aeac49e60d3fc4be",
+    "build_record": "b0-build-runtime.json"
+  }
 }

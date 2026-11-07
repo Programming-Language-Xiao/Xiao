@@ -19,13 +19,13 @@
     },
     {
       "path": "result.json",
-      "bytes": 12246,
-      "sha256": "1a8af40886af7bb0e9d4b727fa433a338508d04318919a2a3915066970b9d840"
+      "bytes": 12126,
+      "sha256": "348846223979694fe1fd4b907ceb21f8d495e3f55ed14cec9d74ee1bcaa8daf1"
     },
     {
       "path": "verify-replay.py",
-      "bytes": 6488,
-      "sha256": "92f9bfdcd1e82f71cbb1f6bc973687a09b9331405dafeffd4054f65a446ef487"
+      "bytes": 6483,
+      "sha256": "57bdac460344c6d947b4b04432e6cfbe1331ed16e7893cc9e4b1f87b792393e1"
     }
   ]
 }

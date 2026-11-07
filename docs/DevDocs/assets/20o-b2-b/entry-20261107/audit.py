@@ -67,6 +67,15 @@ def inventory(root):
     return rows
 
 
+def require_contained(path_value, parent, label, must_exist=True, file=False):
+    path = Path(path_value).resolve()
+    if not path.is_relative_to(parent):
+        fail(f"B0路径不在任务根内：{label}")
+    if must_exist and ((not path.exists()) or (file and not path.is_file()) or (not file and not path.is_dir())):
+        fail(f"B0路径不存在或类型不符：{label}")
+    return path
+
+
 def main(root, source):
     rows = inventory(root)
     bootstrap = read(root, "bootstrap.json")
@@ -104,6 +113,18 @@ def main(root, source):
     overrides = read(root, "environment.json").get("overrides", {})
     if str(overrides.get("XIAO_B1_F10")) != "0" or str(overrides.get("XIAO_B2_A_PERF")) != "0":
         fail("B0错误启用性能开关")
+    bootstrap = read(root, "bootstrap.json")
+    environment = read(root, "environment.json")
+    task_root = require_contained(bootstrap["task_root"], Path(bootstrap["task_root"]).resolve().parent, "task_root")
+    source_root = require_contained(bootstrap["source_root"], task_root, "source_root")
+    if environment.get("fresh_target") is not True or environment.get("fresh_xiao_home") is not True:
+        fail("B0未声明全新target或Xiao Home")
+    for key in ["CARGO_TARGET_DIR", "XIAO_HOME", "TEMP", "TMP"]:
+        require_contained(overrides.get(key), task_root, key)
+    require_contained(overrides.get("XIAO_STDLIB_ROOT"), source_root, "XIAO_STDLIB_ROOT")
+    runtime_path = require_contained(overrides.get("XIAO_RUNTIME_LIBRARY"), task_root, "XIAO_RUNTIME_LIBRARY", file=True)
+    for key in ["XIAO_DIAGNOSTICS_PATH", "XIAO_RUST_DOC_ADAPTER"]:
+        require_contained(overrides.get(key), task_root, key, file=True)
     closeout = read(root, "closeout.json")
     if (
         not closeout.get("passed")
@@ -117,8 +138,21 @@ def main(root, source):
         or closeout.get("codegen") != 20
         or closeout.get("active_intrinsic_max") != 32
         or closeout.get("b1_721_executed")
+        or closeout.get("task_root") != str(task_root)
+        or closeout.get("source_root") != str(source_root)
+        or closeout.get("fresh_target") is not True
+        or closeout.get("fresh_xiao_home") is not True
     ):
         fail("B0 closeout固定状态不符")
+    runtime_identity = closeout.get("runtime_identity")
+    if (
+        not isinstance(runtime_identity, dict)
+        or runtime_identity.get("path") != str(runtime_path)
+        or runtime_identity.get("bytes") != runtime_path.stat().st_size
+        or runtime_identity.get("sha256") != hashlib.sha256(runtime_path.read_bytes()).hexdigest()
+        or runtime_identity.get("build_record") != "b0-build-runtime.json"
+    ):
+        fail("B0 Runtime身份摘要不符")
     print(json.dumps({"passed": len(REQUIRED), "total": len(REQUIRED), "files": len(rows), "baseline_commit": baseline, "planned_entry_commit": "e596cea8"}, ensure_ascii=False))
 
 
