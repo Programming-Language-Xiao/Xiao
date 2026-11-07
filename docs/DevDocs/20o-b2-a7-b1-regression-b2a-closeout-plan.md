@@ -1,7 +1,7 @@
 # 20O-B2-A7. B1回归与B2-A整批收口规划
 
 > **这是 A7 的文档/回归收口规划；不写产品代码、不新增数值能力或改变ABI。**
-> 入口为A6代码快照`e7bf7a49`及A6有效收口；A7尚未开始，B2-B/C后置。
+> 入口为A6代码快照`e7bf7a49`及A6有效收口；A7已按A-P1～A-P3进入文档/回归收口，实际结论见[A7收口记录](20o-b2-a7-b2a-closeout.md)，B2-B/C后置。
 > A7只核对B1功能回归、A1～A6证据、语言说明/教程/registry边界和B2-A退出；不实现`lfloat_divide`/`cmath`。
 > A0的`result.json`失败身份仍保留；A0只以`closeout.json`作为有效收口。
 
@@ -151,4 +151,4 @@ docs/module-registry.json                                  只在有证据时更
 docs/DevDocs/assets/20o-b2-a7/entry-<date>/               A7证据（待建）
 ```
 
-本页只规划A7；B2-B/C仍是后续批次，不把本页当作B2-A已完成收口。
+本页保留A7规划与入口时点要求；实际执行及B2-A内部退出结论另记。B2-B/C仍是后续批次。

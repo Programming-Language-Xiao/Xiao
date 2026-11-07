@@ -24,10 +24,10 @@ error_code已由[独立FIX-B](../../DevDocs/20o-b1-fix-b-closeout.md)实现并�
 固定源码身份的[完整F10](../../DevDocs/assets/20o-b1-imp/rem-identity-final-41464439400/README.md)共721条；
 它记录已测硬件条件，旧报告仅作历史快照。当前状态与新门禁运行号统一在收口记录登记。
 
-## B2规划中
+## B2数值基础与后续库
 
-[cmath浮点数学](cmath.md)为planned教程与登记，尚无产品或执行证据；依赖、精度、域、误差与ABI仍在逐条冻结。
-lint/lfloat是语言数值基础，不另造一个大数标准库；当前边界见[转换说明](../language/basics/types/conversions.md#b2高精度基础规划中)。
+[cmath浮点数学](cmath.md)的契约已冻结，教程与登记仍planned，尚无产品；与显式精度除法lfloat_divide一起留B2-B实施。
+lint/lfloat是语言数值基础，不另造一个大数标准库；B2-A内部1.18/20能力及最终发布planned范围见[转换说明](../language/basics/types/conversions.md)。
 
 ## 首批模块
 
