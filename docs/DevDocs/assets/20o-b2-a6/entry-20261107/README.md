@@ -12,10 +12,11 @@ A6本批验收已完成，固定代码快照为`e7bf7a49ba3ed55679b69c97ac1bd5ce
 python -X utf8 docs/DevDocs/assets/20o-b2-a6/entry-20261107/audit.py
 ```
 
-`validate-audit.py`在临时副本中重建清单，再逐项破坏状态、Cargo参数、精确计数、实际作业ID和平台/产物绑定。它检查实际stderr全文与退出码，避免因任意异常或源码中出现预期文本而假通过。已完成的1正/7反实跑记录在`self-review-20261107/negative-cases.json`，独立报告另有8种反例。运行时使用一个新输出目录：
+`validate-audit.py`在临时副本中重建清单，再逐项破坏状态、Cargo参数、精确计数、实际作业ID和平台/产物绑定。它检查实际stderr全文与退出码，避免因任意异常或源码中出现预期文本而假通过。已完成的1正/7反实跑记录在`self-review-20261107/negative-cases.json`，独立报告另有8种反例。复跑必须使用归档之外的新输出目录，避免结果日志改变历史清单：
 
 ```powershell
-python -X utf8 docs/DevDocs/assets/20o-b2-a6/entry-20261107/validate-audit.py --output docs/DevDocs/assets/20o-b2-a6/entry-20261107/self-review-rerun
+$a6ReviewOutput = Join-Path ([System.IO.Path]::GetTempPath()) ("xiao-a6-audit-" + [guid]::NewGuid().ToString("N"))
+python -X utf8 docs/DevDocs/assets/20o-b2-a6/entry-20261107/validate-audit.py --output $a6ReviewOutput
 ```
 
 归档清单为`evidence.json`，其精确文件集合、字节数与SHA-256不递归包含自身或Python缓存。文件数量以该清单为准，不以提交说明中的估算代替。
@@ -36,7 +37,7 @@ cmd /c git diff --exit-code e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6 HEAD -- cor
 
 固定27条路径、77个规模；VM77条，原生O0/O3各77条。五批各为新进程、预热一次，短操作保留全部校准；正式样本为最后保留批次，时间先按repeat归一后取中位数，OS驻留增量取五批最大保守峰值。编译/输入准备/验证在时钟外；完整语言调用包含实际解析、运算、分配与结果构造。
 
-原始报告和每批stdout/stderr/process.json、完整源程序、字节码或原生文件保存在ZIP中。`verify-performance.py`重算校准、五批、原始单位、PID、黄金事件、统计和翻倍比；`audit.py`另外绑定实际源码、工具/Runtime身份、CI产物ID/远端摘要、目标平台和日志中的每一条统计行。只读复核使用固定代码中的catalog，不把未来夹具当成历史输入。
+原始报告和每批stdout/stderr/process.json、完整源程序、字节码或原生文件保存在ZIP中。`verify-performance.py`重算校准、五批、原始单位、PID、黄金事件、统计和翻倍比；`audit.py`另外绑定实际源码、工具/Runtime身份、CI工作流与平台角色、产物ID/远端摘要、目标平台和日志中的每一条统计行。验证器要求字节码或两份原生可执行文件的完整摘要，逐批核对执行文件、参数、输出路径及启动时间，并用原始时长恢复schema1控制器的实际校准次数。只读复核使用固定代码中的catalog，不把未来夹具当成历史输入。
 
 CI保留原始API响应、每次尝试和实际日志作业ID；重跑保留的绿色执行以最早同次执行ID取日志，最新聚合映射单列。artifact名称包含运行号和尝试号，首轮不会被覆盖。
 
@@ -45,3 +46,5 @@ CI保留原始API响应、每次尝试和实际日志作业ID；重跑保留的�
 `performance-archives`保留首轮Bool宽度错误、gcd看门狗、旧原生超时及中间全量；`ci`保留Rustdoc缺口、macOS头文件可见性和历次翻倍比失败。历史JSON与原件不改成通过，新快照不会引用旧可执行文件作自己的成绩。
 
 `independent-22c-record.json`保留最终源码默认回归首轮Linux作业`128177526738`的排队取消失败；同提交第二次尝试全绿。`independent-22d-record.json`绑定`fb215262`默认回归`42289944485`中Windows作业`128140430506`的释放顺序断言。22D/22C及19/11/22债务独立保留，后续绿色不关闭它们。ABI1.18、生成器20、活动intrinsic最大32、B1原28/28守卫和性能阈值不变；仅A6手动模式40分钟已由`ci-timeout-receipt.json`记录实际裁定。旧721条F10没有运行。
+
+第二轮自审见[独立复核目录](../self-review-20261107/README.md)。原先1正/7反与8种报告反例是首次执行时点；本次新增角色、执行产物和校准反例另存，历史结果不回写。

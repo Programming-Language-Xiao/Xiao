@@ -1,0 +1,84 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "unexpected-process-argv",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\verify-performance.py",
+        "--report",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-process-controls-_zy84fn3\\report.json",
+        "--artifacts",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-process-controls-_zy84fn3\\artifacts",
+        "--require-full"
+      ],
+      "exit_code": 1,
+      "expected_error": "原始进程执行文件或参数未绑定实际产物",
+      "actual_error": "原始进程执行文件或参数未绑定实际产物",
+      "stdout": "unexpected-process-argv.stdout.log",
+      "stderr": "unexpected-process-argv.stderr.log"
+    },
+    {
+      "case": "mismatched-start-time",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\verify-performance.py",
+        "--report",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-process-controls-_zy84fn3\\report.json",
+        "--artifacts",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-process-controls-_zy84fn3\\artifacts",
+        "--require-full"
+      ],
+      "exit_code": 1,
+      "expected_error": "原始进程启动时间不符",
+      "actual_error": "原始进程启动时间不符",
+      "stdout": "mismatched-start-time.stdout.log",
+      "stderr": "mismatched-start-time.stderr.log"
+    },
+    {
+      "case": "mismatched-output-path",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\verify-performance.py",
+        "--report",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-process-controls-_zy84fn3\\report.json",
+        "--artifacts",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-process-controls-_zy84fn3\\artifacts",
+        "--require-full"
+      ],
+      "exit_code": 1,
+      "expected_error": "原始进程输出路径或规模关联不符",
+      "actual_error": "原始进程输出路径或规模关联不符",
+      "stdout": "mismatched-output-path.stdout.log",
+      "stderr": "mismatched-output-path.stderr.log"
+    },
+    {
+      "case": "in-archive-output",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\validate-audit.py",
+        "--output",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\forbidden-review-output"
+      ],
+      "exit_code": 1,
+      "expected_error": "反例输出必须位于原归档之外，避免改变历史清单",
+      "actual_error": "反例输出必须位于原归档之外，避免改变历史清单",
+      "stdout": "in-archive-output.stdout.log",
+      "stderr": "in-archive-output.stderr.log"
+    }
+  ],
+  "report_negative_cases": 11,
+  "archive_manifest_unchanged": true
+}

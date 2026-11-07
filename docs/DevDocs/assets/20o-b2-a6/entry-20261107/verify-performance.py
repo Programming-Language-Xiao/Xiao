@@ -31,6 +31,31 @@ def local_path(original, original_root, artifact_root):
     return result
 
 
+def original_path(value):
+    normalized = value.replace('\\', '/')
+    return normalized.removeprefix('//?/')
+
+
+def artifacts(report):
+    require(report.get('schema') == 1 and report.get('backend') in {'vm', 'native'}, '性能报告schema或后端不符')
+    items = report.get('artifacts')
+    require(isinstance(items, list) and bool(items), '实际产物集合缺项、重复或后端不符')
+    require(all(isinstance(item, dict) and isinstance(item.get('path'), str) and item['path']
+                for item in items), '实际产物集合缺项、重复或后端不符')
+    suffix = '.exe' if report['identity']['target'].endswith('-windows-msvc') else ''
+    expected = {'measurement.xiao', 'measurement.xiaoc'} if report['backend'] == 'vm' else {
+        'measurement.xiao', 'numeric-o0'+suffix, 'numeric-o3'+suffix}
+    names = [item['path'].replace('\\', '/').rsplit('/', 1)[-1] for item in items]
+    require(len(names) == len(expected) and set(names) == expected, '实际产物集合缺项、重复或后端不符')
+    return dict(zip(names, items))
+
+
+def next_repeat(previous):
+    # schema1控制器只依据上个原始时长确定下一批次数；不能另造一个满足增长上限的序列。
+    factor = 16 if previous['seconds'] == 0 else max(2, min(16, math.ceil(0.1/previous['seconds'])))
+    return min(previous['repeats']*factor, 1 << 24)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--report', type=Path, required=True)
@@ -39,6 +64,7 @@ def main():
     parser.add_argument('--catalog', type=Path)
     args = parser.parse_args()
     report = json.loads(args.report.read_text(encoding='utf-8'))
+    actual_artifacts = artifacts(report)
     require(report['complete'] and report['source_unchanged'] and report['passed'], '报告未完成、失败或源码变化')
     require(report['runtime_abi'] == (1 << 16 | 18) and report['codegen'] == 20, '版本边界不符')
     require(report['identity']['rustc'].startswith('rustc 1.96.0'), 'Rust构建版本不符')
@@ -46,7 +72,7 @@ def main():
     require(protocol['batches'] == 5 and protocol['warmup_per_process'] == 1 and protocol['maximum_repeat'] == 1 << 24
             and protocol['minimum_batch_seconds'] == 0.05 and protocol['calibration_target_seconds'] == 0.1
             and protocol['maximum_growth_factor'] == 16 and protocol['memory_limit_bytes'] == 64*1024*1024, 'F-3协议数值漂移')
-    original_root = report['artifacts'][0]['path'].replace('\\', '/').rsplit('/', 1)[0]
+    original_root = actual_artifacts['measurement.xiao']['path'].replace('\\', '/').rsplit('/', 1)[0]
     artifact_root = args.artifacts or Path(original_root)
     for item in report['artifacts']:
         path = local_path(item['path'], original_root, artifact_root)
@@ -64,14 +90,15 @@ def main():
     if args.require_full:
         require(report['full_catalog'] and report['full_catalog_passed'] and report['selected_case'] == report['selected_profile'] == 'all', '子集不可当作全量A6验收')
     medians = {}
+    process_identities = set()
     for row in report['records']:
         require(row['status'] == 'passed' and row['error'] is None and len(row['batches']) == 5, '失败、缺批或不可验证规模')
         case, profile = expected[(row['case'], row['profile'])]
-        require(row['size'] == profile['size'] and row['dimension'] == case['dimension'] and row['complexity'] == case['complexity'], '实际输入族/规模身份不符')
-        times, peaks, pids = [], [], []
+        require(row['size'] == profile['size'] and row['maximum'] == profile['maximum']
+                and row['dimension'] == case['dimension'] and row['complexity'] == case['complexity'], '实际输入族/规模身份不符')
+        times, peaks = [], []
         for index, batch in enumerate(row['batches']):
             require(batch['pid'] > 0 and batch['calibrated'], '缺少真实PID或未完成校准')
-            pids.append(batch['pid'])
             base = memory(batch['baseline'])
             calibration = batch['calibration']
             require(bool(calibration) and calibration[0]['repeats'] == 1 and batch['sample'] == calibration[-1], '正式样本与全部校准记录不符')
@@ -83,6 +110,7 @@ def main():
                 if previous:
                     require(previous['seconds'] < 0.1 and not (previous['repeats'] == 1 and previous['seconds'] >= 0.05)
                             and previous['repeats'] < 1 << 24 and previous['repeats'] < repeats <= min(previous['repeats']*16, 1 << 24), '校准增长或停止条件违反F-3')
+                    require(repeats == next_repeat(previous), '重复次数与原始时长推导的实际校准流程不符')
                 high = max(high, memory(item['memory'])['peak_bytes'])
                 previous = item
             sample = batch['sample']
@@ -101,7 +129,30 @@ def main():
             process_file = stdout.with_name(stdout.name.removesuffix('.stdout.jsonl')+'.process.json')
             process = json.loads(process_file.read_text(encoding='utf-8'))
             require(process['pid'] == batch['pid'] and process['batch'] == index and process['case'] == row['case'] and process['profile'] == row['profile'], '原始进程身份不符')
-        require(len(set(pids)) == 5, '五批不是五个独立PID')
+            relative = f"optimization-{row['optimization']}/{row['case']}-{row['profile']}-batch{index}"
+            expected_stdout = artifact_root/(relative+'.stdout.jsonl')
+            expected_stderr = artifact_root/(relative+'.stderr.log')
+            require(stdout == expected_stdout.resolve()
+                    and local_path(batch['stderr'], original_root, artifact_root) == expected_stderr.resolve()
+                    and isinstance(process.get('stdout'), str) and isinstance(process.get('stderr'), str)
+                    and original_path(process['stdout']) == original_path(batch['stdout'])
+                    and original_path(process['stderr']) == original_path(batch['stderr']), '原始进程输出路径或规模关联不符')
+            started = batch.get('started_unix_nanoseconds')
+            require(type(started) is int and started > 0 and process.get('started_unix_nanoseconds') == str(started), '原始进程启动时间不符')
+            identity = (batch['pid'], started)
+            require(identity not in process_identities, '测量样本重复使用同一次进程')
+            process_identities.add(identity)
+            if report['backend'] == 'vm':
+                executable = report['identity']['worker']['path']
+                expected_args = ['--worker-vm', actual_artifacts['measurement.xiaoc']['path']]
+            else:
+                suffix = '.exe' if report['identity']['target'].endswith('-windows-msvc') else ''
+                executable = actual_artifacts[f"numeric-o{row['optimization']}"+suffix]['path']
+                expected_args = []
+            require(isinstance(process.get('executable'), str) and bool(process['executable'])
+                    and isinstance(executable, str) and bool(executable)
+                    and original_path(process['executable']) == original_path(executable)
+                    and process.get('argv') == expected_args, '原始进程执行文件或参数未绑定实际产物')
         median = statistics.median(times)
         require(times == row['normalized_seconds'] and median == row['median_seconds'] and max(peaks) == row['resident_increment_upper_bytes'], '五批归一化中位数/保守峰值重算不符')
         limit = 10 if report['backend'] == 'vm' else 2

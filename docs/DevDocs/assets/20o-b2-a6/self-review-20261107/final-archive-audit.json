@@ -1,0 +1,57 @@
+{
+  "name": "final-archive-audit",
+  "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "docs/DevDocs/assets/20o-b2-a6/entry-20261107/audit.py"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source",
+  "started_utc": "2026-11-07T04:52:07.119353+00:00",
+  "product_before": {
+    "code_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+    "scope": [
+      "core/rust",
+      "stdlib",
+      "tests/fixtures",
+      "tests/benchmarks",
+      ".github/workflows",
+      ".cargo",
+      "tools",
+      "cli/ts",
+      "docs/UseDocs",
+      "docs/module-registry.json",
+      "package.json",
+      "bun.lock",
+      ".gitattributes"
+    ],
+    "no_product_difference": true
+  },
+  "pid": 22604,
+  "exit_code": 0,
+  "finished_utc": "2026-11-07T04:53:28.607399+00:00",
+  "seconds": 81.09399999999732,
+  "product_after": {
+    "code_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+    "scope": [
+      "core/rust",
+      "stdlib",
+      "tests/fixtures",
+      "tests/benchmarks",
+      ".github/workflows",
+      ".cargo",
+      "tools",
+      "cli/ts",
+      "docs/UseDocs",
+      "docs/module-registry.json",
+      "package.json",
+      "bun.lock",
+      ".gitattributes"
+    ],
+    "no_product_difference": true
+  },
+  "stdout": "final-archive-audit.stdout.log",
+  "stderr": "final-archive-audit.stderr.log",
+  "stdout_sha256": "ed24f3b39e47f257057b7e151d6d6db4fc070cf1afb5904c843ec21afe9a427b",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

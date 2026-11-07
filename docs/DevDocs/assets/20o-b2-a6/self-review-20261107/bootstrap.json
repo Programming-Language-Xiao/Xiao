@@ -1,0 +1,9 @@
+{
+  "entry_commit": "36ec83efd815ff18d74df14c5aabe297317a7cdf",
+  "task_root": "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54",
+  "source_root": "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source",
+  "repository_root": "D:\\project\\Xiao\\Xiao",
+  "branch": "codex/b2-a6-review-20261107-c1f32b9e2f54",
+  "created_utc": "2026-11-07T04:34:16.977191+00:00",
+  "scope": "A6第二轮自审：实现只读复核、归档审计缺口复现与修复，原始样本不改写。"
+}

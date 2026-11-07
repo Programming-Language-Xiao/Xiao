@@ -1,0 +1,60 @@
+{
+  "name": "archive-validation",
+  "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "-u",
+    "docs/DevDocs/assets/20o-b2-a6/entry-20261107/validate-audit.py",
+    "--output",
+    "docs/DevDocs/assets/20o-b2-a6/self-review-20261107/archive-controls"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source",
+  "started_utc": "2026-11-07T04:45:48.359235+00:00",
+  "product_before": {
+    "code_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+    "scope": [
+      "core/rust",
+      "stdlib",
+      "tests/fixtures",
+      "tests/benchmarks",
+      ".github/workflows",
+      ".cargo",
+      "tools",
+      "cli/ts",
+      "docs/UseDocs",
+      "docs/module-registry.json",
+      "package.json",
+      "bun.lock",
+      ".gitattributes"
+    ],
+    "no_product_difference": true
+  },
+  "pid": 28852,
+  "exit_code": 0,
+  "finished_utc": "2026-11-07T04:49:56.836503+00:00",
+  "seconds": 248.0619999999908,
+  "product_after": {
+    "code_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+    "scope": [
+      "core/rust",
+      "stdlib",
+      "tests/fixtures",
+      "tests/benchmarks",
+      ".github/workflows",
+      ".cargo",
+      "tools",
+      "cli/ts",
+      "docs/UseDocs",
+      "docs/module-registry.json",
+      "package.json",
+      "bun.lock",
+      ".gitattributes"
+    ],
+    "no_product_difference": true
+  },
+  "stdout": "archive-validation.stdout.log",
+  "stderr": "archive-validation.stderr.log",
+  "stdout_sha256": "2e0f0ef8ebda2d23946c9ead33c008c3f01e35a4964117451ed0af5c7a91b384",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

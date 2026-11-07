@@ -1,0 +1,10 @@
+{"case": "valid", "passed": true, "exit_code": 0}
+{"case": "false-closeout", "passed": true, "exit_code": 1}
+{"case": "missing-check", "passed": true, "exit_code": 1}
+{"case": "unlocked-cargo", "passed": true, "exit_code": 1}
+{"case": "false-test-count", "passed": true, "exit_code": 1}
+{"case": "aggregate-job-id", "passed": true, "exit_code": 1}
+{"case": "swapped-default-platforms", "passed": true, "exit_code": 1}
+{"case": "maintenance-as-workspace", "passed": true, "exit_code": 1}
+{"case": "cross-platform-report", "passed": true, "exit_code": 1}
+{"case": "wrong-artifact-id", "passed": true, "exit_code": 1}

@@ -17,6 +17,8 @@ parser.add_argument('--output',type=Path,required=True)
 args=parser.parse_args()
 root=args.archive_root.resolve()
 repository=(args.repository_root or root.parents[4]).resolve()
+if args.output.resolve().is_relative_to(root):
+    raise SystemExit('反例输出必须位于原归档之外，避免改变历史清单')
 args.output.mkdir(parents=True,exist_ok=False)
 
 def edit(directory,name,mutate):
@@ -30,6 +32,11 @@ def actual_job(directory):
     run=json.loads((directory/closeout['ci_runs']['default']).read_text())
     edit(directory,closeout['ci_records']['default-vm'],lambda r:r.update(job_id=run['id']))
 
+def swapped_platforms(closeout):
+    records=closeout['ci_records']
+    records['default-windows'],records['default-linux']=records['default-linux'],records['default-windows']
+
+
 cases=[
  ('valid',None,None),
  ('false-closeout',lambda d:edit(d,'closeout.json',lambda r:r.update(passed=False)),'A6尚未有效收口'),
@@ -37,6 +44,8 @@ cases=[
  ('unlocked-cargo',lambda d:edit(d,'a6-resources-decimal.json',lambda r:r['argv'].remove('--locked')),'A6实际Cargo命令偏离执行点：a6-resources-decimal'),
  ('false-test-count',lambda d:edit(d,'checks.json',lambda r:r['test_counts']['a6-resources-decimal'][0].__setitem__(0,99)),'A6精确入口或计数契约漂移'),
  ('aggregate-job-id',actual_job,'实际日志作业被聚合作业ID替代或缺失'),
+ ('swapped-default-platforms',lambda d:edit(d,'closeout.json',swapped_platforms),'CI平台角色与实际作业名称不符'),
+ ('maintenance-as-workspace',lambda d:edit(d,'closeout.json',lambda r:r['ci_runs'].update(workspace=r['ci_runs']['performance'])),'CI工作流角色或触发方式不符：workspace'),
  ('cross-platform-report',lambda d:edit(d,'closeout.json',lambda r:r['performance'].__setitem__('ci-macos',copy.deepcopy(r['performance']['ci-windows']))),'性能报告平台或实际编译器宿主不符'),
  ('wrong-artifact-id',lambda d:edit(d,'closeout.json',lambda r:r['performance']['ci-vm'].update(artifact_id=0)),'性能ZIP没有唯一的实际CI产物ID'),
 ]
@@ -44,7 +53,7 @@ results=[]
 with tempfile.TemporaryDirectory(prefix='a6-source-audit-review-') as temporary:
     for name,mutate,expected in cases:
         directory=Path(temporary)/name
-        shutil.copytree(root,directory,ignore=shutil.ignore_patterns(args.output.name,'__pycache__'))
+        shutil.copytree(root,directory,ignore=shutil.ignore_patterns('__pycache__'))
         if mutate: mutate(directory)
         prefix=[sys.executable,'-X','utf8',str(root/'audit.py'),'--archive-root',str(directory),'--repository-root',str(repository)]
         manifest=subprocess.run([*prefix,'--manifest'],capture_output=True)

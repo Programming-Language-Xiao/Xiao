@@ -267,6 +267,12 @@ def main():
     for role,path in closeout['ci_runs'].items():
         run=read(path)
         require(run['head_sha']==commit and run['status']=='completed' and run['conclusion']=='success', 'A6代码CI未通过：'+role)
+        workflow={
+            'workspace':('Xiao workspace gates','.github/workflows/workspace-gates.yml','push'),
+            'default':('Xiao maintenance regression','.github/workflows/maintenance-regression.yml','push'),
+            'performance':('Xiao maintenance regression','.github/workflows/maintenance-regression.yml','workflow_dispatch'),
+        }[role]
+        require((run['name'],run['path'],run['event'])==workflow, 'CI工作流角色或触发方式不符：'+role)
     require(set(closeout['ci_records'])=={'default-vm','default-windows','default-linux','default-macos','perf-vm','perf-windows','perf-linux','perf-macos'}, 'A6实际日志作业清单缺项')
     performance_logs={}
     for role,path in closeout['ci_records'].items():
@@ -274,8 +280,15 @@ def main():
         group='performance' if role.startswith('perf-') else 'default'
         run=read(closeout['ci_runs'][group]); jobs=read(closeout['ci_jobs'][group])['jobs']
         require(type(record.get('job_id')) is int and record['job_id']>0, '实际日志作业被聚合作业ID替代或缺失')
-        log=common.origin_job(record,jobs,commit,run)
         platform=role.rsplit('-',1)[-1]
+        expected_name={
+            'vm':'Rust workspace default tests (Linux)',
+            'windows':'Native differential regression (Windows)',
+            'linux':'Native differential regression (Linux)',
+            'macos':'Native differential regression (macOS)',
+        }[platform]
+        require(record['job_name']==expected_name, 'CI平台角色与实际作业名称不符')
+        log=common.origin_job(record,jobs,commit,run)
         target='b1_capabilities_have_vm_golden_outputs' if platform=='vm' else 'b1_capabilities_match_native_golden_outputs'
         common.markers(common.exact_section(log,target),common.expected_markers()['vm' if platform=='vm' else 'native'])
         if group=='performance':

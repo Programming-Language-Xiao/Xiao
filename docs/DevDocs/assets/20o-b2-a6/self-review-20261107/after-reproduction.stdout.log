@@ -1,0 +1,4 @@
+{"case": "missing-executable-hashes", "verification_passed": true, "exit_code": 1}
+{"case": "foreign-process-executable", "verification_passed": true, "exit_code": 1}
+{"case": "swapped-default-platforms", "verification_passed": true, "exit_code": 1}
+{"case": "maintenance-as-workspace", "verification_passed": true, "exit_code": 1}

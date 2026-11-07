@@ -1,0 +1,226 @@
+{
+  "passed": true,
+  "scope": "实际错误全文匹配；临时副本重新生成清单后进入语义审计",
+  "cases": [
+    {
+      "case": "valid",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-source-audit-review-zfqhchox\\valid",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source"
+      ],
+      "started_utc": "2026-11-07T04:45:50.829105+00:00",
+      "exit_code": 0,
+      "expected_error": null,
+      "actual_error": "",
+      "stdout": "valid.stdout.log",
+      "stderr": "valid.stderr.log",
+      "stdout_sha256": "ed24f3b39e47f257057b7e151d6d6db4fc070cf1afb5904c843ec21afe9a427b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "false-closeout",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-source-audit-review-zfqhchox\\false-closeout",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source"
+      ],
+      "started_utc": "2026-11-07T04:47:17.028663+00:00",
+      "exit_code": 1,
+      "expected_error": "A6尚未有效收口",
+      "actual_error": "A6尚未有效收口\r\n",
+      "stdout": "false-closeout.stdout.log",
+      "stderr": "false-closeout.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "384d53bcdae4c1d1e553cd1984e817b0c97ca8880f95fe6dcdc846a085885ea3"
+    },
+    {
+      "case": "missing-check",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-source-audit-review-zfqhchox\\missing-check",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source"
+      ],
+      "started_utc": "2026-11-07T04:47:19.812747+00:00",
+      "exit_code": 1,
+      "expected_error": "A6有效检查清单缺项/重复",
+      "actual_error": "A6有效检查清单缺项/重复\r\n",
+      "stdout": "missing-check.stdout.log",
+      "stderr": "missing-check.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e78a47bf44659282b0c34a95ef15e48e38c2f3347dcdb47e8f85303b7b77cc15"
+    },
+    {
+      "case": "unlocked-cargo",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-source-audit-review-zfqhchox\\unlocked-cargo",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source"
+      ],
+      "started_utc": "2026-11-07T04:47:25.112871+00:00",
+      "exit_code": 1,
+      "expected_error": "A6实际Cargo命令偏离执行点：a6-resources-decimal",
+      "actual_error": "A6实际Cargo命令偏离执行点：a6-resources-decimal\r\n",
+      "stdout": "unlocked-cargo.stdout.log",
+      "stderr": "unlocked-cargo.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "237669902d6b8a4556c7552bb3f3ff5ba9e977927210cb79861cacff0c24d934"
+    },
+    {
+      "case": "false-test-count",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-source-audit-review-zfqhchox\\false-test-count",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source"
+      ],
+      "started_utc": "2026-11-07T04:47:30.515364+00:00",
+      "exit_code": 1,
+      "expected_error": "A6精确入口或计数契约漂移",
+      "actual_error": "A6精确入口或计数契约漂移\r\n",
+      "stdout": "false-test-count.stdout.log",
+      "stderr": "false-test-count.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "f5dfdb5454bde9903d5b039acfed641ea623d7b4a3fc2bc45b46c86cd0143d23"
+    },
+    {
+      "case": "aggregate-job-id",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-source-audit-review-zfqhchox\\aggregate-job-id",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source"
+      ],
+      "started_utc": "2026-11-07T04:47:35.936137+00:00",
+      "exit_code": 1,
+      "expected_error": "实际日志作业被聚合作业ID替代或缺失",
+      "actual_error": "实际日志作业被聚合作业ID替代或缺失\r\n",
+      "stdout": "aggregate-job-id.stdout.log",
+      "stderr": "aggregate-job-id.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "46e4e79a0c4ddd918581f4427fe8c34c7fcf31e8cd89bcd0849a8674d051795d"
+    },
+    {
+      "case": "swapped-default-platforms",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-source-audit-review-zfqhchox\\swapped-default-platforms",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source"
+      ],
+      "started_utc": "2026-11-07T04:47:41.565936+00:00",
+      "exit_code": 1,
+      "expected_error": "CI平台角色与实际作业名称不符",
+      "actual_error": "CI平台角色与实际作业名称不符\r\n",
+      "stdout": "swapped-default-platforms.stdout.log",
+      "stderr": "swapped-default-platforms.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "da7aef784677e74897a3ec9f11cec74a4f890a846e358e58109217d245b16cd5"
+    },
+    {
+      "case": "maintenance-as-workspace",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-source-audit-review-zfqhchox\\maintenance-as-workspace",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source"
+      ],
+      "started_utc": "2026-11-07T04:47:47.472272+00:00",
+      "exit_code": 1,
+      "expected_error": "CI工作流角色或触发方式不符：workspace",
+      "actual_error": "CI工作流角色或触发方式不符：workspace\r\n",
+      "stdout": "maintenance-as-workspace.stdout.log",
+      "stderr": "maintenance-as-workspace.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "bb7208c149020cea58c4a7fbea5f858dc8bf69025651ce43e9d64e60c8e91742"
+    },
+    {
+      "case": "cross-platform-report",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-source-audit-review-zfqhchox\\cross-platform-report",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source"
+      ],
+      "started_utc": "2026-11-07T04:47:53.447715+00:00",
+      "exit_code": 1,
+      "expected_error": "性能报告平台或实际编译器宿主不符",
+      "actual_error": "性能报告平台或实际编译器宿主不符\r\n",
+      "stdout": "cross-platform-report.stdout.log",
+      "stderr": "cross-platform-report.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d3e37c26247ef15a499384e9cd07693e439dd07e7ad0147e27b85db81907b078"
+    },
+    {
+      "case": "wrong-artifact-id",
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-source-audit-review-zfqhchox\\wrong-artifact-id",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source"
+      ],
+      "started_utc": "2026-11-07T04:49:16.996150+00:00",
+      "exit_code": 1,
+      "expected_error": "性能ZIP没有唯一的实际CI产物ID",
+      "actual_error": "性能ZIP没有唯一的实际CI产物ID\r\n",
+      "stdout": "wrong-artifact-id.stdout.log",
+      "stderr": "wrong-artifact-id.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "560c72899f3b3b15d13ee67a283dae80c7b29f3a1c2a7d284ed1a3af2147dae1"
+    }
+  ]
+}

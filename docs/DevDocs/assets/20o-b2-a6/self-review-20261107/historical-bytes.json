@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "original_file_count": 732,
+  "changed_original_files": [
+    "README.md",
+    "audit.py",
+    "validate-audit.py",
+    "verify-negative-cases.py",
+    "verify-performance.py"
+  ],
+  "scope": "仅审计工具及复跑说明；所有测量/CI原件、历史结果、源码清单、ZIP逐字节未变",
+  "entry_evidence_sha256": "0624dd51f8902cf56978962066fc001a4ede95f64bdb63c1dae39118ddace7a4"
+}

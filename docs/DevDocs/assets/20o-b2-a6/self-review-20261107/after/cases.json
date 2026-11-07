@@ -1,0 +1,101 @@
+{
+  "phase": "after",
+  "passed": true,
+  "scope": "原件临时副本；before确认误接受，after核对指定实际拒绝文本",
+  "cases": [
+    {
+      "case": "missing-executable-hashes",
+      "phase": "after",
+      "verification_passed": true,
+      "started_utc": "2026-11-07T04:43:53.482116+00:00",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\verify-performance.py",
+        "--report",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-review-report-v2jbuu8f\\omit-artifact.json",
+        "--artifacts",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-review-report-v2jbuu8f\\artifacts",
+        "--require-full"
+      ],
+      "exit_code": 1,
+      "expected_after_error": "实际产物集合缺项、重复或后端不符",
+      "actual_error": "实际产物集合缺项、重复或后端不符",
+      "stdout": "missing-executable-hashes.stdout.log",
+      "stderr": "missing-executable-hashes.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "10868e332b93a75b072df9b17be0476e73d84b3a58d5e4fcee3d17aadb10a8ef"
+    },
+    {
+      "case": "foreign-process-executable",
+      "phase": "after",
+      "verification_passed": true,
+      "started_utc": "2026-11-07T04:43:53.649114+00:00",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\verify-performance.py",
+        "--report",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-review-report-v2jbuu8f\\report.json",
+        "--artifacts",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-review-report-v2jbuu8f\\artifacts",
+        "--require-full"
+      ],
+      "exit_code": 1,
+      "expected_after_error": "原始进程执行文件或参数未绑定实际产物",
+      "actual_error": "原始进程执行文件或参数未绑定实际产物",
+      "stdout": "foreign-process-executable.stdout.log",
+      "stderr": "foreign-process-executable.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "0b8317861068691930f4a13119703face4902f7c1570a4bf061380c79d90a2ba"
+    },
+    {
+      "case": "swapped-default-platforms",
+      "phase": "after",
+      "verification_passed": true,
+      "started_utc": "2026-11-07T04:43:59.201846+00:00",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-review-archive-ew4_p36w\\archive",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source"
+      ],
+      "exit_code": 1,
+      "expected_after_error": "CI平台角色与实际作业名称不符",
+      "actual_error": "CI平台角色与实际作业名称不符",
+      "stdout": "swapped-default-platforms.stdout.log",
+      "stderr": "swapped-default-platforms.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "da7aef784677e74897a3ec9f11cec74a4f890a846e358e58109217d245b16cd5"
+    },
+    {
+      "case": "maintenance-as-workspace",
+      "phase": "after",
+      "verification_passed": true,
+      "started_utc": "2026-11-07T04:44:05.670068+00:00",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\audit.py",
+        "--archive-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\run-temp\\a6-review-archive-d8qlk_zc\\archive",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source"
+      ],
+      "exit_code": 1,
+      "expected_after_error": "CI工作流角色或触发方式不符：workspace",
+      "actual_error": "CI工作流角色或触发方式不符：workspace",
+      "stdout": "maintenance-as-workspace.stdout.log",
+      "stderr": "maintenance-as-workspace.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "bb7208c149020cea58c4a7fbea5f858dc8bf69025651ce43e9d64e60c8e91742"
+    }
+  ]
+}

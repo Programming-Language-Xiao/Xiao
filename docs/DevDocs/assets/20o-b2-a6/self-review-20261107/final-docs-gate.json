@@ -1,0 +1,56 @@
+{
+  "name": "final-docs-gate",
+  "argv": [
+    "bun",
+    "tools/repo-check/src/cli.ts",
+    "all"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source",
+  "started_utc": "2026-11-07T04:55:31.474510+00:00",
+  "product_before": {
+    "code_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+    "scope": [
+      "core/rust",
+      "stdlib",
+      "tests/fixtures",
+      "tests/benchmarks",
+      ".github/workflows",
+      ".cargo",
+      "tools",
+      "cli/ts",
+      "docs/UseDocs",
+      "docs/module-registry.json",
+      "package.json",
+      "bun.lock",
+      ".gitattributes"
+    ],
+    "no_product_difference": true
+  },
+  "pid": 64820,
+  "exit_code": 0,
+  "finished_utc": "2026-11-07T04:56:17.040224+00:00",
+  "seconds": 45.28100000000268,
+  "product_after": {
+    "code_commit": "e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6",
+    "scope": [
+      "core/rust",
+      "stdlib",
+      "tests/fixtures",
+      "tests/benchmarks",
+      ".github/workflows",
+      ".cargo",
+      "tools",
+      "cli/ts",
+      "docs/UseDocs",
+      "docs/module-registry.json",
+      "package.json",
+      "bun.lock",
+      ".gitattributes"
+    ],
+    "no_product_difference": true
+  },
+  "stdout": "final-docs-gate.stdout.log",
+  "stderr": "final-docs-gate.stderr.log",
+  "stdout_sha256": "46021a87622e962c2b03a29aafaebaad4e11721a10a81f03f961e8f2aa78ea93",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

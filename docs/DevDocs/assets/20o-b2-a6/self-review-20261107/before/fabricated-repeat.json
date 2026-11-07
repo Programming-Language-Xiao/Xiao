@@ -1,0 +1,7 @@
+{
+  "case": "fabricated-repeat",
+  "exit_code": 0,
+  "actual_error": "",
+  "accepted": true,
+  "expected_after_error": "重复次数与原始时长推导的实际校准流程不符"
+}

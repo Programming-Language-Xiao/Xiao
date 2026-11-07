@@ -1,0 +1,101 @@
+{
+  "phase": "before",
+  "passed": true,
+  "scope": "原件临时副本；before确认误接受，after核对指定实际拒绝文本",
+  "cases": [
+    {
+      "case": "missing-executable-hashes",
+      "phase": "before",
+      "verification_passed": true,
+      "started_utc": "2026-11-07T04:35:51.382039+00:00",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\verify-performance.py",
+        "--report",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\a6-review-report-vzf7run_\\omit-artifact.json",
+        "--artifacts",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\a6-review-report-vzf7run_\\artifacts",
+        "--require-full"
+      ],
+      "exit_code": 0,
+      "expected_after_error": "实际产物集合缺项、重复或后端不符",
+      "actual_error": "",
+      "stdout": "missing-executable-hashes.stdout.log",
+      "stderr": "missing-executable-hashes.stderr.log",
+      "stdout_sha256": "6205cc713bdd7b57bc3e652392c3c3fc9c8ba53c2f728143ea8df372ad3e47da",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "foreign-process-executable",
+      "phase": "before",
+      "verification_passed": true,
+      "started_utc": "2026-11-07T04:35:53.968042+00:00",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\verify-performance.py",
+        "--report",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\a6-review-report-vzf7run_\\report.json",
+        "--artifacts",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\a6-review-report-vzf7run_\\artifacts",
+        "--require-full"
+      ],
+      "exit_code": 0,
+      "expected_after_error": "原始进程执行文件或参数未绑定实际产物",
+      "actual_error": "",
+      "stdout": "foreign-process-executable.stdout.log",
+      "stderr": "foreign-process-executable.stderr.log",
+      "stdout_sha256": "6205cc713bdd7b57bc3e652392c3c3fc9c8ba53c2f728143ea8df372ad3e47da",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "swapped-default-platforms",
+      "phase": "before",
+      "verification_passed": true,
+      "started_utc": "2026-11-07T04:36:00.828155+00:00",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\audit.py",
+        "--archive-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\a6-review-archive-y9nu_o8j\\archive",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source"
+      ],
+      "exit_code": 0,
+      "expected_after_error": "CI平台角色与实际作业名称不符",
+      "actual_error": "",
+      "stdout": "swapped-default-platforms.stdout.log",
+      "stderr": "swapped-default-platforms.stderr.log",
+      "stdout_sha256": "ed24f3b39e47f257057b7e151d6d6db4fc070cf1afb5904c843ec21afe9a427b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "maintenance-as-workspace",
+      "phase": "before",
+      "verification_passed": true,
+      "started_utc": "2026-11-07T04:37:32.829629+00:00",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source\\docs\\DevDocs\\assets\\20o-b2-a6\\entry-20261107\\audit.py",
+        "--archive-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\a6-review-archive-xrgv0mj2\\archive",
+        "--repository-root",
+        "D:\\project\\Xiao\\.a6-self-review\\20261107-c1f32b9e2f54\\source"
+      ],
+      "exit_code": 0,
+      "expected_after_error": "CI工作流角色或触发方式不符：workspace",
+      "actual_error": "",
+      "stdout": "maintenance-as-workspace.stdout.log",
+      "stderr": "maintenance-as-workspace.stderr.log",
+      "stdout_sha256": "ed24f3b39e47f257057b7e151d6d6db4fc070cf1afb5904c843ec21afe9a427b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
