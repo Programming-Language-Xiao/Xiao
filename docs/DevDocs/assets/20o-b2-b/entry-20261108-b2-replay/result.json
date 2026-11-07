@@ -1,0 +1,49 @@
+{
+  "passed": true,
+  "archive_commit": "f37e3f4c663c7b3165845b4c57de0d7020f1580b",
+  "archive_argv": [
+    "cmd",
+    "/c",
+    "git",
+    "archive",
+    "--format=tar",
+    "f37e3f4c663c7b3165845b4c57de0d7020f1580b",
+    "--",
+    "docs/DevDocs/assets/20o-b2-b/entry-20261108-b2"
+  ],
+  "archive_sha256": "c42d0bf4051c3896cd93b6752c96afd76b73cf90c891e4fec3a073ff846b1ed1",
+  "local": {
+    "argv": [
+      "D:\\Programs\\Python\\Python312\\python.exe",
+      "-X",
+      "utf8",
+      "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b2\\audit.py",
+      "--root",
+      "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b2",
+      "--source-root",
+      "D:\\project\\Xiao\\Xiao"
+    ],
+    "cwd": "D:\\project\\Xiao\\Xiao",
+    "exit_code": 0,
+    "output": "{\"passed\": true, \"files\": 99, \"checks\": 14, \"exact_checks\": 4, \"code_commit\": \"37b92c5338274121afe98320d4e076620744449f\", \"abi\": \"1.18\", \"codegen\": 20, \"max_active_intrinsic\": 33, \"scope\": \"B2内部单入口\"}",
+    "read_only": true,
+    "passed": true
+  },
+  "git_export": {
+    "argv": [
+      "D:\\Programs\\Python\\Python312\\python.exe",
+      "-X",
+      "utf8",
+      "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b2\\audit.py",
+      "--root",
+      "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-git-replay-8ew3vz9b\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b2",
+      "--source-root",
+      "D:\\project\\Xiao\\Xiao"
+    ],
+    "cwd": "D:\\project\\Xiao\\Xiao",
+    "exit_code": 0,
+    "output": "{\"passed\": true, \"files\": 99, \"checks\": 14, \"exact_checks\": 4, \"code_commit\": \"37b92c5338274121afe98320d4e076620744449f\", \"abi\": \"1.18\", \"codegen\": 20, \"max_active_intrinsic\": 33, \"scope\": \"B2内部单入口\"}",
+    "read_only": true,
+    "passed": true
+  }
+}
