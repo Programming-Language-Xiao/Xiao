@@ -1,6 +1,6 @@
 {
   "scope": "仅audit-repair-20261108本目录最终文件；清单自身不计入自身摘要",
-  "file_count": 4,
+  "file_count": 5,
   "files": [
     {
       "path": ".gitattributes",
@@ -8,19 +8,24 @@
       "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
     },
     {
+      "path": "checkout-byte-recovery.json",
+      "bytes": 1959,
+      "sha256": "c4cb4d4dbcdea35816654d6d1a9f9ca53a3e07663b3a342c888518b41a8ea092"
+    },
+    {
       "path": "README.md",
-      "bytes": 1684,
-      "sha256": "2f46829797248c502574179356fd3114e893cc726df5d5f9f697e44515e979d4"
+      "bytes": 2196,
+      "sha256": "b1b3c23532832620bd76b37624a65e693ed52856fc7e416f6931698ebe41b3bd"
     },
     {
       "path": "result.json",
-      "bytes": 11134,
-      "sha256": "01399f9f4219c13a085de26a4f9f27f2d68464743a6140a79e35b3b069b14f10"
+      "bytes": 12246,
+      "sha256": "1a8af40886af7bb0e9d4b727fa433a338508d04318919a2a3915066970b9d840"
     },
     {
       "path": "verify-replay.py",
-      "bytes": 5337,
-      "sha256": "f238368bdcd544e86353d6a8a47869e58c524da8bd9c14a323a8b5d603890427"
+      "bytes": 6488,
+      "sha256": "92f9bfdcd1e82f71cbb1f6bc973687a09b9331405dafeffd4054f65a446ef487"
     }
   ]
 }

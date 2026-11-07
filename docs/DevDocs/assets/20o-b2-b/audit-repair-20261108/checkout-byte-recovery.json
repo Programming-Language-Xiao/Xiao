@@ -1,0 +1,41 @@
+{
+  "source_head_before_recovery": "1fbe1deacf02145128e71a59af585dbf999e711f",
+  "manifest_rebuilt": false,
+  "failed_audit": {
+    "exit_code": 1,
+    "output": "B0证据清单或摘要不符"
+  },
+  "restored_audit": {
+    "exit_code": 0,
+    "output": "{\"passed\": 18, \"total\": 18, \"files\": 48, \"baseline_commit\": \"d08b8460f1941fb82f4ce36b38359fc2ba448f33\", \"planned_entry_commit\": \"e596cea8\"}"
+  },
+  "files": [
+    {
+      "path": "docs/DevDocs/assets/20o-b2-b/entry-20261107/b0-b1-guards.log",
+      "source": "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107\\b0-b1-guards.log",
+      "old_bytes": 252,
+      "old_sha256": "3ebd31222fd4bf61ffae5b108cb66ca2ad78cd67c167bb7fadf33cdc5c3fe6ab",
+      "restored_bytes": 257,
+      "restored_sha256": "f1989d9ff46131346568a5bd9d0e18fb3ac5efc7d3d6cf4ae0012862e3c5d579",
+      "only_crlf_difference": true
+    },
+    {
+      "path": "docs/DevDocs/assets/20o-b2-b/entry-20261107/bootstrap.json",
+      "source": "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107\\bootstrap.json",
+      "old_bytes": 475,
+      "old_sha256": "ed453c979623bd1d65a515c5766fd9f6f9bcc84ed4f47a1f66d55a1591478929",
+      "restored_bytes": 485,
+      "restored_sha256": "c612f064c2dd3998761c58816f55c03a64aff5b70e4d3aa9793d59da022e994e",
+      "only_crlf_difference": true
+    },
+    {
+      "path": "docs/DevDocs/assets/20o-b2-b/entry-20261107/environment.json",
+      "source": "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107\\environment.json",
+      "old_bytes": 6884,
+      "old_sha256": "feca9c2843066d5ca641d73c66eac92f193ee0c37a96f72c333925cf38d7728a",
+      "restored_bytes": 6920,
+      "restored_sha256": "c8b9b9b7fcfa401ee045954245f1d2483ef0198fd4ba3cf3f7b37f1b78930d11",
+      "only_crlf_difference": true
+    }
+  ]
+}

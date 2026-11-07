@@ -2,6 +2,7 @@
 
 import argparse
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -9,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tarfile
 
 
 ROOT = Path(__file__).resolve().parent
@@ -49,15 +51,21 @@ def main(source, output):
         if expected_reason is not None:
             passed = process.returncode == 1 and text == expected_reason
         elif self_result is not None:
-            parsed = json.loads(text)
-            passed = process.returncode == (0 if self_result else 1) and parsed["passed"] is self_result
+            try:
+                parsed = json.loads(text)
+            except json.JSONDecodeError:
+                parsed = {}
+            passed = process.returncode == (0 if self_result else 1) and parsed.get("passed") is self_result
             if self_result:
                 passed = passed and parsed["tampered_manifest_output"] == spec["expected_reason"]
                 passed = passed and parsed["missing_gitattributes_output"] == spec["missing_gitattributes_reason"]
         else:
-            parsed = json.loads(text)
-            passed = (process.returncode == 0 and parsed["passed"] == parsed["total"] == 18
-                      and parsed["files"] == (48 if evidence == b0 else 28))
+            try:
+                parsed = json.loads(text)
+            except json.JSONDecodeError:
+                parsed = {}
+            passed = (process.returncode == 0 and parsed.get("passed") == parsed.get("total") == 18
+                      and parsed.get("files") == (48 if script.parent == b0 else 28))
         records.append({"name": name, "argv": argv, "cwd": str(source), "python_mode": mode,
                         "exit_code": process.returncode, "output": text, "read_only": read_only,
                         "passed": passed and read_only})
@@ -67,6 +75,19 @@ def main(source, output):
             run(f"{label}-replay-{attempt}", evidence / "audit.py", evidence)
     for mode in ("cp936", "utf8"):
         run(f"b1-self-negative-{mode}", b1 / "self-negative.py", b1, mode=mode, self_result=True)
+
+    archive_commit = subprocess.check_output(["cmd", "/c", "git", "rev-parse", "HEAD"], cwd=source, text=True).strip()
+    archive_argv = ["cmd", "/c", "git", "archive", "--format=tar", archive_commit, "--",
+                    "docs/DevDocs/assets/20o-b2-b/entry-20261107",
+                    "docs/DevDocs/assets/20o-b2-b/entry-20261108-b1"]
+    archive = subprocess.check_output(archive_argv, cwd=source)
+    with tempfile.TemporaryDirectory(prefix="xiao-b0-b1-git-export-") as temporary:
+        export_root = Path(temporary).resolve()
+        with tarfile.open(fileobj=io.BytesIO(archive), mode="r:") as stream:
+            stream.extractall(export_root, filter="data")
+        for label, evidence in [("b0", b0), ("b1", b1)]:
+            copied = export_root / "docs/DevDocs/assets/20o-b2-b" / evidence.name
+            run(f"{label}-git-export", evidence / "audit.py", copied)
 
     with tempfile.TemporaryDirectory(prefix="xiao-b0-audit-repair-") as temporary:
         task_root = Path(temporary).resolve()
@@ -90,10 +111,11 @@ def main(source, output):
 
     final = {"b0": snapshot(b0), "b1": snapshot(b1)}
     result = {
-        "passed": len(records) == 9 and all(record["passed"] for record in records) and initial == final,
+        "passed": len(records) == 11 and all(record["passed"] for record in records) and initial == final,
         "checks": len(records),
         "source_root": str(source),
         "source_head": subprocess.check_output(["cmd", "/c", "git", "rev-parse", "HEAD"], cwd=source, text=True).strip(),
+        "archive_argv": archive_argv,
         "evidence_unchanged": initial == final,
         "audit_sha256": {"b0": initial["b0"]["audit.py"]["sha256"], "b1": initial["b1"]["audit.py"]["sha256"]},
         "records": records,

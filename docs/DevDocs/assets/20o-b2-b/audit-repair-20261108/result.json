@@ -1,8 +1,19 @@
 {
   "passed": true,
-  "checks": 9,
+  "checks": 11,
   "source_root": "D:\\project\\Xiao\\Xiao",
-  "source_head": "e5039bbac7c53cba8ed666e93095796e5fc46fca",
+  "source_head": "a2e06bb7e2f531e8fc62a228e8c744272012a72a",
+  "archive_argv": [
+    "cmd",
+    "/c",
+    "git",
+    "archive",
+    "--format=tar",
+    "a2e06bb7e2f531e8fc62a228e8c744272012a72a",
+    "--",
+    "docs/DevDocs/assets/20o-b2-b/entry-20261107",
+    "docs/DevDocs/assets/20o-b2-b/entry-20261108-b1"
+  ],
   "evidence_unchanged": true,
   "audit_sha256": {
     "b0": "698f8f93e097455932ff83d3162c17523a4d116f3e9f4f3ed03dcfe12056ed1d",
@@ -15,9 +26,9 @@
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107\\audit.py",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -34,9 +45,9 @@
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107\\audit.py",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -53,9 +64,9 @@
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1\\audit.py",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -72,9 +83,9 @@
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1\\audit.py",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -91,9 +102,9 @@
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-X",
         "utf8=0",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1\\self-negative.py",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1\\self-negative.py",
         "--root",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -110,9 +121,9 @@
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1\\self-negative.py",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1\\self-negative.py",
         "--root",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -124,14 +135,52 @@
       "passed": true
     },
     {
+      "name": "b0-git-export",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107\\audit.py",
+        "--root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-b1-git-export-wc0nki6u\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "python_mode": "utf8",
+      "exit_code": 0,
+      "output": "{\"passed\": 18, \"total\": 18, \"files\": 48, \"baseline_commit\": \"d08b8460f1941fb82f4ce36b38359fc2ba448f33\", \"planned_entry_commit\": \"e596cea8\"}",
+      "read_only": true,
+      "passed": true
+    },
+    {
+      "name": "b1-git-export",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1\\audit.py",
+        "--root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-b1-git-export-wc0nki6u\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "python_mode": "utf8",
+      "exit_code": 0,
+      "output": "{\"passed\": 18, \"total\": 18, \"files\": 28, \"baseline_commit\": \"d08b8460\", \"code_commit\": \"35872782\", \"source_manifest\": \"source-manifests/8a3d7472ccaf8bb0a25d6731c8e852d770ef03d4f0267476956a974f2f0b7cc8.json\"}",
+      "read_only": true,
+      "passed": true
+    },
+    {
       "name": "b0-tampered-manifest",
       "argv": [
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107\\audit.py",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107\\audit.py",
         "--root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-audit-repair-6x4po461\\evidence",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-audit-repair-2oma0gxq\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -148,9 +197,9 @@
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107\\audit.py",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107\\audit.py",
         "--root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-audit-repair-6x4po461\\evidence",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-audit-repair-2oma0gxq\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -167,18 +216,18 @@
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1\\self-negative.py",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1\\self-negative.py",
         "--root",
-        "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1",
         "--source-root",
         "D:\\project\\Xiao\\Xiao",
         "--source-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-audit-repair-6x4po461\\non-repository"
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-audit-repair-2oma0gxq\\non-repository"
       ],
       "cwd": "D:\\project\\Xiao\\Xiao",
       "python_mode": "utf8",
       "exit_code": 1,
-      "output": "{\"source_root\": \"C:\\\\Users\\\\xiaoc\\\\AppData\\\\Local\\\\Temp\\\\xiao-b0-audit-repair-6x4po461\\\\non-repository\", \"baseline_exit_code\": 1, \"tampered_manifest_exit_code\": 1, \"missing_gitattributes_exit_code\": 1, \"baseline_output\": \"fatal: not a git repository (or any of the parent directories): .git\\nTraceback (most recent call last):\\n  File \\\"D:\\\\project\\\\Xiao\\\\.b2b-kickoff\\\\20261107-8efa782a1f12\\\\source\\\\docs\\\\DevDocs\\\\assets\\\\20o-b2-b\\\\entry-20261108-b1\\\\audit.py\\\", line 302, in <module>\\n    main()\\n  File \\\"D:\\\\project\\\\Xiao\\\\.b2b-kickoff\\\\20261107-8efa782a1f12\\\\source\\\\docs\\\\DevDocs\\\\assets\\\\20o-b2-b\\\\entry-20261108-b1\\\\audit.py\\\", line 239, in main\\n    baseline = git(\\\"rev-parse\\\", \\\"--verify\\\", BASELINE_COMMIT)[0]\\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"D:\\\\project\\\\Xiao\\\\.b2b-kickoff\\\\20261107-8efa782a1f12\\\\source\\\\docs\\\\DevDocs\\\\assets\\\\20o-b2-b\\\\entry-20261108-b1\\\\audit.py\\\", line 67, in git\\n    return subprocess.check_output([\\\"cmd\\\", \\\"/c\\\", \\\"git\\\", *args], cwd=SOURCE, text=True).splitlines()\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"D:\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\subprocess.py\\\", line 466, in check_output\\n    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"D:\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\subprocess.py\\\", line 571, in run\\n    raise CalledProcessError(retcode, process.args,\\nsubprocess.CalledProcessError: Command '['cmd', '/c', 'git', 'rev-parse', '--verify', 'd08b8460']' returned non-zero exit status 128.\", \"tampered_manifest_output\": \"evidence.json \\u4e0e\\u5b9e\\u9645\\u8bc1\\u636e\\u6587\\u4ef6\\u4e0d\\u4e00\\u81f4\", \"missing_gitattributes_output\": \"\\u6700\\u7ec8\\u8bc1\\u636e\\u7f3a\\u5c11\\u5b9a\\u7a3f\\u6587\\u4ef6\", \"read_only\": {\"baseline\": true, \"tampered_manifest\": true, \"missing_gitattributes\": true}, \"expected\": {\"baseline\": 0, \"tampered_manifest\": 1, \"missing_gitattributes\": 1}, \"passed\": false}",
+      "output": "{\"source_root\": \"C:\\\\Users\\\\xiaoc\\\\AppData\\\\Local\\\\Temp\\\\xiao-b0-audit-repair-2oma0gxq\\\\non-repository\", \"baseline_exit_code\": 1, \"tampered_manifest_exit_code\": 1, \"missing_gitattributes_exit_code\": 1, \"baseline_output\": \"fatal: not a git repository (or any of the parent directories): .git\\nTraceback (most recent call last):\\n  File \\\"D:\\\\project\\\\Xiao\\\\Xiao\\\\docs\\\\DevDocs\\\\assets\\\\20o-b2-b\\\\entry-20261108-b1\\\\audit.py\\\", line 302, in <module>\\n    main()\\n  File \\\"D:\\\\project\\\\Xiao\\\\Xiao\\\\docs\\\\DevDocs\\\\assets\\\\20o-b2-b\\\\entry-20261108-b1\\\\audit.py\\\", line 239, in main\\n    baseline = git(\\\"rev-parse\\\", \\\"--verify\\\", BASELINE_COMMIT)[0]\\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"D:\\\\project\\\\Xiao\\\\Xiao\\\\docs\\\\DevDocs\\\\assets\\\\20o-b2-b\\\\entry-20261108-b1\\\\audit.py\\\", line 67, in git\\n    return subprocess.check_output([\\\"cmd\\\", \\\"/c\\\", \\\"git\\\", *args], cwd=SOURCE, text=True).splitlines()\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"D:\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\subprocess.py\\\", line 466, in check_output\\n    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"D:\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\subprocess.py\\\", line 571, in run\\n    raise CalledProcessError(retcode, process.args,\\nsubprocess.CalledProcessError: Command '['cmd', '/c', 'git', 'rev-parse', '--verify', 'd08b8460']' returned non-zero exit status 128.\", \"tampered_manifest_output\": \"evidence.json \\u4e0e\\u5b9e\\u9645\\u8bc1\\u636e\\u6587\\u4ef6\\u4e0d\\u4e00\\u81f4\", \"missing_gitattributes_output\": \"\\u6700\\u7ec8\\u8bc1\\u636e\\u7f3a\\u5c11\\u5b9a\\u7a3f\\u6587\\u4ef6\", \"read_only\": {\"baseline\": true, \"tampered_manifest\": true, \"missing_gitattributes\": true}, \"expected\": {\"baseline\": 0, \"tampered_manifest\": 1, \"missing_gitattributes\": 1}, \"passed\": false}",
       "read_only": true,
       "passed": true
     }
