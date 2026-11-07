@@ -6,6 +6,6 @@ B0只读基线已完成，B1私有内核已在代码提交35872782完成。B0实
 
 ABI1.18、生成器20、活动intrinsic最大32、33～48未激活、ID100墓碑、stdlib.cmath planned、B1七库verified。B0 的 Cargo.lock 和产品树相对 A7 未变；B1 在 `35872782` 的七个允许路径中补齐 libm 依赖及私有内核。b1_f10=0、b2_a_perf=0，旧721条F10未运行，历史债务保持独立。Runtime255项、Clippy与fmt通过；独立证据见[B1目录](assets/20o-b2-b/entry-20261108-b1/README.md)。
 
-原始证据保存命令、PID、日志、前后源码摘要、守卫报告和closeout；B0审计脚本继续固定历史基线，B1审计脚本固定代码提交35872782与七个允许路径。下一入口为B2-B公开接线；公开入口、C ABI、ABI1.19/21和cmath仍后置。
+原始证据保存命令、PID、日志、前后源码摘要、守卫报告和closeout；B0审计脚本继续固定历史基线，B1审计脚本固定代码提交35872782与七个允许路径。下一入口为[B2 `lfloat_divide`/intrinsic 33](20o-b2-b2-lfloat-divide-plan.md)；公开入口、C ABI、ABI1.19/21和cmath仍后置。
 
 B1 当前的常量 ULP 向量仅为私有底座初检，不构成 F-9 正式误差证据。B3 仍须提供 MPFR 4.2.2/GMP 6.3.0 离线生成的独立向量、生成器版本和摘要。

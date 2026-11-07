@@ -81,6 +81,8 @@ B2-B 执行前必须确认：
 
 ### B2：`lfloat_divide` 与 intrinsic 33
 
+执行细化见[B2 `lfloat_divide` 与 intrinsic 33 实施规划](20o-b2-b2-lfloat-divide-plan.md)；B2只开33，34～48与ABI1.19后置。
+
 1. 类型/IR 接受四参 `lfloat_divide(lfloat, lfloat, int, str) -> lfloat`，四参必填；
 2. Runtime 先求精确商余，再只在最终结果按七种模式舍入一次；不先舍入倒数再乘；
 3. precision 只接受 1～32,768；`precision=0` 或超界为 012，顺序按 F-12；
