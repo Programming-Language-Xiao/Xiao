@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import re
 import subprocess
@@ -115,14 +116,26 @@ def main(root, source):
         fail("B0错误启用性能开关")
     bootstrap = read(root, "bootstrap.json")
     environment = read(root, "environment.json")
+    repository = Path(source).resolve()
     task_root = require_contained(bootstrap["task_root"], Path(bootstrap["task_root"]).resolve().parent, "task_root")
+    if task_root == repository or task_root.is_relative_to(repository):
+        fail("B0任务根不能位于仓库内")
     source_root = require_contained(bootstrap["source_root"], task_root, "source_root")
     if environment.get("fresh_target") is not True or environment.get("fresh_xiao_home") is not True:
         fail("B0未声明全新target或Xiao Home")
     for key in ["CARGO_TARGET_DIR", "XIAO_HOME", "TEMP", "TMP"]:
         require_contained(overrides.get(key), task_root, key)
+    target_root = Path(overrides["CARGO_TARGET_DIR"]).resolve()
     require_contained(overrides.get("XIAO_STDLIB_ROOT"), source_root, "XIAO_STDLIB_ROOT")
     runtime_path = require_contained(overrides.get("XIAO_RUNTIME_LIBRARY"), task_root, "XIAO_RUNTIME_LIBRARY", file=True)
+    if not runtime_path.is_relative_to(target_root):
+        fail("B0 Runtime不在独立target内")
+    build_record = read(root, "b0-build-runtime.json")
+    started = datetime.fromisoformat(build_record["started_utc"])
+    finished = datetime.fromisoformat(build_record["finished_utc"])
+    modified = datetime.fromtimestamp(runtime_path.stat().st_mtime, timezone.utc)
+    if not (started - timedelta(seconds=5) <= modified <= finished + timedelta(seconds=5)):
+        fail("B0 Runtime不在本次构建时间窗口内")
     for key in ["XIAO_DIAGNOSTICS_PATH", "XIAO_RUST_DOC_ADAPTER"]:
         require_contained(overrides.get(key), task_root, key, file=True)
     closeout = read(root, "closeout.json")

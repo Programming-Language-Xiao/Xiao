@@ -9,8 +9,8 @@
     },
     {
       "path": "audit.py",
-      "bytes": 7730,
-      "sha256": "184081e4109a9c6721d526b0918f1334eafe6f01468b4d6d769787f887a116e2"
+      "bytes": 8530,
+      "sha256": "9ede58d71dfe7ffb71f7fd25ddb258de4f56ddc6cfea53c32eb037af2394b157"
     },
     {
       "path": "b0-a1-native-exact.json",
@@ -234,13 +234,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 1876,
-      "sha256": "588b2b04ba4aa349b63ff7bc3f16d45043fb08d48de7a75d37daee42241422fd"
+      "bytes": 2005,
+      "sha256": "6445d711ecbbed5607e8cde7b372196f536b1baa2c55b92ef6961498103b6b5c"
     },
     {
       "path": "rebuild-closeout.py",
-      "bytes": 1696,
-      "sha256": "59214bcb49fe790231eb736e884789511111ed011cb989149052e2a9f1060baf"
+      "bytes": 1860,
+      "sha256": "0a045211374b3230d069e384384e4ae4b3a25517bea99a171ecc9eb120bf3f97"
     },
     {
       "path": "rebuild-evidence.py",

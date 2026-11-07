@@ -2,21 +2,21 @@
   "passed": true,
   "checks": 11,
   "source_root": "D:\\project\\Xiao\\Xiao",
-  "source_head": "91cb39ff42607cfe7c1c7e569d5fea68491c4a7a",
+  "source_head": "dcc79fb1bb252de601bb0056ef863a50624a063b",
   "archive_argv": [
     "cmd",
     "/c",
     "git",
     "archive",
     "--format=tar",
-    "91cb39ff42607cfe7c1c7e569d5fea68491c4a7a",
+    "dcc79fb1bb252de601bb0056ef863a50624a063b",
     "--",
     "docs/DevDocs/assets/20o-b2-b/entry-20261107",
     "docs/DevDocs/assets/20o-b2-b/entry-20261108-b1"
   ],
   "evidence_unchanged": true,
   "audit_sha256": {
-    "b0": "184081e4109a9c6721d526b0918f1334eafe6f01468b4d6d769787f887a116e2",
+    "b0": "9ede58d71dfe7ffb71f7fd25ddb258de4f56ddc6cfea53c32eb037af2394b157",
     "b1": "adb59965e44935d84fcc972a65cbfc1fbfce32070fa6ee5731c6c77033e55fda"
   },
   "records": [
@@ -142,7 +142,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107\\audit.py",
         "--root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-b1-git-export-fgmwoc52\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-b1-git-export-pjbh5dlm\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -161,7 +161,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1\\audit.py",
         "--root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-b1-git-export-fgmwoc52\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-b1-git-export-pjbh5dlm\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b1",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -180,7 +180,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107\\audit.py",
         "--root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-audit-repair-nk0p45pp\\evidence",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-audit-repair-o4qt4zqk\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -199,7 +199,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261107\\audit.py",
         "--root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-audit-repair-nk0p45pp\\evidence",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-audit-repair-o4qt4zqk\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -222,12 +222,12 @@
         "--source-root",
         "D:\\project\\Xiao\\Xiao",
         "--source-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-audit-repair-nk0p45pp\\non-repository"
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b0-audit-repair-o4qt4zqk\\non-repository"
       ],
       "cwd": "D:\\project\\Xiao\\Xiao",
       "python_mode": "utf8",
       "exit_code": 1,
-      "output": "{\"source_root\": \"C:\\\\Users\\\\xiaoc\\\\AppData\\\\Local\\\\Temp\\\\xiao-b0-audit-repair-nk0p45pp\\\\non-repository\", \"baseline_exit_code\": 1, \"tampered_manifest_exit_code\": 1, \"missing_gitattributes_exit_code\": 1, \"baseline_output\": \"fatal: not a git repository (or any of the parent directories): .git\\nTraceback (most recent call last):\\n  File \\\"D:\\\\project\\\\Xiao\\\\Xiao\\\\docs\\\\DevDocs\\\\assets\\\\20o-b2-b\\\\entry-20261108-b1\\\\audit.py\\\", line 310, in <module>\\n    main()\\n  File \\\"D:\\\\project\\\\Xiao\\\\Xiao\\\\docs\\\\DevDocs\\\\assets\\\\20o-b2-b\\\\entry-20261108-b1\\\\audit.py\\\", line 249, in main\\n    baseline = git(\\\"rev-parse\\\", \\\"--verify\\\", BASELINE_COMMIT)[0]\\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"D:\\\\project\\\\Xiao\\\\Xiao\\\\docs\\\\DevDocs\\\\assets\\\\20o-b2-b\\\\entry-20261108-b1\\\\audit.py\\\", line 72, in git\\n    return subprocess.check_output([\\\"cmd\\\", \\\"/c\\\", \\\"git\\\", *args], cwd=SOURCE, text=True).splitlines()\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"D:\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\subprocess.py\\\", line 466, in check_output\\n    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"D:\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\subprocess.py\\\", line 571, in run\\n    raise CalledProcessError(retcode, process.args,\\nsubprocess.CalledProcessError: Command '['cmd', '/c', 'git', 'rev-parse', '--verify', 'd08b8460']' returned non-zero exit status 128.\", \"tampered_manifest_output\": \"evidence.json \\u4e0e\\u5b9e\\u9645\\u8bc1\\u636e\\u6587\\u4ef6\\u4e0d\\u4e00\\u81f4\", \"missing_gitattributes_output\": \"\\u6700\\u7ec8\\u8bc1\\u636e\\u7f3a\\u5c11\\u5b9a\\u7a3f\\u6587\\u4ef6\", \"read_only\": {\"baseline\": true, \"tampered_manifest\": true, \"missing_gitattributes\": true}, \"expected\": {\"baseline\": 0, \"tampered_manifest\": 1, \"missing_gitattributes\": 1}, \"passed\": false}",
+      "output": "{\"source_root\": \"C:\\\\Users\\\\xiaoc\\\\AppData\\\\Local\\\\Temp\\\\xiao-b0-audit-repair-o4qt4zqk\\\\non-repository\", \"baseline_exit_code\": 1, \"tampered_manifest_exit_code\": 1, \"missing_gitattributes_exit_code\": 1, \"baseline_output\": \"fatal: not a git repository (or any of the parent directories): .git\\nTraceback (most recent call last):\\n  File \\\"D:\\\\project\\\\Xiao\\\\Xiao\\\\docs\\\\DevDocs\\\\assets\\\\20o-b2-b\\\\entry-20261108-b1\\\\audit.py\\\", line 310, in <module>\\n    main()\\n  File \\\"D:\\\\project\\\\Xiao\\\\Xiao\\\\docs\\\\DevDocs\\\\assets\\\\20o-b2-b\\\\entry-20261108-b1\\\\audit.py\\\", line 249, in main\\n    baseline = git(\\\"rev-parse\\\", \\\"--verify\\\", BASELINE_COMMIT)[0]\\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"D:\\\\project\\\\Xiao\\\\Xiao\\\\docs\\\\DevDocs\\\\assets\\\\20o-b2-b\\\\entry-20261108-b1\\\\audit.py\\\", line 72, in git\\n    return subprocess.check_output([\\\"cmd\\\", \\\"/c\\\", \\\"git\\\", *args], cwd=SOURCE, text=True).splitlines()\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"D:\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\subprocess.py\\\", line 466, in check_output\\n    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"D:\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\subprocess.py\\\", line 571, in run\\n    raise CalledProcessError(retcode, process.args,\\nsubprocess.CalledProcessError: Command '['cmd', '/c', 'git', 'rev-parse', '--verify', 'd08b8460']' returned non-zero exit status 128.\", \"tampered_manifest_output\": \"evidence.json \\u4e0e\\u5b9e\\u9645\\u8bc1\\u636e\\u6587\\u4ef6\\u4e0d\\u4e00\\u81f4\", \"missing_gitattributes_output\": \"\\u6700\\u7ec8\\u8bc1\\u636e\\u7f3a\\u5c11\\u5b9a\\u7a3f\\u6587\\u4ef6\", \"read_only\": {\"baseline\": true, \"tampered_manifest\": true, \"missing_gitattributes\": true}, \"expected\": {\"baseline\": 0, \"tampered_manifest\": 1, \"missing_gitattributes\": 1}, \"passed\": false}",
       "read_only": true,
       "passed": true
     }

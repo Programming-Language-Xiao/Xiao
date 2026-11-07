@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
+REPOSITORY = ROOT.parents[4].resolve()
 bootstrap = json.loads((ROOT / "bootstrap.json").read_text(encoding="utf-8"))
 environment = json.loads((ROOT / "environment.json").read_text(encoding="utf-8"))
 closeout = json.loads((ROOT / "closeout.json").read_text(encoding="utf-8"))
@@ -14,6 +15,8 @@ source_root = Path(bootstrap["source_root"]).resolve()
 runtime_path = Path(environment["overrides"]["XIAO_RUNTIME_LIBRARY"]).resolve()
 if not task_root.is_dir() or not source_root.is_dir() or not runtime_path.is_file():
     raise SystemExit("B0任务根、源码根或Runtime文件不存在")
+if task_root == REPOSITORY or task_root.is_relative_to(REPOSITORY):
+    raise SystemExit("B0任务根不能位于仓库内")
 if not source_root.is_relative_to(task_root) or not runtime_path.is_relative_to(task_root):
     raise SystemExit("B0任务根 containment 不符")
 closeout.update(
