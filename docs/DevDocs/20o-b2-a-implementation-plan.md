@@ -306,7 +306,7 @@ Windows→Linux→macOS按已有平台顺序登记真实作业和日志；失败
 
 ## 八、交接
 
-B2-A收口后下一入口是B2-B实施规划：`lfloat_divide`、15项`cmath`、intrinsic 33～48和ABI1.19/生成器21。B2-C才做新快照721条F10、教程/registry和最终三平台收口。
+B2-A收口后下一入口是[B2-B实施规划](20o-b2-b-implementation-plan.md)：`lfloat_divide`、15项`cmath`、intrinsic 33～48和ABI1.19/生成器21。B2-C才做新快照721条F10、教程/registry和最终三平台收口。
 
 新Agent先读：
 

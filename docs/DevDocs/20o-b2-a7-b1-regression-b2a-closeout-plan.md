@@ -130,7 +130,7 @@ A7执行前必须确认：
 
 ## 七、交接
 
-A7完成后B2-A整批可在1.18/20内部范围收口；下一入口是B2-B实施规划：`lfloat_divide`、15项`cmath`、intrinsic 33～48和ABI1.19/生成器21。B2-C再做最终三平台、完整721条和教程/registry收口。
+A7完成后B2-A整批可在1.18/20内部范围收口；下一入口是[B2-B实施规划](20o-b2-b-implementation-plan.md)：`lfloat_divide`、15项`cmath`、intrinsic 33～48和ABI1.19/生成器21。B2-C再做最终三平台、完整721条和教程/registry收口。
 
 新Agent先读：
 

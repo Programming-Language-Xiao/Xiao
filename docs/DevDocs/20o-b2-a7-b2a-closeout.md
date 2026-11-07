@@ -54,6 +54,6 @@ A0、A1、A2/A3、A4、A5、A6及A6第二轮审计共7个入口均重新只读�
 
 B2-A在内部1.18/20范围收口：精确值身份、算术、转换、语言管线、资源/错误/性能与B1功能均有阶段证据。本批没有改变ABI、生成器、intrinsic或XCON格式，不发布同版本内部产物。
 
-下一入口是B2-B实施规划，先读[数值基础总规划](20o-b2-numeric-foundation-plan.md)、已签[冻结正文](20o-b2-freeze-draft.md)和F-5/F-6/F-12/F-3精表，再拟定lfloat_divide与15项cmath的类型/IR/VM/LLVM/Runtime、intrinsic33～48、ABI1.19和生成器21实施/拒绝矩阵。不得在A7收口中直接写这些产品。
+下一入口是[B2-B实施规划](20o-b2-b-implementation-plan.md)，先读[数值基础总规划](20o-b2-numeric-foundation-plan.md)、已签[冻结正文](20o-b2-freeze-draft.md)和F-5/F-6/F-12/F-3精表，再拟定lfloat_divide与15项cmath的类型/IR/VM/LLVM/Runtime、intrinsic33～48、ABI1.19和生成器21实施/拒绝矩阵。不得在A7收口中直接写这些产品。
 
 B2-C只在最终新1.19/21快照重跑完整B1 721条F10，并收齐最终三平台公共产物、教程和registry状态。A7的内部验收及A5/A6历史证据都不能替代它。
