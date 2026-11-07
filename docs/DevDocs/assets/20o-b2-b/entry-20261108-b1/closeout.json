@@ -1,7 +1,7 @@
 {
   "passed": true,
   "scope": "B2-B B1：仅libm依赖与私有cmath/显式除法内核",
-  "current_head": "358727821a47a0831816325c61176fff67fe45e2",
+  "current_head": "6ad1c73ac73d0652ddeae5c3a169188583a06450",
   "code_commit": "35872782",
   "b0_commit": "e5039bbac7c53cba8ed666e93095796e5fc46fca",
   "source_manifest": "source-manifests/8a3d7472ccaf8bb0a25d6731c8e852d770ef03d4f0267476956a974f2f0b7cc8.json",
