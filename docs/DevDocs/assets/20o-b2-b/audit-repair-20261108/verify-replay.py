@@ -24,7 +24,7 @@ def snapshot(root):
             "mtime_ns": path.stat().st_mtime_ns,
         }
         for path in sorted(root.rglob("*"))
-        if path.is_file()
+        if path.is_file() and "__pycache__" not in path.parts
     }
 
 
@@ -55,7 +55,10 @@ def main(source, output):
                 parsed = json.loads(text)
             except json.JSONDecodeError:
                 parsed = {}
-            passed = process.returncode == (0 if self_result else 1) and parsed.get("passed") == bool(self_result)
+            if self_result is False:
+                passed = process.returncode == 1 and parsed.get("passed") is False
+            else:
+                passed = process.returncode == 0 and parsed.get("passed") is True
             if self_result:
                 passed = passed and parsed["tampered_manifest_output"] == spec["expected_reason"]
                 passed = passed and parsed["missing_gitattributes_output"] == spec["missing_gitattributes_reason"]
@@ -65,7 +68,7 @@ def main(source, output):
             except json.JSONDecodeError:
                 parsed = {}
             passed = (process.returncode == 0 and parsed.get("passed") == parsed.get("total") == 18
-                      and parsed.get("files") == (50 if evidence == b0 else 28))
+                      and parsed.get("files") == (50 if evidence.name == b0.name else 28))
         records.append({"name": name, "argv": argv, "cwd": str(source), "python_mode": mode,
                         "exit_code": process.returncode, "output": text, "read_only": read_only,
                         "passed": passed and read_only})
