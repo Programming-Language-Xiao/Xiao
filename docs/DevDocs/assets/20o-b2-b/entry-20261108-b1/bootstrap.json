@@ -1,0 +1,13 @@
+{
+  "scope": "B2-B B1：libm、私有cmath、显式精度除法；不接公开入口",
+  "source_root": "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source",
+  "code_commit": "35872782",
+  "b0_closeout": "docs/DevDocs/assets/20o-b2-b/entry-20261107/closeout.json",
+  "abi": "1.18",
+  "codegen": 20,
+  "active_intrinsic_max": 32,
+  "cmath": "planned",
+  "b1_f10": false,
+  "b2_a_perf": false,
+  "public_products_unchanged": true
+}

@@ -1,0 +1,106 @@
+{
+  "scope": "仅B1本目录文件；清单自身不计入自身摘要",
+  "file_count": 20,
+  "files": [
+    {
+      "path": "audit.py",
+      "bytes": 7024,
+      "sha256": "ed0fb9240a213db56498924e9fb14f79fd07198770af6702cf91ce5d661fa9e8"
+    },
+    {
+      "path": "b1-benchmark-check.json",
+      "bytes": 1384,
+      "sha256": "c80a01a7eefc6312ef0e63e4f9df5e2596e16477251ade51ef630b4888267a49"
+    },
+    {
+      "path": "b1-benchmark-check.log",
+      "bytes": 282,
+      "sha256": "23c78897f4c4b4d2b35fcf8f47fcf46b32bf40832322cc7a0bf79990a4ee11f1"
+    },
+    {
+      "path": "b1-dependency-tree.json",
+      "bytes": 1432,
+      "sha256": "8175265e09015fc2da8c6d23566b5558aadb0a691c8aa0c3d499bbd55dec86ef"
+    },
+    {
+      "path": "b1-dependency-tree.log",
+      "bytes": 10064,
+      "sha256": "2624e844f77ada506705255328cee77115c00e33d1b363cf7dc10d932698a5f3"
+    },
+    {
+      "path": "b1-docs-all.json",
+      "bytes": 1313,
+      "sha256": "6efadf5ebcc1038916dc76d84b3629d75b9cf2adea85cb2daf8ae0c7e4be5f1d"
+    },
+    {
+      "path": "b1-docs-all.log",
+      "bytes": 279265,
+      "sha256": "818fe092ec83adafe4565b02467bf2abf09c27463b2c4dde3a416bfbbba82c64"
+    },
+    {
+      "path": "b1-runtime-clippy.json",
+      "bytes": 1463,
+      "sha256": "72b53a3c29a895c69108b1e3f3a18a7191eaa3481de006f2f69205c83bd590aa"
+    },
+    {
+      "path": "b1-runtime-clippy.log",
+      "bytes": 72,
+      "sha256": "3819f5a7ceecd9222e0fbd258fbc5b3461b920ebd412d521eff393866d195f71"
+    },
+    {
+      "path": "b1-runtime-fmt.json",
+      "bytes": 1413,
+      "sha256": "677c5443e3ba0314f57e846579613224ab8182120ada33651b443a8509e1e67b"
+    },
+    {
+      "path": "b1-runtime-fmt.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "b1-runtime-tests.json",
+      "bytes": 1415,
+      "sha256": "3ce5e5ecb6451a0afce272b20a8b21ba4cc351fa66034af96ebdb9c1046b85b5"
+    },
+    {
+      "path": "b1-runtime-tests.log",
+      "bytes": 22766,
+      "sha256": "4ef9ceaf232a353677562e18fae52b91bde61e3cd987a7192cb2fddf04a4cb68"
+    },
+    {
+      "path": "bootstrap.json",
+      "bytes": 442,
+      "sha256": "ed1ac9d07365251bf96a0d30ba86b378581e6f9883168d37a083a9c4775c3d80"
+    },
+    {
+      "path": "closeout.json",
+      "bytes": 1391,
+      "sha256": "cd58a2b2d543caa124b2b7b59b12f1c23062fae365ac634fd57509271a2d8fce"
+    },
+    {
+      "path": "dependency-summary.json",
+      "bytes": 464,
+      "sha256": "b246c3d42d7a924df61adb48c67e63525bc9d4614b1418d7e57db96c9b8a5367"
+    },
+    {
+      "path": "environment.json",
+      "bytes": 6908,
+      "sha256": "87084970ff35a5c4206ef757da650be7c5fc98f1e398f327eb1f1875c871246b"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1153,
+      "sha256": "1628eb4504f339578e3309f4baea68ffcaf6f863f49233eec831d8a3c912bcaa"
+    },
+    {
+      "path": "run-step.py",
+      "bytes": 4884,
+      "sha256": "9f8f2319eede23a28dfb6681627a8e63fd0c61167750294f343c6636b75eb254"
+    },
+    {
+      "path": "source-manifests/8a3d7472ccaf8bb0a25d6731c8e852d770ef03d4f0267476956a974f2f0b7cc8.json",
+      "bytes": 294380,
+      "sha256": "f3a52fbd13f227baed12fd4000b6d18bf9765ed0d9985157d4ec99fc275752b4"
+    }
+  ]
+}

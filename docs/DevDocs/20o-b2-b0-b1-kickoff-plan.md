@@ -2,8 +2,8 @@
 
 > **这是 B2-B 的开工细化；B2-B 产品仍未开工，B2-C 仍未开始。**
 > 入口为 A7 内部收口代码快照 `5749d6e0`、产品基线 `e7bf7a49` 与当前规划提交 `e596cea8`。
-> B0 基线已完成，B1 仍待单独实施；B1只补依赖和私有共享内核；不新增 intrinsic、不改 ABI/生成器、不写 `cmath` 公开入口。
-> `stdlib.cmath` 仍 planned，旧 721 条 F10 不运行，22C/22D、19/11/22 与 B1 历史债务保持独立。
+> **B0 基线已完成；B1私有内核已在 35872782 完成并通过独立证据审计；不新增intrinsic，不改ABI/生成器，不写cmath公开入口。
+> stdlib.cmath 保持planned；旧721条F10不运行；22C/22D、19/11/22为B1历史债务保持独立。B1证据见 assets/20o-b2-b/entry-20261108-b1/ 。
 
 ## 一、入口与目标
 
@@ -13,7 +13,7 @@
 | 产品基线 | `e7bf7a49` |
 | 当前版本 | ABI 1.18、生成器 20、活动 intrinsic 最大 32、标准库接口 1 |
 | B0 目标 | 独立工作树内复现 A7 基线，证明 B2-B 从干净入口起步 |
-| B1 目标 | 补 `libm 0.2.16` 直接依赖，建立 `lfloat_divide`/`cmath` 私有内核与共享 `pow` 边界 |
+| B1 目标 | 已补 libm 0.2.16 直接依赖，完成 lfloat_divide/cmath 私有内核与共享 pow 边界；公开接线仍后置 |
 | 不在本页 | intrinsic 33～48、C ABI 符号、类型/IR/VM/LLVM 接线、ABI 1.19/21、registry 升级 |
 | 后续 | B2 `lfloat_divide`/33；B3 `cmath`/34～48；B4 语言全链路；B5 版本；B6 资源/性能；B7 收口 |
 
