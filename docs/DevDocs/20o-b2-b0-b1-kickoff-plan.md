@@ -1,6 +1,6 @@
 # 20O-B2-B0/B1. 开工基线与依赖/共享内核实施规划
 
-> **这是 B2-B 的开工细化；B2-B 产品仍未开工，B2-C 仍未开始。**
+> **这是 B2-B 的开工细化；B0 已完成，B1 私有底座已实现；公开接线与 B2-C 仍未开始。**
 > 规划提交为 `e596cea8`，B0 实际入口为 `d08b8460`；产品基线为 `e7bf7a49`。
 > **B0 基线已完成；B1私有内核已在 35872782 完成并通过独立证据审计；不新增intrinsic，不改ABI/生成器，不写cmath公开入口。**
 > stdlib.cmath 保持planned；旧721条F10不运行；22C/22D、19/11/22为B1历史债务保持独立。B1证据见 assets/20o-b2-b/entry-20261108-b1/ 。
@@ -21,13 +21,13 @@ B0/B1 完成后，B2-B 才进入公开入口实现；B2-C 仍负责最终 721、
 
 ### 1.1 B0/B1 要做
 
-1. 从当前 HEAD 建独立工作树，验证产品树相对 `5749d6e0` 无差异；
+1. 从 B0 实际入口 `d08b8460` 建独立工作树，验证产品树相对 `5749d6e0` 无差异；
 2. 用全新 target/Runtime/缓存/临时目录复现 B1 契约、资源、双精确点、B2-A 资源/语言和 28/28 守卫；
 3. 记录源码、锁、工具链、目标、PID、命令、日志和前后输入摘要；
 4. 按 F-7 补 `libm = "=0.2.16"` 直接依赖，核对六包闭包和 `Cargo.lock`；
 5. 建立私有 `lfloat_divide` 内核和 15 项 `cmath` 内核边界，不公开 intrinsic；
 6. 建立 float `**` 与 `cmath.pow` 的共享内核设计，但不在 B1 半接线；
-7. 建立特殊值/域/有符号零/ULP 的单元测试底座，为 B2/B3 留可复用入口。
+7. 建立特殊值、定义域、有符号零和 ULP 的单元测试底座。当前 ULP 向量仅为 B1 私有底座初检；B3 补齐 F-9 要求的 MPFR 4.2.2/GMP 6.3.0 离线参考、生成器版本和摘要。
 
 ### 1.2 明确不做
 
@@ -43,10 +43,16 @@ B0/B1 完成后，B2-B 才进入公开入口实现；B2-C 仍负责最终 721、
 ### 2.1 工作树与身份
 
 1. 在当前仓库外新建唯一任务根，例如 `D:\project\Xiao\.b2b-kickoff\<run-id>`；
-2. 从 B0 实际入口 d08b8460 建立工作树，并记录 git rev-parse HEAD；规划提交 596cea8 只用于 DevDocs 历史追溯。
+2. 从 B0 实际入口 `d08b8460` 建立工作树，并记录 `git rev-parse HEAD`；规划提交 `e596cea8` 只用于 DevDocs 历史追溯。
 
 ```text
-git diff --name-only 5749d6e0 d08b8460 -- ':!docs/DevDocs'
+cmd /c git worktree add --detach <source> d08b8460
+```
+
+3. 验证产品树与 A7 快照一致：
+
+```text
+cmd /c git diff --name-only 5749d6e0 d08b8460 -- ":!docs/DevDocs"
 ```
 
 结果必须为空；`docs/DevDocs` 的规划差异不算产品差异。
@@ -155,7 +161,7 @@ B1 必须产出一张“现有 float `**` vs F-2/F-9 共享内核”的行为差
 
 1. 15 项 cmath 特殊值/域/有符号零单元测试；
 2. 15 项 cmath 的 NaN/Inf 拒绝测试；
-3. ULP/位模式比较工具与至少一组独立参考向量；参考只用离线 MPFR 4.2.2/GMP 6.3.0，登记生成器版本/摘要；
+3. 当前手写常量与 `std::f64::consts` 向量只作私有底座初检。F-9 正式误差验收留 B3：只使用离线 MPFR 4.2.2/GMP 6.3.0 参考，登记生成器版本和摘要；本次 B1 不声称已经取得该证据；
 4. `lfloat_divide` 七种舍入、precision 1/32,768、0/超界、短结果的私有内核测试；
 5. `cargo +1.96.0 test --locked -p xiao-runtime` 全绿；
 6. 复核 `git diff --name-only` 只含允许文件；`intrinsics.json`、`xiao-runtime-abi`、`CODEGEN_VERSION`、`docs/module-registry.json`、`stdlib/cmath.xiao` 必须无差异；

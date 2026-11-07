@@ -1,4 +1,5 @@
 {
+  "scope": "仅entry-20261107本目录最终文件；清单自身不计入自身摘要",
   "file_count": 48,
   "files": [
     {
@@ -8,8 +9,8 @@
     },
     {
       "path": "audit.py",
-      "bytes": 5313,
-      "sha256": "96e040aa260196e8d3faaf695b55d74f46d9b8808f7b050af3c0b5f3c2f57ed3"
+      "bytes": 5702,
+      "sha256": "698f8f93e097455932ff83d3162c17523a4d116f3e9f4f3ed03dcfe12056ed1d"
     },
     {
       "path": "b0-a1-native-exact.json",
@@ -233,8 +234,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 1025,
-      "sha256": "b3416f0d8abfee14a70913e72eae2c323d0357d98828c0c0fa3faff931a317a2"
+      "bytes": 1688,
+      "sha256": "0e00eb50273b366783c7bb27293dcfa60ec2409b1c1be8b84c6c269ad29451c7"
     },
     {
       "path": "source-manifests/be08658b03c58eb0e4676722dae5e5f4b1aa1977ad9c44ec90d8a40e486bc431.json",

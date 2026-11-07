@@ -1,5 +1,5 @@
 {
-  "scope": "仅B1本目录最终文件；清单自身不计入自身摘要",
+  "scope": "仅entry-20261108-b1本目录最终文件；清单自身不计入自身摘要",
   "file_count": 28,
   "files": [
     {
@@ -9,8 +9,8 @@
     },
     {
       "path": "audit.py",
-      "bytes": 10703,
-      "sha256": "20e1ebfa6b21dc1c1972cf10107c24ffe7a500bb361d75849219b7186b5570ca"
+      "bytes": 10906,
+      "sha256": "26e7ae017abc5dea0cbfeea51ef2e2afbedb5da43bba0548defc4be613a88731"
     },
     {
       "path": "b1-benchmark-check.json",
@@ -99,8 +99,8 @@
     },
     {
       "path": "negative-cases.json",
-      "bytes": 288,
-      "sha256": "8d6125634288300ea317e00824fe4e3f546bacf491c0ada846adbbd7f413efe1"
+      "bytes": 356,
+      "sha256": "139845638253398931c71a7e88a035a8a3f36087d1e2456046d02800f275542c"
     },
     {
       "path": "negative-evidence.json",
@@ -109,8 +109,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 1489,
-      "sha256": "826ea2ce47735b3319edea56de527acfa185d57392c7555b164e1e8ba669bb38"
+      "bytes": 2304,
+      "sha256": "20a10dba1a46f7a581d22f1029b3209589f361210655ab5dc3a3de17762e5b53"
     },
     {
       "path": "rebuild-closeout.py",
@@ -119,8 +119,8 @@
     },
     {
       "path": "rebuild-evidence.py",
-      "bytes": 934,
-      "sha256": "0067896bc319a611f3fe6c9a0d7cb5b5f70e2740e67a6a14d18c560e93b3d507"
+      "bytes": 1279,
+      "sha256": "002f0ed7386ab2cfdfa9cb4697a69b0ff271930248e77bfaf9f591867843f2ba"
     },
     {
       "path": "run-step.py",
@@ -129,13 +129,13 @@
     },
     {
       "path": "self-negative-result.json",
-      "bytes": 223,
-      "sha256": "f573d9c8bb5b75b68f32833939881c5d9d72ab8b4d993bf45475b19e3ff4b835"
+      "bytes": 772,
+      "sha256": "fb4521c04e21f7c326202189e7af0ce5dbb7b2bb50053782622d86b7439d4fcb"
     },
     {
       "path": "self-negative.py",
-      "bytes": 1883,
-      "sha256": "39ed8914113cded1acaa084e8511e0aa4a2f14b279ed4169c4397c24c169fc4d"
+      "bytes": 4298,
+      "sha256": "994fcb3b40723c2eaea7c825a8c9139969ffce465afbd4c1b05dc8df66e37c47"
     },
     {
       "path": "source-manifests/8a3d7472ccaf8bb0a25d6731c8e852d770ef03d4f0267476956a974f2f0b7cc8.json",

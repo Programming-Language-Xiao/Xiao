@@ -3,6 +3,7 @@
   "fixture": "negative-evidence.json",
   "expected_rejected": true,
   "expected_reason": "evidence.json 与实际证据文件不一致",
+  "missing_gitattributes_reason": "最终证据缺少定稿文件",
   "mutation": {
     "path": "README.md",
     "field": "sha256",

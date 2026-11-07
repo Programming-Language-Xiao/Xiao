@@ -87,7 +87,7 @@ def inventory_rows():
             "sha256": sha(path),
         }
         for path in sorted(ROOT.rglob("*"))
-        if path.is_file() and path.name != "evidence.json" and "__pycache__" not in path.parts
+        if path.is_file() and path != ROOT / "evidence.json" and "__pycache__" not in path.parts
     ]
 
 
@@ -140,11 +140,6 @@ def main():
     evidence = read("evidence.json")
     rows = inventory_rows()
     by_path = {row["path"]: row for row in rows}
-    if evidence["file_count"] != len(rows) or evidence["files"] != rows:
-        fail("evidence.json 与实际证据文件不一致")
-    if len(PASS_NAMES) != 18:
-        fail("审计检查数量不是18")
-
     required = {
         ".gitattributes",
         "b1-guards-report.json",
@@ -154,6 +149,11 @@ def main():
     }
     if not required.issubset(by_path):
         fail("最终证据缺少定稿文件")
+    if evidence["file_count"] != len(rows) or evidence["files"] != rows:
+        fail("evidence.json 与实际证据文件不一致")
+    if len(PASS_NAMES) != 18:
+        fail("审计检查数量不是18")
+
     for row in evidence["files"]:
         path = ROOT / row["path"]
         if path.stat().st_size != row["bytes"] or sha(path) != row["sha256"]:
@@ -193,9 +193,11 @@ def main():
     self_negative = read("self-negative-result.json")
     if (
         self_negative.get("baseline_exit_code") != 0
-        or self_negative.get("tampered_manifest_exit_code") == 0
-        or self_negative.get("missing_gitattributes_exit_code") == 0
-        or not self_negative.get("passed")
+        or self_negative.get("tampered_manifest_exit_code") != 1
+        or self_negative.get("missing_gitattributes_exit_code") != 1
+        or self_negative.get("passed") is not True
+        or self_negative.get("tampered_manifest_output") != negative["expected_reason"]
+        or self_negative.get("missing_gitattributes_output") != negative["missing_gitattributes_reason"]
     ):
         fail("自反例没有证明篡改清单和删除.gitattributes会被拒绝")
 

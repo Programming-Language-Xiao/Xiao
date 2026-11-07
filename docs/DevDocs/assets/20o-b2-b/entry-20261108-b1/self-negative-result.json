@@ -1,7 +1,16 @@
 {
+  "source_root": "D:\\project\\Xiao\\Xiao",
   "baseline_exit_code": 0,
   "tampered_manifest_exit_code": 1,
   "missing_gitattributes_exit_code": 1,
+  "baseline_output": "{\"passed\": 18, \"total\": 18, \"files\": 28, \"baseline_commit\": \"d08b8460\", \"code_commit\": \"35872782\", \"source_manifest\": \"source-manifests/8a3d7472ccaf8bb0a25d6731c8e852d770ef03d4f0267476956a974f2f0b7cc8.json\"}",
+  "tampered_manifest_output": "evidence.json 与实际证据文件不一致",
+  "missing_gitattributes_output": "最终证据缺少定稿文件",
+  "read_only": {
+    "baseline": true,
+    "tampered_manifest": true,
+    "missing_gitattributes": true
+  },
   "expected": {
     "baseline": 0,
     "tampered_manifest": 1,
