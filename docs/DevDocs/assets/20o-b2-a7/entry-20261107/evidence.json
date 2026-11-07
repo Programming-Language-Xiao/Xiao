@@ -1,6 +1,6 @@
 {
   "scope": "A7本目录完整原件；清单不递归计自身或Python缓存",
-  "file_count": 106,
+  "file_count": 116,
   "files": [
     {
       "path": ".gitattributes",
@@ -163,6 +163,41 @@
       "sha256": "c134a4f263dc1c9aa39514af7a0632cab53ef66bc23f5298015d9b1ac4233366"
     },
     {
+      "path": "ci-closeout-launch.json",
+      "bytes": 28127,
+      "sha256": "671c1ce744d30a5e4e28a0b19725043dba7bde5963a5b1637c7ffc8304c57733"
+    },
+    {
+      "path": "ci/closeout-workspace/artifacts.json",
+      "bytes": 32,
+      "sha256": "244563f989470892c537c9a4622920af0d228ee4528f7d00c64a06d6cd95856c"
+    },
+    {
+      "path": "ci/closeout-workspace/attempt-1-jobs.json",
+      "bytes": 2413,
+      "sha256": "c85a4e59f06f8b0333a817db222031131da237fd6360597658b71b13698055b4"
+    },
+    {
+      "path": "ci/closeout-workspace/commands.json",
+      "bytes": 1801,
+      "sha256": "b03fb6d2e301da3302096a787d403d1156c21eedc115b17ab3a6b4ee2a8c6a24"
+    },
+    {
+      "path": "ci/closeout-workspace/job-128339344078.log",
+      "bytes": 776606,
+      "sha256": "360b321909e9d62bc556d989f5ce05bd43317f19d8795894bf23860fe27622d2"
+    },
+    {
+      "path": "ci/closeout-workspace/jobs.json",
+      "bytes": 3433,
+      "sha256": "1ffa1efd111cae0306c67b06b34bb7d295ac711b72e64921be5b922ffa6488b3"
+    },
+    {
+      "path": "ci/closeout-workspace/run.json",
+      "bytes": 14041,
+      "sha256": "e78f32bcc7be7504af66eadc60e8181fdbb37d3e706b3332129b74c83c4a1650"
+    },
+    {
       "path": "ci/maintenance/artifacts.json",
       "bytes": 32,
       "sha256": "244563f989470892c537c9a4622920af0d228ee4528f7d00c64a06d6cd95856c"
@@ -278,6 +313,16 @@
       "sha256": "485be4d12db70968b0ec1c4a9f7f1cc247a7bc7c6ca5e5d888725151ebdedbb9"
     },
     {
+      "path": "docs-ci-receipt.json",
+      "bytes": 1321,
+      "sha256": "adcc811e2ed7cce8ce6b9e666391038fc3d44ab2232d485cbdb8a1d96da29aa6"
+    },
+    {
+      "path": "docs-ci-receipt.log",
+      "bytes": 274738,
+      "sha256": "46021a87622e962c2b03a29aafaebaad4e11721a10a81f03f961e8f2aa78ea93"
+    },
+    {
       "path": "docs-closeout.json",
       "bytes": 1316,
       "sha256": "1ff00ddff56c3e053c0be4eac41c2af370ea34639909aae2d8f17175593793ac"
@@ -316,6 +361,11 @@
       "path": "docs-submission.log",
       "bytes": 274738,
       "sha256": "46021a87622e962c2b03a29aafaebaad4e11721a10a81f03f961e8f2aa78ea93"
+    },
+    {
+      "path": "documentation-ci-receipt.json",
+      "bytes": 12517,
+      "sha256": "cfdd397c713b605d2907d3ba5ae3795ba67b8d11bde95fa9d02e9110d4be83c5"
     },
     {
       "path": "driver-unit.json",

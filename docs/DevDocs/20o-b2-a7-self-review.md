@@ -24,3 +24,5 @@
 文档/UseDocs/layout/覆盖率、格式/Clippy、workspace/benchmark锁检查和相关包回归已通过。证据/文档收口提交的后续CI另记，不用候选产品CI冒充后续提交；回执不递归追踪自身。
 
 B2-A仅在内部1.18/20范围退出，下一入口是B2-B实施规划；B2-B产品、cmath/lfloat_divide和1.19/21未开始，B2-C才最终重跑721条并升级公共教程/registry。
+
+后续CI回执：收口提交`2047dad9`的独立工作区运行`42351144863`第一次成功，原始API、实际作业ID和日志摘要见[回执](assets/20o-b2-a7/entry-20261107/documentation-ci-receipt.json)。该提交仅改DevDocs/证据，维护回归未命中push路径过滤；不能将候选快照的三平台CI当作这次重新执行。本回执不递归追踪自身。
