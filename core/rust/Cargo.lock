@@ -769,6 +769,7 @@ name = "xiao-runtime"
 version = "0.1.0"
 dependencies = [
  "bigdecimal",
+ "libm",
  "libc",
  "num-bigint",
  "serde_json",

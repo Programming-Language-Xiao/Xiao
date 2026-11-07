@@ -1,10 +1,14 @@
 //! B2-A精确算术与A6有界十进制加减；公开转换由独立模块承接。
 
+/// B2-B私有cmath数学内核；不接公开入口或宿主ABI。
+mod cmath;
 mod common;
 mod comparison;
 mod decimal;
 mod decimal_power;
 mod exact_division;
+/// B2-B私有显式精度除法契约；B2阶段才接入公开入口。
+mod explicit_division;
 mod float_lift;
 mod integer;
 mod modulus;

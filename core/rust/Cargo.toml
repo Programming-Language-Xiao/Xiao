@@ -48,4 +48,5 @@ debug = false
 
 [workspace.dependencies]
 bigdecimal = { version = "=0.4.11", default-features = false, features = ["std"] }
+libm = { version = "=0.2.16" }
 num-bigint = { version = "=0.4.8", default-features = false, features = ["std"] }
