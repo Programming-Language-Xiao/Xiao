@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "cases": {
+    "baseline": {
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"files\": 99, \"checks\": 14, \"exact_checks\": 4, \"code_commit\": \"37b92c5338274121afe98320d4e076620744449f\", \"abi\": \"1.18\", \"codegen\": 20, \"max_active_intrinsic\": 33, \"scope\": \"B2内部单入口\"}",
+      "read_only": true,
+      "passed": true
+    },
+    "tampered_manifest": {
+      "exit_code": 1,
+      "output": "B2证据清单或摘要不符",
+      "read_only": true,
+      "passed": true
+    },
+    "missing_attributes": {
+      "exit_code": 1,
+      "output": "B2证据清单或摘要不符",
+      "read_only": true,
+      "passed": true
+    },
+    "semantic_tamper_after_temp_manifest_rebuild": {
+      "exit_code": 1,
+      "output": "B2版本或文档状态越界",
+      "read_only": true,
+      "passed": true
+    }
+  }
+}

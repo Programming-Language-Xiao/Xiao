@@ -1,7 +1,7 @@
 # 20O-B2-B2. `lfloat_divide` 与 intrinsic 33 实施规划
 
-> **这是 B2-B 的 B2 子批规划；B2 尚未开工，B3～B7 与 B2-C 仍未开始。**
-> 入口为 B1 私有内核代码提交 `35872782` 及其证据；当前公开版本仍是 ABI 1.18、生成器 20、活动 intrinsic 最大 32。
+> **B2 单入口已在 `37b92c53` 实现，Windows 内部验收见[实施记录](20o-b2-b2-lfloat-divide-progress.md)；B3～B7 与 B2-C 仍未开始。**
+> 开工入口为 `faecd26d`，复用 B1 私有内核代码 `35872782`；当前内部快照是 ABI 1.18、生成器20、活动 intrinsic 最大33，仅供内部验证。
 > B2 只实现全局 `lfloat_divide` / intrinsic 33，不实现 15 项 `cmath`、不升 ABI 1.19/21、不改 registry。
 > `stdlib.cmath` 仍 planned，旧 721 条 F10 不运行，历史债务保持独立。
 
@@ -10,7 +10,7 @@
 | 项 | 当前状态 |
 | --- | --- |
 | B0/B1 | B0 基线已完成；B1 私有 `libm`/`cmath`/显式除法内核已在 `35872782` 交付并通过只读审计 |
-| 公开版本 | ABI 1.18、生成器 20、活动 intrinsic 最大 32、标准库接口 1 |
+| 内部快照 | ABI1.18、生成器20、活动intrinsic最大33、标准库接口1；B5切最终版本 |
 | 本批目标 | 全局 `lfloat_divide(lfloat, lfloat, int, str) -> lfloat`、intrinsic 33、C ABI 与 VM/LLVM 接线 |
 | 版本策略 | B2 只在内部快照激活 33；B5 才统一升 ABI 1.19/生成器 21 |
 | 未激活 | intrinsic 34～48、`std.cmath`、`cmath` 教程/registry verified |
@@ -186,4 +186,4 @@ core/rust/crates/xiao-codegen-llvm/                          LLVM 动态降低
 docs/DevDocs/assets/20o-b2-b/entry-<date>-b2/                B2 证据（待建）
 ```
 
-本页只规划 B2；B2 尚未实现，B3～B7 与 B2-C 仍后置。
+本页保留B2范围与退出门槛；实际实施和证据见[实施记录](20o-b2-b2-lfloat-divide-progress.md)。B3～B7与B2-C仍后置，Linux/macOS本批运行证据尚未取得。

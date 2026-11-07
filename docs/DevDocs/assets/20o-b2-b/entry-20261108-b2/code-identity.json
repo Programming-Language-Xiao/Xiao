@@ -1,0 +1,29 @@
+{
+  "entry_commit": "faecd26d",
+  "code_commit": "37b92c5338274121afe98320d4e076620744449f",
+  "allowed_paths": [
+    "core/rust/crates/xiao-codegen-llvm/src/dynamic/expression.rs",
+    "core/rust/crates/xiao-codegen-llvm/src/dynamic/predicate.rs",
+    "core/rust/crates/xiao-codegen-llvm/src/dynamic/runtime_abi.rs",
+    "core/rust/crates/xiao-driver/tests/20o_b1_probe.rs",
+    "core/rust/crates/xiao-driver/tests/20o_b2_b2_divide.rs",
+    "core/rust/crates/xiao-driver/tests/support/b2_divide.rs",
+    "core/rust/crates/xiao-intrinsics/build.rs",
+    "core/rust/crates/xiao-intrinsics/intrinsics.json",
+    "core/rust/crates/xiao-intrinsics/src/lib.rs",
+    "core/rust/crates/xiao-runtime-abi/README.md",
+    "core/rust/crates/xiao-runtime-abi/src/lib.rs",
+    "core/rust/crates/xiao-runtime/src/abi.rs",
+    "core/rust/crates/xiao-runtime/src/abi_lfloat_divide.rs",
+    "core/rust/crates/xiao-runtime/src/lib.rs",
+    "core/rust/crates/xiao-runtime/src/value/arithmetic/explicit_division.rs",
+    "core/rust/crates/xiao-runtime/src/value/arithmetic/mod.rs",
+    "core/rust/crates/xiao-runtime/src/value/mod.rs",
+    "core/rust/crates/xiao-types/src/checker/expression.rs",
+    "core/rust/crates/xiao-vm/src/semantics/exec.rs",
+    "core/rust/crates/xiao-vm/src/semantics/numeric_intrinsics.rs",
+    "docs/UseDocs/language/basics/types/conversions.md",
+    "tests/fixtures/docs/numeric/b2_explicit_divide.stdout",
+    "tests/fixtures/docs/numeric/b2_explicit_divide.xiao"
+  ]
+}

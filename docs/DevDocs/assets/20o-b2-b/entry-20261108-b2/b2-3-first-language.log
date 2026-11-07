@@ -1,0 +1,21 @@
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-types)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-lifetime)
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-ir)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-runtime)
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-bytecode)
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-artifacts)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-vm)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-package)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-driver)
+error[E0425]: cannot find value `ABI_MINOR` in crate `xiao_runtime_abi`
+  --> crates\xiao-driver\tests\20o_b2_b2_divide.rs:57:34
+   |
+57 |     assert_eq!(xiao_runtime_abi::ABI_MINOR, 18);
+   |                                  ^^^^^^^^^ not found in `xiao_runtime_abi`
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `xiao-driver` (test "20o_b2_b2_divide") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

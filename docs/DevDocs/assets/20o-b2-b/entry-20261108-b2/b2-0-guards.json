@@ -1,0 +1,37 @@
+{
+  "name": "b2-0-guards",
+  "argv": [
+    "pwsh",
+    "-NoProfile",
+    "-File",
+    "tools/gates/b1-probe-guards.ps1",
+    "-BashPath",
+    "D:/msys64/usr/bin/bash.exe",
+    "-ReportPath",
+    "D:/project/Xiao/.b2b-divide/20261108-faecd26d/source/docs/DevDocs/assets/20o-b2-b/entry-20261108-b2/b1-guards-report.json"
+  ],
+  "cwd": "D:\\project\\Xiao\\.b2b-divide\\20261108-faecd26d\\source",
+  "started_utc": "2026-11-07T22:26:20.189190+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "b2-0-guards.log",
+  "pid": 57692,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/464267324f2073f077749fc88ba37e8570ba2f812e4009662e32b1b5b4685881.json",
+    "raw_tree_sha256": "464267324f2073f077749fc88ba37e8570ba2f812e4009662e32b1b5b4685881",
+    "utf8_lf_tree_sha256": "0e9e4de066f8a473f26372a66e82259b3db4e320b48d769255344a0b306c26e8",
+    "files": 1031
+  },
+  "source_after": {
+    "manifest": "source-manifests/464267324f2073f077749fc88ba37e8570ba2f812e4009662e32b1b5b4685881.json",
+    "raw_tree_sha256": "464267324f2073f077749fc88ba37e8570ba2f812e4009662e32b1b5b4685881",
+    "utf8_lf_tree_sha256": "0e9e4de066f8a473f26372a66e82259b3db4e320b48d769255344a0b306c26e8",
+    "files": 1031
+  },
+  "source_unchanged": true,
+  "runner_sha256": "9f8f2319eede23a28dfb6681627a8e63fd0c61167750294f343c6636b75eb254",
+  "finished_utc": "2026-11-07T22:26:38.234244+00:00",
+  "duration_seconds": 18.031,
+  "sha256": "f1989d9ff46131346568a5bd9d0e18fb3ac5efc7d3d6cf4ae0012862e3c5d579"
+}

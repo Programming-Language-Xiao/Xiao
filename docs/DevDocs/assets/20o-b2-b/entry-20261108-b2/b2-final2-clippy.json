@@ -1,0 +1,40 @@
+{
+  "name": "b2-final2-clippy",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "clippy",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--workspace",
+    "--all-targets",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "D:\\project\\Xiao\\.b2b-divide\\20261108-faecd26d\\source",
+  "started_utc": "2026-11-07T22:53:38.562203+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "b2-final2-clippy.log",
+  "pid": 60120,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/8ced0b28b9265be8220a98c04bb54be113bcfe07ddb09134d55f4f73f45ace27.json",
+    "raw_tree_sha256": "8ced0b28b9265be8220a98c04bb54be113bcfe07ddb09134d55f4f73f45ace27",
+    "utf8_lf_tree_sha256": "3dc4ae7add717c42401a772395915ad7e38f102b91ed6a4d7394afebc066e170",
+    "files": 1037
+  },
+  "source_after": {
+    "manifest": "source-manifests/8ced0b28b9265be8220a98c04bb54be113bcfe07ddb09134d55f4f73f45ace27.json",
+    "raw_tree_sha256": "8ced0b28b9265be8220a98c04bb54be113bcfe07ddb09134d55f4f73f45ace27",
+    "utf8_lf_tree_sha256": "3dc4ae7add717c42401a772395915ad7e38f102b91ed6a4d7394afebc066e170",
+    "files": 1037
+  },
+  "source_unchanged": true,
+  "runner_sha256": "9f8f2319eede23a28dfb6681627a8e63fd0c61167750294f343c6636b75eb254",
+  "finished_utc": "2026-11-07T22:56:40.690312+00:00",
+  "duration_seconds": 182.141,
+  "sha256": "7a084c68e1ba172496a9bd4efe274c44c213b545b911e58e0b5cb8247283a42e"
+}

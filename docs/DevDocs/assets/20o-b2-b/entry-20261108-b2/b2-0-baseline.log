@@ -1,0 +1,205 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling cfg-if v1.0.5
+   Compiling serde_core v1.0.229
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling itoa v1.0.18
+   Compiling zmij v1.0.23
+   Compiling version_check v0.9.5
+   Compiling serde v1.0.229
+   Compiling generic-array v0.14.7
+   Compiling memchr v2.8.3
+   Compiling syn v3.0.5
+   Compiling typenum v1.20.1
+   Compiling serde_json v1.0.151
+   Compiling xiao-runtime-abi v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-runtime-abi)
+   Compiling cpufeatures v0.2.17
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling digest v0.10.7
+   Compiling xiao-source v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-source)
+   Compiling sha2 v0.10.9
+   Compiling autocfg v1.5.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling serde_derive v1.0.229
+   Compiling shlex v2.0.1
+   Compiling cc v1.5.1
+   Compiling num-traits v0.2.19
+   Compiling zeroize v1.9.0
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling libm v0.2.16
+   Compiling num-integer v0.1.47
+   Compiling rustls-pki-types v1.15.1
+   Compiling ring v0.17.14
+   Compiling bigdecimal v0.4.11
+   Compiling getrandom v0.2.17
+   Compiling libc v0.2.189
+   Compiling untrusted v0.9.0
+   Compiling httparse v1.10.1
+   Compiling num-bigint v0.4.8
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-i18n)
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-intrinsics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-syntax)
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-standard-library)
+   Compiling rustls v0.23.45
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-types)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-modules)
+   Compiling log v0.4.34
+   Compiling bytes v1.12.1
+   Compiling crc32fast v1.5.2
+   Compiling http v1.5.0
+   Compiling rustls-webpki v0.103.15
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-lifetime)
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-ir)
+   Compiling xiao-lock v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-lock)
+   Compiling windows-targets v0.52.6
+   Compiling once_cell v1.21.4
+   Compiling subtle v2.6.1
+   Compiling base64 v0.23.1
+   Compiling adler2 v2.0.1
+   Compiling simd-adler32 v0.3.10
+   Compiling miniz_oxide v0.9.1
+   Compiling ureq-proto v0.6.4
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-runtime)
+   Compiling windows-sys v0.52.0
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-bytecode)
+   Compiling xiao-config v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-config)
+   Compiling webpki-roots v1.0.9
+   Compiling filetime v0.2.29
+   Compiling percent-encoding v2.3.2
+   Compiling utf8-zero v0.8.1
+   Compiling tar v0.4.46
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-vm)
+   Compiling ureq v3.4.2
+   Compiling flate2 v1.1.10
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-artifacts)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-xar)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 51.78s
+     Running tests\20o_b1_imp_contract.rs (D:\project\Xiao\.b2b-divide\20261108-faecd26d\cargo-target\debug\deps\20o_b1_imp_contract-2dfcab1f79907b7f.exe)
+
+running 9 tests
+test every_implemented_module_is_in_the_active_contract_matrix ... ok
+test product_tutorials_embed_the_executed_sources_and_match_registry ... ok
+test products_keep_the_official_namespace_out_of_ordinary_packages ... ok
+test colliding_public_names_keep_their_own_module_implementations ... ok
+test every_public_function_requires_its_real_implementation ... ok
+B1-IMP-CONTRACT modules=7 entries=20/20 parameter-matrix=complete-for-implemented
+test public_calls_enforce_every_frozen_parameter_and_require_imports ... ok
+test products_execute_and_export_only_the_frozen_names has been running for over 60 seconds
+test products_replay_from_real_archives_without_bundled_library_bodies has been running for over 60 seconds
+test public_std_aliases_execute_through_the_official_loader has been running for over 60 seconds
+test products_execute_and_export_only_the_frozen_names ... ok
+test products_replay_from_real_archives_without_bundled_library_bodies ... ok
+test public_std_aliases_execute_through_the_official_loader ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 115.66s
+
+     Running tests\20o_b1_imp_resources.rs (D:\project\Xiao\.b2b-divide\20261108-faecd26d\cargo-target\debug\deps\20o_b1_imp_resources-29cf7055ec1b195c.exe)
+
+running 17 tests
+test base64_standard_accepts_the_frozen_maximum ... ok
+test base64_url_safe_accepts_the_frozen_maximum ... ok
+test csv_accepts_the_maximum_field_count ... ok
+test csv_accepts_the_maximum_ascii_record ... ok
+test csv_accepts_the_maximum_unicode_record ... ok
+test base64_checks_actual_decoded_size_after_the_last_quartet has been running for over 60 seconds
+test csv_accepts_the_maximum_quoted_record ... ok
+test base64_checks_actual_decoded_size_after_the_last_quartet ... ok
+test csv_parse_budget_and_syntax_priority_is_positional ... ok
+test fmt_checks_both_radix_bounds_and_padding_argument_domains ... ok
+test csv_accepts_the_maximum_multiline_record ... ok
+test hex_accepts_the_frozen_maximum_input_and_output ... ok
+test csv_rejects_every_format_budget_dimension ... ok
+test url_decoding_reaches_the_ascii_result_budget ... ok
+test url_encoding_reaches_the_unicode_output_budget ... ok
+test url_decoding_reaches_the_unicode_result_budget ... ok
+test url_encoding_reaches_the_ascii_output_budget ... ok
+test url_limits_and_mixed_error_order_are_streamed has been running for over 60 seconds
+test url_limits_and_mixed_error_order_are_streamed ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 208.89s
+
+     Running tests\20o_b1_probe.rs (D:\project\Xiao\.b2b-divide\20261108-faecd26d\cargo-target\debug\deps\20o_b1_probe-07d771a661c011fb.exe)
+
+running 11 tests
+test b1_capabilities_match_native_golden_outputs ... ignored, 需要显式 LLVM/MSVC 或平台链接器、Runtime staticlib；维护回归三平台精确执行并校验一项通过
+test b1_tutorial_status_allows_verified_and_rejects_metadata_spoofing ... ok
+20O-B0-BOUNDARY csv_nested_signature=X04-PARSE-005 backends=not_entered
+test b1_csv_nested_signature_records_frontend_boundary ... ok
+test b1_tutorials_embed_the_executed_sources ... ok
+20O-B0-BOUNDARY fixture=numeric-overflow code=X06-RUNTIME-009 backend=vm
+20O-B0-BOUNDARY fixture=explicit-error code=B0_PROBE backend=vm
+test error_code_portable_artifacts_require_runtime_1_18 ... ok
+test error_code_rejects_static_arguments_and_preserves_fatal_boundaries ... ok
+20O-B0-BOUNDARY fixture=error-code-access code=X06-RUNTIME-002 backend=vm
+test b1_error_identities_and_member_access_boundary_are_recorded ... ok
+test error_code_vm_allocation_failure_preserves_source_and_recovers ... ok
+test error_code_vm_read_then_raise_preserves_structured_identity ... ok
+20O-B0-PROBE module=math backend=vm result=success
+20O-B0-PROBE module=hex backend=vm result=success
+test error_code_llvm_copies_the_view_before_releasing_the_input ... ok
+20O-B0-PROBE module=base64 backend=vm result=success
+20O-B0-PROBE module=url backend=vm result=success
+20O-B0-PROBE module=csv backend=vm result=success
+20O-B0-PROBE module=fmt backend=vm result=success
+20O-B0-PROBE module=statistics backend=vm result=success
+20O-B1-FIX-A-PROBE case=math-extremes backend=vm result=success
+20O-B1-FIX-A-PROBE case=hex-all-bytes backend=vm result=success
+20O-B1-FIX-A-PROBE case=base64-tail-bits backend=vm result=success
+20O-B1-FIX-A-PROBE case=utf8-boundaries backend=vm result=success
+20O-B1-FIX-A-PROBE case=csv-budget backend=vm result=success
+20O-B1-FIX-A-PROBE case=fmt-int-min backend=vm result=success
+20O-B1-FIX-A-PROBE case=statistics-overflow backend=vm result=success
+20O-B1-FIX-B-PROBE case=default-and-custom backend=vm result=success
+20O-B1-FIX-B-PROBE case=nested-rethrow backend=vm result=success
+20O-B1-FIX-B-PROBE case=escape-lifetime backend=vm result=success
+20O-B1-FIX-B-PROBE case=pending-finally backend=vm result=success
+20O-B1-FIX-B-PROBE case=dynamic-types backend=vm result=success
+20O-B1-FIX-B-PROBE case=long-code backend=vm result=success
+20O-B1-FIX-B-PROBE case=abi-requirements backend=vm result=success
+20O-B1-IMP-PROBE case=math backend=vm result=success
+20O-B1-IMP-PROBE case=statistics backend=vm result=success
+20O-B1-IMP-PROBE case=fmt backend=vm result=success
+test b1_capabilities_have_vm_golden_outputs has been running for over 60 seconds
+20O-B1-IMP-PROBE case=hex backend=vm result=success
+20O-B1-IMP-PROBE case=base64 backend=vm result=success
+20O-B1-IMP-PROBE case=url backend=vm result=success
+20O-B1-IMP-PROBE case=csv backend=vm result=success
+20O-B1-IMP-PROBE case=aliases backend=vm result=success
+20O-B1-IMP-PROBE case=string-index backend=vm result=success
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=vm result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=vm result=success
+B2-A5-LANGUAGE case=a5_conversions backend=vm result=success
+B2-A5-LANGUAGE case=a5_carriers backend=vm result=success
+B2-A5-LANGUAGE case=a5_errors backend=vm result=success
+B2-A5-LANGUAGE case=a5_matrix backend=vm result=success
+B2-A5-LANGUAGE case=a5_bindings backend=vm result=success
+B2-A5-ERROR case=narrow backend=vm code=X06-RUNTIME-009 span=6..40 result=success
+B2-A5-ERROR case=syntax backend=vm code=X06-RUNTIME-012 span=6..20 result=success
+B2-A5-ERROR case=zero backend=vm code=X06-RUNTIME-013 span=21..30 result=success
+B2-A5-ERROR case=admission backend=vm code=X06-RUNTIME-033 span=6..24 result=success
+B2-A5-ERROR case=quotient backend=vm code=X06-RUNTIME-033 span=47..53 result=success
+B2-A5-ERROR case=nonterminating backend=vm code=X06-RUNTIME-034 span=15..24 result=success
+B2-A5-ERROR case=allocation backend=vm code=X06-RUNTIME-011 source_unchanged=true result=success
+B2-A5-REPLAY case=a5_integer_arithmetic format=xiaoc result=success
+B2-A5-REPLAY case=a5_integer_arithmetic format=xar artifact=\\?\D:\project\Xiao\.b2b-divide\20261108-faecd26d\run-temp\xiao-b2-a5-replay-59632-1794090739250985100\a5_integer_arithmetic.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_decimal_arithmetic format=xiaoc result=success
+B2-A5-REPLAY case=a5_decimal_arithmetic format=xar artifact=\\?\D:\project\Xiao\.b2b-divide\20261108-faecd26d\run-temp\xiao-b2-a5-replay-59632-1794090739250985100\a5_decimal_arithmetic.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_conversions format=xiaoc result=success
+B2-A5-REPLAY case=a5_conversions format=xar artifact=\\?\D:\project\Xiao\.b2b-divide\20261108-faecd26d\run-temp\xiao-b2-a5-replay-59632-1794090739250985100\a5_conversions.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_carriers format=xar artifact=\\?\D:\project\Xiao\.b2b-divide\20261108-faecd26d\run-temp\xiao-b2-a5-replay-59632-1794090739250985100\a5_carriers.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_errors format=xiaoc result=success
+B2-A5-REPLAY case=a5_errors format=xar artifact=\\?\D:\project\Xiao\.b2b-divide\20261108-faecd26d\run-temp\xiao-b2-a5-replay-59632-1794090739250985100\a5_errors.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_matrix format=xiaoc result=success
+B2-A5-REPLAY case=a5_matrix format=xar artifact=\\?\D:\project\Xiao\.b2b-divide\20261108-faecd26d\run-temp\xiao-b2-a5-replay-59632-1794090739250985100\a5_matrix.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_bindings format=xiaoc result=success
+B2-A5-REPLAY case=a5_bindings format=xar artifact=\\?\D:\project\Xiao\.b2b-divide\20261108-faecd26d\run-temp\xiao-b2-a5-replay-59632-1794090739250985100\a5_bindings.xar source_removed=true result=success
+test b1_capabilities_have_vm_golden_outputs ... ok
+
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 119.76s
+

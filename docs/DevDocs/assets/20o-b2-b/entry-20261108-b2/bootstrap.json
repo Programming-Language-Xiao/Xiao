@@ -1,0 +1,12 @@
+{
+  "entry_commit": "faecd26dd7e0d0cc831bbb31af34c8398472bcf6",
+  "task_root": "D:\\project\\Xiao\\.b2b-divide\\20261108-faecd26d",
+  "source_root": "D:\\project\\Xiao\\.b2b-divide\\20261108-faecd26d\\source",
+  "repository_root": "D:\\project\\Xiao\\Xiao",
+  "b1_code": "35872782",
+  "abi": "1.18",
+  "codegen": 20,
+  "initial_max_intrinsic": 32,
+  "b1_f10": false,
+  "b2_a_perf": false
+}

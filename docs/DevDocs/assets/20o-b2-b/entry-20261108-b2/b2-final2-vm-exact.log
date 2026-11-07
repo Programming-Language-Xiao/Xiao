@@ -1,0 +1,33 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on build directory
+   Compiling xiao-runtime-abi v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-runtime-abi)
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-i18n)
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-standard-library)
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-syntax)
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-types)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-modules)
+   Compiling xiao-config v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-config)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-lifetime)
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-ir)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-runtime)
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-bytecode)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-vm)
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-artifacts)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-xar)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.b2b-divide\20261108-faecd26d\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 07s
+     Running tests\20o_b2_b2_divide.rs (D:\project\Xiao\.b2b-divide\20261108-faecd26d\cargo-target\debug\deps\20o_b2_b2_divide-c8a2412f366034e7.exe)
+
+running 1 test
+B2-B2-DIVIDE backend=vm formats=source,xiaoc,xar intrinsic=33 source_removed=true result=success
+test lfloat_divide_has_vm_golden_outputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.86s
+
