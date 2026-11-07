@@ -231,6 +231,32 @@ mod tests {
     }
 
     #[test]
+    fn all_fifteen_functions_reject_nonfinite_inputs() {
+        let results = [
+            sqrt(f64::NAN),
+            floor(f64::NAN),
+            ceil(f64::NAN),
+            round(f64::NAN),
+            trunc(f64::NAN),
+            abs(f64::NAN),
+            min(f64::NAN, 0.0),
+            max(0.0, f64::INFINITY),
+            pow(1.0, f64::NAN),
+            sin(f64::NAN),
+            cos(f64::INFINITY),
+            tan(f64::NAN),
+            exp(f64::NAN),
+            ln(f64::NAN),
+            log10(f64::INFINITY),
+        ];
+        assert!(
+            results
+                .into_iter()
+                .all(|result| result.unwrap_err().code() == "X06-RUNTIME-009")
+        );
+    }
+
+    #[test]
     fn domains_nonfinite_and_signed_zero_follow_frozen_boundary() {
         for result in [
             sqrt(-1.0),
@@ -246,6 +272,22 @@ mod tests {
         }
         assert_eq!(sqrt(-0.0).unwrap().to_bits(), (-0.0_f64).to_bits());
         assert_eq!(round(-0.5).unwrap().to_bits(), (-0.0_f64).to_bits());
+        assert_eq!(floor(-0.0).unwrap().to_bits(), (-0.0_f64).to_bits());
+        assert_eq!(ceil(-0.0).unwrap().to_bits(), (-0.0_f64).to_bits());
+        assert_eq!(trunc(-0.0).unwrap().to_bits(), (-0.0_f64).to_bits());
+        assert_eq!(sin(-0.0).unwrap().to_bits(), (-0.0_f64).to_bits());
+        assert_eq!(tan(-0.0).unwrap().to_bits(), (-0.0_f64).to_bits());
         assert_eq!(pow(-0.0, 3.0).unwrap().to_bits(), (-0.0_f64).to_bits());
+    }
+
+    #[test]
+    fn pow_reference_vector_stays_within_four_ulp() {
+        let actual = pow(2.0, 0.5).unwrap();
+        let reference = std::f64::consts::SQRT_2;
+        let ordered = |value: f64| {
+            let bits = value.to_bits() as i64;
+            if bits < 0 { i64::MIN - bits } else { bits }
+        };
+        assert!(ordered(actual).abs_diff(ordered(reference)) <= 4);
     }
 }
