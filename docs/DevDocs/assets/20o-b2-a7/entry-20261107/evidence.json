@@ -9,8 +9,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 2474,
-      "sha256": "380118f46b38e68af49d9748b08b1fa418e11ed848a426b2e6cf8d866e4ef8a1"
+      "bytes": 2727,
+      "sha256": "76bab86409b3a8dcf03389038e672966351966a7ae04b14061c29475a733b889"
     },
     {
       "path": "a1-native-exact.json",
@@ -554,8 +554,8 @@
     },
     {
       "path": "validate-audit.py",
-      "bytes": 3751,
-      "sha256": "19d5ac721f241a891fa155c4242e9069e2ee7190b8247d78f82448a23016e7d1"
+      "bytes": 4394,
+      "sha256": "f23a4de815a2d35b4be80c3609a2d98b5929805bc08f3e2a0ddd4e203ed4a53d"
     },
     {
       "path": "workspace-check.json",

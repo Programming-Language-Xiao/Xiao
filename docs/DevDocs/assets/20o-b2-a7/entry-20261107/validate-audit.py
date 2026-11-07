@@ -4,6 +4,13 @@ from pathlib import Path
 parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,required=True);args=parser.parse_args()
 ROOT=Path(__file__).resolve().parent;REPO=ROOT.parents[4]
 if args.output.resolve().is_relative_to(ROOT):raise SystemExit('A7反例输出必须位于有效归档之外')
+def manifest_rows(directory):
+ files={p.relative_to(directory).as_posix():p for p in directory.rglob('*') if p.is_file() and p!=directory/'evidence.json' and '__pycache__' not in p.parts}
+ return [{'path':name,'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for name,p in sorted(files.items())]
+def verify_manifest(directory):
+ value=json.loads((directory/'evidence.json').read_text(encoding='utf-8'));rows=manifest_rows(directory)
+ if value.get('file_count')!=len(rows) or value.get('files')!=rows:raise SystemExit('A7归档原件清单或字节摘要不符')
+verify_manifest(ROOT)
 args.output.mkdir(parents=True,exist_ok=False)
 def edit(d,name,change):
  p=d/name;value=json.loads(p.read_text());change(value);p.write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
@@ -25,4 +32,4 @@ with tempfile.TemporaryDirectory(prefix='a7-audit-review-') as temporary:
   row={'case':name,'passed':passed,'argv':argv,'exit_code':p.returncode,'expected_error':error,'actual_error':err,'stdout':name+'.stdout.log','stderr':name+'.stderr.log','stdout_sha256':hashlib.sha256(p.stdout).hexdigest(),'stderr_sha256':hashlib.sha256(p.stderr).hexdigest()};rows.append(row)
   print(json.dumps({'case':name,'passed':passed},ensure_ascii=False),flush=True)
   if not passed:raise SystemExit(json.dumps(row,ensure_ascii=False))
-(args.output/'cases.json').write_text(json.dumps({'passed':True,'audit_sha256':hashlib.sha256((ROOT/'audit.py').read_bytes()).hexdigest(),'validator_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'cases':rows,'scope':'1正例/7反例；临时归档重建清单后核对实际错误全文'},ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
+(args.output/'cases.json').write_text(json.dumps({'passed':True,'audit_sha256':hashlib.sha256((ROOT/'audit.py').read_bytes()).hexdigest(),'validator_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'cases':rows,'scope':'1正例/8反例；复制前校验归档清单，临时副本重建清单后核对实际错误全文'},ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
