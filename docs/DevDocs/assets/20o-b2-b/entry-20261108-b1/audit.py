@@ -26,6 +26,8 @@ CHECKS = {
     "b1-runtime-clippy": None,
     "b1-runtime-fmt": None,
     "b1-dependency-tree": None,
+    "b1-benchmark-check": None,
+    "b1-docs-all": None,
 }
 
 
