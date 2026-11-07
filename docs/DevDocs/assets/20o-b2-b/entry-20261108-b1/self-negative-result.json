@@ -1,0 +1,11 @@
+{
+  "baseline_exit_code": 0,
+  "tampered_manifest_exit_code": 1,
+  "missing_gitattributes_exit_code": 1,
+  "expected": {
+    "baseline": 0,
+    "tampered_manifest": 1,
+    "missing_gitattributes": 1
+  },
+  "passed": true
+}

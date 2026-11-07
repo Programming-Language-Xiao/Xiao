@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import argparse
 from pathlib import Path
 import re
 import subprocess
@@ -129,6 +130,13 @@ def blob_bytes(blob_ids):
 
 
 def main():
+    global ROOT, SOURCE
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root", type=Path, default=ROOT)
+    parser.add_argument("--source-root", type=Path, default=SOURCE)
+    args = parser.parse_args()
+    ROOT = args.root.resolve()
+    SOURCE = args.source_root.resolve()
     evidence = read("evidence.json")
     rows = inventory_rows()
     by_path = {row["path"]: row for row in rows}
@@ -137,7 +145,13 @@ def main():
     if len(PASS_NAMES) != 18:
         fail("审计检查数量不是18")
 
-    required = {".gitattributes", "b1-guards-report.json", "closeout.json", "negative-cases.json"}
+    required = {
+        ".gitattributes",
+        "b1-guards-report.json",
+        "closeout.json",
+        "negative-cases.json",
+        "self-negative-result.json",
+    }
     if not required.issubset(by_path):
         fail("最终证据缺少定稿文件")
     for row in evidence["files"]:
@@ -153,6 +167,7 @@ def main():
         or "current_head" in closeout
         or closeout.get("checks") != sorted(CHECKS)
         or closeout.get("passed_checks") != 18
+        or closeout.get("self_negative") != "self-negative-result.json"
     ):
         fail("closeout.json 契约不符")
 
@@ -175,6 +190,14 @@ def main():
         fail("清单反例突变位置不符")
     if actual_by_path[mutation_path]["sha256"] == fixture["files"][0]["sha256"]:
         fail("清单反例摘要没有改变")
+    self_negative = read("self-negative-result.json")
+    if (
+        self_negative.get("baseline_exit_code") != 0
+        or self_negative.get("tampered_manifest_exit_code") == 0
+        or self_negative.get("missing_gitattributes_exit_code") == 0
+        or not self_negative.get("passed")
+    ):
+        fail("自反例没有证明篡改清单和删除.gitattributes会被拒绝")
 
     source_ids = set()
     logs = {}

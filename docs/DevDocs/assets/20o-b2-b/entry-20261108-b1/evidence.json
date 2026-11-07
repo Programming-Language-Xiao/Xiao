@@ -1,6 +1,6 @@
 {
   "scope": "仅B1本目录最终文件；清单自身不计入自身摘要",
-  "file_count": 26,
+  "file_count": 28,
   "files": [
     {
       "path": ".gitattributes",
@@ -9,8 +9,8 @@
     },
     {
       "path": "audit.py",
-      "bytes": 9862,
-      "sha256": "406bbfcacd23db02fd908f719be0bb31dfd605c1e960880cd1bb871d0a1b28b5"
+      "bytes": 10703,
+      "sha256": "20e1ebfa6b21dc1c1972cf10107c24ffe7a500bb361d75849219b7186b5570ca"
     },
     {
       "path": "b1-benchmark-check.json",
@@ -84,8 +84,8 @@
     },
     {
       "path": "closeout.json",
-      "bytes": 1392,
-      "sha256": "8822fd87b4f2a523372641916d6a943addf8f23b328c73d2b5fed25ce7738151"
+      "bytes": 1440,
+      "sha256": "eb7dbb6ea1541dd783fbb532185e41b74a9f6a63fec40ac80538798e01b3b0ff"
     },
     {
       "path": "dependency-summary.json",
@@ -109,13 +109,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 1381,
-      "sha256": "e276a7dd927c124f618784313f3b38dc7981e4be74920260e9e52f024f9349a6"
+      "bytes": 1489,
+      "sha256": "826ea2ce47735b3319edea56de527acfa185d57392c7555b164e1e8ba669bb38"
     },
     {
       "path": "rebuild-closeout.py",
-      "bytes": 2293,
-      "sha256": "4f580a3db9b4155b1a2d51dffa89a458bc7eca3291c148a104a7348faac3e2ca"
+      "bytes": 2343,
+      "sha256": "5331092b45493c9f374ccb10f2558a5d2363644932299c571f5da3716b9f2484"
     },
     {
       "path": "rebuild-evidence.py",
@@ -126,6 +126,16 @@
       "path": "run-step.py",
       "bytes": 4884,
       "sha256": "9f8f2319eede23a28dfb6681627a8e63fd0c61167750294f343c6636b75eb254"
+    },
+    {
+      "path": "self-negative-result.json",
+      "bytes": 223,
+      "sha256": "f573d9c8bb5b75b68f32833939881c5d9d72ab8b4d993bf45475b19e3ff4b835"
+    },
+    {
+      "path": "self-negative.py",
+      "bytes": 1883,
+      "sha256": "39ed8914113cded1acaa084e8511e0aa4a2f14b279ed4169c4397c24c169fc4d"
     },
     {
       "path": "source-manifests/8a3d7472ccaf8bb0a25d6731c8e852d770ef03d4f0267476956a974f2f0b7cc8.json",

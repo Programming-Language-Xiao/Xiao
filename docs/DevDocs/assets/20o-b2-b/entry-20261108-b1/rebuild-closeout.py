@@ -29,6 +29,7 @@ closeout = {
     "source_manifest": next(iter(source_ids)),
     "checks": CHECKS,
     "passed_checks": 18,
+    "self_negative": "self-negative-result.json",
     "runtime_tests": "255 passed / 0 failed / 0 ignored",
     "dependency_versions": {
         "bigdecimal": "0.4.11",

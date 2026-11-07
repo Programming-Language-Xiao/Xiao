@@ -10,4 +10,4 @@
 python docs/DevDocs/assets/20o-b2-b/entry-20261108-b1/audit.py
 ```
 
-审计是只读的，固定使用 Git 对象 `d08b8460`（B0 实际入口）与 `35872782`（B1 代码提交）校验产品树、锁文件和源码清单，不读取或要求当前 HEAD。输出固定为 18 项通过，并校验 `.gitattributes`、28/28 守卫、`closeout.json` 和清单篡改反例。最终文件由 `rebuild-closeout.py` 与 `rebuild-evidence.py` 按实际字节生成；生成后再运行只读审计。`cmath` 继续 `planned`，旧 721 条 F10 不运行，B2-B 公开接线与 B2-C 最终回归后置。
+审计是只读的，固定使用 Git 对象 `d08b8460`（B0 实际入口）与 `35872782`（B1 代码提交）校验产品树、锁文件和源码清单，不读取或要求当前 HEAD。输出固定为 18 项通过，并校验 `.gitattributes`、28/28 守卫、`closeout.json` 和清单篡改反例。`self-negative.py` 会在临时副本中改写清单并删除 `.gitattributes`，两次都必须被拒绝。最终文件由 `rebuild-closeout.py` 与 `rebuild-evidence.py` 按实际字节生成；生成后再运行只读审计。`cmath` 继续 `planned`，旧 721 条 F10 不运行，B2-B 公开接线与 B2-C 最终回归后置。
