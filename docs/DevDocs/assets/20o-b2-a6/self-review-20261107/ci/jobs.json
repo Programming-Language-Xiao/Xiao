@@ -1,0 +1,104 @@
+{
+  "jobs": [
+    {
+      "id": 128307378394,
+      "run_id": 42340653748,
+      "workflow_name": "Xiao workspace gates",
+      "head_branch": "codex/b1-imp-seven-libraries",
+      "run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/42340653748",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOURc-Qs8AAAAd37c42g",
+      "head_sha": "bbf9feaa76e1fd5083bf7924a363a31baf4c69a9",
+      "url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/jobs/128307378394",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42340653748/job/128307378394",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-07T04:57:32Z",
+      "started_at": "2026-11-07T04:57:33Z",
+      "completed_at": "2026-11-07T05:05:22Z",
+      "name": "Linux workspace gates",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-07T04:57:34Z",
+          "completed_at": "2026-11-07T04:57:35Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-07T04:57:35Z",
+          "completed_at": "2026-11-07T04:57:41Z"
+        },
+        {
+          "name": "Setup Bun",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-07T04:57:41Z",
+          "completed_at": "2026-11-07T04:57:43Z"
+        },
+        {
+          "name": "Setup Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-07T04:57:43Z",
+          "completed_at": "2026-11-07T04:57:52Z"
+        },
+        {
+          "name": "Configure locked Cargo and numeric environment",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-07T04:57:52Z",
+          "completed_at": "2026-11-07T04:57:52Z"
+        },
+        {
+          "name": "Run workspace gates",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-07T04:57:52Z",
+          "completed_at": "2026-11-07T05:05:18Z"
+        },
+        {
+          "name": "Post Setup Bun",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-07T05:05:18Z",
+          "completed_at": "2026-11-07T05:05:18Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-07T05:05:18Z",
+          "completed_at": "2026-11-07T05:05:18Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-07T05:05:18Z",
+          "completed_at": "2026-11-07T05:05:18Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/check-runs/128307378394",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_id": 1000001437,
+      "runner_name": "GitHub Actions 1000001437",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ]
+}

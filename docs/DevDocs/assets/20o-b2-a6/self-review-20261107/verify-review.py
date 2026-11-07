@@ -51,10 +51,12 @@ def main():
             value=json.loads(out)
             require(row['exit_code']==0 and not error and value['passed'] and value['checks']==18 and value['source_files']==1029 and len(value['performance'])==6,'完整归档正例未通过')
         else:require(row['exit_code']==1 and not out and error.strip()==row['expected_error'],'完整归档反例实际原因不符')
-    for name in ['after-reproduction','final-process-and-report-controls','archive-validation','final-docs-gate','final-archive-audit']:
+    for name in ['after-reproduction','final-process-and-report-controls','archive-validation','final-docs-gate-2','final-archive-audit','ci-completion']:
         record=read(ROOT/(name+'.json'))
         require(record['exit_code']==0 and record['product_before']==record['product_after'] and record['product_after']['no_product_difference'],'实际复核命令失败或产品输入改变：'+name)
         require(sha(ROOT/record['stdout'])==record['stdout_sha256'] and sha(ROOT/record['stderr'])==record['stderr_sha256'],'实际复核输出摘要不符：'+name)
+    ci=json.loads((ROOT/'ci-completion.stdout.log').read_text(encoding='utf-8').strip().splitlines()[-1])
+    require(ci['run_id']==42340653748 and ci['conclusion']=='success' and ci['code_commit']=='bbf9feaa76e1fd5083bf7924a363a31baf4c69a9','第二轮自审CI回执不符')
     print(json.dumps({'passed':True,'scope':'A6第二轮自审','files':files,'product_commit':'e7bf7a49ba3ed55679b69c97ac1bd5ce7f5777b6','reproduced_false_acceptances':5,'archive_cases':10,'report_negative_cases':11,'process_and_output_negative_cases':6,'original_measurements_unchanged':True},ensure_ascii=False))
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--manifest',action='store_true');args=parser.parse_args()
