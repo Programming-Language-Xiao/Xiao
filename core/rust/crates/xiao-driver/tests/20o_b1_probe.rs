@@ -3,6 +3,9 @@
 #[path = "support/b1_imp.rs"]
 mod b1_imp;
 
+#[path = "support/b2_divide.rs"]
+mod b2_divide;
+
 #[path = "20o_b2_a_support/mod.rs"]
 mod b2_a;
 
@@ -200,6 +203,7 @@ fn b1_capabilities_have_vm_golden_outputs() {
         println!("20O-B1-IMP-PROBE case={module} backend=vm result=success");
     }
     b2_a::vm_suite();
+    b2_divide::vm_suite();
 }
 
 #[test]
@@ -1032,4 +1036,5 @@ fn b1_capabilities_match_native_golden_outputs() {
     }
     assert_native_error_code_failure_cleanup(&target, &toolchain, &root.0);
     b2_a::native_suite();
+    b2_divide::native_suite();
 }

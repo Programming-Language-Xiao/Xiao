@@ -609,6 +609,7 @@ impl<'a> DynamicGenerator<'a> {
                 self.release_value(value);
                 Ok(result)
             }
+            xiao_intrinsics::VmBinding::LfloatDivide => self.emit_lfloat_divide(arguments, span),
             xiao_intrinsics::VmBinding::ErrorCode => self.emit_error_code(arguments, span),
             xiao_intrinsics::VmBinding::Print => {
                 let mut values = Vec::with_capacity(arguments.len());
@@ -993,6 +994,64 @@ impl<'a> DynamicGenerator<'a> {
         self.emit(format!("  br label %{}", self.error_target()));
         self.terminated = true;
         self.emit_label(&success);
+    }
+
+    /// 用拥有槽保留实参，源码顺序求值后才按形参顺序传入；所有失败边均释放临时输入。
+    fn emit_lfloat_divide(&mut self, arguments: &[IrCallArgument], span: IrSpan) -> Result<String> {
+        let shapes: Vec<_> = arguments
+            .iter()
+            .map(|arg| {
+                (
+                    arg.kind.as_str(),
+                    arg.name.as_ref().map(|name| name.text.as_str()),
+                )
+            })
+            .collect();
+        let order = xiao_intrinsics::lfloat_divide_argument_order(&shapes).ok_or_else(|| {
+            CodegenError::Unsupported {
+                feature: "lfloat_divide 四参数形态".to_owned(),
+                span: Some(span),
+            }
+        })?;
+        let mut slots = Vec::new();
+        for _ in arguments {
+            let slot = self.next_temp();
+            self.emit(format!("  {slot} = alloca {VALUE_TYPE}"));
+            self.emit(format!("  store {VALUE_TYPE} zeroinitializer, ptr {slot}"));
+            slots.push(slot);
+        }
+        let failed = self.next_label("lfloat.divide.arguments.fail");
+        let ready = self.next_label("lfloat.divide.arguments.ready");
+        self.push_error_context(failed.clone());
+        for (arg, slot) in arguments.iter().zip(&slots) {
+            let value = self.emit_expression(&arg.value)?;
+            self.store_call_argument(&arg.value, &arg.value, &value, slot);
+        }
+        self.pop_error_context();
+        self.emit(format!("  br label %{ready}"));
+        self.terminated = true;
+        self.emit_label(&failed);
+        let release = self.value_release_symbol();
+        for slot in slots.iter().rev() {
+            self.emit(format!("  call void @{release}(ptr {slot})"));
+        }
+        self.emit(format!("  br label %{}", self.error_target()));
+        self.terminated = true;
+        self.emit_label(&ready);
+        let output = self.next_temp();
+        self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
+        self.emit(format!(
+            "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
+        ));
+        let status = self.next_temp();
+        self.emit(format!("  {status} = call i32 @xiao_runtime_lfloat_divide(ptr {}, ptr {}, ptr {}, ptr {}, ptr {output})",slots[order[0]],slots[order[1]],slots[order[2]],slots[order[3]]));
+        for slot in slots.iter().rev() {
+            self.emit(format!("  call void @{release}(ptr {slot})"));
+        }
+        self.check_status_at(&status, span);
+        let result = self.next_temp();
+        self.emit(format!("  {result} = load {VALUE_TYPE}, ptr {output}"));
+        Ok(result)
     }
 
     /// 发射已静态解析的顶层函数、表方法与错误构造调用。

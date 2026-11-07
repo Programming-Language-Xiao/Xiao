@@ -86,7 +86,9 @@ pub use tables::{
 /// 重导出释放计划测试驱动器和展开结果。
 pub use testing::{CatchRoute, ReleaseExecution, RuntimeBinding, RuntimeDriver, UnwindExecution};
 /// 重导出 Runtime 标量和字符串值。
-pub use value::{ExternalResourceHandle, ExternalResourceKind, RuntimeValue, StringHandle};
+pub use value::{
+    ExternalResourceHandle, ExternalResourceKind, RuntimeValue, StringHandle, lfloat_divide,
+};
 /// 重导出 VM 并发句柄适配。
 pub use vm_concurrency::{
     VM_DETACHED_ERROR_CAPACITY, VmConcurrencyValue, VmDetachedCompletionTracker, VmDetachedError,

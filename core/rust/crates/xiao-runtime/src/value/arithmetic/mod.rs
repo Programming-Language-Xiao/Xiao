@@ -164,3 +164,55 @@ mod decimal_tests;
 
 #[cfg(test)]
 mod resource_tests;
+
+/// 全局四参除法的共用入口；类型→precision/rounding→逐形参接纳→除零→工作/结果。
+///
+/// 不作隐式数值提升，不触碰挂起槽，不修改输入；返回独立的规范 lfloat 文本。
+pub fn lfloat_divide(
+    numerator: &RuntimeValue,
+    denominator: &RuntimeValue,
+    precision: &RuntimeValue,
+    rounding: &RuntimeValue,
+) -> RuntimeResult<RuntimeValue> {
+    let (
+        RuntimeValue::Lfloat(numerator),
+        RuntimeValue::Lfloat(denominator),
+        RuntimeValue::Int(precision),
+        RuntimeValue::Str(rounding),
+    ) = (numerator, denominator, precision, rounding)
+    else {
+        return Err(RuntimeError::type_mismatch(
+            "lfloat, lfloat, int, str",
+            "lfloat_divide实参",
+        ));
+    };
+    rounding
+        .with_str(|rounding| lfloat_divide_text(numerator, denominator, *precision, rounding))?
+}
+
+/// 共享借用文本门面；两侧接纳完成后才恢复系数，不复制未接纳的大文本。
+pub(crate) fn lfloat_divide_text(
+    numerator: &str,
+    denominator: &str,
+    precision: i64,
+    rounding: &str,
+) -> RuntimeResult<RuntimeValue> {
+    use crate::value::numeric;
+    use xiao_types::numeric_text::NumericTextKind;
+    let request = explicit_division::request(precision, rounding)?;
+    let left = numeric::validated_text(numerator, NumericTextKind::Decimal)?;
+    let right = numeric::validated_text(denominator, NumericTextKind::Decimal)?;
+    let number = |text: &str, digits| -> RuntimeResult<common::Number> {
+        let (coefficient, scale) = numeric::parse_decimal(text)?.into_bigint_and_scale();
+        Ok(common::Number {
+            coefficient,
+            scale: scale as i32,
+            digits,
+        })
+    };
+    explicit_division::divide(
+        &number(numerator, left.digit_count())?,
+        &number(denominator, right.digit_count())?,
+        request,
+    )
+}

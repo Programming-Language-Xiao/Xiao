@@ -46,3 +46,5 @@ getter 只借读指定错误对象的 UTF-8 code，不分配、不 retain/releas
 
 10T 新增独立 `XiaoTableDescriptorV2`、注册式方法回调与值指针字段入口，旧描述符仍为 40 字节。
 新描述符 88 字节、方法项 56 字节；回调返回 i32 状态，receiver/参数借用、结果指针转移所有权。
+
+B2 内部快照追加 `xiao_runtime_lfloat_divide` 的四个借用输入与拥有输出槽声明，成功替换、失败保持 out；只激活 intrinsic 33。ABI 编码仍为 1.18、生成器仍为 20，仅供本批内部验证；B5 才统一切换 1.19/21，不将此快照作为公共发布产物。

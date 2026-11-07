@@ -1041,6 +1041,16 @@ unsafe extern "C" {
     /// getter 不分配、不 retain/release、不触碰挂起槽；失败保持 out 原值。
     /// 状态 1 仅表示 value/out 指针为空，2 为非 Error 标签，3 为无有效错误句柄。
     pub fn xiao_runtime_error_code(value: *const XiaoValue, out: *mut XiaoAbiBytes) -> i32;
+    /// B2 内部单入口：四个实参借读，out 已初始化、拥有且与输入不重叠。
+    /// 成功0释放替换out，失败1/2/3不触碰挂起槽；语义失败6保留out并正常传播错误。
+    /// 当前1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_lfloat_divide(
+        numerator: *const XiaoValue,
+        denominator: *const XiaoValue,
+        precision: *const XiaoValue,
+        rounding: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
     /// 读取当前线程挂起错误的机器字段。
     pub fn xiao_runtime_error_snapshot(out: *mut XiaoAbiErrorSnapshot) -> i32;
     /// 读取当前线程挂起错误的第 `index` 个结构化参数。

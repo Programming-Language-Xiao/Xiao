@@ -672,6 +672,13 @@ impl<'source> TypeChecker<'source> {
         }
         if self
             .intrinsic_decl(callee)
+            .is_some_and(|decl| decl.kind == IntrinsicKind::LfloatDivide)
+        {
+            self.record_intrinsic_call(callee, span);
+            return self.check_lfloat_divide_call(arguments, span);
+        }
+        if self
+            .intrinsic_decl(callee)
             .is_some_and(|decl| decl.kind == IntrinsicKind::ErrorCode)
         {
             self.record_intrinsic_call(callee, span);
@@ -715,6 +722,68 @@ impl<'source> TypeChecker<'source> {
             return self.check_set_mutation_intrinsic_call(declaration.kind, arguments, span);
         }
         self.check_function_value_call(callee, arguments, span)
+    }
+
+    /// 显式除法只接受冻结四参数；动态类型和值域在调用时检查，保留实参求值顺序。
+    fn check_lfloat_divide_call(&mut self, arguments: &[CallArgument], span: SourceSpan) -> Type {
+        let shapes: Vec<_> = arguments
+            .iter()
+            .map(|argument| {
+                if argument.name.as_ref().is_some_and(|name| name.backticked) {
+                    return ("spread", None);
+                }
+                (
+                    match argument.kind {
+                        CallArgumentKind::Positional => "positional",
+                        CallArgumentKind::Keyword => "keyword",
+                        _ => "spread",
+                    },
+                    argument
+                        .name
+                        .as_ref()
+                        .map(|name| name.unquoted_text(self.source)),
+                )
+            })
+            .collect();
+        let order = xiao_intrinsics::lfloat_divide_argument_order(&shapes);
+        let actual: Vec<_> = arguments
+            .iter()
+            .map(|arg| self.check_expression(&arg.value))
+            .collect();
+        let Some(order) = order else {
+            self.call_error(
+                span,
+                "lfloat_divide 需要 numerator、denominator、precision、rounding 四个必填参数",
+            );
+            return Type::scalar(ScalarType::Lfloat);
+        };
+        for (parameter, index) in order.into_iter().enumerate() {
+            let expected = Type::scalar(match parameter {
+                0 | 1 => ScalarType::Lfloat,
+                2 => ScalarType::Int,
+                _ => ScalarType::Str,
+            });
+            let actual = self.context.apply(&actual[index]);
+            if actual != expected && !matches!(actual, Type::Dynamic | Type::Variable(_)) {
+                self.type_error_with_params(
+                    FUNCTION_CALL_CODE,
+                    "x04.type.call_argument_type",
+                    arguments[index].value.span(),
+                    format!("lfloat_divide 需要 {expected}，实际为 {actual}"),
+                    [
+                        (
+                            "expected".to_owned(),
+                            DiagnosticParam::Text(expected.to_string()),
+                        ),
+                        (
+                            "actual".to_owned(),
+                            DiagnosticParam::Text(actual.to_string()),
+                        ),
+                    ],
+                );
+            }
+        }
+        Type::scalar(ScalarType::Lfloat)
     }
 
     /// 内建错误读取只接受一个位置错误对象，动态边界在执行时检查。

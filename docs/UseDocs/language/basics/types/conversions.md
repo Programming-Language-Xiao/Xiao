@@ -205,3 +205,157 @@ true
 失败不修改输入或返回部分结果。涉及lint/lfloat的值错误保留可捕获Runtime检查；其他定宽常量检查维持原规则。身份、错误保留、算术与转换的完整示例均已进入CI；A6受控性能是特定平台测量，不是API超时或任意硬件保证。
 
 [上一页：变量声明](variables.md) · [下一页：编译期常量](constants.md)
+
+## B2显式精度除法（planned）
+
+全局 `lfloat_divide(lfloat numerator, lfloat denominator, int precision, str rounding) -> lfloat` 的四参数都必填，支持位置和命名调用。precision 是最多有效数字（1～32,768）；只在最终商上舍入一次，短结果不补零。
+
+七种 rounding 为 `half_even`、`half_up`、`half_down`、`toward_zero`、`away_from_zero`、`floor`、`ceiling`。错误类型、输入预算和精度/舍入参数均在 Runtime 检查，仍可捕获；按类型、precision、rounding、输入接纳、除零、结果预算的顺序处理。本段只登记 B2 内部快照，最终发布仍 planned，B3 的 cmath 与 B5 版本切换后置。
+
+```xiao
+lfloat one = 1.00
+lfloat two = 2
+print(lfloat_divide(one, two, 10, "half_even"))
+print(lfloat_divide(lfloat(1), lfloat(3), 3, "half_even"))
+print(lfloat_divide(numerator = lfloat("9.99"), denominator = one, precision = 2, rounding = "half_even"))
+print(lfloat_divide(rounding = "half_even", precision = 2, denominator = lfloat(8), numerator = lfloat(3)))
+print(lfloat_divide(one, two, 32768, "half_even"))
+for mode in ["half_even", "half_up", "half_down", "toward_zero", "away_from_zero", "floor", "ceiling"]
+    print(lfloat_divide(lfloat("2.5"), one, 1, mode))
+    print(lfloat_divide(lfloat("-2.5"), one, 1, mode))
+    print(lfloat_divide(lfloat("2.1"), one, 1, mode))
+    print(lfloat_divide(lfloat("-2.1"), one, 1, mode))
+try
+    lfloat_divide(one, lfloat(0), 0, "invalid")
+catch failure as TypeError
+    print(error_code(failure))
+try
+    lfloat_divide(one, lfloat(0), 1, "invalid")
+catch failure as TypeError
+    print(error_code(failure))
+try
+    lfloat_divide(one, lfloat(0), 1, "half_even")
+catch failure as ArithmeticError
+    print(error_code(failure))
+try
+    lfloat_divide(one, two, 32769, "half_even")
+catch failure as TypeError
+    print(error_code(failure))
+try
+    lfloat_divide(lfloat("1e100000"), lfloat("1e-100000"), 1, "half_even")
+catch failure as ResourceError
+    print(error_code(failure))
+print(lfloat_divide(lfloat("1e-100000"), one, 32768, "half_even"))
+print(one)
+print(two)
+def n() -> lfloat
+    print("numerator")
+    return lfloat(1)
+def d() -> lfloat
+    print("denominator")
+    return lfloat(3)
+def p() -> int
+    print("precision")
+    return 3
+def r() -> str
+    print("rounding")
+    return "half_even"
+print(lfloat_divide(rounding = r(), precision = p(), denominator = d(), numerator = n()))
+try
+    try
+        raise Error(code = "ORIGINAL")
+    finally
+        print(lfloat_divide(one, two, 3, "half_even"))
+catch original as Error
+    print(error_code(original))
+try
+    lfloat_divide(lfloat("bad"), d(), p(), r())
+catch failure as TypeError
+    print(error_code(failure))
+print("continued")
+def dynamic_n(value) -> lfloat
+    return lfloat_divide(value, lfloat(2), 1, "half_even")
+def dynamic_d(value) -> lfloat
+    return lfloat_divide(lfloat(1), value, 1, "half_even")
+def dynamic_p(value) -> lfloat
+    return lfloat_divide(lfloat(1), lfloat(2), value, "half_even")
+def dynamic_r(value) -> lfloat
+    return lfloat_divide(lfloat(1), lfloat(2), 1, value)
+try
+    print(dynamic_n(1))
+catch failure as TypeError
+    print(error_code(failure))
+try
+    print(dynamic_d("2"))
+catch failure as TypeError
+    print(error_code(failure))
+try
+    print(dynamic_p("1"))
+catch failure as TypeError
+    print(error_code(failure))
+try
+    print(dynamic_r(1))
+catch failure as TypeError
+    print(error_code(failure))
+```
+
+预期输出：
+
+```text
+0.5
+0.333
+1e1
+0.38
+0.5
+2
+-2
+2
+-2
+3
+-3
+2
+-2
+2
+-2
+2
+-2
+2
+-2
+2
+-2
+3
+-3
+3
+-3
+2
+-3
+2
+-3
+3
+-2
+3
+-2
+X06-RUNTIME-012
+X06-RUNTIME-012
+X06-RUNTIME-013
+X06-RUNTIME-012
+X06-RUNTIME-033
+1e-100000
+1.00
+2
+rounding
+precision
+denominator
+numerator
+0.333
+0.5
+ORIGINAL
+X06-RUNTIME-012
+continued
+X06-RUNTIME-002
+X06-RUNTIME-002
+X06-RUNTIME-002
+X06-RUNTIME-002
+```
+
+[完整源码](../../../../../tests/fixtures/docs/numeric/b2_explicit_divide.xiao)进入默认VM和现有维护原生精确入口，.xiaoc/.xar重放也使用同一份源码与黄金。

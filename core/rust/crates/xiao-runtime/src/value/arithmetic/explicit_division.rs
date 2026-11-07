@@ -10,7 +10,7 @@ use crate::errors::{RuntimeError, RuntimeResult};
 use crate::value::RuntimeValue;
 use bigdecimal::{Signed, Zero};
 use num_bigint::BigInt;
-use xiao_types::numeric_text::{NUMERIC_DIGIT_LIMIT as D, NUMERIC_SCALE_LIMIT as H};
+use xiao_types::numeric_text::NUMERIC_DIGIT_LIMIT as D;
 
 /// F-1确认的七种最终舍入模式。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -64,7 +64,7 @@ pub(super) fn request(precision: i64, rounding: &str) -> RuntimeResult<Request> 
 
 /// 计算显式精度除法。
 ///
-/// 这里先在整数商余上生成一个保护位，再只按最终商的被舍弃部分执行一次舍入。
+/// 这里按已冻结的p-1-K缩放并取得精确整数商余，只对最终结果执行一次舍入。
 /// 结果不补齐无意义的尾零；尾零会在输出前折回 `scale`。该函数只接收已经通过
 /// `Number` 接纳检查的私有数值，不负责公开入口、挂起错误或 ABI 状态。
 pub(super) fn divide(
@@ -91,10 +91,8 @@ pub(super) fn divide(
         denominator_digits,
     );
 
-    // One extra decimal digit plus the exact remainder is enough to distinguish every
-    // rounding mode, including an exact half. The input scales cancel from this
-    // alignment distance, so a large exponent does not force a second unbounded scan.
-    let shift = request.precision as i64 - i64::from(order);
+    // F-3：只按p-1-K缩放；一次精确商余直接判断中点，不额外扩大工作值。
+    let shift = request.precision as i64 - 1 - i64::from(order);
     let (scaled_numerator, scaled_denominator) = scale_pair(
         &numerator,
         &denominator,
@@ -102,16 +100,14 @@ pub(super) fn divide(
         numerator_digits,
         denominator_digits,
     )?;
-    let (guarded, remainder) = common::div_rem(&scaled_numerator, &scaled_denominator)?;
-    let (truncated, discarded_digits) = (&guarded / 10_u8, (&guarded % 10_u8).to_u32_digits());
-    let discarded_digit = discarded_digits.1.first().copied().unwrap_or(0) as u8;
+    let (truncated, remainder) = common::div_rem(&scaled_numerator, &scaled_denominator)?;
     let increment = should_increment(
         request.rounding,
         negative,
         &truncated,
-        discarded_digit,
-        !remainder.is_zero(),
-    );
+        &remainder,
+        &scaled_denominator,
+    )?;
     let mut coefficient = truncated;
     if increment {
         coefficient += 1_u8;
@@ -126,9 +122,6 @@ pub(super) fn divide(
     let scale = i64::from(request.precision as i32 - 1)
         - i64::from(order)
         - (i64::from(right.scale) - i64::from(left.scale));
-    if scale.abs() > i64::from(H) {
-        return Err(common::limit("显式除法结果scale超过100000"));
-    }
     common::check_work(
         "explicit-division-result",
         common::decimal_digits(&coefficient),
@@ -182,28 +175,32 @@ fn scale_pair(
     }
 }
 
+/// 用r与M-r比较中点，避免为2r多物化一位；只舍入最终商一次。
 fn should_increment(
     rounding: Rounding,
     negative: bool,
     truncated: &BigInt,
-    discarded_digit: u8,
-    remainder_nonzero: bool,
-) -> bool {
-    let discarded = discarded_digit != 0 || remainder_nonzero;
-    if !discarded {
-        return false;
+    remainder: &BigInt,
+    denominator: &BigInt,
+) -> RuntimeResult<bool> {
+    if remainder.is_zero() {
+        return Ok(false);
     }
-    let above_half = discarded_digit > 5 || (discarded_digit == 5 && remainder_nonzero);
-    let exact_half = discarded_digit == 5 && !remainder_nonzero;
-    match rounding {
-        Rounding::HalfEven => above_half || (exact_half && (truncated % 2_u8 != BigInt::from(0))),
-        Rounding::HalfUp => above_half || exact_half,
-        Rounding::HalfDown => above_half,
+    let complement = common::checked_value("explicit-division-half", denominator - remainder)?;
+    let half = remainder.cmp(&complement);
+    use std::cmp::Ordering;
+    Ok(match rounding {
+        Rounding::HalfEven => {
+            half == Ordering::Greater
+                || (half == Ordering::Equal && truncated % 2_u8 != BigInt::from(0))
+        }
+        Rounding::HalfUp => half != Ordering::Less,
+        Rounding::HalfDown => half == Ordering::Greater,
         Rounding::TowardZero => false,
         Rounding::AwayFromZero => true,
         Rounding::Floor => negative,
         Rounding::Ceiling => !negative,
-    }
+    })
 }
 
 #[cfg(test)]
@@ -294,13 +291,22 @@ mod tests {
             .code(),
             "X06-RUNTIME-013"
         );
-        let numerator = format!("1{}", "0".repeat(D - 1));
+        let numerator = "2".repeat(D);
         let denominator = "9".repeat(D);
+        let maximum = divide(
+            &decimal(&numerator),
+            &decimal(&denominator),
+            request(32768, "half_even").unwrap(),
+        )
+        .unwrap();
+        assert_eq!(Number::decimal(&maximum).unwrap().digits, D);
+        assert_eq!(result("1e-100000", "1", 32768, "half_even"), "1e-100000");
+        assert_eq!(result("1e100000", "1", 32768, "half_even"), "1e100000");
         assert_eq!(
             divide(
-                &decimal(&numerator),
-                &decimal(&denominator),
-                request(32_768, "half_even").unwrap()
+                &decimal("1e100000"),
+                &decimal("1e-100000"),
+                request(1, "half_even").unwrap()
             )
             .unwrap_err()
             .code(),

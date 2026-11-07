@@ -97,6 +97,16 @@ fn main() {
                     assert_eq!(row.effect, "pure", "字符构造必须是 pure: {}", row.name);
                     assert_eq!(row.capability, "none", "字符构造不应需要能力: {}", row.name);
                 }
+                "lfloat_divide" => {
+                    assert_eq!(row.id, 33);
+                    assert_eq!(row.arity, "four");
+                    assert_eq!(row.parameter_type, "lfloat_divide_parameters");
+                    assert_eq!(row.return_type, "lfloat");
+                    assert_eq!(row.vm_binding, "lfloat_divide");
+                    assert_eq!(row.abi_binding, "lfloat_divide");
+                    assert_eq!(row.effect, "allocates");
+                    assert_eq!(row.capability, "none");
+                }
                 "error_code" => {
                     assert_eq!(row.arity, "one");
                     assert_eq!(row.parameter_type, "error");

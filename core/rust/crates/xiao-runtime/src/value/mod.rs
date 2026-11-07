@@ -6,6 +6,10 @@
 
 /// A2/A3精确系数算术内核。
 mod arithmetic;
+/// 四参显式精度除法，VM 与 C ABI 共用同一实现。
+pub use arithmetic::lfloat_divide;
+/// C ABI 借用文本适配，复用同一接纳和数学路径。
+pub(crate) use arithmetic::lfloat_divide_text;
 /// A4显式转换、精确截断与IEEE最近偶数舍入内核。
 mod conversions;
 /// 语言层数值提升，VM和既有generic C ABI共用，不改变Rust Eq/Hash。

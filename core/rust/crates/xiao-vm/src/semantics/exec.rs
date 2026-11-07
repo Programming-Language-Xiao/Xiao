@@ -34,6 +34,9 @@ mod concurrent;
 /// 模块初始化与上下文切换。
 #[path = "module_exec.rs"]
 mod module_exec;
+/// 显式精度除法的Runtime单入口绑定。
+#[path = "numeric_intrinsics.rs"]
+mod numeric_intrinsics;
 /// 集合变更 intrinsic 的执行绑定。
 #[path = "set_intrinsics.rs"]
 mod set_intrinsics;
@@ -1881,6 +1884,10 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 }
                 Ok(Some(arguments[0].value.to_char().map_err(Fault::Error)?))
             }
+            VmBinding::LfloatDivide => numeric_intrinsics::divide(
+                arguments,
+                SourceSpan::new(span.start, span.end).expect("已验证源码区间"),
+            ),
             VmBinding::ErrorCode => {
                 if declaration.signature.arity != xiao_intrinsics::Arity::One
                     || declaration.signature.parameter != xiao_intrinsics::ValueType::Error

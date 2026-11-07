@@ -57,6 +57,7 @@ pub enum IntrinsicKind {
     ArrayPush,
     ErrorConstructor,
     ErrorCode,
+    LfloatDivide,
     Print,
     Input,
     ResourceOpenFile,
@@ -75,6 +76,7 @@ pub enum Arity {
     One,
     OptionalOne,
     Two,
+    Four,
     Variadic,
     Error,
     None,
@@ -96,6 +98,7 @@ pub enum ValueType {
     SetElement,
     ArrayElement,
     ErrorParameters,
+    LfloatDivideParameters,
     Error,
     File,
     Directory,
@@ -215,6 +218,7 @@ pub enum VmBinding {
     ArrayPush,
     MakeError,
     ErrorCode,
+    LfloatDivide,
     Print,
     Input,
     ResourceOpenFile,
@@ -231,6 +235,7 @@ pub enum VmBinding {
 pub enum AbiBinding {
     ErrorNew,
     ErrorCode,
+    LfloatDivide,
     SetAdd,
     SetRemove,
     ArrayPush,
@@ -344,6 +349,22 @@ pub fn validate_table() -> Result<(), ContractError> {
                         || declaration.vm_binding != VmBinding::CharConstructor
                         || declaration.abi_binding != AbiBinding::None
                         || declaration.effects != Effects::Pure
+                        || declaration.capability != Capability::None
+                    {
+                        return Err(ContractError::SignatureMismatch(declaration.id));
+                    }
+                }
+                IntrinsicKind::LfloatDivide => {
+                    if declaration.id.get() != 33
+                        || declaration.signature
+                            != (Signature {
+                                arity: Arity::Four,
+                                parameter: ValueType::LfloatDivideParameters,
+                                return_type: ValueType::Lfloat,
+                            })
+                        || declaration.vm_binding != VmBinding::LfloatDivide
+                        || declaration.abi_binding != AbiBinding::LfloatDivide
+                        || declaration.effects != Effects::Allocates
                         || declaration.capability != Capability::None
                     {
                         return Err(ContractError::SignatureMismatch(declaration.id));
@@ -529,9 +550,90 @@ impl fmt::Display for ContractError {
 
 impl std::error::Error for ContractError {}
 
+/// 四参显式除法的冻结参数顺序；返回的索引只重排已按源码顺序求值的实参。
+pub const LFLOAT_DIVIDE_PARAMETERS: [(&str, ValueType); 4] = [
+    ("numerator", ValueType::Lfloat),
+    ("denominator", ValueType::Lfloat),
+    ("precision", ValueType::Int),
+    ("rounding", ValueType::Str),
+];
+
+/// 绑定四个必填位置/命名参数；拒绝展开、重复、缺参和命名后的裸位置参数。
+pub fn lfloat_divide_argument_order(arguments: &[(&str, Option<&str>)]) -> Option<[usize; 4]> {
+    if arguments.len() != 4 {
+        return None;
+    }
+    let mut order = [None; 4];
+    let mut positional = 0;
+    let mut saw_keyword = false;
+    for (source, (kind, name)) in arguments.iter().enumerate() {
+        let destination = match (*kind, name) {
+            ("positional", None) if !saw_keyword => {
+                let index = positional;
+                positional += 1;
+                index
+            }
+            ("keyword", Some(name)) => {
+                saw_keyword = true;
+                LFLOAT_DIVIDE_PARAMETERS
+                    .iter()
+                    .position(|(expected, _)| expected == name)?
+            }
+            _ => return None,
+        };
+        if order.get_mut(destination)?.replace(source).is_some() {
+            return None;
+        }
+    }
+    Some([order[0]?, order[1]?, order[2]?, order[3]?])
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn explicit_division_binding_preserves_source_order_and_rejects_ambiguous_shapes() {
+        assert_eq!(
+            lfloat_divide_argument_order(&[
+                ("keyword", Some("rounding")),
+                ("keyword", Some("precision")),
+                ("keyword", Some("denominator")),
+                ("keyword", Some("numerator"))
+            ]),
+            Some([3, 2, 1, 0])
+        );
+        assert_eq!(
+            lfloat_divide_argument_order(&[
+                ("positional", None),
+                ("positional", None),
+                ("positional", None),
+                ("positional", None)
+            ]),
+            Some([0, 1, 2, 3])
+        );
+        for args in [
+            [
+                ("keyword", Some("numerator")),
+                ("positional", None),
+                ("keyword", Some("precision")),
+                ("keyword", Some("rounding")),
+            ],
+            [
+                ("positional", None),
+                ("keyword", Some("numerator")),
+                ("keyword", Some("precision")),
+                ("keyword", Some("rounding")),
+            ],
+            [
+                ("positional", None),
+                ("positional", None),
+                ("spread", None),
+                ("keyword", Some("rounding")),
+            ],
+        ] {
+            assert!(lfloat_divide_argument_order(&args).is_none());
+        }
+    }
     #[test]
     fn generated_table_is_valid_and_zero_is_rejected() {
         validate_table().expect("生成表必须自洽");
@@ -566,7 +668,7 @@ mod tests {
         assert_eq!(declaration.abi_binding, AbiBinding::ErrorCode);
         assert_eq!(declaration.effects, Effects::Allocates);
         assert_eq!(declaration.capability, Capability::None);
-        assert_eq!(declarations().len(), 33);
+        assert_eq!(declarations().len(), 34);
         assert_eq!(
             declarations()
                 .iter()
