@@ -1,11 +1,16 @@
 {
-  "scope": "仅B1本目录文件；清单自身不计入自身摘要",
-  "file_count": 20,
+  "scope": "仅B1本目录最终文件；清单自身不计入自身摘要",
+  "file_count": 26,
   "files": [
     {
+      "path": ".gitattributes",
+      "bytes": 82,
+      "sha256": "b857aea69502e95479368bed81aca34202c65f04c4be8cc1480e21f1a9d537d2"
+    },
+    {
       "path": "audit.py",
-      "bytes": 7081,
-      "sha256": "df29c47cdadb0eb8e0dee7bd6cdab7e888fb7bf61b162bc1f44df2eed69aadbb"
+      "bytes": 9862,
+      "sha256": "406bbfcacd23db02fd908f719be0bb31dfd605c1e960880cd1bb871d0a1b28b5"
     },
     {
       "path": "b1-benchmark-check.json",
@@ -36,6 +41,11 @@
       "path": "b1-docs-all.log",
       "bytes": 279265,
       "sha256": "818fe092ec83adafe4565b02467bf2abf09c27463b2c4dde3a416bfbbba82c64"
+    },
+    {
+      "path": "b1-guards-report.json",
+      "bytes": 3487,
+      "sha256": "e74d9c3feb8c094a97a2a8253708b4c5a3504ce067cd9864dda7d862da5da4d0"
     },
     {
       "path": "b1-runtime-clippy.json",
@@ -69,13 +79,13 @@
     },
     {
       "path": "bootstrap.json",
-      "bytes": 442,
-      "sha256": "ed1ac9d07365251bf96a0d30ba86b378581e6f9883168d37a083a9c4775c3d80"
+      "bytes": 475,
+      "sha256": "cd69e26ad8b50c67d8818c64dc887a30dadbe480e2ec196c1cb34d1d900ac18e"
     },
     {
       "path": "closeout.json",
-      "bytes": 1436,
-      "sha256": "1887e013dc7141f75b8157b7af46b7d1e9c46338278aa532f06b89faae86172c"
+      "bytes": 1392,
+      "sha256": "8822fd87b4f2a523372641916d6a943addf8f23b328c73d2b5fed25ce7738151"
     },
     {
       "path": "dependency-summary.json",
@@ -88,9 +98,29 @@
       "sha256": "87084970ff35a5c4206ef757da650be7c5fc98f1e398f327eb1f1875c871246b"
     },
     {
+      "path": "negative-cases.json",
+      "bytes": 288,
+      "sha256": "8d6125634288300ea317e00824fe4e3f546bacf491c0ada846adbbd7f413efe1"
+    },
+    {
+      "path": "negative-evidence.json",
+      "bytes": 249,
+      "sha256": "d9b160f96892a9bd4345493a84e32ce4635d8ced940e81c86eb6fccb32d7fefb"
+    },
+    {
       "path": "README.md",
-      "bytes": 1153,
-      "sha256": "1628eb4504f339578e3309f4baea68ffcaf6f863f49233eec831d8a3c912bcaa"
+      "bytes": 1381,
+      "sha256": "e276a7dd927c124f618784313f3b38dc7981e4be74920260e9e52f024f9349a6"
+    },
+    {
+      "path": "rebuild-closeout.py",
+      "bytes": 2293,
+      "sha256": "4f580a3db9b4155b1a2d51dffa89a458bc7eca3291c148a104a7348faac3e2ca"
+    },
+    {
+      "path": "rebuild-evidence.py",
+      "bytes": 934,
+      "sha256": "0067896bc319a611f3fe6c9a0d7cb5b5f70e2740e67a6a14d18c560e93b3d507"
     },
     {
       "path": "run-step.py",

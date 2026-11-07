@@ -1,6 +1,11 @@
 {
-  "file_count": 47,
+  "file_count": 48,
   "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 82,
+      "sha256": "b857aea69502e95479368bed81aca34202c65f04c4be8cc1480e21f1a9d537d2"
+    },
     {
       "path": "audit.py",
       "bytes": 5313,
@@ -208,8 +213,8 @@
     },
     {
       "path": "b1-guards-report.json",
-      "bytes": 3487,
-      "sha256": "e74d9c3feb8c094a97a2a8253708b4c5a3504ce067cd9864dda7d862da5da4d0"
+      "bytes": 3307,
+      "sha256": "cf5543b06a15d418b047b1da232a945f7d84e5c357a2e439b25c61530a66c82b"
     },
     {
       "path": "bootstrap.json",
@@ -218,8 +223,8 @@
     },
     {
       "path": "closeout.json",
-      "bytes": 1670,
-      "sha256": "fdcffa016ad7cb726cf4d02293d8c769b3c8dff7d57606986439b4878758f69a"
+      "bytes": 1672,
+      "sha256": "765c24dd1124107ab116b20e86d9b5c342a38dc093ea9d1c7ab20b1e6d30ee08"
     },
     {
       "path": "environment.json",
@@ -228,8 +233,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 1245,
-      "sha256": "07f315aeb3c06d03bf4b60f2b334e2ba7f616e244964d94883a86764f6da898c"
+      "bytes": 1025,
+      "sha256": "b3416f0d8abfee14a70913e72eae2c323d0357d98828c0c0fa3faff931a317a2"
     },
     {
       "path": "source-manifests/be08658b03c58eb0e4676722dae5e5f4b1aa1977ad9c44ec90d8a40e486bc431.json",

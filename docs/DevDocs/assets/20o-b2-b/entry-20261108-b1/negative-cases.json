@@ -1,0 +1,11 @@
+{
+  "case": "tampered-evidence-manifest",
+  "fixture": "negative-evidence.json",
+  "expected_rejected": true,
+  "expected_reason": "evidence.json 与实际证据文件不一致",
+  "mutation": {
+    "path": "README.md",
+    "field": "sha256",
+    "change": "replace with 64 zeroes"
+  }
+}

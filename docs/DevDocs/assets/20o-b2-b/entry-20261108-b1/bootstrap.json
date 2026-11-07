@@ -9,5 +9,6 @@
   "cmath": "planned",
   "b1_f10": false,
   "b2_a_perf": false,
-  "public_products_unchanged": true
+  "public_products_unchanged": true,
+  "baseline_commit": "d08b8460"
 }
