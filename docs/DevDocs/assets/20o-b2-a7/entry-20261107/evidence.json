@@ -1,6 +1,6 @@
 {
   "scope": "A7本目录完整原件；清单不递归计自身或Python缓存",
-  "file_count": 116,
+  "file_count": 118,
   "files": [
     {
       "path": ".gitattributes",
@@ -9,8 +9,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 2459,
-      "sha256": "02cd785e4c9d0cea921495dcf92d09dbd233f5073a8513fa416240ba5b51923d"
+      "bytes": 2474,
+      "sha256": "380118f46b38e68af49d9748b08b1fa418e11ed848a426b2e6cf8d866e4ef8a1"
     },
     {
       "path": "a1-native-exact.json",
@@ -34,8 +34,8 @@
     },
     {
       "path": "audit.py",
-      "bytes": 15494,
-      "sha256": "d326282a22a35b329a917a594e5b29f43a44d87e394215c7f7adfb965cf530b4"
+      "bytes": 15915,
+      "sha256": "5bcc039acd3920838fba63e067ddcbb7f9a11d884435c0de53350d4a87ed4f75"
     },
     {
       "path": "b1-contract.json",
@@ -333,6 +333,16 @@
       "sha256": "46021a87622e962c2b03a29aafaebaad4e11721a10a81f03f961e8f2aa78ea93"
     },
     {
+      "path": "docs-final-2.json",
+      "bytes": 1314,
+      "sha256": "40006666ceb48faaa6df1c18059b71a04910dd5eb4eae9deabd70154570bb646"
+    },
+    {
+      "path": "docs-final-2.log",
+      "bytes": 274738,
+      "sha256": "46021a87622e962c2b03a29aafaebaad4e11721a10a81f03f961e8f2aa78ea93"
+    },
+    {
       "path": "docs-final.json",
       "bytes": 1311,
       "sha256": "89805bb419e169015b32a86dc6403c190f5564979e232da4f8a2703712abb1ed"
@@ -544,8 +554,8 @@
     },
     {
       "path": "validate-audit.py",
-      "bytes": 3532,
-      "sha256": "6a15094276a46fe7b8cd0bfee80b421076f125bd1072a1591e8a7e6753b58b7a"
+      "bytes": 3751,
+      "sha256": "19d5ac721f241a891fa155c4242e9069e2ee7190b8247d78f82448a23016e7d1"
     },
     {
       "path": "workspace-check.json",

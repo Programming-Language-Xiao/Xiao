@@ -116,8 +116,10 @@ def main():
     artifacts=read('local-artifacts.json');require(artifacts['source_manifest']==closeout['source_manifest'] and artifacts['runtime_build_record']=='build-runtime.json' and artifacts['runtime']['bytes']>0 and len(artifacts['runtime']['sha256'])==64,'A7 Runtime身份不完整')
     setup=read('environment.json')['overrides'];bootstrap=read('bootstrap.json')
     require(setup['XIAO_B1_F10']==setup['XIAO_B2_A_PERF']=='0' and artifacts['runtime']['path']==setup['XIAO_RUNTIME_LIBRARY'] and setup['XIAO_STDLIB_ROOT']==str(Path(bootstrap['source_root'])/'stdlib'),'A7构建/stdlib/开关身份不符')
-    require(Path(artifacts['runtime']['path']).is_relative_to(Path(bootstrap['task_root'])) and artifacts['fresh_target']==setup['CARGO_TARGET_DIR'],'A7 Runtime不是本任务独占输出')
-    require(bool(artifacts['artifacts']) and len({row['path'] for row in artifacts['artifacts']})==len(artifacts['artifacts']) and all(row['bytes']>0 and re.fullmatch('[0-9a-f]{64}',row['sha256']) for row in artifacts['artifacts']),'A7真实原生产物身份不完整')
+    task_root=Path(bootstrap['task_root']).resolve()
+    require(Path(artifacts['runtime']['path']).resolve().is_relative_to(task_root) and artifacts['fresh_target']==setup['CARGO_TARGET_DIR'] and Path(artifacts['fresh_target']).resolve().is_relative_to(task_root),'A7 Runtime不是本任务独占输出')
+    require(Path(artifacts['source_root']).resolve()==Path(bootstrap['source_root']).resolve() and Path(artifacts['stdlib_root']).resolve()==(Path(bootstrap['source_root'])/'stdlib').resolve(),'A7源码或stdlib根身份不符')
+    require(bool(artifacts['artifacts']) and len({row['path'] for row in artifacts['artifacts']})==len(artifacts['artifacts']) and all(row['bytes']>0 and re.fullmatch('[0-9a-f]{64}',row['sha256']) and Path(row['path']).resolve().is_relative_to(task_root) for row in artifacts['artifacts']),'A7真实原生产物身份不完整或越出任务根')
     print(json.dumps({'passed':True,'scope':closeout['scope'],'code_commit':CANDIDATE,'product_commit':BASELINE,'checks':len(REQUIRED),'source_files':len(snapshot['files']),'files':files,'platforms':['windows','linux','macos'],'b1_entries':20,'historical_stage_audits':7,'b1_721_executed':False},ensure_ascii=False))
 
 if __name__=='__main__':

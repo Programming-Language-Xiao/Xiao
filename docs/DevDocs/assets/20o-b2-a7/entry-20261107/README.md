@@ -18,7 +18,7 @@ python -X utf8 docs/DevDocs/assets/20o-b2-a7/entry-20261107/audit.py
 
 audit.py对固定Git对象恢复完整被测输入，不要求未来HEAD的语言文档继续保持旧字节。它核对实际Cargo参数、计数/标记、真实20项导出、阶段原件、工作流/平台角色、性能开关关闭和Runtime/产物身份。
 
-正反例只写归档之外的独占目录，不修改有效原件：
+正反例共1正/8反，只写归档之外的独占目录，不修改有效原件：
 
 ```powershell
 $a7ReviewOutput = Join-Path ([System.IO.Path]::GetTempPath()) ("xiao-a7-audit-" + [guid]::NewGuid().ToString("N"))
