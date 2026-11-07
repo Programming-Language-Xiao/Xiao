@@ -1,0 +1,79 @@
+{
+  "passed": true,
+  "expect_rejection": false,
+  "audit_sha256": "d4b459b8cf8d3fa9c098ab2bec2516adc615b174fbfcd89d4ae93a3844afad40",
+  "records": [
+    {
+      "case": "drop_clippy",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b2\\audit.py",
+        "--root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-review-audit-hhhm7l_y\\drop_clippy",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"files\": 99, \"checks\": 13, \"exact_checks\": 4, \"code_commit\": \"37b92c5338274121afe98320d4e076620744449f\", \"abi\": \"1.18\", \"codegen\": 20, \"max_active_intrinsic\": 33, \"scope\": \"B2内部单入口\"}",
+      "expected_reason": "B2有效执行点集合不完整",
+      "read_only": true,
+      "passed": true
+    },
+    {
+      "case": "drop_exact_checks",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b2\\audit.py",
+        "--root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-review-audit-hhhm7l_y\\drop_exact_checks",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"files\": 99, \"checks\": 14, \"exact_checks\": 0, \"code_commit\": \"37b92c5338274121afe98320d4e076620744449f\", \"abi\": \"1.18\", \"codegen\": 20, \"max_active_intrinsic\": 33, \"scope\": \"B2内部单入口\"}",
+      "expected_reason": "B2精确入口集合不完整",
+      "read_only": true,
+      "passed": true
+    },
+    {
+      "case": "wrong_runtime_override",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b2\\audit.py",
+        "--root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-review-audit-hhhm7l_y\\wrong_runtime_override",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"files\": 99, \"checks\": 14, \"exact_checks\": 4, \"code_commit\": \"37b92c5338274121afe98320d4e076620744449f\", \"abi\": \"1.18\", \"codegen\": 20, \"max_active_intrinsic\": 33, \"scope\": \"B2内部单入口\"}",
+      "expected_reason": "B2Runtime环境路径与收口身份不符",
+      "read_only": true,
+      "passed": true
+    },
+    {
+      "case": "wrong_summary_counts",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b2\\audit.py",
+        "--root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-review-audit-hhhm7l_y\\wrong_summary_counts",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"files\": 99, \"checks\": 14, \"exact_checks\": 4, \"code_commit\": \"37b92c5338274121afe98320d4e076620744449f\", \"abi\": \"1.18\", \"codegen\": 20, \"max_active_intrinsic\": 33, \"scope\": \"B2内部单入口\"}",
+      "expected_reason": "B2收口测试计数不符",
+      "read_only": true,
+      "passed": true
+    }
+  ]
+}

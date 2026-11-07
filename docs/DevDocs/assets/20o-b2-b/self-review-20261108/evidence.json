@@ -1,0 +1,51 @@
+{
+  "scope": "仅self-review-20261108本目录最终文件；清单自身不计入自身摘要",
+  "file_count": 9,
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    {
+      "path": "audit-after.json",
+      "bytes": 3221,
+      "sha256": "750e9a87ccad354158709a2538ea8464b494bb424e291282b6446e3acb26ca57"
+    },
+    {
+      "path": "audit-before-complete.json",
+      "bytes": 4229,
+      "sha256": "21a15f4b25660c01ee7a35d98e7a3a98391fe341b5dff281b8979e374c50c8a6"
+    },
+    {
+      "path": "audit-before.json",
+      "bytes": 3416,
+      "sha256": "bcfbb07ab63a733494e359ed4e60e4fed0091aa61bf86de26aba932ae71bba45"
+    },
+    {
+      "path": "audit-cases.py",
+      "bytes": 3896,
+      "sha256": "ad240d856e6c1b40628d100425c7c126d0739f6022709c6d795baab2c61107e3"
+    },
+    {
+      "path": "numeric-probe.rs",
+      "bytes": 2486,
+      "sha256": "655945030de157d968c99734789928059b87b73c58ac98322db3daf51c0e1645"
+    },
+    {
+      "path": "numeric-reference.py",
+      "bytes": 4012,
+      "sha256": "265e34aa442b25247f96bd38a3d90626300e40b56bd189a9251d5dd54227f54a"
+    },
+    {
+      "path": "numeric-result.json",
+      "bytes": 1800,
+      "sha256": "8082e0a191faf412add18908a10ad72eef4d4b75f8bd9881cdf93f26259a5b7e"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1472,
+      "sha256": "5f34b8602f1d39d03fbbd28eaf961e50c74f6ed64b6a9d07588c56e0c8918dc7"
+    }
+  ]
+}

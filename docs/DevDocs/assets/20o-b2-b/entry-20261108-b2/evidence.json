@@ -9,8 +9,8 @@
     },
     {
       "path": "audit.py",
-      "bytes": 9374,
-      "sha256": "d4b459b8cf8d3fa9c098ab2bec2516adc615b174fbfcd89d4ae93a3844afad40"
+      "bytes": 11955,
+      "sha256": "8d35d9251a5befb9895d61976e27a176a64e6d19b6108b8aa8b6e4f83aff8843"
     },
     {
       "path": "b1-guards-report.json",

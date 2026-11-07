@@ -10,6 +10,14 @@ DEFAULT_ROOT=Path(__file__).resolve().parent
 DEFAULT_SOURCE=DEFAULT_ROOT.parents[4]
 ENTRY="faecd26d"
 CODE_COMMIT="37b92c5338274121afe98320d4e076620744449f"
+REQUIRED_CHECKS=[
+ 'b2-final2-check','b2-final2-runtime-build','b2-final2-unit-language','b2-final2-clippy',
+ 'b2-docs-close','b2-final2-regression','b2-final2-b1-vm-exact','b2-final2-vm-exact',
+ 'b2-final2-workspace-tests','b2-final2-benchmark','b2-final2-fmt','b2-final2-native-exact',
+ 'b2-final2-b1-native-exact','b2-final2-guards',
+]
+EXACT_CHECKS=['b2-final2-b1-vm-exact','b2-final2-vm-exact','b2-final2-native-exact','b2-final2-b1-native-exact']
+CHECK_ROLES={'b2-final-regression':'b2-final2-regression','b2-final-b1-vm-exact':'b2-final2-b1-vm-exact','b2-final-b1-native-exact':'b2-final2-b1-native-exact'}
 ALLOWED_PATHS={
  'core/rust/crates/xiao-codegen-llvm/src/dynamic/expression.rs',
  'core/rust/crates/xiao-codegen-llvm/src/dynamic/predicate.rs',
@@ -56,7 +64,12 @@ def main(root,source):
     require(manifest['file_count']==len(rows) and manifest['files']==rows,'B2证据清单或摘要不符')
     closeout=read('closeout.json');identity=read('code-identity.json');code=identity['code_commit']
     require(closeout['passed'] is True and closeout['code_commit']==code==CODE_COMMIT,'B2收口或代码身份不符')
+    require(closeout.get('effective_checks')==REQUIRED_CHECKS,'B2有效执行点集合不完整')
+    require(closeout.get('exact_checks')==EXACT_CHECKS,'B2精确入口集合不完整')
+    require(closeout.get('check_roles')==CHECK_ROLES,'B2执行点角色映射不符')
+    require((closeout.get('runtime_tests'),closeout.get('driver_unit'),closeout.get('intrinsic_tests'),closeout.get('guards'))==(259,64,7,'28/28'),'B2收口测试计数不符')
     require(closeout['abi']=='1.18' and closeout['codegen']==20 and closeout['cmath']=='planned','B2版本或文档状态越界')
+    require(closeout.get('active_intrinsic_max')==33 and closeout.get('stdlib_interface')==1,'B2收口公开面不符')
     require(closeout['b1_721_executed'] is False and closeout['b2_c_started'] is False,'B2执行范围越界')
     changed=set(git('diff','--name-only',ENTRY,code,'--',*PRODUCT_ROOTS).decode().splitlines())
     require(changed==set(identity['allowed_paths'])==ALLOWED_PATHS,'B2产品改动不在冻结允许集合')
@@ -91,6 +104,17 @@ def main(root,source):
     require(guards['passed']==guards['total']==len(guards['cases'])==28 and all(c['Passed'] for c in guards['cases']),'B1守卫不是28/28')
     require('B2-B2-DIVIDE backend=vm' in logs['b2-final-b1-vm-exact'] and 'B2-B2-DIVIDE backend=native' in logs['b2-final-b1-native-exact'],'B2示例未进入维护精确入口')
     snapshot=read(next(iter(snapshots)))
+    tracked=git('ls-tree','-r','--name-only','-z',code,'--',*PRODUCT_ROOTS).decode('utf-8').split('\0')
+    tracked={path for path in tracked if path}
+    listed=[row['path'] for row in snapshot['files']]
+    require(set(listed)==tracked and len(listed)==len(tracked),'B2源码清单范围不完整')
+    raw_tree=hashlib.sha256(json.dumps(snapshot['files'],ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+    canonical_tree=hashlib.sha256(json.dumps([[row['path'],row['utf8_lf_or_binary_sha256']] for row in snapshot['files']],ensure_ascii=False,separators=(',',':')).encode()).hexdigest()
+    require(snapshot['raw_tree_sha256']==raw_tree and snapshot['utf8_lf_tree_sha256']==canonical_tree,'B2源码树摘要不符')
+    require(closeout['source_manifest']==next(iter(snapshots)),'B2收口源码清单与执行记录不符')
+    for name in REQUIRED_CHECKS:
+        record=read(name+'.json')['source_before']
+        require(record['files']==len(listed) and record['raw_tree_sha256']==snapshot['raw_tree_sha256'] and record['utf8_lf_tree_sha256']==snapshot['utf8_lf_tree_sha256'],'B2源码清单身份与执行记录不符')
     requests=''.join(code+':'+row['path']+'\n' for row in snapshot['files']).encode()
     raw=subprocess.check_output(['cmd','/c','git','cat-file','--batch'],cwd=source,input=requests)
     offset=0
@@ -104,6 +128,8 @@ def main(root,source):
     require(runtime_path.is_relative_to(task) and runtime_path.is_file(),'B2Runtime不在独立任务根内')
     require(runtime_path.stat().st_size==runtime['bytes'] and digest(runtime_path)==runtime['sha256'],'B2Runtime摘要不符')
     override=read('environment.json')['overrides']
+    require(Path(override['XIAO_RUNTIME_LIBRARY']).resolve()==runtime_path,'B2Runtime环境路径与收口身份不符')
+    require(runtime_path.is_relative_to(Path(override['CARGO_TARGET_DIR']).resolve()),'B2Runtime不在独立target内')
     require(str(override['XIAO_B1_F10'])=='0' and str(override['XIAO_B2_A_PERF'])=='0','B2错误启用性能开关')
     for key in ['CARGO_TARGET_DIR','XIAO_HOME','TEMP','TMP','XIAO_RUNTIME_LIBRARY']:
         require(Path(override[key]).resolve().is_relative_to(task),'B2路径越出独立任务根：'+key)

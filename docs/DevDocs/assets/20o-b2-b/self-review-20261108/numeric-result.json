@@ -1,0 +1,40 @@
+{
+  "passed": true,
+  "numeric_cases": 2300,
+  "c_abi_alias_cases": 3,
+  "mismatches": [],
+  "reference": {
+    "python": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "libmpdec": "2.5.1",
+    "seed": 20261108
+  },
+  "compile_argv": [
+    "rustup",
+    "run",
+    "1.96.0",
+    "rustc",
+    "--edition",
+    "2024",
+    "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\self-review-20261108\\numeric-probe.rs",
+    "-L",
+    "dependency=D:\\project\\Xiao\\.b2b-divide\\20261108-faecd26d\\cargo-target\\debug\\deps",
+    "--extern",
+    "xiao_runtime=D:\\project\\Xiao\\.b2b-divide\\20261108-faecd26d\\cargo-target\\debug\\deps\\libxiao_runtime-3277553780f23756.rlib",
+    "--extern",
+    "xiao_runtime_abi=D:\\project\\Xiao\\.b2b-divide\\20261108-faecd26d\\cargo-target\\debug\\deps\\libxiao_runtime_abi-546b3d6965f0fb81.rlib",
+    "-o",
+    "D:\\project\\Xiao\\.b2b-divide\\20261108-faecd26d\\self-review\\numeric-probe.exe"
+  ],
+  "runtime_rlib": {
+    "path": "D:\\project\\Xiao\\.b2b-divide\\20261108-faecd26d\\cargo-target\\debug\\deps\\libxiao_runtime-3277553780f23756.rlib",
+    "sha256": "c73da02c46f81903ee994e73353b4c77f2aa471109f944dc7594700f2b9058da"
+  },
+  "abi_rlib": {
+    "path": "D:\\project\\Xiao\\.b2b-divide\\20261108-faecd26d\\cargo-target\\debug\\deps\\libxiao_runtime_abi-546b3d6965f0fb81.rlib",
+    "sha256": "2f3fe1d9406b18686b06d3c053b69a40890bf40624c8d410006a29e3a054c862"
+  },
+  "probe_sha256": "655945030de157d968c99734789928059b87b73c58ac98322db3daf51c0e1645",
+  "exe_sha256": "021007909103f3c121527c556b3b7cbfaa70f35fe3024a4869d8b9f090bdde8e",
+  "input_sha256": "a19c8dd75e14d071e17db0dca3403006e43ee7ed6385f9e869a9d344dd7678fe",
+  "output_sha256": "297c6f68abb1913f68f464eb0b739a7bca39c6e431b8432f4a69fff897145195"
+}
