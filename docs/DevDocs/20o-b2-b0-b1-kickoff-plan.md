@@ -2,7 +2,7 @@
 
 > **这是 B2-B 的开工细化；B2-B 产品仍未开工，B2-C 仍未开始。**
 > 入口为 A7 内部收口代码快照 `5749d6e0`、产品基线 `e7bf7a49` 与当前规划提交 `e596cea8`。
-> B0 只建立独立基线，B1 只补依赖和私有共享内核；不新增 intrinsic、不改 ABI/生成器、不写 `cmath` 公开入口。
+> B0 基线已完成，B1 仍待单独实施；B1只补依赖和私有共享内核；不新增 intrinsic、不改 ABI/生成器、不写 `cmath` 公开入口。
 > `stdlib.cmath` 仍 planned，旧 721 条 F10 不运行，22C/22D、19/11/22 与 B1 历史债务保持独立。
 
 ## 一、入口与目标
@@ -47,7 +47,7 @@ B0/B1 完成后，B2-B 才进入公开入口实现；B2-C 仍负责最终 721、
 3. 验证产品树与 A7 快照一致：
 
 ```text
-git diff --name-only 5749d6e0 e596cea8 -- ':!docs/DevDocs'
+git diff --name-only 5749d6e0 d08b8460 -- ':!docs/DevDocs'
 ```
 
 结果必须为空；`docs/DevDocs` 的规划差异不算产品差异。

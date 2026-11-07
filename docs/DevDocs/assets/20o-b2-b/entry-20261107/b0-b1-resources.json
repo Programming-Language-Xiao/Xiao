@@ -1,0 +1,39 @@
+{
+  "name": "b0-b1-resources",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b1_imp_resources"
+  ],
+  "cwd": "D:\\project\\Xiao\\.b2b-kickoff\\20261107-8efa782a1f12\\source",
+  "started_utc": "2026-11-07T14:24:40.514483+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "b0-b1-resources.log",
+  "pid": 57064,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/be08658b03c58eb0e4676722dae5e5f4b1aa1977ad9c44ec90d8a40e486bc431.json",
+    "raw_tree_sha256": "be08658b03c58eb0e4676722dae5e5f4b1aa1977ad9c44ec90d8a40e486bc431",
+    "utf8_lf_tree_sha256": "513c984252d0c2333d53a2f6f4ce6921eed506448a8f2628a69fe938639b287d",
+    "files": 1029
+  },
+  "source_after": {
+    "manifest": "source-manifests/be08658b03c58eb0e4676722dae5e5f4b1aa1977ad9c44ec90d8a40e486bc431.json",
+    "raw_tree_sha256": "be08658b03c58eb0e4676722dae5e5f4b1aa1977ad9c44ec90d8a40e486bc431",
+    "utf8_lf_tree_sha256": "513c984252d0c2333d53a2f6f4ce6921eed506448a8f2628a69fe938639b287d",
+    "files": 1029
+  },
+  "source_unchanged": true,
+  "runner_sha256": "208be86129276ef25d634de4bef811a9750f72240bc469a87dccf1749080c813",
+  "finished_utc": "2026-11-07T14:28:03.830088+00:00",
+  "duration_seconds": 203.328,
+  "sha256": "eb2ccb45000290ebb7b4d35c5986c6a2387759326205c031c66232066455f9d9"
+}

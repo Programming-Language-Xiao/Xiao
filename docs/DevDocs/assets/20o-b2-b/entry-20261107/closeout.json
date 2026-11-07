@@ -1,0 +1,81 @@
+{
+  "passed": true,
+  "scope": "B2-B B0只读基线",
+  "actual_head": "d08b8460f1941fb82f4ce36b38359fc2ba448f33",
+  "planned_entry_commit": "e596cea8de38059962d5f73f8b01286ffa617970",
+  "planned_entry_stale": true,
+  "checks": [
+    "b0-a1-native-exact",
+    "b0-a1-vm-exact",
+    "b0-b1-contract",
+    "b0-b1-guards",
+    "b0-b1-native-exact",
+    "b0-b1-resources",
+    "b0-b1-vm-exact",
+    "b0-b2-language",
+    "b0-b2-resources",
+    "b0-benchmarks-check",
+    "b0-build-adapters",
+    "b0-build-runtime",
+    "b0-docs-final-2",
+    "b0-driver-unit",
+    "b0-package-tests",
+    "b0-workspace-check",
+    "b0-workspace-clippy",
+    "b0-workspace-fmt"
+  ],
+  "counts": {
+    "b0-b1-contract": [
+      [
+        9,
+        0
+      ]
+    ],
+    "b0-b1-resources": [
+      [
+        17,
+        0
+      ]
+    ],
+    "b0-b2-resources": [
+      [
+        3,
+        0
+      ],
+      [
+        8,
+        0
+      ]
+    ],
+    "b0-b2-language": [
+      [
+        12,
+        1
+      ]
+    ],
+    "b0-driver-unit": [
+      [
+        64,
+        1
+      ]
+    ]
+  },
+  "exact": {
+    "b0-b1-vm-exact": "b1_capabilities_have_vm_golden_outputs",
+    "b0-b1-native-exact": "b1_capabilities_match_native_golden_outputs",
+    "b0-a1-vm-exact": "a1_numeric_values_and_errors_have_vm_golden_outputs",
+    "b0-a1-native-exact": "a1_numeric_values_and_errors_match_native_golden_outputs"
+  },
+  "guards": "28/28",
+  "abi": "1.18",
+  "codegen": 20,
+  "active_intrinsic_max": 32,
+  "cmath": "planned",
+  "b1_f10": false,
+  "b2_a_perf": false,
+  "b1_721_executed": false,
+  "product_changed": false,
+  "registry_changed": false,
+  "b2_b_product_started": false,
+  "b2_c_started": false
+}
