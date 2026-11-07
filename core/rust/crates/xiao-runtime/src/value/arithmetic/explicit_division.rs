@@ -27,7 +27,9 @@ pub(super) enum Rounding {
 /// 一次显式除法请求；precision表示最多有效数字。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(super) struct Request {
+    /// 最多保留的有效十进制数字个数。
     pub precision: usize,
+    /// 最终商使用的舍入模式。
     pub rounding: Rounding,
 }
 
