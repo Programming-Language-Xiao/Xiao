@@ -95,6 +95,8 @@ B2-B 执行前必须确认：
 
 ### B3：`cmath` 15 项与 intrinsic 34～48
 
+执行细化见[B3 `cmath`、intrinsic 34～48 与共享 `pow` 实施规划](20o-b2-b3-cmath-plan.md)；B3只做Runtime/C ABI/参考，语言全链路留B4。
+
 1. 逐项实现 sqrt/floor/ceil/round/trunc/abs/min/max/pow/sin/cos/tan/exp/ln/log10；
 2. 全部入口先拒绝 NaN/Inf；域错误为 009；`sqrt(-0)=-0`、`round(-0.5)=-0` 等按 F-2；
 3. 取整/abs/min/max 逐位精确；普通非零超越与 pow 结果不超过 4 ULP；
