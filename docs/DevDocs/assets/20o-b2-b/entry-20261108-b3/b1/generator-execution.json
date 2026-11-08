@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\b1\\generate-reference.py"
+  ],
+  "cwd": "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source",
+  "pid": 66768,
+  "started_utc": "2026-11-08T10:21:03.442078+00:00",
+  "finished_utc": "2026-11-08T10:21:04.034629+00:00",
+  "exit_code": 0,
+  "log": "generator.log",
+  "log_sha256": "ce691dd791687b24574fe67751a52d45d7fde514e345509c260c120da1f97933"
+}

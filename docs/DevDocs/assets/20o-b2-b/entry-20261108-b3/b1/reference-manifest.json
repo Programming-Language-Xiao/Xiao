@@ -1,0 +1,39 @@
+{
+  "generator_version": 1,
+  "generator_sha256": "582581aae8cee4e7144a87af56cf844ea3bc3c8907e0661b7885c24eb8d8e44c",
+  "seed": "b203f90020261108",
+  "gmpy2": "2.3.2",
+  "mpfr": "MPFR 4.2.2",
+  "gmp": "GMP 6.3.0",
+  "rounding": "256/512/1024/2048/4096-bit RoundDown/RoundUp -> IEEE binary64 nearest-even; accept iff both bit patterns equal",
+  "cases": 17243,
+  "functions": {
+    "sqrt": 1214,
+    "floor": 1214,
+    "ceil": 1214,
+    "round": 1214,
+    "trunc": 1214,
+    "abs": 1214,
+    "sin": 1214,
+    "cos": 1214,
+    "tan": 1214,
+    "exp": 1214,
+    "ln": 1214,
+    "log10": 1214,
+    "min": 800,
+    "max": 800,
+    "pow": 1075
+  },
+  "outcomes": {
+    "value": 14479,
+    "error": 2764
+  },
+  "precision_counts": {
+    "256": 12259,
+    "0": 4984
+  },
+  "inputs_sha256": "28acad962bcdc2144d6d6b0a2574566fd342d0d09aa7ab4f5ad569f241bf7dca",
+  "vectors_sha256": "0e61a2da361448477b15f5508df6d612a3f01e29a06e50699d6ed48a917d1ed3",
+  "tool_provenance": "tool-provenance.json",
+  "production_dependencies": "unchanged"
+}
