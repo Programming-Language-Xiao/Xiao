@@ -1,6 +1,6 @@
 # 20O-B2-B. `lfloat_divide`、`cmath` 与 ABI 1.19/21 实施规划
 
-> **B0/B1已交付；B2的lfloat_divide/intrinsic33已在 `37b92c53` 完成单入口内部实现，见[实施记录](20o-b2-b2-lfloat-divide-progress.md)。B3～B7与B2-C未开始。**
+> **B0/B1已交付；B2的lfloat_divide/intrinsic33已在 `37b92c53` 完成单入口内部实现，见[实施记录](20o-b2-b2-lfloat-divide-progress.md)。B3-0/B3-1已完成并经自审，仅有Windows本机证据；B3-2起、B4～B7与B2-C未开始。**
 > 初始入口为A7 `5749d6e0`与产品基线`e7bf7a49`；B2内部快照仍是ABI1.18/生成器20，活动intrinsic最大33，最终版本切换由B5集中完成。
 > B2-B 只实现已确认且适用于本批的 F-1～F-12 精表（包括 F-3 资源/性能、F-8 转换、F-10 显示尺度与 F-11 文本边界）；不新增数学裁定，不把 `cmath`/`lfloat_divide` 提前写成已验证。
 > A0 的 `result.json` 失败身份、22C/22D、19/11/22 与 B1 历史债务继续独立保留。
@@ -10,7 +10,7 @@
 | 项 | 当前状态 |
 | --- | --- |
 | A7 | B2-A 已在内部 1.18/20 范围收口；代码快照 `5749d6e0`，产品 `e7bf7a49` |
-| 版本 | ABI 1.18、`CODEGEN_VERSION` 20、活动 intrinsic 最大 32、标准库接口 1 |
+| A7 入口版本 | ABI 1.18、`CODEGEN_VERSION` 20、活动 intrinsic 最大 32、标准库接口 1；当前 B2 内部快照的活动最大 ID 为 33 |
 | 目标版本 | ABI 1.19、生成器 21、标准库接口 1；只在新快照生成，不回改旧原件 |
 | 新入口 | 全局 `lfloat_divide`、15 项 `std.cmath`，规划 intrinsic 33～48 |
 | 依赖 | F-7 六包精确版本已锁定；`cmath` 需要 `libm =0.2.16` 直接依赖 |
@@ -96,6 +96,8 @@ B2-B 执行前必须确认：
 ### B3：`cmath` 15 项与 intrinsic 34～48
 
 执行细化见[B3 `cmath`、intrinsic 34～48 与共享 `pow` 实施规划](20o-b2-b3-cmath-plan.md)；B3只做Runtime/C ABI/参考，语言全链路留B4。
+
+当前 B3-0/B3-1 的 Windows 本机参考与自审已完成；后续执行须落实该规划 §7.1 的向量夹具迁移、本机 Runtime 显式核验、1,075 组 `pow` 对照/B2-A 回归，以及 B4/B5/B6 的三平台和远端 CI 证据门槛。
 
 1. 逐项实现 sqrt/floor/ceil/round/trunc/abs/min/max/pow/sin/cos/tan/exp/ln/log10；
 2. 全部入口先拒绝 NaN/Inf；域错误为 009；`sqrt(-0)=-0`、`round(-0.5)=-0` 等按 F-2；

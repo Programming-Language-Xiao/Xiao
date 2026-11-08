@@ -1,15 +1,17 @@
 # 20O-B2-B3. 15 项 `cmath`、intrinsic 34～48 与共享 `pow` 实施规划
 
-> **这是 B2-B 的 B3 子批规划；B3 尚未开工，B4～B7 与 B2-C 仍未开始。**
+> **B3-0/B3-1 已完成并经自审，现有证据仅为 Windows 本机；B3-2 起与 B4～B7、B2-C 仍未开始。**
 > 入口为 B2 内部收口代码提交 `37b92c53` 及其证据；当前活动 intrinsic 最大 33，ABI 1.18、生成器 20、标准库接口 1。
 > B3 只实现 15 项 `cmath`、intrinsic 34～48、C ABI 与共享 `pow`；不升 ABI 1.19/21，不升级 registry。
 > `stdlib.cmath` 仍 planned，旧 721 条 F10 不运行，历史债务保持独立。
+> 已完成部分见 [B3-0/B3-1 证据](assets/20o-b2-b/entry-20261108-b3/README.md)；后续接线须满足本页 §7.1 的四项交接门槛。
 
 ## 一、入口与范围
 
 | 项 | 当前状态 |
 | --- | --- |
 | B2 | 全局 `lfloat_divide`/intrinsic 33 已在 `37b92c53` 内部收口；B2 审计通过 |
+| B3-0/B3-1 | 基线与私有内核参考验收完成；代码 `88886dd5`，自审证据至 `96f28de0`，仅 Windows 本机 |
 | 公开版本 | ABI 1.18、生成器 20、活动 intrinsic 最大 33、标准库接口 1 |
 | 本批目标 | 15 项 `std.cmath`、intrinsic 34～48、15 个 C 符号、`cmath.pow` 与 float `**` 共用内核 |
 | 版本策略 | B3 只在内部快照激活 34～48；B5 才统一升 ABI 1.19/21 |
@@ -87,7 +89,7 @@ B3 执行前必须确认：
 5. `pow` 处理 `0**0=1`、负底整指数、`-0` 奇偶幂、0 的负幂和负底非整数域错误；
 6. 取整/abs/min/max 逐位精确；普通非零超越与 pow 结果 ≤4 ULP；
 7. 建立 `cmath.pow` 与 float `**` 的单一共享内核；B3 一次性切换两个调用点，不留半接线；
-8. 切换前后产出 float `**` 行为差表，若改变 B2-A 已验收行为先回冻结。
+8. 切换前后产出 float `**` 行为差表，逐项对照已确认 F-2/F-9；涉及尚未裁定的 B2-A 兼容变化时先回冻结。
 
 退出：15 项 Runtime 内核通过正式参考；float `**` 与 `cmath.pow` 共用同一实现。
 
@@ -166,6 +168,19 @@ B3 执行前必须确认：
 
 B3 完成后进入 B4：类型/IR/TAC/VM/LLVM/序列化全链路，`std.cmath` 与 `stdlib.cmath` 双路径、导出/移除/归档。B5 再升 ABI 1.19/生成器 21，B6 做资源/性能，B7 收口后交 B2-C。
 
+### 7.1 B3-0/B3-1 已知边界与后续门槛
+
+以下四项属于后续批次的执行要求。本次只同步交接文档；现有产品测试路径和历史证据身份保持原样。
+
+| 项 | 当前事实 | 后续执行要求 |
+| --- | --- | --- |
+| 正式向量归属 | `cmath_tests.rs` 的 `include_str!` 仍直接读取 DevDocs 证据目录 | 在 B4 接入前将产品测试使用的正式向量迁入 `tests/fixtures/docs/cmath/`；后续批次单列路径、源码身份和测试入口。DevDocs 保留历史副本与摘要，校验夹具与副本逐字节一致，并从迁移后的源码重新编译测试，确认产品测试不再依赖 DevDocs 目录位置 |
+| 本机 Runtime 身份 | 默认 `audit.py` 校验归档、构建窗口和记录身份；只有 `--live-runtime` 读取并校验两份本机 Runtime 存档。现有复跑报告已含该模式通过记录 | 后续声称本机 Runtime 字节身份已核实时，必须另跑 `--live-runtime` 并保存实际输出；默认归档审计通过不能替代该结论。新批次还须绑定本批源码、Runtime 和独立任务根，历史存档通过不替代新产物身份 |
+| 共享 `pow` 行为变化 | [差表](assets/20o-b2-b/entry-20261108-b3/b1/pow-diff.json)有 1,075 组：1,011 组一致、40 组值/错误边界差异、24 组位模式差异 | B3-2/B3-3 切共享内核前逐组登记旧/新行为、对应 F-2/F-9 规则及公开路径可达性；全部差表用例保留。切换后回归 B2-A 已验收的算术、错误、语言和重放路径，VM 与原生 O0/O3 分记；超出已确认规则或出现尚未裁定的 B2-A 兼容变化时先回冻结 |
+| 平台和 CI 证据 | 当前归档只有 Windows 本机证据，未收录本批 Linux/macOS 或远端 CI 实测 | B4 语言全链路、B5 版本矩阵、B6 资源/性能分别补齐对应的三平台与远端 CI 证据，记录源码、Runtime、作业及日志身份；缺项明确标不可验证。不能将当前 B3 写成三平台通过，也不能因此提前升级 `cmath` 教程或 registry |
+
+历史 B3-0/B3-1 的默认复跑入口仍按其固定 Git 对象审计。向量迁移与后续共享内核接线使用新的源码身份和证据，不改写旧快照、差表或清单。B2-C 的完整 721 条 F10 与最终状态升级继续按原批次执行。
+
 新 Agent 先读：
 
 1. [B2-B 实施规划](20o-b2-b-implementation-plan.md)；
@@ -185,7 +200,7 @@ core/rust/crates/xiao-runtime-abi/src/lib.rs                 15 个 C 声明
 core/rust/crates/xiao-runtime/src/value/ops.rs               float ** 切共享 pow
 stdlib/cmath.xiao                                            15 个公开包装
 tests/fixtures/docs/cmath/                                   cmath 夹具
-docs/DevDocs/assets/20o-b2-b/entry-<date>-b3/                 B3 证据（待建）
+docs/DevDocs/assets/20o-b2-b/entry-20261108-b3/               B3-0/B3-1 Windows 本机证据
 ```
 
-本页只规划 B3；B3 尚未实现，B4～B7 与 B2-C 仍后置。
+本页记录 B3 的分批规划与进度；B3-0/B3-1 已完成，B3-2 起、B4～B7 与 B2-C 仍后置。

@@ -1,9 +1,10 @@
 # 20O-B2-B3-0/B3-1. cmath 开工基线与 F-9 参考流水线规划
 
-> **这是 B3 的开工细化；B3 产品尚未开工，B4～B7 与 B2-C 仍未开始。**
+> **B3-0 基线与 B3-1 参考/私有内核验收已完成，仅有 Windows 本机证据；B3-2 起、B4～B7 与 B2-C 仍未开始。**
 > 入口为 B2 内部收口代码 `37b92c53`、B3 规划 `f23c4493`；当前活动 intrinsic 最大 33，ABI 1.18、生成器 20。
 > B3-0 只做基线，B3-1 只做 MPFR/GMP 参考与私有内核升级；不激活 34～48、不写 C ABI、不升版本。
 > `stdlib.cmath` 仍 planned，旧 721 条 F10 不运行。
+> 实际结果见 [B3-0/B3-1 证据](assets/20o-b2-b/entry-20261108-b3/README.md)及[自审记录](assets/20o-b2-b/entry-20261108-b3/self-review-20261108/README.md)；本页保留已执行批次的开工要求。
 
 ## 一、入口与目标
 
@@ -178,7 +179,9 @@ B3-0 不写产品；B3-1 不改 `ops.rs`、`intrinsics.json`、`xiao-runtime-abi
 
 ## 六、交接
 
-B3-1 完成后进入 B3-2：15 项 Runtime/C ABI、intrinsic 34～48 与 `stdlib/cmath.xiao` 包装。B4 再接语言全链路，B5 切 ABI 1.19/21。
+B3-0/B3-1 已完成，下一步为 B3-2 的 Runtime 内核及共享 `pow` 接线，随后 B3-3 接 intrinsic 34～48/C ABI、B3-4 接 `stdlib/cmath.xiao` 包装。B4 再接语言全链路，B5 切 ABI 1.19/21。
+
+后续统一遵守 [B3 cmath 规划 §7.1](20o-b2-b3-cmath-plan.md)的四项门槛：B4 前迁移产品测试所用正式向量；本机 Runtime 字节核验须显式运行 `--live-runtime`；共享内核切换须登记全部 1,075 组 `pow` 对照并回归 B2-A；B4/B5/B6 补齐对应三平台与远端 CI 证据。当前归档不构成 B3 三平台通过。
 
 新 Agent 先读：
 
