@@ -1,0 +1,17 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on shared package cache
+    Blocking waiting for file lock on build directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.27s
+     Running tests\20o_b2_b2_divide.rs (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\cargo-target\debug\deps\20o_b2_b2_divide-c8a2412f366034e7.exe)
+
+running 1 test
+B2-A5-LANGUAGE case=b2_explicit_divide backend=native optimization=0 artifact=D:\project\Xiao\.b3-cmath\20261108-ae1744e5\run-temp\xiao-b2-a5-native-69576-1794133548555642200\b2_explicit_divide-o0.exe result=success
+B2-A5-LANGUAGE case=b2_explicit_divide backend=native optimization=3 artifact=D:\project\Xiao\.b3-cmath\20261108-ae1744e5\run-temp\xiao-b2-a5-native-69576-1794133548555642200\b2_explicit_divide-o3.exe result=success
+B2-B2-DIVIDE backend=native optimization=0,3 intrinsic=33 result=success
+test lfloat_divide_matches_native_golden_outputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 3.01s
+

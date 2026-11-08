@@ -1,0 +1,7 @@
+    Blocking waiting for file lock on build directory
+    Checking xiao-runtime v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-runtime)
+    Checking xiao-vm v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-vm)
+    Checking xiao-xar v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-xar)
+    Checking xiao-driver v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-driver)
+    Checking xiao-bytecode v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-bytecode)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 32.06s

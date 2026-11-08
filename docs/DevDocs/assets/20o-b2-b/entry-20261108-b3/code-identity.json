@@ -1,0 +1,27 @@
+{
+  "entry_commit": "ae1744e586990f59d6714b9ba67e77505de3c3ab",
+  "baseline_commit": "ca63a792",
+  "code_commit": "88886dd597cc2f5df00377873ab35135d496f5f4",
+  "allowed_product_paths": [
+    "core/rust/crates/xiao-runtime/src/value/arithmetic/cmath.rs",
+    "core/rust/crates/xiao-runtime/src/value/arithmetic/cmath_tests.rs"
+  ],
+  "products": [
+    {
+      "path": "core/rust/crates/xiao-runtime/src/value/arithmetic/cmath.rs",
+      "raw_sha256": "f26f6a043806a27bad6b80b02f6cdfe860cedf357c742e42895cc148e75320aa",
+      "utf8_lf_sha256": "f26f6a043806a27bad6b80b02f6cdfe860cedf357c742e42895cc148e75320aa"
+    },
+    {
+      "path": "core/rust/crates/xiao-runtime/src/value/arithmetic/cmath_tests.rs",
+      "raw_sha256": "995fefb258721baa4571b4a184038c58430b52a35065f047018d54523c4fdad8",
+      "utf8_lf_sha256": "995fefb258721baa4571b4a184038c58430b52a35065f047018d54523c4fdad8"
+    }
+  ],
+  "source_manifest": "source-manifests/e04e24e997d00af69a771cdbc30f13b29f80625b917e0161fda578e40ce1b864.json",
+  "reference_inputs": [
+    "b1/reference-vectors.tsv",
+    "b1/reference-inputs.json",
+    "b1/generate-reference.py"
+  ]
+}

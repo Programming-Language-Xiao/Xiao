@@ -1,0 +1,98 @@
+{
+  "cases": 17243,
+  "functions": [
+    {
+      "function": "abs",
+      "cases": 1214,
+      "max_ulp": 0,
+      "limit": 0
+    },
+    {
+      "function": "ceil",
+      "cases": 1214,
+      "max_ulp": 0,
+      "limit": 0
+    },
+    {
+      "function": "cos",
+      "cases": 1214,
+      "max_ulp": 1,
+      "limit": 4
+    },
+    {
+      "function": "exp",
+      "cases": 1214,
+      "max_ulp": 1,
+      "limit": 4
+    },
+    {
+      "function": "floor",
+      "cases": 1214,
+      "max_ulp": 0,
+      "limit": 0
+    },
+    {
+      "function": "ln",
+      "cases": 1214,
+      "max_ulp": 1,
+      "limit": 4
+    },
+    {
+      "function": "log10",
+      "cases": 1214,
+      "max_ulp": 1,
+      "limit": 4
+    },
+    {
+      "function": "max",
+      "cases": 800,
+      "max_ulp": 0,
+      "limit": 0
+    },
+    {
+      "function": "min",
+      "cases": 800,
+      "max_ulp": 0,
+      "limit": 0
+    },
+    {
+      "function": "pow",
+      "cases": 1075,
+      "max_ulp": 1,
+      "limit": 4
+    },
+    {
+      "function": "round",
+      "cases": 1214,
+      "max_ulp": 0,
+      "limit": 0
+    },
+    {
+      "function": "sin",
+      "cases": 1214,
+      "max_ulp": 1,
+      "limit": 4
+    },
+    {
+      "function": "sqrt",
+      "cases": 1214,
+      "max_ulp": 0,
+      "limit": 0
+    },
+    {
+      "function": "tan",
+      "cases": 1214,
+      "max_ulp": 1,
+      "limit": 4
+    },
+    {
+      "function": "trunc",
+      "cases": 1214,
+      "max_ulp": 0,
+      "limit": 0
+    }
+  ],
+  "source_log": "kernel-tests.log",
+  "initial_failure": "kernel-initial.log",
+  "initial_failure_cause": "参考工具floor/ceil/trunc便捷接口返回mpz丢失负零；改用MPFR rint_*，没有修改或放宽产品零语义。"
+}

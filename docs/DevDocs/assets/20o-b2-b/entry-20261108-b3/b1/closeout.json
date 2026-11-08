@@ -1,0 +1,63 @@
+{
+  "passed": true,
+  "scope": "B3-1 F-9参考与私有内核，尚未公开接线",
+  "code_commit": "88886dd597cc2f5df00377873ab35135d496f5f4",
+  "effective_checks": [
+    "build-runtime",
+    "kernel-tests",
+    "reference-self-tests",
+    "reference-replay",
+    "runtime-all",
+    "unit-contract",
+    "workspace-check",
+    "benchmark",
+    "clippy",
+    "fmt",
+    "guards",
+    "b1-vm",
+    "b1-native",
+    "b2-vm",
+    "b2-native",
+    "public-boundary",
+    "docs-final"
+  ],
+  "exact_checks": [
+    "b1-vm",
+    "b1-native",
+    "b2-vm",
+    "b2-native"
+  ],
+  "source_manifest": "source-manifests/e04e24e997d00af69a771cdbc30f13b29f80625b917e0161fda578e40ce1b864.json",
+  "reference_cases": 17243,
+  "reference_unverifiable": 0,
+  "reference_self_tests": 7,
+  "kernel_tests": 5,
+  "runtime_unit_passed": 259,
+  "driver_unit_passed": 64,
+  "intrinsic_passed": 7,
+  "contract_passed": 9,
+  "resource_passed": 17,
+  "guards": "28/28",
+  "runtime": {
+    "path": "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\cargo-target\\release\\xiao_runtime.lib",
+    "bytes": 27305152,
+    "sha256": "45f38104ab9c468a8b8b6b8e43b821aed55cf970e2f9a73f3bdfa5872c0c384a",
+    "mtime_ns": 1794133487364181500,
+    "archived_copy": "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\runtime-b1\\xiao_runtime.lib"
+  },
+  "abi": "1.18",
+  "codegen": 20,
+  "stdlib_interface": 1,
+  "active_intrinsic_max": 33,
+  "cmath": "planned",
+  "ops_callsite_changed": false,
+  "b1_721_executed": false,
+  "b2_a_perf": false,
+  "ci_claimed": false,
+  "platforms": {
+    "windows": "本批本机实测通过",
+    "linux": "本批未执行",
+    "macos": "本批未执行"
+  },
+  "next": "B3-2 Runtime/C ABI；B4语言全链路；B5集中1.19/21"
+}

@@ -1,0 +1,52 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "fmt",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--all",
+    "--",
+    "--check"
+  ],
+  "cwd": "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source",
+  "phase": "b1",
+  "name": "fmt",
+  "started_utc": "2026-11-08T10:25:43.901650+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "b1/fmt.log",
+  "pid": 64328,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/e04e24e997d00af69a771cdbc30f13b29f80625b917e0161fda578e40ce1b864.json",
+    "raw_tree_sha256": "e04e24e997d00af69a771cdbc30f13b29f80625b917e0161fda578e40ce1b864",
+    "utf8_lf_tree_sha256": "892dd06096a1337f9c84c2d742b0384e2316c73fc47af6267c896f9b8f024d2b",
+    "files": 1041
+  },
+  "source_after": {
+    "manifest": "source-manifests/e04e24e997d00af69a771cdbc30f13b29f80625b917e0161fda578e40ce1b864.json",
+    "raw_tree_sha256": "e04e24e997d00af69a771cdbc30f13b29f80625b917e0161fda578e40ce1b864",
+    "utf8_lf_tree_sha256": "892dd06096a1337f9c84c2d742b0384e2316c73fc47af6267c896f9b8f024d2b",
+    "files": 1041
+  },
+  "source_unchanged": true,
+  "runtime_before": {
+    "path": "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\cargo-target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27305152,
+    "sha256": "45f38104ab9c468a8b8b6b8e43b821aed55cf970e2f9a73f3bdfa5872c0c384a",
+    "mtime_ns": 1794133487364181500
+  },
+  "runtime_after": {
+    "path": "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\cargo-target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27305152,
+    "sha256": "45f38104ab9c468a8b8b6b8e43b821aed55cf970e2f9a73f3bdfa5872c0c384a",
+    "mtime_ns": 1794133487364181500
+  },
+  "duration_seconds": 6.031,
+  "finished_utc": "2026-11-08T10:25:49.931036+00:00",
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "runner_sha256": "dba5aaf5b5fe9eb8d17b9734dacf4d58205c07db1386209c429ba5ebb60a8e8b"
+}

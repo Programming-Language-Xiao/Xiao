@@ -1,0 +1,96 @@
+{
+  "passed": true,
+  "cases": {
+    "baseline": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\baseline-fszynf95\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source",
+        "--core-only"
+      ],
+      "exit_code": 0,
+      "expected_reason": null,
+      "output": "{\"passed\": true, \"core_only\": true, \"files\": 117, \"baseline_commit\": \"ae1744e5\", \"code_commit\": \"88886dd5\", \"b0_checks\": 16, \"b1_checks\": 17, \"exact_entries_per_phase\": 4, \"reference_cases\": 17243, \"max_ulp\": 1, \"live_runtime_checked\": false, \"scope\": \"B3-0/B3-1 私有内核；尚未公开接线\"}",
+      "read_only": true,
+      "passed": true
+    },
+    "tampered_manifest": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\tampered_manifest-miq0p8pi\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source",
+        "--core-only"
+      ],
+      "exit_code": 1,
+      "expected_reason": "B3证据清单或摘要不符",
+      "output": "B3证据清单或摘要不符",
+      "read_only": true,
+      "passed": true
+    },
+    "missing_attributes": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\missing_attributes-ohe036t4\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source",
+        "--core-only"
+      ],
+      "exit_code": 1,
+      "expected_reason": "B3证据清单或摘要不符",
+      "output": "B3证据清单或摘要不符",
+      "read_only": true,
+      "passed": true
+    },
+    "semantic_tamper_after_manifest_rebuild": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\semantic_tamper_after_manifest_rebuild-nro_wdlx\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source",
+        "--core-only"
+      ],
+      "exit_code": 1,
+      "expected_reason": "B3版本或公开边界越界",
+      "output": "B3版本或公开边界越界",
+      "read_only": true,
+      "passed": true
+    },
+    "runtime_tamper_after_manifest_rebuild": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\runtime_tamper_after_manifest_rebuild-g5vl06jj\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source",
+        "--core-only"
+      ],
+      "exit_code": 1,
+      "expected_reason": "B3原生Runtime身份与构建记录不符",
+      "output": "B3原生Runtime身份与构建记录不符",
+      "read_only": true,
+      "passed": true
+    }
+  },
+  "scope": "复制归档仅在隔离临时目录内篡改；清单重建反例显式标注；默认审计另行执行"
+}
