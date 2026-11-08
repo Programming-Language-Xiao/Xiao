@@ -1,5 +1,5 @@
 {
-  "file_count": 119,
+  "file_count": 121,
   "files": [
     {
       "path": ".gitattributes",
@@ -557,14 +557,24 @@
       "sha256": "423d89076081999faf82dcac3722381fa322a0fc207a0b92b916395bf690b429"
     },
     {
+      "path": "replay-757454e1.json",
+      "bytes": 3699,
+      "sha256": "c2984e41f510031acae8a855ee3014333ab763deed7e5102f36029fdaa37fc93"
+    },
+    {
       "path": "run-step.py",
       "bytes": 4573,
       "sha256": "dba5aaf5b5fe9eb8d17b9734dacf4d58205c07db1386209c429ba5ebb60a8e8b"
     },
     {
-      "path": "self-negative-result.json",
+      "path": "self-negative-before-replay.json",
       "bytes": 4012,
       "sha256": "a90279e02a4e590dd8177d602d399954a860d76eec2fc70b59e54297d134eece"
+    },
+    {
+      "path": "self-negative-result.json",
+      "bytes": 4012,
+      "sha256": "f9641a29c63dd1268ca9c191198bf4bdc608534c45aecef1c9d09c4a5edacb45"
     },
     {
       "path": "self-negative.py",

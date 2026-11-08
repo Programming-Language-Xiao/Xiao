@@ -8,14 +8,14 @@
         "utf8",
         "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\baseline-fszynf95\\evidence",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\baseline-pl9csxkg\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source",
         "--core-only"
       ],
       "exit_code": 0,
       "expected_reason": null,
-      "output": "{\"passed\": true, \"core_only\": true, \"files\": 117, \"baseline_commit\": \"ae1744e5\", \"code_commit\": \"88886dd5\", \"b0_checks\": 16, \"b1_checks\": 17, \"exact_entries_per_phase\": 4, \"reference_cases\": 17243, \"max_ulp\": 1, \"live_runtime_checked\": false, \"scope\": \"B3-0/B3-1 私有内核；尚未公开接线\"}",
+      "output": "{\"passed\": true, \"core_only\": true, \"files\": 121, \"baseline_commit\": \"ae1744e5\", \"code_commit\": \"88886dd5\", \"b0_checks\": 16, \"b1_checks\": 17, \"exact_entries_per_phase\": 4, \"reference_cases\": 17243, \"max_ulp\": 1, \"live_runtime_checked\": false, \"scope\": \"B3-0/B3-1 私有内核；尚未公开接线\"}",
       "read_only": true,
       "passed": true
     },
@@ -26,7 +26,7 @@
         "utf8",
         "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\tampered_manifest-miq0p8pi\\evidence",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\tampered_manifest-2nsb6j_d\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source",
         "--core-only"
@@ -44,7 +44,7 @@
         "utf8",
         "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\missing_attributes-ohe036t4\\evidence",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\missing_attributes-793u7rz9\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source",
         "--core-only"
@@ -62,7 +62,7 @@
         "utf8",
         "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\semantic_tamper_after_manifest_rebuild-nro_wdlx\\evidence",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\semantic_tamper_after_manifest_rebuild-zlzozu44\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source",
         "--core-only"
@@ -80,7 +80,7 @@
         "utf8",
         "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\runtime_tamper_after_manifest_rebuild-g5vl06jj\\evidence",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\runtime_tamper_after_manifest_rebuild-mz5omnon\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source",
         "--core-only"
