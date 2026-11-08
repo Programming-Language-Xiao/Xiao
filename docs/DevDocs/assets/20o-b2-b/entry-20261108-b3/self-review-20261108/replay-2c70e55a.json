@@ -1,0 +1,78 @@
+{
+  "passed": true,
+  "evidence_commit": "2c70e55a6182612cc8e7d4e463933563badd85f9",
+  "source_repository": "D:\\project\\Xiao\\Xiao",
+  "archive_command": [
+    "cmd",
+    "/c",
+    "git",
+    "archive",
+    "2c70e55a6182612cc8e7d4e463933563badd85f9",
+    "--format=tar",
+    "--output=D:\\project\\Xiao\\.b3-cmath\\self-review-20261108-8213e3e4\\b3-git-evidence-export-0lv862rl\\evidence.tar",
+    "--",
+    "docs/DevDocs/assets/20o-b2-b/entry-20261108-b3"
+  ],
+  "archive_sha256": "62b6f9b6d88540c0af50b7f0f0e02834adbb6b9d11772ce384b11218560e8bd0",
+  "export_scope": "只导出本批证据目录；完整产品源码通过固定Git对象逐文件校验",
+  "runs": [
+    {
+      "name": "default-first",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 0,
+      "read_only": true,
+      "output": "{\"passed\": true, \"core_only\": false, \"files\": 130, \"baseline_commit\": \"ae1744e5\", \"code_commit\": \"88886dd5\", \"b0_checks\": 16, \"b1_checks\": 17, \"exact_entries_per_phase\": 4, \"reference_cases\": 17243, \"max_ulp\": 1, \"live_runtime_checked\": false, \"scope\": \"B3-0/B3-1 私有内核；尚未公开接线\"}"
+    },
+    {
+      "name": "default-second",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 0,
+      "read_only": true,
+      "output": "{\"passed\": true, \"core_only\": false, \"files\": 130, \"baseline_commit\": \"ae1744e5\", \"code_commit\": \"88886dd5\", \"b0_checks\": 16, \"b1_checks\": 17, \"exact_entries_per_phase\": 4, \"reference_cases\": 17243, \"max_ulp\": 1, \"live_runtime_checked\": false, \"scope\": \"B3-0/B3-1 私有内核；尚未公开接线\"}"
+    },
+    {
+      "name": "live-runtime",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao",
+        "--live-runtime"
+      ],
+      "exit_code": 0,
+      "read_only": true,
+      "output": "{\"passed\": true, \"core_only\": false, \"files\": 130, \"baseline_commit\": \"ae1744e5\", \"code_commit\": \"88886dd5\", \"b0_checks\": 16, \"b1_checks\": 17, \"exact_entries_per_phase\": 4, \"reference_cases\": 17243, \"max_ulp\": 1, \"live_runtime_checked\": true, \"scope\": \"B3-0/B3-1 私有内核；尚未公开接线\"}"
+    },
+    {
+      "name": "git-evidence-export",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cmath\\self-review-20261108-8213e3e4\\b3-git-evidence-export-0lv862rl\\export\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 0,
+      "read_only": true,
+      "output": "{\"passed\": true, \"core_only\": false, \"files\": 130, \"baseline_commit\": \"ae1744e5\", \"code_commit\": \"88886dd5\", \"b0_checks\": 16, \"b1_checks\": 17, \"exact_entries_per_phase\": 4, \"reference_cases\": 17243, \"max_ulp\": 1, \"live_runtime_checked\": false, \"scope\": \"B3-0/B3-1 私有内核；尚未公开接线\"}"
+    }
+  ],
+  "ci_executed": false
+}

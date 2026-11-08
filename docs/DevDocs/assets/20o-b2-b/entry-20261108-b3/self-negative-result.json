@@ -8,14 +8,14 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\baseline-xeu_vttr\\evidence",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\baseline-ui1_yj0s\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\Xiao",
         "--core-only"
       ],
       "exit_code": 0,
       "expected_reason": null,
-      "output": "{\"passed\": true, \"core_only\": true, \"files\": 130, \"baseline_commit\": \"ae1744e5\", \"code_commit\": \"88886dd5\", \"b0_checks\": 16, \"b1_checks\": 17, \"exact_entries_per_phase\": 4, \"reference_cases\": 17243, \"max_ulp\": 1, \"live_runtime_checked\": false, \"scope\": \"B3-0/B3-1 私有内核；尚未公开接线\"}",
+      "output": "{\"passed\": true, \"core_only\": true, \"files\": 131, \"baseline_commit\": \"ae1744e5\", \"code_commit\": \"88886dd5\", \"b0_checks\": 16, \"b1_checks\": 17, \"exact_entries_per_phase\": 4, \"reference_cases\": 17243, \"max_ulp\": 1, \"live_runtime_checked\": false, \"scope\": \"B3-0/B3-1 私有内核；尚未公开接线\"}",
       "read_only": true,
       "passed": true
     },
@@ -26,7 +26,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\tampered_manifest-dhwjr1z1\\evidence",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\tampered_manifest-4_zza5ql\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\Xiao",
         "--core-only"
@@ -44,7 +44,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\missing_attributes-sdfu75hq\\evidence",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\missing_attributes-5oo456dc\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\Xiao",
         "--core-only"
@@ -62,7 +62,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\semantic_tamper_after_manifest_rebuild-687gd2pm\\evidence",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\semantic_tamper_after_manifest_rebuild-hmhoqgmj\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\Xiao",
         "--core-only"
@@ -80,7 +80,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\runtime_tamper_after_manifest_rebuild-4ov1_m0y\\evidence",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\runtime_tamper_after_manifest_rebuild-i6ap3rcf\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\Xiao",
         "--core-only"
@@ -98,7 +98,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\reference_rebound_after_manifest_rebuild-jfj1_0r5\\evidence",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\reference_rebound_after_manifest_rebuild-128sct2q\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\Xiao",
         "--core-only"
@@ -116,7 +116,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\baseline_record_after_manifest_rebuild-3qk62hpe\\evidence",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\baseline_record_after_manifest_rebuild-oaxf05ue\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\Xiao",
         "--core-only"
@@ -134,7 +134,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\pow_summary_after_manifest_rebuild-26gh6xnp\\evidence",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\pow_summary_after_manifest_rebuild-zcvr6yga\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\Xiao",
         "--core-only"
@@ -152,7 +152,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
         "--root",
-        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\exact_target_after_manifest_rebuild-cirvqqrl\\evidence",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\audit-self-negative\\exact_target_after_manifest_rebuild-rkn0iw_p\\evidence",
         "--source-root",
         "D:\\project\\Xiao\\Xiao",
         "--core-only"

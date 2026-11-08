@@ -1,5 +1,5 @@
 {
-  "file_count": 130,
+  "file_count": 131,
   "files": [
     {
       "path": ".gitattributes",
@@ -574,7 +574,7 @@
     {
       "path": "self-negative-result.json",
       "bytes": 6444,
-      "sha256": "18b6a5fc8a210be8b57af2d11e226eb094a7049378ba0803f142563d6791026f"
+      "sha256": "4265aee7721798fe6f5c40e26a8faf7825b544411c64029dcc45998cded5999d"
     },
     {
       "path": "self-negative.py",
@@ -615,6 +615,11 @@
       "path": "self-review-20261108/reference-tools-result.json",
       "bytes": 4264,
       "sha256": "2767122bec9a6c56497316302a390878d49f56bb27cb63a92da2f8a029a605b7"
+    },
+    {
+      "path": "self-review-20261108/replay-2c70e55a.json",
+      "bytes": 3627,
+      "sha256": "1a4dcf0dee9b38da8c0d5e01101555c7eea538685fa55e3af73cbffca61efc6a"
     },
     {
       "path": "self-review-20261108/reproduce-before.py",
