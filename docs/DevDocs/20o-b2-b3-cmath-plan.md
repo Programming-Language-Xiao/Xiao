@@ -11,7 +11,7 @@
 | 项 | 当前状态 |
 | --- | --- |
 | B2 | 全局 `lfloat_divide`/intrinsic 33 已在 `37b92c53` 内部收口；B2 审计通过 |
-| B3-0/B3-1 | 基线与私有内核参考验收完成；代码 `88886dd5`，自审证据至 `96f28de0`，仅 Windows 本机 |
+| B3-0/B3-1 | 基线与私有内核参考验收完成；代码 `88886dd5`，B3证据冻结于 `96f28de0`，仅 Windows 本机 |
 | 公开版本 | ABI 1.18、生成器 20、活动 intrinsic 最大 33、标准库接口 1 |
 | 本批目标 | 15 项 `std.cmath`、intrinsic 34～48、15 个 C 符号、`cmath.pow` 与 float `**` 共用内核 |
 | 版本策略 | B3 只在内部快照激活 34～48；B5 才统一升 ABI 1.19/21 |
@@ -82,6 +82,8 @@ B3 执行前必须确认：
 
 ### B3-2：15 项 Runtime 内核
 
+执行细化见[B3-2/B3-4 开工规划](20o-b2-b3-2-b3-4-kickoff-plan.md)；B3-2A先切共享pow，C ABI与声明在B3-3A/B。
+
 1. 逐项完成 sqrt/floor/ceil/round/trunc/abs/min/max/pow/sin/cos/tan/exp/ln/log10；
 2. 全部入口先拒绝 NaN/Inf；域错误和非有限结果按 F-2 为 009；
 3. `sqrt(-0)=-0`、`round(-0.5)=-0`、`min/max` 零符号、`ln(1)=+0` 等按 F-2；
@@ -95,6 +97,8 @@ B3 执行前必须确认：
 
 ### B3-3：intrinsic 34～48 与 C ABI
 
+执行细化见[B3-2/B3-4 开工规划](20o-b2-b3-2-b3-4-kickoff-plan.md)；B3-3A做C ABI，B3-3B做声明。
+
 1. 在 `intrinsics.json` 增加 34～48，保持 1～33 和 ID 100 不变；
 2. 每项声明：源级入口、参数名、返回 `float`、效果 `Pure`、能力 `None`、C 符号；
 3. 15 个 C 符号与 F-5 表一一对应：sqrt/floor/ceil/round/trunc/abs/min/max/pow/sin/cos/tan/exp/ln/log10；
@@ -106,6 +110,8 @@ B3 执行前必须确认：
 退出：15 个声明/C 符号/Runtime 入口一一对应；34～48 在内部快照活动，ABI 仍 1.18/20。
 
 ### B3-4：`stdlib/cmath.xiao` 公开包装
+
+执行细化见[B3-2/B3-4 开工规划](20o-b2-b3-2-b3-4-kickoff-plan.md)；只做包装源码，VM/LLVM双路径留B4。
 
 1. 新增 `stdlib/cmath.xiao`，导出 15 个公开包装；
 2. 每个包装只调用已确认原语，不复制数学实现；
