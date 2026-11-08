@@ -1,0 +1,56 @@
+{
+  "passed": true,
+  "scope": "B3-2A Runtime共享pow与B2-A回归",
+  "effective_checks": [
+    "build-runtime",
+    "kernel-tests",
+    "runtime-all",
+    "b1-vm",
+    "b1-native",
+    "b2-a-regression",
+    "public-boundary",
+    "pow-annotations-final"
+  ],
+  "source_manifest": "source-manifests/dc7836e210ed243e51308e051166906a95fe974cced588e1d64ab613e40c345b.json",
+  "pow_cases": 1075,
+  "pow_summary": {
+    "same": 1011,
+    "value_or_error_boundary": 40,
+    "value_bits": 24
+  },
+  "runtime_unit_passed": 259,
+  "b2_a_results": [
+    [
+      "1",
+      "0",
+      "1"
+    ],
+    [
+      "12",
+      "0",
+      "1"
+    ],
+    [
+      "8",
+      "0",
+      "0"
+    ]
+  ],
+  "exact_checks": [
+    "b1-vm",
+    "b1-native"
+  ],
+  "runtime": {
+    "path": "D:\\project\\Xiao\\.b3-cmath\\20261108-d2f8c239-runtime\\cargo-target\\release\\xiao_runtime.lib",
+    "bytes": 27295194,
+    "sha256": "00b5f25f252eecf00a3d7b8d24374fad972321178f116b00771241a817b2d048",
+    "mtime_ns": 1794142446980090900,
+    "archived_copy": "D:\\project\\Xiao\\.b3-cmath\\20261108-d2f8c239-runtime\\runtime-shared\\xiao_runtime.lib"
+  },
+  "abi": "1.18",
+  "codegen": 20,
+  "active_intrinsic_max": 33,
+  "cmath": "planned",
+  "llvm_static_power": "尚用llvm.pow.f64，B4后端共核待做",
+  "initial_annotation_failure": "pow-annotations.log：测试进度前缀混入同一行，初版工具漏行；最终工具从数据标记提取，不重跑或改写产品样本"
+}

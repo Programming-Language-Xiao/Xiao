@@ -1,15 +1,15 @@
 #![allow(dead_code)]
 
-//! B2-B私有cmath底座。
+//! B3共享cmath数学内核。
 //!
-//! 这里只提供经过边界检查的纯Rust f64内核，不注册intrinsic、不暴露C ABI，
-//! 也不切换现有 float `**` 调用点。B3会在冻结的全链路批次一次性接线。
+//! 这里只提供经过边界检查的纯Rust f64内核，Runtime的float `**`与C ABI适配
+//! 复用这些函数。intrinsic声明和语言后端接线各有独立批次。
 
 use crate::errors::{RuntimeError, RuntimeResult};
 
 /// B2-B规划中的15项函数名称，供私有测试和后续接线共享。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(super) enum Function {
+pub(crate) enum Function {
     Sqrt,
     Floor,
     Ceil,
@@ -51,7 +51,7 @@ fn result(function: Function, value: f64) -> RuntimeResult<f64> {
 }
 
 /// 私有sqrt边界，负零由libm保留。
-pub(super) fn sqrt(value: f64) -> RuntimeResult<f64> {
+pub(crate) fn sqrt(value: f64) -> RuntimeResult<f64> {
     let value = finite(Function::Sqrt, value)?;
     if value < 0.0 {
         return Err(domain(Function::Sqrt, "定义域要求x>=0"));
@@ -60,37 +60,37 @@ pub(super) fn sqrt(value: f64) -> RuntimeResult<f64> {
 }
 
 /// 私有floor边界。
-pub(super) fn floor(value: f64) -> RuntimeResult<f64> {
+pub(crate) fn floor(value: f64) -> RuntimeResult<f64> {
     let value = finite(Function::Floor, value)?;
     result(Function::Floor, libm::floor(value))
 }
 
 /// 私有ceil边界。
-pub(super) fn ceil(value: f64) -> RuntimeResult<f64> {
+pub(crate) fn ceil(value: f64) -> RuntimeResult<f64> {
     let value = finite(Function::Ceil, value)?;
     result(Function::Ceil, libm::ceil(value))
 }
 
 /// 最近偶数舍入；不使用宿主默认round的远离零规则。
-pub(super) fn round(value: f64) -> RuntimeResult<f64> {
+pub(crate) fn round(value: f64) -> RuntimeResult<f64> {
     let value = finite(Function::Round, value)?;
     result(Function::Round, libm::roundeven(value))
 }
 
 /// 向零截断。
-pub(super) fn trunc(value: f64) -> RuntimeResult<f64> {
+pub(crate) fn trunc(value: f64) -> RuntimeResult<f64> {
     let value = finite(Function::Trunc, value)?;
     result(Function::Trunc, libm::trunc(value))
 }
 
 /// 逐位绝对值；负零按IEEE绝对值归为正零。
-pub(super) fn abs(value: f64) -> RuntimeResult<f64> {
+pub(crate) fn abs(value: f64) -> RuntimeResult<f64> {
     let value = finite(Function::Abs, value)?;
     result(Function::Abs, libm::fabs(value))
 }
 
 /// 异号零平局取-0；同号零保持输入顺序无关的零符号。
-pub(super) fn min(left: f64, right: f64) -> RuntimeResult<f64> {
+pub(crate) fn min(left: f64, right: f64) -> RuntimeResult<f64> {
     let left = finite(Function::Min, left)?;
     let right = finite(Function::Min, right)?;
     if left == right {
@@ -107,7 +107,7 @@ pub(super) fn min(left: f64, right: f64) -> RuntimeResult<f64> {
 }
 
 /// 异号零平局取+0；同号零保留零。
-pub(super) fn max(left: f64, right: f64) -> RuntimeResult<f64> {
+pub(crate) fn max(left: f64, right: f64) -> RuntimeResult<f64> {
     let left = finite(Function::Max, left)?;
     let right = finite(Function::Max, right)?;
     if left == right {
@@ -123,8 +123,8 @@ pub(super) fn max(left: f64, right: f64) -> RuntimeResult<f64> {
     Ok(left.max(right))
 }
 
-/// 共享pow域边界；B3将float **和cmath.pow接到同一函数。
-pub(super) fn pow(base: f64, exponent: f64) -> RuntimeResult<f64> {
+/// 共享pow域边界；Runtime的float **与cmath.pow使用同一函数。
+pub(crate) fn pow(base: f64, exponent: f64) -> RuntimeResult<f64> {
     let base = finite(Function::Pow, base)?;
     let exponent = finite(Function::Pow, exponent)?;
     if exponent == 0.0 {
@@ -143,27 +143,27 @@ pub(super) fn pow(base: f64, exponent: f64) -> RuntimeResult<f64> {
 }
 
 /// 普通超越函数统一有限输入/输出边界。
-pub(super) fn sin(value: f64) -> RuntimeResult<f64> {
+pub(crate) fn sin(value: f64) -> RuntimeResult<f64> {
     result(Function::Sin, libm::sin(finite(Function::Sin, value)?))
 }
 
 /// 普通超越函数统一有限输入/输出边界。
-pub(super) fn cos(value: f64) -> RuntimeResult<f64> {
+pub(crate) fn cos(value: f64) -> RuntimeResult<f64> {
     result(Function::Cos, libm::cos(finite(Function::Cos, value)?))
 }
 
 /// tan不使用epsilon判极点；只有实际非有限结果才报009。
-pub(super) fn tan(value: f64) -> RuntimeResult<f64> {
+pub(crate) fn tan(value: f64) -> RuntimeResult<f64> {
     result(Function::Tan, libm::tan(finite(Function::Tan, value)?))
 }
 
 /// exp在正常IEEE下溢时允许有符号零，溢出结果报009。
-pub(super) fn exp(value: f64) -> RuntimeResult<f64> {
+pub(crate) fn exp(value: f64) -> RuntimeResult<f64> {
     result(Function::Exp, libm::exp(finite(Function::Exp, value)?))
 }
 
 /// ln的定义域为x>0。
-pub(super) fn ln(value: f64) -> RuntimeResult<f64> {
+pub(crate) fn ln(value: f64) -> RuntimeResult<f64> {
     let value = finite(Function::Ln, value)?;
     if value <= 0.0 {
         return Err(domain(Function::Ln, "定义域要求x>0"));
@@ -172,7 +172,7 @@ pub(super) fn ln(value: f64) -> RuntimeResult<f64> {
 }
 
 /// log10的定义域为x>0。
-pub(super) fn log10(value: f64) -> RuntimeResult<f64> {
+pub(crate) fn log10(value: f64) -> RuntimeResult<f64> {
     let value = finite(Function::Log10, value)?;
     if value <= 0.0 {
         return Err(domain(Function::Log10, "定义域要求x>0"));

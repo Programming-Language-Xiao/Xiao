@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\.b3-cmath\20261108-d2f8c239-runtime\source\docs\DevDocs\assets\20o-b2-b\entry-20261108-b3-runtime\annotate-pow.py", line 88, in <module>
+    main(parser.parse_args().phase)
+  File "D:\project\Xiao\.b3-cmath\20261108-d2f8c239-runtime\source\docs\DevDocs\assets\20o-b2-b\entry-20261108-b3-runtime\annotate-pow.py", line 59, in main
+    assert len(current) == baseline['cases'] == 1075
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

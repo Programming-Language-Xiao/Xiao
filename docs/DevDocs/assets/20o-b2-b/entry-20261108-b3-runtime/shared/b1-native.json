@@ -1,0 +1,59 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b1_probe",
+    "b1_capabilities_match_native_golden_outputs",
+    "--",
+    "--ignored",
+    "--exact",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\.b3-cmath\\20261108-d2f8c239-runtime\\source",
+  "phase": "shared",
+  "name": "b1-native",
+  "started_utc": "2026-11-08T12:54:51.883283+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "shared/b1-native.log",
+  "pid": 74484,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/dc7836e210ed243e51308e051166906a95fe974cced588e1d64ab613e40c345b.json",
+    "raw_tree_sha256": "dc7836e210ed243e51308e051166906a95fe974cced588e1d64ab613e40c345b",
+    "utf8_lf_tree_sha256": "146ca98247ad34ce601ad0478b1330772f0de8424f8c211a0551864292b22ce7",
+    "files": 1042
+  },
+  "source_after": {
+    "manifest": "source-manifests/dc7836e210ed243e51308e051166906a95fe974cced588e1d64ab613e40c345b.json",
+    "raw_tree_sha256": "dc7836e210ed243e51308e051166906a95fe974cced588e1d64ab613e40c345b",
+    "utf8_lf_tree_sha256": "146ca98247ad34ce601ad0478b1330772f0de8424f8c211a0551864292b22ce7",
+    "files": 1042
+  },
+  "source_unchanged": true,
+  "runtime_before": {
+    "path": "D:\\project\\Xiao\\.b3-cmath\\20261108-d2f8c239-runtime\\cargo-target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27295194,
+    "sha256": "00b5f25f252eecf00a3d7b8d24374fad972321178f116b00771241a817b2d048",
+    "mtime_ns": 1794142446980090900
+  },
+  "runtime_after": {
+    "path": "D:\\project\\Xiao\\.b3-cmath\\20261108-d2f8c239-runtime\\cargo-target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27295194,
+    "sha256": "00b5f25f252eecf00a3d7b8d24374fad972321178f116b00771241a817b2d048",
+    "mtime_ns": 1794142446980090900
+  },
+  "duration_seconds": 280.453,
+  "finished_utc": "2026-11-08T12:59:32.341559+00:00",
+  "sha256": "7563c33943e9b07285573a02651af1ceb917685df07a42d784392c69b8dc5703",
+  "runner_sha256": "bea7fcd7c46ad265138cc3aa4ce86bd4aa1067630b8728706f7d23936f31e944"
+}

@@ -165,11 +165,11 @@ fn outcome(result: RuntimeResult<f64>) -> String {
 }
 
 #[test]
-fn mpfr_pow_vectors_and_legacy_float_differences() {
+fn mpfr_pow_vectors_and_public_float_share_kernel() {
     group(&["pow"], 4);
-    // 实际调用现有公开Runtime算子；只登记差异，不修改ops.rs或切换调用点。
+    // 调用已接线的公开Runtime算子；旧宿主结果由冻结的B3-1差表单独保留。
     for vector in vectors().filter(|v| v.function == "pow") {
-        let old = RuntimeValue::Float(vector.a)
+        let public = RuntimeValue::Float(vector.a)
             .power(&RuntimeValue::Float(vector.b))
             .map(|value| {
                 if let RuntimeValue::Float(value) = value {
@@ -178,13 +178,16 @@ fn mpfr_pow_vectors_and_legacy_float_differences() {
                     panic!("float幂返回类型变化")
                 }
             });
+        let public = outcome(public);
+        let kernel = outcome(call(&vector));
+        assert_eq!(public, kernel, "{}：公开float幂与共享内核不一致", vector.id);
         println!(
-            "B3-POW-DIFF\t{}\t{:016x}\t{:016x}\t{}\t{}\t{}",
+            "B3-POW-SHARED\t{}\t{:016x}\t{:016x}\t{}\t{}\t{}",
             vector.id,
             vector.a.to_bits(),
             vector.b.to_bits(),
-            outcome(old),
-            outcome(call(&vector)),
+            public,
+            kernel,
             vector.expected
         );
     }

@@ -1,0 +1,1 @@
+{"phase": "shared", "active_max": 33, "absent": [34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48], "versions": {"abi": 18, "codegen": 20, "stdlib_interface": 1}, "runtime_sha256": "00b5f25f252eecf00a3d7b8d24374fad972321178f116b00771241a817b2d048", "symbols": 150, "cmath": "planned"}

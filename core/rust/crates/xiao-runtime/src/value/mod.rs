@@ -5,7 +5,7 @@
 //! 算术、比较、相等和显式转换统一放在子模块 `ops`，避免算子矩阵散落。
 
 /// A2/A3精确系数算术内核。
-mod arithmetic;
+pub(crate) mod arithmetic;
 /// 四参显式精度除法，VM 与 C ABI 共用同一实现。
 pub use arithmetic::lfloat_divide;
 /// C ABI 借用文本适配，复用同一接纳和数学路径。

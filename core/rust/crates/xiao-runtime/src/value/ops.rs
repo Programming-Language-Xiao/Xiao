@@ -210,7 +210,7 @@ impl RuntimeValue {
                     .map(Self::Sint)
                     .ok_or_else(|| RuntimeError::numeric_overflow("sint 幂运算溢出"))
             }
-            NumericPair::Float(left, right) => finite_float64(left.powf(right)),
+            NumericPair::Float(left, right) => arithmetic::cmath::pow(left, right).map(Self::Float),
             NumericPair::Sfloat(left, right) => finite_float32(left.powf(right)),
         }
     }
