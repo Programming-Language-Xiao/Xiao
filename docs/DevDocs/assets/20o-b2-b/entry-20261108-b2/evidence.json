@@ -439,8 +439,8 @@
     },
     {
       "path": "rebuild-evidence.py",
-      "bytes": 699,
-      "sha256": "b879eb55dcb24962dd614e3d2cbf6ec93e034da8de81c7961e71b0ae398652c2"
+      "bytes": 860,
+      "sha256": "c7489c2f512f84c6efcc7adfc29946fbdd480d04a3023b36a1813fca7a0007eb"
     },
     {
       "path": "run-step.py",

@@ -1,5 +1,5 @@
 {
-  "scope": "仅self-review-20261108本目录最终文件；清单自身不计入自身摘要",
+  "scope": "B2本目录全部归档文件，清单自身除外",
   "file_count": 9,
   "files": [
     {
@@ -10,7 +10,7 @@
     {
       "path": "audit-after.json",
       "bytes": 3221,
-      "sha256": "750e9a87ccad354158709a2538ea8464b494bb424e291282b6446e3acb26ca57"
+      "sha256": "4aa728582db491095f085084cf696c44fb71c33eb18c4d57bb3ef072b776e0f1"
     },
     {
       "path": "audit-before-complete.json",

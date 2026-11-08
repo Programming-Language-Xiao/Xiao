@@ -11,7 +11,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b2\\audit.py",
         "--root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-review-audit-mfxels8q\\drop_clippy",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-review-audit-k8lpm_ju\\drop_clippy",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -29,7 +29,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b2\\audit.py",
         "--root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-review-audit-mfxels8q\\drop_exact_checks",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-review-audit-k8lpm_ju\\drop_exact_checks",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -47,7 +47,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b2\\audit.py",
         "--root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-review-audit-mfxels8q\\wrong_runtime_override",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-review-audit-k8lpm_ju\\wrong_runtime_override",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -65,7 +65,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b2\\audit.py",
         "--root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-review-audit-mfxels8q\\wrong_summary_counts",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-review-audit-k8lpm_ju\\wrong_summary_counts",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
@@ -83,7 +83,7 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b2\\audit.py",
         "--root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-review-audit-mfxels8q\\missing_source_row",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-review-audit-k8lpm_ju\\missing_source_row",
         "--source-root",
         "D:\\project\\Xiao\\Xiao"
       ],
