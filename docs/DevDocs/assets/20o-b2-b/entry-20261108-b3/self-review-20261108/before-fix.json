@@ -1,0 +1,100 @@
+{
+  "source_commit": "8213e3e49f68ea8574ff3054af24b25ce08b72a0",
+  "scope": "修复前审计的真实接受结果，非修复后通过证据",
+  "cases": {
+    "baseline": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cmath\\self-review-20261108-8213e3e4\\baseline-s4_cc70w\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao",
+        "--core-only"
+      ],
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"core_only\": true, \"files\": 121, \"baseline_commit\": \"ae1744e5\", \"code_commit\": \"88886dd5\", \"b0_checks\": 16, \"b1_checks\": 17, \"exact_entries_per_phase\": 4, \"reference_cases\": 17243, \"max_ulp\": 1, \"live_runtime_checked\": false, \"scope\": \"B3-0/B3-1 私有内核；尚未公开接线\"}",
+      "read_only": true
+    },
+    "reference_generator_rebound": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cmath\\self-review-20261108-8213e3e4\\reference_generator_rebound-dyhhea5k\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao",
+        "--core-only"
+      ],
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"core_only\": true, \"files\": 121, \"baseline_commit\": \"ae1744e5\", \"code_commit\": \"88886dd5\", \"b0_checks\": 16, \"b1_checks\": 17, \"exact_entries_per_phase\": 4, \"reference_cases\": 17243, \"max_ulp\": 1, \"live_runtime_checked\": false, \"scope\": \"B3-0/B3-1 私有内核；尚未公开接线\"}",
+      "read_only": true
+    },
+    "baseline_record_rewritten": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cmath\\self-review-20261108-8213e3e4\\baseline_record_rewritten-5dh3d07n\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao",
+        "--core-only"
+      ],
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"core_only\": true, \"files\": 121, \"baseline_commit\": \"ae1744e5\", \"code_commit\": \"88886dd5\", \"b0_checks\": 16, \"b1_checks\": 17, \"exact_entries_per_phase\": 4, \"reference_cases\": 17243, \"max_ulp\": 1, \"live_runtime_checked\": false, \"scope\": \"B3-0/B3-1 私有内核；尚未公开接线\"}",
+      "read_only": true
+    },
+    "pow_summary_rewritten": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cmath\\self-review-20261108-8213e3e4\\pow_summary_rewritten-5x2i_t8b\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao",
+        "--core-only"
+      ],
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"core_only\": true, \"files\": 121, \"baseline_commit\": \"ae1744e5\", \"code_commit\": \"88886dd5\", \"b0_checks\": 16, \"b1_checks\": 17, \"exact_entries_per_phase\": 4, \"reference_cases\": 17243, \"max_ulp\": 1, \"live_runtime_checked\": false, \"scope\": \"B3-0/B3-1 私有内核；尚未公开接线\"}",
+      "read_only": true
+    },
+    "exact_target_rewritten": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261108-b3\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cmath\\self-review-20261108-8213e3e4\\exact_target_rewritten-8kdvjjih\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao",
+        "--core-only"
+      ],
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"core_only\": true, \"files\": 121, \"baseline_commit\": \"ae1744e5\", \"code_commit\": \"88886dd5\", \"b0_checks\": 16, \"b1_checks\": 17, \"exact_entries_per_phase\": 4, \"reference_cases\": 17243, \"max_ulp\": 1, \"live_runtime_checked\": false, \"scope\": \"B3-0/B3-1 私有内核；尚未公开接线\"}",
+      "read_only": true
+    },
+    "reference_self_test_read_only": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cmath\\self-review-20261108-8213e3e4\\reference-self-test-2f8e_xw1\\test-reference.py"
+      ],
+      "exit_code": 0,
+      "output": "test_all_integral_roundings_preserve_negative_zero (__main__.ReferenceTests.test_all_integral_roundings_preserve_negative_zero) ... ok\ntest_binary64_rounding_midpoints_and_subnormals (__main__.ReferenceTests.test_binary64_rounding_midpoints_and_subnormals) ... ok\ntest_input_is_exact_binary64 (__main__.ReferenceTests.test_input_is_exact_binary64) ... ok\ntest_nonfinite_is_rejected_before_pow_zero (__main__.ReferenceTests.test_nonfinite_is_rejected_before_pow_zero) ... ok\ntest_precision_doubles_until_bounds_agree (__main__.ReferenceTests.test_precision_doubles_until_bounds_agree) ... ok\ntest_sqrt_requires_a_unique_rounded_interval (__main__.ReferenceTests.test_sqrt_requires_a_unique_rounded_interval) ... ok\ntest_unresolved_interval_is_not_guessed (__main__.ReferenceTests.test_unresolved_interval_is_not_guessed) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.002s\n\nOK",
+      "new_files": [
+        "__pycache__/generate-reference.cpython-312.pyc"
+      ],
+      "read_only": false
+    }
+  }
+}

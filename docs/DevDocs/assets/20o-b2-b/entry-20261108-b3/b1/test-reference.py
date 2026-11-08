@@ -1,11 +1,14 @@
 """参考生成器自检：零符号、精确输入、IEEE出口及精度升级/不可验证边界。"""
 import importlib.util
 from pathlib import Path
+import sys
 import unittest
 from unittest.mock import patch
 
 import gmpy2 as g
 
+# 自检只读取已封存生成器；导入时也不得在归档目录生成缓存。
+sys.dont_write_bytecode = True
 spec = importlib.util.spec_from_file_location('reference', Path(__file__).with_name('generate-reference.py'))
 reference = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(reference)

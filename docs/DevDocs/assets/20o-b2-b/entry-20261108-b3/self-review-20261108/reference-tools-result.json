@@ -1,0 +1,40 @@
+{
+  "passed": true,
+  "source_sha256": {
+    "generate-reference.py": "582581aae8cee4e7144a87af56cf844ea3bc3c8907e0661b7885c24eb8d8e44c",
+    "reference-inputs.json": "28acad962bcdc2144d6d6b0a2574566fd342d0d09aa7ab4f5ad569f241bf7dca",
+    "reference-manifest.json": "70104bc632a84c5ca787106d0ccbed51cc524da5b49ba1c6a9a0bc72ad0d4e93",
+    "reference-vectors.tsv": "0e61a2da361448477b15f5508df6d612a3f01e29a06e50699d6ed48a917d1ed3",
+    "replay-reference.py": "52eaed01d809fc86b2ad7bb187f8c32b0482f2860fd8b397a27ee75b5095044e",
+    "test-reference.py": "52360802b8ead43da396a9b44beb8a78b23c20ff463064ac3999e42d094f3971"
+  },
+  "cases": {
+    "test-reference.py": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\reference-self-review\\fresh-reference-xpbj596_\\test-reference.py"
+      ],
+      "exit_code": 0,
+      "read_only": true,
+      "new_files": [],
+      "output": "test_all_integral_roundings_preserve_negative_zero (__main__.ReferenceTests.test_all_integral_roundings_preserve_negative_zero) ... ok\ntest_binary64_rounding_midpoints_and_subnormals (__main__.ReferenceTests.test_binary64_rounding_midpoints_and_subnormals) ... ok\ntest_input_is_exact_binary64 (__main__.ReferenceTests.test_input_is_exact_binary64) ... ok\ntest_nonfinite_is_rejected_before_pow_zero (__main__.ReferenceTests.test_nonfinite_is_rejected_before_pow_zero) ... ok\ntest_precision_doubles_until_bounds_agree (__main__.ReferenceTests.test_precision_doubles_until_bounds_agree) ... ok\ntest_sqrt_requires_a_unique_rounded_interval (__main__.ReferenceTests.test_sqrt_requires_a_unique_rounded_interval) ... ok\ntest_unresolved_interval_is_not_guessed (__main__.ReferenceTests.test_unresolved_interval_is_not_guessed) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.002s\n\nOK",
+      "passed": true
+    },
+    "replay-reference.py": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\reference-self-review\\fresh-reference-xpbj596_\\replay-reference.py"
+      ],
+      "exit_code": 0,
+      "read_only": true,
+      "new_files": [],
+      "output": "{\"generator_version\": 1, \"generator_sha256\": \"582581aae8cee4e7144a87af56cf844ea3bc3c8907e0661b7885c24eb8d8e44c\", \"seed\": \"b203f90020261108\", \"gmpy2\": \"2.3.2\", \"mpfr\": \"MPFR 4.2.2\", \"gmp\": \"GMP 6.3.0\", \"rounding\": \"256/512/1024/2048/4096-bit RoundDown/RoundUp -> IEEE binary64 nearest-even; accept iff both bit patterns equal\", \"cases\": 17243, \"functions\": {\"sqrt\": 1214, \"floor\": 1214, \"ceil\": 1214, \"round\": 1214, \"trunc\": 1214, \"abs\": 1214, \"sin\": 1214, \"cos\": 1214, \"tan\": 1214, \"exp\": 1214, \"ln\": 1214, \"log10\": 1214, \"min\": 800, \"max\": 800, \"pow\": 1075}, \"outcomes\": {\"value\": 14479, \"error\": 2764}, \"precision_counts\": {\"256\": 12259, \"0\": 4984}, \"inputs_sha256\": \"28acad962bcdc2144d6d6b0a2574566fd342d0d09aa7ab4f5ad569f241bf7dca\", \"vectors_sha256\": \"0e61a2da361448477b15f5508df6d612a3f01e29a06e50699d6ed48a917d1ed3\", \"tool_provenance\": \"tool-provenance.json\", \"production_dependencies\": \"unchanged\"}\n{\"passed\": true, \"argv\": [\"D:\\\\Programs\\\\Python\\\\Python312\\\\python.exe\", \"-X\", \"utf8\", \"D:\\\\project\\\\Xiao\\\\.b3-cmath\\\\20261108-ae1744e5\\\\reference-self-review\\\\fresh-reference-xpbj596_\\\\generate-reference.py\", \"--output\", \"C:\\\\Users\\\\xiaoc\\\\AppData\\\\Local\\\\Temp\\\\b3-reference-replay-cpca9sly\"], \"temporary_directory\": \"C:\\\\Users\\\\xiaoc\\\\AppData\\\\Local\\\\Temp\\\\b3-reference-replay-cpca9sly\", \"files\": {\"reference-inputs.json\": \"28acad962bcdc2144d6d6b0a2574566fd342d0d09aa7ab4f5ad569f241bf7dca\", \"reference-vectors.tsv\": \"0e61a2da361448477b15f5508df6d612a3f01e29a06e50699d6ed48a917d1ed3\", \"reference-manifest.json\": \"70104bc632a84c5ca787106d0ccbed51cc524da5b49ba1c6a9a0bc72ad0d4e93\"}, \"originals_overwritten\": false}",
+      "passed": true
+    }
+  },
+  "scope": "全新复制目录，未设置禁止字节码缓存的环境变量；子命令前后所有文件字节和集合一致"
+}

@@ -12,7 +12,11 @@ ROOT = Path(__file__).resolve().parent
 SOURCE = ROOT.parents[4]
 REASONS = {'baseline': None, 'tampered_manifest': 'B3证据清单或摘要不符', 'missing_attributes': 'B3证据清单或摘要不符',
            'semantic_tamper_after_manifest_rebuild': 'B3版本或公开边界越界',
-           'runtime_tamper_after_manifest_rebuild': 'B3原生Runtime身份与构建记录不符'}
+           'runtime_tamper_after_manifest_rebuild': 'B3原生Runtime身份与构建记录不符',
+           'reference_rebound_after_manifest_rebuild': 'B3参考文件偏离被测源码清单',
+           'baseline_record_after_manifest_rebuild': 'B3-0证据偏离已提交基线',
+           'pow_summary_after_manifest_rebuild': 'B3幂行为差表汇总偏离明细',
+           'exact_target_after_manifest_rebuild': 'B3精确入口命令或测试目标不符'}
 
 
 def rows(root):
@@ -51,6 +55,39 @@ def main():
                 surface = json.loads((target / 'b1/public-surface.json').read_text(encoding='utf-8'))
                 surface['runtime']['sha256'] = '0' * 64
                 save(target / 'b1/public-surface.json', surface)
+            elif name == 'reference_rebound_after_manifest_rebuild':
+                generator = target / 'b1/generate-reference.py'
+                generator.write_bytes(generator.read_bytes() + b'\n# changed after the measured snapshot\n')
+                manifest = json.loads((target / 'b1/reference-manifest.json').read_text(encoding='utf-8'))
+                manifest['generator_sha256'] = hashlib.sha256(generator.read_bytes()).hexdigest()
+                save(target / 'b1/reference-manifest.json', manifest)
+                log = target / 'b1/reference-replay.log'
+                lines = log.read_text(encoding='utf-8').splitlines()
+                replay = json.loads(lines[-1])
+                replay['files']['reference-manifest.json'] = hashlib.sha256((target / 'b1/reference-manifest.json').read_bytes()).hexdigest()
+                lines[-1] = json.dumps(replay, ensure_ascii=True)
+                log.write_text('\n'.join(lines) + '\n', encoding='utf-8', newline='\n')
+                record = json.loads((target / 'b1/reference-replay.json').read_text(encoding='utf-8'))
+                record['sha256'] = hashlib.sha256(log.read_bytes()).hexdigest()
+                save(target / 'b1/reference-replay.json', record)
+            elif name == 'baseline_record_after_manifest_rebuild':
+                path = target / 'b0/build-driver.json'
+                record = json.loads(path.read_text(encoding='utf-8'))
+                record['duration_seconds'] += 1
+                save(path, record)
+                files = rows(target / 'b0')
+                save(target / 'b0/evidence.json', {'file_count': len(files), 'files': files})
+            elif name == 'pow_summary_after_manifest_rebuild':
+                path = target / 'b1/pow-diff.json'
+                document = json.loads(path.read_text(encoding='utf-8'))
+                document['summary'] = {'same': 0, 'value_or_error_boundary': 0, 'value_bits': 0}
+                save(path, document)
+            elif name == 'exact_target_after_manifest_rebuild':
+                path = target / 'b1/b2-vm.json'
+                document = json.loads(path.read_text(encoding='utf-8'))
+                index = document['argv'].index('lfloat_divide_has_vm_golden_outputs')
+                document['argv'][index] = 'unrelated_test'
+                save(path, document)
             if name.endswith('after_manifest_rebuild'):
                 files = rows(target)
                 save(target / 'evidence.json', {'file_count': len(files), 'files': files})

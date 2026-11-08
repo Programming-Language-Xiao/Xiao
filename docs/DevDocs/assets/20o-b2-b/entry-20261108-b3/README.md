@@ -2,6 +2,8 @@
 
 B3-0 基线与 B3-1 私有参考已完成。入口为 `ae1744e5`，基线提交 `ca63a792`，被测代码为 `88886dd5`。本批只有 `cmath.rs` 和新增 `cmath_tests.rs` 两个产品路径发生变化；现有 15 项内核通过正式参考，无须修改数学算法。
 
+后续[自审修复](self-review-20261108/README.md)补齐了归档参考文件与被测快照的绑定、B0 历史字节校验、精确测试目标校验、pow 汇总核算及参考自检的缓存约束。产品代码、正式参考生成器及向量均保持上述被测身份；自审结果与原始验收分开记录。
+
 ABI 1.18、生成器 20、标准库接口 1、活动 intrinsic 最大 33、100 墓碑；34～48/C ABI/stdlib 包装尚未接线，`stdlib.cmath` 继续 planned。float `**` 调用点没有切换；B3-2、B4、B5 与 B2-C 后置，22C/22D 及 19/11/22 债务保留。
 
 基线采用当前干净入口。相对 B2 代码 `37b92c53`，唯一非 DevDocs 差异是已批准的 `3aa6a290` 所含 UseDocs 状态勘误，已在 [bootstrap.json](bootstrap.json) 单列并核对 Git blob；产品与示例没有继承额外变更。
@@ -60,6 +62,8 @@ python -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261108-b3/b1/test-reference.
 ## 自审与清单
 
 [自反例工具](self-negative.py) 检查基线、清单篡改、缺失 `.gitattributes`、临时重建清单后的语义篡改与 Runtime 身份篡改，结果保存为 `self-negative-result.json`；每项核对确切拒绝文本、退出码和审计前后字节不变。`--core-only` 仅是自反例内部入口，会明确标记，不能替代最终默认审计。
+
+当前集合为 9 项，另覆盖重建清单后的参考摘要重绑、B0 记录改写、pow 汇总改错及精确测试目标替换；原有 5 项报告保留在自审目录中，未用新结果改写旧结论。
 
 `collect-results.py` 与 `refresh-evidence.py` 是显式生成工具，分别从执行日志生成收口文件、从实际字节生成完整清单；`audit.py` 不调用它们。修改文档或证据后必须显式重新封存，并重新运行自反例及最终审计。
 

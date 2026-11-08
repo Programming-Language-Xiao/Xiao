@@ -1,5 +1,5 @@
 {
-  "file_count": 121,
+  "file_count": 130,
   "files": [
     {
       "path": ".gitattributes",
@@ -13,8 +13,8 @@
     },
     {
       "path": "audit.py",
-      "bytes": 21465,
-      "sha256": "ffda6c44882ae5827c4b921c45812741c4c810def52450a0f7062a559a2b7175"
+      "bytes": 24918,
+      "sha256": "6ec79d3c08e1bef3f10a777fcdd89958e4766dc20836a53eadd080da830e32d2"
     },
     {
       "path": "b0/b1-guards-report.json",
@@ -488,8 +488,8 @@
     },
     {
       "path": "b1/test-reference.py",
-      "bytes": 3009,
-      "sha256": "f4bb551becdc33d4567bb579b2235d0455a0a7033156daa03e032e7e695a2c67"
+      "bytes": 3138,
+      "sha256": "52360802b8ead43da396a9b44beb8a78b23c20ff463064ac3999e42d094f3971"
     },
     {
       "path": "b1/tool-provenance.json",
@@ -543,8 +543,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 6254,
-      "sha256": "9dd3a42f70ad254cbf28b88a7c2c6a1ae8ae9ce89285a63b85acaa26df301fee"
+      "bytes": 6795,
+      "sha256": "0df01ebb0e1290720b9cdf65263209f0aef0c4bc4a9c2e96c4647e9054209b01"
     },
     {
       "path": "reference-provenance.py",
@@ -573,13 +573,58 @@
     },
     {
       "path": "self-negative-result.json",
+      "bytes": 6444,
+      "sha256": "18b6a5fc8a210be8b57af2d11e226eb094a7049378ba0803f142563d6791026f"
+    },
+    {
+      "path": "self-negative.py",
+      "bytes": 6809,
+      "sha256": "d472f618d55ca4e606a049e1e08a08bd52c1718fbefbded9b28bac8cb957ca18"
+    },
+    {
+      "path": "self-review-20261108/before-fix.json",
+      "bytes": 5781,
+      "sha256": "73d518b6ab11f2b0f256717aaa8ad58205ad3c1e2bc11bf18d5a920c7a1e7b23"
+    },
+    {
+      "path": "self-review-20261108/boundary.json",
+      "bytes": 1657,
+      "sha256": "f075f5e68126205a0c8bc21c6f74fe7cd83b7e73319d9aa024760dd6ca614e4e"
+    },
+    {
+      "path": "self-review-20261108/docs-gate.json",
+      "bytes": 673,
+      "sha256": "1daf58533631a16590f7ff3a280cfc5c38a3d315f9c2d21adbdf495dce2ced4e"
+    },
+    {
+      "path": "self-review-20261108/docs-gate.log",
+      "bytes": 282498,
+      "sha256": "751c6133b6505e4c514815dbde525919915067e065a9a74e7120ce331cbbd7c9"
+    },
+    {
+      "path": "self-review-20261108/negative-before-fix.json",
       "bytes": 4012,
       "sha256": "f9641a29c63dd1268ca9c191198bf4bdc608534c45aecef1c9d09c4a5edacb45"
     },
     {
-      "path": "self-negative.py",
-      "bytes": 4107,
-      "sha256": "be5f79494b65c14f4ef76a6aec6345f808b96d68331aec08cfe941e46c340118"
+      "path": "self-review-20261108/README.md",
+      "bytes": 2752,
+      "sha256": "ed1d0105cad95c59c26bbd549c9ddd540acf6d9512a76fb4532931ed93fd9840"
+    },
+    {
+      "path": "self-review-20261108/reference-tools-result.json",
+      "bytes": 4264,
+      "sha256": "2767122bec9a6c56497316302a390878d49f56bb27cb63a92da2f8a029a605b7"
+    },
+    {
+      "path": "self-review-20261108/reproduce-before.py",
+      "bytes": 5360,
+      "sha256": "138bee0efb759db3e783acba15fdf1b1ab182c86b43cd0f5b6a338e686067faa"
+    },
+    {
+      "path": "self-review-20261108/verify-reference-tools.py",
+      "bytes": 2680,
+      "sha256": "1de624041f4c112167bbadc85a8bc9e086cecb1c7181f697594d1cbff4f58c65"
     },
     {
       "path": "source-manifests/dbf63e9052dd17999c0b7fc53df148c07ce5109c04dd7ae16240691c298d5f8c.json",

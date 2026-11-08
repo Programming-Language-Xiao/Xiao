@@ -10,6 +10,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parent
 ENTRY = 'ae1744e586990f59d6714b9ba67e77505de3c3ab'
+BASELINE = 'ca63a7922039f5d8b2cfeb329f47f326c6675755'
 CODE = '88886dd5'
 PREFIX = 'docs/DevDocs/assets/20o-b2-b/entry-20261108-b3/'
 PRODUCT_ROOTS = ['core/rust', 'stdlib', 'tests/fixtures', 'tests/benchmarks', '.github/workflows', '.cargo',
@@ -22,12 +23,22 @@ B0 = ['build-runtime', 'build-driver', 'runtime-all', 'unit-contract', 'guards',
 B1 = ['build-runtime', 'kernel-tests', 'reference-self-tests', 'reference-replay', 'runtime-all', 'unit-contract',
       'workspace-check', 'benchmark', 'clippy', 'fmt', 'guards', 'b1-vm', 'b1-native', 'b2-vm', 'b2-native', 'public-boundary', 'docs-final']
 EXACT = ['b1-vm', 'b1-native', 'b2-vm', 'b2-native']
+EXACT_TARGETS = {
+    'b1-vm': ('20o_b1_probe', 'b1_capabilities_have_vm_golden_outputs'),
+    'b1-native': ('20o_b1_probe', 'b1_capabilities_match_native_golden_outputs'),
+    'b2-vm': ('20o_b2_b2_divide', 'lfloat_divide_has_vm_golden_outputs'),
+    'b2-native': ('20o_b2_b2_divide', 'lfloat_divide_matches_native_golden_outputs'),
+}
 SUMMARY = r'^test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;'
 FUNCTIONS = {'sqrt', 'floor', 'ceil', 'round', 'trunc', 'abs', 'min', 'max', 'pow', 'sin', 'cos', 'tan', 'exp', 'ln', 'log10'}
 EXACT_FUNCTIONS = {'sqrt', 'floor', 'ceil', 'round', 'trunc', 'abs', 'min', 'max'}
 NEGATIVE = {'baseline': None, 'tampered_manifest': 'B3证据清单或摘要不符', 'missing_attributes': 'B3证据清单或摘要不符',
             'semantic_tamper_after_manifest_rebuild': 'B3版本或公开边界越界',
-            'runtime_tamper_after_manifest_rebuild': 'B3原生Runtime身份与构建记录不符'}
+            'runtime_tamper_after_manifest_rebuild': 'B3原生Runtime身份与构建记录不符',
+            'reference_rebound_after_manifest_rebuild': 'B3参考文件偏离被测源码清单',
+            'baseline_record_after_manifest_rebuild': 'B3-0证据偏离已提交基线',
+            'pow_summary_after_manifest_rebuild': 'B3幂行为差表汇总偏离明细',
+            'exact_target_after_manifest_rebuild': 'B3精确入口命令或测试目标不符'}
 
 
 def require(condition, reason):
@@ -59,6 +70,20 @@ def main(root, source, core_only=False, live_runtime=False):
     def git(*args, data=None):
         return subprocess.check_output(['cmd', '/c', 'git', *args], cwd=source, input=data)
 
+    def blobs(commit, paths):
+        requests = ''.join(commit + ':' + path + '\n' for path in paths).encode()
+        stream = git('cat-file', '--batch', data=requests)
+        offset, result = 0, {}
+        for path in paths:
+            end = stream.index(b'\n', offset)
+            header = stream[offset:end].split()
+            require(len(header) == 3 and header[1] == b'blob', 'B3固定代码对象缺文件：' + path)
+            length = int(header[2])
+            result[path] = stream[end + 1:end + 1 + length]
+            offset = end + length + 2
+        require(offset == len(stream), 'B3源码对象流长度不符')
+        return result
+
     def verify_manifest(directory):
         document = json.loads((directory / 'evidence.json').read_text(encoding='utf-8'))
         rows = manifest_rows(directory)
@@ -72,13 +97,19 @@ def main(root, source, core_only=False, live_runtime=False):
     code = git('rev-parse', CODE).decode().strip()
     require(bootstrap['entry_commit'] == identity['entry_commit'] == ENTRY and identity['code_commit'] == code,
             'B3固定Git入口或代码身份不符')
+    require(identity['baseline_commit'] in [BASELINE, BASELINE[:8]], 'B3固定B0基线身份不符')
+    baseline_paths = git('ls-tree', '-r', '--name-only', BASELINE, '--', PREFIX + 'b0').decode().splitlines()
+    current_baseline = {PREFIX + row['path']: row for row in rows if row['path'].startswith('b0/')}
+    require(set(baseline_paths) == set(current_baseline), 'B3-0证据偏离已提交基线')
+    for path, raw in blobs(BASELINE, baseline_paths).items():
+        require(sha(raw) == current_baseline[path]['sha256'] and len(raw) == current_baseline[path]['bytes'], 'B3-0证据偏离已提交基线')
     changed = set(git('diff', '--name-only', ENTRY, code).decode().splitlines())
     require({path for path in changed if not path.startswith(PREFIX)} == ALLOWED == set(identity['allowed_product_paths']),
             'B3代码改动越出允许集合')
     require({r['path'] for r in identity['products']} == ALLOWED and identity['reference_inputs'] == REFERENCE, 'B3产品摘要集合不完整')
     for product in identity['products']:
         require(sha(canonical(git('show', code + ':' + product['path']))) == product['utf8_lf_sha256'], 'B3产品摘要偏离固定代码对象')
-    require(not git('diff', '--name-only', identity['baseline_commit'], code, '--', PREFIX + 'b0').strip(), 'B3-0历史基线被改写')
+    require(not git('diff', '--name-only', BASELINE, code, '--', PREFIX + 'b0').strip(), 'B3-0历史基线被改写')
     inherited = bootstrap['inherited_editorial_delta']
     previous = set(git('diff', '--name-only', bootstrap['b2_code'], ENTRY).decode().splitlines())
     require({p for p in previous if not p.startswith('docs/DevDocs/')} == {inherited['path']}, 'B3入口继承了未登记的产品差异')
@@ -123,6 +154,9 @@ def main(root, source, core_only=False, live_runtime=False):
         snapshot_name = next(iter(manifests))
         snapshot = read(snapshot_name)
         require(snapshot_name == 'source-manifests/' + snapshot['raw_tree_sha256'] + '.json', 'B3源码清单文件名不符')
+        snapshot_object = PREFIX + snapshot_name
+        committed_snapshot = blobs(BASELINE if phase == 'b0' else code, [snapshot_object])[snapshot_object]
+        require((root / snapshot_name).read_bytes() == committed_snapshot, 'B3源码清单偏离固定证据对象')
         require(snapshot['scope'] == PRODUCT_ROOTS and snapshot['reference_inputs'] == REFERENCE, 'B3源码保护范围不完整')
         source_rows = snapshot['files']
         raw_tree = sha(json.dumps(source_rows, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode())
@@ -132,21 +166,25 @@ def main(root, source, core_only=False, live_runtime=False):
         if phase == 'b1':
             tracked.update(PREFIX + name for name in REFERENCE)
         require([r['path'] for r in source_rows] == sorted(tracked), 'B3源码清单没有覆盖完整产品树与参考')
-        requests = ''.join(commit + ':' + r['path'] + '\n' for r in source_rows).encode()
-        stream = git('cat-file', '--batch', data=requests)
-        offset = 0
+        source_blobs = blobs(commit, [r['path'] for r in source_rows])
         for row in source_rows:
-            end = stream.index(b'\n', offset)
-            header = stream[offset:end].split()
-            require(len(header) == 3 and header[1] == b'blob', 'B3固定代码对象缺文件：' + row['path'])
-            length = int(header[2])
-            require(sha(canonical(stream[end + 1:end + 1 + length])) == row['utf8_lf_or_binary_sha256'], 'B3被测源码偏离固定Git代码对象：' + row['path'])
-            offset = end + length + 2
-        require(offset == len(stream), 'B3源码对象流长度不符')
+            require(sha(canonical(source_blobs[row['path']])) == row['utf8_lf_or_binary_sha256'], 'B3被测源码偏离固定Git代码对象：' + row['path'])
+        if phase == 'b1':
+            by_path = {row['path']: row for row in source_rows}
+            for name in REFERENCE:
+                measured = by_path[PREFIX + name]
+                current = (root / name).read_bytes()
+                require(current == source_blobs[PREFIX + name] and sha(current) == measured['raw_sha256']
+                        and len(current) == measured['bytes'], 'B3参考文件偏离被测源码清单')
         for record in records.values():
             require(record['source_before'] == {'manifest': snapshot_name, 'raw_tree_sha256': raw_tree,
                     'utf8_lf_tree_sha256': canonical_tree, 'files': len(source_rows)}, 'B3执行记录的源码身份不符')
         for name in EXACT:
+            target, function = EXACT_TARGETS[name]
+            flags = ['--ignored', '--exact', '--nocapture'] if name.endswith('native') else ['--exact', '--nocapture']
+            expected_argv = ['cargo', '+1.96.0', 'test', '--locked', '--manifest-path', 'core/rust/Cargo.toml',
+                             '-p', 'xiao-driver', '--test', target, function, '--', *flags]
+            require(records[name]['argv'] == expected_argv and re.search(r'^test ' + re.escape(function) + r' \.\.\. ok\r?$', logs[name], re.M), 'B3精确入口命令或测试目标不符')
             require('--exact' in records[name]['argv'] and re.findall(SUMMARY, logs[name], re.M) == [('1', '0', '0')], 'B3精确入口不是恰好1 passed')
             require(('--ignored' in records[name]['argv']) == name.endswith('native'), 'B3原生精确入口参数不符')
         expected_unit = [('64', '0', '1'), ('9', '0', '0'), ('17', '0', '0'), ('2', '0', '1'), ('7', '0', '0'), ('259', '0', '0')]
@@ -211,6 +249,9 @@ def main(root, source, core_only=False, live_runtime=False):
                 and (int(row[6]) == 0 if row[5] == 'contract_special' else int(row[6]) in [256, 512, 1024, 2048, 4096]), 'B3参考输入输出未配对或区间未收敛')
     counts = Counter(row[1] for row in vector_rows)
     require(dict(counts) == reference['functions'] and set(counts) == FUNCTIONS and not reference['outcomes'].get('unverifiable', 0), 'B3参考缺少函数或存在未验项')
+    outcomes = Counter('error' if row[4] == 'X06-RUNTIME-009' else 'value' for row in vector_rows)
+    precisions = Counter(row[6] for row in vector_rows)
+    require(reference['outcomes'] == dict(outcomes) and reference['precision_counts'] == dict(precisions), 'B3参考汇总偏离明细')
     logs = phase_logs['b1']
     require(re.findall(SUMMARY, logs['kernel-tests'], re.M) == [('5', '0', '0')] and 'Ran 7 tests' in logs['reference-self-tests'] and logs['reference-self-tests'].rstrip().endswith('OK'), 'B3内核或参考自检未通过')
     metrics = [{'function': f, 'cases': int(c), 'max_ulp': int(u), 'limit': int(t)} for f, c, u, t in re.findall(r'^B3-CMATH function=(\w+) cases=(\d+) max_ulp=(\d+) limit=(\d+) result=success$', logs['kernel-tests'], re.M)]
@@ -222,9 +263,13 @@ def main(root, source, core_only=False, live_runtime=False):
     difference = read('b1/pow-diff.json')
     actual_differences = [line.split('\t')[1:] for line in logs['kernel-tests'].splitlines() if line.startswith('B3-POW-DIFF\t')]
     require(difference['cases'] == len(difference['rows']) == len(actual_differences) == 1075, 'B3幂行为差表不完整')
+    difference_summary = Counter()
     for row, actual in zip(difference['rows'], actual_differences):
         require([row[k] for k in ['id', 'a_bits', 'b_bits', 'legacy_float_power', 'private_cmath_pow', 'reference']] == actual
                 and row['same_bits_or_error'] == (actual[3] == actual[4]), 'B3幂行为差表偏离实际算子调用')
+        kind = 'same' if actual[3] == actual[4] else 'value_or_error_boundary' if actual[3].startswith('X') != actual[4].startswith('X') else 'value_bits'
+        difference_summary[kind] += 1
+    require(difference['summary'] == dict(difference_summary), 'B3幂行为差表汇总偏离明细')
     provenance = read('b1/tool-provenance.json')
     require(json.loads((root / 'b0/reference-tools.log').read_text(encoding='utf-8')) == provenance, 'B3工具来源摘要偏离实际取证日志')
     require((provenance['mpfr'], provenance['gmp']) == ('MPFR 4.2.2', 'GMP 6.3.0') and len(provenance['archives']) == 2
