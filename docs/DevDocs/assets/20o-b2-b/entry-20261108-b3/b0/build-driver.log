@@ -1,0 +1,10 @@
+    Blocking waiting for file lock on package cache
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-runtime)
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling syn v2.0.119
+   Compiling xiao-doc-coverage-rust v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-doc-coverage-rust)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-driver)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 19.38s

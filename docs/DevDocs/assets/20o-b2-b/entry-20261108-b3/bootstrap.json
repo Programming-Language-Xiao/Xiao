@@ -1,0 +1,19 @@
+{
+  "entry_commit": "ae1744e586990f59d6714b9ba67e77505de3c3ab",
+  "task_root": "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5",
+  "source_root": "D:\\project\\Xiao\\.b3-cmath\\20261108-ae1744e5\\source",
+  "repository_root": "D:\\project\\Xiao\\Xiao",
+  "created_utc": "2026-11-08T10:08:41.224244+00:00",
+  "b2_code": "37b92c5338274121afe98320d4e076620744449f",
+  "inherited_editorial_delta": {
+    "path": "docs/UseDocs/language/basics/types/conversions.md",
+    "source_commit": "3aa6a290",
+    "sha256": "3ceb83c65a153f5796d70c7ba6d9f390e5b8ae9c1b421bc0dd4e6ce87f094c8d",
+    "description": "获准自审修改planned段落状态；产品代码和可执行示例未变"
+  },
+  "abi": "1.18",
+  "codegen": 20,
+  "active_intrinsic_max": 33,
+  "b1_f10": false,
+  "b2_a_perf": false
+}

@@ -1,0 +1,507 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling serde_core v1.0.229
+   Compiling quote v1.0.47
+   Compiling itoa v1.0.18
+   Compiling cfg-if v1.0.5
+   Compiling zmij v1.0.23
+   Compiling serde v1.0.229
+   Compiling version_check v0.9.5
+   Compiling syn v3.0.5
+   Compiling memchr v2.8.3
+   Compiling generic-array v0.14.7
+   Compiling typenum v1.20.1
+   Compiling serde_json v1.0.151
+   Compiling xiao-runtime-abi v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-runtime-abi)
+   Compiling cpufeatures v0.2.17
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling digest v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling serde_derive v1.0.229
+   Compiling xiao-source v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-source)
+   Compiling autocfg v1.5.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling num-traits v0.2.19
+   Compiling shlex v2.0.1
+   Compiling cc v1.5.1
+   Compiling libm v0.2.16
+   Compiling num-integer v0.1.47
+   Compiling bigdecimal v0.4.11
+   Compiling libc v0.2.189
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling zeroize v1.9.0
+   Compiling rustls-pki-types v1.15.1
+   Compiling ring v0.17.14
+   Compiling num-bigint v0.4.8
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-i18n)
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-intrinsics)
+   Compiling getrandom v0.2.17
+   Compiling untrusted v0.9.0
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-syntax)
+   Compiling httparse v1.10.1
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-types)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-modules)
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-standard-library)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-lifetime)
+   Compiling rustls v0.23.45
+   Compiling bytes v1.12.1
+   Compiling log v0.4.34
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-ir)
+   Compiling crc32fast v1.5.2
+   Compiling http v1.5.0
+   Compiling windows-targets v0.52.6
+   Compiling rustls-webpki v0.103.15
+   Compiling xiao-lock v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-lock)
+   Compiling base64 v0.23.1
+   Compiling simd-adler32 v0.3.10
+   Compiling adler2 v2.0.1
+   Compiling once_cell v1.21.4
+   Compiling subtle v2.6.1
+   Compiling miniz_oxide v0.9.1
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-optimizer)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-runtime)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-bytecode)
+   Compiling ureq-proto v0.6.4
+   Compiling windows-sys v0.52.0
+   Compiling xiao-config v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-config)
+   Compiling webpki-roots v1.0.9
+   Compiling filetime v0.2.29
+   Compiling utf8-zero v0.8.1
+   Compiling percent-encoding v2.3.2
+   Compiling tar v0.4.46
+   Compiling ureq v3.4.2
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-vm)
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-artifacts)
+   Compiling flate2 v1.1.10
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-xar)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 04s
+     Running unittests src\lib.rs (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\cargo-target\debug\deps\xiao_driver-5d86cfce584dd0ac.exe)
+
+running 65 tests
+test compatibility::tests::standard_library_identity_is_parallel_to_existing_compatibility_versions ... ok
+test compatibility::tests::matrix_contains_no_unfrozen_migration_claim ... ok
+test compatibility::tests::matrix_is_generated_from_current_versions_and_has_every_axis ... ok
+test diagnostics::tests::disconnected_window_does_not_change_event_handling ... ok
+test diagnostics::tests::missing_terminal_renderer_is_an_explicit_startup_failure ... ok
+test diagnostics::tests::real_terminal_session_is_environment_gated ... ignored, 需要真实终端模拟器；准备方式见 10D §4.2
+test diagnostics::tests::persistent_diagnostic_logs_redact_sensitive_payloads ... ok
+test diagnostics::tests::runtime_events_keep_required_structured_identity ... ok
+test diagnostics::tests::terminal_candidates_forward_locale ... ok
+test diagnostics::tests::terminal_candidates_have_stable_platform_order ... ok
+test diagnostics::tests::focus_rules_match_module_and_source ... ok
+test diagnostics::tests::unwritable_log_target_is_reported_without_startup_failure ... ok
+test module_loader::tests::removed_standard_library_module_is_not_loadable ... ok
+test diagnostics::tests::runtime_error_events_keep_localized_message_fields ... ok
+test protocol::package_view::tests::duplicate_roots_are_rejected ... ok
+test protocol::tests::artifact_runtime_facts_round_trip ... ok
+test protocol::tests::build_rejects_unknown_target_before_toolchain ... ok
+test protocol::tests::build_request_round_trips_toolchain_and_config_fields ... ok
+test protocol::package_view::tests::active_and_global_views_do_not_leak ... ok
+test protocol::architecture_tests::module_dependency_direction_is_acyclic ... ok
+test protocol::package_view::tests::interface_query_does_not_execute_module ... ok
+test protocol::tests::cache_clean_protocol_deletes_unreferenced_objects ... ok
+test protocol::tests::cache_list_returns_structured_result ... ok
+test protocol::tests::debug_build_requires_diagnostics_path ... ok
+test protocol::tests::diagnostics_component_is_staged_next_to_executable ... ok
+test protocol::tests::diagnostics_component_staging_distinguishes_existing_source ... ok
+test protocol::tests::environment_request_generates_stable_metadata ... ok
+test protocol::tests::frame_and_request_errors_keep_distinct_codes ... ok
+test protocol::tests::frame_uses_eight_byte_big_endian_payload_length ... ok
+test protocol::tests::hello_advertises_test_capability ... ok
+test protocol::tests::cache_clean_protocol_reads_archive_references ... ok
+test protocol::tests::protocol_run_accepts_nonzero_optimization_level ... ok
+test protocol::tests::read_frame_accepts_clean_eof_and_rejects_truncation ... ok
+test protocol::tests::read_frame_rejects_oversized_payload_before_allocating ... ok
+test protocol::tests::real_source_run_maps_cancel_to_artifact_rejected ... ok
+test protocol::tests::real_source_run_returns_structured_result_without_text_parsing ... ok
+test protocol::tests::repl_packages_request_validates_environment_without_renaming_package_operation ... ok
+test protocol::tests::run_archive_honors_zero_timeout_before_reading_archive ... ok
+test protocol::tests::run_archive_missing_file_has_stable_error ... ok
+test protocol::tests::run_locale_is_optional_and_does_not_change_machine_error_fields ... ok
+test protocol::tests::cache_clean_protocol_reads_project_lock_from_directory ... ok
+test protocol::tests::run_locale_renders_known_message_and_preserves_missing_id_with_params ... ok
+test protocol::tests::runtime_config_freeze_is_deterministic_and_validated ... ok
+test protocol::tests::service_requires_hello_as_first_frame ... ok
+test protocol::tests::service_round_trips_hello_run_and_shutdown_frames ... ok
+test protocol::tests::runtime_config_can_be_replaced ... ok
+test protocol::tests::test_locale_renders_diagnostics_inside_each_case ... ok
+test protocol::tests::test_request_rejects_empty_case_list ... ok
+test protocol::tests::verify_missing_artifact_has_stable_error ... ok
+test protocol::tests::version_mismatch_is_machine_readable ... ok
+test run::tests::cancellation_and_zero_timeout_are_structured_control_errors ... ok
+test protocol::tests::cache_clean_protocol_rejects_broken_archive_before_deleting ... ok
+test protocol::tests::test_request_preserves_case_order_and_aggregates_results ... ok
+test protocol::tests::package_request_missing_lock_does_not_create_environment ... ok
+test run::tests::corrupted_tac_is_rejected_before_execution ... ok
+test run::tests::frontend_failure_keeps_structured_diagnostics ... ok
+test run::tests::migrated_intrinsics_keep_existing_vm_semantics ... ok
+test run::tests::nonzero_optimization_levels_run_through_bytecode_pipeline ... ok
+test run::tests::print_intrinsic_reaches_vm_output_event ... ok
+test run::tests::removal_verification_print_contract_and_vm_binding ... ok
+test run::tests::runs_frontend_to_vm_without_an_entry_override ... ok
+test run::tests::structurally_invalid_tac_uses_internal_diagnostic ... ok
+test run::tests::concurrency_shared_and_lock_reaches_vm ... ok
+test run::tests::concurrency_pool_submit_wait_shutdown_reaches_vm ... ok
+test run::tests::concurrency_runtime_create_spawn_join_reaches_vm ... ok
+
+test result: ok. 64 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.62s
+
+     Running tests\20o_b1_imp_contract.rs (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\cargo-target\debug\deps\20o_b1_imp_contract-2dfcab1f79907b7f.exe)
+
+running 9 tests
+test every_implemented_module_is_in_the_active_contract_matrix ... ok
+test product_tutorials_embed_the_executed_sources_and_match_registry ... ok
+test products_keep_the_official_namespace_out_of_ordinary_packages ... ok
+test colliding_public_names_keep_their_own_module_implementations ... ok
+test every_public_function_requires_its_real_implementation ... ok
+B1-IMP-CONTRACT modules=7 entries=20/20 parameter-matrix=complete-for-implemented
+test public_calls_enforce_every_frozen_parameter_and_require_imports ... ok
+test products_execute_and_export_only_the_frozen_names has been running for over 60 seconds
+test products_replay_from_real_archives_without_bundled_library_bodies has been running for over 60 seconds
+test public_std_aliases_execute_through_the_official_loader has been running for over 60 seconds
+test products_execute_and_export_only_the_frozen_names ... ok
+test products_replay_from_real_archives_without_bundled_library_bodies ... ok
+test public_std_aliases_execute_through_the_official_loader ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 115.55s
+
+     Running tests\20o_b1_imp_resources.rs (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\cargo-target\debug\deps\20o_b1_imp_resources-29cf7055ec1b195c.exe)
+
+running 17 tests
+test base64_standard_accepts_the_frozen_maximum ... ok
+test base64_url_safe_accepts_the_frozen_maximum ... ok
+test csv_accepts_the_maximum_field_count ... ok
+test csv_accepts_the_maximum_ascii_record ... ok
+test csv_accepts_the_maximum_unicode_record ... ok
+test base64_checks_actual_decoded_size_after_the_last_quartet has been running for over 60 seconds
+test csv_accepts_the_maximum_quoted_record ... ok
+test base64_checks_actual_decoded_size_after_the_last_quartet ... ok
+test csv_parse_budget_and_syntax_priority_is_positional ... ok
+test fmt_checks_both_radix_bounds_and_padding_argument_domains ... ok
+test csv_accepts_the_maximum_multiline_record ... ok
+test hex_accepts_the_frozen_maximum_input_and_output ... ok
+test csv_rejects_every_format_budget_dimension ... ok
+test url_decoding_reaches_the_ascii_result_budget ... ok
+test url_encoding_reaches_the_unicode_output_budget ... ok
+test url_decoding_reaches_the_unicode_result_budget ... ok
+test url_encoding_reaches_the_ascii_output_budget ... ok
+test url_limits_and_mixed_error_order_are_streamed has been running for over 60 seconds
+test url_limits_and_mixed_error_order_are_streamed ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 210.66s
+
+     Running tests\20o_b2_b2_divide.rs (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\cargo-target\debug\deps\20o_b2_b2_divide-c8a2412f366034e7.exe)
+
+running 3 tests
+test lfloat_divide_matches_native_golden_outputs ... ignored, 需要本任务新Runtime和显式LLVM工具链；维护原生精确入口调用相同套件
+test lfloat_divide_requires_the_frozen_public_contract ... ok
+B2-B2-DIVIDE backend=vm formats=source,xiaoc,xar intrinsic=33 source_removed=true result=success
+test lfloat_divide_has_vm_golden_outputs ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.88s
+
+     Running unittests src\lib.rs (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\cargo-target\debug\deps\xiao_intrinsics-960031eeb1796bb1.exe)
+
+running 7 tests
+test tests::array_push_contract_is_active_and_bound_on_both_paths ... ok
+test tests::capability_bits_cover_standard_streams_and_reject_unknown_bits ... ok
+test tests::explicit_division_binding_preserves_source_order_and_rejects_ambiguous_shapes ... ok
+test tests::error_code_has_a_unique_owned_string_contract ... ok
+test tests::generated_table_is_valid_and_zero_is_rejected ... ok
+test tests::print_is_variadic_and_returns_none ... ok
+test tests::removed_ids_remain_tombstones ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (D:\project\Xiao\.b3-cmath\20261108-ae1744e5\cargo-target\debug\deps\xiao_runtime-13fd27f6d549fe2b.exe)
+
+running 259 tests
+test abi::abi_concurrency::tests::completed_child_cancellation_uses_vm_error_normalization_and_keeps_cleanup_error ... ok
+test abi::abi_concurrency::tests::entry_close_drain_failure_preserves_primary_and_suppressed ... ok
+test abi::abi_concurrency::tests::detached_trampoline_failure_keeps_error_identity_and_runtime_id ... ok
+test abi::abi_concurrency::tests::lock_guard_rejects_cross_thread_use ... ok
+test abi::abi_concurrency::tests::native_blocked_lock_wait_is_cancelled_by_host_token ... ok
+test abi::abi_concurrency::tests::native_cleanup_checkpoint_defers_repeated_cancellation ... ok
+test abi::abi_concurrency::tests::native_error_checkpoint_preserves_primary_and_suppressed ... ok
+test abi::abi_concurrency::tests::native_error_frames_are_appended_during_unwind ... ok
+test abi::abi_concurrency::tests::native_external_cancellation_checks_safe_point_wait_and_lock_wait ... ok
+test abi::abi_concurrency::tests::native_finish_close_error_is_suppressed_under_primary ... ok
+test abi::abi_concurrency::tests::native_first_cancellation_inside_finally_is_delivered ... ok
+test abi::abi_concurrency::tests::current_runtime_is_stable_and_child_uses_bound_runtime_context ... ok
+test abi::abi_concurrency::tests::join_rejects_shared_mut_result_owned_by_child_runtime ... ok
+test abi::abi_concurrency::tests::native_shared_boundary_releases_every_transfer_alias ... ok
+test abi::abi_concurrency::tests::native_shared_mut_lock_round_trips_and_writes_value ... ok
+test abi::abi_concurrency::tests::native_trampoline_resets_worker_checkpoint_and_inherits_locale ... ok
+test abi::abi_concurrency::tests::public_release_reclaims_shared_box_and_boundaries_reject_thread_local_handles ... ok
+test abi::abi_concurrency::tests::native_xcon_maximum_depth_round_trips_through_trampoline ... ok
+test abi::abi_concurrency::tests::runtime_and_pool_values_use_opaque_concurrency_tag ... ok
+test abi::abi_concurrency::tests::shared_creation_rejects_a_closed_current_runtime ... ok
+test abi::abi_concurrency::tests::native_trampoline_spawn_join_round_trips_scalar_result ... ok
+test abi::abi_concurrency::tests::trampoline_error_identity_returns_to_joining_thread ... ok
+test abi::abi_concurrency::tests::unsupported_operation_is_explicitly_rejected ... ok
+test abi::abi_concurrency::tests::vm_release_trace_includes_concurrency_external_objects ... ok
+test abi::abi_io::tests::capability_context_rejects_stdin_before_input ... ok
+test abi::abi_concurrency::tests::wait_rejects_shared_mut_result_owned_by_pool_runtime ... ok
+test abi::abi_io::tests::capability_context_rejects_stdout_before_output ... ok
+test abi::abi_io::tests::removal_verification_input_wrapper_rejects_invalid_prompt_flag ... ok
+test abi::abi_io::tests::removal_verification_print_wrapper_rejects_null_nonempty_input ... ok
+none
+test abi::abi_io::tests::removal_verification_print_wrapper_writes_stdout_behavior ... ok
+test abi::abi_lfloat_divide::tests::parameter_errors_precede_zero_and_all_failures_preserve_output ... ok
+test abi::abi_lfloat_divide::tests::external_raw_text_keeps_error_order_and_ownership ... ok
+test abi::abi_lfloat_divide::tests::structural_failures_do_not_touch_pending_or_output ... ok
+test abi::abi_resource::tests::capability_is_checked_before_open_and_io_errors_keep_reason ... ok
+test abi::abi_resource::tests::directory_open_validates_directory_and_non_utf8_is_rejected ... ok
+test abi::abi_resource::tests::every_entry_checks_capabilities_before_decoding_arguments ... ok
+test abi::abi_resource::tests::open_read_close_and_closed_alias_are_stable ... ok
+test abi::abi_resource::tests::process_abi_checks_capabilities_before_arguments ... ok
+test abi::abi_resource::tests::process_abi_roundtrip_and_close_preserve_capability_and_alias_state ... ok
+test abi::abi_tables::tests::native_constructor_rejects_an_occupied_output_slot ... ok
+test abi::abi_tables::tests::native_descriptor_rejects_invalid_metadata_before_allocation ... ok
+test abi::abi_tables::tests::native_drop_failure_is_suppressed_by_existing_primary ... ok
+test abi::abi_tables::tests::native_drop_view_is_readonly_and_expires ... ok
+test abi::abi_tables::tests::native_fatal_skips_drop_and_ordinary_drop_error_is_reported ... ok
+test abi::abi_tables::tests::native_init_failure_preserves_cause_and_cleanup_error ... ok
+test abi::abi_tables::tests::native_method_rejects_wrong_signature_arguments_and_result ... ok
+test abi::abi_tables::tests::native_methods_copy_metadata_and_balance_borrowed_receiver ... ok
+test abi::error_code_tests::borrowed_view_survives_releasing_a_different_alias ... ok
+test abi::error_code_tests::copied_result_survives_source_release_and_copy_failure_keeps_alias ... ok
+test abi::error_code_tests::failure_statuses_preserve_both_output_fields_and_pending ... ok
+test abi::error_code_tests::success_borrows_exact_bytes_without_allocating_or_touching_pending ... ok
+test abi::numeric_identity_tests::borrowed_value_restore_preserves_output_on_numeric_failure ... ok
+test abi::numeric_identity_tests::constructors_reject_semantic_payloads_through_existing_pending_errors ... ok
+test abi::numeric_identity_tests::frozen_numeric_errors_reuse_existing_runtime_status ... ok
+test abi::numeric_identity_tests::numeric_handles_restore_shared_identity_without_mutating_inputs ... ok
+test abi::tests::abi_compatibility_accepts_old_minor_and_rejects_unsupported_versions ... ok
+test abi::tests::array_round_trip_copies_values ... ok
+X11-DIAGNOSTIC-START-001: 诊断进程握手版本或令牌不匹配
+test abi::tests::diagnostic_ready_failure_cleans_session_and_environment ... ok
+test abi::abi_concurrency::tests::retain_release_race_is_serialized_until_box_reclamation ... ok
+test abi::abi_lfloat_divide::tests::replaces_owned_output_and_preserves_pending_on_success ... ok
+test abi::tests::dictionary_rejects_duplicate_keys ... ok
+test abi::tests::dynamic_member_type_error_releases_input_value ... ok
+test abi::tests::dynamic_operator_and_check_round_trip ... ok
+test abi::tests::error_take_rejects_weak_output_slot ... ok
+test abi::tests::error_value_constructor_preserves_identity ... ok
+test abi::tests::external_resource_round_trips_through_abi_tag ... ok
+test abi::tests::fatal_error_constructor_never_returns_recoverable_value ... ok
+test abi::tests::handle_outputs_replace_previous_owner ... ok
+test abi::tests::legacy_output_slots_replace_owned_values_and_preserve_on_failure ... ok
+test abi::tests::legacy_value_wrapper_rejects_wrong_handle_kind_with_none_sentinel ... ok
+test abi::tests::length_outputs_are_zeroed_on_invalid_handle ... ok
+test abi::tests::native_error_checkpoint_reset_discards_stale_entry_state ... ok
+test abi::tests::native_error_checkpoint_survives_successful_helper_return ... ok
+test abi::tests::native_random_seed_controls_a_persistent_sequence ... ok
+test abi::tests::numeric_error_abi_preserves_identity_and_span ... ok
+test abi::tests::diagnostic_ready_waits_for_delayed_hello ... ok
+test abi::tests::pending_fatal_error_is_not_replaced_by_runtime_error ... ok
+test abi::tests::pending_runtime_error_preserves_primary_and_suppresses_secondary ... ok
+test abi::tests::rejects_invalid_boolean_payload_on_copy ... ok
+test abi::tests::rejects_unknown_value_tag ... ok
+test abi::tests::diagnostic_session_forwards_events_and_closes ... ok
+test abi::tests::retain_keeps_same_box_and_balances_count ... ok
+test abi::tests::resource_dynamic_checks_preserve_nominal_kinds_and_closed_values ... ok
+test abi::tests::scalar_value_copy_preserves_payload ... ok
+test abi::tests::strong_release_leaves_weak_value_for_weak_entry ... ok
+test abi::tests::strong_value_copy_uses_runtime_counts ... ok
+test abi::tests::table_descriptor_rejects_empty_names ... ok
+test abi::tests::table_descriptor_rejects_unknown_metadata ... ok
+test abi::tests::table_descriptor_round_trip ... ok
+test abi::tests::value_copy_replaces_existing_owned_output ... ok
+test abi::tests::weak_release_rejects_strong_value ... ok
+test abi::tests::weak_upgrade_fails_after_last_strong_release ... ok
+test abi::tests::weak_value_rejects_non_table_target ... ok
+test concurrency::tests::cancellation_hook_registration_is_removed_when_task_finishes ... ok
+test concurrency::tests::runtime_registry_maps_and_closes_static_labels ... ok
+test concurrency::tests::lock_cancellation_wakes_waiting_thread ... ok
+test concurrency::tests::shared_counts_weak_upgrade_and_exact_drop ... ok
+test concurrency::tests::shared_header_layout_is_frozen ... ok
+test concurrency::tests::shared_lock_supports_mutation_and_cancellation ... ok
+test concurrency::tests::shared_lock_blocks_and_wakes_waiting_thread ... ok
+test concurrency::tests::shared_read_access_is_tag_restricted ... ok
+test containers::tests::hashability_allowlist_rejects_external_resources ... ok
+test crash::tests::process_exit_codes_preserve_normal_values_and_map_exceptions ... ok
+test crash::tests::windows_exception_classes_share_unix_exit_codes ... ok
+xiao-error class=recoverable code=X06-RUNTIME-009 message_id=runtime.user_error params={"message": Text("overflow")} span=4..9 exit_code=3
+error [X06-RUNTIME-009]: overflow
+at bytes 4..9
+test abi::tests::ordinary_error_report_does_not_activate_diagnostic_sink ... ok
+test memory::tests::native_release_trace_collects_child_thread_events ... ok
+test memory::tests::native_release_trace_keeps_recording_after_root_flush ... ok
+test memory::tests::peak_live_bytes_includes_objects_allocated_during_drop ... ok
+test memory::tests::release_trace_records_shared_runtime_events ... ok
+test memory::tests::releases_payload_on_last_strong_and_keeps_weak_header ... ok
+test scheduler::runtime_helpers::tests::current_runtime_reuses_root_and_registered_context ... ok
+test scheduler::tests::active_close_drains_queued_activity_with_single_worker ... ok
+test scheduler::tests::active_close_follower_leaves_owner_to_drain_other_activity ... ok
+test scheduler::tests::active_thread_close_drains_other_threads_before_returning ... ok
+test scheduler::tests::cancellation_at_completed_unreclaimed_position_returns_027 ... ok
+test scheduler::tests::cancellation_at_queued_position_skips_task_body ... ok
+test scheduler::tests::cancellation_at_running_position_waits_for_task_exit ... ok
+test scheduler::tests::cancellation_at_waiting_position_waits_for_task_exit ... ok
+test scheduler::tests::completed_task_cancellation_is_observed_by_public_wait_apis ... ok
+test scheduler::tests::cross_pool_shutdowns_do_not_deadlock ... ok
+test scheduler::tests::cross_runtime_pool_shutdown_is_rejected ... ok
+test scheduler::tests::cross_runtime_runtime_close_and_spawn_are_rejected ... ok
+test memory::tests::peak_live_bytes_counts_container_contents_per_run ... ok
+test scheduler::tests::default_submit_inherits_worker_cancellation_context ... ok
+
+thread 'xiao-runtime-50' (58648) panicked at crates\xiao-runtime\src\scheduler_tests.rs:897:25:
+detached classification panic
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test scheduler::tests::detached_errors_are_classified_and_reaped_concurrently ... ok
+test scheduler::tests::detached_reaper_queue_does_not_block_when_workers_are_busy ... ok
+
+thread 'xiao-runtime-51' (19648) panicked at crates\xiao-runtime\src\scheduler_tests.rs:854:25:
+detached panic regression
+test scheduler::tests::detached_thread_panic_is_reported_to_process_channel ... ok
+test scheduler::tests::external_pool_shutdown_and_worker_runtime_close_drain_queue ... ok
+test scheduler::tests::default_submit_from_external_thread_stops_on_runtime_close ... ok
+test scheduler::tests::large_pool_close_drains_many_queued_tasks ... ok
+test scheduler::tests::pool_shutdown_after_runtime_close_returns_runtime_closed ... ok
+test scheduler::tests::pool_shutdown_and_runtime_close_do_not_deadlock ... ok
+test scheduler::tests::queued_task_cancel_releases_slot_before_worker_is_free ... ok
+test scheduler::tests::runtime_close_and_independent_pool_shutdown_converge ... ok
+test scheduler::tests::runtime_close_is_reentrant_from_pool_worker ... ok
+test scheduler::tests::runtime_close_shuts_down_and_drains_owned_pools ... ok
+test scheduler::tests::runtime_close_stops_admission_and_drains_threads ... ok
+test scheduler::tests::runtime_spawn_cancel_and_join_are_wired ... ok
+test scheduler::tests::shutdown_drain_helper_handles_queued_runtime_close ... ok
+test scheduler::tests::task_owned_runtime_can_create_pool_and_spawn ... ok
+
+thread 'xiao-pool-66-0' (64380) panicked at crates\xiao-runtime\src\scheduler_tests.rs:838:21:
+task panic regression
+test scheduler::tests::task_panic_is_reported_without_killing_pool_worker ... ok
+test scheduler::tests::task_pool_validates_capacity_and_waits_tasks ... ok
+test scheduler::tests::two_active_runtime_closers_do_not_deadlock ... ok
+test scheduler::tests::two_pool_workers_can_close_same_pool_concurrently ... ok
+test scheduler::tests::wait_interruptible_checks_host_interrupt_after_receiving_result ... ok
+test scheduler::tests::wait_interruptible_checks_host_interrupt_on_disconnect ... ok
+test serialization::tests::xcon_decoder_rejects_noncanonical_set_and_dict_order ... ok
+test serialization::tests::xcon_rejects_reserved_tags_and_bad_headers ... ok
+test serialization::tests::xcon_round_trips_scalars_and_nested_values ... ok
+test serialization::tests::xcon_set_and_dict_encoding_is_deterministic ... ok
+test tables::tests::follows_construct_state_machine_and_checks_fields ... ok
+test tables::tests::init_failure_is_reported_and_object_is_released ... ok
+test tables::tests::scalar_fields_accept_widening_assignments ... ok
+test testing::tests::dispatches_recoverable_catch_by_type ... ok
+test testing::tests::executes_static_plan_in_order ... ok
+test testing::tests::keeps_fatal_outside_recoverable_catch ... ok
+test testing::tests::unwind_keeps_primary_and_suppresses_cleanup_errors ... ok
+test value::arithmetic::cmath::tests::all_fifteen_functions_have_private_finite_boundaries ... ok
+test value::arithmetic::cmath::tests::all_fifteen_functions_reject_nonfinite_inputs ... ok
+test value::arithmetic::cmath::tests::domains_nonfinite_and_signed_zero_follow_frozen_boundary ... ok
+test value::arithmetic::cmath::tests::independent_reference_vectors_stay_within_four_ulp ... ok
+test value::arithmetic::cmath::tests::pow_reference_vector_stays_within_four_ulp ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_display_scales_and_identities_are_preserved ... ok
+test scheduler::tests::full_queue_submission_has_cancellable_backpressure ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_mixed_binary_inputs_are_lifted_exactly ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_order_is_numeric_and_exact ... ok
+test scheduler::tests::active_close_waits_for_queued_pool_activity ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_finite_division_matches_independent_small_reference ... ok
+test value::arithmetic::decimal_tests::arithmetic_text_comparison_matches_integer_reference ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_power_preserves_frozen_scales_and_domains ... ok
+test value::arithmetic::exact_division::gcd_tests::binary_gcd_matches_wide_reference_and_common_shifts ... ok
+test value::arithmetic::explicit_division::tests::accepts_exact_precision_bounds_and_all_rounding_modes ... ok
+test value::arithmetic::exact_division::gcd_tests::binary_gcd_matches_every_small_pair ... ok
+test value::arithmetic::explicit_division::tests::keeps_exact_short_results_and_rounds_carries ... ok
+test value::arithmetic::explicit_division::tests::rejects_precision_and_rounding_before_any_division_work ... ok
+test value::arithmetic::explicit_division::tests::rounds_the_final_quotient_once_for_all_modes ... ok
+test abi::abi_concurrency::tests::malformed_xcon_never_enters_native_trampoline ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_floor_pairs_cover_all_signs ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_input_order_and_bool_parity_are_stable ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_small_rational_reference_covers_signs_and_scales ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_division_errors_keep_the_frozen_order ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_values_do_not_narrow_to_host_widths ... ok
+A2最大乘法工作记录：[WorkEvent { label: "integer-multiply", upper: 65536, actual: None }, WorkEvent { label: "integer-multiply", upper: 65536, actual: Some(65536) }, WorkEvent { label: "final-coefficient", upper: 65536, actual: Some(65536) }]
+test value::arithmetic::integer_tests::arithmetic_integer_limits_and_cancellation_are_atomic ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_exact_division_keeps_failure_identities_and_order ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_power_bounds_preserve_fast_paths ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_non_finite_precedes_operator_domain_after_inputs ... ok
+A3余数D+1强消去工作记录：[WorkEvent { label: "remainder-denominator", upper: 32769, actual: None }, WorkEvent { label: "alignment", upper: 32769, actual: None }, WorkEvent { label: "power-ten", upper: 32769, actual: None }, WorkEvent { label: "power-ten", upper: 32769, actual: Some(32769) }, WorkEvent { label: "alignment", upper: 32769, actual: Some(32769) }, WorkEvent { label: "remainder-boundary-difference", upper: 32769, actual: None }, WorkEvent { label: "remainder-boundary-difference", upper: 1, actual: Some(1) }, WorkEvent { label: "final-coefficient", upper: 1, actual: Some(1) }]
+A3最大非零模乘工作记录：[WorkEvent { label: "modular-multiply", upper: 3, actual: None }, WorkEvent { label: "modular-multiply", upper: 2, actual: Some(2) }, WorkEvent { label: "modular-reduction", upper: 2, actual: None }, WorkEvent { label: "modular-reduction", upper: 2, actual: Some(2) }, WorkEvent { label: "modular-multiply", upper: 4, actual: None }, WorkEvent { label: "modular-multiply", upper: 3, actual: Some(3) }, WorkEvent { label: "modular-reduction", upper: 3, actual: None }, WorkEvent { label: "modular-reduction", upper: 3, actual: Some(3) }, WorkEvent { label: "modular-multiply", upper: 5, actual: None }, WorkEvent { label: "modular-multiply", upper: 4, actual: Some(4) }, WorkEvent { label: "modular-reduction", upper: 4, actual: None }, WorkEvent { label: "modular-reduction", upper: 4, actual: Some(4) }, WorkEvent { label: "modular-multiply", upper: 6, actual: None }, WorkEvent { label: "modular-multiply", upper: 5, actual: Some(5) }, WorkEvent { label: "modular-reduction", upper: 5, actual: None }, WorkEvent { label: "modular-reduction", upper: 5, actual: Some(5) }, WorkEvent { label: "modular-multiply", upper: 9, actual: None }, WorkEvent { label: "modular-multiply", upper: 8, actual: Some(8) }, WorkEvent { label: "modular-reduction", upper: 8, actual: None }, WorkEvent { label: "modular-reduction", upper: 8, actual: Some(8) }, WorkEvent { label: "modular-multiply", upper: 10, actual: None }, WorkEvent { label: "modular-multiply", upper: 9, actual: Some(9) }, WorkEvent { label: "modular-reduction", upper: 9, actual: None }, WorkEvent { label: "modular-reduction", upper: 9, actual: Some(9) }, WorkEvent { label: "modular-multiply", upper: 17, actual: None }, WorkEvent { label: "modular-multiply", upper: 16, actual: Some(16) }, WorkEvent { label: "modular-reduction", upper: 16, actual: None }, WorkEvent { label: "modular-reduction", upper: 16, actual: Some(16) }, WorkEvent { label: "modular-multiply", upper: 18, actual: None }, WorkEvent { label: "modular-multiply", upper: 17, actual: Some(17) }, WorkEvent { label: "modular-reduction", upper: 17, actual: None }, WorkEvent { label: "modular-reduction", upper: 17, actual: Some(17) }, WorkEvent { label: "modular-multiply", upper: 33, actual: None }, WorkEvent { label: "modular-multiply", upper: 32, actual: Some(32) }, WorkEvent { label: "modular-reduction", upper: 32, actual: None }, WorkEvent { label: "modular-reduction", upper: 32, actual: Some(32) }, WorkEvent { label: "modular-multiply", upper: 34, actual: None }, WorkEvent { label: "modular-multiply", upper: 33, actual: Some(33) }, WorkEvent { label: "modular-reduction", upper: 33, actual: None }, WorkEvent { label: "modular-reduction", upper: 33, actual: Some(33) }, WorkEvent { label: "modular-multiply", upper: 65, actual: None }, WorkEvent { label: "modular-multiply", upper: 64, actual: Some(64) }, WorkEvent { label: "modular-reduction", upper: 64, actual: None }, WorkEvent { label: "modular-reduction", upper: 64, actual: Some(64) }, WorkEvent { label: "modular-multiply", upper: 66, actual: None }, WorkEvent { label: "modular-multiply", upper: 65, actual: Some(65) }, WorkEvent { label: "modular-reduction", upper: 65, actual: None }, WorkEvent { label: "modular-reduction", upper: 65, actual: Some(65) }, WorkEvent { label: "modular-multiply", upper: 129, actual: None }, WorkEvent { label: "modular-multiply", upper: 128, actual: Some(128) }, WorkEvent { label: "modular-reduction", upper: 128, actual: None }, WorkEvent { label: "modular-reduction", upper: 128, actual: Some(128) }, WorkEvent { label: "modular-multiply", upper: 130, actual: None }, WorkEvent { label: "modular-multiply", upper: 129, actual: Some(129) }, WorkEvent { label: "modular-reduction", upper: 129, actual: None }, WorkEvent { label: "modular-reduction", upper: 129, actual: Some(129) }, WorkEvent { label: "modular-multiply", upper: 257, actual: None }, WorkEvent { label: "modular-multiply", upper: 256, actual: Some(256) }, WorkEvent { label: "modular-reduction", upper: 256, actual: None }, WorkEvent { label: "modular-reduction", upper: 256, actual: Some(256) }, WorkEvent { label: "modular-multiply", upper: 258, actual: None }, WorkEvent { label: "modular-multiply", upper: 257, actual: Some(257) }, WorkEvent { label: "modular-reduction", upper: 257, actual: None }, WorkEvent { label: "modular-reduction", upper: 257, actual: Some(257) }, WorkEvent { label: "modular-multiply", upper: 513, actual: None }, WorkEvent { label: "modular-multiply", upper: 512, actual: Some(512) }, WorkEvent { label: "modular-reduction", upper: 512, actual: None }, WorkEvent { label: "modular-reduction", upper: 512, actual: Some(512) }, WorkEvent { label: "modular-multiply", upper: 514, actual: None }, WorkEvent { label: "modular-multiply", upper: 513, actual: Some(513) }, WorkEvent { label: "modular-reduction", upper: 513, actual: None }, WorkEvent { label: "modular-reduction", upper: 513, actual: Some(513) }, WorkEvent { label: "modular-multiply", upper: 1025, actual: None }, WorkEvent { label: "modular-multiply", upper: 1024, actual: Some(1024) }, WorkEvent { label: "modular-reduction", upper: 1024, actual: None }, WorkEvent { label: "modular-reduction", upper: 1024, actual: Some(1024) }, WorkEvent { label: "modular-multiply", upper: 1026, actual: None }, WorkEvent { label: "modular-multiply", upper: 1025, actual: Some(1025) }, WorkEvent { label: "modular-reduction", upper: 1025, actual: None }, WorkEvent { label: "modular-reduction", upper: 1025, actual: Some(1025) }, WorkEvent { label: "modular-multiply", upper: 2049, actual: None }, WorkEvent { label: "modular-multiply", upper: 2048, actual: Some(2048) }, WorkEvent { label: "modular-reduction", upper: 2048, actual: None }, WorkEvent { label: "modular-reduction", upper: 2048, actual: Some(2048) }, WorkEvent { label: "modular-multiply", upper: 2050, actual: None }, WorkEvent { label: "modular-multiply", upper: 2049, actual: Some(2049) }, WorkEvent { label: "modular-reduction", upper: 2049, actual: None }, WorkEvent { label: "modular-reduction", upper: 2049, actual: Some(2049) }, WorkEvent { label: "modular-multiply", upper: 4097, actual: None }, WorkEvent { label: "modular-multiply", upper: 4096, actual: Some(4096) }, WorkEvent { label: "modular-reduction", upper: 4096, actual: None }, WorkEvent { label: "modular-reduction", upper: 4096, actual: Some(4096) }, WorkEvent { label: "modular-multiply", upper: 4098, actual: None }, WorkEvent { label: "modular-multiply", upper: 4097, actual: Some(4097) }, WorkEvent { label: "modular-reduction", upper: 4097, actual: None }, WorkEvent { label: "modular-reduction", upper: 4097, actual: Some(4097) }, WorkEvent { label: "modular-multiply", upper: 8193, actual: None }, WorkEvent { label: "modular-multiply", upper: 8192, actual: Some(8192) }, WorkEvent { label: "modular-reduction", upper: 8192, actual: None }, WorkEvent { label: "modular-reduction", upper: 8192, actual: Some(8192) }, WorkEvent { label: "modular-multiply", upper: 8194, actual: None }, WorkEvent { label: "modular-multiply", upper: 8193, actual: Some(8193) }, WorkEvent { label: "modular-reduction", upper: 8193, actual: None }, WorkEvent { label: "modular-reduction", upper: 8193, actual: Some(8193) }, WorkEvent { label: "modular-multiply", upper: 16385, actual: None }, WorkEvent { label: "modular-multiply", upper: 16384, actual: Some(16384) }, WorkEvent { label: "modular-reduction", upper: 16384, actual: None }, WorkEvent { label: "modular-reduction", upper: 16384, actual: Some(16384) }, WorkEvent { label: "modular-multiply", upper: 16386, actual: None }, WorkEvent { label: "modular-multiply", upper: 16385, actual: Some(16385) }, WorkEvent { label: "modular-reduction", upper: 16385, actual: None }, WorkEvent { label: "modular-reduction", upper: 16385, actual: Some(16385) }, WorkEvent { label: "modular-multiply", upper: 32769, actual: None }, WorkEvent { label: "modular-multiply", upper: 32768, actual: Some(32768) }, WorkEvent { label: "modular-reduction", upper: 32768, actual: None }, WorkEvent { label: "modular-reduction", upper: 32768, actual: Some(32768) }, WorkEvent { label: "modular-input-remainder", upper: 32768, actual: None }, WorkEvent { label: "modular-input-remainder", upper: 32768, actual: Some(32768) }, WorkEvent { label: "modular-multiply", upper: 65536, actual: None }, WorkEvent { label: "modular-multiply", upper: 65535, actual: Some(65535) }, WorkEvent { label: "modular-reduction", upper: 65535, actual: None }, WorkEvent { label: "modular-reduction", upper: 32768, actual: Some(32768) }, WorkEvent { label: "final-coefficient", upper: 32768, actual: Some(32768) }]
+test value::arithmetic::resource_tests::arithmetic_decimal_dense_modulus_reaches_the_work_boundary ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_remainder_does_not_materialize_the_quotient ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_remainder_d_plus_one_boundary_is_checked_exactly ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_scale_limits_precede_expensive_construction ... ok
+A3对齐W边界工作记录：[WorkEvent { label: "decimal-add-subtract", upper: 65536, actual: None }, WorkEvent { label: "decimal-add-subtract", upper: 65535, actual: Some(65535) }, WorkEvent { label: "final-coefficient", upper: 65535, actual: Some(65535) }]
+A3对齐W+1拒绝记录：[WorkEvent { label: "decimal-add-subtract", upper: 65537, actual: None }]
+test value::arithmetic::resource_tests::arithmetic_decimal_work_limits_and_cancellation_keep_inputs_unchanged ... ok
+test value::arithmetic::resource_tests::arithmetic_high_precision_negation_checks_admission_before_zero ... ok
+test value::arithmetic::text_add::tests::text_add_subtract_keeps_exact_result_and_work_limits ... ok
+test value::arithmetic::text_add::tests::text_add_subtract_matches_bigint_path_and_input_state ... ok
+test value::arithmetic::text_add::tests::text_add_subtract_matches_independent_rational_reference ... ok
+test value::conversions::binary_tests::a4_binary32_does_not_round_through_binary64 ... ok
+test value::conversions::binary_tests::a4_binary_inputs_keep_actual_values_and_normalize_zero ... ok
+test value::arithmetic::explicit_division::tests::division_by_zero_and_work_limits_are_stable ... ok
+test value::conversions::binary_tests::a4_binary_overflow_uses_the_rounded_result ... ok
+test value::conversions::binary_tests::a4_binary_rounding_uses_nearest_even_at_halfway_points ... ok
+test value::conversions::binary_tests::a4_binary_subnormal_and_signed_zero_boundaries_are_exact ... ok
+test value::arithmetic::resource_tests::arithmetic_known_alignment_lengths_match_independent_texts ... ok
+test value::conversions::resource_tests::a4_input_admission_precedes_range_checks_and_zero_shortcuts ... ok
+test value::conversions::resource_tests::a4_integer_decimal_text_cast_preserves_scale_and_input_kind ... ok
+test value::conversions::resource_tests::a4_integer_result_limits_are_checked_before_materialization ... ok
+A4最大系数截断工作记录：[WorkEvent { label: "conversion-ten", upper: 32750, actual: None }, WorkEvent { label: "conversion-ten", upper: 32750, actual: Some(32750) }, WorkEvent { label: "truncate-division", upper: 32768, actual: None }, WorkEvent { label: "truncate-division", upper: 19, actual: Some(19) }]
+test value::conversions::resource_tests::a4_large_fractional_coefficients_can_truncate_to_bounded_integers ... ok
+test value::conversions::resource_tests::a4_non_finite_and_failed_conversions_preserve_the_frozen_errors ... ok
+A4最大系数边界舍入工作记录：[WorkEvent { label: "conversion-ten", upper: 33092, actual: None }, WorkEvent { label: "conversion-ten", upper: 33092, actualtest value::conversions::resource_tests::a4_text_truncation_matches_exact_integer_reference ... : Someok(33092) }, 
+WorkEvent { label: "binary-order-numerator", upper: 33126, actual: None }, WorkEvent { label: "binary-order-numerator", upper: 33092, actual: Some(33092) }, WorkEvent { label: "binary-scale-numerator", upper: 33126, actual: None }, WorkEvent { label: "binary-scale-numerator", upper: 33092, actual: Some(test value::conversions::tests::a4_all_numeric_scalar_directions_use_the_frozen_matrix ... 33092) }ok
+, WorkEvent { label: "binary-quotient", upper: 33092, actual: None }, WorkEvent { label: "binary-quotient", upper: 1, actual: Some(1) }, WorkEvent { label: "binary-product", upper: 33092, actual: None }, WorkEvent { label: "binary-product", upper: 33092, actual: Some(33092) }, WorkEvent { label: "binary-remainder", upper: 33092, actual: None }, WorkEvent { label: "binary-remainder", upper: 33090, actual: Some(33090) }, WorkEvent { label: "binary-half-comparison", upper: test value::conversions::tests::a4_fractional_integer_conversions_truncate_toward_zero ... 33091ok
+, actual: None }, WorkEvent { label: "binary-half-comparison", upper: 33090, actual: Some(33090) }]
+test value::conversions::resource_tests::a4_binary_limits_clip_only_unambiguous_extremes ... ok
+test value::conversions::tests::a4_integer_widths_are_exact_and_range_checked ... ok
+test value::conversions::tests::a4_strings_preserve_codepoints_and_decimal_syntax ... ok
+test value::conversions::tests::a4_text_round_trips_preserve_display_precision ... ok
+test value::language::tests::language_dynamic_arithmetic_uses_frozen_promotions ... ok
+test value::language::tests::language_input_budget_precedes_non_finite_promotion ... ok
+test value::language::tests::language_promotion_does_not_change_structural_equality ... ok
+test value::conversions::tests::a4_truncation_matches_independent_small_integer_reference ... ok
+test value::numeric::tests::deterministic_spelling_cases_have_one_runtime_identity ... ok
+test value::numeric::tests::frozen_decimal_display_vectors_round_trip ... ok
+test value::numeric::tests::numeric_identity_drives_sets_and_rust_hash_maps ... ok
+test value::numeric::tests::recoverable_errors_preserve_the_frozen_order ... ok
+test value::numeric::tests::temporary_upstream_values_are_exact_and_bounded ... ok
+test value::ops::tests::compares_numbers_and_strings ... ok
+test value::ops::tests::constructs_and_rejects_unicode_scalar_values ... ok
+test value::ops::tests::converts_between_bool_and_str ... ok
+test value::ops::tests::converts_numeric_widths_with_range_check ... ok
+test value::ops::tests::converts_single_codepoint_to_integer ... ok
+test value::ops::tests::division_by_zero_has_stable_identity ... ok
+test value::ops::tests::division_requires_float_operands ... ok
+test value::ops::tests::floor_division_pairs_with_remainder ... ok
+test value::ops::tests::high_precision_public_conversions_use_the_a4_kernel ... ok
+test value::ops::tests::integer_power_rejects_negative_exponent ... ok
+test value::ops::tests::negates_high_precision_text_without_narrowing ... ok
+test value::ops::tests::overflow_uses_stable_identity ... ok
+test value::ops::tests::rejects_cross_width_operands ... ok
+test value::ops::tests::string_equality_compares_content ... ok
+test value::ops::tests::supports_arithmetic_operators ... ok
+test value::string_index_tests::ascii_and_empty_strings_use_direct_byte_positions ... ok
+test value::string_index_tests::cached_indices_preserve_every_scalar_and_out_of_bounds ... ok
+test value::string_index_tests::shared_unicode_indices_stay_alive_and_are_accounted ... ok
+test value::tests::error_type_name_is_explicit ... ok
+test value::tests::error_values_keep_identity_semantics ... ok
+test value::tests::external_resource_aliases_share_identity_and_close_idempotently ... ok
+test value::tests::stores_and_reads_utf8_string ... ok
+test value::tests::supports_bool_parity_adjustment ... ok
+test vm_concurrency::numeric_identity_tests::xcon_numeric_identity_round_trips_through_the_existing_frame ... ok
+test vm_concurrency::numeric_identity_tests::xcon_numeric_payloads_are_checked_before_becoming_runtime_values ... ok
+test vm_concurrency::tests::cancelled_task_disconnect_is_classified_as_027 ... ok
+test vm_concurrency::tests::completed_child_cancellation_keeps_noncatchable_variant ... ok
+test vm_concurrency::tests::excessive_recursive_values_fail_before_unbounded_copy ... ok
+test vm_concurrency::tests::owned_guard_keeps_allocation_alive_and_unlocks_after_alias_drop ... ok
+test vm_concurrency::tests::task_disconnect_without_cancellation_remains_028 ... ok
+test value::conversions::binary_tests::a4_binary_round_trips_match_independent_ieee_bit_patterns ... ok
+test vm_concurrency::tests::transfer_bytes_are_validated_and_copy_values ... ok
+test vm_concurrency::tests::thread_consumption_is_shared_but_handles_are_not_hashable ... ok
+test vm_concurrency::tests::vm_detached_report_channel_is_bounded_and_counts_drops ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_finite_division_and_power_exact_limits ... ok
+test value::numeric::tests::balanced_coefficients_match_independent_upstream_parser ... ok
+
+test result: ok. 259 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.09s
+
