@@ -16,7 +16,7 @@ related:
 
 ## 适用范围与状态
 
-本页为planned教程提纲。B3-3A/B已提供15项cmath的Runtime/C ABI内部实现和intrinsic34～48声明；stdlib/cmath.xiao包装与语言调用仍留B3-4/B4，不能按已交付源码库调用。
+本页为planned教程提纲。B3-3A/B已提供15项cmath的Runtime/C ABI内部实现和intrinsic34～48声明；stdlib/cmath.xiao包装源码已在B3-4独立工作树加入，语言调用仍留B4，不能按已交付源码库调用。
 星崽已确认首批15个float入口，floor/ceil/round/trunc也返回float，sfloat与高精度超越函数后置。
 F-A已确认定义域、舍入、特殊值和误差；F-5进一步确认参数名、原语及C ABI契约。F-6版本与产物矩阵、F-12完整错误表与优先级也已确认；F-3/F-7也已确认接纳/工作量/性能协议与依赖策略；F-D已实际签字并激活联合冻结，见[B2冻结草案](../../DevDocs/20o-b2-freeze-draft.md)。当前内部实施进度见[B3-3A/B记录](../../DevDocs/20o-b2-b3-3a-b-progress.md)。
 当前只有Windows本机内部证据，完整源码库与三平台产品证据尚未交付，本页保持planned。
@@ -25,7 +25,7 @@ F-A已确认定义域、舍入、特殊值和误差；F-5进一步确认参数�
 
 计划公共路径std.cmath，固定身份stdlib.cmath，标准库接口版本1。
 产品将随工具链提供，不作为普通包安装。F-6已确认B2-B的未来交付目标为Runtime ABI1.19、生成器21，当前仓库实际仍为1.18/20。
-当前内部C ABI与声明不代表模块导入已经可执行，源码包装及VM/原生语言调用仍待后续验收。
+当前包装源码、内部C ABI与声明不代表模块导入已经可执行，VM/原生语言调用仍待B4验收。
 
 ## 五分钟运行与完整示例
 
@@ -44,9 +44,9 @@ cmath是固定64位二进制浮点库，不是复数库，也不是lfloat高精�
 
 | 已确认入口组 | 输入/结果 | 规则与待办 |
 | --- | --- | --- |
-| sqrt、floor、ceil、round、trunc、abs | float到float | 内部Runtime/C ABI已实现；包装与语言调用后置 |
-| min、max、pow | 两个float到float | 内部Runtime/C ABI已实现；包装与语言调用后置 |
-| sin、cos、tan、exp、ln、log10 | float到float | 内部Runtime/C ABI已实现；包装与语言调用后置 |
+| sqrt、floor、ceil、round、trunc、abs | float到float | 内部Runtime/C ABI与包装源码已存在；语言调用后置 |
+| min、max、pow | 两个float到float | 内部Runtime/C ABI与包装源码已存在；语言调用后置 |
+| sin、cos、tan、exp、ln、log10 | float到float | 内部Runtime/C ABI与包装源码已存在；语言调用后置 |
 
 底层已按F-7冻结Rust libm0.2.16，六包闭包与构建策略见冻结草案§四；B3-3A/B内部快照已登记ID34～48和15个xiao_runtime_cmath_*符号。当前ABI1.18/生成器20仅用于内部验收，语言全链路留B4、最终1.19/21切换留B5。
 
@@ -75,6 +75,6 @@ B1七库仍按其历史快照verified；19/11/22与历史22C/22D债务不在本�
 
 ## 故障排查与下一步
 
-当前尚无std.cmath源码包装及语言接线；即使内部C ABI已通过，模块导入失败仍应登记具体诊断，不能当作源码产品已支持。
+当前包装源码已存在，语言原语仍未接线；模块导入失败应登记具体诊断，不能当作源码产品已支持。
 先查看[B2规划](../../DevDocs/20o-b2-numeric-foundation-plan.md)与[冻结草案](../../DevDocs/20o-b2-freeze-draft.md)，
 需要已交付整数运算时使用[math](math.md)，返回[官方库索引](README.md)。
