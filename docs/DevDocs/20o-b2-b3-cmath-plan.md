@@ -97,7 +97,7 @@ B3 执行前必须确认：
 
 ### B3-3：intrinsic 34～48 与 C ABI
 
-执行细化见[B3-2/B3-5 开工规划](20o-b2-b3-2-b3-5-kickoff-plan.md)；B3-3A做C ABI，B3-3B做声明。
+执行细化见[B3-2/B3-5 开工规划](20o-b2-b3-2-b3-5-kickoff-plan.md)与[C ABI/intrinsic 34～48 规划](20o-b2-b3-3a-b-c-abi-intrinsics-plan.md)；B3-3A做C ABI，B3-3B做声明。
 
 1. 在 `intrinsics.json` 增加 34～48，保持 1～33 和 ID 100 不变；
 2. 每项声明：源级入口、参数名、返回 `float`、效果 `Pure`、能力 `None`、C 符号；

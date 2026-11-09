@@ -67,6 +67,8 @@ B3-2 执行前必须确认：
 
 ### B3-3A：15 个 C ABI 符号
 
+执行细化见[C ABI 与 intrinsic 34～48 规划](20o-b2-b3-3a-b-c-abi-intrinsics-plan.md)；B3-3A只做C入口，声明在B3-3B。
+
 1. 新增 sqrt/floor/ceil/round/trunc/abs/min/max/pow/sin/cos/tan/exp/ln/log10 的 C 符号；
 2. 符号名与 F-5 表一致：`xiao_runtime_cmath_*`；
 3. 一元函数一个借用输入、二元 min/max/pow 两个借用输入，统一拥有 out；
@@ -78,6 +80,8 @@ B3-2 执行前必须确认：
 退出：15 个 C 符号与 Runtime 内核一一对应；状态/out 测试通过。
 
 ### B3-3B：intrinsic 34～48 声明
+
+执行细化见[C ABI 与 intrinsic 34～48 规划](20o-b2-b3-3a-b-c-abi-intrinsics-plan.md)；B3-3B只做声明，类型/IR/VM/LLVM留B4。
 
 1. 在 `intrinsics.json` 增加 34～48，保持 1～33 与 ID 100；
 2. 每项声明：源级入口、参数名、`float` 返回、`Pure`、无能力、C 符号；
