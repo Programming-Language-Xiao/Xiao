@@ -107,6 +107,31 @@ fn main() {
                     assert_eq!(row.effect, "allocates");
                     assert_eq!(row.capability, "none");
                 }
+                "cmath" => {
+                    // F-5编号顺序与冻结函数集合，生成期拒绝错号或绑定漂移。
+                    const NAMES: [&str; 15] = [
+                        "sqrt", "floor", "ceil", "round", "trunc", "abs", "min", "max", "pow",
+                        "sin", "cos", "tan", "exp", "ln", "log10",
+                    ];
+                    let index = row.id.checked_sub(34).expect("cmath编号必须为34～48") as usize;
+                    let name = NAMES.get(index).expect("cmath编号必须为34～48");
+                    assert_eq!(row.name, format!("cmath_{name}"));
+                    assert_eq!(
+                        row.arity,
+                        if matches!(*name, "min" | "max" | "pow") {
+                            "two"
+                        } else {
+                            "one"
+                        }
+                    );
+                    assert_eq!(row.parameter_type, "float");
+                    assert_eq!(row.return_type, "float");
+                    assert_eq!(row.vm_binding, row.name);
+                    assert_eq!(row.abi_binding, row.name);
+                    assert_eq!(row.effect, "pure");
+                    assert_eq!(row.capability, "none");
+                    assert_eq!(row.error, "runtime.type_mismatch");
+                }
                 "error_code" => {
                     assert_eq!(row.arity, "one");
                     assert_eq!(row.parameter_type, "error");

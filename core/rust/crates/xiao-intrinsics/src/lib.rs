@@ -58,6 +58,7 @@ pub enum IntrinsicKind {
     ErrorConstructor,
     ErrorCode,
     LfloatDivide,
+    Cmath,
     Print,
     Input,
     ResourceOpenFile,
@@ -219,6 +220,21 @@ pub enum VmBinding {
     MakeError,
     ErrorCode,
     LfloatDivide,
+    CmathSqrt,
+    CmathFloor,
+    CmathCeil,
+    CmathRound,
+    CmathTrunc,
+    CmathAbs,
+    CmathMin,
+    CmathMax,
+    CmathPow,
+    CmathSin,
+    CmathCos,
+    CmathTan,
+    CmathExp,
+    CmathLn,
+    CmathLog10,
     Print,
     Input,
     ResourceOpenFile,
@@ -236,6 +252,21 @@ pub enum AbiBinding {
     ErrorNew,
     ErrorCode,
     LfloatDivide,
+    CmathSqrt,
+    CmathFloor,
+    CmathCeil,
+    CmathRound,
+    CmathTrunc,
+    CmathAbs,
+    CmathMin,
+    CmathMax,
+    CmathPow,
+    CmathSin,
+    CmathCos,
+    CmathTan,
+    CmathExp,
+    CmathLn,
+    CmathLog10,
     SetAdd,
     SetRemove,
     ArrayPush,
@@ -250,6 +281,45 @@ pub enum AbiBinding {
     ProcessClose,
     None,
 }
+/// F-5冻结的cmath名称及后端绑定键；仅声明数据，不安装VM/LLVM执行器。
+pub const CMATH_DECLARATIONS: [(&str, VmBinding, AbiBinding); 15] = [
+    ("cmath_sqrt", VmBinding::CmathSqrt, AbiBinding::CmathSqrt),
+    ("cmath_floor", VmBinding::CmathFloor, AbiBinding::CmathFloor),
+    ("cmath_ceil", VmBinding::CmathCeil, AbiBinding::CmathCeil),
+    ("cmath_round", VmBinding::CmathRound, AbiBinding::CmathRound),
+    ("cmath_trunc", VmBinding::CmathTrunc, AbiBinding::CmathTrunc),
+    ("cmath_abs", VmBinding::CmathAbs, AbiBinding::CmathAbs),
+    ("cmath_min", VmBinding::CmathMin, AbiBinding::CmathMin),
+    ("cmath_max", VmBinding::CmathMax, AbiBinding::CmathMax),
+    ("cmath_pow", VmBinding::CmathPow, AbiBinding::CmathPow),
+    ("cmath_sin", VmBinding::CmathSin, AbiBinding::CmathSin),
+    ("cmath_cos", VmBinding::CmathCos, AbiBinding::CmathCos),
+    ("cmath_tan", VmBinding::CmathTan, AbiBinding::CmathTan),
+    ("cmath_exp", VmBinding::CmathExp, AbiBinding::CmathExp),
+    ("cmath_ln", VmBinding::CmathLn, AbiBinding::CmathLn),
+    ("cmath_log10", VmBinding::CmathLog10, AbiBinding::CmathLog10),
+];
+
+/// 一元cmath的必填参数。
+pub const CMATH_UNARY_PARAMETERS: [(&str, ValueType); 1] = [("value", ValueType::Float)];
+/// min/max的必填参数。
+pub const CMATH_COMPARISON_PARAMETERS: [(&str, ValueType); 2] =
+    [("left", ValueType::Float), ("right", ValueType::Float)];
+/// pow的必填参数。
+pub const CMATH_POWER_PARAMETERS: [(&str, ValueType); 2] =
+    [("base", ValueType::Float), ("exponent", ValueType::Float)];
+
+/// 读取34～48的冻结形参顺序；参数绑定与类型/IR接线留B4。
+#[must_use]
+pub const fn cmath_parameters(id: IntrinsicId) -> Option<&'static [(&'static str, ValueType)]> {
+    match id.get() {
+        34..=39 | 43..=48 => Some(&CMATH_UNARY_PARAMETERS),
+        40 | 41 => Some(&CMATH_COMPARISON_PARAMETERS),
+        42 => Some(&CMATH_POWER_PARAMETERS),
+        _ => None,
+    }
+}
+
 /// 签名的后端无关部分。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Signature {
@@ -366,6 +436,37 @@ pub fn validate_table() -> Result<(), ContractError> {
                         || declaration.abi_binding != AbiBinding::LfloatDivide
                         || declaration.effects != Effects::Allocates
                         || declaration.capability != Capability::None
+                    {
+                        return Err(ContractError::SignatureMismatch(declaration.id));
+                    }
+                }
+                IntrinsicKind::Cmath => {
+                    let contract = declaration
+                        .id
+                        .get()
+                        .checked_sub(34)
+                        .and_then(|index| CMATH_DECLARATIONS.get(index as usize));
+                    let Some(&(name, vm, abi)) = contract else {
+                        return Err(ContractError::SignatureMismatch(declaration.id));
+                    };
+                    let parameters = cmath_parameters(declaration.id).expect("已校验cmath编号");
+                    let arity = if parameters.len() == 1 {
+                        Arity::One
+                    } else {
+                        Arity::Two
+                    };
+                    if declaration.public_name != name
+                        || declaration.signature
+                            != (Signature {
+                                arity,
+                                parameter: ValueType::Float,
+                                return_type: ValueType::Float,
+                            })
+                        || declaration.effects != Effects::Pure
+                        || declaration.capability != Capability::None
+                        || declaration.vm_binding != vm
+                        || declaration.abi_binding != abi
+                        || declaration.error_code != "runtime.type_mismatch"
                     {
                         return Err(ContractError::SignatureMismatch(declaration.id));
                     }
@@ -592,6 +693,42 @@ pub fn lfloat_divide_argument_order(arguments: &[(&str, Option<&str>)]) -> Optio
 mod tests {
     use super::*;
     #[test]
+    /// 精确核对48活动ID、15项形参/效果绑定与100墓碑。
+    fn cmath_fifteen_declarations_keep_the_frozen_identity_and_parameters() {
+        validate_table().unwrap();
+        let mut active: Vec<_> = declarations()
+            .iter()
+            .filter(|d| d.status == DeclarationStatus::Active)
+            .map(|d| d.id.get())
+            .collect();
+        active.sort_unstable();
+        assert_eq!(active, (1..=48).collect::<Vec<_>>());
+        for (index, &(name, vm, abi)) in CMATH_DECLARATIONS.iter().enumerate() {
+            let id = IntrinsicId::new(34 + index as u32).unwrap();
+            let declaration = active_by_id(id).unwrap();
+            assert_eq!(by_name(name), Some(declaration));
+            assert_eq!(declaration.kind, IntrinsicKind::Cmath);
+            assert_eq!(declaration.vm_binding, vm);
+            assert_eq!(declaration.abi_binding, abi);
+            assert_eq!(declaration.effects, Effects::Pure);
+            assert_eq!(declaration.capability, Capability::None);
+            assert!(
+                cmath_parameters(id)
+                    .unwrap()
+                    .iter()
+                    .all(|(_, ty)| *ty == ValueType::Float)
+            );
+        }
+        assert_eq!(cmath_parameters(IntrinsicId::new(33).unwrap()), None);
+        assert_eq!(cmath_parameters(IntrinsicId::new(49).unwrap()), None);
+        assert_eq!(cmath_parameters(IntrinsicId::new(100).unwrap()), None);
+        assert_eq!(
+            by_id(IntrinsicId::new(100).unwrap()).unwrap().status,
+            DeclarationStatus::Tombstone
+        );
+    }
+
+    #[test]
     fn explicit_division_binding_preserves_source_order_and_rejects_ambiguous_shapes() {
         assert_eq!(
             lfloat_divide_argument_order(&[
@@ -668,7 +805,8 @@ mod tests {
         assert_eq!(declaration.abi_binding, AbiBinding::ErrorCode);
         assert_eq!(declaration.effects, Effects::Allocates);
         assert_eq!(declaration.capability, Capability::None);
-        assert_eq!(declarations().len(), 34);
+        // B3新增15条声明：48个活动入口加ID100墓碑，仍要求精确计数。
+        assert_eq!(declarations().len(), 49);
         assert_eq!(
             declarations()
                 .iter()

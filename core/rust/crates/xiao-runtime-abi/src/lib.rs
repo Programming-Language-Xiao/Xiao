@@ -1051,6 +1051,78 @@ unsafe extern "C" {
         rounding: *const XiaoValue,
         out: *mut XiaoValue,
     ) -> i32;
+    /// B3内部cmath sqrt：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_cmath_sqrt(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath floor：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_cmath_floor(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath ceil：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_cmath_ceil(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath round：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_cmath_round(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath trunc：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_cmath_trunc(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath abs：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_cmath_abs(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath min：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_cmath_min(
+        left: *const XiaoValue,
+        right: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// B3内部cmath max：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_cmath_max(
+        left: *const XiaoValue,
+        right: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// B3内部cmath pow：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_cmath_pow(
+        base: *const XiaoValue,
+        exponent: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// B3内部cmath sin：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_cmath_sin(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath cos：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_cmath_cos(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath tan：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_cmath_tan(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath exp：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_cmath_exp(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath ln：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_cmath_ln(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath log10：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    pub fn xiao_runtime_cmath_log10(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
     /// 读取当前线程挂起错误的机器字段。
     pub fn xiao_runtime_error_snapshot(out: *mut XiaoAbiErrorSnapshot) -> i32;
     /// 读取当前线程挂起错误的第 `index` 个结构化参数。
