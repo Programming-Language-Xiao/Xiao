@@ -1,0 +1,104 @@
+{
+  "passed": true,
+  "evidence_commit": "e8dad65216569a5b9e5c7b0257e959817d42d607",
+  "code_commit": "89d782e13f00776b90193f1719b4454c54367db7",
+  "source_objects": "D:\\project\\Xiao\\.b3-cabi\\self-review-3411c506\\objects.git",
+  "source_create_argv": [
+    "cmd",
+    "/c",
+    "git",
+    "clone",
+    "--bare",
+    "--shared",
+    "D:\\project\\Xiao\\Xiao",
+    "D:\\project\\Xiao\\.b3-cabi\\self-review-3411c506\\objects.git"
+  ],
+  "source_has_reference_worktree": false,
+  "archive_argv": [
+    "cmd",
+    "/c",
+    "git",
+    "archive",
+    "e8dad65216569a5b9e5c7b0257e959817d42d607",
+    "--format=tar",
+    "--output=D:\\project\\Xiao\\.b3-cabi\\self-review-3411c506\\b3-export-self-review-7evyysfp\\evidence.tar",
+    "--",
+    "docs/DevDocs/assets/20o-b2-b/entry-20261109-b3-cabi"
+  ],
+  "archive_sha256": "f0779c0a8a6cb7dcdfa41e665d1791bb1884cabca0fa25c7e6c90deb5c93f013",
+  "runs": [
+    {
+      "name": "default-repository",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 0,
+      "read_only": true,
+      "output": "{\"passed\": true, \"core_only\": false, \"files\": 85, \"code_commit\": \"89d782e1\", \"checks\": 22, \"exact\": 4, \"formal_abi_cases\": 17243, \"runtime_tests\": 269, \"active_max\": 48, \"live_runtime_checked\": false, \"scope\": \"B3-2A与B3-3A/B内部；B3-4/B4未开始\"}"
+    },
+    {
+      "name": "objects-only-first",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cabi\\self-review-3411c506\\objects.git"
+      ],
+      "exit_code": 0,
+      "read_only": true,
+      "output": "{\"passed\": true, \"core_only\": false, \"files\": 85, \"code_commit\": \"89d782e1\", \"checks\": 22, \"exact\": 4, \"formal_abi_cases\": 17243, \"runtime_tests\": 269, \"active_max\": 48, \"live_runtime_checked\": false, \"scope\": \"B3-2A与B3-3A/B内部；B3-4/B4未开始\"}"
+    },
+    {
+      "name": "objects-only-second",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cabi\\self-review-3411c506\\objects.git"
+      ],
+      "exit_code": 0,
+      "read_only": true,
+      "output": "{\"passed\": true, \"core_only\": false, \"files\": 85, \"code_commit\": \"89d782e1\", \"checks\": 22, \"exact\": 4, \"formal_abi_cases\": 17243, \"runtime_tests\": 269, \"active_max\": 48, \"live_runtime_checked\": false, \"scope\": \"B3-2A与B3-3A/B内部；B3-4/B4未开始\"}"
+    },
+    {
+      "name": "live-runtime",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cabi\\self-review-3411c506\\objects.git",
+        "--live-runtime"
+      ],
+      "exit_code": 0,
+      "read_only": true,
+      "output": "{\"passed\": true, \"core_only\": false, \"files\": 85, \"code_commit\": \"89d782e1\", \"checks\": 22, \"exact\": 4, \"formal_abi_cases\": 17243, \"runtime_tests\": 269, \"active_max\": 48, \"live_runtime_checked\": true, \"scope\": \"B3-2A与B3-3A/B内部；B3-4/B4未开始\"}"
+    },
+    {
+      "name": "git-export-with-objects-only",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cabi\\self-review-3411c506\\b3-export-self-review-7evyysfp\\export\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cabi\\self-review-3411c506\\objects.git"
+      ],
+      "exit_code": 0,
+      "read_only": true,
+      "output": "{\"passed\": true, \"core_only\": false, \"files\": 85, \"code_commit\": \"89d782e1\", \"checks\": 22, \"exact\": 4, \"formal_abi_cases\": 17243, \"runtime_tests\": 269, \"active_max\": 48, \"live_runtime_checked\": false, \"scope\": \"B3-2A与B3-3A/B内部；B3-4/B4未开始\"}"
+    }
+  ],
+  "scope": "收口后自审，只读默认/裸仓库/实际Runtime/导出复核",
+  "remote_ci_claimed": false
+}
