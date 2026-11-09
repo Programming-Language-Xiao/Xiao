@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "entry_commit": "3411c506",
+  "code_commit": "89d782e13f00776b90193f1719b4454c54367db7",
+  "original_files_checked": 68,
+  "original_results_unchanged": true,
+  "changed_product_paths": [],
+  "documentation_only": [
+    "docs/UseDocs/library/cmath.md"
+  ],
+  "scope": "保留原采样与源码身份，本轮只改证据核验及状态说明"
+}

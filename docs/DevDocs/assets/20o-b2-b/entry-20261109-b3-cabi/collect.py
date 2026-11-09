@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 import subprocess
 
 ROOT = Path(__file__).resolve().parent
@@ -38,10 +39,25 @@ def main(prepare):
           'source_manifest':next(iter(manifests)),'reuse_from':'a3e0eec9源码选择，旧日志未作本批证据'})
     pow_manifest=read('baseline/pow-switch-manifest.json')
     assert pow_manifest['cases']==1075
+    def summaries(path):
+        return [tuple(map(int,row)) for row in re.findall(r'^test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;',
+                (ROOT/path).read_text(encoding='utf-8'),re.M)]
+    runtime=summaries('baseline/runtime.log')[0]
+    abi=summaries('baseline/abi.log')
+    intrinsic=summaries('baseline/intrinsics.log')
+    assert runtime==(269,0,0) and abi==[(10,0,0)] and intrinsic==[(8,0,0)]
+    abi_cases=sum(int(count) for count in re.findall(r'B3-CMATH-ABI function=\w+ cases=(\d+) result=success',
+                  (ROOT/'baseline/abi.log').read_text(encoding='utf-8')))
+    probe=read('abi/c-probe-result.json')
+    counts=[int(re.fullmatch(r'B3-CMATH-C-PROBE entries=15 checks=(\d+) statuses=0,1,2,3,6 result=success\s*',row['output']).group(1))
+            for row in probe['records'] if row['name'].startswith('run-')]
+    guards=read('baseline/b1-guards-report.json')
+    assert abi_cases==17243 and probe['passed'] and counts==[231,231] and guards['passed']==guards['total']==28
     write('closeout.json',{'passed':not prepare,'scope':'B3-2A + B3-3A/B内部验收','code_commit':code,
           'effective_checks':{'baseline':BASE,'abi':FINAL},'source_manifest':next(iter(manifests)),
-          'runtime_tests':269,'abi_tests':10,'intrinsic_tests':8,'formal_abi_cases':17243,'external_c_checks_each':231,
-          'pow_summary':pow_manifest['summary'],'guards':'28/28','runtime':read('abi/public-surface.json')['runtime'],
+          'runtime_tests':runtime[0],'abi_tests':abi[0][0],'intrinsic_tests':intrinsic[0][0],
+          'formal_abi_cases':abi_cases,'external_c_checks_each':counts[0],
+          'pow_summary':pow_manifest['summary'],'guards':f"{guards['passed']}/{guards['total']}",'runtime':read('abi/public-surface.json')['runtime'],
           'abi':'1.18','codegen':20,'stdlib_interface':1,'active_max':48,'cmath':'planned','b3_4_started':False,
           'b1_721_executed':False,'b2_a_perf':False,'remote_ci_claimed':False,
           'platforms':{'windows':'本机内部验收','linux':'本批未执行','macos':'本批未执行'},

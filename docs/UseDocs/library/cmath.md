@@ -16,16 +16,16 @@ related:
 
 ## 适用范围与状态
 
-本页为planned教程提纲，当前没有stdlib/cmath.xiao或对应数学intrinsic，不能按已交付产品调用。
+本页为planned教程提纲。B3-3A/B已提供15项cmath的Runtime/C ABI内部实现和intrinsic34～48声明；stdlib/cmath.xiao包装与语言调用仍留B3-4/B4，不能按已交付源码库调用。
 星崽已确认首批15个float入口，floor/ceil/round/trunc也返回float，sfloat与高精度超越函数后置。
-F-A已确认定义域、舍入、特殊值和误差；F-5进一步确认参数名、规划原语及C ABI契约。F-6版本与产物矩阵、F-12完整错误表与优先级也已确认；F-3/F-7也已确认接纳/工作量/性能协议与依赖策略；F-D已实际签字并激活联合冻结，仅开放B2-A实施规划，见[B2冻结草案](../../DevDocs/20o-b2-freeze-draft.md)。
-这些是已确认契约，产品与三平台证据尚未交付，本页保持planned。
+F-A已确认定义域、舍入、特殊值和误差；F-5进一步确认参数名、原语及C ABI契约。F-6版本与产物矩阵、F-12完整错误表与优先级也已确认；F-3/F-7也已确认接纳/工作量/性能协议与依赖策略；F-D已实际签字并激活联合冻结，见[B2冻结草案](../../DevDocs/20o-b2-freeze-draft.md)。当前内部实施进度见[B3-3A/B记录](../../DevDocs/20o-b2-b3-3a-b-progress.md)。
+当前只有Windows本机内部证据，完整源码库与三平台产品证据尚未交付，本页保持planned。
 
 ## 导入与准备
 
 计划公共路径std.cmath，固定身份stdlib.cmath，标准库接口版本1。
 产品将随工具链提供，不作为普通包安装。F-6已确认B2-B的未来交付目标为Runtime ABI1.19、生成器21，当前仓库实际仍为1.18/20。
-当前只登记文档，不把未来导入命令写成已经可以执行。
+当前内部C ABI与声明不代表模块导入已经可执行，源码包装及VM/原生语言调用仍待后续验收。
 
 ## 五分钟运行与完整示例
 
@@ -37,22 +37,22 @@ F-A已确认定义域、舍入、特殊值和误差；F-5进一步确认参数�
 ## 核心概念与所有权
 
 cmath是固定64位二进制浮点库，不是复数库，也不是lfloat高精度十进制库。
-已确认三角函数使用弧度，round采用最近偶数；负零与逐函数定义域按冻结精表执行，产品尚未实现。
+已确认三角函数使用弧度，round采用最近偶数；负零与逐函数定义域已在内部数学内核实现，源码调用仍待后续接线。
 输入/结果为标量，纯计算且无新增宿主能力；实现须保证失败不产生部分结果。
 
 ## 首批范围
 
 | 已确认入口组 | 输入/结果 | 规则与待办 |
 | --- | --- | --- |
-| sqrt、floor、ceil、round、trunc、abs | float到float | 舍入/零/域及value参数名已确认；产品未实现 |
-| min、max、pow | 两个float到float | 特殊值、left/right或base/exponent参数名已确认；产品未实现 |
-| sin、cos、tan、exp、ln、log10 | float到float | 弧度/下溢/域/误差、value参数及原语契约已确认；产品未实现 |
+| sqrt、floor、ceil、round、trunc、abs | float到float | 内部Runtime/C ABI已实现；包装与语言调用后置 |
+| min、max、pow | 两个float到float | 内部Runtime/C ABI已实现；包装与语言调用后置 |
+| sin、cos、tan、exp、ln、log10 | float到float | 内部Runtime/C ABI已实现；包装与语言调用后置 |
 
-底层已按F-7冻结Rust libm0.2.16，六包闭包与构建策略见冻结草案§四；F-5已确认cmath规划ID34～48和xiao_runtime_cmath_*符号，活动表与实际ABI尚未接线。
+底层已按F-7冻结Rust libm0.2.16，六包闭包与构建策略见冻结草案§四；B3-3A/B内部快照已登记ID34～48和15个xiao_runtime_cmath_*符号。当前ABI1.18/生成器20仅用于内部验收，语言全链路留B4、最终1.19/21切换留B5。
 
 ## 错误与恢复
 
-F-12已确认：NaN/Inf输入或非有限结果、sqrt负输入、ln/log10非正输入等数学域错误使用ArithmeticError/X06-RUNTIME-009；动态实参类型不符使用TypeError/002，受控输出分配失败使用ResourceError/011。完整顺序和C ABI状态6/out保留规则见冻结草案§5.2，产品错误路径尚未实现。
+F-12已确认：NaN/Inf输入或非有限结果、sqrt负输入、ln/log10非正输入等数学域错误使用ArithmeticError/X06-RUNTIME-009；动态实参类型不符使用TypeError/002，受控输出分配失败使用ResourceError/011。完整顺序和C ABI状态6/out保留规则见冻结草案§5.2；内部Runtime/C ABI错误路径已有本机测试，源码完整示例仍待后续验收。
 完整示例将通过catch与error_code读取实际code；不使用只打印恢复标签的方式代替错误身份验证。
 
 ## 资源、性能与安全边界
@@ -75,6 +75,6 @@ B1七库仍按其历史快照verified；19/11/22与历史22C/22D债务不在本�
 
 ## 故障排查与下一步
 
-当前找不到std.cmath是产品尚未实现，不能当作已经验收的环境跳过。
+当前尚无std.cmath源码包装及语言接线；即使内部C ABI已通过，模块导入失败仍应登记具体诊断，不能当作源码产品已支持。
 先查看[B2规划](../../DevDocs/20o-b2-numeric-foundation-plan.md)与[冻结草案](../../DevDocs/20o-b2-freeze-draft.md)，
 需要已交付整数运算时使用[math](math.md)，返回[官方库索引](README.md)。

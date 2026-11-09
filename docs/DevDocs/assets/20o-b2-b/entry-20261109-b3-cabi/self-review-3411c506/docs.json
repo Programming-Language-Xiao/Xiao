@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "bun",
+    "tools/repo-check/src/cli.ts",
+    "all"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 68096,
+  "started_utc": "2026-11-09T03:11:20.571807+00:00",
+  "finished_utc": "2026-11-09T03:12:01.557767+00:00",
+  "exit_code": 0,
+  "sha256": "5a6affa22a43fdeec23d922bcffb7053fa21b3f377a506e58ab32194977efb7f",
+  "log": "docs.log",
+  "scope": "收口后自审文档门禁；不是重跑产品样本"
+}

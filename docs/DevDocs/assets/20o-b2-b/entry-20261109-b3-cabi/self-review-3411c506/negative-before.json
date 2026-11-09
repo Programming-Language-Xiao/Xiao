@@ -1,0 +1,114 @@
+{
+  "passed": true,
+  "cases": {
+    "baseline": {
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"core_only\": true, \"files\": 73, \"code_commit\": \"89d782e1\", \"checks\": 22, \"exact\": 4, \"formal_abi_cases\": 17243, \"runtime_tests\": 269, \"active_max\": 48, \"live_runtime_checked\": false, \"scope\": \"B3-2A与B3-3A/B内部；B3-4/B4未开始\"}",
+      "expected_reason": null,
+      "read_only": true,
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\b3-negative-baseline-elv9xvyn\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source",
+        "--core-only"
+      ]
+    },
+    "manifest": {
+      "exit_code": 1,
+      "output": "B3-CABI证据清单或摘要不符",
+      "expected_reason": "B3-CABI证据清单或摘要不符",
+      "read_only": true,
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\b3-negative-manifest-poadlvif\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source",
+        "--core-only"
+      ]
+    },
+    "attributes": {
+      "exit_code": 1,
+      "output": "B3-CABI证据清单或摘要不符",
+      "expected_reason": "B3-CABI证据清单或摘要不符",
+      "read_only": true,
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\b3-negative-attributes-863oox7s\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source",
+        "--core-only"
+      ]
+    },
+    "target": {
+      "exit_code": 1,
+      "output": "B3-CABI精确入口命令或测试名不符",
+      "expected_reason": "B3-CABI精确入口命令或测试名不符",
+      "read_only": true,
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\b3-negative-target-8cb09q4k\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source",
+        "--core-only"
+      ]
+    },
+    "runtime": {
+      "exit_code": 1,
+      "output": "B3-CABI Runtime身份与构建记录不符",
+      "expected_reason": "B3-CABI Runtime身份与构建记录不符",
+      "read_only": true,
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\b3-negative-runtime-gre6qi5l\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source",
+        "--core-only"
+      ]
+    },
+    "pow": {
+      "exit_code": 1,
+      "output": "B3-CABI pow分类或数值距离不符",
+      "expected_reason": "B3-CABI pow分类或数值距离不符",
+      "read_only": true,
+      "passed": true,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\b3-negative-pow-09xofvoq\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source",
+        "--core-only"
+      ]
+    }
+  },
+  "scope": "临时复制及三种明确重建清单的语义反例；不改真实证据"
+}

@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "copied_directory": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\b3-collector-review-937b_0pe\\evidence",
+  "output": "{\"passed\": true, \"prepare_only\": false, \"code_commit\": \"89d782e13f00776b90193f1719b4454c54367db7\", \"checks\": 22}",
+  "originals_overwritten": false,
+  "before": {
+    "closeout.json": "c23af2a5602048ecee2bc2d1d3f0d9a3090ec9ffb61178a5ef916609d97c3683",
+    "code-identity.json": "24cea5c41b894c7ec9ed6d9f550f360122de5ebd44afcf2c140b0de3db8ee2ac"
+  },
+  "after": {
+    "closeout.json": "c23af2a5602048ecee2bc2d1d3f0d9a3090ec9ffb61178a5ef916609d97c3683",
+    "code-identity.json": "24cea5c41b894c7ec9ed6d9f550f360122de5ebd44afcf2c140b0de3db8ee2ac"
+  },
+  "collector_sha256": "f15ad7f47bd931f0bc52f8cbaa3c1ad539a36cfdf952bab5c46bc4da38c3ecf3"
+}

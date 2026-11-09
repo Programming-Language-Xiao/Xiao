@@ -1,0 +1,102 @@
+{
+  "entry_commit": "3411c5069496a3552204e40c339009ffc733ecb1",
+  "cases": {
+    "baseline": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cabi\\self-review-3411c506\\baseline-rj95mxwl\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao",
+        "--core-only"
+      ],
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"core_only\": true, \"files\": 73, \"code_commit\": \"89d782e1\", \"checks\": 22, \"exact\": 4, \"formal_abi_cases\": 17243, \"runtime_tests\": 269, \"active_max\": 48, \"live_runtime_checked\": false, \"scope\": \"B3-2A与B3-3A/B内部；B3-4/B4未开始\"}",
+      "read_only": true
+    },
+    "closeout_counts": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cabi\\self-review-3411c506\\closeout_counts-rhn59gdq\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao",
+        "--core-only"
+      ],
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"core_only\": true, \"files\": 73, \"code_commit\": \"89d782e1\", \"checks\": 22, \"exact\": 4, \"formal_abi_cases\": 17243, \"runtime_tests\": 269, \"active_max\": 48, \"live_runtime_checked\": false, \"scope\": \"B3-2A与B3-3A/B内部；B3-4/B4未开始\"}",
+      "read_only": true
+    },
+    "pow_rule_distance": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cabi\\self-review-3411c506\\pow_rule_distance-q3v1ipdy\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao",
+        "--core-only"
+      ],
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"core_only\": true, \"files\": 73, \"code_commit\": \"89d782e1\", \"checks\": 22, \"exact\": 4, \"formal_abi_cases\": 17243, \"runtime_tests\": 269, \"active_max\": 48, \"live_runtime_checked\": false, \"scope\": \"B3-2A与B3-3A/B内部；B3-4/B4未开始\"}",
+      "read_only": true
+    },
+    "c_optimization": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cabi\\self-review-3411c506\\c_optimization-kzrmk4c2\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao",
+        "--core-only"
+      ],
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"core_only\": true, \"files\": 73, \"code_commit\": \"89d782e1\", \"checks\": 22, \"exact\": 4, \"formal_abi_cases\": 17243, \"runtime_tests\": 269, \"active_max\": 48, \"live_runtime_checked\": false, \"scope\": \"B3-2A与B3-3A/B内部；B3-4/B4未开始\"}",
+      "read_only": true
+    },
+    "source_record_identity": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cabi\\self-review-3411c506\\source_record_identity-opyt3ia8\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\Xiao",
+        "--core-only"
+      ],
+      "exit_code": 0,
+      "output": "{\"passed\": true, \"core_only\": true, \"files\": 73, \"code_commit\": \"89d782e1\", \"checks\": 22, \"exact\": 4, \"formal_abi_cases\": 17243, \"runtime_tests\": 269, \"active_max\": 48, \"live_runtime_checked\": false, \"scope\": \"B3-2A与B3-3A/B内部；B3-4/B4未开始\"}",
+      "read_only": true
+    },
+    "git_objects_only": {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b3-cabi\\self-review-3411c506\\git_objects_only-lti2hnz6\\evidence",
+        "--source-root",
+        "D:\\project\\Xiao\\.b3-cabi\\self-review-3411c506\\objects.git",
+        "--core-only"
+      ],
+      "exit_code": 1,
+      "output": "Traceback (most recent call last):\n  File \"D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py\", line 199, in <module>\n    main(args.root.resolve(),args.source_root.resolve(),args.core_only,args.live_runtime)\n  File \"D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\audit.py\", line 110, in main\n    require((source / row['path']).read_bytes() == raw, 'B3-CABI参考偏离固定Git对象')\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\Programs\\Python\\Python312\\Lib\\pathlib.py\", line 1019, in read_bytes\n    with self.open(mode='rb') as f:\n         ^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\Programs\\Python\\Python312\\Lib\\pathlib.py\", line 1013, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: 'D:\\\\project\\\\Xiao\\\\.b3-cabi\\\\self-review-3411c506\\\\objects.git\\\\docs\\\\DevDocs\\\\assets\\\\20o-b2-b\\\\entry-20261108-b3\\\\b1\\\\generate-reference.py'",
+      "read_only": true
+    }
+  },
+  "scope": "修复前隔离目录真实审计输出；Git对象目录无参考工作树文件"
+}
