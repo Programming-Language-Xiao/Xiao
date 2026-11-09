@@ -286,6 +286,7 @@
 | 20O-B2-B3-2/B3-5 | [B3-2/B3-5开工规划](20o-b2-b3-2-b3-5-kickoff-plan.md) | 共享pow切换、15个C ABI、intrinsic34～48与stdlib包装 | **实施中（2026-11-09）**：B3-2A/3A/B内部验收完成，包装B3-4未开始；整批B3未收口 |
 | 20O-B2-B3-2A | [pow切换规划](20o-b2-b3-2a-pow-switch-plan.md) | float `**` 共享 cmath.pow、1075组差异归属、B2-A回归 | **Runtime子批内部验收完成（2026-11-09）**：1075组及B2-A回归通过；sfloat不变，静态LLVM留B4 |
 | 20O-B2-B3-3A/B | [C ABI与intrinsic规划](20o-b2-b3-3a-b-c-abi-intrinsics-plan.md) / [实施记录](20o-b2-b3-3a-b-progress.md) | 15个cmath C ABI、intrinsic34～48声明、状态/out契约 | **本机内部验收完成（2026-11-09）**：89d782e1，269项Runtime/8项声明、17243条ABI参考及4个精确入口通过；无包装，ABI1.18/20 |
+| 20O-B2-B3-4 | [stdlib包装规划](20o-b2-b3-4-stdlib-wrapper-plan.md) | stdlib/cmath.xiao 15个包装、模块说明、registry仍planned | **规划稿（2026-11-09）**：B3-4未开始；只写源码，语言双路径留B4 |
 | 20O-B2-A7 | [A7 回归与收口规划](20o-b2-a7-b1-regression-b2a-closeout-plan.md) / [内部收口记录](20o-b2-a7-b2a-closeout.md) / [自审](20o-b2-a7-self-review.md) | B1七库20入口、A0～A6对账、语言参考及版本/状态边界 | **内部1.18/20已收口（2026-11-07）**：18项当前门禁及7项阶段审计、B1双精确/原28守卫和三平台CI通过；产品固定e7bf7a49，最终数值教程/cmath planned，旧721未跑，B2-B/C未开始 |
 | 20O-B2-B | [B2-B 实施规划](20o-b2-b-implementation-plan.md) | lfloat_divide、15项cmath、intrinsic 33～48、ABI1.19/生成器21与旧/新拒绝矩阵 | **B2单入口内部已实现**：lfloat_divide/intrinsic33，ABI1.18/20；B3-2A共享pow与B3-3A/B内部验收完成，仅Windows本机、活动最大48；B3-4及B4～B7、B2-C后置 |
 | 20P | [Day-1 官方库架构](20p-day1-library-architecture.md) | 模块/错误/生命周期/能力/发布、每库教程与数据库架构；D-13～D-22 裁定 | **规划中（2026-11-01）**：方向已逐条确认；独立数据库能力位、首批有界连接池、固定教程示例与状态门槛、分平台证据；精确契约待后续批次 |

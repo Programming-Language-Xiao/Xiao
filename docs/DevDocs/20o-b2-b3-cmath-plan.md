@@ -111,7 +111,7 @@ B3 执行前必须确认：
 
 ### B3-4：`stdlib/cmath.xiao` 公开包装
 
-执行细化见[B3-2/B3-5 开工规划](20o-b2-b3-2-b3-5-kickoff-plan.md)；只做包装源码，VM/LLVM双路径留B4。
+执行细化见[B3-2/B3-5 开工规划](20o-b2-b3-2-b3-5-kickoff-plan.md)与[stdlib/cmath.xiao 包装规划](20o-b2-b3-4-stdlib-wrapper-plan.md)；只做包装源码，VM/LLVM双路径留B4。
 
 1. 新增 `stdlib/cmath.xiao`，导出 15 个公开包装；
 2. 每个包装只调用已确认原语，不复制数学实现；
