@@ -1,6 +1,6 @@
 # 20O-B2-B3-4. `stdlib/cmath.xiao` 十五项公开包装规划
 
-> **B3-0/B3-1、B3-2A、B3-3A/B 已完成内部验收；B3-4 尚未开工，B4～B7 与 B2-C 仍未开始。**
+> **B3-0/B3-1、B3-2A、B3-3A/B 已完成内部验收；当前主工作区 B3-4 产品实施尚未开始，B4～B7 与 B2-C 仍未开始。**
 > 入口为 B3-3 代码 `89d782e1` 与证据；当前 intrinsic 34～48 仅内部 active，VM/LLVM 未绑定。
 > B3-4 只增加 `stdlib/cmath.xiao` 的 15 个公开包装；不接类型/IR/TAC/VM/LLVM，不升 ABI 1.19/21。
 > `stdlib.cmath` registry 仍 planned；不把包装或教程写成 verified，不跑旧 721。
@@ -10,12 +10,14 @@
 | 项 | 当前状态 |
 | --- | --- |
 | B3-3 | 15 个 C ABI、intrinsic 34～48 内部 active；无 `stdlib/cmath.xiao` |
-| 当前公开面 | intrinsic 1～48 active、ID 100 墓碑；ABI 1.18/生成器 20/接口 1 |
+| 当前登记表 | intrinsic 1～48 active（34～48 仅内部声明）、ID 100 墓碑；ABI 1.18/生成器 20/接口 1 |
 | 本批目标 | `stdlib/cmath.xiao` 15 个公开包装、`stdlib/cmath.md` 模块说明、导出集合 |
 | 未做 | 类型/IR/TAC/VM/LLVM、`std.cmath` 可执行导入、B5 版本、B6 性能、B2-C 发布 |
 | 状态 | `stdlib.cmath` 仍 planned；UseDocs 教程仍 planned；registry 不升级 |
 
 B3-4 是 **源码包装批**，不是语言可用性批。B4 才把 `std.cmath` 接进类型/IR/VM/LLVM 和归档；B4 前包装不能在公开产物中运行。
+
+[现有目录](assets/20o-b2-b/entry-20261109-b3-wrapper/README.md)随 `b62505ae` 纳入当前工作分支，仅含基线及B2过时断言的失败/修补证据，没有包装源码或B3-4审计脚本。独立分支的包装工作尚未交付到当前工作分支，不能作为本规划的收口或 `std.cmath` 可用证据。
 
 ### 1.1 要做
 

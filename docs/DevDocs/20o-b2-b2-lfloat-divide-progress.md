@@ -1,6 +1,8 @@
 # 20O-B2-B2. 显式精度除法内部实施记录
 
-本批从 `faecd26d` 新建任务根 `D:\project\Xiao\.b2b-divide\20261108-faecd26d`，B0/B1 历史审计均在入口通过。B2 只接全局 `lfloat_divide` 与 intrinsic 33；当前内部版本仍为 ABI 1.18、生成器20、标准库接口1，34～48未激活，registry与stdlib均未改。B3～B7、B2-C以及最终版本发布后置。
+> 本页记录固定代码 `37b92c53` 的 B2 历史状态，“仅激活 33、34～48 未激活”由该代码的旧测试与[原始证据](assets/20o-b2-b/entry-20261108-b2/README.md)证明。当前分支测试已随 B3-3 改为核对 34～48 内部声明；其结果属于当前快照回归，不能替代本页的历史证据，也不证明 `std.cmath` 可用。
+
+本批从 `faecd26d` 新建任务根 `D:\project\Xiao\.b2b-divide\20261108-faecd26d`，B0/B1 历史审计均在入口通过。B2 只接全局 `lfloat_divide` 与 intrinsic 33；该批内部版本仍为 ABI 1.18、生成器20、标准库接口1，34～48未激活，registry与stdlib均未改。B3～B7、B2-C以及最终版本发布后置。
 
 实现为四个必填参数 `numerator`、`denominator`、`precision`、`rounding`，接受位置与命名调用。类型检查、VM和LLVM共用同一参数绑定计划；LLVM先按源码顺序求值，再按形参顺序传入C入口，并在实参求值失败和调用失败时释放临时拥有槽。没有默认值、重载、别名或新的隐式数值提升。
 
