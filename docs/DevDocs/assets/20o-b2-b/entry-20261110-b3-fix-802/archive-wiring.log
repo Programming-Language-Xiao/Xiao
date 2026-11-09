@@ -1,0 +1,19 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.14s
+     Running tests\20e_archive_wiring.rs (core\rust\target\debug\deps\20e_archive_wiring-92b63f6226dfb86d.exe)
+
+running 11 tests
+test builder_requires_metadata_and_rejects_official_module_objects ... ok
+test archive_error_messages_render_in_both_catalogs ... ok
+test every_missing_capability_is_rejected_before_execution ... ok
+test review_builder_rejects_relabelled_payload_language ... ok
+test archive_protocol_passes_capabilities_to_preflight ... ok
+test builder_derives_requirements_and_keeps_official_objects_external ... ok
+test incompatible_standard_library_is_rejected_before_execution ... ok
+test runtime_keeps_the_same_request_capabilities ... ok
+test unknown_request_capabilities_are_validation_errors ... ok
+test review_protocol_checks_context_before_corrupt_payload ... ok
+test review_protocol_context_precedes_diagnostic_start ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+

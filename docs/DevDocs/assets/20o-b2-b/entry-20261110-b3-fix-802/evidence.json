@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "scope": "B3-4/802回归修复；标准库原生按需绑定、子VM别名快照与归档身份",
+  "source_commit": "802b6ff9a9ba75fa6414d838f33366a4dcb9bfd8",
+  "toolchain": "Rust 1.96.0",
+  "passed": true,
+  "tests": [
+    {
+      "name": "20o_b2_b3_wrapper",
+      "command": "cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_b3_wrapper -- --nocapture",
+      "log": "wrapper.log",
+      "exit_code": 0,
+      "summary": "7 passed; 0 failed; 0 ignored",
+      "log_bytes": 7480,
+      "log_sha256": "e689fb21bbbfef80bc16e8e16e66513393fea5622021d41a246b6882fa838076"
+    },
+    {
+      "name": "22c_vm_concurrency",
+      "command": "cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency -- --nocapture",
+      "log": "concurrency.log",
+      "exit_code": 0,
+      "summary": "29 passed; 0 failed; 0 ignored",
+      "log_bytes": 2554,
+      "log_sha256": "aa2264ea5b6c2d1f8ca96345c2e3b7c8f370a52da8f64f148dfee35ef8e8afb8"
+    },
+    {
+      "name": "20e_archive_wiring",
+      "command": "cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20e_archive_wiring -- --nocapture",
+      "log": "archive-wiring.log",
+      "exit_code": 0,
+      "summary": "11 passed; 0 failed; 0 ignored",
+      "log_bytes": 1121,
+      "log_sha256": "8e9a3333fed7a4722ec2696c3254f687137a5d703f675030c05141c49d38f630"
+    },
+    {
+      "name": "xiao-codegen-llvm",
+      "command": "cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-codegen-llvm",
+      "log": "codegen.log",
+      "exit_code": 0,
+      "summary": "55 passed; related integration tests passed; controlled ignored tests retained",
+      "log_bytes": 10964,
+      "log_sha256": "284947080b4c785fc8714a4ff4f2761c02352a8a9bf39fe40da061307d706fc3"
+    }
+  ],
+  "boundaries": {
+    "cmath": "planned",
+    "language_binding": "B4后置",
+    "archive_execution": "当前归档运行器未提供标准库加载器，按X06-RUNTIME-012拒绝",
+    "three_platform": "未声称",
+    "old_721": false
+  }
+}

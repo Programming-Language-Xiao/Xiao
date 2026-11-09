@@ -486,6 +486,61 @@ fn real_source_builds_and_runs_xar_with_preflight_features() {
     );
 }
 
+/// 验证 `.xar` 闭包把 `std.text` 规范化为 `stdlib.text`，不把别名写进归档索引；
+/// 当前归档执行器尚未提供标准库加载器，执行阶段按既有 planned 边界拒绝。
+#[test]
+fn real_source_xar_keeps_standard_alias_identity() {
+    let root = std::env::temp_dir().join(format!("xiao-22c-stdlib-xar-{}", std::process::id()));
+    std::fs::create_dir_all(&root).unwrap();
+    let input = root.join("main.xiao");
+    std::fs::write(
+        &input,
+        r#"from std.concurrent import current_runtime, spawn, join
+def use_text() -> str
+    from std.text import lower_ascii
+    return lower_ascii("OK")
+rt = current_runtime()
+task = spawn(rt, use_text)
+print(join(task))
+"#,
+    )
+    .unwrap();
+    let mut request = xiao_driver::ArchiveBuildRequest::new(&input);
+    request.output = Some(root.join("main.xar"));
+    request.cache_root = Some(root.join("cache"));
+    let archive =
+        xiao_driver::build_archive(&request, &xiao_driver::CancellationToken::new()).unwrap();
+    assert_eq!(archive.index.stdlib_modules, ["stdlib.text"]);
+    let bytes = std::fs::read(&archive.output).unwrap();
+    let result = xiao_xar::run_archive(&bytes, Default::default()).unwrap();
+    assert!(!result.result.is_success(), "{result:?}");
+    let report = result.report.as_ref().expect("归档应保留运行错误报告");
+    assert_eq!(report.code, "X06-RUNTIME-012");
+    assert!(report.message.contains("未注册官方标准库加载器"));
+    println!(
+        "B3-STDLIB-XAR identity=stdlib.text aliases=std.text index=success execution=planned-rejected"
+    );
+}
+
+/// planned cmath 在 B4 接线前不得进入 `.xar`，且失败时不写出部分归档。
+#[test]
+fn planned_cmath_xar_is_rejected_before_output() {
+    let root = std::env::temp_dir().join(format!("xiao-22c-cmath-xar-{}", std::process::id()));
+    std::fs::create_dir_all(&root).unwrap();
+    let input = root.join("main.xiao");
+    let output = root.join("main.xar");
+    std::fs::write(&input, "from std.cmath import sqrt\nprint(1)\n").unwrap();
+    let mut request = xiao_driver::ArchiveBuildRequest::new(&input);
+    request.output = Some(output.clone());
+    request.cache_root = Some(root.join("cache"));
+    let error =
+        xiao_driver::build_archive(&request, &xiao_driver::CancellationToken::new()).unwrap_err();
+    assert_eq!(error.code, "X11-PROTOCOL-007");
+    assert!(error.message.contains("cmath_sqrt"), "{error}");
+    assert!(!output.exists(), "planned cmath 失败不得留下部分归档");
+    println!("B3-CMATH-XAR identity=stdlib.cmath aliases=std.cmath result=planned-rejected");
+}
+
 /// 验证排队任务取消后 wait 不等 worker 空闲，并立即释放队列容量。
 #[test]
 fn queued_task_cancel_never_runs_body_and_wait_is_027() {
@@ -868,6 +923,42 @@ fn isolated_child_loads_project_and_standard_modules() {
         xiao_driver::run(&DriverRequest::new(frontend).with_timeout(Duration::from_secs(3)));
     assert!(result.is_success(), "{result:?}");
     assert_eq!(outputs(result.as_executed().unwrap().events()), "ok7\n");
+}
+
+/// 验证隔离 child 对 `std.cmath` 与 `stdlib.cmath` 使用同一只读快照身份。
+///
+/// cmath 仍是 planned，函数体不会被调用；这个回归只验证 spawn 预扫描和子 VM
+/// 加载器不会把 `std.cmath` 错记为项目模块，也不会在 child 中重新编译源码。
+#[test]
+fn isolated_child_preserves_cmath_alias_snapshot_identity() {
+    for prefix in ["std", "stdlib"] {
+        let source = format!(
+            r#"from std.concurrent import current_runtime, spawn, join
+def use_cmath() -> int
+    from {prefix}.cmath import sqrt
+    return 7
+rt = current_runtime()
+task = spawn(rt, use_cmath)
+print(join(task))
+"#
+        );
+        let result = observe(&source);
+        assert!(
+            !result.success,
+            "planned cmath 不应在子 VM 中执行：{result:?}"
+        );
+        assert_eq!(result.code.as_deref(), Some("X06-RUNTIME-012"));
+        assert!(
+            result
+                .report
+                .as_ref()
+                .is_some_and(|report| report.message.contains("官方标准库模块 cmath 加载失败")),
+            "{prefix}.cmath 未按规范标准库身份失败：{result:?}"
+        );
+        println!(
+            "B3-CMATH-SPAWN path={prefix}.cmath identity=stdlib.cmath result=planned-rejected"
+        );
+    }
 }
 
 /// 验证优化级别变化不会丢失并发值和 TAC 计划。

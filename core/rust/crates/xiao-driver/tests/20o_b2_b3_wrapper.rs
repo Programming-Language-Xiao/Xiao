@@ -252,9 +252,15 @@ fn existing_hex_import_keeps_native_lowering() {
         .map(|m| m.name.as_str())
         .collect();
     println!("B3-CMATH-ISOLATION modules={modules:?}");
-    xiao_codegen_llvm::NativeBuild::new()
+    let module = xiao_codegen_llvm::NativeBuild::new()
         .lower(&artifact.ir, &Default::default())
         .unwrap();
+    assert!(
+        !module.text.contains("cmath_abs"),
+        "未导入的 planned cmath 不得进入 hex 原生模块：{}",
+        module.text
+    );
+    println!("B3-CMATH-ISOLATION native=success imported=stdlib.hex preloaded=stdlib.cmath:false");
 }
 
 #[test]

@@ -1,6 +1,6 @@
 # B3-2A 与 B3-3A/B 内部证据
 
-本批按 `5343baac` 的拆分范围实施：共享 Runtime pow 前置及15个cmath C ABI/intrinsic34～48。产品代码为 `89d782e1`，仅13个允许路径变化；`stdlib/cmath.xiao` 尚未新增，类型/IR/VM/LLVM、教程、registry、ABI/生成器和锁文件保持入口身份。B3-4与B4以后未开始。
+本批按 `5343baac` 的拆分范围实施：共享 Runtime pow 前置及15个cmath C ABI/intrinsic34～48。产品代码为 `89d782e1`，仅13个允许路径变化；**截至本批证据时点** `stdlib/cmath.xiao` 尚未新增，类型/IR/VM/LLVM、教程、registry、ABI/生成器和锁文件保持入口身份。后续B3-4源码包装与802回归另见[2026-11-10修复证据](../entry-20261110-b3-fix-802/README.md)，B4以后仍后置。
 
 代码复用了旧隔离分支中的已验证实现，执行证据全部在本批全新任务根生成。原分支 `codex/b3-runtime-20261108` 的包装/LLVM原生阻塞与失败日志仍保留。本批不带包装，完整原生回归按新范围重新执行，不将旧失败改写为通过。
 

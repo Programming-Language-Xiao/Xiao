@@ -1,6 +1,6 @@
 # 20O-B2-B3-3A/B. cmath C ABI 与 intrinsic 34～48 实施规划
 
-> **B3-2A 与 B3-3A/B 已完成 Windows 本机内部验收；B3-4、B4～B7 与 B2-C 未开始。**
+> **截至本规划批次退出，B3-2A 与 B3-3A/B 已完成 Windows 本机内部验收，B3-4、B4～B7 与 B2-C 未开始；后续B3-4源码包装另批登记。**
 > 本批入口为 `5343baac`，产品代码 `89d782e1`；Runtime float `**` 与 `cmath.pow` 已共享内核，LLVM 静态路径仍留 B4。
 > 本页只做 15 个 cmath C ABI 符号与 intrinsic 34～48 声明；不接类型/IR/TAC/VM/LLVM，不写 `stdlib/cmath.xiao`。
 > `stdlib.cmath` 仍 planned；ABI 仍 1.18、生成器 20、标准库接口 1。
@@ -134,7 +134,7 @@ xiao_runtime_cmath_log10   (value, out)
 8. 复核无类型/IR/TAC/VM/LLVM/stdlib/registry/ABI 改动；
 9. 保存源码、锁、Runtime、工具链、目标、PID、日志和前后摘要。
 
-退出：15 个 C ABI 与 34～48 声明有完整证据；B3-4 未开始；cmath 仍 planned。
+退出（本批时点）：15 个 C ABI 与 34～48 声明有完整证据；B3-4 当时未开始；cmath 仍 planned。
 
 ## 六、证据矩阵
 
@@ -157,7 +157,7 @@ xiao_runtime_cmath_log10   (value, out)
 4. 没有类型/IR/TAC/VM/LLVM/stdlib/registry/ABI 改动；
 5. B1/B2/B3 回归通过；旧 721 未运行；历史债务未核销；
 6. `stdlib.cmath` 仍 planned；ABI 1.18/生成器 20/标准库接口 1 未变；
-7. B3-4 未开始；B4 未开始。
+7. B3-4 在本批退出时未开始；当前源码包装与回归证据另见后续批次；B4 未开始。
 
 ## 八、风险与禁止
 

@@ -1,6 +1,6 @@
 # B3-2A 前置与 B3-3A/B 内部验收记录
 
-本批遵守 [B3-3A/B 规划](20o-b2-b3-3a-b-c-abi-intrinsics-plan.md)，入口 `5343baac`，产品代码 `89d782e1`。只交付共享 Runtime pow、15 个 cmath C ABI 与 intrinsic34～48 声明；ABI1.18、生成器20、标准库接口1，cmath继续planned。B3-4包装、B4语言全链路及B2-C未开始。
+本批遵守 [B3-3A/B 规划](20o-b2-b3-3a-b-c-abi-intrinsics-plan.md)，入口 `5343baac`，产品代码 `89d782e1`。只交付共享 Runtime pow、15 个 cmath C ABI 与 intrinsic34～48 声明；ABI1.18、生成器20、标准库接口1，cmath继续planned。**截至本批退出时** B3-4包装、B4语言全链路及B2-C未开始；后续B3-4源码包装与802回归见[修复证据](assets/20o-b2-b/entry-20261110-b3-fix-802/README.md)。
 
 旧隔离分支 `codex/b3-runtime-20261108` 包含包装造成的原生回归阻塞，始终未收口。本批按新规划建立全新任务根，选择复用其已验证实现而不移植包装或旧执行日志。旧失败和LLVM范围卡保留原归属，不能据本批通过声称已修复该问题。
 
