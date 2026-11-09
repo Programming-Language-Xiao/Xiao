@@ -1,4 +1,4 @@
-# 20O-B2-B3-2/B3-4. cmath Runtime、C ABI、intrinsic 34～48 与包装实施规划
+# 20O-B2-B3-2/B3-5. cmath Runtime、C ABI、intrinsic 34～48 与包装实施规划
 
 > **B3-0/B3-1 已完成；B3-2 起尚未开工，B4～B7 与 B2-C 仍未开始。**
 > 入口为 B3-1 代码 `88886dd5` 与证据 `96f28de0`；当前活动 intrinsic 最大 33，ABI 1.18、生成器 20。
@@ -15,7 +15,7 @@
 | 版本策略 | 本批内部激活 34～48，ABI/生成器仍 1.18/20；B5 才切 1.19/21 |
 | 未做 | B4 类型/IR/TAC/VM/LLVM、B5 版本、B6 性能、B7 收口、B2-C 721/发布 |
 
-B3-2/B3-4 是 `cmath` 的 Runtime/C ABI/声明/包装批，不是 B4 语言全链路；B4 才让 `std.cmath` 在 VM/LLVM 和归档中真正可调用。
+B3-2/B3-5 是 `cmath` 的 Runtime/C ABI/声明/包装批，不是 B4 语言全链路；B4 才让 `std.cmath` 在 VM/LLVM 和归档中真正可调用。
 
 ### 1.1 要做
 
@@ -52,6 +52,8 @@ B3-2 执行前必须确认：
 ## 三、分批执行
 
 ### B3-2A：共享 `pow` 切换与 B2-A 回归
+
+执行细化见[float `**` 与 `cmath.pow` 共享内核切换规划](20o-b2-b3-2a-pow-switch-plan.md)；B3-2A只切 float `**`。
 
 1. 对 1,075 组 `pow` 差异逐组标注旧 float `**`、私有 cmath.pow、F-2/F-9 规则和公开路径可达性；
 2. 1,011 组一致不改变行为；40 组值/错误边界与 24 组位模式必须逐项决定；
@@ -146,7 +148,7 @@ B3-2 执行前必须确认：
 
 ## 七、交接
 
-B3-2/B3-4 完成后进入 B4：类型/IR/TAC/VM/LLVM/序列化双路径，`std.cmath`/`stdlib.cmath` 导出、移除、归档和普通包隔离。B4 前必须把产品测试正式向量迁入 `tests/fixtures/docs/cmath/`。B5 再升 ABI 1.19/21，B6 做资源/性能，B7 收口后交 B2-C。
+B3-2/B3-5 完成后进入 B4：类型/IR/TAC/VM/LLVM/序列化双路径，`std.cmath`/`stdlib.cmath` 导出、移除、归档和普通包隔离。B4 前必须把产品测试正式向量迁入 `tests/fixtures/docs/cmath/`。B5 再升 ABI 1.19/21，B6 做资源/性能，B7 收口后交 B2-C。
 
 新 Agent 先读：
 
@@ -166,7 +168,7 @@ core/rust/crates/xiao-runtime/src/abi_cmath.rs                 15 个 C 入口
 core/rust/crates/xiao-runtime-abi/src/lib.rs                   15 个 C 声明
 core/rust/crates/xiao-intrinsics/intrinsics.json               intrinsic 34～48
 stdlib/cmath.xiao                                              15 个公开包装
-docs/DevDocs/assets/20o-b2-b/entry-<date>-b3/                  B3-2/B3-4 证据
+docs/DevDocs/assets/20o-b2-b/entry-<date>-b3/                  B3-2/B3-5 证据
 ```
 
-本页只规划 B3-2/B3-4；B4 语言全链路、B5 版本、B6 性能与 B2-C 仍后置。
+本页只规划 B3-2/B3-5；B4 语言全链路、B5 版本、B6 性能与 B2-C 仍后置。

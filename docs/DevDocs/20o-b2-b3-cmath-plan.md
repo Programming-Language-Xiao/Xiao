@@ -82,7 +82,7 @@ B3 执行前必须确认：
 
 ### B3-2：15 项 Runtime 内核
 
-执行细化见[B3-2/B3-4 开工规划](20o-b2-b3-2-b3-4-kickoff-plan.md)；B3-2A先切共享pow，C ABI与声明在B3-3A/B。
+执行细化见[B3-2/B3-5 开工规划](20o-b2-b3-2-b3-5-kickoff-plan.md)与[B3-2A pow切换规划](20o-b2-b3-2a-pow-switch-plan.md)；B3-2A先切共享pow，C ABI与声明在B3-3A/B。
 
 1. 逐项完成 sqrt/floor/ceil/round/trunc/abs/min/max/pow/sin/cos/tan/exp/ln/log10；
 2. 全部入口先拒绝 NaN/Inf；域错误和非有限结果按 F-2 为 009；
@@ -97,7 +97,7 @@ B3 执行前必须确认：
 
 ### B3-3：intrinsic 34～48 与 C ABI
 
-执行细化见[B3-2/B3-4 开工规划](20o-b2-b3-2-b3-4-kickoff-plan.md)；B3-3A做C ABI，B3-3B做声明。
+执行细化见[B3-2/B3-5 开工规划](20o-b2-b3-2-b3-5-kickoff-plan.md)；B3-3A做C ABI，B3-3B做声明。
 
 1. 在 `intrinsics.json` 增加 34～48，保持 1～33 和 ID 100 不变；
 2. 每项声明：源级入口、参数名、返回 `float`、效果 `Pure`、能力 `None`、C 符号；
@@ -111,7 +111,7 @@ B3 执行前必须确认：
 
 ### B3-4：`stdlib/cmath.xiao` 公开包装
 
-执行细化见[B3-2/B3-4 开工规划](20o-b2-b3-2-b3-4-kickoff-plan.md)；只做包装源码，VM/LLVM双路径留B4。
+执行细化见[B3-2/B3-5 开工规划](20o-b2-b3-2-b3-5-kickoff-plan.md)；只做包装源码，VM/LLVM双路径留B4。
 
 1. 新增 `stdlib/cmath.xiao`，导出 15 个公开包装；
 2. 每个包装只调用已确认原语，不复制数学实现；
