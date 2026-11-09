@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "scope": "B3-4/802回归修复；标准库原生按需绑定、子VM别名快照与归档身份",
-  "source_commit": "802b6ff9a9ba75fa6414d838f33366a4dcb9bfd8",
+  "source_commit": "ea9e33baa8dc0cdd03c2108b8ba1a89797bcf850",
   "toolchain": "Rust 1.96.0",
   "passed": true,
   "tests": [

@@ -2,7 +2,7 @@
 
 本目录记录 `802b6ff9` 之后的最小回归修复。修复把 LLVM 动态降低器的标准库函数预注册范围收紧为实际导入图，避免 `stdlib.hex` 的原生构建提前生成 planned `cmath` 原语；同时补上子 VM 别名快照、`.xar` 归档身份和 planned 边界测试。
 
-源码入口为 `802b6ff9a9ba75fa6414d838f33366a4dcb9bfd8`。本目录的测试运行绑定该入口工作树，日志保留原始字节并由目录内 `.gitattributes` 的 `* -text` 保护。B3-4 仍未收口：`cmath` 的源码包装、C ABI 与 intrinsic 已存在，语言接线、可执行 VM/LLVM 入口和归档运行仍待 B4。
+修复提交为 `ea9e33baa8dc0cdd03c2108b8ba1a89797bcf850`，基线为 `802b6ff9`。本目录的测试运行绑定该修复工作树，日志保留原始字节并由目录内 `.gitattributes` 的 `* -text -diff` 保护。B3-4 仍未收口：`cmath` 的源码包装、C ABI 与 intrinsic 已存在，语言接线、可执行 VM/LLVM 入口和归档运行仍待 B4。
 
 | 执行点 | 命令 | 结果 |
 | --- | --- | --- |
