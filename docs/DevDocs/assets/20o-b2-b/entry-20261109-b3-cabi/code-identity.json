@@ -1,0 +1,22 @@
+{
+  "entry_commit": "5343baac2632b2f947ebbb06920eb7781383d6b1",
+  "code_commit": "89d782e13f00776b90193f1719b4454c54367db7",
+  "pow_commit": "8bf3a138",
+  "allowed_product_paths": [
+    "core/rust/crates/xiao-intrinsics/build.rs",
+    "core/rust/crates/xiao-intrinsics/intrinsics.json",
+    "core/rust/crates/xiao-intrinsics/src/lib.rs",
+    "core/rust/crates/xiao-runtime-abi/README.md",
+    "core/rust/crates/xiao-runtime-abi/src/lib.rs",
+    "core/rust/crates/xiao-runtime/src/abi.rs",
+    "core/rust/crates/xiao-runtime/src/abi_cmath.rs",
+    "core/rust/crates/xiao-runtime/src/abi_cmath_tests.rs",
+    "core/rust/crates/xiao-runtime/src/value/arithmetic/cmath.rs",
+    "core/rust/crates/xiao-runtime/src/value/arithmetic/cmath_tests.rs",
+    "core/rust/crates/xiao-runtime/src/value/arithmetic/mod.rs",
+    "core/rust/crates/xiao-runtime/src/value/mod.rs",
+    "core/rust/crates/xiao-runtime/src/value/ops.rs"
+  ],
+  "source_manifest": "source-manifests/e69233db22214842d3a3a4b81130ffc53a693718a6eeda14b188fdc49a160da8.json",
+  "reuse_from": "a3e0eec9源码选择，旧日志未作本批证据"
+}

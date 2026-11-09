@@ -1,0 +1,49 @@
+{
+  "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "docs/DevDocs/assets/20o-b2-b/entry-20261108-b3/audit.py",
+    "--live-runtime"
+  ],
+  "cwd": "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source",
+  "phase": "baseline",
+  "name": "history",
+  "started_utc": "2026-11-09T02:10:03.651932+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "baseline/history.log",
+  "pid": 55112,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/e69233db22214842d3a3a4b81130ffc53a693718a6eeda14b188fdc49a160da8.json",
+    "raw_tree_sha256": "e69233db22214842d3a3a4b81130ffc53a693718a6eeda14b188fdc49a160da8",
+    "utf8_lf_tree_sha256": "065ff4f82d1914bc8d28a2a3b36ee073fbe14242fa60c05a52f6128334231425",
+    "files": 1044
+  },
+  "source_after": {
+    "manifest": "source-manifests/e69233db22214842d3a3a4b81130ffc53a693718a6eeda14b188fdc49a160da8.json",
+    "raw_tree_sha256": "e69233db22214842d3a3a4b81130ffc53a693718a6eeda14b188fdc49a160da8",
+    "utf8_lf_tree_sha256": "065ff4f82d1914bc8d28a2a3b36ee073fbe14242fa60c05a52f6128334231425",
+    "files": 1044
+  },
+  "source_unchanged": true,
+  "runtime_before": {
+    "path": "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\cargo-target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27459960,
+    "sha256": "29210927ee2a30fcecc36cb0454cff2c8ed5679ab55d8797c0bf527b624b3f98",
+    "mtime_ns": 1794190064895557900
+  },
+  "runtime_after": {
+    "path": "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\cargo-target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27459960,
+    "sha256": "29210927ee2a30fcecc36cb0454cff2c8ed5679ab55d8797c0bf527b624b3f98",
+    "mtime_ns": 1794190064895557900
+  },
+  "duration_seconds": 5.406,
+  "finished_utc": "2026-11-09T02:10:09.062143+00:00",
+  "sha256": "e563e7222d8669fc3042d20fdd4167334724ce62a7900066209f541738578842",
+  "runner_sha256": "376356277a2b09e5f5cade73271afbeb22a4503ef1b39d2d0e75967744bf9611"
+}

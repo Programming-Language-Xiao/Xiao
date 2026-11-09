@@ -1,17 +1,18 @@
 # 20O-B2-B3-3A/B. cmath C ABI 与 intrinsic 34～48 实施规划
 
-> **B3-0/B3-1 已完成；B3-2A 尚未开工，B3-3A/B 仍未开始。**
-> 入口为 B3-1 代码 `88886dd5` 与证据 `96f28de0`；B3-2A 完成后 float `**` 与 `cmath.pow` 共享同一内核。
+> **B3-2A 与 B3-3A/B 已完成 Windows 本机内部验收；B3-4、B4～B7 与 B2-C 未开始。**
+> 本批入口为 `5343baac`，产品代码 `89d782e1`；Runtime float `**` 与 `cmath.pow` 已共享内核，LLVM 静态路径仍留 B4。
 > 本页只做 15 个 cmath C ABI 符号与 intrinsic 34～48 声明；不接类型/IR/TAC/VM/LLVM，不写 `stdlib/cmath.xiao`。
 > `stdlib.cmath` 仍 planned；ABI 仍 1.18、生成器 20、标准库接口 1。
+> 实际执行见[实施记录](20o-b2-b3-3a-b-progress.md)及[本批证据](assets/20o-b2-b/entry-20261109-b3-cabi/README.md)；以下保留开工与退出要求。
 
 ## 一、入口与范围
 
 | 项 | 当前状态 |
 | --- | --- |
 | B3-1 | 15 项私有内核通过 17,243 条参考，max 1 ULP |
-| B3-2A | 待执行：float `**` 切共享 `cmath.pow`，登记 1,075 组差异 |
-| 当前公开面 | intrinsic 1～33 活动、34～48 不存在、ID 100 墓碑；无 `xiao_runtime_cmath_*` |
+| B3-2A | Runtime float `**` 已切共享内核，1,075 组逐项登记，B2-A 与 B1 回归通过 |
+| 当前内部面 | intrinsic 1～48 活动、ID 100 墓碑；15 个 `xiao_runtime_cmath_*`，无 `stdlib/cmath.xiao` |
 | 本批目标 | 15 个 C 符号、intrinsic 34～48 声明、声明/C 符号/Runtime 一一对应 |
 | 未做 | B3-4 `stdlib/cmath.xiao`、B4 语言全链路、B5 版本、B6 性能、B2-C 发布 |
 
@@ -80,7 +81,7 @@ xiao_runtime_cmath_log10   (value, out)
 | 0 | 成功 | 释放并替换旧 out；不清既有挂起错误 |
 | 1 | 必需输入/out 为空 | 保持 out，不碰挂起槽 |
 | 2 | 未知 XiaoValue 标签/ABI 结构非法 | 保持 out，不碰挂起槽 |
-| 3 | 有效句柄但种类错/已释放 | 保持 out，不碰挂起槽 |
+| 3 | 缺少有效句柄、存活盒子种类错或无有效载荷 | 保持 out，不碰挂起槽；不承诺安全识别已释放的悬空地址 |
 | 6 | 已知有效标签但类型错，或域/非有限/预算/受控分配失败 | 保持 out，设置对应可恢复错误 |
 | 8/Fatal | 不可恢复故障 | 沿既有 Fatal 边界 |
 
@@ -188,4 +189,4 @@ core/rust/crates/xiao-runtime/src/value/arithmetic/cmath.rs    15 项私有内�
 docs/DevDocs/assets/20o-b2-b/entry-<date>-b3/                  B3-3 证据
 ```
 
-本页只规划 B3-3A/B；B3-4 包装、B4 语言全链路、B5 版本与 B2-C 仍后置。
+本页记录 B3-3A/B 的规划与内部验收；证据仅为 Windows 本机。B3-4 包装、B4 语言全链路、B5 版本与 B2-C 仍后置。

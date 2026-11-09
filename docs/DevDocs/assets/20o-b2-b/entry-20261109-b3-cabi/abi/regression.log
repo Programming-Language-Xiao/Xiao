@@ -1,0 +1,199 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.b3-cabi\20261109-5343baac\source\core\rust\crates\xiao-runtime)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.b3-cabi\20261109-5343baac\source\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.b3-cabi\20261109-5343baac\source\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.b3-cabi\20261109-5343baac\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25.14s
+     Running unittests src\lib.rs (D:\project\Xiao\.b3-cabi\20261109-5343baac\cargo-target\debug\deps\xiao_driver-5d86cfce584dd0ac.exe)
+
+running 65 tests
+test compatibility::tests::standard_library_identity_is_parallel_to_existing_compatibility_versions ... ok
+test compatibility::tests::matrix_contains_no_unfrozen_migration_claim ... ok
+test compatibility::tests::matrix_is_generated_from_current_versions_and_has_every_axis ... ok
+test diagnostics::tests::disconnected_window_does_not_change_event_handling ... ok
+test diagnostics::tests::missing_terminal_renderer_is_an_explicit_startup_failure ... ok
+test diagnostics::tests::persistent_diagnostic_logs_redact_sensitive_payloads ... ok
+test diagnostics::tests::real_terminal_session_is_environment_gated ... ignored, 需要真实终端模拟器；准备方式见 10D §4.2
+test diagnostics::tests::runtime_events_keep_required_structured_identity ... ok
+test diagnostics::tests::terminal_candidates_forward_locale ... ok
+test diagnostics::tests::terminal_candidates_have_stable_platform_order ... ok
+test diagnostics::tests::focus_rules_match_module_and_source ... ok
+test diagnostics::tests::unwritable_log_target_is_reported_without_startup_failure ... ok
+test module_loader::tests::removed_standard_library_module_is_not_loadable ... ok
+test diagnostics::tests::runtime_error_events_keep_localized_message_fields ... ok
+test protocol::package_view::tests::duplicate_roots_are_rejected ... ok
+test protocol::tests::artifact_runtime_facts_round_trip ... ok
+test protocol::tests::build_rejects_unknown_target_before_toolchain ... ok
+test protocol::tests::build_request_round_trips_toolchain_and_config_fields ... ok
+test protocol::package_view::tests::active_and_global_views_do_not_leak ... ok
+test protocol::architecture_tests::module_dependency_direction_is_acyclic ... ok
+test protocol::package_view::tests::interface_query_does_not_execute_module ... ok
+test protocol::tests::cache_clean_protocol_deletes_unreferenced_objects ... ok
+test protocol::tests::cache_list_returns_structured_result ... ok
+test protocol::tests::debug_build_requires_diagnostics_path ... ok
+test protocol::tests::diagnostics_component_is_staged_next_to_executable ... ok
+test protocol::tests::diagnostics_component_staging_distinguishes_existing_source ... ok
+test protocol::tests::environment_request_generates_stable_metadata ... ok
+test protocol::tests::frame_and_request_errors_keep_distinct_codes ... ok
+test protocol::tests::frame_uses_eight_byte_big_endian_payload_length ... ok
+test protocol::tests::hello_advertises_test_capability ... ok
+test protocol::tests::cache_clean_protocol_reads_archive_references ... ok
+test protocol::tests::protocol_run_accepts_nonzero_optimization_level ... ok
+test protocol::tests::read_frame_accepts_clean_eof_and_rejects_truncation ... ok
+test protocol::tests::read_frame_rejects_oversized_payload_before_allocating ... ok
+test protocol::tests::real_source_run_maps_cancel_to_artifact_rejected ... ok
+test protocol::tests::real_source_run_returns_structured_result_without_text_parsing ... ok
+test protocol::tests::repl_packages_request_validates_environment_without_renaming_package_operation ... ok
+test protocol::tests::run_archive_honors_zero_timeout_before_reading_archive ... ok
+test protocol::tests::run_archive_missing_file_has_stable_error ... ok
+test protocol::tests::run_locale_is_optional_and_does_not_change_machine_error_fields ... ok
+test protocol::tests::cache_clean_protocol_reads_project_lock_from_directory ... ok
+test protocol::tests::run_locale_renders_known_message_and_preserves_missing_id_with_params ... ok
+test protocol::tests::runtime_config_freeze_is_deterministic_and_validated ... ok
+test protocol::tests::service_requires_hello_as_first_frame ... ok
+test protocol::tests::service_round_trips_hello_run_and_shutdown_frames ... ok
+test protocol::tests::runtime_config_can_be_replaced ... ok
+test protocol::tests::test_locale_renders_diagnostics_inside_each_case ... ok
+test protocol::tests::test_request_rejects_empty_case_list ... ok
+test protocol::tests::verify_missing_artifact_has_stable_error ... ok
+test protocol::tests::version_mismatch_is_machine_readable ... ok
+test run::tests::cancellation_and_zero_timeout_are_structured_control_errors ... ok
+test protocol::tests::test_request_preserves_case_order_and_aggregates_results ... ok
+test protocol::tests::cache_clean_protocol_rejects_broken_archive_before_deleting ... ok
+test protocol::tests::package_request_missing_lock_does_not_create_environment ... ok
+test run::tests::corrupted_tac_is_rejected_before_execution ... ok
+test run::tests::frontend_failure_keeps_structured_diagnostics ... ok
+test run::tests::migrated_intrinsics_keep_existing_vm_semantics ... ok
+test run::tests::nonzero_optimization_levels_run_through_bytecode_pipeline ... ok
+test run::tests::print_intrinsic_reaches_vm_output_event ... ok
+test run::tests::removal_verification_print_contract_and_vm_binding ... ok
+test run::tests::runs_frontend_to_vm_without_an_entry_override ... ok
+test run::tests::structurally_invalid_tac_uses_internal_diagnostic ... ok
+test run::tests::concurrency_shared_and_lock_reaches_vm ... ok
+test run::tests::concurrency_pool_submit_wait_shutdown_reaches_vm ... ok
+test run::tests::concurrency_runtime_create_spawn_join_reaches_vm ... ok
+
+test result: ok. 64 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.66s
+
+     Running tests\20o_b1_imp_contract.rs (D:\project\Xiao\.b3-cabi\20261109-5343baac\cargo-target\debug\deps\20o_b1_imp_contract-2dfcab1f79907b7f.exe)
+
+running 9 tests
+test every_implemented_module_is_in_the_active_contract_matrix ... ok
+test product_tutorials_embed_the_executed_sources_and_match_registry ... ok
+test products_keep_the_official_namespace_out_of_ordinary_packages ... ok
+test colliding_public_names_keep_their_own_module_implementations ... ok
+test every_public_function_requires_its_real_implementation ... ok
+B1-IMP-CONTRACT modules=7 entries=20/20 parameter-matrix=complete-for-implemented
+test public_calls_enforce_every_frozen_parameter_and_require_imports ... ok
+test products_execute_and_export_only_the_frozen_names has been running for over 60 seconds
+test products_replay_from_real_archives_without_bundled_library_bodies has been running for over 60 seconds
+test products_execute_and_export_only_the_frozen_names ... ok
+test products_replay_from_real_archives_without_bundled_library_bodies ... ok
+test public_std_aliases_execute_through_the_official_loader has been running for over 60 seconds
+test public_std_aliases_execute_through_the_official_loader ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 91.85s
+
+     Running tests\20o_b1_imp_resources.rs (D:\project\Xiao\.b3-cabi\20261109-5343baac\cargo-target\debug\deps\20o_b1_imp_resources-29cf7055ec1b195c.exe)
+
+running 17 tests
+test base64_standard_accepts_the_frozen_maximum ... ok
+test base64_url_safe_accepts_the_frozen_maximum ... ok
+test csv_accepts_the_maximum_ascii_record ... ok
+test csv_accepts_the_maximum_field_count ... ok
+test csv_accepts_the_maximum_unicode_record ... ok
+test csv_accepts_the_maximum_quoted_record ... ok
+test base64_checks_actual_decoded_size_after_the_last_quartet ... ok
+test csv_parse_budget_and_syntax_priority_is_positional ... ok
+test fmt_checks_both_radix_bounds_and_padding_argument_domains ... ok
+test csv_accepts_the_maximum_multiline_record ... ok
+test hex_accepts_the_frozen_maximum_input_and_output ... ok
+test csv_rejects_every_format_budget_dimension ... ok
+test url_decoding_reaches_the_ascii_result_budget ... ok
+test url_encoding_reaches_the_unicode_output_budget ... ok
+test url_decoding_reaches_the_unicode_result_budget ... ok
+test url_encoding_reaches_the_ascii_output_budget ... ok
+test url_limits_and_mixed_error_order_are_streamed ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 155.57s
+
+     Running tests\20o_b2_a1_identity.rs (D:\project\Xiao\.b3-cabi\20261109-5343baac\cargo-target\debug\deps\20o_b2_a1_identity-da31300486b73864.exe)
+
+running 2 tests
+test a1_numeric_values_and_errors_match_native_golden_outputs ... ignored, 需要本次新构建的Runtime及显式LLVM/平台链接器；既有原生workspace入口可执行
+B2-A1-IDENTITY case=a1_identity backend=vm result=success
+B2-A1-IDENTITY case=a1_admission_error backend=vm result=success
+B2-A1-IDENTITY case=a1_pending_finally backend=vm result=success
+test a1_numeric_values_and_errors_have_vm_golden_outputs ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests\20o_b2_a_contract.rs (D:\project\Xiao\.b3-cabi\20261109-5343baac\cargo-target\debug\deps\20o_b2_a_contract-5c8002711d8f3487.exe)
+
+running 13 tests
+B2-A5-LANGUAGE case=a5_bindings backend=vm result=success
+test a5_assignments_and_constants_keep_the_declared_numeric_value ... ok
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=vm result=success
+B2-A5-LANGUAGE case=a5_conversions backend=vm result=success
+test a5_conversion_language_preserves_values_and_promotion ... ok
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=vm result=success
+test a5_decimal_language_preserves_frozen_scales ... ok
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=vm result=success
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=vm result=success
+test a5_integer_language_uses_exact_runtime_arithmetic ... ok
+B2-A5-LANGUAGE case=a5_conversions backend=vm result=success
+test a5_encoded_numeric_matrix_matches_all_existing_carriers ... ok
+B2-A5-LANGUAGE case=a5_matrix backend=vm result=success
+test a5_complete_numeric_language_matrix_matches_independent_golden ... ok
+test a5_language_values_match_native_golden_outputs ... ignored, 需要本任务新Runtime与显式LLVM/平台链接器
+test a5_portable_numeric_payloads_cannot_bypass_admission ... ok
+test a5_preserves_existing_function_type_boundaries ... ok
+test a5_static_invalid_numeric_combinations_remain_rejected ... ok
+B2-A5-LANGUAGE case=a5_errors backend=vm result=success
+test a5_language_errors_remain_recoverable_and_observable ... ok
+B2-A5-LANGUAGE case=a5_carriers backend=vm result=success
+B2-A5-LANGUAGE case=a5_carriers backend=vm result=success
+test a5_language_carriers_preserve_numeric_types_and_values ... ok
+B2-A5-LANGUAGE case=a5_errors backend=vm result=success
+B2-A5-LANGUAGE case=a5_matrix backend=vm result=success
+B2-A5-LANGUAGE case=a5_bindings backend=vm result=success
+B2-A5-ERROR case=narrow backend=vm code=X06-RUNTIME-009 span=6..40 result=success
+B2-A5-ERROR case=syntax backend=vm code=X06-RUNTIME-012 span=6..20 result=success
+B2-A5-ERROR case=zero backend=vm code=X06-RUNTIME-013 span=21..30 result=success
+B2-A5-ERROR case=admission backend=vm code=X06-RUNTIME-033 span=6..24 result=success
+B2-A5-ERROR case=quotient backend=vm code=X06-RUNTIME-033 span=47..53 result=success
+B2-A5-ERROR case=nonterminating backend=vm code=X06-RUNTIME-034 span=15..24 result=success
+B2-A5-ERROR case=allocation backend=vm code=X06-RUNTIME-011 source_unchanged=true result=success
+B2-A5-REPLAY case=a5_integer_arithmetic format=xiaoc result=success
+B2-A5-REPLAY case=a5_integer_arithmetic format=xar artifact=\\?\D:\project\Xiao\.b3-cabi\20261109-5343baac\run-temp\xiao-b2-a5-replay-71312-1794190531221653800\a5_integer_arithmetic.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_decimal_arithmetic format=xiaoc result=success
+B2-A5-REPLAY case=a5_decimal_arithmetic format=xar artifact=\\?\D:\project\Xiao\.b3-cabi\20261109-5343baac\run-temp\xiao-b2-a5-replay-71312-1794190531221653800\a5_decimal_arithmetic.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_conversions format=xiaoc result=success
+B2-A5-REPLAY case=a5_conversions format=xar artifact=\\?\D:\project\Xiao\.b3-cabi\20261109-5343baac\run-temp\xiao-b2-a5-replay-71312-1794190531221653800\a5_conversions.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_carriers format=xar artifact=\\?\D:\project\Xiao\.b3-cabi\20261109-5343baac\run-temp\xiao-b2-a5-replay-71312-1794190531221653800\a5_carriers.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_errors format=xiaoc result=success
+B2-A5-REPLAY case=a5_errors format=xar artifact=\\?\D:\project\Xiao\.b3-cabi\20261109-5343baac\run-temp\xiao-b2-a5-replay-71312-1794190531221653800\a5_errors.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_matrix format=xiaoc result=success
+B2-A5-REPLAY case=a5_matrix format=xar artifact=\\?\D:\project\Xiao\.b3-cabi\20261109-5343baac\run-temp\xiao-b2-a5-replay-71312-1794190531221653800\a5_matrix.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_bindings format=xiaoc result=success
+B2-A5-REPLAY case=a5_bindings format=xar artifact=\\?\D:\project\Xiao\.b3-cabi\20261109-5343baac\run-temp\xiao-b2-a5-replay-71312-1794190531221653800\a5_bindings.xar source_removed=true result=success
+test a5_complete_vm_entry_covers_resources_and_portable_replay ... ok
+
+test result: ok. 12 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 6.95s
+
+     Running tests\20o_b2_a_resources.rs (D:\project\Xiao\.b3-cabi\20261109-5343baac\cargo-target\debug\deps\20o_b2_a_resources-bb66242c8eb0c4e7.exe)
+
+running 8 tests
+test controlled_allocation_failure_is_distinct_from_numeric_limit ... ok
+test abi_semantic_failures_preserve_owned_out_and_inputs ... ok
+test mixed_error_priority_is_stable_at_the_language_entry ... ok
+test admission_boundaries_and_error_order_preserve_inputs ... ok
+test successful_abi_replacement_releases_old_out_without_clearing_pending ... ok
+test quotient_remainder_and_nontermination_have_independent_budgets ... ok
+test actual_results_accept_strong_cancellation_and_balanced_products ... ok
+test power_and_conversion_limits_do_not_expand_unbounded_values ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+

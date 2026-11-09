@@ -1,7 +1,7 @@
 # 20O-B2-B3. 15 项 `cmath`、intrinsic 34～48 与共享 `pow` 实施规划
 
-> **B3-0/B3-1 已完成并经自审，现有证据仅为 Windows 本机；B3-2 起与 B4～B7、B2-C 仍未开始。**
-> 入口为 B2 内部收口代码提交 `37b92c53` 及其证据；当前活动 intrinsic 最大 33，ABI 1.18、生成器 20、标准库接口 1。
+> **B3-0/B3-1、B3-2A 与 B3-3A/B 已完成 Windows 本机内部验收；B3-4 及 B4～B7、B2-C 后置。**
+> 初始入口为 B2 内部收口代码 `37b92c53`；当前 `89d782e1` 活动 intrinsic 最大 48、ABI 1.18、生成器 20、标准库接口 1。
 > B3 只实现 15 项 `cmath`、intrinsic 34～48、C ABI 与共享 `pow`；不升 ABI 1.19/21，不升级 registry。
 > `stdlib.cmath` 仍 planned，旧 721 条 F10 不运行，历史债务保持独立。
 > 已完成部分见 [B3-0/B3-1 证据](assets/20o-b2-b/entry-20261108-b3/README.md)；后续接线须满足本页 §7.1 的四项交接门槛。
@@ -12,7 +12,7 @@
 | --- | --- |
 | B2 | 全局 `lfloat_divide`/intrinsic 33 已在 `37b92c53` 内部收口；B2 审计通过 |
 | B3-0/B3-1 | 基线与私有内核参考验收完成；代码 `88886dd5`，B3证据冻结于 `96f28de0`，仅 Windows 本机 |
-| 公开版本 | ABI 1.18、生成器 20、活动 intrinsic 最大 33、标准库接口 1 |
+| 当前内部版本 | ABI 1.18、生成器 20、活动 intrinsic 最大 48、标准库接口 1；B3-3记录见[实施记录](20o-b2-b3-3a-b-progress.md) |
 | 本批目标 | 15 项 `std.cmath`、intrinsic 34～48、15 个 C 符号、`cmath.pow` 与 float `**` 共用内核 |
 | 版本策略 | B3 只在内部快照激活 34～48；B5 才统一升 ABI 1.19/21 |
 | 文档/registry | `stdlib.cmath` 仍 planned；B2-C 才按最终三平台证据升级 |
@@ -209,4 +209,4 @@ tests/fixtures/docs/cmath/                                   cmath 夹具
 docs/DevDocs/assets/20o-b2-b/entry-20261108-b3/               B3-0/B3-1 Windows 本机证据
 ```
 
-本页记录 B3 的分批规划与进度；B3-0/B3-1 已完成，B3-2 起、B4～B7 与 B2-C 仍后置。
+本页记录 B3 的分批规划与进度；B3-0/B3-1、B3-2A、B3-3A/B 已内部验收，B3-4、B4～B7 与 B2-C 仍后置。

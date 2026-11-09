@@ -1,0 +1,17 @@
+{
+  "entry_commit": "5343baac2632b2f947ebbb06920eb7781383d6b1",
+  "repository_root": "D:\\project\\Xiao\\Xiao",
+  "task_root": "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac",
+  "source_root": "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source",
+  "created_utc": "2026-11-09T02:04:07.928599+00:00",
+  "reuse_product_from": "a3e0eec9",
+  "prior_attempt_branch": "codex/b3-runtime-20261108",
+  "scope": "B3-2A + B3-3A/B；不带B3-4包装与原LLVM隔离待裁定项",
+  "abi": "1.18",
+  "codegen": 20,
+  "stdlib_interface": 1,
+  "cmath": "planned",
+  "b1_721_executed": false,
+  "b2_a_perf": false,
+  "platform": "Windows x86_64-msvc"
+}

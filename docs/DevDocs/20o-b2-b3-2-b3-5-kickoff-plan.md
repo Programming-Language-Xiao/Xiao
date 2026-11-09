@@ -1,7 +1,7 @@
 # 20O-B2-B3-2/B3-5. cmath Runtime、C ABI、intrinsic 34～48 与包装实施规划
 
-> **B3-0/B3-1 已完成；B3-2 起尚未开工，B4～B7 与 B2-C 仍未开始。**
-> 入口为 B3-1 代码 `88886dd5` 与证据 `96f28de0`；当前活动 intrinsic 最大 33，ABI 1.18、生成器 20。
+> **B3-2A 与 B3-3A/B 已完成 Windows 本机内部验收；B3-4、B3-5 与 B4～B7、B2-C 尚未完成。**
+> 当前产品代码 `89d782e1`，活动 intrinsic 最大 48、ABI 1.18、生成器 20；实际证据见[实施记录](20o-b2-b3-3a-b-progress.md)。
 > 本页只做 15 项 cmath 的 Runtime/C ABI、intrinsic 34～48 与 `stdlib/cmath.xiao` 包装；B4 才接语言全链路。
 > `stdlib.cmath` 仍 planned；不升 ABI 1.19/21，不跑旧 721，不关闭历史债务。
 
@@ -10,7 +10,7 @@
 | 项 | 当前状态 |
 | --- | --- |
 | B3-1 | 15 项私有内核实测 17,243 条参考，15 函数，max 1 ULP，0 不可验证 |
-| 当前公开面 | intrinsic 1～33 活动、34～48 不存在、ID 100 墓碑；C 符号只有 `xiao_runtime_lfloat_divide` |
+| 当前内部面 | intrinsic 1～48 活动、ID 100 墓碑；15 个cmath C符号已实现，包装未加入 |
 | 本批目标 | 15 个 C 符号、intrinsic 34～48、共享 `pow` 接线、`stdlib/cmath.xiao` 15 包装 |
 | 版本策略 | 本批内部激活 34～48，ABI/生成器仍 1.18/20；B5 才切 1.19/21 |
 | 未做 | B4 类型/IR/TAC/VM/LLVM、B5 版本、B6 性能、B7 收口、B2-C 721/发布 |

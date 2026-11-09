@@ -1,0 +1,32 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on shared package cache
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.24
+   Compiling serde_core v1.0.229
+   Compiling zmij v1.0.23
+   Compiling serde v1.0.229
+   Compiling serde_json v1.0.151
+   Compiling memchr v2.8.3
+   Compiling syn v3.0.5
+   Compiling itoa v1.0.18
+   Compiling serde_derive v1.0.229
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\.b3-cabi\20261109-5343baac\source\core\rust\crates\xiao-intrinsics)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.13s
+     Running unittests src\lib.rs (D:\project\Xiao\.b3-cabi\20261109-5343baac\cargo-target\debug\deps\xiao_intrinsics-960031eeb1796bb1.exe)
+
+running 8 tests
+test tests::array_push_contract_is_active_and_bound_on_both_paths ... ok
+test tests::capability_bits_cover_standard_streams_and_reject_unknown_bits ... ok
+test tests::cmath_fifteen_declarations_keep_the_frozen_identity_and_parameters ... ok
+test tests::error_code_has_a_unique_owned_string_contract ... ok
+test tests::explicit_division_binding_preserves_source_order_and_rejects_ambiguous_shapes ... ok
+test tests::generated_table_is_valid_and_zero_is_rejected ... ok
+test tests::print_is_variadic_and_returns_none ... ok
+test tests::removed_ids_remain_tombstones ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,50 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "build",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--release",
+    "-p",
+    "xiao-runtime"
+  ],
+  "cwd": "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source",
+  "phase": "baseline",
+  "name": "build-runtime",
+  "started_utc": "2026-11-09T02:06:44.952238+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "baseline/build-runtime.log",
+  "pid": 48136,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/e69233db22214842d3a3a4b81130ffc53a693718a6eeda14b188fdc49a160da8.json",
+    "raw_tree_sha256": "e69233db22214842d3a3a4b81130ffc53a693718a6eeda14b188fdc49a160da8",
+    "utf8_lf_tree_sha256": "065ff4f82d1914bc8d28a2a3b36ee073fbe14242fa60c05a52f6128334231425",
+    "files": 1044
+  },
+  "source_after": {
+    "manifest": "source-manifests/e69233db22214842d3a3a4b81130ffc53a693718a6eeda14b188fdc49a160da8.json",
+    "raw_tree_sha256": "e69233db22214842d3a3a4b81130ffc53a693718a6eeda14b188fdc49a160da8",
+    "utf8_lf_tree_sha256": "065ff4f82d1914bc8d28a2a3b36ee073fbe14242fa60c05a52f6128334231425",
+    "files": 1044
+  },
+  "source_unchanged": true,
+  "runtime_before": {
+    "path": "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\cargo-target\\release\\xiao_runtime.lib",
+    "exists": false
+  },
+  "runtime_after": {
+    "path": "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\cargo-target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27459960,
+    "sha256": "29210927ee2a30fcecc36cb0454cff2c8ed5679ab55d8797c0bf527b624b3f98",
+    "mtime_ns": 1794190064895557900
+  },
+  "duration_seconds": 60.765,
+  "finished_utc": "2026-11-09T02:07:45.720414+00:00",
+  "sha256": "ec67a3ac6cde3dad84afe81a80daa89c6055a62dd7e56b924dac6415902730c0",
+  "runner_sha256": "376356277a2b09e5f5cade73271afbeb22a4503ef1b39d2d0e75967744bf9611"
+}

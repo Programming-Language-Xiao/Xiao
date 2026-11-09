@@ -1,0 +1,61 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on build directory
+   Compiling version_check v0.9.5
+   Compiling typenum v1.20.1
+   Compiling autocfg v1.5.1
+   Compiling cfg-if v1.0.5
+   Compiling cpufeatures v0.2.17
+   Compiling xiao-runtime-abi v0.1.0 (D:\project\Xiao\.b3-cabi\20261109-5343baac\source\core\rust\crates\xiao-runtime-abi)
+   Compiling generic-array v0.14.7
+   Compiling xiao-source v0.1.0 (D:\project\Xiao\.b3-cabi\20261109-5343baac\source\core\rust\crates\xiao-source)
+   Compiling num-traits v0.2.19
+   Compiling libm v0.2.16
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\.b3-cabi\20261109-5343baac\source\core\rust\crates\xiao-intrinsics)
+   Compiling bigdecimal v0.4.11
+   Compiling libc v0.2.189
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling num-integer v0.1.47
+   Compiling digest v0.10.7
+   Compiling num-bigint v0.4.8
+   Compiling sha2 v0.10.9
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\.b3-cabi\20261109-5343baac\source\core\rust\crates\xiao-i18n)
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\.b3-cabi\20261109-5343baac\source\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\.b3-cabi\20261109-5343baac\source\core\rust\crates\xiao-syntax)
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.b3-cabi\20261109-5343baac\source\core\rust\crates\xiao-types)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\.b3-cabi\20261109-5343baac\source\core\rust\crates\xiao-lifetime)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.b3-cabi\20261109-5343baac\source\core\rust\crates\xiao-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 34.39s
+     Running unittests src\lib.rs (D:\project\Xiao\.b3-cabi\20261109-5343baac\cargo-target\debug\deps\xiao_runtime-252b184bcc0896d3.exe)
+
+running 10 tests
+test abi::abi_cmath::tests::all_entries_reject_required_null_pointers_without_mutating_state ... ok
+test abi::abi_cmath::tests::all_entries_reject_missing_or_mismatched_handles_without_pending_changes ... ok
+test abi::abi_cmath::tests::all_entries_reject_nonfinite_inputs_and_keep_owned_output_on_error ... ok
+test abi::abi_cmath::tests::all_entries_reject_unknown_tags_aliases_and_malformed_boolean ... ok
+test abi::abi_cmath::tests::all_entries_replace_owned_output_and_keep_pending_on_success ... ok
+test abi::abi_cmath::tests::binary_type_errors_precede_nonfinite_math_checks ... ok
+test abi::abi_cmath::tests::float_math_does_not_require_payload_allocation ... ok
+test abi::abi_cmath::tests::malformed_output_structure_preserves_pending_before_math ... ok
+test abi::abi_cmath::tests::all_entries_report_known_wrong_types_before_parsing_numeric_payloads ... ok
+B3-CMATH-ABI function=abs cases=1214 result=success
+B3-CMATH-ABI function=ceil cases=1214 result=success
+B3-CMATH-ABI function=cos cases=1214 result=success
+B3-CMATH-ABI function=exp cases=1214 result=success
+B3-CMATH-ABI function=floor cases=1214 result=success
+B3-CMATH-ABI function=ln cases=1214 result=success
+B3-CMATH-ABI function=log10 cases=1214 result=success
+B3-CMATH-ABI function=max cases=800 result=success
+B3-CMATH-ABI function=min cases=800 result=success
+B3-CMATH-ABI function=pow cases=1075 result=success
+B3-CMATH-ABI function=round cases=1214 result=success
+B3-CMATH-ABI function=sin cases=1214 result=success
+B3-CMATH-ABI function=sqrt cases=1214 result=success
+B3-CMATH-ABI function=tan cases=1214 result=success
+B3-CMATH-ABI function=trunc cases=1214 result=success
+test abi::abi_cmath::tests::all_abi_results_match_formal_reference_errors_signs_and_ulp ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 259 filtered out; finished in 0.08s
+

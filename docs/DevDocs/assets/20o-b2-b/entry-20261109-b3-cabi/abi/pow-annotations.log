@@ -1,0 +1,2 @@
+usage: annotate-pow.py [-h] [--result RESULT] {pow,abi}
+annotate-pow.py: error: argument phase: invalid choice: 'baseline' (choose from pow, abi)

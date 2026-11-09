@@ -1,16 +1,17 @@
 # 20O-B2-B3-2A. float `**` 与 `cmath.pow` 共享内核切换规划
 
-> **B3-0/B3-1 已完成；B3-2A 尚未开工，B3-3 起、B4～B7 与 B2-C 仍未开始。**
-> 入口为 B3-1 代码 `88886dd5` 与证据 `96f28de0`；当前 `float **` 仍走宿主 `powf`，私有 `cmath.pow` 尚未接线。
+> **B3-2A 的共享 Runtime pow 已完成 Windows 本机内部验收；B3-3A/B 的后续内部接线见各自记录。**
+> 本批从 `5343baac` 复用已实现的切换并重新取证；Runtime float `**` 已走共享 `cmath::pow`，sfloat 及 LLVM 静态路径保持原样。
 > B3-2A 只把 `float **` 切到共享私有内核；不新增 intrinsic 34～48、不写 C ABI/stdlib、不升 ABI 1.19/21。
 > `stdlib.cmath` 仍 planned；旧 721 不运行，历史债务保持独立。
+> 下述“不新增 C ABI/intrinsic”约束针对 B3-2A 子批；随后 B3-3A/B 在同一最终源码上独立接线与验收，见[实施记录](20o-b2-b3-3a-b-progress.md)。
 
 ## 一、入口与范围
 
 | 项 | 当前状态 |
 | --- | --- |
 | 私有内核 | `cmath::pow` 已通过 17,243 条 MPFR/GMP 参考，非零结果 ≤4 ULP |
-| 旧路径 | `RuntimeValue::power` 的 Float 分支仍是 `finite_float64(left.powf(right))` |
+| 旧路径 | 切换前是 `finite_float64(left.powf(right))`；旧位模式差表保持原身份 |
 | 差表 | 1,075 组：1,011 一致、40 值/错误边界、24 组 1 ULP 位模式差异 |
 | 本批目标 | 一次性把 float `**` 切到 `cmath::pow`，登记全部差异并回归 B2-A |
 | 未做 | C ABI/stdlib/intrinsic 34～48、类型/IR/VM/LLVM 全链路、版本切换、性能 |
@@ -144,4 +145,4 @@ core/rust/crates/xiao-runtime/src/value/arithmetic/cmath_tests.rs  共享一致�
 docs/DevDocs/assets/20o-b2-b/entry-<date>-b3/                  B3-2A 证据
 ```
 
-本页只规划 B3-2A；B3-3～B3-5、B4～B7 与 B2-C 仍后置。
+本页保留 B3-2A 的切换要求；当前 Runtime 子批已验收，B3-3A/B 进度见独立记录，B3-4、B4～B7 与 B2-C 仍后置。

@@ -1,0 +1,134 @@
+{
+  "passed": true,
+  "directory": "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\c-probes\\cc672b51-ebf6-411e-8629-dc1b9fa405b5",
+  "failure": null,
+  "runtime_before": {
+    "path": "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\cargo-target\\release\\xiao_runtime.lib",
+    "sha256": "29210927ee2a30fcecc36cb0454cff2c8ed5679ab55d8797c0bf527b624b3f98",
+    "bytes": 27459960,
+    "mtime_ns": 1794190064895557900
+  },
+  "runtime_after": {
+    "path": "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\cargo-target\\release\\xiao_runtime.lib",
+    "sha256": "29210927ee2a30fcecc36cb0454cff2c8ed5679ab55d8797c0bf527b624b3f98",
+    "bytes": 27459960,
+    "mtime_ns": 1794190064895557900
+  },
+  "runtime_unchanged": true,
+  "inputs_before": {
+    "cmath-abi-probe.c": "0628ec22aa9f05f73607da34c42e7b2cc4d78b11bfabc90b1096ac3ec9ea9e8d",
+    "run-c-probe.py": "695be674702542d78a28d6473d729733f4eab65adaf6b343c785982dae1de4b4"
+  },
+  "inputs_after": {
+    "cmath-abi-probe.c": "0628ec22aa9f05f73607da34c42e7b2cc4d78b11bfabc90b1096ac3ec9ea9e8d",
+    "run-c-probe.py": "695be674702542d78a28d6473d729733f4eab65adaf6b343c785982dae1de4b4"
+  },
+  "inputs_unchanged": true,
+  "source_sha256": "0628ec22aa9f05f73607da34c42e7b2cc4d78b11bfabc90b1096ac3ec9ea9e8d",
+  "tool_sha256": "695be674702542d78a28d6473d729733f4eab65adaf6b343c785982dae1de4b4",
+  "native_libraries": [
+    "-lkernel32",
+    "-lntdll",
+    "-luserenv",
+    "-lws2_32",
+    "-ldbghelp"
+  ],
+  "records": [
+    {
+      "name": "native-libs",
+      "argv": [
+        "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+        "--crate-type=staticlib",
+        "--print=native-static-libs",
+        "--target=x86_64-pc-windows-msvc",
+        "-o",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\c-probes\\cc672b51-ebf6-411e-8629-dc1b9fa405b5\\native-libs.lib",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\c-probes\\cc672b51-ebf6-411e-8629-dc1b9fa405b5\\native-libs.rs"
+      ],
+      "pid": 66616,
+      "started_utc": "2026-11-09T02:10:52.910258+00:00",
+      "finished_utc": "2026-11-09T02:10:53.158518+00:00",
+      "exit_code": 0,
+      "output": "note: link against the following native artifacts when linking against this static library. The order and any duplication can be significant on some platforms\n\nnote: native-static-libs: kernel32.lib ntdll.lib userenv.lib ws2_32.lib dbghelp.lib /defaultlib:msvcrt\n\n"
+    },
+    {
+      "name": "compile-o0",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\clang.exe",
+        "--target=x86_64-pc-windows-msvc",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-O0",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\cmath-abi-probe.c",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\cargo-target\\release\\xiao_runtime.lib",
+        "-o",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\c-probes\\cc672b51-ebf6-411e-8629-dc1b9fa405b5\\cmath-o0.exe",
+        "-lkernel32",
+        "-lntdll",
+        "-luserenv",
+        "-lws2_32",
+        "-ldbghelp"
+      ],
+      "pid": 43236,
+      "started_utc": "2026-11-09T02:10:53.158518+00:00",
+      "finished_utc": "2026-11-09T02:10:54.729771+00:00",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "name": "run-o0",
+      "argv": [
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\c-probes\\cc672b51-ebf6-411e-8629-dc1b9fa405b5\\cmath-o0.exe"
+      ],
+      "pid": 47128,
+      "started_utc": "2026-11-09T02:10:54.729771+00:00",
+      "finished_utc": "2026-11-09T02:10:54.768576+00:00",
+      "exit_code": 0,
+      "output": "B3-CMATH-C-PROBE entries=15 checks=231 statuses=0,1,2,3,6 result=success\n",
+      "executable_sha256": "a86e48c89d26731fb1c0f789d4760e4e842e33cd6cad0d77601240588fc903d0",
+      "executable_bytes": 525312
+    },
+    {
+      "name": "compile-o3",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\clang.exe",
+        "--target=x86_64-pc-windows-msvc",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-O3",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\source\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261109-b3-cabi\\cmath-abi-probe.c",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\cargo-target\\release\\xiao_runtime.lib",
+        "-o",
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\c-probes\\cc672b51-ebf6-411e-8629-dc1b9fa405b5\\cmath-o3.exe",
+        "-lkernel32",
+        "-lntdll",
+        "-luserenv",
+        "-lws2_32",
+        "-ldbghelp"
+      ],
+      "pid": 10596,
+      "started_utc": "2026-11-09T02:10:54.769575+00:00",
+      "finished_utc": "2026-11-09T02:10:55.478647+00:00",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "name": "run-o3",
+      "argv": [
+        "D:\\project\\Xiao\\.b3-cabi\\20261109-5343baac\\c-probes\\cc672b51-ebf6-411e-8629-dc1b9fa405b5\\cmath-o3.exe"
+      ],
+      "pid": 63440,
+      "started_utc": "2026-11-09T02:10:55.478647+00:00",
+      "finished_utc": "2026-11-09T02:10:55.714952+00:00",
+      "exit_code": 0,
+      "output": "B3-CMATH-C-PROBE entries=15 checks=231 statuses=0,1,2,3,6 result=success\n",
+      "executable_sha256": "1ee5a41eee112e7af57bbe9ade530bc6fa78c0eb09aca7da515fa9229706d29e",
+      "executable_bytes": 524288
+    }
+  ],
+  "scope": "外部C ABI调用；不代表Xiao VM/LLVM语言全链路"
+}
