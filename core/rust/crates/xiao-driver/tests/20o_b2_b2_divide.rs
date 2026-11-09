@@ -20,7 +20,7 @@ fn lfloat_divide_matches_native_golden_outputs() {
 }
 
 #[test]
-/// 只开放33，参数精确、无默认/重载/别名，错误值仍留Runtime捕获。
+/// 源级33号契约保持精确；B3内部声明34～48不改变其参数或错误边界。
 fn lfloat_divide_requires_the_frozen_public_contract() {
     let valid = "lfloat_divide(lfloat(1),lfloat(2),3,\"half_even\")";
     for expression in [
@@ -53,9 +53,26 @@ fn lfloat_divide_requires_the_frozen_public_contract() {
     assert_eq!(decl.effects, xiao_intrinsics::Effects::Allocates);
     assert_eq!(decl.capability, xiao_intrinsics::Capability::None);
     for id in 34..=48 {
-        assert!(
-            xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(id).unwrap()).is_none()
+        let internal =
+            xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(id).unwrap())
+                .expect("B3-3已登记34～48内部声明");
+        assert_eq!(internal.kind, xiao_intrinsics::IntrinsicKind::Cmath);
+        assert_eq!(
+            internal.signature.parameter,
+            xiao_intrinsics::ValueType::Float
         );
+        assert_eq!(
+            internal.signature.return_type,
+            xiao_intrinsics::ValueType::Float
+        );
+        assert_eq!(internal.effects, xiao_intrinsics::Effects::Pure);
+        assert_eq!(internal.capability, xiao_intrinsics::Capability::None);
     }
+    assert!(
+        xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(49).unwrap()).is_none()
+    );
+    assert!(
+        xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(100).unwrap()).is_none()
+    );
     assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 18);
 }

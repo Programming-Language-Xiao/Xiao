@@ -1,0 +1,12 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.b3-wrapper\20261109-f0cb6253\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.86s
+     Running tests\20o_b2_b2_divide.rs (D:\project\Xiao\.b3-wrapper\20261109-f0cb6253\cargo-target\debug\deps\20o_b2_b2_divide-c8a2412f366034e7.exe)
+
+running 3 tests
+test lfloat_divide_matches_native_golden_outputs ... ignored, 需要本任务新Runtime和显式LLVM工具链；维护原生精确入口调用相同套件
+test lfloat_divide_requires_the_frozen_public_contract ... ok
+B2-B2-DIVIDE backend=vm formats=source,xiaoc,xar intrinsic=33 source_removed=true result=success
+test lfloat_divide_has_vm_golden_outputs ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.85s
+

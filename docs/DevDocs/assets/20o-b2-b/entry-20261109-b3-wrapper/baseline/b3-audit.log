@@ -1,0 +1,1 @@
+{"passed": true, "core_only": false, "files": 86, "code_commit": "89d782e1", "checks": 22, "exact": 4, "formal_abi_cases": 17243, "runtime_tests": 269, "active_max": 48, "live_runtime_checked": true, "scope": "B3-2A与B3-3A/B内部；B3-4/B4未开始"}

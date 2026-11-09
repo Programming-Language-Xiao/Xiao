@@ -1,0 +1,15 @@
+{
+  "entry_commit": "f0cb6253e319d67776a18ab42d41f526d7351f36",
+  "source_root": "D:\\project\\Xiao\\.b3-wrapper\\20261109-f0cb6253\\source",
+  "repository_root": "D:\\project\\Xiao\\Xiao",
+  "task_root": "D:\\project\\Xiao\\.b3-wrapper\\20261109-f0cb6253",
+  "created_utc": "2026-11-09T04:40:46.436779+00:00",
+  "abi": "1.18",
+  "codegen": 20,
+  "active_max": 48,
+  "stdlib_interface": 1,
+  "cmath": "planned",
+  "b4_started": false,
+  "old_721_executed": false,
+  "platform": "Windows x86_64-msvc"
+}

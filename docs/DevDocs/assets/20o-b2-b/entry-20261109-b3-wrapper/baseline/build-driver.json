@@ -1,0 +1,51 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "build",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "-p",
+    "xiao-doc-coverage-rust"
+  ],
+  "cwd": "D:\\project\\Xiao\\.b3-wrapper\\20261109-f0cb6253\\source",
+  "phase": "baseline",
+  "name": "build-driver",
+  "started_utc": "2026-11-09T04:41:13.804772+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "baseline/build-driver.log",
+  "pid": 31692,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/a89a55c5d83686079ee06741030d6baaf81b41d066a01217e22d9369ea030539.json",
+    "raw_tree_sha256": "a89a55c5d83686079ee06741030d6baaf81b41d066a01217e22d9369ea030539",
+    "utf8_lf_tree_sha256": "6b987196eba5481e403ffede0f1f8c7e6b522f6b3d6946a3c2561fd93086f69e",
+    "files": 1044
+  },
+  "source_after": {
+    "manifest": "source-manifests/a89a55c5d83686079ee06741030d6baaf81b41d066a01217e22d9369ea030539.json",
+    "raw_tree_sha256": "a89a55c5d83686079ee06741030d6baaf81b41d066a01217e22d9369ea030539",
+    "utf8_lf_tree_sha256": "6b987196eba5481e403ffede0f1f8c7e6b522f6b3d6946a3c2561fd93086f69e",
+    "files": 1044
+  },
+  "source_unchanged": true,
+  "runtime_before": {
+    "path": "D:\\project\\Xiao\\.b3-wrapper\\20261109-f0cb6253\\cargo-target\\release\\xiao_runtime.lib",
+    "exists": false
+  },
+  "runtime_after": {
+    "path": "D:\\project\\Xiao\\.b3-wrapper\\20261109-f0cb6253\\cargo-target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27459960,
+    "sha256": "29210927ee2a30fcecc36cb0454cff2c8ed5679ab55d8797c0bf527b624b3f98",
+    "mtime_ns": 1794199343506994100
+  },
+  "duration_seconds": 76.984,
+  "finished_utc": "2026-11-09T04:42:30.791265+00:00",
+  "sha256": "8cf947887b630c421147eaf26f0d10f94d89c449b291923bdce4179229761d2e",
+  "runner_sha256": "e800aeb0ea7031af8748bd7473ea820ce2d577fc90f77bf46bbcbb00d38ff073"
+}
