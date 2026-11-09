@@ -18,6 +18,8 @@
 
 B3-3A/B 是 **C ABI + 声明批**，不是语言接线。B4 才让 `std.cmath` 在类型/IR/VM/LLVM/归档中可调用。
 
+34～48 的 active 仅表示内部声明已登记，当前 VM/LLVM 尚未绑定这些 ID，也没有 `stdlib/cmath.xiao` 包装。B4 接线与相应验收完成前，不得发布或让公开产物消费这些 ID；当前 1.18/20 开发快照不构成可发布 intrinsic 支持。
+
 ### 1.1 要做
 
 1. 为 15 项 cmath 增加 C ABI 符号，按 F-5 的借用/out/状态表实现；

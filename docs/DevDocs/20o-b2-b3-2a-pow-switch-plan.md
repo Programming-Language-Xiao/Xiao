@@ -69,7 +69,7 @@ B3-2A 是共享 `pow` 的行为切换批，不是 B3-3 C ABI 批，也不是 B4 
 6. 不新增公开 intrinsic/C ABI；`cmath` 仍是私有模块；
 7. 一次提交完成切换，不保留 `old/new` 双路径或运行时开关。
 
-退出：float `**` 只调用共享内核；源码中不存在第二条 Float 幂实现。
+退出：Runtime 的 float `**` 只调用共享内核；Runtime 源码中不存在第二条 Float 幂实现。LLVM 静态路径仍使用 `llvm.pow.f64/f32`，留 B4 接线。
 
 ### B3-2A-3：回归与证据
 
@@ -99,7 +99,7 @@ B3-2A 是共享 `pow` 的行为切换批，不是 B3-3 C ABI 批，也不是 B4 
 | --- | --- |
 | 差异清单 | 1,075 组全部归类，40 边界、24 个 1 ULP |
 | 规则 | F-2 NaN/Inf/域、F-9 共享内核与 ≤4 ULP |
-| 切换 | float `**` 只调 `cmath::pow`；无私自 `powf` |
+| 切换 | Runtime Float 幂只调 `cmath::pow`；sfloat 与 LLVM 静态路径保持原样 |
 | 回归 | B2-A 算术/语言/重放；B3-1 参考；B1 20/17/双精确/28 守卫 |
 | 后端 | VM 与原生 O0/O3 精确入口 |
 | 边界 | 无 intrinsic 34～48/C ABI/stdlib/ABI/registry 改动 |
@@ -107,7 +107,7 @@ B3-2A 是共享 `pow` 的行为切换批，不是 B3-3 C ABI 批，也不是 B4 
 
 ## 五、退出条件
 
-1. float `**` 与 `cmath.pow` 共用同一内核，源码无第二条 Float 幂实现；
+1. Runtime float `**` 与 `cmath.pow` 共用同一内核，Runtime 源码无第二条 Float 幂实现；LLVM 静态路径留 B4；
 2. 1,075 组差异全部有 F-2/F-9 归属，40 组边界与 24 个 1 ULP 逐项登记；
 3. B2-A 算术/语言/重放回归通过；B1 20/17/双精确/28 守卫通过；
 4. `sfloat **` 未变；没有 intrinsic/C ABI/stdlib/registry 改动；
