@@ -628,10 +628,10 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 if native_module(module) {
                     continue;
                 }
-                let identity = if module == crate::STANDARD_LIBRARY_NAMESPACE
-                    || module.starts_with(crate::STANDARD_LIBRARY_PREFIX)
+                let identity = if let Some(identity) =
+                    xiao_standard_library::canonical_module_identity(module)
                 {
-                    module.clone()
+                    identity
                 } else if owner.starts_with("stdlib.") {
                     format!("stdlib.{module}")
                 } else if let Some(package) = owner.strip_prefix("package:") {
