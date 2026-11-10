@@ -1,0 +1,13 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.32s
+     Running tests\20o_b2_b4_frontend.rs (D:\project\Xiao\.b4-a0-a1\20261110-7d8b85e4\cargo-target\debug\deps\20o_b2_b4_frontend-f6dd88ed772d2bd6.exe)
+
+running 3 tests
+B4-1-CMATH-NEGATIVE cases=10 error=X04-TYPE-002 span=present result=success
+test cmath_static_call_shape_and_type_errors_are_rejected ... ok
+B4-1-CMATH count=15 positional=named=exact ids=34..48 return=float result=success
+test cmath_intrinsics_typecheck_and_lower_to_frozen_ir ... ok
+B4-1-CMATH-WRAPPER module=stdlib.cmath ids=34..48 import=retained result=success
+test cmath_wrapper_module_carries_intrinsic_ir_without_enabling_import_execution ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+

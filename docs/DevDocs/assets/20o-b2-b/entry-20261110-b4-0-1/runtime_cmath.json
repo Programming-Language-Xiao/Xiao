@@ -1,0 +1,63 @@
+{
+  "phase": "b4-0",
+  "label": "runtime_cmath",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-runtime",
+    "cmath",
+    "--",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "task_root": "D:\\project\\Xiao\\.b4-a0-a1\\20261110-7d8b85e4",
+  "pid": 57884,
+  "started_utc": "2026-11-10T13:06:07.239342+00:00",
+  "finished_utc": "2026-11-10T13:06:09.076392+00:00",
+  "exit_code": 0,
+  "source_before": {
+    "baseline_commit": "7d8b85e4d8c588b40ec76d641edc865481295032",
+    "product_commit": "c7a45e10b76b26915499717563761ed20fda6e6c",
+    "raw_tree_sha256": "59969609462200a76fc7b237f79f248e452e0d46d5587c83a01145f2fbac9d09",
+    "utf8_lf_tree_sha256": "effbe6090d14249cf42f6711eff4ce9b4138b1f96f2a880fbe82353e4d08bfc8",
+    "files": 1048,
+    "locks": {
+      "core/rust/Cargo.lock": {
+        "bytes": 20472,
+        "sha256": "d8046478bad7c8b2188cb63968c9f6ea31752ad84dcdd7e23c9dcb95f32c5fb2"
+      },
+      "tests/benchmarks/Cargo.lock": {
+        "bytes": 20053,
+        "sha256": "3d8ddc71c7c24bd48ac54729aa78b3d742ed2f4045fb4c8cfb43943bf5e677c0"
+      }
+    }
+  },
+  "source_after": {
+    "baseline_commit": "7d8b85e4d8c588b40ec76d641edc865481295032",
+    "product_commit": "c7a45e10b76b26915499717563761ed20fda6e6c",
+    "raw_tree_sha256": "59969609462200a76fc7b237f79f248e452e0d46d5587c83a01145f2fbac9d09",
+    "utf8_lf_tree_sha256": "effbe6090d14249cf42f6711eff4ce9b4138b1f96f2a880fbe82353e4d08bfc8",
+    "files": 1048,
+    "locks": {
+      "core/rust/Cargo.lock": {
+        "bytes": 20472,
+        "sha256": "d8046478bad7c8b2188cb63968c9f6ea31752ad84dcdd7e23c9dcb95f32c5fb2"
+      },
+      "tests/benchmarks/Cargo.lock": {
+        "bytes": 20053,
+        "sha256": "3d8ddc71c7c24bd48ac54729aa78b3d742ed2f4045fb4c8cfb43943bf5e677c0"
+      }
+    }
+  },
+  "source_unchanged": true,
+  "log": "runtime_cmath.log",
+  "log_bytes": 117616,
+  "log_sha256": "d8bda13a42d716c9d6b0da7dc3d9023f6eb320016e724c393744b356001796b4",
+  "runner_sha256": "ff6072644f0e764b8709326665a001b79828ec272a1c816318557612d4461fb7",
+  "environment_sha256": "723844bd343390d0accf344bb71983a6ac98716fcc7e2aeb076337b1450757fb"
+}

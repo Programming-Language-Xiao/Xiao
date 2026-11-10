@@ -1,6 +1,7 @@
 # 20O-B2-B4-0/B4-1. 向量迁移与 cmath 类型/IR 开工规划
 
-> **B3-4 源码包装已收口；B4-0/B4-1 尚未开工，B4-2 起、B5～B7 与 B2-C 仍未开始。**
+> **B3-4 源码包装已收口；B4-0/B4-1 已按本计划完成 Windows 本机验证，B4-2 起、B5～B7 与 B2-C 仍未开始。**
+> B4-0/B4-1 固定产品提交为 `c7a45e10b76b26915499717563761ed20fda6e6c`；[本机收口证据](assets/20o-b2-b/entry-20261110-b4-0-1/README.md)。这不是三平台或 cmath 可执行性证据。
 > 入口为 B3-4 产品代码 `7d8b85e4` 与 66 文件收口证据；当前 34～48 只有内部声明，VM/LLVM 未绑定。
 > B4-0 只迁移产品测试正式向量，B4-1 只接类型/IR；不接 TAC/VM/LLVM、不升 ABI 1.19/21、不改 registry。
 > `stdlib.cmath` 仍 planned；30 条 cmath 导入路径仍明确拒绝。
@@ -11,6 +12,7 @@
 | --- | --- |
 | B3-4 | 源码包装收口；15 forwarder、30 条 planned 拒绝、802/可达性修复通过 |
 | 代码 | `7d8b85e4`；B3-4 closeout `language_available=false` |
+| B4-0/B4-1 | Windows 本机验证收口；向量迁移、类型/IR 绑定完成，完整 B4 仍未收口 |
 | 当前版本 | ABI 1.18、生成器 20、接口 1、intrinsic 1～48（34～48 内部） |
 | B4-0 目标 | 把 `cmath_tests.rs`/`abi_cmath_tests.rs` 的正式向量迁入 `tests/fixtures/docs/cmath/` |
 | B4-1 目标 | 类型检查/IR 接受 34～48 的一元/二元 `float` 原语 |
