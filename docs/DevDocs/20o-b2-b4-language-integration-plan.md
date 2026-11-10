@@ -52,6 +52,8 @@ B4 是 `cmath` 的**语言全链路内部验收批**，不是最终发布。B5 �
 
 ### B4-0：向量迁移与语言基线
 
+执行细化见[B4-0/B4-1 开工规划](20o-b2-b4-0-b4-1-kickoff-plan.md)；B4-0只迁移向量与基线。
+
 1. 将 `cmath_tests.rs` 与 `abi_cmath_tests.rs` 使用的正式向量迁入 `tests/fixtures/docs/cmath/`；
 2. DevDocs 证据保留历史副本与摘要，逐字节核对迁移副本与原副本一致；
 3. 更新两处测试的 `include_str!` 指向新 fixture，重新编译并运行；
@@ -62,6 +64,8 @@ B4 是 `cmath` 的**语言全链路内部验收批**，不是最终发布。B5 �
 退出：产品测试不再依赖 DevDocs 路径；向量字节一致；基线通过。
 
 ### B4-1：类型检查与 IR
+
+执行细化见[B4-0/B4-1 开工规划](20o-b2-b4-0-b4-1-kickoff-plan.md)；B4-1不接TAC/VM/LLVM。
 
 1. 识别 34～48 的一元/二元 `float -> float` 原语；
 2. 参数全部必填；一元 `value`，二元 `left/right` 或 `base/exponent`；
