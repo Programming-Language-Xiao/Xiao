@@ -49,6 +49,9 @@ RUNS = {
     "repo_all_closeout": ("gate", ["bun", "tools/repo-check/src/cli.ts", "all"]),
     "repo_all_final": ("gate", ["bun", "tools/repo-check/src/cli.ts", "all"]),
     "repo_all_authoritative": ("gate", ["bun", "tools/repo-check/src/cli.ts", "all"]),
+    "repo_all_final_final": ("gate", ["bun", "tools/repo-check/src/cli.ts", "all"]),
+    "repo_all_authoritative_v2": ("gate", ["bun", "tools/repo-check/src/cli.ts", "all"]),
+    "repo_all_review_final": ("gate", ["bun", "tools/repo-check/src/cli.ts", "all"]),
 }
 SUMMARY = re.compile(r"^test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;", re.M)
 FROZEN = {
@@ -88,7 +91,7 @@ def git(repository, *args):
 def evidence_inventory(root):
     rows = []
     for path in sorted(item for item in root.rglob("*") if item.is_file()):
-        if path.name in {"evidence.json", "self-negative-result.json"} or "__pycache__" in path.parts:
+        if path.name == "evidence.json" or path.name.startswith("self-negative-result") or "__pycache__" in path.parts:
             continue
         data = path.read_bytes()
         rows.append({"path": path.relative_to(root).as_posix(), "bytes": len(data), "sha256": sha(data)})
@@ -246,7 +249,7 @@ def validate(root, repository, require_closeout=False):
             "Rust workspace测试出现失败")
     require("Finished `dev` profile" in logs["clippy"] and "error:" not in logs["clippy"], "workspace Clippy失败")
     require(all(records[name]["exit_code"] == 0 and "[error]" not in logs[name]
-                for name in ["repo_all", "repo_all_final", "repo_all_closeout", "repo_all_authoritative"]),
+                for name in ["repo_all", "repo_all_final", "repo_all_closeout", "repo_all_authoritative", "repo_all_final_final", "repo_all_authoritative_v2", "repo_all_review_final"]),
             "repo docs/usedocs/layout门禁失败")
     require(records["fmt"]["exit_code"] == 0, "cargo fmt失败")
     require(records["lock_check"]["exit_code"] == 0 and "error:" not in logs["lock_check"], "cargo lock gate失败")
@@ -258,7 +261,13 @@ def validate(root, repository, require_closeout=False):
         closeout = json.loads((root / "closeout.json").read_text(encoding="utf-8"))
         require(closeout["passed"] is True and closeout["b3_4_closed"] is True
                 and closeout["language_available"] is False, "B3-4 closeout状态不符")
-        require(closeout["gates"]["repo_all_authoritative"]["exit_code"] == 0
+        require(closeout["cmath_status"] == closeout["registry_status"] == closeout["tutorial_status"] == "planned"
+                and closeout["old_721_executed"] is False
+                and closeout["historical_debts_touched"] is False
+                and closeout["remote_ci_claimed"] is False
+                and closeout["three_platform_public_product"] is False,
+                "B3-4 closeout越过planned/历史/平台边界")
+        require(closeout["gates"]["repo_all_review_final"]["exit_code"] == 0
                 and closeout["gates"]["workspace_tests_final"]["exit_code"] == 0,
                 "closeout未引用最终workspace/docs门禁")
         evidence = json.loads((root / "evidence.json").read_text(encoding="utf-8"))

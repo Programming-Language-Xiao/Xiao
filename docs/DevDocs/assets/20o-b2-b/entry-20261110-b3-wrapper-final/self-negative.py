@@ -32,7 +32,7 @@ def rebuild_manifest(root):
 
 
 def main():
-    output = audit.ROOT / "self-negative-result.json"
+    output = audit.ROOT / "self-negative-result-final.json"
     if output.exists():
         raise SystemExit("拒绝覆盖B3-4自反例结果")
     cases = []

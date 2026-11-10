@@ -30,9 +30,11 @@ def main():
                 "closeout_scope": "planned source wrappers and isolation regressions only",
                 "language_available": False, "cmath_status": "planned",
                 "registry_status": "planned", "tutorial_status": "planned",
+                "platform": "Windows x86_64-msvc", "remote_ci_claimed": False,
+                "three_platform_public_product": False, "old_721_executed": False,
                 "historical_audits": {name: runs[name] for name in ["b1_history", "b2_history", "b3_cabi_history"]},
                 "b3_4_checks": {name: runs[name] for name in ["wrapper", "concurrency", "codegen", "archive_wiring"]},
-                "gates": {name: runs[name] for name in ["workspace_tests_final", "clippy", "fmt", "lock_check", "repo_all_authoritative"]},
+                "gates": {name: runs[name] for name in ["workspace_tests_final", "clippy", "fmt", "lock_check", "repo_all_review_final"]},
                 "failed_invocations": {"workspace_tests_root_without_manifest": {
                     "record": "workspace_tests.json", "exit_code": 101,
                     "classification": "执行目录未指定core/rust/Cargo.toml；不是测试失败，修正命令后重跑"}},

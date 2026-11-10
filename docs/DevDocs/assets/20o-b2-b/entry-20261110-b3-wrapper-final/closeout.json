@@ -2,10 +2,10 @@
   "schema_version": 1,
   "passed": true,
   "status": "B3-4 planned源码包装收口通过；语言不可用，不是公共发布",
-  "generated_utc": "2026-11-10T08:45:01.556250+00:00",
+  "generated_utc": "2026-11-10T09:44:10.312709+00:00",
   "entry_commit": "89d782e13f00776b90193f1719b4454c54367db7",
   "code_commit": "7d8b85e4d8c588b40ec76d641edc865481295032",
-  "head_commit_at_audit": "cdce40b9a3dfbc991283330ab8daba6738d3820d",
+  "head_commit_at_audit": "94bd4c42360883f3301f5f84f23dac939e85d37b",
   "source": {
     "raw_tree_sha256": "894448232babe973d7e04c0efb4e0968070642d1838159c5e3d8414147afd90c",
     "utf8_lf_tree_sha256": "e443e0c2175efcebc1a0a454c1e62926d5d8d8b35ef2036219c97c0ab122c752",
@@ -6301,6 +6301,10 @@
   "cmath_status": "planned",
   "registry_status": "planned",
   "tutorial_status": "planned",
+  "platform": "Windows x86_64-msvc",
+  "remote_ci_claimed": false,
+  "three_platform_public_product": false,
+  "old_721_executed": false,
   "historical_audits": {
     "b1_history": {
       "record": "b1_history.json",
@@ -6515,10 +6519,10 @@
         }
       }
     },
-    "repo_all_authoritative": {
-      "record": "repo_all_authoritative.json",
-      "log": "repo_all_authoritative.log",
-      "pid": 39308,
+    "repo_all_review_final": {
+      "record": "repo_all_review_final.json",
+      "log": "repo_all_review_final.log",
+      "pid": 40448,
       "exit_code": 0,
       "log_bytes": 282916,
       "log_sha256": "768357a73d914bd200b73b8867ceec252cb587beb5cfd39abe335d003d7418b9",

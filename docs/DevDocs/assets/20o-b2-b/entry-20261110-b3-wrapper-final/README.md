@@ -20,7 +20,7 @@ B3-4 在**源码包装范围**内完成：15 个 `float -> float` forwarder、�
 | Clippy/格式/锁 | workspace `-D warnings`、fmt、`bun run check:lock` 均通过 |
 | 文档门禁 | `bun tools/repo-check/src/cli.ts all`；docs、UseDocs、layout 和仓库覆盖门禁通过 |
 
-各命令原始输出、PID、退出码、源码与锁摘要、日志哈希见同目录 JSON/LOG。`collect.py` 仅在所有日志完成后生成权威 `closeout.json` 与 `evidence.json`；默认 `audit.py` 和反例均不写入证据。`closeout-rejected-manifest-scope.json` / `evidence-rejected-manifest-scope.json` 是清单字段校验未通过的首版草稿，保留为历史，不作为本批结论。`closeout-pre-final-docs.json` / `evidence-pre-final-docs.json` 是最终文档门禁回执补齐前生成的中间版本，也仅作历史。
+各命令原始输出、PID、退出码、源码与锁摘要、日志哈希见同目录 JSON/LOG。`collect.py` 仅在所有日志完成后生成权威 `closeout.json` 与 `evidence.json`；默认 `audit.py` 和反例均不写入证据。收集器迭代期间被审计拒绝或被后续门禁回执取代的自动生成草稿均保留在目录内；正式结论只来自与当前 `evidence.json` 字节清单一致并通过只读 `audit.py` 的 `closeout.json`。权威文档门禁以 `repo_all_review_final` 记录为准。
 
 首轮 workspace 命令从仓库根漏写 `--manifest-path core/rust/Cargo.toml`，Cargo 在编译前退出 101 并报告找不到 Cargo.toml；原始失败记录保留为执行器调用修正，不归类为测试失败。最终全工作区测试使用正确 manifest 单独运行并以 `workspace_tests_final` 记录。
 
