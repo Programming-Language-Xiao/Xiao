@@ -91,7 +91,7 @@ def git(repository, *args):
 def evidence_inventory(root):
     rows = []
     for path in sorted(item for item in root.rglob("*") if item.is_file()):
-        if path.name == "evidence.json" or path.name.startswith("self-negative-result") or "__pycache__" in path.parts:
+        if path.name == "evidence.json" or "__pycache__" in path.parts:
             continue
         data = path.read_bytes()
         rows.append({"path": path.relative_to(root).as_posix(), "bytes": len(data), "sha256": sha(data)})
@@ -274,6 +274,14 @@ def validate(root, repository, require_closeout=False):
         require(evidence["files"] == evidence_inventory(root), "B3-4证据清单与实际文件字节不符")
         require(evidence["scope"] == "B3-4 source-only planned wrapper closeout; language unavailable",
                 "B3-4证据范围被扩大")
+        negative = json.loads((root / "self-negative-result-final.json").read_text(encoding="utf-8"))
+        require(negative.get("passed") is True and negative.get("read_only") is True
+                and len(negative.get("cases", [])) == 3
+                and {row.get("case") for row in negative["cases"]}
+                == {"baseline-read-only", "unlisted-file", "language-status-overclaim"}
+                and negative["cases"][1].get("expected_reason") == "B3-4证据清单与实际文件字节不符"
+                and negative["cases"][2].get("expected_reason") == "B3-4 closeout状态不符",
+                "B3-4自反例回执缺失或被改写")
     return {"passed": True, "source": static["source"], "identity": static,
             "test_summaries": {key: [list(row) for row in SUMMARY.findall(value)]
                                for key, value in logs.items()},

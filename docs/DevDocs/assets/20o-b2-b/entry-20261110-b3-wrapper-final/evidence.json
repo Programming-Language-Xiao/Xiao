@@ -19,8 +19,8 @@
     },
     {
       "path": "audit.py",
-      "bytes": 19719,
-      "sha256": "e7667fea3b5e339e0bbf3f3a0f3677dc470d3bd2734f2cd983cb49f808f06c54"
+      "bytes": 20335,
+      "sha256": "c92689153b37e396915792d8432c84d2f2aaafc30e12e9a64e768438947869ad"
     },
     {
       "path": "b1_history.json",
@@ -276,6 +276,16 @@
       "path": "run-step.py",
       "bytes": 4739,
       "sha256": "49ceaa8a5decf3d766387713de4585c570682746fd75a0f49326179f05c55590"
+    },
+    {
+      "path": "self-negative-result-final.json",
+      "bytes": 422,
+      "sha256": "d95bb00d83c561a06b19d6cf04f620fc10e16c7c24dec4096e88ee0db0d0bfcd"
+    },
+    {
+      "path": "self-negative-result.json",
+      "bytes": 422,
+      "sha256": "d95bb00d83c561a06b19d6cf04f620fc10e16c7c24dec4096e88ee0db0d0bfcd"
     },
     {
       "path": "self-negative.py",
