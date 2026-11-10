@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "task_root": "D:\\project\\Xiao\\.b3-4-closeout\\20261110-7d8b85e4",
+  "repository_root": "D:\\project\\Xiao\\Xiao",
+  "baseline_commit": "89d782e13f00776b90193f1719b4454c54367db7",
+  "product_commit": "7d8b85e4d8c588b40ec76d641edc865481295032",
+  "created_utc": "2026-11-10",
+  "target_fresh": true,
+  "xiao_home_fresh": true,
+  "temp_fresh": true,
+  "platform": "Windows x86_64-msvc",
+  "native_cmath_execution": false,
+  "old_721_executed": false
+}

@@ -1,6 +1,6 @@
 # 20O-B2-B3-4. `stdlib/cmath.xiao` 源码包装收口规划
 
-> **B3-4 源码包装已在当前工作区加入，但独立审计/closeout 尚未交付；B4～B7 与 B2-C 仍未开始。**
+> **B3-4 planned 源码包装范围已独立收口；不代表语言可用。证据与只读审计见 `entry-20261110-b3-wrapper-final`。**
 > 入口为 B3-3 代码 `89d782e1`、B3-4 包装提交 `6ddc0c35`、802/可达性修复 `ea9e33ba`/`7d8b85e4`，以及修复证据。
 > B3-4 只收口“planned 源码包装 + 隔离修复”，不是 `std.cmath` 语言可用；类型/IR/TAC/VM/LLVM 仍留 B4。
 > `stdlib.cmath` registry 仍 planned；不升 ABI 1.19/21，不跑旧 721。
@@ -12,11 +12,14 @@
 | 包装源码 | `stdlib/cmath.xiao` 15 个 `float -> float` 转发包装 |
 | 模块说明 | `stdlib/cmath.md`、UseDocs cmath 均 planned |
 | 当前代码 | 产品代码 `7d8b85e4`（包装 + 802/可达性修复）；B3-CABI 历史代码 `89d782e1` |
-| 测试 | wrapper 8/0、22c 29/0、reachability 30 用例、B3-CABI 22 项 |
-| 未做 | B3-4 独立审计/closeout、B4 语言全链路、B5 版本、B6 性能、B2-C 721 |
-| 状态 | `stdlib.cmath` planned；30 条 cmath 导入路径明确拒绝 |
+| 测试 | wrapper 8/0、22c 29/0、reachability 30 用例、B3-CABI 固定审计 22 项 |
+| 收口证据 | [独立回执与审计](assets/20o-b2-b/entry-20261110-b3-wrapper-final/README.md)；当前状态以最终 `closeout.json` 为准 |
+| 未做 | B4 语言全链路、B5 版本、B6 性能、B2-C 721 |
+| 状态 | `stdlib.cmath` planned；语言不可用；B3-4 只对源码包装与隔离回归收口 |
 
 B3-4 收口只确认“包装源码、planned 边界和隔离修复可复核”，不能写成 `std.cmath` 可执行、B3 整批完成或 B2-C 发布。
+
+本机收口结果绑定固定代码 `7d8b85e4`：wrapper 8/0、并发 29/0、LLVM 56 单测和4项标准库绑定回归、archive wiring 11/0、Rust workspace测试、Clippy、fmt、锁与仓库文档门禁通过；B1 18/18、B2 14项/4个精确目标及B3-CABI 22项为固定历史审计。完整命令和原始日志见[收口证据](assets/20o-b2-b/entry-20261110-b3-wrapper-final/README.md)。审计不要求当前HEAD等于产品提交，但校验其为HEAD祖先且受保护产品树未变。
 
 ### 1.1 要交付
 

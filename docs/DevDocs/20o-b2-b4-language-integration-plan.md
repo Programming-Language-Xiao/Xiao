@@ -1,7 +1,7 @@
 # 20O-B2-B4. cmath 语言全链路与承载实施规划
 
-> **B3-0/B3-1、B3-2A、B3-3A/B 已完成内部验收；B3-4 与 B4 尚未开工。**
-> 入口为 B3-3 代码 `89d782e1` 与 B3-4 包装源码；当前 intrinsic 34～48 仅内部 active，VM/LLVM 未绑定。
+> **B3-4 planned 源码包装收口已完成；B4 语言全链路仍未开始。**
+> 入口为 B3-3 代码 `89d782e1`、B3-4 固定代码 `7d8b85e4` 与其源码收口证据；当前 intrinsic 34～48 仅内部 active，VM/LLVM 未绑定。
 > B4 只做类型/IR/TAC/VM/LLVM/序列化与双路径承载；不升 ABI 1.19/21，不升级 registry，不跑旧 721。
 > `stdlib.cmath` 仍 planned；B4 的通过只作为内部语言验收，B5 切版本，B2-C 才最终发布。
 
@@ -10,7 +10,7 @@
 | 项 | 当前状态 |
 | --- | --- |
 | B3-3 | 15 个 C ABI、intrinsic 34～48 内部 active；无 VM/LLVM 绑定 |
-| B3-4 | `stdlib/cmath.xiao` 15 个包装（待交付）；registry 仍 planned |
+| B3-4 | 15 个 planned 源码包装和隔离回归已独立收口；registry 仍 planned |
 | 当前版本 | ABI 1.18、生成器 20、标准库接口 1、活动 intrinsic 最大 48（仅内部） |
 | 本批目标 | 类型/IR、TAC/字节码、VM、LLVM、序列化、`std.cmath`/`stdlib.cmath` 双路径 |
 | 未做 | B5 版本矩阵、B6 资源/性能、B7 收口、B2-C 721/最终教程 registry |
@@ -40,8 +40,8 @@ B4 是 `cmath` 的**语言全链路内部验收批**，不是最终发布。B5 �
 
 ## 二、开工闸门
 
-1. B3-0/B3-1、B3-2A、B3-3A/B 审计通过；
-2. B3-4 `stdlib/cmath.xiao` 15 个包装已交付且 registry 仍 planned；
+1. B3-0/B3-1、B3-2A、B3-3A/B 固定审计通过；
+2. B3-4 源码包装 closeout 与 30 条 planned 拒绝回归通过，registry 仍 planned；
 3. intrinsic 1～48 活动、ID 100 墓碑、ABI 1.18/生成器 20/接口 1 未变；
 4. 15 个 C 符号、17,243 条正式参考和共享 pow 证据可复现；
 5. 两处 `include_str!` 的向量路径与 B4-0 迁移方案已确认；

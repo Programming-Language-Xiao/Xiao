@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "scope": "B3-4 source-only Windows closeout; native cmath execution is intentionally absent",
+  "overrides": {
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.b3-4-closeout\\20261110-7d8b85e4\\cargo-target",
+    "XIAO_HOME": "D:\\project\\Xiao\\.b3-4-closeout\\20261110-7d8b85e4\\xiao-home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\Xiao\\stdlib",
+    "TEMP": "D:\\project\\Xiao\\.b3-4-closeout\\20261110-7d8b85e4\\temp",
+    "TMP": "D:\\project\\Xiao\\.b3-4-closeout\\20261110-7d8b85e4\\temp",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "XIAO_B1_F10": "0",
+    "XIAO_B2_A_PERF": "0",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "removed_environment_prefixes": ["XIAO_", "RUST_BIGDECIMAL_"],
+  "lock_files": ["core/rust/Cargo.lock", "tests/benchmarks/Cargo.lock"],
+  "runtime_library": null,
+  "native_cmath_execution": false
+}

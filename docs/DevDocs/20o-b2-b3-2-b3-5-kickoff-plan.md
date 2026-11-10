@@ -1,6 +1,6 @@
 # 20O-B2-B3-2/B3-5. cmath Runtime、C ABI、intrinsic 34～48 与包装实施规划
 
-> **B3-2A 与 B3-3A/B 已完成 Windows 本机内部验收；B3-4、B3-5 与 B4～B7、B2-C 尚未完成。**
+> **截至本规划批次时点，B3-2A 与 B3-3A/B 已完成 Windows 本机内部验收；B3-4源码包装现已独立收口，B3-5 与 B4～B7、B2-C 仍未完成。**
 > 当前产品代码 `89d782e1`，活动 intrinsic 最大 48、ABI 1.18、生成器 20；实际证据见[实施记录](20o-b2-b3-3a-b-progress.md)。
 > 本页只做 15 项 cmath 的 Runtime/C ABI、intrinsic 34～48 与 `stdlib/cmath.xiao` 包装；B4 才接语言全链路。
 > `stdlib.cmath` 仍 planned；不升 ABI 1.19/21，不跑旧 721，不关闭历史债务。

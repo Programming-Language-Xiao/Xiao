@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "read_only": true,
+  "cases": [
+    {
+      "case": "baseline-read-only",
+      "exit_code": 0,
+      "read_only": true
+    },
+    {
+      "case": "unlisted-file",
+      "exit_code": 1,
+      "expected_reason": "B3-4证据清单与实际文件字节不符"
+    },
+    {
+      "case": "language-status-overclaim",
+      "exit_code": 1,
+      "expected_reason": "B3-4 closeout状态不符"
+    }
+  ]
+}

@@ -6,4 +6,4 @@ B0/B1 的开工步骤、命令、计数和退出条件见[B2-B0/B1 开工规划]
 
 证据必须绑定实际源码、锁文件、Runtime、工具链/目标、PID 和独立输出路径；不复用 A7 的 Runtime、缓存或可执行文件，不覆盖 A0～A7 归档。
 
-B3-2A共享Runtime pow与B3-3A/B C ABI/intrinsic已在独立任务根重新验收，见[本批证据](entry-20261109-b3-cabi/README.md)。产品89d782e1，活动最大48、ABI1.18/20；无stdlib包装，证据仅为Windows本机，B3-4及B4后置。先前包装/LLVM失败分支保留其未收口身份。
+B3-2A共享Runtime pow与B3-3A/B C ABI/intrinsic已在独立任务根重新验收，见[本批证据](entry-20261109-b3-cabi/README.md)。B3-3产品89d782e1，活动最大48、ABI1.18/20；B3-4 planned源码包装已另批收口，具体见[收口证据](entry-20261110-b3-wrapper-final/README.md)。B4及之后版本/性能/最终发布仍后置；先前包装/LLVM失败分支保留为历史记录。
