@@ -1,4 +1,5 @@
 """完成所有门禁后，仅一次生成由实际执行记录导出的 closeout/evidence。"""
+import argparse
 import datetime
 import json
 from pathlib import Path
@@ -7,6 +8,23 @@ import audit
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--refresh-evidence", action="store_true",
+                        help="只读重验现有证据并按当前实际字节重建 evidence.json")
+    args = parser.parse_args()
+    if args.refresh_evidence:
+        if not (audit.ROOT / "closeout.json").is_file() or not (audit.ROOT / "evidence.json").is_file():
+            raise SystemExit("--refresh-evidence要求已有closeout.json和evidence.json")
+        audit.validate(audit.ROOT, audit.REPOSITORY, require_closeout=False)
+        manifest = {"schema_version": 1,
+                    "scope": "B3-4 source-only planned wrapper closeout; language unavailable",
+                    "files": audit.evidence_inventory(audit.ROOT)}
+        with (audit.ROOT / "evidence.json").open("w", encoding="utf-8", newline="\n") as stream:
+            stream.write(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
+        print(json.dumps({"passed": True, "refreshed": "evidence.json",
+                          "files": len(manifest["files"]), "closeout_rewritten": False},
+                         ensure_ascii=False))
+        return
     if (audit.ROOT / "closeout.json").exists() or (audit.ROOT / "evidence.json").exists():
         raise SystemExit("拒绝覆盖B3-4 closeout/evidence")
     result = audit.validate(audit.ROOT, audit.REPOSITORY, require_closeout=False)

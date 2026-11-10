@@ -38,11 +38,14 @@ RUNS = {
     "b1_history": ("history", ["python", "-B", "-X", "utf8", "docs/DevDocs/assets/20o-b2-b/entry-20261108-b1/audit.py"]),
     "b2_history": ("history", ["python", "-B", "-X", "utf8", "docs/DevDocs/assets/20o-b2-b/entry-20261108-b2/audit.py"]),
     "b3_cabi_history": ("history", ["python", "-B", "-X", "utf8", "docs/DevDocs/assets/20o-b2-b/entry-20261109-b3-cabi/audit.py"]),
+    "b3_wrapper_history": ("history", ["python", "-B", "-X", "utf8", "docs/DevDocs/assets/20o-b2-b/entry-20261110-b3-wrapper-final/audit.py"]),
     "clippy": ("gate", ["cargo", "+1.96.0", "clippy", "--locked", "--manifest-path", "core/rust/Cargo.toml", "-p", "xiao-types", "-p", "xiao-ir", "-p", "xiao-runtime", "-p", "xiao-driver", "--all-targets", "--", "-D", "warnings"]),
     "fmt": ("gate", ["cargo", "+1.96.0", "fmt", "--manifest-path", "core/rust/Cargo.toml", "--all", "--", "--check"]),
     "repo_all": ("gate", ["bun", "tools/repo-check/src/cli.ts", "all"]),
     "repo_all_closeout": ("gate", ["bun", "tools/repo-check/src/cli.ts", "all"]),
     "repo_all_final": ("gate", ["bun", "tools/repo-check/src/cli.ts", "all"]),
+    "repo_after_audit_fixes": ("gate", ["bun", "tools/repo-check/src/cli.ts", "all"]),
+    "repo_final_status": ("gate", ["bun", "tools/repo-check/src/cli.ts", "all"]),
 }
 SUMMARY = re.compile(r"^test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;", re.M)
 CMATH = [
@@ -233,6 +236,7 @@ def main():
     for key in RUNS:
         records[key], logs[key] = read_run(root, repository, key)
         require(records[key]["source_before"] == current, "B4有效执行未绑定相同源码与锁：" + key)
+    b4_closed = False
     require("test result: ok. 15 passed; 0 failed; 0 ignored;" in logs["runtime_cmath"]
             and "all_abi_results_match_formal_reference_errors_signs_and_ulp ... ok" in logs["runtime_cmath"]
             and "mpfr_pow_vectors_and_public_float_share_kernel ... ok" in logs["runtime_cmath"]
@@ -260,6 +264,10 @@ def main():
             "B2固定历史审计未过14项/4精确入口")
     require('"checks": 22' in logs["b3_cabi_history"] and '"code_commit": "89d782e1"' in logs["b3_cabi_history"],
             "B3-CABI固定历史审计未过22项")
+    require('"b3_4_closed": true' in logs["b3_wrapper_history"]
+            and '"code_commit": "7d8b85e4d8c588b40ec76d641edc865481295032"' in logs["b3_wrapper_history"]
+            and '"identity_source": "fixed Git commit blobs; canonical UTF-8/LF hashes"' in logs["b3_wrapper_history"],
+            "B3-4固定Git对象历史审计未通过")
     require("Finished" in logs["clippy"] and "error:" not in logs["clippy"], "B4影响crates Clippy失败")
     require(records["fmt"]["exit_code"] == 0 and records["repo_all"]["exit_code"] == 0
             and "[error]" not in logs["repo_all"], "B4-0/B4-1 fmt或docs/usedocs/layout门禁失败")
@@ -292,10 +300,12 @@ def main():
                 and evidence["runtime_abi"] == "1.18" and evidence["codegen_version"] == 20
                 and evidence["runs"] == list(RUNS),
                 "B4 evidence源码、版本或运行范围不符")
+        b4_closed = closeout["b4_closed"]
     print(json.dumps({"passed": True, "product_commit": source["code_commit"],
                       "product_files": source["source"]["files"], "fixture_sha256": source["fixture"]["sha256"],
                       "b4_0_closed": True, "b4_1_closed": True,
-                      "b4_closed": not args.prepare, "language_available": False, "cmath": "planned"},
+                      "b4_0_1_closed": not args.prepare, "b4_closed": b4_closed,
+                      "language_available": False, "cmath": "planned"},
                      ensure_ascii=False, sort_keys=True))
 
 

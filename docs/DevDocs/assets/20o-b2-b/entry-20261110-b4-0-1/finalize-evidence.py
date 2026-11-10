@@ -9,8 +9,8 @@ BASELINE = "7d8b85e4d8c588b40ec76d641edc865481295032"
 PRODUCT = "c7a45e10b76b26915499717563761ed20fda6e6c"
 RUNS = [
     "runtime_cmath", "runtime_all", "types_ir", "b4_frontend", "b3_wrapper",
-    "b1_history", "b2_history", "b3_cabi_history", "clippy", "fmt", "repo_all",
-    "repo_all_closeout", "repo_all_final",
+    "b1_history", "b2_history", "b3_cabi_history", "b3_wrapper_history", "clippy", "fmt", "repo_all",
+    "repo_all_closeout", "repo_all_final", "repo_after_audit_fixes", "repo_final_status",
 ]
 SCOPE = "B4-0/B4-1 internal vector/type/IR closeout; cmath language unavailable"
 

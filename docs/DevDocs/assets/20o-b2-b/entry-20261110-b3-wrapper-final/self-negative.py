@@ -1,4 +1,5 @@
 """在临时证据副本中验证审计只读、清单篡改和语义冒进均被明确拒绝。"""
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -32,7 +33,13 @@ def rebuild_manifest(root):
 
 
 def main():
-    output = audit.ROOT / "self-negative-result-final.json"
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", type=Path, default=Path("self-negative-result-final.json"))
+    args = parser.parse_args()
+    output = args.output if args.output.is_absolute() else audit.ROOT / args.output
+    output = output.resolve()
+    if not output.is_relative_to(audit.ROOT.resolve()):
+        raise SystemExit("自反例结果必须位于固定证据目录内")
     if output.exists():
         raise SystemExit("拒绝覆盖B3-4自反例结果")
     cases = []

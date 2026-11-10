@@ -53,6 +53,11 @@
       "log": "b3_cabi_history.log",
       "log_sha256": "42419cd9935a8f78f2795dbd0450c62bb3fd8d3b29a1b2f88a43a97e3e173ec3"
     },
+    "b3_wrapper_history": {
+      "pid": 57220,
+      "log": "b3_wrapper_history.log",
+      "log_sha256": "547d9e8ab8b0915ac06ac6c0a126b1f79a7ccc5a42cf916d0c754e4a828cc5cd"
+    },
     "clippy": {
       "pid": 40768,
       "log": "clippy.log",
@@ -76,6 +81,16 @@
     "repo_all_final": {
       "pid": 26940,
       "log": "repo_all_final.log",
+      "log_sha256": "a8a934d222d1e1cdcccc17b458f61f79b7ba451613c680a9820a710f07456bb5"
+    },
+    "repo_after_audit_fixes": {
+      "pid": 44124,
+      "log": "repo_after_audit_fixes.log",
+      "log_sha256": "a8a934d222d1e1cdcccc17b458f61f79b7ba451613c680a9820a710f07456bb5"
+    },
+    "repo_final_status": {
+      "pid": 56396,
+      "log": "repo_final_status.log",
       "log_sha256": "a8a934d222d1e1cdcccc17b458f61f79b7ba451613c680a9820a710f07456bb5"
     }
   }

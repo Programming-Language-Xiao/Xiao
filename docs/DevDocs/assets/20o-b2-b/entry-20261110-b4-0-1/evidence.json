@@ -17,11 +17,14 @@
     "b1_history",
     "b2_history",
     "b3_cabi_history",
+    "b3_wrapper_history",
     "clippy",
     "fmt",
     "repo_all",
     "repo_all_closeout",
-    "repo_all_final"
+    "repo_all_final",
+    "repo_after_audit_fixes",
+    "repo_final_status"
   ],
   "files": [
     {
@@ -31,8 +34,8 @@
     },
     {
       "path": "audit.py",
-      "bytes": 18668,
-      "sha256": "db0df0c32256bc9c237a8305f68c0bdfe70d78291ddb2e53f844a2211b727300"
+      "bytes": 19441,
+      "sha256": "131942513fe511dfe85b09561732316d996e1003f2d1bc90d11d2aa884334389"
     },
     {
       "path": "b1_history.json",
@@ -75,6 +78,16 @@
       "sha256": "1425297d9296cca6489ddb2ac457292855d2a8562f623d0e4d8d3f06f239dde7"
     },
     {
+      "path": "b3_wrapper_history.json",
+      "bytes": 2167,
+      "sha256": "77c3202c30c55e89e78cd571eb5531154765a713d476f4688a547314f1b52621"
+    },
+    {
+      "path": "b3_wrapper_history.log",
+      "bytes": 298,
+      "sha256": "547d9e8ab8b0915ac06ac6c0a126b1f79a7ccc5a42cf916d0c754e4a828cc5cd"
+    },
+    {
       "path": "b4_frontend.json",
       "bytes": 2232,
       "sha256": "01d327f3fa4bd2746425db29cede490c0875448f8a745b1888a0a8c1aa9ed90d"
@@ -101,8 +114,8 @@
     },
     {
       "path": "closeout.json",
-      "bytes": 2584,
-      "sha256": "c636da32e45ddcf662b0eb5d034c9a77519d8d821a50ab644580ff3503fee03b"
+      "bytes": 3133,
+      "sha256": "bc9877086d423434b499ce82367c2e2e45e3545ad9a610c5a2ee765a0b9f56a1"
     },
     {
       "path": "environment.json",
@@ -111,8 +124,8 @@
     },
     {
       "path": "finalize-evidence.py",
-      "bytes": 4536,
-      "sha256": "a90a85831598ea9ec9e4fede4e6ed2b6d2851a054864bb0181cab66e545cdd6a"
+      "bytes": 4605,
+      "sha256": "989604d71622fffde3d7cc12c811e32748a9e372fcfc62155e84b9f1fb6ebac1"
     },
     {
       "path": "fmt.json",
@@ -126,13 +139,23 @@
     },
     {
       "path": "README.md",
-      "bytes": 2144,
-      "sha256": "94ad20274afd6173f7a4d5fb9486586024f2298bb65f8cee6e84d7d5eccb6409"
+      "bytes": 2242,
+      "sha256": "046b718b88f65478c8b9b5e4033c9e2231fe15d3ac7fc78a45102023799c4263"
     },
     {
       "path": "record-step.py",
       "bytes": 5484,
       "sha256": "ff6072644f0e764b8709326665a001b79828ec272a1c816318557612d4461fb7"
+    },
+    {
+      "path": "repo_after_audit_fixes.json",
+      "bytes": 2109,
+      "sha256": "10914307b920a2a8d5da7805a2718f6e8d53240e13f9d7f3076c4a9a621da252"
+    },
+    {
+      "path": "repo_after_audit_fixes.log",
+      "bytes": 283588,
+      "sha256": "a8a934d222d1e1cdcccc17b458f61f79b7ba451613c680a9820a710f07456bb5"
     },
     {
       "path": "repo_all.json",
@@ -161,6 +184,16 @@
     },
     {
       "path": "repo_all_final.log",
+      "bytes": 283588,
+      "sha256": "a8a934d222d1e1cdcccc17b458f61f79b7ba451613c680a9820a710f07456bb5"
+    },
+    {
+      "path": "repo_final_status.json",
+      "bytes": 2099,
+      "sha256": "36e317a8bba9234bedb1543574e4f2f41acb481988bfae4a64d3d80964d095d4"
+    },
+    {
+      "path": "repo_final_status.log",
       "bytes": 283588,
       "sha256": "a8a934d222d1e1cdcccc17b458f61f79b7ba451613c680a9820a710f07456bb5"
     },

@@ -1,6 +1,6 @@
 # B3-4 planned 源码包装收口证据
 
-本收口绑定 B3-3A/B 产品提交 `89d782e13f00776b90193f1719b4454c54367db7` 与 B3-4/802/可达性修复后产品提交 `7d8b85e4d8c588b40ec76d641edc865481295032`。审计固定 Git 对象，不要求当前 HEAD；当前受保护产品树必须与固定代码提交相同。所有 Rust 命令由本目录 `run-step.py` 在新任务根 `D:\project\Xiao\.b3-4-closeout\20261110-7d8b85e4` 执行，使用全新 Cargo target、XIAO_HOME 和 TEMP/TMP。未生成 Runtime staticlib，也未执行原生 cmath；所有未执行平台和功能在 closeout 中明确登记。
+本收口绑定 B3-3A/B 产品提交 `89d782e13f00776b90193f1719b4454c54367db7` 与 B3-4/802/可达性修复后产品提交 `7d8b85e4d8c588b40ec76d641edc865481295032`。审计从固定提交 Git tree/blob 读取受保护产品树，不要求当前 HEAD 或当前工作树与旧快照相同；逐路径 UTF-8/LF 规范摘要与原执行记录核对。原始执行记录保留当时 Windows 工作树的 CRLF 摘要，并验证其内部清单及锁摘要自洽。只需当前仓库仍持有上述固定 Git 对象。所有 Rust 命令由本目录 `run-step.py` 在新任务根 `D:\project\Xiao\.b3-4-closeout\20261110-7d8b85e4` 执行，使用全新 Cargo target、XIAO_HOME 和 TEMP/TMP。未生成 Runtime staticlib，也未执行原生 cmath；所有未执行平台和功能在 closeout 中明确登记。
 
 ## 收口结论
 
@@ -22,6 +22,8 @@ B3-4 在**源码包装范围**内完成：15 个 `float -> float` forwarder、�
 
 各命令原始输出、PID、退出码、源码与锁摘要、日志哈希见同目录 JSON/LOG。`collect.py` 仅在所有日志完成后生成权威 `closeout.json` 与 `evidence.json`；默认 `audit.py` 和反例均不写入证据。收集器迭代期间被审计拒绝或被后续门禁回执取代的自动生成草稿均保留在目录内；正式结论只来自与当前 `evidence.json` 字节清单一致并通过只读 `audit.py` 的 `closeout.json`。权威文档门禁以 `repo_all_review_final` 记录为准。
 
+审计通过固定 Git 对象复核后，若只读审计脚本或 README 有文档性更新，可运行 `python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261110-b3-wrapper-final/collect.py --refresh-evidence` 重新生成实际字节清单；此模式重建 `evidence.json`，不改写历史 `closeout.json` 或任何运行日志。
+
 首轮 workspace 命令从仓库根漏写 `--manifest-path core/rust/Cargo.toml`，Cargo 在编译前退出 101 并报告找不到 Cargo.toml；原始失败记录保留为执行器调用修正，不归类为测试失败。最终全工作区测试使用正确 manifest 单独运行并以 `workspace_tests_final` 记录。
 
 开发期首轮 LLVM 架构断言和 Clippy 布尔简化检查的失败日志也保留；分别修正测试只扫描生产区段、将否定 `is_some_and` 改为等价 `is_none_or` 后，全量后端测试及 workspace Clippy 通过。没有忽略或移除失败项。
@@ -39,5 +41,5 @@ B4 的函数映射、向量迁移和教程 fixture 交接见 [handoff-b4.md](han
 
 ```powershell
 python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261110-b3-wrapper-final/audit.py
-python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261110-b3-wrapper-final/self-negative.py
+python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261110-b3-wrapper-final/self-negative.py --output self-negative-result-fixed-git-blobs.json
 ```
