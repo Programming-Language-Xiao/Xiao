@@ -39,6 +39,19 @@ B4-2 是 VM 内部可执行批，不是 `std.cmath` 模块导入可用批。B4-4
 - 不升 ABI 1.19/21，不改 registry/教程/锁；
 - 不跑旧 721，不关闭历史债务。
 
+### 1.3 已确认的 Runtime 入口
+
+星崽已确认以下口径；B4-2A 可先开工，B4-2B 按此冻结签名接线：
+
+1. 在 `xiao-runtime`  crate 根暴露 15 个类型化自由函数，与 F-5 原语一一对应；
+2. 返回 `RuntimeResult<f64>`，错误直接复用 Runtime 的 009 等身份；不读写 Runtime ABI 挂起错误槽；
+3. 作为 Runtime 内部 API，不承诺语言级 semver 稳定性；文档注明仅供 VM/后端调用，不是语言公开 API；
+4. 一元函数 `cmath_sqrt(value: f64)`、`cmath_floor`、`cmath_ceil`、`cmath_round`、`cmath_trunc`、`cmath_abs`、`cmath_sin`、`cmath_cos`、`cmath_tan`、`cmath_exp`、`cmath_ln`、`cmath_log10`；
+5. 二元函数 `cmath_min(left: f64, right: f64)`、`cmath_max(left, right)`、`cmath_pow(base: f64, exponent: f64)`；
+6. 函数内部复用现有私有 `cmath` 内核；不复制数学/域/ULP 逻辑；
+7. VM 通过这 15 个函数调用，不跨 crate 访问私有模块，也不借 C ABI 状态槽转运 VM 错误；
+8. 本批不把该入口加入 intrinsic/C ABI/语言公开面；B4-3/B4-4 再接入各自路径。
+
 ## 二、开工闸门
 
 1. B4-0/B4-1 审计通过，代码 `c7a45e10` 未漂移；
@@ -47,7 +60,7 @@ B4-2 是 VM 内部可执行批，不是 `std.cmath` 模块导入可用批。B4-4
 4. ABI 1.18/生成器 20/接口 1/cmath planned 未变；
 5. B3-4 wrapper 8/0、22c 29/0、B1/B2/B3 历史审计通过；
 6. 唯一任务根、独立 target/Runtime/缓存已建立。
-7. B4-2B 的调用边界已明确、精确 API 尚未冻结：现有 `value::arithmetic::cmath` 函数是 crate 私有；C ABI 适配器通过状态码报告错误并写 Runtime 挂起错误槽。VM 不得直接跨 crate 调用私有函数，也不得借 C ABI 状态槽转运 VM 错误。B4-2B 开工前须由星崽确认窄的 Rust-only、错误返回式入口及其精确 Rust 签名；未确认时只可做 B4-2A。
+7. B4-2B 的调用边界已明确、精确 API 已确认：现有 `value::arithmetic::cmath` 函数是 crate 私有；C ABI 适配器通过状态码报告错误并写 Runtime 挂起错误槽。VM 不得直接跨 crate 调用私有函数，也不得借 C ABI 状态槽转运 VM 错误。星崽已确认采用 15 个类型化 Rust-only 函数、`RuntimeResult<f64>` 返回和内部 API 口径，精确签名见 §1.3；B4-2A 可先开工。
 
 ## 三、分批执行
 
@@ -68,7 +81,7 @@ B4-2 是 VM 内部可执行批，不是 `std.cmath` 模块导入可用批。B4-4
 1. VM 按 34～48 ID 分派到共享 Runtime `cmath` 内核；
 2. 一元：sqrt/floor/ceil/round/trunc/abs/sin/cos/tan/exp/ln/log10；
 3. 二元：min/max/pow；
-4. 通过开工闸门冻结的 Rust-only Runtime 入口调用现有私有内核；该入口返回 `RuntimeResult`，不得调用会写 Runtime 挂起错误槽的 `xiao_runtime_cmath_*` C ABI 包装；
+4. 通过 §1.3 已确认的 15 个 Rust-only 函数调用现有私有内核；该入口返回 `RuntimeResult`，不得调用会写 Runtime 挂起错误槽的 `xiao_runtime_cmath_*` C ABI 包装；
 5. 按 `cmath_parameters(id)` 绑定位置/命名参数到规范顺序；表达式仍按源码顺序求值，形状/类型不符映射 X06-RUNTIME-002；
 6. 数学域与非有限结果按 X06-RUNTIME-009，作为 VM `Fault::Error` 进入既有 handler/catch 路由；指令 fault 注记附上 source span；成功调用不清除 Runtime ABI 的既有挂起错误；
 7. 不复制数学/域/ULP 逻辑，不调用宿主 libm 形成第二套；
@@ -117,7 +130,7 @@ B4-2 是 VM 内部可执行批，不是 `std.cmath` 模块导入可用批。B4-4
 ## 五、退出条件
 
 1. 34～48 的 TAC/字节码可往返，容器版本未变；
-2. VM 15 项经 B4-2B 开工前冻结的 Rust-only Runtime 错误返回入口绑定共享内核，无第二实现；
+2. VM 15 项经 §1.3 已确认的 Rust-only Runtime 错误返回入口绑定共享内核，无第二实现；
 3. 002/009、encode/decode 后 span、catch/清理及 ABI 挂起槽隔离证据完整；
 4. 30 条 planned 导入路径仍拒绝，`language_available=false`；
 5. 无 LLVM/双路径/归档/ABI/registry 改动；
