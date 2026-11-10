@@ -382,7 +382,7 @@ fn float_math_does_not_require_payload_allocation() {
 fn all_abi_results_match_formal_reference_errors_signs_and_ulp() {
     let reference = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
-        "/../../../../docs/DevDocs/assets/20o-b2-b/entry-20261108-b3/b1/reference-vectors.tsv"
+        "/../../../../tests/fixtures/docs/cmath/reference-vectors.tsv"
     ));
     let mut counts = std::collections::BTreeMap::new();
     for line in reference.lines().filter(|line| !line.starts_with('#')) {

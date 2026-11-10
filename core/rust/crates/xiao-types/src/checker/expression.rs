@@ -4,16 +4,17 @@
 //! 容器、函数和表的专门规则仍由各自子模块提供。
 
 use xiao_diagnostics::{DiagnosticParam, error_kind_of};
-use xiao_intrinsics::IntrinsicKind;
+use xiao_intrinsics::{CMATH_DECLARATIONS, IntrinsicKind, ValueType, cmath_parameters};
 use xiao_source::SourceSpan;
 use xiao_syntax::{
-    BinaryOperator, CallArgument, CallArgumentKind, Expression, LiteralKind, ScalarType,
-    UnaryOperator,
+    BinaryOperator, CallArgument, CallArgumentKind, Expression, FunctionParameterKind, LiteralKind,
+    ScalarType, UnaryOperator,
 };
 
 use crate::containers::ArrayType;
 use crate::conversion::{ConversionKind, can_assign, classify_conversion, is_numeric};
 use crate::diagnostics::*;
+use crate::functions::{FunctionParameterSignature, FunctionSignature};
 use crate::numeric::{
     binary_scalar_type, is_decimal_integer, parse_float_literal, parse_integer_literal,
 };
@@ -644,6 +645,12 @@ impl<'source> TypeChecker<'source> {
             self.record_intrinsic_call(callee, span);
             return self.check_scalar_call(target, arguments, span);
         }
+        if let Some(declaration) = self.intrinsic_decl(callee)
+            && declaration.kind == IntrinsicKind::Cmath
+        {
+            self.record_intrinsic_call(callee, span);
+            return self.check_cmath_intrinsic_call(declaration, arguments, span);
+        }
         if self
             .intrinsic_decl(callee)
             .is_some_and(|decl| decl.kind == IntrinsicKind::Input)
@@ -722,6 +729,61 @@ impl<'source> TypeChecker<'source> {
             return self.check_set_mutation_intrinsic_call(declaration.kind, arguments, span);
         }
         self.check_function_value_call(callee, arguments, span)
+    }
+
+    /// 检查一元/二元 cmath 原语；使用冻结参数表和既有位置/命名匹配规则。
+    fn check_cmath_intrinsic_call(
+        &mut self,
+        declaration: &'static xiao_intrinsics::IntrinsicDecl,
+        arguments: &[CallArgument],
+        span: SourceSpan,
+    ) -> Type {
+        let Some(parameters) = cmath_parameters(declaration.id) else {
+            self.call_error(span, "cmath intrinsic ID 缺少冻结参数表");
+            return Type::Dynamic;
+        };
+        let Some((expected_name, _, _)) = declaration
+            .id
+            .get()
+            .checked_sub(34)
+            .and_then(|index| CMATH_DECLARATIONS.get(index as usize))
+        else {
+            self.call_error(span, "cmath intrinsic ID 超出冻结范围");
+            return Type::Dynamic;
+        };
+        if declaration.public_name != *expected_name
+            || declaration.signature.return_type != ValueType::Float
+            || declaration.signature.parameter != ValueType::Float
+            || declaration.signature.arity
+                != if parameters.len() == 1 {
+                    xiao_intrinsics::Arity::One
+                } else {
+                    xiao_intrinsics::Arity::Two
+                }
+        {
+            self.call_error(span, "cmath intrinsic 声明签名与冻结参数表不一致");
+            return Type::Dynamic;
+        }
+        let mut signature_parameters = Vec::with_capacity(parameters.len());
+        for &(name, parameter_type) in parameters {
+            if parameter_type != ValueType::Float {
+                self.call_error(span, "cmath intrinsic 参数表必须全部为 float");
+                return Type::Dynamic;
+            }
+            signature_parameters.push(FunctionParameterSignature {
+                name: format!("ascii:{name}"),
+                kind: FunctionParameterKind::PositionalOrKeyword,
+                ty: Type::scalar(ScalarType::Float),
+                has_default: false,
+            });
+        }
+        let signature = FunctionSignature::new(
+            format!("ascii:cmath-{}", declaration.id.get()),
+            signature_parameters,
+            Type::scalar(ScalarType::Float),
+            span,
+        );
+        self.check_function_arguments(&signature, arguments, span)
     }
 
     /// 显式除法只接受冻结四参数；动态类型和值域在调用时检查，保留实参求值顺序。

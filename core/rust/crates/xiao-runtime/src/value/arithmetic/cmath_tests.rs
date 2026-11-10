@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 
 const VECTORS: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/../../../../docs/DevDocs/assets/20o-b2-b/entry-20261108-b3/b1/reference-vectors.tsv"
+    "/../../../../tests/fixtures/docs/cmath/reference-vectors.tsv"
 ));
 
 struct Vector<'a> {
