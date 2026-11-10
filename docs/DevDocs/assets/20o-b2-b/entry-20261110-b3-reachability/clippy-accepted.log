@@ -1,0 +1,5 @@
+    Checking xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+    Checking xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+    Checking xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+    Checking xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 16.57s

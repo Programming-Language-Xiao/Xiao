@@ -1,0 +1,221 @@
+{
+  "scope": "仅B3可达性与planned拒绝回归；不是B3-4独立收口",
+  "source": {
+    "baseline_commit": "0e33e6bf40b0d5a2cf52659445c339753294b90a",
+    "baseline_tree": "1c6cb3f4c1c0f323755229ac9684f89a95bc9b06",
+    "changed_product_files": [
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic.rs",
+        "bytes": 36377,
+        "sha256": "ae2065a6e78ca104bd20bcb648ee877073d4803298d72d729791829def60ca72",
+        "utf8_lf_sha256": "ae2065a6e78ca104bd20bcb648ee877073d4803298d72d729791829def60ca72"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/README.md",
+        "bytes": 5703,
+        "sha256": "bf4fa6be233b48988dcec97b3dd6a899afdaae21957950c3f21ab56277498d40",
+        "utf8_lf_sha256": "95d9672396d569ac5c29d8402775da94e4e20a3e1568d45afb7a32c66bf8df6f"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/imports.rs",
+        "bytes": 5513,
+        "sha256": "be7e13e09380a9fdebc4dd6fa7f800c43c40dcb83ab0bee67fff31e97b4bc889",
+        "utf8_lf_sha256": "be7e13e09380a9fdebc4dd6fa7f800c43c40dcb83ab0bee67fff31e97b4bc889"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic_architecture_tests.rs",
+        "bytes": 5169,
+        "sha256": "b3fc6a44c58c934d8c9d8b67b9a52563747b35ebe00ec812ca098c3dd8e1c1b3",
+        "utf8_lf_sha256": "bec81b62fca21a0eedeebc6acd7a319f21af4c1df5f3f249db7979c375bb47f9"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/tests/stdlib_bindings.rs",
+        "bytes": 9751,
+        "sha256": "91ed77114086afa1be4946b7599f9c8c8559394a2fe84394c88419ed88301766",
+        "utf8_lf_sha256": "91ed77114086afa1be4946b7599f9c8c8559394a2fe84394c88419ed88301766"
+      },
+      {
+        "path": "core/rust/crates/xiao-driver/tests/20o_b2_b3_wrapper.rs",
+        "bytes": 15253,
+        "sha256": "b3e4774abce8e301d87609cc210088d1b767945efc1631d2698dd8105bcda643",
+        "utf8_lf_sha256": "b3e4774abce8e301d87609cc210088d1b767945efc1631d2698dd8105bcda643"
+      }
+    ]
+  },
+  "source_scope": [
+    "core/rust",
+    "stdlib",
+    "tests/fixtures",
+    "tests/benchmarks",
+    ".github/workflows",
+    ".cargo",
+    "tools",
+    "cli/ts",
+    "docs/UseDocs",
+    "docs/module-registry.json",
+    "package.json",
+    "bun.lock",
+    ".gitattributes"
+  ],
+  "final_runs": [
+    "codegen-accepted",
+    "driver-accepted",
+    "clippy-accepted",
+    "fmt-accepted",
+    "final-docs"
+  ],
+  "b3_4_closed": false,
+  "cmath_status": "planned",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 20,
+      "sha256": "2199d532e3836627014a38692a34c49da747cd5baeb033c2a88b90d1490f1fe0"
+    },
+    {
+      "path": "audit.py",
+      "bytes": 5117,
+      "sha256": "29bef4259ab556e7733bea6924e6d8a53d116e03db8c56184dc1c99d8203957a"
+    },
+    {
+      "path": "before-reachability.json",
+      "bytes": 1529,
+      "sha256": "66dd5689a36840920f8a4e9bdc61888a510a5f20bcb8ca7612cec7eb917fef9e"
+    },
+    {
+      "path": "before-reachability.log",
+      "bytes": 1000,
+      "sha256": "8a7736d8c6d6ffc1ac79a9fede7ad4391ed1eeadd9c49bdadff6da3d09740497"
+    },
+    {
+      "path": "clippy-accepted.json",
+      "bytes": 4626,
+      "sha256": "fc50fde56c6db87c6090248da88935e80cdcd54cfca308969f198d4e71cc7232"
+    },
+    {
+      "path": "clippy-accepted.log",
+      "bytes": 417,
+      "sha256": "1ad58bc4e6a6f556249e9a29d03d9d83c4bb814cfea64e0791da11e5c9c80181"
+    },
+    {
+      "path": "codegen-accepted.json",
+      "bytes": 4570,
+      "sha256": "4c67c0e6286fad14b70f3acb0e8bf176265df87d12e7c489ac32e336b078420c"
+    },
+    {
+      "path": "codegen-accepted.log",
+      "bytes": 12753,
+      "sha256": "c865e0dbde4b66de76ff13c976a07f7034c0c282915693a99fc7b983b8b2d4d8"
+    },
+    {
+      "path": "driver-accepted.json",
+      "bytes": 4640,
+      "sha256": "0a7ded46e7bfe2f8a59b39ed300d3761794bdef3da4055b0664cab4f2f1c11ff"
+    },
+    {
+      "path": "driver-accepted.log",
+      "bytes": 9486,
+      "sha256": "4a13d23ec97794ec99041876fbbcdb30813f3ee7399ff4c60cd6b48b402c6e98"
+    },
+    {
+      "path": "final-clippy.json",
+      "bytes": 4626,
+      "sha256": "f891985c9ee348749ee5582b681b15934e481a2f1a7a3c5e4bdd09b31115f6c6"
+    },
+    {
+      "path": "final-clippy.log",
+      "bytes": 2976,
+      "sha256": "3ce447874fe583675c32fd26cb0414b3236dc94c7e9dcbcdc58698ba84643d30"
+    },
+    {
+      "path": "final-codegen-fixed.json",
+      "bytes": 4573,
+      "sha256": "c9aa8b03a9d29fe48564d4d51e441426f973489327d4cbe98156e31dd19f64c9"
+    },
+    {
+      "path": "final-codegen-fixed.log",
+      "bytes": 12753,
+      "sha256": "35b831742d6a2240afd836bce7be30a16598a28aa22c3504082460aeb073dd38"
+    },
+    {
+      "path": "final-codegen.json",
+      "bytes": 3440,
+      "sha256": "bde3ca60e1325c745459af047e1166d368a01e7e89b8f1c8fe4c1bf0c5b7be9c"
+    },
+    {
+      "path": "final-codegen.log",
+      "bytes": 5194,
+      "sha256": "6e33dc4ec7350df36451af8f584b51ac5e00d9899c8661c07a5d33092f1ffb5a"
+    },
+    {
+      "path": "final-docs.json",
+      "bytes": 4451,
+      "sha256": "e14de50f9e3fbed116b08999be583091d33b5da97512240129c21ad3ef6cf7a3"
+    },
+    {
+      "path": "final-docs.log",
+      "bytes": 282916,
+      "sha256": "768357a73d914bd200b73b8867ceec252cb587beb5cfd39abe335d003d7418b9"
+    },
+    {
+      "path": "final-driver-fixed.json",
+      "bytes": 4643,
+      "sha256": "376da430dbb80107783973542976c6c1bfbcd43967234cec45c1276169d67e19"
+    },
+    {
+      "path": "final-driver-fixed.log",
+      "bytes": 9303,
+      "sha256": "e65aacbd51b3e8b9089420b09e1c2897b321f735219edaebe3eda271e1fdec5f"
+    },
+    {
+      "path": "final-driver.json",
+      "bytes": 3509,
+      "sha256": "c0de1cc90c7e7521d78f02261be823cb66df550fd6196cee81fe69a72a603936"
+    },
+    {
+      "path": "final-driver.log",
+      "bytes": 9328,
+      "sha256": "568cd2d7af6bbb75a7c09c683831723ab0ae83d834458a0ce9c90d21c4543726"
+    },
+    {
+      "path": "final-fmt.json",
+      "bytes": 4516,
+      "sha256": "79f407e67a59af2f4f0fba6aadd2c317cf9f1915958c9787fbf7dec86c8d23c7"
+    },
+    {
+      "path": "final-fmt.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "fmt-accepted.json",
+      "bytes": 4519,
+      "sha256": "bae24856107c07d5e03ac8d118297d645fd1f3837c1abef9eb68b8018df413e2"
+    },
+    {
+      "path": "fmt-accepted.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reachable-bindings.json",
+      "bytes": 3479,
+      "sha256": "4f0d3b730c4d57dd5d8f1e186493ba04608d10c181d5417f3957fa51b566cff4"
+    },
+    {
+      "path": "reachable-bindings.log",
+      "bytes": 658,
+      "sha256": "fb4396b1b2b9457e5eeca905d87e1a3600f48677cf23c4c2e172dc206e86fcdf"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2378,
+      "sha256": "cd27c773459ba1be90d60edc77764b103a71df214280d6a5b8b7c783e98edfe7"
+    },
+    {
+      "path": "record-check.py",
+      "bytes": 4659,
+      "sha256": "acdc61c8f9fc490df1fd96fac3c7f1dd0854e5981976726e7682420fac0f72be"
+    }
+  ]
+}

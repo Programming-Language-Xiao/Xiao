@@ -1,0 +1,112 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "clippy",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-codegen-llvm",
+    "-p",
+    "xiao-driver",
+    "--all-targets",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 46700,
+  "started_utc": "2026-11-10T06:01:32.272581+00:00",
+  "finished_utc": "2026-11-10T06:01:50.044166+00:00",
+  "exit_code": 0,
+  "source_before": {
+    "baseline_commit": "0e33e6bf40b0d5a2cf52659445c339753294b90a",
+    "baseline_tree": "1c6cb3f4c1c0f323755229ac9684f89a95bc9b06",
+    "changed_product_files": [
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic.rs",
+        "bytes": 36377,
+        "sha256": "ae2065a6e78ca104bd20bcb648ee877073d4803298d72d729791829def60ca72",
+        "utf8_lf_sha256": "ae2065a6e78ca104bd20bcb648ee877073d4803298d72d729791829def60ca72"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/README.md",
+        "bytes": 5703,
+        "sha256": "bf4fa6be233b48988dcec97b3dd6a899afdaae21957950c3f21ab56277498d40",
+        "utf8_lf_sha256": "95d9672396d569ac5c29d8402775da94e4e20a3e1568d45afb7a32c66bf8df6f"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/imports.rs",
+        "bytes": 5513,
+        "sha256": "be7e13e09380a9fdebc4dd6fa7f800c43c40dcb83ab0bee67fff31e97b4bc889",
+        "utf8_lf_sha256": "be7e13e09380a9fdebc4dd6fa7f800c43c40dcb83ab0bee67fff31e97b4bc889"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic_architecture_tests.rs",
+        "bytes": 5169,
+        "sha256": "b3fc6a44c58c934d8c9d8b67b9a52563747b35ebe00ec812ca098c3dd8e1c1b3",
+        "utf8_lf_sha256": "bec81b62fca21a0eedeebc6acd7a319f21af4c1df5f3f249db7979c375bb47f9"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/tests/stdlib_bindings.rs",
+        "bytes": 9751,
+        "sha256": "91ed77114086afa1be4946b7599f9c8c8559394a2fe84394c88419ed88301766",
+        "utf8_lf_sha256": "91ed77114086afa1be4946b7599f9c8c8559394a2fe84394c88419ed88301766"
+      },
+      {
+        "path": "core/rust/crates/xiao-driver/tests/20o_b2_b3_wrapper.rs",
+        "bytes": 15253,
+        "sha256": "b3e4774abce8e301d87609cc210088d1b767945efc1631d2698dd8105bcda643",
+        "utf8_lf_sha256": "b3e4774abce8e301d87609cc210088d1b767945efc1631d2698dd8105bcda643"
+      }
+    ]
+  },
+  "source_after": {
+    "baseline_commit": "0e33e6bf40b0d5a2cf52659445c339753294b90a",
+    "baseline_tree": "1c6cb3f4c1c0f323755229ac9684f89a95bc9b06",
+    "changed_product_files": [
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic.rs",
+        "bytes": 36377,
+        "sha256": "ae2065a6e78ca104bd20bcb648ee877073d4803298d72d729791829def60ca72",
+        "utf8_lf_sha256": "ae2065a6e78ca104bd20bcb648ee877073d4803298d72d729791829def60ca72"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/README.md",
+        "bytes": 5703,
+        "sha256": "bf4fa6be233b48988dcec97b3dd6a899afdaae21957950c3f21ab56277498d40",
+        "utf8_lf_sha256": "95d9672396d569ac5c29d8402775da94e4e20a3e1568d45afb7a32c66bf8df6f"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/imports.rs",
+        "bytes": 5513,
+        "sha256": "be7e13e09380a9fdebc4dd6fa7f800c43c40dcb83ab0bee67fff31e97b4bc889",
+        "utf8_lf_sha256": "be7e13e09380a9fdebc4dd6fa7f800c43c40dcb83ab0bee67fff31e97b4bc889"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic_architecture_tests.rs",
+        "bytes": 5169,
+        "sha256": "b3fc6a44c58c934d8c9d8b67b9a52563747b35ebe00ec812ca098c3dd8e1c1b3",
+        "utf8_lf_sha256": "bec81b62fca21a0eedeebc6acd7a319f21af4c1df5f3f249db7979c375bb47f9"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/tests/stdlib_bindings.rs",
+        "bytes": 9751,
+        "sha256": "91ed77114086afa1be4946b7599f9c8c8559394a2fe84394c88419ed88301766",
+        "utf8_lf_sha256": "91ed77114086afa1be4946b7599f9c8c8559394a2fe84394c88419ed88301766"
+      },
+      {
+        "path": "core/rust/crates/xiao-driver/tests/20o_b2_b3_wrapper.rs",
+        "bytes": 15253,
+        "sha256": "b3e4774abce8e301d87609cc210088d1b767945efc1631d2698dd8105bcda643",
+        "utf8_lf_sha256": "b3e4774abce8e301d87609cc210088d1b767945efc1631d2698dd8105bcda643"
+      }
+    ]
+  },
+  "source_unchanged": true,
+  "log": "clippy-accepted.log",
+  "log_bytes": 417,
+  "log_sha256": "1ad58bc4e6a6f556249e9a29d03d9d83c4bb814cfea64e0791da11e5c9c80181",
+  "recorder_sha256": "acdc61c8f9fc490df1fd96fac3c7f1dd0854e5981976726e7682420fac0f72be"
+}

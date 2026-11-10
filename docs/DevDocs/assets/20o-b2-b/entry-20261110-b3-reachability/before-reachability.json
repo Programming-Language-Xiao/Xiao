@@ -1,0 +1,50 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-codegen-llvm",
+    "--test",
+    "stdlib_bindings",
+    "unreachable_module_cannot_pull_in_planned_cmath",
+    "--",
+    "--exact",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 36764,
+  "started_utc": "2026-11-10T05:48:16.705569+00:00",
+  "finished_utc": "2026-11-10T05:48:21.681920+00:00",
+  "exit_code": 101,
+  "source_before": {
+    "baseline_commit": "0e33e6bf40b0d5a2cf52659445c339753294b90a",
+    "baseline_tree": "1c6cb3f4c1c0f323755229ac9684f89a95bc9b06",
+    "changed_product_files": [
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/tests/stdlib_bindings.rs",
+        "bytes": 9706,
+        "sha256": "56ab1d41f906a274a5efb53ae2d14100e21d7d4491d2f1da573ab917635036f9"
+      }
+    ]
+  },
+  "source_after": {
+    "baseline_commit": "0e33e6bf40b0d5a2cf52659445c339753294b90a",
+    "baseline_tree": "1c6cb3f4c1c0f323755229ac9684f89a95bc9b06",
+    "changed_product_files": [
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/tests/stdlib_bindings.rs",
+        "bytes": 9706,
+        "sha256": "56ab1d41f906a274a5efb53ae2d14100e21d7d4491d2f1da573ab917635036f9"
+      }
+    ]
+  },
+  "source_unchanged": true,
+  "log": "before-reachability.log",
+  "log_bytes": 1000,
+  "log_sha256": "8a7736d8c6d6ffc1ac79a9fede7ad4391ed1eeadd9c49bdadff6da3d09740497",
+  "recorder_sha256": "8cc1c5e9ecad3a77db8290c289c3875fbee53e35f3b42f26e9c7e0ca88363d11"
+}

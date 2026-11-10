@@ -18,6 +18,7 @@ slot.rs             槽收集、表字段初始化、作用域边界和槽读写
 release.rs          临时值释放、所有权释放计划和退出边
 control.rs          顶层语句、条件、if/elif/else、while、break/continue
 expression.rs       表达式、字面量、字符串和表字段读写
+imports.rs          从入口导入出发的模块闭包、标准库别名归一和导入环去重
 container.rs        数组/元组、字典、集合、表构造和表描述符
 methods.rs          表方法与字段回调、参数绑定、弱只读 receiver 和失败清理
 ```
@@ -25,7 +26,7 @@ methods.rs          表方法与字段回调、参数绑定、弱只读 receiver
 ## 依赖边界
 
 `dynamic.rs` 是稳定门面，保存 `DynamicGenerator` 的状态和生成顺序；各职责模块通过
-`impl DynamicGenerator` 扩展实现，不能把实现重新塞回门面。`predicate.rs` 和 `text.rs`
+`impl DynamicGenerator` 扩展实现，不能把实现重新塞回门面。`imports.rs`、`predicate.rs` 和 `text.rs`
 保持无状态，容器/表达式模块只能消费它们的纯辅助；其他子模块可以访问门面提供的内部
 状态、常量和发射原语，但不得互相形成控制流、表达式、容器、释放或 ABI 的反向依赖。
 
@@ -35,6 +36,10 @@ methods.rs          表方法与字段回调、参数绑定、弱只读 receiver
 
 模块导入可以消费 `xiao-standard-library` 的纯身份元数据以统一 std 别名；不依赖
 驱动器或 VM，也不执行 Runtime 来解析模块身份。
+
+标准库函数只为入口导入可达的文件模块建立绑定。`imports.rs` 从 `program.body`
+收集边，再逐个展开可达模块体；完整模块索引只供查找，不能把不可达模块的导入混入闭包。
+函数、表和控制流中的语法导入保守保留，不做运行时分支裁剪；访问集合使导入环有限终止。
 
 ## 验收
 

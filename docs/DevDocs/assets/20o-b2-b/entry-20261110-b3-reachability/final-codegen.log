@@ -1,0 +1,74 @@
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.87s
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_codegen_llvm-642e6c35e475c196.exe)
+
+running 56 tests
+test artifact::tests::composition_keeps_declared_and_observed_components_separate ... ok
+test artifact::tests::keeps_unclassified_runtime_symbols_visible ... ok
+test artifact::tests::maps_runtime_symbols_to_declared_component_names ... ok
+test artifact::tests::normalizes_macho_leading_underscore_without_touching_other_symbols ... ok
+test artifact::tests::parses_arm64_slice_from_fat_macho ... ok
+test artifact::tests::parses_controlled_elf_symbols ... ok
+test artifact::tests::parses_controlled_macho_symbols_and_normalizes_prefix ... ok
+test artifact::tests::parses_controlled_pe_coff_symbols ... ok
+test artifact::tests::parses_fat_macho_slice_with_independent_endianness ... ok
+test artifact::tests::dynamic_artifact_reports_runtime_dependency_fact ... ok
+test artifact::tests::rejects_byte_offset_that_cannot_fit_usize ... ok
+test artifact::tests::declared_runtime_component_is_observable_for_each_format ... ok
+test artifact::tests::static_artifact_with_runtime_dependency_is_rejected ... ok
+test artifact::tests::pe_symbol_table_status_reflects_actual_coff_table ... ok
+test artifact::tests::stripped_symbol_tables_are_not_accepted_as_trimming_evidence ... ok
+test artifact::tests::symbol_table_comparison_never_equates_unavailable_reports ... ok
+test baseline::tests::median_and_noise_are_stable ... ok
+test baseline::tests::rejects_non_finite_samples_and_exposes_noise_gate ... ok
+test baseline::tests::rejects_uncontrolled_sample_shapes ... ok
+test artifact::tests::debug_symbol_is_required_only_for_debug_artifacts ... ok
+test artifact::tests::static_artifact_with_runtime_symbol_is_rejected ... ok
+test dynamic::release::storage_tests::only_literal_alloca_counts_can_move_to_entry ... ok
+test dynamic::imports::tests::namespace_selection_does_not_expand_unselected_siblings ... ok
+test native_concurrency::tests::duplicate_spans_are_rejected ... ok
+test native_concurrency::tests::metadata_must_match_one_typed_call_and_cannot_intercept_another_module ... ok
+test native_concurrency::tests::module_concurrency_is_rejected_structurally ... ok
+test native_concurrency::tests::orphan_concurrency_facts_are_rejected ... ok
+test native_concurrency::tests::plan_indexes_ir_calls_without_name_resolution ... ok
+test native_concurrency::tests::unknown_operation_is_fail_closed ... ok
+test native_metadata::tests::native_metadata_codec_is_bounded_and_exact ... ok
+test native_metadata::tests::native_metadata_does_not_scan_for_magic ... ok
+test native_metadata::tests::native_metadata_requirements_reject_incompatible_inputs ... ok
+test native_metadata::tests::native_metadata_emission_uses_the_declared_target ... ok
+test optimization::tests::extension_switches_are_explicitly_rejected_until_frozen ... ok
+test optimization::tests::plan_keeps_extensions_off_and_fingerprint_stable ... ok
+test optimization::tests::runtime_report_explains_retained_and_removed_components ... ok
+test reproducible::tests::binary_layout_whitelist_is_explicit ... ok
+test reproducible::tests::normalizes_debug_paths_in_place_and_records_offsets ... ok
+test reproducible::tests::normalizes_elf_gnu_build_id ... ok
+test reproducible::tests::normalizes_paths_times_and_symbol_order ... ok
+test reproducible::tests::normalizes_pe_debug_directory_timestamp ... ok
+test reproducible::tests::normalizes_pe_timestamp_and_records_the_field ... ok
+test reproducible::tests::records_unix_and_windows_path_fields_separately ... ok
+test target::tests::controlled_targets_validate_equally ... ok
+test target::tests::host_target_architecture_matches_compile_time_target ... ok
+test target::tests::invalid_fixed_width_and_format_are_rejected ... ok
+test toolchain::tests::native_library_list_is_fingerprinted ... ok
+test toolchain::tests::normalizes_case_insensitive_windows_tokens ... ok
+test toolchain::tests::parses_windows_native_static_libraries ... ok
+
+thread 'dynamic::architecture_tests::module_dependency_direction_is_acyclic' (48052) panicked at crates\xiao-codegen-llvm\src\dynamic_architecture_tests.rs:15:5:
+imports.rs 不得依赖 super::
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test toolchain::tests::preserves_unix_native_static_libraries ... ok
+test dynamic::architecture_tests::module_dependency_direction_is_acyclic ... FAILED
+test toolchain::tests::posix_startup_shim_waits_for_readiness ... ok
+test toolchain::tests::rejects_missing_native_static_library_marker ... ok
+test toolchain::tests::startup_shim_embeds_only_diagnostics_basename ... ok
+test toolchain::tests::windows_startup_shim_opens_console_and_waits_for_readiness ... ok
+test artifact::tests::verifies_release_debug_and_stripped_modes_independently ... ok
+
+failures:
+
+failures:
+    dynamic::architecture_tests::module_dependency_direction_is_acyclic
+
+test result: FAILED. 55 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.35s
+
+error: test failed, to rerun pass `-p xiao-codegen-llvm --lib`

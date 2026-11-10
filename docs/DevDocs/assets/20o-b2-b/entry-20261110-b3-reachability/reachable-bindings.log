@@ -1,0 +1,12 @@
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.59s
+     Running tests\stdlib_bindings.rs (core\rust\target\debug\deps\stdlib_bindings-3e32bba7fd3f6b45.exe)
+
+running 4 tests
+test missing_selected_body_cannot_fall_back_to_another_module ... ok
+test imports_and_internal_calls_keep_all_real_module_definitions ... ok
+test transitive_imports_bind_dependencies_and_terminate_cycles ... ok
+test unreachable_module_cannot_pull_in_planned_cmath ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

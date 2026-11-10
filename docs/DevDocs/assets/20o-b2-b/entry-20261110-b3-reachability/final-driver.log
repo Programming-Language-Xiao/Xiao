@@ -1,0 +1,89 @@
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.20s
+     Running tests\20c_first_modules.rs (core\rust\target\debug\deps\20c_first_modules-3c997782d0024b8e.exe)
+
+running 15 tests
+test first_modules_match_native_results ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test fixed_named_calls_preserve_argument_evaluation_and_binding ... ok
+test project_cannot_shadow_the_reserved_standard_library_namespace ... ok
+test removing_llvm_standard_library_function_binding_rejects_native_build ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test set_remove_missing_native_matches_vm ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test b1_release_edges_have_vm_golden_outputs ... ok
+test standard_library_import_requires_vm_loader_binding ... ok
+test helper_module_can_import_standard_library ... ok
+test std_aliases_preserve_imported_function_contracts ... ok
+test path_module_vm_result_and_removal_boundary_are_stable ... ok
+test string_indices_preserve_unicode_iteration_and_negative_bounds ... ok
+test std_alias_native_lowering_matches_the_canonical_capability_boundary ... ok
+test std_alias_archives_record_canonical_host_requirements ... ok
+test std_aliases_use_the_canonical_official_module ... ok
+test text_module_vm_result_and_removal_boundary_are_stable ... ok
+
+test result: ok. 12 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 12.55s
+
+     Running tests\20o_b2_b3_wrapper.rs (core\rust\target\debug\deps\20o_b2_b3_wrapper-a8cece87f2cea900.exe)
+
+running 7 tests
+B3-CMATH-WRAPPER paths=std,stdlib ordinary-package=rejected result=success
+test source_contract_aliases_share_identity_and_reject_package_override ... ok
+B3-WRAPPER-EXPORT	{"function":"sqrt","intrinsic_id":34,"parameter_type":"float","parameters":["value"],"primitive":"cmath_sqrt","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"floor","intrinsic_id":35,"parameter_type":"float","parameters":["value"],"primitive":"cmath_floor","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"ceil","intrinsic_id":36,"parameter_type":"float","parameters":["value"],"primitive":"cmath_ceil","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"round","intrinsic_id":37,"parameter_type":"float","parameters":["value"],"primitive":"cmath_round","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"trunc","intrinsic_id":38,"parameter_type":"float","parameters":["value"],"primitive":"cmath_trunc","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"abs","intrinsic_id":39,"parameter_type":"float","parameters":["value"],"primitive":"cmath_abs","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"min","intrinsic_id":40,"parameter_type":"float","parameters":["left","right"],"primitive":"cmath_min","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"max","intrinsic_id":41,"parameter_type":"float","parameters":["left","right"],"primitive":"cmath_max","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"pow","intrinsic_id":42,"parameter_type":"float","parameters":["base","exponent"],"primitive":"cmath_pow","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"sin","intrinsic_id":43,"parameter_type":"float","parameters":["value"],"primitive":"cmath_sin","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"cos","intrinsic_id":44,"parameter_type":"float","parameters":["value"],"primitive":"cmath_cos","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"tan","intrinsic_id":45,"parameter_type":"float","parameters":["value"],"primitive":"cmath_tan","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"exp","intrinsic_id":46,"parameter_type":"float","parameters":["value"],"primitive":"cmath_exp","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"ln","intrinsic_id":47,"parameter_type":"float","parameters":["value"],"primitive":"cmath_ln","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"log10","intrinsic_id":48,"parameter_type":"float","parameters":["value"],"primitive":"cmath_log10","return_type":"float"}
+B3-CMATH-WRAPPER functions=15 validation=AST-interface status=planned result=success
+test source_contract_exports_exactly_fifteen_frozen_forwarders ... ok
+B3-WRAPPER-CONTRACT mutation_cases=10 result=success
+test source_contract_rejects_extra_exports_and_wrong_forwarders ... ok
+B3-CMATH-WRAPPER removals=15 validation=AST-interface result=success
+test source_contract_removing_each_wrapper_invalidates_exports ... ok
+test source_contract_tutorial_tracks_registry_and_requires_verified_evidence ... ok
+B3-CMATH-ISOLATION modules=["stdlib.base64", "stdlib.cmath", "stdlib.csv", "stdlib.dict", "stdlib.fmt", "stdlib.hex", "stdlib.math", "stdlib.os", "stdlib.path", "stdlib.set", "stdlib.statistics", "stdlib.text", "stdlib.url"]
+B3-WRAPPER-IMPORT path=std.cmath function=sqrt stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-CMATH-ISOLATION native=success imported=stdlib.hex preloaded=stdlib.cmath:false
+test existing_hex_import_keeps_native_lowering ... ok
+B3-WRAPPER-IMPORT path=std.cmath function=floor stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=ceil stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=round stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=trunc stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=abs stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=min stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=max stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=pow stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=sin stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=cos stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=tan stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=exp stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=ln stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=log10 stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=sqrt stage=frontend code=X02-TYPE-001 primitive=cmath_sqrt executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=floor stage=frontend code=X02-TYPE-001 primitive=cmath_floor executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=ceil stage=frontend code=X02-TYPE-001 primitive=cmath_ceil executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=round stage=frontend code=X02-TYPE-001 primitive=cmath_round executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=trunc stage=frontend code=X02-TYPE-001 primitive=cmath_trunc executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=abs stage=frontend code=X02-TYPE-001 primitive=cmath_abs executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=min stage=frontend code=X02-TYPE-001 primitive=cmath_min executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=max stage=frontend code=X02-TYPE-001 primitive=cmath_max executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=pow stage=frontend code=X02-TYPE-001 primitive=cmath_pow executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=sin stage=frontend code=X02-TYPE-001 primitive=cmath_sin executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=cos stage=frontend code=X02-TYPE-001 primitive=cmath_cos executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=tan stage=frontend code=X02-TYPE-001 primitive=cmath_tan executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=exp stage=frontend code=X02-TYPE-001 primitive=cmath_exp executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=ln stage=frontend code=X02-TYPE-001 primitive=cmath_ln executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=log10 stage=frontend code=X02-TYPE-001 primitive=cmath_log10 executable=false result=planned-rejected
+test b3_handoff_rejects_all_planned_language_imports ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.02s
+

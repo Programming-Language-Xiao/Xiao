@@ -264,6 +264,45 @@ fn existing_hex_import_keeps_native_lowering() {
 }
 
 #[test]
+/// 未导入的path模块即使引用真实planned cmath包装，也不得破坏hex原生降低。
+fn unimported_module_cannot_pull_cmath_into_hex() {
+    let mut artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(
+            "from stdlib.hex import encode\nprint(encode([0, 255]))\n",
+        ))
+        .unwrap();
+    let mut dependency = artifact
+        .ir
+        .body
+        .iter()
+        .find(|statement| matches!(statement.kind, xiao_ir::IrStatementKind::Import { .. }))
+        .unwrap()
+        .clone();
+    let xiao_ir::IrStatementKind::Import { items, .. } = &mut dependency.kind else {
+        unreachable!();
+    };
+    for item in items {
+        item.module = "std.cmath".to_owned();
+        item.selected.as_mut().unwrap().text = "abs".to_owned();
+        item.binding.text = "planned_abs".to_owned();
+    }
+    let unused = artifact
+        .ir
+        .modules
+        .iter_mut()
+        .find(|module| module.name == "stdlib.path")
+        .unwrap();
+    unused.body.insert(0, dependency);
+    let module = xiao_codegen_llvm::NativeBuild::new()
+        .lower(&artifact.ir, &Default::default())
+        .expect("不可达path模块不能把cmath原语带入hex降低");
+    assert!(!module.text.contains("cmath_abs"));
+    println!(
+        "B3-CMATH-REACHABILITY root=stdlib.hex unreachable=stdlib.path dependency=stdlib.cmath result=success"
+    );
+}
+
+#[test]
 /// 非冻结导出、错误形参/类型/默认值和数学实现必须破坏包装转发契约。
 fn source_contract_rejects_extra_exports_and_wrong_forwarders() {
     let text = wrapper().text().to_owned();
@@ -293,8 +332,8 @@ fn source_contract_rejects_extra_exports_and_wrong_forwarders() {
 }
 
 #[test]
-/// 探测真实15个函数的两条导入路径；当前状态由B3证据核验，后续批次可记录新状态。
-fn b3_handoff_records_language_import_state() {
+/// B3 当前30条路径必须保持未接线；B4实施时须与可执行语料一起显式更新此边界。
+fn b3_handoff_rejects_all_planned_language_imports() {
     use std::time::Duration;
     use xiao_driver::{DriverRequest, FrontendVmDriver};
     let mut checked = 0;
@@ -314,22 +353,22 @@ fn b3_handoff_records_language_import_state() {
                         &artifact,
                         &DriverRequest::new(request).with_timeout(Duration::from_secs(10)),
                     );
-                    let executable = outcome.is_success();
-                    if !executable {
-                        assert_eq!(
-                            outcome.code(),
-                            Some("X06-RUNTIME-012"),
-                            "{prefix}.{name}: {outcome:?}"
-                        );
-                        let detail = format!("{outcome:?}");
-                        assert!(
-                            detail.contains(&format!("cmath_{name}"))
-                                || detail.contains("尚未绑定 VM"),
-                            "{detail}"
-                        );
-                    }
+                    assert!(
+                        !outcome.is_success(),
+                        "B3 planned边界意外接通：{prefix}.{name}: {outcome:?}"
+                    );
+                    assert_eq!(
+                        outcome.code(),
+                        Some("X06-RUNTIME-012"),
+                        "{prefix}.{name}: {outcome:?}"
+                    );
+                    let detail = format!("{outcome:?}");
+                    assert!(
+                        detail.contains(&format!("cmath_{name}")) || detail.contains("尚未绑定 VM"),
+                        "{detail}"
+                    );
                     println!(
-                        "B3-WRAPPER-IMPORT path={prefix}.cmath function={name} stage=vm code={} executable={executable} result=observed",
+                        "B3-WRAPPER-IMPORT path={prefix}.cmath function={name} stage=vm code={} executable=false result=planned-rejected",
                         outcome.code().unwrap_or("none")
                     );
                 }
@@ -345,7 +384,7 @@ fn b3_handoff_records_language_import_state() {
                         })
                         .unwrap_or_else(|| panic!("失败未指明未接线原语：{error:?}"));
                     println!(
-                        "B3-WRAPPER-IMPORT path={prefix}.cmath function={name} stage=frontend code={} primitive={primitive} executable=false result=observed",
+                        "B3-WRAPPER-IMPORT path={prefix}.cmath function={name} stage=frontend code={} primitive={primitive} executable=false result=planned-rejected",
                         diagnostic.code()
                     );
                 }

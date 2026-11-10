@@ -28,6 +28,7 @@ fn module_dependency_direction_is_acyclic() {
         "#[path = \"dynamic/control.rs\"]",
         "#[path = \"dynamic/entry.rs\"]",
         "#[path = \"dynamic/expression.rs\"]",
+        "#[path = \"dynamic/imports.rs\"]",
         "#[path = \"dynamic/predicate.rs\"]",
         "#[path = \"dynamic/release.rs\"]",
         "#[path = \"dynamic/runtime_abi.rs\"]",
@@ -75,10 +76,17 @@ fn module_dependency_direction_is_acyclic() {
 
     let predicate = include_str!("dynamic/predicate.rs");
     let text = include_str!("dynamic/text.rs");
+    // 单元测试可访问父模块；纯辅助的依赖边界只检查生产实现。
+    let imports_source = include_str!("dynamic/imports.rs");
+    let imports = imports_source
+        .split_once("\n#[cfg(test)]")
+        .map_or(imports_source, |(production, _)| production);
     assert_no_dependency("predicate.rs", predicate, "super::");
     assert_no_dependency("predicate.rs", predicate, "crate::dynamic");
     assert_no_dependency("text.rs", text, "super::");
     assert_no_dependency("text.rs", text, "crate::dynamic");
+    assert_no_dependency("imports.rs", imports, "super::");
+    assert_no_dependency("imports.rs", imports, "crate::dynamic");
 
     let runtime_abi = include_str!("dynamic/runtime_abi.rs");
     let entry = include_str!("dynamic/entry.rs");

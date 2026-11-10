@@ -1,6 +1,6 @@
 # 20O-B2-B3-4. `stdlib/cmath.xiao` 十五项公开包装规划
 
-> **B3-0/B3-1、B3-2A、B3-3A/B 已完成内部验收；B3-4 源码包装已进入当前工作区，语言接线与独立收口仍留 B4；B5～B7 与 B2-C 仍未开始。**
+> **B3-0/B3-1、B3-2A、B3-3A/B 已完成内部验收；B3-4 源码包装已进入当前工作区，独立审计与 closeout 尚未交付；语言接线留 B4，B5～B7 与 B2-C 仍未开始。**
 > 入口为 B3-3 代码 `89d782e1` 与证据；当前 intrinsic 34～48 仅内部 active，VM/LLVM 未绑定。
 > B3-4 只增加 `stdlib/cmath.xiao` 的 15 个公开包装；不接类型/IR/TAC/VM/LLVM，不升 ABI 1.19/21。
 > `stdlib.cmath` registry 仍 planned；不把包装或教程写成 verified，不跑旧 721。
@@ -18,6 +18,8 @@
 B3-4 是 **源码包装批**，不是语言可用性批。B4 才把 `std.cmath` 接进类型/IR/VM/LLVM 和归档；B4 前包装不能在公开产物中运行。
 
 [历史基线目录](assets/20o-b2-b/entry-20261109-b3-wrapper/README.md)保留包装进入主工作区前的失败/修补记录；当前源码契约、hex 原生隔离、子 VM 别名与归档边界见[802 修复证据](assets/20o-b2-b/entry-20261110-b3-fix-802/README.md)。这些记录仍不能作为 B3-4 收口或 `std.cmath` 可用证据。
+
+后续自审发现 802 修复仍扫描所有模块体，未严格按入口可达性过滤。本轮改为从入口导入递归展开可达模块，并把30条语言路径改成 planned 拒绝断言；反例、正例及执行记录见[可达性修复证据](assets/20o-b2-b/entry-20261110-b3-reachability/README.md)。该目录只核验本次修复，不能替代 B3-4 独立审计/closeout；教程与 registry 继续 planned。
 
 ### 1.1 要做
 

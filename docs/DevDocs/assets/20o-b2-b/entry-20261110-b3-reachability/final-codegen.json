@@ -1,0 +1,96 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-codegen-llvm",
+    "--",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 47724,
+  "started_utc": "2026-11-10T05:53:48.125693+00:00",
+  "finished_utc": "2026-11-10T05:53:59.126795+00:00",
+  "exit_code": 101,
+  "source_before": {
+    "baseline_commit": "0e33e6bf40b0d5a2cf52659445c339753294b90a",
+    "baseline_tree": "1c6cb3f4c1c0f323755229ac9684f89a95bc9b06",
+    "changed_product_files": [
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic.rs",
+        "bytes": 36377,
+        "sha256": "ae2065a6e78ca104bd20bcb648ee877073d4803298d72d729791829def60ca72"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/README.md",
+        "bytes": 5703,
+        "sha256": "bf4fa6be233b48988dcec97b3dd6a899afdaae21957950c3f21ab56277498d40"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/imports.rs",
+        "bytes": 5515,
+        "sha256": "58aa4730bf32547a4a7b2a7c6978d07a5e6488daba69ae84bc5f7a434542a4a0"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic_architecture_tests.rs",
+        "bytes": 4935,
+        "sha256": "d796a369a5d6f950634d57fada1c5f965de368ac591f2997db795ec952e7bf4c"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/tests/stdlib_bindings.rs",
+        "bytes": 9751,
+        "sha256": "91ed77114086afa1be4946b7599f9c8c8559394a2fe84394c88419ed88301766"
+      },
+      {
+        "path": "core/rust/crates/xiao-driver/tests/20o_b2_b3_wrapper.rs",
+        "bytes": 13832,
+        "sha256": "f9b86179efce54fb7676de99dc774f4b7ab560c730c028db8efe87e4c8212ea7"
+      }
+    ]
+  },
+  "source_after": {
+    "baseline_commit": "0e33e6bf40b0d5a2cf52659445c339753294b90a",
+    "baseline_tree": "1c6cb3f4c1c0f323755229ac9684f89a95bc9b06",
+    "changed_product_files": [
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic.rs",
+        "bytes": 36377,
+        "sha256": "ae2065a6e78ca104bd20bcb648ee877073d4803298d72d729791829def60ca72"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/README.md",
+        "bytes": 5703,
+        "sha256": "bf4fa6be233b48988dcec97b3dd6a899afdaae21957950c3f21ab56277498d40"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/imports.rs",
+        "bytes": 5515,
+        "sha256": "58aa4730bf32547a4a7b2a7c6978d07a5e6488daba69ae84bc5f7a434542a4a0"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic_architecture_tests.rs",
+        "bytes": 4935,
+        "sha256": "d796a369a5d6f950634d57fada1c5f965de368ac591f2997db795ec952e7bf4c"
+      },
+      {
+        "path": "core/rust/crates/xiao-codegen-llvm/tests/stdlib_bindings.rs",
+        "bytes": 9751,
+        "sha256": "91ed77114086afa1be4946b7599f9c8c8559394a2fe84394c88419ed88301766"
+      },
+      {
+        "path": "core/rust/crates/xiao-driver/tests/20o_b2_b3_wrapper.rs",
+        "bytes": 13832,
+        "sha256": "f9b86179efce54fb7676de99dc774f4b7ab560c730c028db8efe87e4c8212ea7"
+      }
+    ]
+  },
+  "source_unchanged": true,
+  "log": "final-codegen.log",
+  "log_bytes": 5194,
+  "log_sha256": "6e33dc4ec7350df36451af8f584b51ac5e00d9899c8661c07a5d33092f1ffb5a",
+  "recorder_sha256": "8cc1c5e9ecad3a77db8290c289c3875fbee53e35f3b42f26e9c7e0ca88363d11"
+}

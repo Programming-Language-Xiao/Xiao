@@ -1,0 +1,182 @@
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.23s
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_codegen_llvm-642e6c35e475c196.exe)
+
+running 56 tests
+test artifact::tests::composition_keeps_declared_and_observed_components_separate ... ok
+test artifact::tests::keeps_unclassified_runtime_symbols_visible ... ok
+test artifact::tests::maps_runtime_symbols_to_declared_component_names ... ok
+test artifact::tests::normalizes_macho_leading_underscore_without_touching_other_symbols ... ok
+test artifact::tests::parses_arm64_slice_from_fat_macho ... ok
+test artifact::tests::parses_controlled_elf_symbols ... ok
+test artifact::tests::parses_controlled_macho_symbols_and_normalizes_prefix ... ok
+test artifact::tests::parses_controlled_pe_coff_symbols ... ok
+test artifact::tests::parses_fat_macho_slice_with_independent_endianness ... ok
+test artifact::tests::dynamic_artifact_reports_runtime_dependency_fact ... ok
+test artifact::tests::rejects_byte_offset_that_cannot_fit_usize ... ok
+test artifact::tests::declared_runtime_component_is_observable_for_each_format ... ok
+test artifact::tests::static_artifact_with_runtime_dependency_is_rejected ... ok
+test artifact::tests::stripped_symbol_tables_are_not_accepted_as_trimming_evidence ... ok
+test artifact::tests::pe_symbol_table_status_reflects_actual_coff_table ... ok
+test artifact::tests::symbol_table_comparison_never_equates_unavailable_reports ... ok
+test baseline::tests::median_and_noise_are_stable ... ok
+test baseline::tests::rejects_non_finite_samples_and_exposes_noise_gate ... ok
+test baseline::tests::rejects_uncontrolled_sample_shapes ... ok
+test dynamic::architecture_tests::module_dependency_direction_is_acyclic ... ok
+test dynamic::imports::tests::namespace_selection_does_not_expand_unselected_siblings ... ok
+test dynamic::release::storage_tests::only_literal_alloca_counts_can_move_to_entry ... ok
+test native_concurrency::tests::duplicate_spans_are_rejected ... ok
+test native_concurrency::tests::metadata_must_match_one_typed_call_and_cannot_intercept_another_module ... ok
+test native_concurrency::tests::module_concurrency_is_rejected_structurally ... ok
+test native_concurrency::tests::orphan_concurrency_facts_are_rejected ... ok
+test native_concurrency::tests::plan_indexes_ir_calls_without_name_resolution ... ok
+test native_concurrency::tests::unknown_operation_is_fail_closed ... ok
+test native_metadata::tests::native_metadata_codec_is_bounded_and_exact ... ok
+test native_metadata::tests::native_metadata_does_not_scan_for_magic ... ok
+test native_metadata::tests::native_metadata_emission_uses_the_declared_target ... ok
+test native_metadata::tests::native_metadata_requirements_reject_incompatible_inputs ... ok
+test optimization::tests::extension_switches_are_explicitly_rejected_until_frozen ... ok
+test optimization::tests::plan_keeps_extensions_off_and_fingerprint_stable ... ok
+test optimization::tests::runtime_report_explains_retained_and_removed_components ... ok
+test reproducible::tests::binary_layout_whitelist_is_explicit ... ok
+test reproducible::tests::normalizes_debug_paths_in_place_and_records_offsets ... ok
+test reproducible::tests::normalizes_elf_gnu_build_id ... ok
+test reproducible::tests::normalizes_paths_times_and_symbol_order ... ok
+test reproducible::tests::normalizes_pe_debug_directory_timestamp ... ok
+test reproducible::tests::normalizes_pe_timestamp_and_records_the_field ... ok
+test reproducible::tests::records_unix_and_windows_path_fields_separately ... ok
+test target::tests::controlled_targets_validate_equally ... ok
+test target::tests::host_target_architecture_matches_compile_time_target ... ok
+test target::tests::invalid_fixed_width_and_format_are_rejected ... ok
+test toolchain::tests::native_library_list_is_fingerprinted ... ok
+test toolchain::tests::normalizes_case_insensitive_windows_tokens ... ok
+test toolchain::tests::parses_windows_native_static_libraries ... ok
+test toolchain::tests::posix_startup_shim_waits_for_readiness ... ok
+test toolchain::tests::preserves_unix_native_static_libraries ... ok
+test toolchain::tests::rejects_missing_native_static_library_marker ... ok
+test toolchain::tests::startup_shim_embeds_only_diagnostics_basename ... ok
+test toolchain::tests::windows_startup_shim_opens_console_and_waits_for_readiness ... ok
+test artifact::tests::debug_symbol_is_required_only_for_debug_artifacts ... ok
+test artifact::tests::static_artifact_with_runtime_symbol_is_rejected ... ok
+test artifact::tests::verifies_release_debug_and_stripped_modes_independently ... ok
+
+test result: ok. 56 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.47s
+
+     Running tests\15e_ci_gated.rs (core\rust\target\debug\deps\15e_ci_gated-96c2cf4bafa0bc4c.exe)
+
+running 5 tests
+test ci_performance_baseline_is_platform_scoped ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+test real_artifact_reproducibility_is_byte_comparable ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+test real_artifact_strip_modes_all_optimization_levels ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH / XIAO_STRIP；准备方式见 10D §4
+test real_debug_activation_survives_all_optimization_levels ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+test real_symbol_table_and_debug_path_evidence ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+
+test result: ok. 0 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\n0_a.rs (core\rust\target\debug\deps\n0_a-89daefafaf4846ba.exe)
+
+running 23 tests
+test debug_startup_shim_precedes_user_entry ... ok
+test emits_checked_integer_arithmetic ... ok
+test emits_terminated_elif_false_path ... ok
+test entry_observation_is_explicit ... ok
+test lowers_boolean_equality ... ok
+test lowers_constant_integer_power_with_checked_multiplication ... ok
+test lowers_float_and_bool_scalars ... ok
+test lowers_float_power_with_valid_intrinsic_signature ... ok
+test lowers_integer_division_to_float ... ok
+test accepts_fixed_named_and_rejects_expanded_arguments ... ok
+test lowers_runtime_values_with_abi ... ok
+test missing_toolchain_is_structured ... ok
+test optional_corrupt_llvm_is_rejected ... ignored, 需要 XIAO_CLANG；准备方式见 10D §4
+test optional_entry_observation_tracks_runtime_branch ... ignored, 需要 XIAO_CLANG 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_external_access_violation_remains_fatal ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_external_illegal_instruction_remains_fatal ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_real_llvm_round_trip ... ignored, 需要 XIAO_CLANG（可选 XIAO_LLVM_AS）与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_static_numeric_failure_boundaries_match_runtime_contract ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_static_overflow_uses_recoverable_runtime_report ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test lowers_logical_and_rejects_identity_in_raw_ir ... ok
+test lowers_scalar_calls_and_control_flow ... ok
+test ordinary_static_artifact_does_not_activate_diagnostics ... ok
+test respects_declared_scalar_width ... ok
+
+test result: ok. 16 passed; 0 failed; 7 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\n0_b_dynamic.rs (core\rust\target\debug\deps\n0_b_dynamic-d6b20a0ca279915d.exe)
+
+running 28 tests
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+test accepts_identity_dynamic_cast ... ok
+test debug_dynamic_artifact_activates_diagnostic_session ... ok
+test decodes_string_escapes_before_llvm_emission ... ok
+test dynamic_dictionary_member_reports_table_type_mismatch ... ok
+test emits_sysv_runtime_value_layout ... ok
+test dynamic_entry_observation_is_explicit ... ok
+test emits_complete_table_descriptor ... ok
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+test dynamic_table_member_uses_value_pointer_and_valid_payload_index ... ok
+test fatal_error_intrinsic_is_still_rejected ... ok
+test emits_windows_indirect_runtime_abi_calls ... ok
+test function_body_dynamic_condition_has_closed_labels ... ok
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+test lowers_array_and_preserves_runtime_components ... ok
+test lowers_dictionary_with_runtime_component ... ok
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+test function_error_constructor_borrows_parameter_slots ... ok
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+test lowers_dynamic_boolean_if ... ok
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+test lowers_empty_singleton_declaration ... ok
+test lowers_dynamic_error_constructor_arguments_to_runtime_abi ... ok
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+test lowers_input_intrinsic_to_runtime_abi ... ok
+test lowers_non_identity_dynamic_cast ... ok
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+test lowers_non_text_error_constructor_argument_to_runtime_check ... ok
+test lowers_error_constructor_intrinsics_to_runtime_abi ... ok
+test optional_llvm_accepts_dynamic_table_module ... ignored, 需要 XIAO_LLVM_AS 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+test lowers_runtime_check_to_abi ... ok
+test lowers_print_intrinsic_to_runtime_abi ... ok
+N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验
+test ordinary_dynamic_artifact_does_not_activate_diagnostics ... ok
+test lowers_str_intrinsic_to_runtime_cast ... ok
+test rejects_table_declaration_without_signature ... ok
+test rejects_table_constructor_arguments_until_init_abi_exists ... ok
+
+test result: ok. 27 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\n0_c_errors.rs (core\rust\target\debug\deps\n0_c_errors-a6dd92aa694c0f97.exe)
+
+running 6 tests
+test optional_llvm_accepts_error_path_module ... ignored, 需要 XIAO_LLVM_AS；准备方式见 10D §4
+test optional_stackrestore_runtime_probe ... ignored, 需要真实 clang；准备方式见 10D §4
+test rejects_fatal_catch_type ... ok
+test lowers_recoverable_error_path ... ok
+test emits_language_context_and_release_trace_hooks ... ok
+test lowers_nonlocal_control_exits_through_cleanup_chain ... ok
+
+test result: ok. 4 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\stdlib_bindings.rs (core\rust\target\debug\deps\stdlib_bindings-3e32bba7fd3f6b45.exe)
+
+running 4 tests
+test missing_selected_body_cannot_fall_back_to_another_module ... ok
+test imports_and_internal_calls_keep_all_real_module_definitions ... ok
+test transitive_imports_bind_dependencies_and_terminate_cycles ... ok
+test unreachable_module_cannot_pull_in_planned_cmath ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+   Doc-tests xiao_codegen_llvm
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -33,6 +33,9 @@ mod entry;
 #[path = "dynamic/expression.rs"]
 /// 动态表达式、字面量和表字段访问发射。
 mod expression;
+#[path = "dynamic/imports.rs"]
+/// 从入口沿模块导入边计算可达集合。
+mod imports;
 #[path = "dynamic/methods.rs"]
 /// 表方法注册、字段辅助函数与指针回调适配。
 mod methods;
@@ -263,11 +266,7 @@ impl<'a> DynamicGenerator<'a> {
         // 因此把实际导入图中的纯 Xiao 顶层函数加入同一符号表，使
         // `from stdlib.x import f` 能降低为直接函数调用；未导入的模块不能提前
         // 进入函数表，否则 planned 模块的未接线原语会污染无关库的原生降低。
-        let mut imported_standard_modules = BTreeSet::new();
-        collect_standard_module_imports(&self.program.body, &mut imported_standard_modules);
-        for module in &self.program.modules {
-            collect_standard_module_imports(&module.body, &mut imported_standard_modules);
-        }
+        let imported_standard_modules = imports::reachable_modules(self.program);
         for module in self.program.modules.iter().filter(|module| {
             module.name.starts_with("stdlib.")
                 && module.kind == "file"
@@ -840,60 +839,5 @@ impl<'a> DynamicGenerator<'a> {
             self.function_texts.push(lines.join("\n"));
         }
         Ok(())
-    }
-}
-
-/// 收集当前 IR 递归语句树真正引用的官方标准库模块。
-///
-/// 前端会把完整标准库索引放进 `IrProgram::modules`，但原生后端只能为实际导入的
-/// 模块建立函数绑定。按导入图筛选可以保持 planned 模块的按需边界，并避免一个
-/// 尚未接线的原语函数让无关标准库的原生构建失败。
-fn collect_standard_module_imports(statements: &[IrStatement], modules: &mut BTreeSet<String>) {
-    for statement in statements {
-        match &statement.kind {
-            xiao_ir::IrStatementKind::Import { items, .. } => {
-                for item in items {
-                    if let Some(identity) =
-                        xiao_standard_library::canonical_module_identity(&item.module)
-                    {
-                        modules.insert(identity);
-                    }
-                }
-            }
-            xiao_ir::IrStatementKind::Table { body, .. }
-            | xiao_ir::IrStatementKind::Function { body, .. }
-            | xiao_ir::IrStatementKind::For { body, .. }
-            | xiao_ir::IrStatementKind::While { body, .. } => {
-                collect_standard_module_imports(body, modules);
-            }
-            xiao_ir::IrStatementKind::If {
-                body,
-                elif_branches,
-                else_body,
-                ..
-            } => {
-                collect_standard_module_imports(body, modules);
-                for branch in elif_branches {
-                    collect_standard_module_imports(&branch.body, modules);
-                }
-                if let Some(body) = else_body {
-                    collect_standard_module_imports(body, modules);
-                }
-            }
-            xiao_ir::IrStatementKind::Try {
-                body,
-                catches,
-                finally_body,
-            } => {
-                collect_standard_module_imports(body, modules);
-                for catch in catches {
-                    collect_standard_module_imports(&catch.body, modules);
-                }
-                if let Some(body) = finally_body {
-                    collect_standard_module_imports(body, modules);
-                }
-            }
-            _ => {}
-        }
     }
 }

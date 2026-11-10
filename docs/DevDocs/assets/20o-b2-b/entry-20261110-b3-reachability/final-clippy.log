@@ -1,0 +1,49 @@
+    Checking xiao-runtime-abi v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime-abi)
+    Checking xiao-source v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-source)
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-intrinsics)
+    Checking num-traits v0.2.19
+    Checking xiao-i18n v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-i18n)
+    Checking xiao-standard-library v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-standard-library)
+    Checking ring v0.17.14
+    Checking num-integer v0.1.47
+    Checking xiao-diagnostics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+    Checking num-bigint v0.4.8
+    Checking libm v0.2.16
+    Checking xiao-syntax v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-syntax)
+    Checking rustls-webpki v0.103.15
+    Checking xiao-lock v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lock)
+    Checking rustls v0.23.45
+    Checking bigdecimal v0.4.11
+    Checking xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+    Checking xiao-modules v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-modules)
+    Checking xiao-config v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-config)
+    Checking xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+    Checking xiao-ir v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-ir)
+    Checking xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+    Checking ureq v3.4.2
+    Checking xiao-optimizer v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+    Checking xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+    Checking xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+    Checking xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+    Checking xiao-artifacts v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+error: this boolean expression can be simplified
+  --> crates\xiao-codegen-llvm\src\dynamic\imports.rs:43:28
+   |
+43 |                           && !index
+   |  ____________________________^
+44 | |                             .get(identity.as_str())
+45 | |                             .is_some_and(|module| module.kind == "file")
+   | |________________________________________________________________________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#nonminimal_bool
+   = note: `-D clippy::nonminimal-bool` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::nonminimal_bool)]`
+help: try
+   |
+43 ~                         && index
+44 +                             .get(identity.as_str()).is_none_or(|module| module.kind != "file")
+   |
+
+error: could not compile `xiao-codegen-llvm` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `xiao-codegen-llvm` (lib test) due to 1 previous error

@@ -195,3 +195,80 @@ fn missing_selected_body_cannot_fall_back_to_another_module() {
     assert!(feature.contains("stdlib.binding_second.pick"), "{feature}");
     assert!(span.is_some());
 }
+
+#[test]
+/// 不可达模块即使导入未接线原语，也不得污染入口已导入的标准库函数。
+fn unreachable_module_cannot_pull_in_planned_cmath() {
+    for prefix in ["std", "stdlib"] {
+        let mut program = program();
+        let mut unused = module("stdlib.unused", &["value"]);
+        unused
+            .body
+            .insert(0, import(&format!("{prefix}.cmath"), "abs", "unused_abs"));
+        let mut cmath = module("stdlib.cmath", &[]);
+        cmath.body = vec![function("abs", &[], call("cmath_abs", &[]))];
+        program.modules.extend([unused, cmath]);
+        for reverse in [false, true] {
+            if reverse {
+                program.modules.reverse();
+            }
+            for target in [
+                TargetDescription::windows_x86_64(),
+                TargetDescription::linux_x86_64(),
+                TargetDescription::macos_aarch64(),
+            ] {
+                let lowered = NativeBuild::new()
+                    .lower(&program, &CodegenOptions::for_target(target))
+                    .expect("未导入的模块不能把 cmath 带进入口");
+                assert_eq!(lowered.text.matches("define void @xiao.fn.").count(), 4);
+            }
+        }
+        // 同一模块变成入口可达后仍须明确拒绝，不能靠全局屏蔽 cmath 补绿。
+        program
+            .body
+            .insert(0, import("stdlib.unused", "pick", "unused_pick"));
+        let Err(CodegenError::Unsupported { feature, .. }) =
+            NativeBuild::new().lower(&program, &Default::default())
+        else {
+            panic!("实际可达的未接线原语必须拒绝");
+        };
+        assert!(feature.contains("cmath_abs"), "{feature}");
+    }
+}
+
+#[test]
+/// 入口经项目模块、函数内导入和官方别名可达的依赖均须绑定；导入环只访问一次。
+fn transitive_imports_bind_dependencies_and_terminate_cycles() {
+    let mut program = program();
+    let mut bridge = module("bridge", &["value"]);
+    bridge
+        .body
+        .insert(0, import("std.binding_middle", "pick", "middle_pick"));
+    let mut middle = module("stdlib.binding_middle", &["value"]);
+    let IrStatementKind::Function { body, .. } = &mut middle.body[1].kind else {
+        unreachable!();
+    };
+    body.insert(0, import("std.binding_leaf", "pick", "leaf_pick"));
+    let mut leaf = module("stdlib.binding_leaf", &["value"]);
+    leaf.body
+        .insert(0, import("stdlib.binding_middle", "pick", "middle_pick"));
+    program
+        .body
+        .insert(0, import("bridge", "pick", "bridge_pick"));
+    program.modules.extend([bridge, middle, leaf]);
+    for reverse in [false, true] {
+        if reverse {
+            program.modules.reverse();
+        }
+        for target in [
+            TargetDescription::windows_x86_64(),
+            TargetDescription::linux_x86_64(),
+            TargetDescription::macos_aarch64(),
+        ] {
+            let lowered = NativeBuild::new()
+                .lower(&program, &CodegenOptions::for_target(target))
+                .expect("必须保留传递导入和模块内函数绑定");
+            assert_eq!(lowered.text.matches("define void @xiao.fn.").count(), 8);
+        }
+    }
+}

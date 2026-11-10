@@ -1,0 +1,19 @@
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.12s
+     Running tests\stdlib_bindings.rs (core\rust\target\debug\deps\stdlib_bindings-3e32bba7fd3f6b45.exe)
+
+running 1 test
+
+thread 'unreachable_module_cannot_pull_in_planned_cmath' (36464) panicked at crates\xiao-codegen-llvm\tests\stdlib_bindings.rs:222:22:
+未导入的模块不能把 cmath 带进入口: Unsupported { feature: "动态函数调用 cmath_abs（未找到静态函数绑定）", span: Some(IrSpan { start: 0, end: 1 }) }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test unreachable_module_cannot_pull_in_planned_cmath ... FAILED
+
+failures:
+
+failures:
+    unreachable_module_cannot_pull_in_planned_cmath
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p xiao-codegen-llvm --test stdlib_bindings`
