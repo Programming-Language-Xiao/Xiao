@@ -94,7 +94,7 @@ B3-2 执行前必须确认：
 
 ### B3-4：`stdlib/cmath.xiao` 包装
 
-执行细化见[stdlib/cmath.xiao 包装规划](20o-b2-b3-4-stdlib-wrapper-plan.md)；B3-4只写包装源码，语言双路径留B4。
+执行细化见[stdlib/cmath.xiao 包装规划](20o-b2-b3-4-stdlib-wrapper-plan.md)与[收口规划](20o-b2-b3-4-closeout-plan.md)；B3-4只写包装源码，语言双路径留B4。
 
 1. 新增 15 个公开包装，只调用已确认原语；
 2. 不复制数学实现，不假装已有私有可见性；

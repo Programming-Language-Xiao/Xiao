@@ -135,7 +135,7 @@ min(left, right)  max(left, right)  pow(base, exponent)
 
 ## 七、交接
 
-B3-4 完成后进入[B4 cmath 语言全链路与承载规划](20o-b2-b4-language-integration-plan.md)：类型/IR/TAC/VM/LLVM/序列化双路径，`std.cmath`/`stdlib.cmath` 导出、移除、归档和普通包隔离；B4 前把两处正式向量迁入 `tests/fixtures/docs/cmath/`。B5 切 ABI 1.19/21，B6 性能，B7 收口，B2-C 最终 721/发布。
+B3-4 完成后进入[B3-4 源码包装收口](20o-b2-b3-4-closeout-plan.md)，再进入[B4 cmath 语言全链路与承载规划](20o-b2-b4-language-integration-plan.md)：类型/IR/TAC/VM/LLVM/序列化双路径，`std.cmath`/`stdlib.cmath` 导出、移除、归档和普通包隔离；B4 前把两处正式向量迁入 `tests/fixtures/docs/cmath/`。B5 切 ABI 1.19/21，B6 性能，B7 收口，B2-C 最终 721/发布。
 
 新 Agent 先读：
 
