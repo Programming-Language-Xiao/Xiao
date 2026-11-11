@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "stage": "B4-2A",
+  "status": "blocked",
+  "b4_2a_closed": false,
+  "b4_2b_started": false,
+  "b4_3_started": false,
+  "language_available": false,
+  "implementation_commit": "df8a16dbb57c2365ba7a69a4569938e63763f1ff",
+  "starting_commit": "fe752363702b3613a8a70d89b877e32ad6505f33",
+  "environment": {
+    "toolchain": "Rust 1.96.0 (ac68faa20)",
+    "host": "x86_64-pc-windows-msvc",
+    "task_root": "D:\\project\\Xiao\\.b4-2a\\20261112-fe752363",
+    "cargo_target_dir": "D:\\project\\Xiao\\.b4-2a\\20261112-fe752363\\target",
+    "isolated_vm_replay": {
+      "xiao_home": "D:\\project\\Xiao\\.b4-2a\\20261112-fe752363\\xiao-home",
+      "stdlib_root": "D:\\project\\Xiao\\Xiao\\stdlib",
+      "temp": "D:\\project\\Xiao\\.b4-2a\\20261112-fe752363\\temp",
+      "b1_f10": 0,
+      "b2_a_perf": 0
+    }
+  },
+  "coverage": {
+    "intrinsic_ids": [34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48],
+    "calls_per_width": 33,
+    "widths": ["Leb128", "FixedU16"],
+    "round_trip_observations": 66,
+    "negative_intrinsic_ids": [49, 100, 4294967295],
+    "negative_checks": ["verify_production rejects", "encode rejects"],
+    "source_span_checks": ["TAC span", "encoded directory span", "decoded span map", "PC to span map"]
+  },
+  "versions": {
+    "tac_version": 1,
+    "bytecode_abi_version": 1,
+    "format_version_constant": 4,
+    "format_byte_without_concurrency_plans": 3
+  },
+  "test_results": [
+    {
+      "name": "xiao-bytecode full package",
+      "passed": 64,
+      "failed": 0,
+      "result": "passed",
+      "command": "cargo +1.96.0 test --target-dir D:\\project\\Xiao\\.b4-2a\\20261112-fe752363\\target --locked --manifest-path core/rust/Cargo.toml -p xiao-bytecode -- --nocapture",
+      "log": "xiao-bytecode-final.log",
+      "sha256": "C21AF656E4217CEF0C8CF558AA36E8C63903E46BAC823EAB7626B7A4CDE41D1A"
+    },
+    {
+      "name": "B4-1 frontend plus B3-4 wrapper",
+      "passed": 11,
+      "failed": 0,
+      "result": "passed",
+      "breakdown": {"b4_1_frontend": "3/3", "b3_4_wrapper": "8/8"},
+      "log": "b4-1-b3-4-regression.log",
+      "sha256": "659C192862B4F05563173376458507A2ABA671D31F67D9D5AA397E1B945FBB4A"
+    },
+    {
+      "name": "repository documentation gates",
+      "command": "bun tools/repo-check/src/cli.ts all --format json",
+      "result": "passed_with_existing_A0-COVERAGE-002_warnings"
+    },
+    {
+      "name": "22c full regression under isolated task root",
+      "passed": 27,
+      "failed": 2,
+      "result": "blocked",
+      "failed_tests": [
+        "isolated_child_preserves_cmath_alias_snapshot_identity",
+        "planned_cmath_xar_is_rejected_before_output"
+      ],
+      "log": "22c-isolated-replay.log",
+      "sha256": "1427790FA6BD01E88C2A7C2799840B193E61B1BB0FAF94CB7D41E6957DD0E23D"
+    }
+  ],
+  "documentation_gates": {
+    "repo_check_all": "passed_with_existing_A0-COVERAGE-002_warnings",
+    "after_evidence_update": {
+      "docs": "passed",
+      "usedocs": "passed",
+      "layout": "passed"
+    }
+  },
+  "fixed_audits": {
+    "b4_0_b4_1": {"passed": true, "product_commit": "c7a45e10", "protected_files": 1048},
+    "b3_4": {"passed": true, "code_commit": "7d8b85e4", "protected_files": 1044},
+    "b1": {"passed": "18/18", "files": 28},
+    "b2": {"passed": true, "checks": 14, "exact_checks": 4, "files": 99},
+    "b3_cabi": {"passed": true, "checks": 22, "exact_checks": 4, "files": 86, "formal_abi_cases": 17243}
+  },
+  "blockers": [
+    {
+      "test": "isolated_child_preserves_cmath_alias_snapshot_identity",
+      "expected": "planned import rejected with X06-RUNTIME-012",
+      "actual": "child VM loaded stdlib.cmath and returned 7\\n successfully",
+      "scope_owner": "VM child module loading; outside B4-2A allowed edits"
+    },
+    {
+      "test": "planned_cmath_xar_is_rejected_before_output",
+      "expected": "archive build rejected with X11-PROTOCOL-007 before writing output",
+      "actual": "archive was produced with stdlib_modules=[stdlib.cmath]",
+      "scope_owner": "archive build boundary; outside B4-2A allowed edits"
+    }
+  ],
+  "not_run": ["old 721 F10", "B4-2B implementation", "B4-3 LLVM", "performance", "Linux/macOS", "remote CI"] ,
+  "artifacts": {
+    "core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs": "6F2ABB75827D35DC9B2A048EEBC58143D1C1BA6D024B65B8CCB17791AB351C4C",
+    "driver-regression.log": "97A2F4C6043977509562A47CEB2D561B482BD777EA561A6299518E81522F2D33"
+  }
+}
