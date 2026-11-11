@@ -1,8 +1,8 @@
 # 20O-B2-B4-2A/B. cmath TAC/字节码与 VM 执行规划
 
 > **B4-2A/B 尚未开工；B4-3 起、B5～B7 与 B2-C 仍未开始。**
-> 入口为 B4-1 产品代码 `c7a45e10`、B4-2 规划 `162d94ea` 与已冻结的 15 个 Rust-only Runtime 入口。
-> B4-2A 只补 TAC/字节码 34～48 往返与测试；B4-2B 只补 VM 分派与错误/清理。
+> 入口为 B4-1 产品代码 `c7a45e10`、B4-2 边界规划 `162d94ea`、Runtime 入口裁定 `8b8d5e3e` 和完整签名记录 `a5d7c866`。
+> B4-2A 验证 TAC/字节码 34～48 往返；若发现缺口，只修对应 lowering/校验。B4-2B 接入 15 个 Runtime 门面与 VM 分派、错误及清理。
 > 30 条 cmath 导入路径仍 planned 拒绝；`language_available=false`，B4-4 才接双路径。
 
 ## 一、入口与冻结接口
@@ -19,11 +19,20 @@
 
 ```text
 xiao_runtime::cmath_sqrt(value: f64) -> RuntimeResult<f64>
-xiao_runtime::cmath_floor / cmath_ceil / cmath_round / cmath_trunc / cmath_abs
-xiao_runtime::cmath_sin / cmath_cos / cmath_tan / cmath_exp / cmath_ln / cmath_log10
+xiao_runtime::cmath_floor(value: f64) -> RuntimeResult<f64>
+xiao_runtime::cmath_ceil(value: f64) -> RuntimeResult<f64>
+xiao_runtime::cmath_round(value: f64) -> RuntimeResult<f64>
+xiao_runtime::cmath_trunc(value: f64) -> RuntimeResult<f64>
+xiao_runtime::cmath_abs(value: f64) -> RuntimeResult<f64>
 xiao_runtime::cmath_min(left: f64, right: f64) -> RuntimeResult<f64>
-xiao_runtime::cmath_max(left, right) -> RuntimeResult<f64>
+xiao_runtime::cmath_max(left: f64, right: f64) -> RuntimeResult<f64>
 xiao_runtime::cmath_pow(base: f64, exponent: f64) -> RuntimeResult<f64>
+xiao_runtime::cmath_sin(value: f64) -> RuntimeResult<f64>
+xiao_runtime::cmath_cos(value: f64) -> RuntimeResult<f64>
+xiao_runtime::cmath_tan(value: f64) -> RuntimeResult<f64>
+xiao_runtime::cmath_exp(value: f64) -> RuntimeResult<f64>
+xiao_runtime::cmath_ln(value: f64) -> RuntimeResult<f64>
+xiao_runtime::cmath_log10(value: f64) -> RuntimeResult<f64>
 ```
 
 内部 API，不承诺语言级 semver；不读写 Runtime ABI 挂起错误槽。
@@ -61,9 +70,9 @@ xiao_runtime::cmath_pow(base: f64, exponent: f64) -> RuntimeResult<f64>
 ### 2.2 执行
 
 1. 对 15 个 ID 各构造一元/二元调用，覆盖位置/命名/逆序命名；
-2. 编码→解码→再执行/比较，保留 ID、参数顺序、span；
+2. 编码→解码后逐项比较 TAC 调用 ID、参数顺序和 source span；VM 执行留在 B4-2B；
 3. 验证 `TAC_VERSION`/`TAC_BYTECODE_ABI_VERSION`/容器格式未变；
-4. 验证 49/未知 ID 被校验拒绝；
+4. 验证编码器和生产验证器均拒绝 49/未知 ID；
 5. 若现有 lowering 已足够，不加生产代码，只补测试/证据；若发现缺失，只改字节码 lowering/校验，不接 VM。
 6. 保存 15 项往返样本、span、版本和负例。
 
