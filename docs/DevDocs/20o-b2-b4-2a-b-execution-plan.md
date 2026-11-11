@@ -4,6 +4,7 @@
 > 入口为 B4-1 产品代码 `c7a45e10`、B4-2 边界规划 `162d94ea`、Runtime 入口裁定 `8b8d5e3e` 和完整签名记录 `a5d7c866`。
 > B4-2A 验证 TAC/字节码 34～48 往返；若发现缺口，只修对应 lowering/校验。B4-2B 接入 15 个 Runtime 门面与 VM 分派、错误及清理。
 > 30 条 cmath 导入路径仍 planned 拒绝；`language_available=false`，B4-4 才接双路径。
+> 2026-11-12 安排：B4-2A 为下一实施批；已核 `c7a45e10` 与当前 HEAD 的 `core/`、`stdlib/` 无差异；B4-2B 待 B4-2A 退出后另行安排。
 
 ## 一、入口与冻结接口
 
