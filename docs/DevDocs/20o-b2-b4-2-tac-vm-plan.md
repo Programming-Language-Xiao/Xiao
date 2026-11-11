@@ -66,6 +66,8 @@ B4-2 是 VM 内部可执行批，不是 `std.cmath` 模块导入可用批。B4-4
 
 ### B4-2A：TAC/字节码编码
 
+执行细化见[B4-2A/B TAC与VM执行规划](20o-b2-b4-2a-b-execution-plan.md)；B4-2A只验TAC往返。
+
 1. 34～48 的 IntrinsicCall 使用既有 TAC 指令承载；
 2. 复用 `TacOp::Call`、`FuncId(0)` 与 `CallSig::intrinsic(id)`；ID 仍由既有调用签名字段承载；
 3. 保持现有 opcode/标签/`TAC_VERSION`/字节码格式版本，不新增版本；
@@ -77,6 +79,8 @@ B4-2 是 VM 内部可执行批，不是 `std.cmath` 模块导入可用批。B4-4
 退出：TAC/字节码可往返 15 项；无容器版本变化。
 
 ### B4-2B：VM 绑定与执行
+
+执行细化见[B4-2A/B TAC与VM执行规划](20o-b2-b4-2a-b-execution-plan.md)；B4-2B按§1.3冻结入口接VM。
 
 1. VM 按 34～48 ID 分派到共享 Runtime `cmath` 内核；
 2. 一元：sqrt/floor/ceil/round/trunc/abs/sin/cos/tan/exp/ln/log10；
