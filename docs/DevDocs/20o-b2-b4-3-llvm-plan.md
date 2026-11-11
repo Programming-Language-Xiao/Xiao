@@ -12,7 +12,7 @@
 | 类型/IR | 15 项 `IntrinsicCall` 保留 ID/参数/span（B4-1） |
 | VM | B4-2 提供 VM 分派与错误/清理；本批不复用 VM 状态机 |
 | Runtime | 15 个 `xiao_runtime::cmath_*` Rust 门面与 15 个 C ABI 符号 |
-| 静态 LLVM | `float **` 仍用 `llvm.pow.f64/f32`；cmath 34～48 未 lowering |
+| 静态 LLVM | Float 的 `**` 仍用 `llvm.pow.f64`；sfloat 的 `**` 仍用 `llvm.pow.f32`；cmath 34～48 未 lowering |
 | 动态 LLVM | 有通用 intrinsic/dynamic Runtime 机制，但 cmath 分支未接 |
 | 版本 | ABI 1.18、生成器 20、接口 1；本批不升 |
 
@@ -22,7 +22,7 @@ B4-3 是 **LLVM 后端内部验收**，不是 `std.cmath` 导入可用。B4-4 �
 
 1. LLVM 动态路径为 34～48 生成 Runtime C ABI 调用；
 2. 静态路径为 15 项 cmath 生成同一 Runtime 内核调用；
-3. 静态 float `**` 从 `llvm.pow.f64/f32` 切到共享 cmath_pow 内核；
+3. 静态 Float `**` 从 `llvm.pow.f64` 切到共享 cmath_pow 内核；sfloat 的 `llvm.pow.f32` 保持原路径；
 4. 正确处理 C ABI 的借读输入、拥有 out、i32 状态和挂起错误；
 5. 保留 009/002 错误身份、source span 和既有静态/动态错误通道；
 6. 保持 sfloat `**` 现有路径，不扩大范围；
@@ -42,7 +42,7 @@ B4-3 是 **LLVM 后端内部验收**，不是 `std.cmath` 导入可用。B4-4 �
 
 1. B4-2A/B 审计通过，VM 15 项、TAC 往返、30 条 planned 拒绝可复现；
 2. 15 个 C ABI 符号、17,243 条参考和共享 Runtime 内核可复现；
-3. 当前静态 float `**` 仍指向 `llvm.pow.f64/f32`，未半接线；
+3. 当前静态 Float `**` 仍指向 `llvm.pow.f64`、sfloat `**` 仍指向 `llvm.pow.f32`，均未半接线；
 4. ABI 1.18/生成器 20/接口 1/cmath planned 未变；
 5. B4-0/B4-1、B3-4、B1/B2/B3 回归可复现；
 6. 唯一任务根、独立 target/Runtime/缓存已建立。
