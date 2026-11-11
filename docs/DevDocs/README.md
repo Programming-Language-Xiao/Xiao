@@ -298,6 +298,7 @@
 | 20O-B2-B7 | [B7内部收口规划](20o-b2-b7-closeout-plan.md) | B1七库回归、A1～B6对账、教程/registry边界与B2-C交接 | **规划稿（2026-11-11）**：B7未开始；不跑721、不升级registry，B2-C仍后置 |
 | 20O-B2-C | [B2-C最终公共收口规划](20o-b2-c-final-closeout-plan.md) | 最终721、三平台公共产物、教程/registry、发布证据 | **规划稿（2026-11-11）**：B2-C未开始；依赖B7完成，不关闭历史债务 |
 | 20O-B3 | [B3简单宿主库规划](20o-b3-host-libraries-plan.md) | time/args/cli/fs/env/log、能力/取消/错误、三平台与教程 | **规划稿（2026-11-11）**：B3未开始；依赖B2-C或明确并行授权，B4-B9后置 |
+| 20O-B4 | [B4 JSON/TOML规划](20o-b4-json-toml-plan.md) | 专用值模型、JSON/TOML解析/序列化、双路径/教程 | **规划稿（2026-11-11）**：B4未开始；与B5数值类型分开，B5-B9后置 |
 | 20O-B2-A7 | [A7 回归与收口规划](20o-b2-a7-b1-regression-b2a-closeout-plan.md) / [内部收口记录](20o-b2-a7-b2a-closeout.md) / [自审](20o-b2-a7-self-review.md) | B1七库20入口、A0～A6对账、语言参考及版本/状态边界 | **内部1.18/20已收口（2026-11-07）**：18项当前门禁及7项阶段审计、B1双精确/原28守卫和三平台CI通过；产品固定e7bf7a49，最终数值教程/cmath planned，旧721未跑，B2-B/C未开始 |
 | 20O-B2-B | [B2-B 实施规划](20o-b2-b-implementation-plan.md) | lfloat_divide、15项cmath、intrinsic 33～48、ABI1.19/生成器21与旧/新拒绝矩阵 | **B2单入口内部已实现**：lfloat_divide/intrinsic33，ABI1.18/20；B3-2A共享pow与B3-3A/B内部验收完成，仅Windows本机、活动最大48；B3-4及B4～B7、B2-C后置 |
 | 20P | [Day-1 官方库架构](20p-day1-library-architecture.md) | 模块/错误/生命周期/能力/发布、每库教程与数据库架构；D-13～D-22 裁定 | **规划中（2026-11-01）**：方向已逐条确认；独立数据库能力位、首批有界连接池、固定教程示例与状态门槛、分平台证据；精确契约待后续批次 |
