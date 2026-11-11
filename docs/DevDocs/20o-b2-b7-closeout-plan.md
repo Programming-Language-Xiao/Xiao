@@ -155,7 +155,7 @@ cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver 
 
 ## 七、交接
 
-B7完成后进入B2-C：最终1.19/21快照完整721、三平台公共产物、最终教程/registry与发布收口。B2-C未完成前，B2-B仍只是内部收口。
+B7完成后进入[B2-C 最终公共收口规划](20o-b2-c-final-closeout-plan.md)：最终1.19/21快照完整721、三平台公共产物、最终教程/registry与发布收口。B2-C未完成前，B2-B仍只是内部收口。
 
 新 Agent 先读：
 
