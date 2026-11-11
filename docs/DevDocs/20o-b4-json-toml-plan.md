@@ -149,7 +149,7 @@ B4 是 **数据格式批**，不是数值批。JSON/TOML 的 number 表示、精
 
 ## 七、交接
 
-B4完成后进入B5：decimal/fractions/statistics浮点/random。B4值模型与B5数值类型分开评审；流式解析/JSON Pointer等后置；XML不属于本批范围。
+B4完成后进入[B5数值库规划](20o-b5-numeric-libraries-plan.md)：decimal/fractions/statistics浮点/random。B4值模型与B5数值类型分开评审；流式解析/JSON Pointer等后置；XML不属于本批范围。
 
 新 Agent 先读：
 
