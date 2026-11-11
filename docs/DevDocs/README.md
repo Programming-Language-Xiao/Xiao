@@ -291,6 +291,7 @@
 | 20O-B2-B4-0/B4-1 | [B4开工规划](20o-b2-b4-0-b4-1-kickoff-plan.md) | 正式向量迁移、类型检查/IR、34～48一元/二元映射 | **本机内部验收（2026-11-10）**：c7a45e10，向量迁移与类型/IR通过；VM/LLVM未接，b4_closed=false |
 | 20O-B2-B4-2 | [B4-2 TAC/VM规划](20o-b2-b4-2-tac-vm-plan.md) / [执行规划](20o-b2-b4-2a-b-execution-plan.md) | 34～48编码、VM共享内核、009/span/清理与30条planned拒绝 | **规划稿（2026-11-10）**：Rust-only 15函数入口已确认，B4-2A可开工；B4-2未开始，LLVM/导入/归档后置 |
 | 20O-B2-B4-3 | [B4-3 LLVM规划](20o-b2-b4-3-llvm-plan.md) | 动态/静态cmath、float `**` 共核、O0/O3与状态/清理 | **规划稿（2026-11-11）**：B4-3未开始；导入/归档/序列化留B4-4 |
+| 20O-B2-B4-4 | [B4-4双路径/归档规划](20o-b2-b4-4-dual-path-archive-plan.md) | std/stdlib双路径、导出/移除、xar加载器、序列化与隔离 | **规划稿（2026-11-11）**：B4-4未开始；registry/教程仍planned，721后置 |
 | 20O-B2-A7 | [A7 回归与收口规划](20o-b2-a7-b1-regression-b2a-closeout-plan.md) / [内部收口记录](20o-b2-a7-b2a-closeout.md) / [自审](20o-b2-a7-self-review.md) | B1七库20入口、A0～A6对账、语言参考及版本/状态边界 | **内部1.18/20已收口（2026-11-07）**：18项当前门禁及7项阶段审计、B1双精确/原28守卫和三平台CI通过；产品固定e7bf7a49，最终数值教程/cmath planned，旧721未跑，B2-B/C未开始 |
 | 20O-B2-B | [B2-B 实施规划](20o-b2-b-implementation-plan.md) | lfloat_divide、15项cmath、intrinsic 33～48、ABI1.19/生成器21与旧/新拒绝矩阵 | **B2单入口内部已实现**：lfloat_divide/intrinsic33，ABI1.18/20；B3-2A共享pow与B3-3A/B内部验收完成，仅Windows本机、活动最大48；B3-4及B4～B7、B2-C后置 |
 | 20P | [Day-1 官方库架构](20p-day1-library-architecture.md) | 模块/错误/生命周期/能力/发布、每库教程与数据库架构；D-13～D-22 裁定 | **规划中（2026-11-01）**：方向已逐条确认；独立数据库能力位、首批有界连接池、固定教程示例与状态门槛、分平台证据；精确契约待后续批次 |
