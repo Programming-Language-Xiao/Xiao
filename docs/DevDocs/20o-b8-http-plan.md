@@ -80,10 +80,10 @@ B8 是 **网络协议批**，不是替代B7安全批的安全审阅，也不是�
 11. 冻结client/server精确签名、参数/返回/效果/所有权/资源/性能预算；明示各阶段截止时间共用总预算，不因重定向/重试重置；
 12. 按20P D-15静态内置依赖，固定版本/特性/锁/许可证/安全公告/审计来源/`--locked`，禁止运行时任意动态加载；冻结新增Runtime值/intrinsic/ABI/生成器/标准库接口/`.xiaoc`/`.xar`身份和旧产物拒绝/缓存规则，不回写历史基线；新增intrinsic/值类型按20P升级ABI并更新指纹，保留既有编号和ID 100墓碑；
 13. 建立安全/网络审阅清单：TLS信任、请求走私差异、头/正文/速率/连接上限、SSRF/重定向、DNS变化、取消/关闭、日志脱敏/能力；定严重度和未解决风险签收规则；
-14. client/server各写完整教程草案和固定示例，按D-20进入VM/受控原生逐字输出与退出码CI；示例只依赖隔离的本地服务/测试证书，不依赖公共互联网或共享服务；registry保持planned；
+14. client/server各写完整教程章节（同一`docs/UseDocs/library/http.md`，按D-20配固定示例），进入VM/受控原生逐字输出与退出码CI；示例只依赖隔离的本地服务/测试证书，不依赖公共互联网或共享服务；registry保持planned；
 15. 记录延期能力（HTTP/2/3、WebSocket、代理、Cookie/缓存、自动解压等）。
 
-退出：协议子集、消息解析/走私拒绝规则、API/TLS/能力、限制/错误/依赖/版本、审阅计划和两份教程冻结；未写产品，也不由B8-0本身授权产品并行实施。
+退出：协议子集、消息解析/走私拒绝规则、API/TLS/能力、限制/错误/依赖/版本、审阅计划和client/server两章教程冻结；未写产品，也不由B8-0本身授权产品并行实施。
 
 ### B8-1：HTTP 客户端
 
@@ -120,7 +120,7 @@ B8 是 **网络协议批**，不是替代B7安全批的安全审阅，也不是�
 
 1. HTTP framing/走私、TLS/重定向/凭据、头/正文、DNS/目的地址策略、慢速连接/取消/关闭测试；
 2. 三平台互操作/CI/资源/性能；记录实际候选二进制与工具身份；
-3. 两份完整教程进入VM/受控原生逐字输出与退出码CI；client教程使用隔离本地server，TLS只用测试证书，不依赖公共互联网；registry只升必测与审阅通过范围；
+3. client/server两章完整教程进入VM/受控原生逐字输出与退出码CI；client章使用隔离本地server，TLS只用测试证书，不依赖公共互联网；registry只升必测与审阅通过范围；
 4. 独立B8网络/HTTP安全审阅通过；不能用B7 TLS依赖已审阅来替代B8协议审阅；
 5. B1七库20入口/17资源/双精确/28守卫回归通过；不跑721条F10；
 6. 完整workspace测试/Clippy/fmt、benchmark/驱动自检、`check:lock`及docs/UseDocs/layout/覆盖率门禁；依赖许可证/漏洞扫描；
@@ -180,7 +180,7 @@ B8完成后进入B9数据库批：SQLite→PostgreSQL→Redis→MySQL，首批�
 
 ```text
 stdlib/http.xiao
-docs/UseDocs/library/http.md
+docs/UseDocs/library/http.md                           单模块教程（client/server两章）
 docs/module-registry.json
 core/rust/crates/xiao-*/                               类型/IR/VM/LLVM/网络依赖
 docs/DevDocs/assets/20o-b8/entry-<date>/               B8证据
