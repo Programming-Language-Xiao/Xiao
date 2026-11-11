@@ -46,8 +46,8 @@ B4-2 是 VM 内部可执行批，不是 `std.cmath` 模块导入可用批。B4-4
 1. 在 `xiao-runtime`  crate 根暴露 15 个类型化自由函数，与 F-5 原语一一对应；
 2. 返回 `RuntimeResult<f64>`，错误直接复用 Runtime 的 009 等身份；不读写 Runtime ABI 挂起错误槽；
 3. 作为 Runtime 内部 API，不承诺语言级 semver 稳定性；文档注明仅供 VM/后端调用，不是语言公开 API；
-4. 一元函数 `cmath_sqrt(value: f64)`、`cmath_floor`、`cmath_ceil`、`cmath_round`、`cmath_trunc`、`cmath_abs`、`cmath_sin`、`cmath_cos`、`cmath_tan`、`cmath_exp`、`cmath_ln`、`cmath_log10`；
-5. 二元函数 `cmath_min(left: f64, right: f64)`、`cmath_max(left, right)`、`cmath_pow(base: f64, exponent: f64)`；
+4. 一元函数均为 `fn name(value: f64) -> RuntimeResult<f64>`：`cmath_sqrt`、`cmath_floor`、`cmath_ceil`、`cmath_round`、`cmath_trunc`、`cmath_abs`、`cmath_sin`、`cmath_cos`、`cmath_tan`、`cmath_exp`、`cmath_ln`、`cmath_log10`；
+5. 二元函数均为 `fn name(left: f64, right: f64) -> RuntimeResult<f64>`：`cmath_min`、`cmath_max`；`cmath_pow(base: f64, exponent: f64) -> RuntimeResult<f64>`；
 6. 函数内部复用现有私有 `cmath` 内核；不复制数学/域/ULP 逻辑；
 7. VM 通过这 15 个函数调用，不跨 crate 访问私有模块，也不借 C ABI 状态槽转运 VM 错误；
 8. 本批不把该入口加入 intrinsic/C ABI/语言公开面；B4-3/B4-4 再接入各自路径。
