@@ -186,7 +186,7 @@ B7 是 **安全批**，不是普通库批。错误默认值、随机源、密钥
 
 ## 七、交接
 
-B7完成后进入B8网络批：HTTP client/server，依赖B3+B7，超时/限制/取消/关闭drain。B9数据库最后。
+B7完成后进入[B8 HTTP规划](20o-b8-http-plan.md)：HTTP client/server，依赖B3+B7，超时/限制/取消/关闭drain。B9数据库最后。
 
 新 Agent 先读：
 
