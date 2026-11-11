@@ -162,7 +162,7 @@ B6 是 **原生工具批**，不是B7安全/网络批。正则和压缩仍须按
 
 ## 七、交接
 
-B6完成后进入B7安全批：hash/hmac/CSPRNG/AEAD/TLS基础。B8网络依赖B3+B7，B9数据库最后。
+B6完成后进入[B7安全批规划](20o-b7-security-plan.md)：hash/hmac/CSPRNG/AEAD/TLS基础。B8网络依赖B3+B7，B9数据库最后。
 
 新 Agent 先读：
 

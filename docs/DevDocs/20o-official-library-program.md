@@ -212,7 +212,7 @@ Rust 数值底座；字符串往返精确，除法需显式精度与舍入。精
 | B4 | JSON/TOML 值模型 + `json`/`toml` 解析器 | B0；语言冻结 | [规划](20o-b4-json-toml-plan.md)；类型/IR/两后端/生命周期 |
 | B5 | 数值库批：`decimal`、`fractions`、`statistics` 浮点、确定性 `random` | B2 | [规划](20o-b5-numeric-libraries-plan.md)；精度/舍入/边界/三平台 |
 | B6 | 原生工具批：`regex`、`compression`、`fmt` 扩展 | B0；原生库策略 | [规划](20o-b6-native-tools-plan.md)；上限/模糊/依赖锁定 |
-| B7 | 安全批：`hash`/`hmac`/CSPRNG/AEAD/TLS 基础 | B2；安全审阅 | 测试向量/侧信道/能力位 |
+| B7 | 安全批：`hash`/`hmac`/CSPRNG/AEAD/TLS 基础 | B2；安全审阅 | [规划](20o-b7-security-plan.md)；测试向量/侧信道/能力位 |
 | B8 | 网络批：HTTP client/server | B3+B7 | 超时/限制/取消/关闭 drain |
 | B9 | 原生扩展/数据库批：SQLite → PostgreSQL → Redis → MySQL；首批有界连接池；每驱动必须有教程和示例 | 原生扩展契约；B7 的 TLS/crypto | 独立数据库能力/隔离/凭据/审计/池关闭/服务测试 |
 
