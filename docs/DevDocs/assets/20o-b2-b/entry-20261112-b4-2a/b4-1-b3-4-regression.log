@@ -1,0 +1,78 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.25s
+     Running tests\20o_b2_b3_wrapper.rs (D:\project\Xiao\.b4-2a\20261112-fe752363\target\debug\deps\20o_b2_b3_wrapper-a8cece87f2cea900.exe)
+
+running 8 tests
+B3-CMATH-WRAPPER paths=std,stdlib ordinary-package=rejected result=success
+test source_contract_aliases_share_identity_and_reject_package_override ... ok
+B3-WRAPPER-EXPORT	{"function":"sqrt","intrinsic_id":34,"parameter_type":"float","parameters":["value"],"primitive":"cmath_sqrt","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"floor","intrinsic_id":35,"parameter_type":"float","parameters":["value"],"primitive":"cmath_floor","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"ceil","intrinsic_id":36,"parameter_type":"float","parameters":["value"],"primitive":"cmath_ceil","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"round","intrinsic_id":37,"parameter_type":"float","parameters":["value"],"primitive":"cmath_round","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"trunc","intrinsic_id":38,"parameter_type":"float","parameters":["value"],"primitive":"cmath_trunc","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"abs","intrinsic_id":39,"parameter_type":"float","parameters":["value"],"primitive":"cmath_abs","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"min","intrinsic_id":40,"parameter_type":"float","parameters":["left","right"],"primitive":"cmath_min","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"max","intrinsic_id":41,"parameter_type":"float","parameters":["left","right"],"primitive":"cmath_max","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"pow","intrinsic_id":42,"parameter_type":"float","parameters":["base","exponent"],"primitive":"cmath_pow","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"sin","intrinsic_id":43,"parameter_type":"float","parameters":["value"],"primitive":"cmath_sin","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"cos","intrinsic_id":44,"parameter_type":"float","parameters":["value"],"primitive":"cmath_cos","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"tan","intrinsic_id":45,"parameter_type":"float","parameters":["value"],"primitive":"cmath_tan","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"exp","intrinsic_id":46,"parameter_type":"float","parameters":["value"],"primitive":"cmath_exp","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"ln","intrinsic_id":47,"parameter_type":"float","parameters":["value"],"primitive":"cmath_ln","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"log10","intrinsic_id":48,"parameter_type":"float","parameters":["value"],"primitive":"cmath_log10","return_type":"float"}
+B3-CMATH-WRAPPER functions=15 validation=AST-interface status=planned result=success
+test source_contract_exports_exactly_fifteen_frozen_forwarders ... ok
+B3-WRAPPER-CONTRACT mutation_cases=10 result=success
+test source_contract_rejects_extra_exports_and_wrong_forwarders ... ok
+B3-CMATH-WRAPPER removals=15 validation=AST-interface result=success
+test source_contract_removing_each_wrapper_invalidates_exports ... ok
+test source_contract_tutorial_tracks_registry_and_requires_verified_evidence ... ok
+B3-CMATH-ISOLATION modules=["stdlib.base64", "stdlib.cmath", "stdlib.csv", "stdlib.dict", "stdlib.fmt", "stdlib.hex", "stdlib.math", "stdlib.os", "stdlib.path", "stdlib.set", "stdlib.statistics", "stdlib.text", "stdlib.url"]
+B3-CMATH-ISOLATION native=success imported=stdlib.hex preloaded=stdlib.cmath:false
+test existing_hex_import_keeps_native_lowering ... ok
+B3-CMATH-REACHABILITY root=stdlib.hex unreachable=stdlib.path dependency=stdlib.cmath result=success
+test unimported_module_cannot_pull_cmath_into_hex ... ok
+B3-WRAPPER-IMPORT path=std.cmath function=sqrt stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=floor stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=ceil stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=round stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=trunc stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=abs stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=min stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=max stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=pow stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=sin stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=cos stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=tan stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=exp stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=ln stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=log10 stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=sqrt stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=floor stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=ceil stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=round stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=trunc stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=abs stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=min stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=max stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=pow stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=sin stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=cos stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=tan stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=exp stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=ln stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=log10 stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+test b3_handoff_rejects_all_planned_language_imports ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 33.61s
+
+     Running tests\20o_b2_b4_frontend.rs (D:\project\Xiao\.b4-2a\20261112-fe752363\target\debug\deps\20o_b2_b4_frontend-f6dd88ed772d2bd6.exe)
+
+running 3 tests
+B4-1-CMATH-NEGATIVE cases=10 error=X04-TYPE-002 span=present result=success
+test cmath_static_call_shape_and_type_errors_are_rejected ... ok
+B4-1-CMATH count=15 positional=named=exact ids=34..48 return=float result=success
+test cmath_intrinsics_typecheck_and_lower_to_frozen_ir ... ok
+B4-1-CMATH-WRAPPER module=stdlib.cmath ids=34..48 import=retained result=success
+test cmath_wrapper_module_carries_intrinsic_ir_without_enabling_import_execution ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
