@@ -31,7 +31,7 @@ B5 是 **数值库批**，不是 B2 数值运行时重复。lfloat/lint 的解�
 
 ### 1.2 明确不做
 
-- 不重写/改变 B2 lfloat/lint 语义或 ABI 1.19/21；
+- 不重写/改变 B2 lfloat/lint 语义或回写 B2-C 的 1.19/21 历史产物；若 B5 需要新 intrinsic/值类型/ABI 增量，按 B5-0 另立版本并冻结；
 - 不把 decimal/fractions 并入 B4 json_value；
 - 不实现 CSPRNG/加密随机（B7）、网络/数据库（B8/B9）；
 - 不新增未冻结能力位/错误码/intrinsic；
@@ -73,7 +73,7 @@ B5 是 **数值库批**，不是 B2 数值运行时重复。lfloat/lint 的解�
    - 序列复现/并发/不隐式全局；
    - 不提供CSPRNG；
 6. 冻结四模块签名/参数/返回/效果/所有权/能力/错误码/资源/性能预算；
-7. 冻结intrinsic/ABI/生成器/.xiaoc/.xar身份增量（如需），不改变B2 1.19/21；
+7. 冻结intrinsic/ABI/生成器/.xiaoc/.xar身份增量（如需）；B5 不修改/回写 B2-C 的 1.19/21 历史快照，新增量另立版本；
 8. 四份教程草案、固定示例、registry候选（planned）；
 9. 记录延期API/平台。
 
@@ -174,7 +174,7 @@ B5 是 **数值库批**，不是 B2 数值运行时重复。lfloat/lint 的解�
 
 ## 七、交接
 
-B5完成后进入B6：regex/compression/fmt扩展。B6依赖原生库策略；B7安全/CSPRNG后置。
+B5完成后进入[B6原生工具规划](20o-b6-native-tools-plan.md)：regex/compression/fmt扩展。B6依赖原生库策略；B7安全/CSPRNG后置。
 
 新 Agent 先读：
 
