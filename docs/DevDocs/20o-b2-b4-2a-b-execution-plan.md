@@ -182,3 +182,5 @@ docs/DevDocs/assets/20o-b2-b/entry-<date>-b4/           B4-2 证据
 ```
 
 本页只做 B4-2A/B；B4-3 起、B5～B7 与 B2-C 仍后置。
+
+FIX1 之后的新证据目录统一用 `logs/sha256/<前两位>/<完整摘要>.log` 保存原始日志对象；执行回执各自记录 `(label, pid, started/finished, argv, cwd, source_sha, docs_tree_before, docs_tree_after, docs_tree_sha256, exit_code, log_ref)`，审计确认每个内容对象唯一且被回执引用。最终 docs 门禁须绑定已提交 DevDocs 快照：`docs_tree_sha256` 覆盖所有 `docs/DevDocs` 静态文件的相对路径与原始字节，包含本批 README、工具和反例源码，只排除运行期间生成的日志对象、回执与收口清单；门禁运行前后摘要相同，且与回执所记固定 Git commit tree 摘要相等。相同日志的多次运行共享对象，不共享回执；历史日志不迁移。

@@ -16,7 +16,9 @@ FIX1 在 Windows 本机完成，修复提交 `c46102115c63956466361d83243dea8ba3
 
 本次自审核对了 FIX1 证据体量：docs 门禁重复运行回执与重复日志确有膨胀，历史目录和日志字节保留不改。FIX1 后的新证据目录改用原始日志 SHA-256 内容寻址：同字节只存一个对象，每次执行仍单独保存 PID、时间、命令、环境、源码身份、退出码及日志对象引用；不会为去重删除运行事实。
 
-规划、索引、本 README 与审计反例定稿后，完整 `docs/UseDocs/layout` 门禁在 `fixed/self_review_docs` 再次通过；`docs` 仅有既有 `A0-COVERAGE-002` 警告，没有错误。UseDocs/layout 的独立通过记录也保留于 `fixed/sealed_usedocs`、`fixed/sealed_layout`。
+F2 的具体规则和实现位置：新日志对象写入 `logs/sha256/<前两位>/<完整摘要>.log`，记录中只放 `log_ref/log_bytes/log_sha256`，每次执行的回执独立保留；采集函数检测到相同摘要时逐字节比较并复用对象，审计拒绝未引用、重复路径或内容与文件名摘要不符的对象。`content_store_self_test` 和紧随其后的同命令复跑由同一采集器执行；审计要求两份回执的日志摘要与对象引用完全相同，并核对存储函数对不同内容及损坏对象的处理。
+
+旧回执 `fixed/self_review_docs`、`fixed/final_self_review_docs` 等只证明各自运行成功；它们的 `source_before` 没有 DevDocs 字节，不能单独证明当时读取了最终 README 或规划文本。新增的 `fixed/docs_final.json` 作为终稿 docs 回执，单独绑定 README、规划、审计器和反例源码定稿后的 DevDocs 快照；该门禁要求全量通过，历史 `docs` 门禁日志中的 `A0-COVERAGE-002` 警告仍如实保留。UseDocs/layout 的独立通过记录仍见 `fixed/sealed_usedocs`、`fixed/sealed_layout`。
 
 归属由直接运行确定，见 `b34/concurrency.*`、`b401/concurrency.*` 及生成的 `attribution.json`。`c7a45e10` 为唯一接入 cmath 类型/IR 的产品提交；其 checker 让标准库包装能够编译，旧流程所依赖的“包装编译失败”随之消失，于是未使用导入可在子 VM 加载，归档也可生成。B3-4 当时的 29/29 结论仍有效，不能把这项回归归到 B4-2A 新增测试。
 
@@ -32,7 +34,9 @@ checker 必须继续接受 B4-1 已验收的类型/IR，B4-2A 也必须保留直
 
 F3 摘要口径核实：`22c_vm_concurrency.rs` 在 B3-4/B4-1 捕获的原始字节长度为 35,708、SHA-256 为 `1ebb2305cd41dfeabdc36102c172350d80fcfbf8c46b7c31caf258b496ec6c79`；当前本机检出长度为 34,713、raw SHA 为 `e4fd05aaf70d2e410e2f5b487cfe294b56f09a885decd022f2c9e38b3e7c25a1`。三份来源的 UTF-8/LF 规范 SHA 都是 `e4fd05aaf70d2e410e2f5b487cfe294b56f09a885decd022f2c9e38b3e7c25a1`，因此这是检出换行差异；审计同时保留 raw 与 canonical 摘要，没有把二者混用。
 
-提交 `cb2444dc0a2afd6d2bf456fe3b1805454b4825c9` 固定原始 `record.py`，`13e7670f0ceb5d6ab4ca181effb07da0a8059284` 加固全新任务根，`2e656b123a99bda33c881606fe01898863a2f122` 加固父路径 junction 检查。审计从这三个固定 Git blob 复核回执执行器摘要；当前同名脚本是后续自审版。每条回执记录 PID、时间、完整参数、cwd、隔离环境、原始日志摘要和源码/锁前后摘要。`source.json` 同时保留原始字节和 UTF-8/LF 规范摘要，历史审计逐字段校验 B1/B2/B3/B3-4/B4-0/1 的计数、快照、公开状态和版本；日志保持原始字节，既有历史日志不改写。
+F1 的绑定机制：`record.py run` 在终稿 docs 门禁回执内保存 `docs_commit` 以及 `docs_tree_before/after`；摘要按 `docs/DevDocs` 下的相对路径和原始字节计算。摘要包含本批 README、规划、审计器、采集器、反例脚本及其余静态 DevDocs 文件，只排除内容寻址日志对象、运行回执、收口清单和自反例输出这些运行时生成物。`record.py` 要求运行前工作树摘要等于 Git commit tree；审计从回执绑定的固定 commit 重读 Git blobs 并重算，且要求运行前后摘要相同，拒绝未提交文档、门禁期间文档漂移或回执与 commit 不同。这补足了 `source_before` 未包含 DevDocs 字节的边界。
+
+提交 `cb2444dc0a2afd6d2bf456fe3b1805454b4825c9` 固定原始 `record.py`，`13e7670f0ceb5d6ab4ca181effb07da0a8059284` 加固全新任务根，`2e656b123a99bda33c881606fe01898863a2f122` 加固父路径 junction 检查，`6ed66039ae13fe841ebe60d86f2458b957f6d191` 固定内容寻址采集器。审计从这些固定 Git blob 复核回执执行器摘要；当前同名审计脚本是后续自审版。每条回执记录 PID、时间、完整参数、cwd、隔离环境、原始日志摘要和源码/锁前后摘要。`source.json` 同时保留原始字节和 UTF-8/LF 规范摘要，历史审计逐字段校验 B1/B2/B3/B3-4/B4-0/1 的计数、快照、公开状态和版本；日志保持原始字节，既有历史日志不改写。
 
 从仓库根只读复核：
 
@@ -41,7 +45,7 @@ python -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261112-b4-2a-fix1/audit.py
 python -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261112-b4-2a-fix1/audit.py --self-negative
 ```
 
-默认审计不读当前工作树、不要求当前 HEAD，也不要求旧 worktree、target 或 Runtime 仍存在；只需仓库保留固定 Git 对象。它支持 `--root` 和 `--repository-root`，不写证据、不生成 Python 缓存。自反例有 11 个用例（1 个基线、10 个拒绝反例），只改临时副本，覆盖属性删除及重建清单、运行记录/收口/退出状态篡改、伪造来源/日志、嵌套清单、`..` 逃逸和复用空任务根；每项核对准确拒绝原因及整个目录文件/目录项的前后摘要。最终自反例回执为 `self-negative-findings.json`，修复前三个缺口被漏过的复现日志见 `self-review-20261112/before-negative.json`。
+默认审计不读当前工作树、不要求当前 HEAD，也不要求旧 worktree、target 或 Runtime 仍存在；只需仓库保留固定 Git 对象。它支持 `--root` 和 `--repository-root`，不写证据、不生成 Python 缓存。自反例有 13 个用例（1 个基线、12 个拒绝反例），只改临时副本，覆盖属性删除及重建清单、运行记录/收口/退出状态篡改、伪造来源/日志、DevDocs 摘要篡改、孤立内容日志对象、嵌套清单、`..` 逃逸和复用空任务根；每项核对准确拒绝原因及整个目录文件/目录项的前后摘要。最终自反例回执为 `self-negative-findings.json`，修复前三个缺口被漏过的复现日志见 `self-review-20261112/before-negative.json`。
 
 `audit.py --collect` 是显式生成命令，在所有运行与文档完成后从真实记录生成 `attribution.json`、`closeout.json`、`b4-2a-exit.json` 和 `evidence.json`，拒绝覆盖。新增门禁记录后使用 `--refresh-results`，只有归属不变、原运行映射完全匹配时才用全部真实记录重建 closeout 与清单；该模式不改写运行日志。工具或说明更新而没有新运行时，用 `--refresh-inventory`，它先验证原结论再刷新实际清单。旧的 blocked 自审仍保留，后续实现入口以本目录退出记录为准。
 

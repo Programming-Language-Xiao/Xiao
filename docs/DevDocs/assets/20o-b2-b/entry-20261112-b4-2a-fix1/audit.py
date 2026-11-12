@@ -1,7 +1,7 @@
 """FIX1 只读审计：历史归属、修复源码、原始执行与阶段退出逐项核对。"""
 import argparse
 import json
-from pathlib import Path, PureWindowsPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import re
 import shutil
 import subprocess
@@ -11,16 +11,17 @@ import tempfile
 sys.dont_write_bytecode = True
 
 from record import (PRODUCT_ROOTS, REPOSITORY, ROOT, fixed_files, git, identity, load,
-                    require, require_new_task_root, sha, write_json)
+                    require, require_new_task_root, sha, write_json,
+                    docs_tree_from_commit)
 
 ENTRY = "2f862f51"
 CODE = "c4610211"
 RUNNER_COMMIT = "cb2444dc0a2afd6d2bf456fe3b1805454b4825c9"
 RUNNER_COMMITS = [RUNNER_COMMIT, "13e7670f0ceb5d6ab4ca181effb07da0a8059284",
-                  "2e656b123a99bda33c881606fe01898863a2f122"]
+                  "2e656b123a99bda33c881606fe01898863a2f122",
+                  "6ed66039ae13fe841ebe60d86f2458b957f6d191"]
 RUNNER_PATH = "docs/DevDocs/assets/20o-b2-b/entry-20261112-b4-2a-fix1/record.py"
 VERSIONS = {"b34": "7d8b85e4", "b401": "c7a45e10", "fixed": CODE}
-TASK_BASE = PureWindowsPath(r"D:\project\Xiao\.b4-2a-fix1\20261112-2f862f51")
 TASK_BASE = PureWindowsPath(r"D:\project\Xiao\.b4-2a-fix1\20261112-2f862f51")
 ALLOWED = {
     "core/rust/crates/xiao-driver/src/module_loader.rs",
@@ -69,6 +70,9 @@ RUNS = {
     ("fixed", "cross_status_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "self_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "final_self_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "content_store_self_test"): ["python", "-B", "-X", "utf8", RUNNER_PATH, "content-store-self-test"],
+    ("fixed", "content_store_self_test_repeat"): ["python", "-B", "-X", "utf8", RUNNER_PATH, "content-store-self-test"],
+    ("fixed", "docs_final"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "self_review_findings_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "final_self_review_findings_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "sealed_self_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
@@ -140,6 +144,43 @@ def totals(log):
     return tuple(sum(int(row[index]) for row in rows) for index in range(3))
 
 
+def content_objects(root):
+    base = root / "logs" / "sha256"
+    objects = {}
+    if not base.exists():
+        return objects
+    for path in base.rglob("*.log"):
+        require(not path.is_symlink(), "内容日志对象不能是符号链接")
+        digest = sha(path.read_bytes())
+        require(path.name == digest + ".log" and path.parent.name == digest[:2],
+                "内容寻址日志对象摘要/路径不符")
+        require(digest not in objects, "相同 SHA-256 内容存在重复日志对象")
+        objects[digest] = path.relative_to(root).as_posix()
+    return objects
+
+
+def read_run_log(root, record, label, objects):
+    if "log_ref" not in record:
+        # 固定历史运行保留逐 label 的旧式原始日志，不做搬移或改写。
+        require(record["log"] == label + ".log", "历史日志引用不符：" + label)
+        path = root / record["log"]
+    else:
+        reference = PurePosixPath(record["log_ref"])
+        require(not reference.is_absolute() and ".." not in reference.parts
+                and len(reference.parts) == 4 and reference.parts[:2] == ("logs", "sha256"),
+                "内容日志引用路径不合法：" + label)
+        digest = reference.name.removesuffix(".log")
+        require(re.fullmatch(r"[0-9a-f]{64}", digest) is not None
+                and reference.parts[2] == digest[:2] and reference.name == digest + ".log",
+                "内容日志引用不是规范 SHA-256 对象路径：" + label)
+        require(objects.get(digest) == record["log_ref"], "内容日志引用对象不存在或路径不唯一：" + label)
+        path = root.joinpath(*reference.parts)
+    raw = path.read_bytes()
+    require(record["log_sha256"] == sha(raw) and record["log_bytes"] == len(raw),
+            "原始日志身份不符：" + label)
+    return raw.decode("utf-8"), raw
+
+
 def verify(root, repository):
     sources, environments, task_roots = {}, {}, {}
     runner_shas = {sha(git(repository, "show", commit + ":" + RUNNER_PATH)) for commit in RUNNER_COMMITS}
@@ -180,7 +221,8 @@ def verify(root, repository):
     original_22c = "core/rust/crates/xiao-driver/tests/22c_vm_concurrency.rs"
     require(len({sources[variant]["files"][original_22c]["canonical_sha256"] for variant in sources}) == 1,
             "既有 22c 断言被改动")
-    logs, records = {}, {}
+    objects = content_objects(root)
+    referenced_objects, logs, records = set(), {}, {}
     for (variant, label), argv in RUNS.items():
         directory = root / variant
         record = load(directory / (label + ".json"))
@@ -191,12 +233,43 @@ def verify(root, repository):
                 == sources[variant]["tree_sha256"], "执行期间源码或锁漂移：" + label)
         require(record["environment_sha256"] == sha((directory / "environment.json").read_bytes())
                 and record["runner_sha256"] in runner_shas, "固定执行器/环境摘要不符：" + label)
-        require(record["log"] == label + ".log", "日志路径不符：" + label)
-        raw = (directory / record["log"]).read_bytes()
-        require(record["log_sha256"] == sha(raw) and record["log_bytes"] == len(raw), "原始日志身份不符：" + label)
+        log, raw = read_run_log(directory, record, label, objects)
+        if "log_ref" in record:
+            referenced_objects.add(record["log_sha256"])
+            require(record.get("log") is None, "内容寻址回执不能再保存 label 日志副本：" + label)
+        if "docs_tree_before" in record or "docs_tree_after" in record:
+            require(record.get("docs_tree_unchanged") is True
+                    and record.get("docs_tree_sha256") == record.get("docs_tree_before")
+                    and record.get("docs_tree_before") == record.get("docs_tree_after"),
+                    "门禁执行期间 DevDocs 字节变化：" + label)
+            docs_commit = git(repository, "rev-parse", record["docs_commit"]).decode("ascii").strip()
+            require(docs_commit == record["docs_commit"]
+                    and record["docs_tree_before"] == docs_tree_from_commit(repository, docs_commit),
+                    "门禁回执 DevDocs SHA 与固定 commit tree 不符：" + label)
         expected_exit = 101 if variant == "b401" else 0
         require(record["exit_code"] == expected_exit, "执行退出码不符：" + label)
-        logs[variant, label], records[variant, label] = raw.decode("utf-8"), record
+        logs[variant, label], records[variant, label] = log, record
+    require(referenced_objects == set(objects), "内容日志对象必须且只须由运行回执引用")
+    require("fixed/content_store_self_test" in records and
+            json.loads(logs["fixed", "content_store_self_test"]) == {
+                "passed": True, "distinct_objects": 2,
+                "identical_outputs_reused": True, "tampered_object_rejected": True,
+                "docs_tree_static_bound": True},
+            "内容寻址日志对象去重/损坏反例未通过")
+    first_store_run = records["fixed", "content_store_self_test"]
+    repeated_store_run = records.get(("fixed", "content_store_self_test_repeat"))
+    require(repeated_store_run is not None
+            and first_store_run["log_ref"] == repeated_store_run["log_ref"]
+            and first_store_run["log_sha256"] == repeated_store_run["log_sha256"]
+            and logs["fixed", "content_store_self_test"] == logs["fixed", "content_store_self_test_repeat"],
+            "相同采集命令未复用唯一内容日志对象")
+    docs_record = records.get(("fixed", "docs_final"))
+    require(docs_record is not None and "log_ref" in docs_record
+            and docs_record["docs_tree_unchanged"] is True
+            and docs_record["docs_tree_sha256"] == docs_record["docs_tree_before"]
+            and docs_record["docs_tree_before"] == docs_tree_from_commit(repository, docs_record["docs_commit"])
+            and json.loads(logs["fixed", "docs_final"])["passed"] is True,
+            "终稿 docs 门禁未绑定静态 DevDocs Git tree")
     require(totals(logs["b34", "concurrency"]) == (29, 0, 0), "B3-4 直接复跑未通过 29/29")
     require(totals(logs["b401", "concurrency"]) == (27, 2, 0), "B4-1 直接复跑不符 27/29")
     failed = re.findall(r"^test (\w+) \.\.\. FAILED$", logs["b401", "concurrency"], re.M)
@@ -403,6 +476,8 @@ def negative(root, repository):
     for label, reason in [("baseline", None), ("missing_attributes", "FIX1 证据目录属性不符"),
                           ("missing_attributes_reindexed", "FIX1 证据目录属性不符"),
                           ("tampered_log", "原始日志身份不符：concurrency"),
+                          ("orphan_content_object", "内容日志对象必须且只须由运行回执引用"),
+                          ("tampered_docs_tree", "门禁执行期间 DevDocs 字节变化：docs_final"),
                           ("forged_source", "固定 Git 产品树不符：b34"),
                           ("false_closeout", "阶段收口与实际运行不符"),
                           ("false_b4_2a_exit", "B4-2A 退出与恢复门槛不符"),
@@ -422,6 +497,17 @@ def negative(root, repository):
             elif label == "tampered_log":
                 with (copied / "b34/concurrency.log").open("ab") as output:
                     output.write(b"\nforged success\n")
+            elif label == "orphan_content_object":
+                orphan = b"unreferenced log object\n"
+                digest = sha(orphan)
+                orphan_path = copied / "logs/sha256" / digest[:2] / (digest + ".log")
+                orphan_path.parent.mkdir(parents=True, exist_ok=True)
+                orphan_path.write_bytes(orphan)
+            elif label == "tampered_docs_tree":
+                record_path = copied / "fixed/docs_final.json"
+                record = load(record_path)
+                record["docs_tree_sha256"] = "0" * 64
+                record_path.write_text(json.dumps(record), encoding="utf-8")
             elif label == "forged_source":
                 source = load(copied / "b34/source.json")
                 source["files"]["core/rust/Cargo.lock"]["canonical_sha256"] = "0" * 64
@@ -453,7 +539,8 @@ def negative(root, repository):
                     if "environment_sha256" in record:
                         record["environment_sha256"] = digest
                         record_path.write_text(json.dumps(record), encoding="utf-8")
-            if label in {"tampered_log", "forged_source", "false_closeout", "false_b4_2a_exit", "parent_escape"}:
+            if label in {"tampered_log", "orphan_content_object", "tampered_docs_tree", "forged_source",
+                         "false_closeout", "false_b4_2a_exit", "parent_escape"}:
                 if label == "false_closeout":
                     exit_result = load(copied / "b4-2a-exit.json")
                     exit_result["b4_2b_started"] = True
