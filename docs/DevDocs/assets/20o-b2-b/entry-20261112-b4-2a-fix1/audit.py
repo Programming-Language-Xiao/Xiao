@@ -75,6 +75,7 @@ RUNS = {
     ("fixed", "content_store_self_test_repeat"): ["python", "-B", "-X", "utf8", RUNNER_PATH, "content-store-self-test"],
     ("fixed", "docs_final"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "docs_final_sealed"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "docs_final_closeout"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "self_review_findings_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "final_self_review_findings_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "sealed_self_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
@@ -235,7 +236,8 @@ def verify(root, repository):
                 == sources[variant]["tree_sha256"], "执行期间源码或锁漂移：" + label)
         require(record["environment_sha256"] == sha((directory / "environment.json").read_bytes())
                 and record["runner_sha256"] in runner_shas, "固定执行器/环境摘要不符：" + label)
-        log, raw = read_run_log(directory, record, label, objects)
+        log_root = root if "log_ref" in record else directory
+        log, raw = read_run_log(log_root, record, label, objects)
         if "log_ref" in record:
             referenced_objects.add(record["log_sha256"])
             require(record.get("log") is None, "内容寻址回执不能再保存 label 日志副本：" + label)
@@ -270,7 +272,7 @@ def verify(root, repository):
             and first_store_run["log_sha256"] == repeated_store_run["log_sha256"]
             and logs["fixed", "content_store_self_test"] == logs["fixed", "content_store_self_test_repeat"],
             "相同采集命令未复用唯一内容日志对象")
-    docs_record = records.get(("fixed", "docs_final_sealed"))
+    docs_record = records.get(("fixed", "docs_final_closeout"))
     require(docs_record is not None and "log_ref" in docs_record
             and docs_record["docs_tree_unchanged"] is True
             and docs_record["docs_tree_sha256"] == docs_record["docs_tree_before"]
@@ -485,7 +487,7 @@ def negative(root, repository):
                           ("missing_attributes_reindexed", "FIX1 证据目录属性不符"),
                           ("tampered_log", "原始日志身份不符：concurrency"),
                           ("orphan_content_object", "内容日志对象必须且只须由运行回执引用"),
-                          ("tampered_docs_tree", "门禁执行期间 DevDocs 字节变化：docs_final"),
+                          ("tampered_docs_tree", "门禁执行期间 DevDocs 字节变化：docs_final_closeout"),
                           ("forged_source", "固定 Git 产品树不符：b34"),
                           ("false_closeout", "阶段收口与实际运行不符"),
                           ("false_b4_2a_exit", "B4-2A 退出与恢复门槛不符"),
@@ -512,7 +514,7 @@ def negative(root, repository):
                 orphan_path.parent.mkdir(parents=True, exist_ok=True)
                 orphan_path.write_bytes(orphan)
             elif label == "tampered_docs_tree":
-                record_path = copied / "fixed/docs_final.json"
+                record_path = copied / "fixed/docs_final_closeout.json"
                 record = load(record_path)
                 record["docs_tree_sha256"] = "0" * 64
                 record_path.write_text(json.dumps(record), encoding="utf-8")

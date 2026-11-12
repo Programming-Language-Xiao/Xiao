@@ -18,7 +18,7 @@ FIX1 在 Windows 本机完成，修复提交 `c46102115c63956466361d83243dea8ba3
 
 F2 的具体规则和实现位置：新日志对象写入 `logs/sha256/<前两位>/<完整摘要>.log`，记录中只放 `log_ref/log_bytes/log_sha256`，每次执行的回执独立保留；采集函数检测到相同摘要时逐字节比较并复用对象，审计拒绝未引用、重复路径或内容与文件名摘要不符的对象。`content_store_self_test` 和紧随其后的同命令复跑由同一采集器执行；审计要求两份回执的日志摘要与对象引用完全相同，并核对存储函数对不同内容及损坏对象的处理。
 
-旧回执 `fixed/self_review_docs`、`fixed/final_self_review_docs` 等只证明各自运行成功；它们的 `source_before` 没有 DevDocs 字节，不能单独证明当时读取了最终 README 或规划文本。`fixed/docs_final.json` 保留为先前提交快照上的成功运行；本次终稿回执为 `fixed/docs_final_sealed.json`，绑定当前 README、规划、审计器和反例源码定稿后的 DevDocs 快照，并要求全量通过。历史 `docs` 门禁日志中的 `A0-COVERAGE-002` 警告仍如实保留。UseDocs/layout 的独立通过记录仍见 `fixed/sealed_usedocs`、`fixed/sealed_layout`。
+旧回执 `fixed/self_review_docs`、`fixed/final_self_review_docs` 等只证明各自运行成功；它们的 `source_before` 没有 DevDocs 字节，不能单独证明当时读取了最终 README 或规划文本。`fixed/docs_final.json` 与 `fixed/docs_final_sealed.json` 保留为先前提交快照上的成功运行；本次终稿回执为 `fixed/docs_final_closeout.json`，绑定当前 README、规划、审计器和反例源码定稿后的 DevDocs 快照，并要求全量通过。历史 `docs` 门禁日志中的 `A0-COVERAGE-002` 警告仍如实保留。UseDocs/layout 的独立通过记录仍见 `fixed/sealed_usedocs`、`fixed/sealed_layout`。
 
 归属由直接运行确定，见 `b34/concurrency.*`、`b401/concurrency.*` 及生成的 `attribution.json`。`c7a45e10` 为唯一接入 cmath 类型/IR 的产品提交；其 checker 让标准库包装能够编译，旧流程所依赖的“包装编译失败”随之消失，于是未使用导入可在子 VM 加载，归档也可生成。B3-4 当时的 29/29 结论仍有效，不能把这项回归归到 B4-2A 新增测试。
 
