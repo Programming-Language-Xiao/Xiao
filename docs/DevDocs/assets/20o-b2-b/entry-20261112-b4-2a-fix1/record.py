@@ -52,8 +52,7 @@ def require_new_task_root(task_root):
     require(task.is_absolute() and not task.exists() and not task.is_symlink(), "拒绝复用已有任务根")
     current = task
     while current != current.parent:
-        require(not current.is_symlink()
-                and not (current.exists() and getattr(current, "is_junction", lambda: False)()),
+        require(not current.is_symlink() and not getattr(current, "is_junction", lambda: False)(),
                 "任务根路径不能经过符号链接或 junction")
         current = current.parent
 
