@@ -1,0 +1,28 @@
+{
+  "label": "bytecode",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-bytecode",
+    "--",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 11180,
+  "started_utc": "2026-11-12T04:42:46.599492+00:00",
+  "finished_utc": "2026-11-12T04:43:19.793206+00:00",
+  "exit_code": 0,
+  "source_before": "25d60f02d710202c7d52eb458a0a3c6d3b1f6b8751b5e00d43163cde33847fa7",
+  "source_after": "25d60f02d710202c7d52eb458a0a3c6d3b1f6b8751b5e00d43163cde33847fa7",
+  "source_unchanged": true,
+  "log": "bytecode.log",
+  "log_bytes": 13020,
+  "log_sha256": "e0db411f33f978a25d603c0ae1e0267da16bcbb2e80f94b94f41743980771d02",
+  "runner_sha256": "dfca5bbef4bb5014802bc46a27309b680c58232af6d52e37b2337fc095312633",
+  "environment_sha256": "232af1c0e8e55e0e64bb052930f9c59a5c41b394a8e7db98a57d06310d9d7943"
+}

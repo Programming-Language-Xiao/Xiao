@@ -1,11 +1,11 @@
 # 20O-B2-B4-2A/B. cmath TAC/字节码与 VM 执行规划
 
-> **B4-2A 已开工，TAC/字节码专项通过；22c 两项回归失败，阶段尚未退出。B4-2B、B4-3 起、B5～B7 与 B2-C 仍未开始。**
+> **B4-2A 已完成 Windows 本机退出：TAC/字节码 65/65，FIX1 恢复 22c 29/29。B4-2B、B4-3 起、B5～B7 与 B2-C 仍未开始。**
 > 入口为 B4-1 产品代码 `c7a45e10`、B4-2 边界规划 `162d94ea`、Runtime 入口裁定 `8b8d5e3e` 和完整签名记录 `a5d7c866`。
 > B4-2A 验证 TAC/字节码 34～48 往返；若发现缺口，只修对应 lowering/校验。B4-2B 接入 15 个 Runtime 门面与 VM 分派、错误及清理。
-> 30 条 cmath 导入后调用探测仍拒绝；未使用导入的子 VM/归档另有两项失败，不能据此宣称导入边界完整。`language_available=false`，B4-4 才接双路径。
+> 30 条 cmath 导入后调用探测仍拒绝，FIX1 已恢复未使用导入的子 VM/归档拒绝；`language_available=false`，B4-4 才接双路径。
 > 2026-11-12 实施及自审：`09fa912b` 补齐 34～48 往返、完整 TAC/目录、精确拒绝与解码反例；只修改测试。原 `fe752363` 开工检查中，`c7a45e10` 至该入口无产品差异；当前已新增 TAC 测试。证据见[自审记录](assets/20o-b2-b/entry-20261112-b4-2a/review-20261112/README.md)。
-> 22c 失败不归本批测试：B3-4 收口 `7d8b85e4` 为 29/29，`c7a45e10` 之后到 `09fa912b` 的产品改动只有测试，引入点指向 `c7a45e10`，由[FIX.1 规划](20o-b2-b4-2a-fix1-cmath-boundary-plan.md)直接复跑定论并修复；B4-2B 待退出门槛恢复后另行安排。
+> 22c 归属已由直接复跑确定：`7d8b85e4` 为 29/29，`c7a45e10` 为 27/29；修复 `c4610211` 为 29/29。B4-2A 退出回执 `b4-2a-exit.json` 见 [FIX1 证据](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)；旧 blocked 记录保留，B4-2B 另批安排。
 
 ## 一、入口与冻结接口
 
@@ -15,7 +15,7 @@
 | TAC lowering | 现有 `lower_intrinsic_call` 已用 `CallSig::intrinsic(id)`、`FuncId(0)`、`TacOp::Call` |
 | VM | `VmBinding::Cmath*` 已有声明键，尚无分派实现 |
 | Runtime | 私有 `cmath` 内核存在；B4-2B 需按 §1.3 增加 15 个 Rust-only 函数 |
-| 导入 | 30 条导入后调用探测仍拒绝；22c 子 VM 未使用导入及归档拒绝有回归，未收口 |
+| 导入 | 30 条导入后调用仍拒绝；FIX1 恢复子 VM 未使用导入/归档写前拒绝，22c 29/29 |
 
 已冻结的 Runtime API（B4-2B 使用）：
 

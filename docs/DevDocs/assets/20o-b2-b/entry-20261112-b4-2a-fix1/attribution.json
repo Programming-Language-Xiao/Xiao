@@ -1,0 +1,8 @@
+{
+  "introduced_by": "c7a45e10b76b26915499717563761ed20fda6e6c",
+  "last_passing": "7d8b85e4d8c588b40ec76d641edc865481295032",
+  "old_22c": "29/29",
+  "regressed_22c": "27/29",
+  "fixed_22c": "29/29",
+  "reason": "B4-1 接通 cmath 类型检查后，包装编译失败不再构成执行/归档拒绝；FIX1 增加显式 planned 门控。"
+}

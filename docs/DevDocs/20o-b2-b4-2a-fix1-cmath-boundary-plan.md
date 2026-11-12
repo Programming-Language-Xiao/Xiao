@@ -1,17 +1,18 @@
 # 20O-B2-B4-2A-FIX.1. cmath planned 边界回归修复与归属定论
 
-> **FIX.1 尚未开始；B4-2A 因 22c 27/29 阻塞，B4-2B 不启动。**
-> 触发：B3-4 收口 `7d8b85e4` 时 22c 为 29/29；`c7a45e10`（B4-0/1）到 `09fa912b` 的产品改动只有测试，复跑却为 27/29，引入点指向 `c7a45e10`。
+> **FIX.1 已完成 Windows 本机验收：`c4610211` 恢复 22c 29/29；B4-2A 退出门槛已恢复并另记退出，B4-2B 仍未开始。**
+> 直接复跑确认归属：独立 `7d8b85e4` 为 29/29，独立 `c7a45e10` 为 27/29，回归由后者的类型/IR 接入引入；不是 B4-2A 测试引入。
 > FIX.1 只修复子 VM 执行 planned cmath 与 planned `.xar` 构建成功两项边界，恢复 22c 29/29 并给出归属结论。
 > 不改测试断言、不放宽 30 条拒绝、不接 LLVM/双路径、不升 ABI；不跑旧 721；registry/教程不动。
+> 固定代码、原始执行、归属及退出记录见[FIX1 证据](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)。本页下文保留批准时的执行要求，§一表格记录入口时点。
 
 ## 一、入口与范围
 
-| 项 | 当前状态 |
+| 项 | 入口时点状态 |
 | --- | --- |
 | B3-4 收口 | `7d8b85e4`，22c 29/29，1044 个受保护产品文件，边界完整 |
 | B4-0/1 | `c7a45e10`，改动 `xiao-types/src/checker/expression.rs` 等；22c 归属待本批复跑 |
-| B4-2A | `09fa912b`，TAC/字节码 65/65；22c 27/29，`b4_2a_closed=false` |
+| B4-2A | `09fa912b` TAC/字节码 65/65；修复提交 `c4610211` 后 FIX1 收口，B4-2A 退出回执另在 FIX1 closeout 登记 |
 | 失败一 | `isolated_child_preserves_cmath_alias_snapshot_identity`：预期 `X06-RUNTIME-012`，实际子 VM 执行并输出 `7\n`，事件含 `ModuleLoaded { module: "stdlib.cmath" }` |
 | 失败二 | `planned_cmath_xar_is_rejected_before_output`：预期 `X11-PROTOCOL-007`，实际构建出含 `stdlib.cmath` 的 `.xar` |
 | 本批目标 | 边界修复、归属定论、22c 29/29、B4-2A 退出门槛恢复 |
@@ -137,4 +138,4 @@ core/rust/crates/xiao-xar/ 或 driver 归档入口         .xar 写前拒绝（�
 docs/DevDocs/assets/20o-b2-b/entry-<date>-b4-2a-fix1/ FIX.1 证据
 ```
 
-本页只规划 FIX.1；B4-2B 与后续批次仍后置。
+本页限定 FIX.1；本机收口不代表三平台或公开发布，B4-2B 与后续批次仍后置。
