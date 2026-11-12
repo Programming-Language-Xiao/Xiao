@@ -11,11 +11,17 @@ import tempfile
 sys.dont_write_bytecode = True
 
 from record import (PRODUCT_ROOTS, REPOSITORY, ROOT, fixed_files, git, identity, load,
-                    require, sha, write_json)
+                    require, require_new_task_root, sha, write_json)
 
 ENTRY = "2f862f51"
 CODE = "c4610211"
+RUNNER_COMMIT = "cb2444dc0a2afd6d2bf456fe3b1805454b4825c9"
+RUNNER_COMMITS = [RUNNER_COMMIT, "13e7670f0ceb5d6ab4ca181effb07da0a8059284",
+                  "2e656b123a99bda33c881606fe01898863a2f122"]
+RUNNER_PATH = "docs/DevDocs/assets/20o-b2-b/entry-20261112-b4-2a-fix1/record.py"
 VERSIONS = {"b34": "7d8b85e4", "b401": "c7a45e10", "fixed": CODE}
+TASK_BASE = PureWindowsPath(r"D:\project\Xiao\.b4-2a-fix1\20261112-2f862f51")
+TASK_BASE = PureWindowsPath(r"D:\project\Xiao\.b4-2a-fix1\20261112-2f862f51")
 ALLOWED = {
     "core/rust/crates/xiao-driver/src/module_loader.rs",
     "core/rust/crates/xiao-driver/src/archive_closure.rs",
@@ -61,6 +67,15 @@ RUNS = {
     ("fixed", "sealed_review_layout"): ["bun", "run", "check:layout"],
     ("fixed", "locked_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "cross_status_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "self_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "final_self_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "sealed_self_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "audit_self_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "final_audit_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "review_audit_v3_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "audit_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "final_self_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "last_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "final_doc_review"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "sealed_usedocs"): ["bun", "run", "check:usedocs"],
     ("fixed", "sealed_layout"): ["bun", "run", "check:layout"],
@@ -74,12 +89,14 @@ for label, directory in {
 
 
 def inventory(root):
+    paths = list(root.rglob("*"))
+    require(not any(path.is_symlink() for path in paths), "证据目录禁止符号链接")
+    require(not any("__pycache__" in path.parts for path in paths), "证据目录禁止 Python 缓存")
     return {
         path.relative_to(root).as_posix(): {"bytes": path.stat().st_size, "sha256": sha(path.read_bytes())}
-        for path in sorted(root.rglob("*"))
+        for path in sorted(paths)
         if path.is_file()
         and path.relative_to(root).as_posix() != "evidence.json"
-        and "__pycache__" not in path.parts
     }
 
 
@@ -105,6 +122,8 @@ def safe_child(raw_path, task, allow_missing=False):
     resolved_task = PureWindowsPath(str(current.resolve()))
     for part in path.relative_to(task).parts:
         current /= part
+        require(not current.is_symlink() and not getattr(current, "is_junction", lambda: False)(),
+                "执行路径不能经过符号链接或 junction")
         if current.exists():
             require(PureWindowsPath(str(current.resolve())).is_relative_to(resolved_task),
                     "执行目录解析后逃出任务根")
@@ -120,7 +139,8 @@ def totals(log):
 
 
 def verify(root, repository):
-    sources, environments = {}, {}
+    sources, environments, task_roots = {}, {}, {}
+    runner_shas = {sha(git(repository, "show", commit + ":" + RUNNER_PATH)) for commit in RUNNER_COMMITS}
     for variant, revision in VERSIONS.items():
         directory = root / variant
         source, env = load(directory / "source.json"), load(directory / "environment.json")
@@ -129,19 +149,28 @@ def verify(root, repository):
                 == fixed_files(repository, revision), "固定 Git 产品树不符：" + variant)
         require(source["tree_sha256"] == identity(source["files"]), "来源内部摘要不符：" + variant)
         task = PureWindowsPath(env["task_root"])
+        require(task.name == variant, "任务根变体标记不符：" + variant)
+        task_fs = Path(str(task))
+        if task_fs.exists():
+            require(PureWindowsPath(str(task_fs.resolve())) == task,
+                    "任务根不能经符号链接/junction 重定向：" + variant)
         require(source["source_root"] == env["source_root"], "执行源码根不符：" + variant)
         for key in ["CARGO_TARGET_DIR", "XIAO_HOME", "TEMP", "TMP", "XIAO_RUNTIME_LIBRARY"]:
-            path = safe_child(env["overrides"][key], task, allow_missing=key == "XIAO_RUNTIME_LIBRARY")
-        require(safe_child(env["overrides"]["CARGO_TARGET_DIR"], task).exists(), "独立 Cargo target 不存在")
-        require(safe_child(env["overrides"]["XIAO_HOME"], task).is_dir(), "独立 Xiao Home 不存在")
-        require(safe_child(env["overrides"]["TEMP"], task).is_dir()
-                and safe_child(env["overrides"]["TMP"], task).is_dir(), "独立 TEMP/TMP 不存在")
+            safe_child(env["overrides"][key], task, allow_missing=True)
         require(env["overrides"]["TEMP"] == env["overrides"]["TMP"], "TEMP/TMP 应绑定同一任务目录")
         require(env["overrides"]["XIAO_STDLIB_ROOT"] == str(PureWindowsPath(source["source_root"]) / "stdlib"), "stdlib 来源不符：" + variant)
         require(env["overrides"]["XIAO_B1_F10"] == env["overrides"]["XIAO_B2_A_PERF"] == "0", "性能开关不符")
         require(env["removed_environment_prefixes"] == ["XIAO_", "RUST_BIGDECIMAL_"]
                 and env["runtime_staticlib_built_or_used"] is False, "执行环境边界不符")
-        sources[variant], environments[variant] = source, env
+        sources[variant], environments[variant], task_roots[variant] = source, env, task
+    require(set(task_roots) == {"b34", "b401", "fixed"}
+            and len({task.parent for task in task_roots.values()}) == 1
+            and all(task == TASK_BASE / variant for variant, task in task_roots.items()),
+            "任务根必须位于本批专用目录并相互隔离")
+    require(PureWindowsPath(sources["b34"]["source_root"]) == task_roots["b34"] / "source"
+            and PureWindowsPath(sources["b401"]["source_root"]) == task_roots["b401"] / "source"
+            and PureWindowsPath(sources["fixed"]["source_root"]) == PureWindowsPath(r"D:\project\Xiao\Xiao"),
+            "FIX1 源码工作树与固定环境路径不符")
     for key in ["CARGO_TARGET_DIR", "XIAO_HOME", "TEMP", "XIAO_RUNTIME_LIBRARY"]:
         require(len({env["overrides"][key] for env in environments.values()}) == 3, "历史与修复环境被复用")
     changed = set(git(repository, "diff", "--name-only", ENTRY, CODE, "--", *PRODUCT_ROOTS).decode().splitlines())
@@ -159,7 +188,7 @@ def verify(root, repository):
         require(record["source_unchanged"] is True and record["source_before"] == record["source_after"]
                 == sources[variant]["tree_sha256"], "执行期间源码或锁漂移：" + label)
         require(record["environment_sha256"] == sha((directory / "environment.json").read_bytes())
-                and record["runner_sha256"] == sha((root / "record.py").read_bytes()), "执行器/环境摘要不符：" + label)
+                and record["runner_sha256"] in runner_shas, "固定执行器/环境摘要不符：" + label)
         require(record["log"] == label + ".log", "日志路径不符：" + label)
         raw = (directory / record["log"]).read_bytes()
         require(record["log_sha256"] == sha(raw) and record["log_bytes"] == len(raw), "原始日志身份不符：" + label)
@@ -221,6 +250,10 @@ def verify(root, repository):
     require(review_repo["passed"] is True and all(
         item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
         for item in review_repo["diagnostics"]), "自审最终文档门禁失败或出现新诊断")
+    final_self_review_repo = json.loads(logs["fixed", "final_self_review_docs"])
+    require(final_self_review_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in final_self_review_repo["diagnostics"]), "FIX1 自审核最终文档门禁失败或出现新诊断")
     require("通过：未发现 A0 规则问题。" in logs["fixed", "review_usedocs"]
             and "通过：未发现 A0 规则问题。" in logs["fixed", "review_layout"], "自审最终 UseDocs/layout 门禁失败")
     audit_repo = json.loads(logs["fixed", "audit_final_docs"])
@@ -253,14 +286,71 @@ def verify(root, repository):
     require(cross_status_repo["passed"] is True and all(
         item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
         for item in cross_status_repo["diagnostics"]), "B4跨阶段状态对账 docs 门禁失败或出现新诊断")
+    self_review_repo = json.loads(logs["fixed", "self_review_docs"])
+    require(self_review_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in self_review_repo["diagnostics"]), "本轮自审收口 docs 门禁失败或出现新诊断")
+    final_self_review_repo = json.loads(logs["fixed", "final_self_review_docs"])
+    require(final_self_review_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in final_self_review_repo["diagnostics"]), "自审最终记录文档门禁失败或出现新诊断")
+    sealed_self_review_repo = json.loads(logs["fixed", "sealed_self_review_docs"])
+    require(sealed_self_review_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in sealed_self_review_repo["diagnostics"]), "自审封存文案 docs 门禁失败或出现新诊断")
+    audit_self_review_repo = json.loads(logs["fixed", "audit_self_review_docs"])
+    require(audit_self_review_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in audit_self_review_repo["diagnostics"]), "审计自审说明 docs 门禁失败或出现新诊断")
+    final_audit_repo = json.loads(logs["fixed", "final_audit_docs"])
+    require(final_audit_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in final_audit_repo["diagnostics"]), "最终 FIX1 证据门禁失败或出现新诊断")
+    audit_v3_repo = json.loads(logs["fixed", "review_audit_v3_docs"])
+    require(audit_v3_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in audit_v3_repo["diagnostics"]), "最终只读审计自反例文案 docs 门禁失败或出现新诊断")
+    audit_review_repo = json.loads(logs["fixed", "audit_review_docs"])
+    require(audit_review_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in audit_review_repo["diagnostics"]), "最终审计自审记录 docs 门禁失败或出现新诊断")
+    last_review_repo = json.loads(logs["fixed", "last_review_docs"])
+    require(last_review_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in last_review_repo["diagnostics"]), "最后自审说明的 docs 门禁失败或出现新诊断")
     final_doc_review = json.loads(logs["fixed", "final_doc_review"])
     require(final_doc_review["passed"] is True and all(
         item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
         for item in final_doc_review["diagnostics"]), "最终反例计数文案的 docs 门禁失败或出现新诊断")
     require("通过：未发现 A0 规则问题。" in logs["fixed", "usedocs_closeout"]
             and "通过：未发现 A0 规则问题。" in logs["fixed", "layout_closeout"], "最终 UseDocs/layout 门禁失败")
-    for label in ["b1_history", "b2_history", "b3_history", "b34_history", "b401_history"]:
-        require(json.loads(logs["fixed", label])["passed"] in (True, 18), "固定历史审计未通过：" + label)
+    b1, b2, b3, b34, b401 = (json.loads(logs["fixed", label]) for label in
+                              ["b1_history", "b2_history", "b3_history", "b34_history", "b401_history"])
+    require(b1 == {"passed": 18, "total": 18, "files": 28, "baseline_commit": "d08b8460",
+                   "code_commit": "35872782",
+                   "source_manifest": "source-manifests/8a3d7472ccaf8bb0a25d6731c8e852d770ef03d4f0267476956a974f2f0b7cc8.json"},
+            "B1 固定历史审计精确结果不符")
+    require(b2 == {"passed": True, "files": 99, "checks": 14, "exact_checks": 4,
+                   "code_commit": "37b92c5338274121afe98320d4e076620744449f", "abi": "1.18",
+                   "codegen": 20, "max_active_intrinsic": 33, "scope": "B2内部单入口"},
+            "B2 固定历史审计精确结果不符")
+    require(b3 == {"passed": True, "core_only": False, "files": 86, "code_commit": "89d782e1",
+                   "checks": 22, "exact": 4, "formal_abi_cases": 17243, "runtime_tests": 269,
+                   "active_max": 48, "live_runtime_checked": False,
+                   "scope": "B3-2A与B3-3A/B内部；B3-4/B4未开始"},
+            "B3-CABI 固定历史审计精确结果不符")
+    require(b34 == {"b3_4_closed": True, "cmath": "planned", "code_commit": sources["b34"]["revision"],
+                    "identity_source": "fixed Git commit blobs; canonical UTF-8/LF hashes",
+                    "language_available": False, "passed": True, "product_files": 1044,
+                    "scope": "B3-4源码包装收口；非语言可用性"}, "B3-4 固定历史审计精确结果不符")
+    require(b401 == {"b4_0_1_closed": True, "b4_0_closed": True, "b4_1_closed": True,
+                     "b4_closed": False, "cmath": "planned",
+                     "fixture_sha256": "0e61a2da361448477b15f5508df6d612a3f01e29a06e50699d6ed48a917d1ed3",
+                     "language_available": False, "passed": True,
+                     "product_commit": sources["b401"]["revision"], "product_files": 1048},
+            "B4-0/1 固定历史审计精确结果不符")
+    require("diagnostics::tests::real_terminal_session_is_environment_gated ... ignored" in logs["fixed", "driver_lib"],
+            "driver lib 的既有 ignored 测试身份不符")
     attribution = {"introduced_by": sources["b401"]["revision"], "last_passing": sources["b34"]["revision"],
                    "old_22c": "29/29", "regressed_22c": "27/29", "fixed_22c": "29/29",
                    "reason": "B4-1 接通 cmath 类型检查后，包装编译失败不再构成执行/归档拒绝；FIX1 增加显式 planned 门控。"}
@@ -376,6 +466,19 @@ def negative(root, repository):
                 require(process.returncode == 1 and process.stdout.strip() == reason and not process.stderr,
                         "反例未按精确原因拒绝：" + label + " stdout=" + process.stdout.strip() + " stderr=" + process.stderr.strip())
             cases.append({"case": label, "exit_code": process.returncode, "reason": reason, "read_only": True})
+    with tempfile.TemporaryDirectory(prefix="b4-fix1-task-root-negative-") as task:
+        reused = Path(task) / "existing-empty-task-root"
+        reused.mkdir()
+        before = all_bytes(Path(task))
+        try:
+            require_new_task_root(reused)
+        except ValueError as error:
+            require(str(error) == "拒绝复用已有任务根", "任务根复用拒绝原因不符")
+        else:
+            raise ValueError("新任务根初始化意外接受了已有空目录")
+        require(all_bytes(Path(task)) == before, "任务根复用检查改写目录")
+        cases.append({"case": "reuse_existing_task_root", "exit_code": 1,
+                      "reason": "拒绝复用已有任务根", "read_only": True})
     return {"passed": True, "cases": cases}
 
 
