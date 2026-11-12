@@ -1,10 +1,10 @@
 # 20O-B2-B4-2A/B. cmath TAC/字节码与 VM 执行规划
 
-> **B4-2A/B 尚未开工；B4-3 起、B5～B7 与 B2-C 仍未开始。**
+> **B4-2A 已开工，TAC/字节码专项通过；22c 两项回归失败，阶段尚未退出。B4-2B、B4-3 起、B5～B7 与 B2-C 仍未开始。**
 > 入口为 B4-1 产品代码 `c7a45e10`、B4-2 边界规划 `162d94ea`、Runtime 入口裁定 `8b8d5e3e` 和完整签名记录 `a5d7c866`。
 > B4-2A 验证 TAC/字节码 34～48 往返；若发现缺口，只修对应 lowering/校验。B4-2B 接入 15 个 Runtime 门面与 VM 分派、错误及清理。
-> 30 条 cmath 导入路径仍 planned 拒绝；`language_available=false`，B4-4 才接双路径。
-> 2026-11-12 安排：B4-2A 为下一实施批；已核 `c7a45e10` 与当前 HEAD 的 `core/`、`stdlib/` 无差异；B4-2B 待 B4-2A 退出后另行安排。
+> 30 条 cmath 导入后调用探测仍拒绝；未使用导入的子 VM/归档另有两项失败，不能据此宣称导入边界完整。`language_available=false`，B4-4 才接双路径。
+> 2026-11-12 实施及自审：`09fa912b` 补齐 34～48 往返、完整 TAC/目录、精确拒绝与解码反例；只修改测试。原 `fe752363` 开工检查中，`c7a45e10` 至该入口无产品差异；当前已新增 TAC 测试。证据见[自审记录](assets/20o-b2-b/entry-20261112-b4-2a/review-20261112/README.md)。B4-2B 待退出门槛恢复后另行安排。
 
 ## 一、入口与冻结接口
 
@@ -14,7 +14,7 @@
 | TAC lowering | 现有 `lower_intrinsic_call` 已用 `CallSig::intrinsic(id)`、`FuncId(0)`、`TacOp::Call` |
 | VM | `VmBinding::Cmath*` 已有声明键，尚无分派实现 |
 | Runtime | 私有 `cmath` 内核存在；B4-2B 需按 §1.3 增加 15 个 Rust-only 函数 |
-| 导入 | 30 条 cmath 路径仍 planned 拒绝 |
+| 导入 | 30 条导入后调用探测仍拒绝；22c 子 VM 未使用导入及归档拒绝有回归，未收口 |
 
 已冻结的 Runtime API（B4-2B 使用）：
 

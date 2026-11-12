@@ -289,7 +289,7 @@
 | 20O-B2-B3-4 | [stdlib包装规划](20o-b2-b3-4-stdlib-wrapper-plan.md) / [收口规划](20o-b2-b3-4-closeout-plan.md) | stdlib/cmath.xiao 15个包装、模块说明、registry仍planned | **planned源码包装范围已独立收口（2026-11-10）**：入口可达隔离、30条 planned 拒绝、历史审计与工作区门禁通过；`stdlib.cmath` 仍planned、语言不可用；见[收口证据](assets/20o-b2-b/entry-20261110-b3-wrapper-final/README.md) |
 | 20O-B2-B4 | [B4语言全链路规划](20o-b2-b4-language-integration-plan.md) | 类型/IR/TAC/VM/LLVM、双路径、归档/序列化与向量迁移 | **规划稿（2026-11-09）**：B4未开始；只做内部语言验收，B5版本/B2-C发布后置 |
 | 20O-B2-B4-0/B4-1 | [B4开工规划](20o-b2-b4-0-b4-1-kickoff-plan.md) | 正式向量迁移、类型检查/IR、34～48一元/二元映射 | **本机内部验收（2026-11-10）**：c7a45e10，向量迁移与类型/IR通过；VM/LLVM未接，b4_closed=false |
-| 20O-B2-B4-2 | [B4-2 TAC/VM规划](20o-b2-b4-2-tac-vm-plan.md) / [执行规划](20o-b2-b4-2a-b-execution-plan.md) | 34～48编码、VM共享内核、009/span/清理与30条planned拒绝 | **开工就绪（2026-11-12）**：Rust-only 15函数入口已确认，入口产品代码 c7a45e10 与当前HEAD无产品差异；下一实施批为B4-2A，B4-2B/LLVM/导入/归档后置 |
+| 20O-B2-B4-2 | [B4-2 TAC/VM规划](20o-b2-b4-2-tac-vm-plan.md) / [执行规划](20o-b2-b4-2a-b-execution-plan.md) | 34～48编码、VM共享内核、009/span/清理与30条planned拒绝 | **实施中/阻塞（2026-11-12）**：09fa912b TAC/字节码专项通过，22c 27/29；子VM未使用导入/归档拒绝回归未解决，B4-2A未收口；B4-2B/LLVM/双路径后置 |
 | 20O-B2-B4-3 | [B4-3 LLVM规划](20o-b2-b4-3-llvm-plan.md) | 动态/静态cmath、float `**` 共核、O0/O3与状态/清理 | **规划稿（2026-11-11）**：B4-3未开始；导入/归档/序列化留B4-4 |
 | 20O-B2-B4-4 | [B4-4双路径/归档规划](20o-b2-b4-4-dual-path-archive-plan.md) | std/stdlib双路径、导出/移除、xar加载器、序列化与隔离 | **规划稿（2026-11-11）**：B4-4未开始；registry/教程仍planned，721后置 |
 | 20O-B2-B4-5 | [B4-5内部收口规划](20o-b2-b4-5-closeout-plan.md) | B4-1～B4-4对账、语言全链路回归、内部language_available与B5交接 | **规划稿（2026-11-11）**：B4-5未开始；公共registry/教程仍planned，721后置 |

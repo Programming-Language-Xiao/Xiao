@@ -1,9 +1,9 @@
 # 20O-B2-B4-2. cmath TAC/字节码与 VM 实施规划
 
-> **B4-0/B4-1 已完成；B4-2 尚未开工，B4-3 起、B5～B7 与 B2-C 仍未开始。**
+> **B4-0/B4-1 已完成；B4-2A 已开工，TAC/字节码专项通过，22c 两项回归失败，尚未退出；B4-2B、B4-3 起、B5～B7 与 B2-C 仍未开始。**
 > 入口为 B4-1 产品代码 `c7a45e10` 与证据；类型/IR 已能表达 34～48，声明表已有 `VmBinding::Cmath*` 键，但 VM 分派实现和 LLVM lowering 尚未接通。
 > B4-2 只做 TAC/字节码编码、VM 执行和必要的 Rust-only Runtime 调用桥；不接 LLVM、双路径导入/归档、C ABI、ABI 1.19/21 或 registry。
-> 30 条 `std.cmath`/`stdlib.cmath` 导入路径仍按 B3-4 边界拒绝；B4-4 才接双路径。
+> 30 条 `std.cmath`/`stdlib.cmath` 导入后调用探测仍拒绝；22c 的未使用导入子 VM 和归档拒绝存在失败，不能宣称完整保持 B3-4 边界。B4-4 才接双路径。本轮状态与原始运行见[自审记录](assets/20o-b2-b/entry-20261112-b4-2a/review-20261112/README.md)。
 
 ## 一、入口与范围
 
@@ -12,7 +12,7 @@
 | B4-0 | 正式向量已迁入 `tests/fixtures/docs/cmath/`，逐字节一致 |
 | B4-1 | 15 项类型/IR 接通；`IntrinsicCall` 保留 ID/参数/span |
 | VM/LLVM | 34～48 已登记声明层 VM 键；VM 分派实现与 LLVM lowering 缺失，直接原语可生成 IR 但不能执行 |
-| 导入边界 | 30 条 cmath 导入路径仍 planned 拒绝；`language_available=false` |
+| 导入边界 | 30 条导入后调用探测仍拒绝；22c 27/29，子 VM 未使用导入/归档阻塞；`language_available=false` |
 | 本批目标 | TAC/字节码 34～48 编码、VM 15 项执行、错误/span/清理 |
 | 未做 | B4-3 LLVM、B4-4 双路径/归档、B5 版本、B6 性能、B2-C 发布 |
 
@@ -53,6 +53,8 @@ B4-2 是 VM 内部可执行批，不是 `std.cmath` 模块导入可用批。B4-4
 8. 本批不把该入口加入 intrinsic/C ABI/语言公开面；B4-3/B4-4 再接入各自路径。
 
 ## 二、开工闸门
+
+以下为批准的要求。B4-2A 复跑发现第 5 项中的当前 22c 不满足 29/0；专项测试虽通过，仍保留阻塞，B4-2B 不启动。固定历史审计通过不替代当前运行。
 
 1. B4-0/B4-1 审计通过，代码 `c7a45e10` 未漂移；
 2. 15 项 `IntrinsicCall` 的 ID/参数/span 和 30 条 planned 拒绝可复现；

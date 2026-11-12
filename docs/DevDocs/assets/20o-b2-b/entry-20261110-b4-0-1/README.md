@@ -23,3 +23,7 @@ python -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261110-b4-0-1/audit.py
 ```
 
 只读审计应返回 `passed=true`、产品提交 `c7a45e10b76b26915499717563761ed20fda6e6c`、1048 个受保护产品文件、`b4_0_1_closed=true` 和 `b4_closed=false`。前两阶段收口不表示 B4 整批结束。逐项运行记录和实际文件字节摘要由 `finalize-evidence.py` 生成，`audit.py` 只读复核且不写证据文件。
+
+2026-11-12 自审修正：原审计还检查当前工作树/HEAD，B4-2A 增加测试后默认复跑被拒绝。现已改为读取固定 `c7a45e10` 的完整受保护 Git tree/blob，逐路径核对 UTF-8/LF 规范摘要；原执行的 CRLF 字节摘要及两份锁文件另外验证内部自洽。`--repository-root` 仅用来定位 Git 对象，也可指向裸仓库；执行记录的 cwd 仍按原 `bootstrap.json` 校验。历史日志、`source-manifest.json` 和 `closeout.json` 均未改写。工具或说明更新后，用 `python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261110-b4-0-1/finalize-evidence.py --refresh-evidence` 只刷新实际文件清单。
+
+该历史审计证明的是本目录当时记录的向量、前端及 wrapper 执行，不代表当前 22c 通过；B4-2A 已实测 22c 为 27/29，见[本轮自审](../entry-20261112-b4-2a/review-20261112/README.md)。
