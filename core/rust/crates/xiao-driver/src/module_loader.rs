@@ -102,6 +102,18 @@ pub(crate) fn standard_library_root() -> PathBuf {
     xiao_standard_library::source_root()
 }
 
+/// B4 的类型/IR 探测不等于模块可执行；VM 与归档共用同一个 planned 拒绝边界。
+///
+/// 只检查实际请求的官方模块，不能扫描预载索引而污染无关库。B4-4 接通模块全链路
+/// 后再撤销本门控；不在 checker 中拒绝，以保留已验收的直接原语 IR/TAC。
+pub(crate) fn require_executable_standard_module(identity: &str) -> Result<(), String> {
+    if xiao_standard_library::canonical_module_identity(identity).as_deref() == Some("stdlib.cmath")
+    {
+        return Err("官方标准库 cmath 仍为 planned：cmath_sqrt 等原语尚未绑定 VM".to_owned());
+    }
+    Ok(())
+}
+
 /// 读取并校验工具链随附的标准库源码索引。
 fn load_standard_library(root: &Path) -> Option<ProjectModuleResult> {
     let project = analyze_project(root);
@@ -116,6 +128,7 @@ impl ModuleLoader for DriverModuleLoader<'_> {
 
     /// 首次引用时编译并验证指定模块；命名空间本身返回空结果。
     fn compile(&self, identity: &str) -> Result<Option<CompiledModule>, String> {
+        require_executable_standard_module(identity)?;
         let Some((path, root, exports)) = self.descriptor(identity) else {
             return if self.namespace_exists(identity) {
                 Ok(None)
