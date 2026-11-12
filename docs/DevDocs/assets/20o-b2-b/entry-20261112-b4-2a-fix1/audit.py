@@ -74,6 +74,7 @@ RUNS = {
     ("fixed", "content_store_self_test"): ["python", "-B", "-X", "utf8", RUNNER_PATH, "content-store-self-test"],
     ("fixed", "content_store_self_test_repeat"): ["python", "-B", "-X", "utf8", RUNNER_PATH, "content-store-self-test"],
     ("fixed", "docs_final"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "docs_final_sealed"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "self_review_findings_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "final_self_review_findings_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "sealed_self_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
@@ -269,14 +270,14 @@ def verify(root, repository):
             and first_store_run["log_sha256"] == repeated_store_run["log_sha256"]
             and logs["fixed", "content_store_self_test"] == logs["fixed", "content_store_self_test_repeat"],
             "相同采集命令未复用唯一内容日志对象")
-    docs_record = records.get(("fixed", "docs_final"))
+    docs_record = records.get(("fixed", "docs_final_sealed"))
     require(docs_record is not None and "log_ref" in docs_record
             and docs_record["docs_tree_unchanged"] is True
             and docs_record["docs_tree_sha256"] == docs_record["docs_tree_before"]
             and docs_record["docs_tree_canonical_before"] == docs_tree_from_commit(
                 repository, docs_record["docs_commit"])["canonical_sha256"]
             and json.loads(logs["fixed", "docs_final"])["passed"] is True,
-            "终稿 docs 门禁未绑定静态 DevDocs Git tree")
+            "最终 docs 门禁未绑定静态 DevDocs Git tree")
     require(totals(logs["b34", "concurrency"]) == (29, 0, 0), "B3-4 直接复跑未通过 29/29")
     require(totals(logs["b401", "concurrency"]) == (27, 2, 0), "B4-1 直接复跑不符 27/29")
     failed = re.findall(r"^test (\w+) \.\.\. FAILED$", logs["b401", "concurrency"], re.M)

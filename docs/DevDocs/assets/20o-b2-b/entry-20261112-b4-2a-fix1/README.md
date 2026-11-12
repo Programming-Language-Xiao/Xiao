@@ -18,7 +18,7 @@ FIX1 在 Windows 本机完成，修复提交 `c46102115c63956466361d83243dea8ba3
 
 F2 的具体规则和实现位置：新日志对象写入 `logs/sha256/<前两位>/<完整摘要>.log`，记录中只放 `log_ref/log_bytes/log_sha256`，每次执行的回执独立保留；采集函数检测到相同摘要时逐字节比较并复用对象，审计拒绝未引用、重复路径或内容与文件名摘要不符的对象。`content_store_self_test` 和紧随其后的同命令复跑由同一采集器执行；审计要求两份回执的日志摘要与对象引用完全相同，并核对存储函数对不同内容及损坏对象的处理。
 
-旧回执 `fixed/self_review_docs`、`fixed/final_self_review_docs` 等只证明各自运行成功；它们的 `source_before` 没有 DevDocs 字节，不能单独证明当时读取了最终 README 或规划文本。新增的 `fixed/docs_final.json` 作为终稿 docs 回执，单独绑定 README、规划、审计器和反例源码定稿后的 DevDocs 快照；该门禁要求全量通过，历史 `docs` 门禁日志中的 `A0-COVERAGE-002` 警告仍如实保留。UseDocs/layout 的独立通过记录仍见 `fixed/sealed_usedocs`、`fixed/sealed_layout`。
+旧回执 `fixed/self_review_docs`、`fixed/final_self_review_docs` 等只证明各自运行成功；它们的 `source_before` 没有 DevDocs 字节，不能单独证明当时读取了最终 README 或规划文本。`fixed/docs_final.json` 保留为先前提交快照上的成功运行；本次终稿回执为 `fixed/docs_final_sealed.json`，绑定当前 README、规划、审计器和反例源码定稿后的 DevDocs 快照，并要求全量通过。历史 `docs` 门禁日志中的 `A0-COVERAGE-002` 警告仍如实保留。UseDocs/layout 的独立通过记录仍见 `fixed/sealed_usedocs`、`fixed/sealed_layout`。
 
 归属由直接运行确定，见 `b34/concurrency.*`、`b401/concurrency.*` 及生成的 `attribution.json`。`c7a45e10` 为唯一接入 cmath 类型/IR 的产品提交；其 checker 让标准库包装能够编译，旧流程所依赖的“包装编译失败”随之消失，于是未使用导入可在子 VM 加载，归档也可生成。B3-4 当时的 29/29 结论仍有效，不能把这项回归归到 B4-2A 新增测试。
 
@@ -45,7 +45,7 @@ python -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261112-b4-2a-fix1/audit.py
 python -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261112-b4-2a-fix1/audit.py --self-negative
 ```
 
-默认审计不读当前工作树、不要求当前 HEAD，也不要求旧 worktree、target 或 Runtime 仍存在；只需仓库保留固定 Git 对象。它支持 `--root` 和 `--repository-root`，不写证据、不生成 Python 缓存。自反例有 13 个用例（1 个基线、12 个拒绝反例），只改临时副本，覆盖属性删除及重建清单、运行记录/收口/退出状态篡改、伪造来源/日志、DevDocs 摘要篡改、孤立内容日志对象、嵌套清单、`..` 逃逸和复用空任务根；每项核对准确拒绝原因及整个目录文件/目录项的前后摘要。最终自反例回执为 `self-negative-findings.json`，修复前三个缺口被漏过的复现日志见 `self-review-20261112/before-negative.json`。
+默认审计不读当前工作树、不要求当前 HEAD，也不要求旧 worktree、target 或 Runtime 仍存在；只需仓库保留固定 Git 对象。它支持 `--root` 和 `--repository-root`，不写证据、不生成 Python 缓存。自反例有 13 个用例（1 个基线、12 个拒绝反例），只改临时副本，覆盖属性删除及重建清单、运行记录/收口/退出状态篡改、伪造来源/日志、DevDocs 摘要篡改、孤立内容日志对象、嵌套清单、`..` 逃逸和复用空任务根；每项核对准确拒绝原因及整个目录文件/目录项的前后摘要。当前 13 项报告保存在 `self-negative-findings-content-addressed.json`；旧 `self-negative-findings.json` 是 11 项历史结果并保留不改。修复前三个缺口被漏过的复现日志见 `self-review-20261112/before-negative.json`。
 
 `audit.py --collect` 是显式生成命令，在所有运行与文档完成后从真实记录生成 `attribution.json`、`closeout.json`、`b4-2a-exit.json` 和 `evidence.json`，拒绝覆盖。新增门禁记录后使用 `--refresh-results`，只有归属不变、原运行映射完全匹配时才用全部真实记录重建 closeout 与清单；该模式不改写运行日志。工具或说明更新而没有新运行时，用 `--refresh-inventory`，它先验证原结论再刷新实际清单。旧的 blocked 自审仍保留，后续实现入口以本目录退出记录为准。
 
