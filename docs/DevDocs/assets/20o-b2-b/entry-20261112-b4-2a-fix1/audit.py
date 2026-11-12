@@ -19,7 +19,8 @@ CODE = "c4610211"
 RUNNER_COMMIT = "cb2444dc0a2afd6d2bf456fe3b1805454b4825c9"
 RUNNER_COMMITS = [RUNNER_COMMIT, "13e7670f0ceb5d6ab4ca181effb07da0a8059284",
                   "2e656b123a99bda33c881606fe01898863a2f122",
-                  "6ed66039ae13fe841ebe60d86f2458b957f6d191"]
+                  "6ed66039ae13fe841ebe60d86f2458b957f6d191",
+                  "4ca4b12c976ad971f7ca5241cea784d6b0c05f74"]
 RUNNER_PATH = "docs/DevDocs/assets/20o-b2-b/entry-20261112-b4-2a-fix1/record.py"
 VERSIONS = {"b34": "7d8b85e4", "b401": "c7a45e10", "fixed": CODE}
 TASK_BASE = PureWindowsPath(r"D:\project\Xiao\.b4-2a-fix1\20261112-2f862f51")
@@ -238,13 +239,18 @@ def verify(root, repository):
             referenced_objects.add(record["log_sha256"])
             require(record.get("log") is None, "内容寻址回执不能再保存 label 日志副本：" + label)
         if "docs_tree_before" in record or "docs_tree_after" in record:
-            require(record.get("docs_tree_unchanged") is True
-                    and record.get("docs_tree_sha256") == record.get("docs_tree_before")
-                    and record.get("docs_tree_before") == record.get("docs_tree_after"),
-                    "门禁执行期间 DevDocs 字节变化：" + label)
             docs_commit = git(repository, "rev-parse", record["docs_commit"]).decode("ascii").strip()
+            docs_git_tree = docs_tree_from_commit(repository, docs_commit)
+            require(record.get("docs_tree_unchanged") is True
+                    and record.get("docs_commit_after") == record.get("docs_commit")
+                    and record.get("docs_tree_sha256") == record.get("docs_tree_before")
+                    and record.get("docs_tree_before") == record.get("docs_tree_after")
+                    and record.get("docs_tree_canonical_before") == record.get("docs_tree_canonical_after"),
+                    "门禁执行期间 DevDocs 字节变化：" + label)
             require(docs_commit == record["docs_commit"]
-                    and record["docs_tree_before"] == docs_tree_from_commit(repository, docs_commit),
+                    and record["docs_tree_commit_raw_sha256"] == docs_git_tree["raw_sha256"]
+                    and record["docs_tree_commit_canonical_sha256"] == docs_git_tree["canonical_sha256"]
+                    and record["docs_tree_canonical_before"] == docs_git_tree["canonical_sha256"],
                     "门禁回执 DevDocs SHA 与固定 commit tree 不符：" + label)
         expected_exit = 101 if variant == "b401" else 0
         require(record["exit_code"] == expected_exit, "执行退出码不符：" + label)
@@ -267,7 +273,8 @@ def verify(root, repository):
     require(docs_record is not None and "log_ref" in docs_record
             and docs_record["docs_tree_unchanged"] is True
             and docs_record["docs_tree_sha256"] == docs_record["docs_tree_before"]
-            and docs_record["docs_tree_before"] == docs_tree_from_commit(repository, docs_record["docs_commit"])
+            and docs_record["docs_tree_canonical_before"] == docs_tree_from_commit(
+                repository, docs_record["docs_commit"])["canonical_sha256"]
             and json.loads(logs["fixed", "docs_final"])["passed"] is True,
             "终稿 docs 门禁未绑定静态 DevDocs Git tree")
     require(totals(logs["b34", "concurrency"]) == (29, 0, 0), "B3-4 直接复跑未通过 29/29")

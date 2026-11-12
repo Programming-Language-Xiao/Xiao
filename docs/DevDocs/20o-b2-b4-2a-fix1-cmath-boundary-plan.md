@@ -142,4 +142,4 @@ docs/DevDocs/assets/20o-b2-b/entry-<date>-b4-2a-fix1/ FIX.1 证据
 
 后续新增任何 planned 官方模块，须在开工契约中列出规范身份，并同步更新驱动器模块门控以及 VM/子 VM/归档拒绝测试；模块出现在源码索引或 registry 不代表可执行。FIX1 后的新证据目录按原始日志 SHA-256 内容寻址，相同采集输出只存一个对象、每次运行保留独立回执；审计验证对象唯一、完整引用和损坏拒绝。本页既有日志与回执保持原样。
 
-DevDocs 绑定规则：终稿门禁前先提交本批 DevDocs；回执记录 `docs_tree_before`、`docs_tree_after`、`docs_tree_sha256` 及对应 commit。摘要覆盖整个 `docs/DevDocs` 下的静态文件，包含本 README、规划、采集器、审计器和反例源码；仅排除内容寻址日志对象、运行回执、收口清单和自反例输出等运行期生成物。审计从固定 Git commit 重算相同摘要，并要求运行前后一致，从而验证门禁读取的是已定稿字节。
+DevDocs 绑定规则：终稿门禁前先提交本批 DevDocs；回执记录 `docs_commit/docs_commit_after`、`docs_tree_before/after`、`docs_tree_sha256`、规范前后摘要及对应 commit。raw 摘要覆盖整个 `docs/DevDocs` 下的静态文件及工作树原始字节，包含本 README、规划、采集器、审计器和反例源码；仅排除内容寻址日志对象、运行回执、收口清单和自反例输出等运行期生成物。审计要求 raw/规范前后摘要相同、Git HEAD 不变，UTF-8/LF 规范摘要与固定 Git commit tree 相同，并分别核对 Git blob 原始摘要，以兼容 Windows CRLF 检出。

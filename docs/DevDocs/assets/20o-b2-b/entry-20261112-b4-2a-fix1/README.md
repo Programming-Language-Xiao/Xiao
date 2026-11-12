@@ -34,9 +34,9 @@ checker 必须继续接受 B4-1 已验收的类型/IR，B4-2A 也必须保留直
 
 F3 摘要口径核实：`22c_vm_concurrency.rs` 在 B3-4/B4-1 捕获的原始字节长度为 35,708、SHA-256 为 `1ebb2305cd41dfeabdc36102c172350d80fcfbf8c46b7c31caf258b496ec6c79`；当前本机检出长度为 34,713、raw SHA 为 `e4fd05aaf70d2e410e2f5b487cfe294b56f09a885decd022f2c9e38b3e7c25a1`。三份来源的 UTF-8/LF 规范 SHA 都是 `e4fd05aaf70d2e410e2f5b487cfe294b56f09a885decd022f2c9e38b3e7c25a1`，因此这是检出换行差异；审计同时保留 raw 与 canonical 摘要，没有把二者混用。
 
-F1 的绑定机制：`record.py run` 在终稿 docs 门禁回执内保存 `docs_commit` 以及 `docs_tree_before/after`；摘要按 `docs/DevDocs` 下的相对路径和原始字节计算。摘要包含本批 README、规划、审计器、采集器、反例脚本及其余静态 DevDocs 文件，只排除内容寻址日志对象、运行回执、收口清单和自反例输出这些运行时生成物。`record.py` 要求运行前工作树摘要等于 Git commit tree；审计从回执绑定的固定 commit 重读 Git blobs 并重算，且要求运行前后摘要相同，拒绝未提交文档、门禁期间文档漂移或回执与 commit 不同。这补足了 `source_before` 未包含 DevDocs 字节的边界。
+F1 的绑定机制：`record.py run` 在终稿 docs 门禁回执内保存 `docs_commit`、`docs_commit_after`、工作树 raw `docs_tree_before/after` 与 `docs_tree_sha256`，并保存规范摘要及 Git tree 的 raw/规范摘要。摘要按 `docs/DevDocs` 下的相对路径计算，包含本批 README、规划、审计器、采集器、反例脚本及其余静态 DevDocs 文件，只排除内容寻址日志对象、运行回执、收口清单和自反例输出这些运行时生成物。审计要求运行前后 raw/规范摘要相同、运行前后 HEAD 不变，并要求工作树 UTF-8/LF 规范摘要等于回执绑定 Git commit 的规范摘要，同时逐字节核对 Git blob 原始摘要。这样既证明门禁实际读取的工作树字节未漂移，也容纳 Windows 检出的 CRLF 与 Git LF blob 差异；未提交文档或门禁期间文档变化都会拒绝。这补足了 `source_before` 未包含 DevDocs 字节的边界。
 
-提交 `cb2444dc0a2afd6d2bf456fe3b1805454b4825c9` 固定原始 `record.py`，`13e7670f0ceb5d6ab4ca181effb07da0a8059284` 加固全新任务根，`2e656b123a99bda33c881606fe01898863a2f122` 加固父路径 junction 检查，`6ed66039ae13fe841ebe60d86f2458b957f6d191` 固定内容寻址采集器。审计从这些固定 Git blob 复核回执执行器摘要；当前同名审计脚本是后续自审版。每条回执记录 PID、时间、完整参数、cwd、隔离环境、原始日志摘要和源码/锁前后摘要。`source.json` 同时保留原始字节和 UTF-8/LF 规范摘要，历史审计逐字段校验 B1/B2/B3/B3-4/B4-0/1 的计数、快照、公开状态和版本；日志保持原始字节，既有历史日志不改写。
+提交 `cb2444dc0a2afd6d2bf456fe3b1805454b4825c9` 固定原始 `record.py`，`13e7670f0ceb5d6ab4ca181effb07da0a8059284` 加固全新任务根，`2e656b123a99bda33c881606fe01898863a2f122` 加固父路径 junction 检查，`6ed66039ae13fe841ebe60d86f2458b957f6d191` 固定内容寻址采集器，`4ca4b12c976ad971f7ca5241cea784d6b0c05f74` 固定 raw/规范双摘要采集器。审计从这些固定 Git blob 复核回执执行器摘要；当前同名审计脚本是后续自审版。每条回执记录 PID、时间、完整参数、cwd、隔离环境、原始日志摘要和源码/锁前后摘要。`source.json` 同时保留原始字节和 UTF-8/LF 规范摘要，历史审计逐字段校验 B1/B2/B3/B3-4/B4-0/1 的计数、快照、公开状态和版本；日志保持原始字节，既有历史日志不改写。
 
 从仓库根只读复核：
 
