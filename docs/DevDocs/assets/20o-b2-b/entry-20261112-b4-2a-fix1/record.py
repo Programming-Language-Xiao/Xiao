@@ -46,14 +46,27 @@ def write_json(path, value):
         output.write(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
 
 
+def require_new_task_root(task_root):
+    """每个来源变体必须用此前不存在的任务根。"""
+    task = Path(task_root)
+    require(task.is_absolute() and not task.exists() and not task.is_symlink(), "拒绝复用已有任务根")
+    current = task
+    while current != current.parent:
+        require(not current.is_symlink()
+                and not (current.exists() and getattr(current, "is_junction", lambda: False)()),
+                "任务根路径不能经过符号链接或 junction")
+        current = current.parent
+
+
 def fixed_files(repository, revision):
     entries = []
     raw = git(repository, "ls-tree", "-r", "-z", revision, "--", *PRODUCT_ROOTS)
     for entry in raw.split(b"\0"):
         if entry:
             metadata, path = entry.split(b"\t", 1)
-            _, kind, oid = metadata.split()
-            require(kind == b"blob", "受保护路径必须是 Blob")
+            mode, kind, oid = metadata.split()
+            require(kind == b"blob" and mode in {b"100644", b"100755"},
+                    "受保护路径必须是普通文件 Blob")
             entries.append((path.decode("utf-8"), oid))
     raw = git(repository, "cat-file", "--batch", data=b"".join(oid + b"\n" for _, oid in entries))
     files, offset = {}, 0
@@ -98,9 +111,9 @@ def main():
     require(Path(args.variant).name == args.variant and args.variant not in {".", ".."}, "变体名非法")
     destination = ROOT / args.variant
     if args.action == "init":
+        require_new_task_root(args.task_root)
         source, task = args.source_root.resolve(), args.task_root.resolve()
         require(not destination.exists(), "证据变体已存在")
-        require(not any((task / name).exists() for name in ["target", "home", "temp", "runtime"]), "拒绝复用执行目录")
         revision = git(REPOSITORY, "rev-parse", args.revision).decode().strip()
         files = worktree_files(source)
         require({path: row["canonical_sha256"] for path, row in files.items()} == fixed_files(REPOSITORY, revision), "工作树偏离固定提交")
