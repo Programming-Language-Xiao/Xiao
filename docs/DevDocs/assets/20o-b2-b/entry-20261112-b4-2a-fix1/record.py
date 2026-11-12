@@ -119,9 +119,9 @@ def is_runtime_devdocs_artifact(path):
 
 
 def docs_tree_snapshot(repository):
-    """摘要 DevDocs 原始字节，只排除运行时回执、日志对象和收口产物。"""
+    """分别摘要 DevDocs 工作树原始字节和 UTF-8/LF 规范字节。"""
     root = repository / DEV_DOCS_ROOT
-    files = {}
+    raw_files, canonical_files = {}, {}
     for path in sorted(root.rglob("*")):
         relative = path.relative_to(repository).as_posix()
         if path.is_symlink():
@@ -131,8 +131,10 @@ def docs_tree_snapshot(repository):
         if is_runtime_devdocs_artifact(relative):
             continue
         data = path.read_bytes()
-        files[relative] = {"bytes": len(data), "sha256": sha(data)}
-    return identity(files)
+        normalized = canonical(data)
+        raw_files[relative] = {"bytes": len(data), "sha256": sha(data)}
+        canonical_files[relative] = {"bytes": len(normalized), "sha256": sha(normalized)}
+    return {"raw_sha256": identity(raw_files), "canonical_sha256": identity(canonical_files)}
 
 
 def docs_tree_from_commit(repository, revision):
@@ -150,17 +152,19 @@ def docs_tree_from_commit(repository, revision):
         require(kind == b"blob" and mode in {b"100644", b"100755"}, "DevDocs Git tree 含非普通文件")
         entries.append((path, oid))
     stream = git(repository, "cat-file", "--batch", data=b"".join(oid + b"\n" for _, oid in entries))
-    files, offset = {}, 0
+    raw_files, canonical_files, offset = {}, {}, 0
     for path, oid in entries:
         end = stream.index(b"\n", offset)
         header = stream[offset:end].split()
         require(header[:2] == [oid, b"blob"], "DevDocs Git Blob 身份不符：" + path)
         length = int(header[2])
         data = stream[end + 1:end + 1 + length]
-        files[path] = {"bytes": length, "sha256": sha(data)}
+        normalized = canonical(data)
+        raw_files[path] = {"bytes": length, "sha256": sha(data)}
+        canonical_files[path] = {"bytes": len(normalized), "sha256": sha(normalized)}
         offset = end + length + 2
     require(offset == len(stream), "DevDocs Git Blob 流长度不符")
-    return identity(files)
+    return {"raw_sha256": identity(raw_files), "canonical_sha256": identity(canonical_files)}
 
 
 def docs_tree_self_test():
@@ -285,8 +289,9 @@ def main():
     require(before == source["files"], "运行前源码/锁变化")
     docs_before = docs_tree_snapshot(repository)
     docs_commit = git(repository, "rev-parse", "HEAD").decode("ascii").strip()
-    require(docs_before == docs_tree_from_commit(repository, docs_commit),
-            "DevDocs 运行前字节不是已提交快照")
+    docs_commit_tree = docs_tree_from_commit(repository, docs_commit)
+    require(docs_before["canonical_sha256"] == docs_commit_tree["canonical_sha256"],
+            "DevDocs 运行前规范字节不是已提交快照")
     env = {key: value for key, value in os.environ.items() if not key.startswith(tuple(config["removed_environment_prefixes"]))}
     env.update(config["overrides"])
     started = datetime.datetime.now(datetime.timezone.utc).isoformat()
@@ -299,17 +304,25 @@ def main():
     log_ref, log_digest = store_content_log(ROOT, log_bytes)
     after = worktree_files(repository)
     docs_after = docs_tree_snapshot(repository)
+    docs_commit_after = git(repository, "rev-parse", "HEAD").decode("ascii").strip()
     write_json(result, {"label": args.label, "argv": argv, "cwd": str(repository), "pid": process.pid,
                "started_utc": started, "finished_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                "exit_code": exit_code, "source_before": identity(before), "source_after": identity(after),
                "source_unchanged": before == after,
-               "docs_commit": docs_commit, "docs_tree_before": docs_before, "docs_tree_after": docs_after,
-               "docs_tree_sha256": docs_before, "docs_tree_unchanged": docs_before == docs_after,
+               "docs_commit": docs_commit, "docs_commit_after": docs_commit_after,
+               "docs_tree_before": docs_before["raw_sha256"], "docs_tree_after": docs_after["raw_sha256"],
+               "docs_tree_sha256": docs_before["raw_sha256"],
+               "docs_tree_canonical_before": docs_before["canonical_sha256"],
+               "docs_tree_canonical_after": docs_after["canonical_sha256"],
+               "docs_tree_commit_raw_sha256": docs_commit_tree["raw_sha256"],
+               "docs_tree_commit_canonical_sha256": docs_commit_tree["canonical_sha256"],
+               "docs_tree_unchanged": docs_before == docs_after,
                "log_ref": log_ref, "log_bytes": len(log_bytes),
                "log_sha256": log_digest, "runner_sha256": sha(Path(__file__).read_bytes()),
                "environment_sha256": sha((destination / "environment.json").read_bytes())})
     print(json.dumps({"variant": args.variant, "label": args.label, "exit_code": exit_code, "source_unchanged": before == after}))
     require(before == after, "运行期间源码/锁变化")
+    require(docs_commit_after == docs_commit, "运行期间 Git HEAD 变化")
     raise SystemExit(exit_code)
 
 
