@@ -76,6 +76,7 @@ RUNS = {
     ("fixed", "docs_final"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "docs_final_sealed"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "docs_final_closeout"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "docs_final_verified"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "self_review_findings_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "final_self_review_findings_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "sealed_self_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
@@ -259,7 +260,7 @@ def verify(root, repository):
         require(record["exit_code"] == expected_exit, "执行退出码不符：" + label)
         logs[variant, label], records[variant, label] = log, record
     require(referenced_objects == set(objects), "内容日志对象必须且只须由运行回执引用")
-    require("fixed/content_store_self_test" in records and
+    require(("fixed", "content_store_self_test") in records and
             json.loads(logs["fixed", "content_store_self_test"]) == {
                 "passed": True, "distinct_objects": 2,
                 "identical_outputs_reused": True, "tampered_object_rejected": True,
@@ -272,7 +273,7 @@ def verify(root, repository):
             and first_store_run["log_sha256"] == repeated_store_run["log_sha256"]
             and logs["fixed", "content_store_self_test"] == logs["fixed", "content_store_self_test_repeat"],
             "相同采集命令未复用唯一内容日志对象")
-    docs_record = records.get(("fixed", "docs_final_closeout"))
+    docs_record = records.get(("fixed", "docs_final_verified"))
     require(docs_record is not None and "log_ref" in docs_record
             and docs_record["docs_tree_unchanged"] is True
             and docs_record["docs_tree_sha256"] == docs_record["docs_tree_before"]
@@ -487,7 +488,7 @@ def negative(root, repository):
                           ("missing_attributes_reindexed", "FIX1 证据目录属性不符"),
                           ("tampered_log", "原始日志身份不符：concurrency"),
                           ("orphan_content_object", "内容日志对象必须且只须由运行回执引用"),
-                          ("tampered_docs_tree", "门禁执行期间 DevDocs 字节变化：docs_final_closeout"),
+                          ("tampered_docs_tree", "门禁执行期间 DevDocs 字节变化：docs_final_verified"),
                           ("forged_source", "固定 Git 产品树不符：b34"),
                           ("false_closeout", "阶段收口与实际运行不符"),
                           ("false_b4_2a_exit", "B4-2A 退出与恢复门槛不符"),
@@ -514,7 +515,7 @@ def negative(root, repository):
                 orphan_path.parent.mkdir(parents=True, exist_ok=True)
                 orphan_path.write_bytes(orphan)
             elif label == "tampered_docs_tree":
-                record_path = copied / "fixed/docs_final_closeout.json"
+                record_path = copied / "fixed/docs_final_verified.json"
                 record = load(record_path)
                 record["docs_tree_sha256"] = "0" * 64
                 record_path.write_text(json.dumps(record), encoding="utf-8")
