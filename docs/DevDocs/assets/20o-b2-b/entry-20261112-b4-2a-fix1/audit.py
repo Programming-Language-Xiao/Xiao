@@ -69,6 +69,8 @@ RUNS = {
     ("fixed", "cross_status_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "self_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "final_self_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "self_review_findings_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "final_self_review_findings_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "sealed_self_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "audit_self_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "final_audit_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
@@ -294,6 +296,14 @@ def verify(root, repository):
     require(final_self_review_repo["passed"] is True and all(
         item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
         for item in final_self_review_repo["diagnostics"]), "自审最终记录文档门禁失败或出现新诊断")
+    findings_repo = json.loads(logs["fixed", "self_review_findings_docs"])
+    require(findings_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in findings_repo["diagnostics"]), "F1-F3 自审结论文档门禁失败或出现新诊断")
+    final_findings_repo = json.loads(logs["fixed", "final_self_review_findings_docs"])
+    require(final_findings_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in final_findings_repo["diagnostics"]), "F1-F3 最终收尾文档门禁失败或出现新诊断")
     sealed_self_review_repo = json.loads(logs["fixed", "sealed_self_review_docs"])
     require(sealed_self_review_repo["passed"] is True and all(
         item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"

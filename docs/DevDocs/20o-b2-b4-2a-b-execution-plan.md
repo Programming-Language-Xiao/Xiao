@@ -116,7 +116,7 @@ xiao_runtime::cmath_log10(value: f64) -> RuntimeResult<f64>
 6. 002/009 错误顺序；unknown ID 拒绝；
 7. 30 条 planned 导入路径仍拒绝；
 8. B4-0 向量、B4-1 类型/IR、B3-4 wrapper/22c、B1/B2/B3 历史回归；
-9. 保存源码、工具链、目标、PID、日志、前后摘要；
+9. 保存源码、工具链、目标、PID、日志、前后摘要；FIX1 后的新证据目录按原始日志字节 SHA-256 内容寻址，重复内容只存一个对象；每次运行仍单独保存 label、PID、时间、argv、cwd、环境/源码摘要、退出码，并引用日志对象的路径、字节数和摘要；
 10. 记录 Windows 本机与未执行平台。
 
 退出：B4-2 内部证据完整；B4-3 未开始；`language_available=false`。
