@@ -184,6 +184,30 @@
       "pid": 48360,
       "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
     },
+    "fixed/content_store_self_test": {
+      "pid": 25088,
+      "log_sha256": "c544a654244cd6a544f7d44c583c7de9fbf5638bcc11b54000a6a383e193ce8e"
+    },
+    "fixed/content_store_self_test_repeat": {
+      "pid": 55508,
+      "log_sha256": "c544a654244cd6a544f7d44c583c7de9fbf5638bcc11b54000a6a383e193ce8e"
+    },
+    "fixed/docs_final": {
+      "pid": 14448,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/docs_final_sealed": {
+      "pid": 62924,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/docs_final_closeout": {
+      "pid": 44876,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/docs_final_verified": {
+      "pid": 68864,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
     "fixed/self_review_findings_docs": {
       "pid": 16416,
       "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
