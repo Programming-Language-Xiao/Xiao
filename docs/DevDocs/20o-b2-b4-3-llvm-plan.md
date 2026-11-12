@@ -1,6 +1,6 @@
 # 20O-B2-B4-3. cmath LLVM 动态/静态与共享 pow 实施规划
 
-> **B4-2A/B 尚未开工；B4-3 仍未开始，B4-4、B5～B7 与 B2-C 后置。**
+> **B4-2A 与 FIX1 已完成 Windows 本机内部退出；B4-2B、B4-3 尚未开始，B4-4、B5～B7 与 B2-C 后置。**
 > 入口为 B4-1 类型/IR、B4-2 的 VM 执行与已冻结的 15 个 Rust-only Runtime 门面；当前 LLVM 尚无 cmath lowering。
 > B4-3 只做 LLVM 动态/静态路径与 float `**` 共核；不接导入/归档/序列化（B4-4），不升 ABI 1.19/21。
 > 30 条 cmath 导入路径仍 planned 拒绝；`language_available=false`。

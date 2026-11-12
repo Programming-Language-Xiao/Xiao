@@ -123,7 +123,7 @@ B4-0/B4-1 是 B4 的开工前置，不是语言可用性完成；B4-2 才接 TAC
 5. 30 条 planned 导入路径仍拒绝；
 6. 无 TAC/VM/LLVM/序列化/归档、C ABI/intrinsic/ABI/registry/锁改动；
 7. B3-4/B1/B2/B3 回归通过；旧 721 未运行；
-8. B4-2 未开始；`stdlib.cmath` 仍 planned。
+8. 本页原退出时 B4-2 未开始；后续 B4-2A/FIX1 退出见[当前 FIX1 记录](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)，`stdlib.cmath` 仍 planned。
 
 ## 七、风险与禁止
 

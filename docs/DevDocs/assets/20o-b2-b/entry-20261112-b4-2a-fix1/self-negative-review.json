@@ -1,0 +1,59 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "reason": null,
+      "read_only": true
+    },
+    {
+      "case": "missing_attributes",
+      "exit_code": 1,
+      "reason": "证据字节清单不符",
+      "read_only": true
+    },
+    {
+      "case": "tampered_log",
+      "exit_code": 1,
+      "reason": "原始日志身份不符：concurrency",
+      "read_only": true
+    },
+    {
+      "case": "forged_source",
+      "exit_code": 1,
+      "reason": "固定 Git 产品树不符：b34",
+      "read_only": true
+    },
+    {
+      "case": "false_closeout",
+      "exit_code": 1,
+      "reason": "阶段收口与实际运行不符",
+      "read_only": true
+    },
+    {
+      "case": "false_b4_2a_exit",
+      "exit_code": 1,
+      "reason": "B4-2A 退出与恢复门槛不符",
+      "read_only": true
+    },
+    {
+      "case": "refresh_forged_state",
+      "exit_code": 1,
+      "reason": "已有收口字段被改写，拒绝刷新",
+      "read_only": true
+    },
+    {
+      "case": "nested_evidence",
+      "exit_code": 1,
+      "reason": "证据字节清单不符",
+      "read_only": true
+    },
+    {
+      "case": "parent_escape",
+      "exit_code": 1,
+      "reason": "执行路径包含相对跳转",
+      "read_only": true
+    }
+  ]
+}

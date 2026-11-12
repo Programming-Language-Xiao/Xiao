@@ -1,0 +1,2 @@
+$ bun tools/repo-check/src/cli.ts usedocs
+通过：未发现 A0 规则问题。

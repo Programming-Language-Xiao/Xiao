@@ -1,9 +1,10 @@
 # 20O-B2-B4. cmath 语言全链路与承载实施规划
 
-> **B3-4 planned 源码包装收口已完成；B4 语言全链路仍未开始。**
+> **B3-4 planned 源码包装收口已完成；B4-0/B4-1 已完成 Windows 内部验收，B4-2A 已退出；B4-2B、B4-3、B4-4、B4-5 尚未开始，B4 整批仍未收口。**
 > 入口为 B3-3 代码 `89d782e1`、B3-4 固定代码 `7d8b85e4` 与其源码收口证据；当前 intrinsic 34～48 仅内部 active，VM/LLVM 未绑定。
 > B4 只做类型/IR/TAC/VM/LLVM/序列化与双路径承载；不升 ABI 1.19/21，不升级 registry，不跑旧 721。
 > `stdlib.cmath` 仍 planned；B4 的通过只作为内部语言验收，B5 切版本，B2-C 才最终发布。
+> 2026-11-12 状态回写：B4-2A 的 34～48 TAC/字节码、FIX1 planned 边界修复及退出门槛已由 `c4610211` 验收；Rust-only Runtime/VM 分派尚未开始。归属和固定复跑见[FIX1证据](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)。
 
 ## 一、入口与范围
 

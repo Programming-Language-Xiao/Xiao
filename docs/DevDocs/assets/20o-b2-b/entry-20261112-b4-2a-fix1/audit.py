@@ -46,6 +46,22 @@ RUNS = {
     ("fixed", "evidence_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "final_evidence_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "release_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "review_usedocs"): ["bun", "run", "check:usedocs"],
+    ("fixed", "review_layout"): ["bun", "run", "check:layout"],
+    ("fixed", "audit_final_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "audit_final_usedocs"): ["bun", "run", "check:usedocs"],
+    ("fixed", "audit_final_layout"): ["bun", "run", "check:layout"],
+    ("fixed", "review_final_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "review_final_usedocs"): ["bun", "run", "check:usedocs"],
+    ("fixed", "review_final_layout"): ["bun", "run", "check:layout"],
+    ("fixed", "last_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "sealed_review_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "sealed_review_usedocs"): ["bun", "run", "check:usedocs"],
+    ("fixed", "sealed_review_layout"): ["bun", "run", "check:layout"],
+    ("fixed", "locked_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "cross_status_docs"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    ("fixed", "final_doc_review"): ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     ("fixed", "sealed_usedocs"): ["bun", "run", "check:usedocs"],
     ("fixed", "sealed_layout"): ["bun", "run", "check:layout"],
 }
@@ -58,13 +74,43 @@ for label, directory in {
 
 
 def inventory(root):
-    return {path.relative_to(root).as_posix(): {"bytes": path.stat().st_size, "sha256": sha(path.read_bytes())}
-            for path in sorted(root.rglob("*")) if path.is_file() and path.name != "evidence.json"
-            and "__pycache__" not in path.parts}
+    return {
+        path.relative_to(root).as_posix(): {"bytes": path.stat().st_size, "sha256": sha(path.read_bytes())}
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+        and path.relative_to(root).as_posix() != "evidence.json"
+        and "__pycache__" not in path.parts
+    }
 
 
 def all_bytes(root):
-    return {path.relative_to(root).as_posix(): sha(path.read_bytes()) for path in root.rglob("*") if path.is_file()}
+    result = {}
+    for path in root.rglob("*"):
+        relative = path.relative_to(root).as_posix()
+        if path.is_dir():
+            result[relative + "/"] = None
+        elif path.is_file():
+            result[relative] = sha(path.read_bytes())
+    return result
+
+
+def safe_child(raw_path, task, allow_missing=False):
+    """按 Windows 词法拒绝任务根逃逸和路径组件跳过，再核对现存父级解析路径。"""
+    path = PureWindowsPath(raw_path)
+    require(path.is_absolute() and ".." not in path.parts and "." not in path.parts,
+            "执行路径包含相对跳转")
+    require(path != task, "执行路径不能等于任务根")
+    require(path.is_relative_to(task), "执行目录逃出任务根")
+    current = Path(str(task))
+    resolved_task = PureWindowsPath(str(current.resolve()))
+    for part in path.relative_to(task).parts:
+        current /= part
+        if current.exists():
+            require(PureWindowsPath(str(current.resolve())).is_relative_to(resolved_task),
+                    "执行目录解析后逃出任务根")
+    if not allow_missing:
+        require(current.exists(), "登记的执行目录不存在")
+    return current
 
 
 def totals(log):
@@ -85,8 +131,12 @@ def verify(root, repository):
         task = PureWindowsPath(env["task_root"])
         require(source["source_root"] == env["source_root"], "执行源码根不符：" + variant)
         for key in ["CARGO_TARGET_DIR", "XIAO_HOME", "TEMP", "TMP", "XIAO_RUNTIME_LIBRARY"]:
-            path = PureWindowsPath(env["overrides"][key])
-            require(path.is_relative_to(task) and path != task, "执行目录逃出任务根：" + variant)
+            path = safe_child(env["overrides"][key], task, allow_missing=key == "XIAO_RUNTIME_LIBRARY")
+        require(safe_child(env["overrides"]["CARGO_TARGET_DIR"], task).exists(), "独立 Cargo target 不存在")
+        require(safe_child(env["overrides"]["XIAO_HOME"], task).is_dir(), "独立 Xiao Home 不存在")
+        require(safe_child(env["overrides"]["TEMP"], task).is_dir()
+                and safe_child(env["overrides"]["TMP"], task).is_dir(), "独立 TEMP/TMP 不存在")
+        require(env["overrides"]["TEMP"] == env["overrides"]["TMP"], "TEMP/TMP 应绑定同一任务目录")
         require(env["overrides"]["XIAO_STDLIB_ROOT"] == str(PureWindowsPath(source["source_root"]) / "stdlib"), "stdlib 来源不符：" + variant)
         require(env["overrides"]["XIAO_B1_F10"] == env["overrides"]["XIAO_B2_A_PERF"] == "0", "性能开关不符")
         require(env["removed_environment_prefixes"] == ["XIAO_", "RUST_BIGDECIMAL_"]
@@ -113,7 +163,8 @@ def verify(root, repository):
         require(record["log"] == label + ".log", "日志路径不符：" + label)
         raw = (directory / record["log"]).read_bytes()
         require(record["log_sha256"] == sha(raw) and record["log_bytes"] == len(raw), "原始日志身份不符：" + label)
-        require(record["exit_code"] == (101 if variant == "b401" else 0), "执行退出码不符：" + label)
+        expected_exit = 101 if variant == "b401" else 0
+        require(record["exit_code"] == expected_exit, "执行退出码不符：" + label)
         logs[variant, label], records[variant, label] = raw.decode("utf-8"), record
     require(totals(logs["b34", "concurrency"]) == (29, 0, 0), "B3-4 直接复跑未通过 29/29")
     require(totals(logs["b401", "concurrency"]) == (27, 2, 0), "B4-1 直接复跑不符 27/29")
@@ -166,6 +217,46 @@ def verify(root, repository):
     require(release_repo["passed"] is True and all(
         item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
         for item in release_repo["diagnostics"]), "最终 README 文档门禁失败或出现新诊断")
+    review_repo = json.loads(logs["fixed", "review_docs"])
+    require(review_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in review_repo["diagnostics"]), "自审最终文档门禁失败或出现新诊断")
+    require("通过：未发现 A0 规则问题。" in logs["fixed", "review_usedocs"]
+            and "通过：未发现 A0 规则问题。" in logs["fixed", "review_layout"], "自审最终 UseDocs/layout 门禁失败")
+    audit_repo = json.loads(logs["fixed", "audit_final_docs"])
+    require(audit_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in audit_repo["diagnostics"]), "最终审计工具快照的 docs 门禁失败或出现新诊断")
+    require("通过：未发现 A0 规则问题。" in logs["fixed", "audit_final_usedocs"]
+            and "通过：未发现 A0 规则问题。" in logs["fixed", "audit_final_layout"], "最终审计工具快照的 UseDocs/layout 门禁失败")
+    review_repo = json.loads(logs["fixed", "review_final_docs"])
+    require(review_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in review_repo["diagnostics"]), "自审最终说明的 docs 门禁失败或出现新诊断")
+    require("通过：未发现 A0 规则问题。" in logs["fixed", "review_final_usedocs"]
+            and "通过：未发现 A0 规则问题。" in logs["fixed", "review_final_layout"], "自审最终说明的 UseDocs/layout 门禁失败")
+    sealed_review = json.loads(logs["fixed", "sealed_review_docs"])
+    require(sealed_review["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in sealed_review["diagnostics"]), "最终自审 README 的 docs 门禁失败或出现新诊断")
+    require("通过：未发现 A0 规则问题。" in logs["fixed", "sealed_review_usedocs"]
+            and "通过：未发现 A0 规则问题。" in logs["fixed", "sealed_review_layout"], "最终自审 README 的 UseDocs/layout 门禁失败")
+    locked_repo = json.loads(logs["fixed", "locked_docs"])
+    require(locked_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in locked_repo["diagnostics"]), "最终反例计数文档门禁失败或出现新诊断")
+    last_repo = json.loads(logs["fixed", "last_docs"])
+    require(last_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in last_repo["diagnostics"]), "最终 README/反例说明文档门禁失败或出现新诊断")
+    cross_status_repo = json.loads(logs["fixed", "cross_status_docs"])
+    require(cross_status_repo["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in cross_status_repo["diagnostics"]), "B4跨阶段状态对账 docs 门禁失败或出现新诊断")
+    final_doc_review = json.loads(logs["fixed", "final_doc_review"])
+    require(final_doc_review["passed"] is True and all(
+        item["code"] == "A0-COVERAGE-002" and item["severity"] == "warning"
+        for item in final_doc_review["diagnostics"]), "最终反例计数文案的 docs 门禁失败或出现新诊断")
     require("通过：未发现 A0 规则问题。" in logs["fixed", "usedocs_closeout"]
             and "通过：未发现 A0 规则问题。" in logs["fixed", "layout_closeout"], "最终 UseDocs/layout 门禁失败")
     for label in ["b1_history", "b2_history", "b3_history", "b34_history", "b401_history"]:
@@ -186,6 +277,9 @@ def verify(root, repository):
 
 
 def audit(root, repository):
+    require((root / ".gitattributes").is_file()
+            and (root / ".gitattributes").read_bytes() == b"* -text -whitespace\n*.log -diff\n",
+            "FIX1 证据目录属性不符")
     evidence = load(root / "evidence.json")
     require(evidence["files"] == inventory(root), "证据字节清单不符")
     attribution, result = verify(root, repository)
@@ -206,15 +300,25 @@ def a_exit(result):
 
 def negative(root, repository):
     cases = []
-    for label, reason in [("baseline", None), ("missing_attributes", "证据字节清单不符"),
+    for label, reason in [("baseline", None), ("missing_attributes", "FIX1 证据目录属性不符"),
+                          ("missing_attributes_reindexed", "FIX1 证据目录属性不符"),
                           ("tampered_log", "原始日志身份不符：concurrency"),
                           ("forged_source", "固定 Git 产品树不符：b34"),
-                          ("false_closeout", "阶段收口与实际运行不符")]:
+                          ("false_closeout", "阶段收口与实际运行不符"),
+                          ("false_b4_2a_exit", "B4-2A 退出与恢复门槛不符"),
+                          ("refresh_forged_state", "已有收口字段被改写，拒绝刷新"),
+                          ("nested_evidence", "证据字节清单不符"),
+                          ("parent_escape", "执行路径包含相对跳转")]:
         with tempfile.TemporaryDirectory(prefix="b4-fix1-negative-") as task:
             copied = Path(task) / "evidence"
             shutil.copytree(root, copied)
             if label == "missing_attributes":
                 (copied / ".gitattributes").unlink()
+            elif label == "missing_attributes_reindexed":
+                (copied / ".gitattributes").unlink()
+                evidence = load(copied / "evidence.json")
+                evidence["files"] = inventory(copied)
+                (copied / "evidence.json").write_text(json.dumps(evidence), encoding="utf-8")
             elif label == "tampered_log":
                 with (copied / "b34/concurrency.log").open("ab") as output:
                     output.write(b"\nforged success\n")
@@ -226,7 +330,30 @@ def negative(root, repository):
                 result = load(copied / "closeout.json")
                 result["b4_2b_started"] = True
                 (copied / "closeout.json").write_text(json.dumps(result), encoding="utf-8")
-            if label in {"tampered_log", "forged_source", "false_closeout"}:
+            elif label == "false_b4_2a_exit":
+                result = load(copied / "b4-2a-exit.json")
+                result["b4_2b_started"] = True
+                (copied / "b4-2a-exit.json").write_text(json.dumps(result), encoding="utf-8")
+            elif label == "refresh_forged_state":
+                result = load(copied / "closeout.json")
+                result["language_available"] = True
+                (copied / "closeout.json").write_text(json.dumps(result), encoding="utf-8")
+            elif label == "nested_evidence":
+                nested = copied / "unlisted/evidence.json"
+                nested.parent.mkdir()
+                nested.write_text('{"forged":true}', encoding="utf-8")
+            elif label == "parent_escape":
+                env_path = copied / "fixed/environment.json"
+                config = load(env_path)
+                config["overrides"]["CARGO_TARGET_DIR"] = config["task_root"] + "\\..\\escaped-target"
+                env_path.write_text(json.dumps(config), encoding="utf-8")
+                digest = sha(env_path.read_bytes())
+                for record_path in (copied / "fixed").glob("*.json"):
+                    record = load(record_path)
+                    if "environment_sha256" in record:
+                        record["environment_sha256"] = digest
+                        record_path.write_text(json.dumps(record), encoding="utf-8")
+            if label in {"tampered_log", "forged_source", "false_closeout", "false_b4_2a_exit", "parent_escape"}:
                 if label == "false_closeout":
                     exit_result = load(copied / "b4-2a-exit.json")
                     exit_result["b4_2b_started"] = True
@@ -234,15 +361,20 @@ def negative(root, repository):
                 evidence = load(copied / "evidence.json")
                 evidence["files"] = inventory(copied)
                 (copied / "evidence.json").write_text(json.dumps(evidence), encoding="utf-8")
+            if label == "refresh_forged_state":
+                evidence = load(copied / "evidence.json")
+                evidence["files"] = inventory(copied)
+                (copied / "evidence.json").write_text(json.dumps(evidence), encoding="utf-8")
             before = all_bytes(copied)
+            options = ["--refresh-results"] if label == "refresh_forged_state" else []
             process = subprocess.run([sys.executable, "-X", "utf8", str(copied / "audit.py"), "--root", str(copied),
-                                      "--repository-root", str(repository)], capture_output=True, text=True, encoding="utf-8")
+                                      "--repository-root", str(repository), *options], capture_output=True, text=True, encoding="utf-8")
             require(all_bytes(copied) == before, "审计改写文件")
             if reason is None:
                 require(process.returncode == 0 and json.loads(process.stdout)["passed"], "基线反例失败")
             else:
                 require(process.returncode == 1 and process.stdout.strip() == reason and not process.stderr,
-                        "反例未按精确原因拒绝：" + label)
+                        "反例未按精确原因拒绝：" + label + " stdout=" + process.stdout.strip() + " stderr=" + process.stderr.strip())
             cases.append({"case": label, "exit_code": process.returncode, "reason": reason, "read_only": True})
     return {"passed": True, "cases": cases}
 
@@ -274,14 +406,11 @@ def main():
         old_attribution = load(args.root / "attribution.json")
         old_closeout = load(args.root / "closeout.json")
         require(old_attribution == attribution, "固定归属结论变化，拒绝刷新")
-        require(old_closeout["product_commit"] == result["product_commit"]
-                and old_closeout["entry_commit"] == result["entry_commit"]
-                and old_closeout["fix1_closed"] is True
-                and old_closeout["b4_2a_gate_restored"] is True
-                and old_closeout["b4_2b_started"] is False,
-                "已有有效收口身份变化，拒绝刷新")
-        require(all(old_closeout["runs"].get(key) == value for key, value in result["runs"].items()
-                    if key in old_closeout["runs"]), "已有运行记录被替换，拒绝刷新")
+        old_state = {key: value for key, value in old_closeout.items() if key != "runs"}
+        new_state = {key: value for key, value in result.items() if key != "runs"}
+        require(old_state == new_state, "已有收口字段被改写，拒绝刷新")
+        require(all(result["runs"].get(key) == value for key, value in old_closeout["runs"].items()),
+                "已有运行记录被替换，拒绝刷新")
         (args.root / "closeout.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         exit_result = a_exit(result)
         (args.root / "b4-2a-exit.json").write_text(json.dumps(exit_result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

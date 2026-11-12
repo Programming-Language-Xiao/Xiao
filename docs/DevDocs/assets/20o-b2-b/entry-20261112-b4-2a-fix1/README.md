@@ -35,6 +35,8 @@ python -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261112-b4-2a-fix1/audit.py
 python -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261112-b4-2a-fix1/audit.py --self-negative
 ```
 
-默认审计不读当前工作树、不要求当前 HEAD，也不要求旧 worktree、target 或 Runtime 仍存在；只需仓库保留固定 Git 对象。它支持 `--root` 和 `--repository-root`，不写证据、不生成 Python 缓存。自反例只改临时副本，检查缺失属性、改日志后重建清单、伪造历史来源后重建清单、虚假后续开工状态均按准确原因拒绝，并比较全部文件前后摘要。
+默认审计不读当前工作树、不要求当前 HEAD，也不要求旧 worktree、target 或 Runtime 仍存在；只需仓库保留固定 Git 对象。它支持 `--root` 和 `--repository-root`，不写证据、不生成 Python 缓存。自反例有 11 个用例（1 个基线、10 个拒绝反例），只改临时副本，覆盖缺失 `.gitattributes` 及重建清单、改日志后重建清单、伪造历史来源后重建清单、虚假阶段收口、虚假 B4-2A 退出、刷新时篡改语言状态、嵌套 `evidence.json` 和任务根 `..` 逃逸；每项核对准确拒绝原因及整个目录文件/目录项的前后摘要。独立自审记录了修复前三个缺口被漏过的复现日志 `self-review-20261112/before-negative.json`；相应固定反例现在列于 `audit.py`。
 
 `audit.py --collect` 是显式生成命令，在所有运行与文档完成后从真实记录生成 `attribution.json`、`closeout.json`、`b4-2a-exit.json` 和 `evidence.json`，拒绝覆盖。新增门禁记录后使用 `--refresh-results`，只有归属不变、原运行映射完全匹配时才用全部真实记录重建 closeout 与清单；该模式不改写运行日志。工具或说明更新而没有新运行时，用 `--refresh-inventory`，它先验证原结论再刷新实际清单。旧的 blocked 自审仍保留，后续实现入口以本目录退出记录为准。
+
+自审核额外用临时副本复现并修复了四个审计器缺口：刷新 closeout 时不能改写 `language_available` 等既有状态；清单只排除根级权威 `evidence.json`，嵌套同名文件仍须纳入；执行路径检查拒绝 `..`、点路径和解析后符号链接逃逸；即便重建清单，证据目录仍必须保留固定 `.gitattributes`。复现前的原始输出及审计器摘要见 `self-review-20261112/before-negative.json`，全部以退出码 0 误报通过；现在这些缺口均纳入固定反例。全部反例均在临时副本检查准确原因、退出码及目录项和文件摘要只读性。

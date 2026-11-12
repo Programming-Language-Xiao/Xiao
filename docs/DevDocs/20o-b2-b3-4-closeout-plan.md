@@ -126,7 +126,7 @@ B3-4 收口只确认“包装源码、planned 边界和隔离修复可复核”�
 4. registry/UseDocs/stdlib README 仍 planned；
 5. 无 intrinsic 34～48 语言绑定、C ABI/VM/LLVM 改动；
 6. ABI 1.18/生成器 20/接口 1/1～48/ID 100 未变；
-7. 旧 721 未运行；历史债务未核销；B4 未开始；
+7. 旧 721 未运行；历史债务未核销；本页 B3-4 退出时 B4 未开始；后续 B4 状态见[FIX1 归属记录](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)；
 8. B4 向量迁移/双路径清单已交接。
 
 ## 六、风险与禁止
