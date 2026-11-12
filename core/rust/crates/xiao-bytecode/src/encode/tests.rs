@@ -675,6 +675,45 @@ fn damaged_inputs_are_rejected_structurally() {
     ));
 }
 
+/// 损坏字节流绕过编码前校验后，解码入口仍必须以同一原因拒绝未知 intrinsic。
+#[test]
+fn decoded_intrinsic_ids_are_checked_in_both_operand_widths() {
+    for width in [OperandWidth::Leb128, OperandWidth::FixedU16] {
+        let mut program = all_ops_program();
+        program.signatures.intern(CallSig::intrinsic(34));
+        let encoded = encode(&program, width).expect("活动 ID 应可编码");
+        let mut table = Writer::new(width);
+        encode_signatures(&mut table, &program.signatures).expect("活动签名表应可编码");
+        let starts = encoded
+            .bytes
+            .windows(table.bytes.len())
+            .enumerate()
+            .filter_map(|(offset, bytes)| (bytes == table.bytes).then_some(offset))
+            .collect::<Vec<_>>();
+        assert_eq!(starts.len(), 1, "应唯一定位完整签名表，不能误改其它字段");
+
+        // 只替换刚追加的最后一条签名，不调用会提前拒绝未知 ID 的编码校验。
+        let signature_bytes = |id: u32| {
+            let mut writer = Writer::new(width);
+            writer.uleb(0); // 空形参表。
+            write_optional_index(&mut writer, Some(id & 0xffff)).unwrap();
+            write_optional_index(&mut writer, Some(id >> 16)).unwrap();
+            writer.byte(10); // IrType::Dynamic。
+            writer.bytes
+        };
+        let valid = signature_bytes(34);
+        assert!(table.bytes.ends_with(&valid));
+        let end = starts[0] + table.bytes.len();
+        for id in [49, 100, u32::MAX] {
+            let mut bytes = encoded.bytes.clone();
+            bytes.splice(end - valid.len()..end, signature_bytes(id));
+            let expected = EncodeError::InvalidFormat(format!("未知或已废弃的 intrinsic ID {id}"));
+            assert_eq!(decode(&bytes), Err(expected.clone()));
+            assert_eq!(decode_encoded(&bytes), Err(expected));
+        }
+    }
+}
+
 /// 定宽模式下 `handler.binding` 放不下时，必须报出**精确字段名**。
 ///
 /// 这条检查必须拿到调用方的真实宽度：`FixedU16` 下应在写出前报出精确字段名，

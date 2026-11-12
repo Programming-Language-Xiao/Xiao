@@ -1,9 +1,9 @@
 //! B4-2A：cmath intrinsic 在 TAC 与既有字节码中的往返契约。
 
 use xiao_bytecode::{
-    BlockId, CallSig, EncodeError, FORMAT_VERSION, FuncId, OperandWidth, TAC_BYTECODE_ABI_VERSION,
-    TAC_VERSION, TacArgument, TacOp, TacProgram, build_pc_map, decode, decode_encoded, encode,
-    lower_program, verify_production,
+    BlockId, CallSig, EncodeError, FORMAT_VERSION, FuncId, OperandWidth, RegisterClass,
+    TAC_BYTECODE_ABI_VERSION, TAC_STRUCTURE_CODE, TAC_VERSION, TacArgument, TacOp, TacProgram,
+    build_pc_map, decode, decode_encoded, encode, lower_program, verify_production,
 };
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 use xiao_ir::{IrProgram, IrSpan};
@@ -137,10 +137,8 @@ fn fixture() -> (String, IrProgram, TacProgram, Vec<ExpectedCall>) {
             parameters,
             Form::Positional,
         );
-        if parameters.len() == 1 {
-            add_case(&mut source, &mut cases, id, name, parameters, Form::Named);
-        } else {
-            add_case(&mut source, &mut cases, id, name, parameters, Form::Named);
+        add_case(&mut source, &mut cases, id, name, parameters, Form::Named);
+        if parameters.len() == 2 {
             add_case(
                 &mut source,
                 &mut cases,
@@ -210,6 +208,9 @@ fn assert_case(source: &str, tac: &TacProgram, case: &ExpectedCall) -> (usize, C
         .find(|(_, function)| function.name == case.function)
         .unwrap_or_else(|| panic!("缺少 TAC 函数 {}", case.function));
     let site = call_site(tac, function_index);
+    let instruction = &function.blocks[site.block_index].instructions[site.instruction_index];
+    let result = instruction.dst.expect("float 调用应有结果寄存器");
+    assert_eq!(function.categories.get(result), RegisterClass::Float);
     assert_eq!(site.id, case.id, "{}", case.function);
     assert_eq!(site.callee.get(), 0, "intrinsic 使用保留入口函数编号 0");
     assert_eq!(site.span, case.span, "{}", case.function);
@@ -221,15 +222,16 @@ fn assert_case(source: &str, tac: &TacProgram, case: &ExpectedCall) -> (usize, C
     );
     assert_eq!(site.arguments.len(), case.parameter_indexes.len());
     for (index, argument) in site.arguments.iter().enumerate() {
+        let expected = match case.argument_names[index] {
+            Some(name) => TacArgument::keyword(
+                name.to_owned(),
+                function.parameters[case.parameter_indexes[index]],
+            ),
+            None => TacArgument::positional(function.parameters[case.parameter_indexes[index]]),
+        };
         assert_eq!(
-            argument.name.as_deref(),
-            case.argument_names[index],
-            "{} 的实参名称/顺序",
-            case.function
-        );
-        assert_eq!(
-            argument.value, function.parameters[case.parameter_indexes[index]],
-            "{} 的实参寄存器顺序",
+            argument, &expected,
+            "{} 的实参类别、名称与寄存器顺序",
             case.function
         );
     }
@@ -239,37 +241,6 @@ fn assert_case(source: &str, tac: &TacProgram, case: &ExpectedCall) -> (usize, C
         case.function
     );
     (function_index, site)
-}
-
-fn assert_decoded_case(decoded: &TacProgram, case: &ExpectedCall, original: &[TacArgument]) {
-    let (function_index, function) = decoded
-        .functions
-        .iter()
-        .enumerate()
-        .find(|(_, function)| function.name == case.function)
-        .unwrap_or_else(|| panic!("解码后缺少 TAC 函数 {}", case.function));
-    let site = call_site(decoded, function_index);
-    assert_eq!(site.id, case.id, "{}", case.function);
-    assert_eq!(site.callee.get(), 0);
-    assert_eq!(site.arguments, original, "{}", case.function);
-    assert_eq!(site.span, case.span, "{} 解码后的源码 span", case.function);
-    assert_eq!(
-        site.arguments
-            .iter()
-            .map(|argument| argument.name.as_deref())
-            .collect::<Vec<_>>(),
-        case.argument_names,
-        "{} 解码后的实参顺序",
-        case.function
-    );
-    assert!(
-        function
-            .blocks
-            .iter()
-            .flat_map(|block| &block.instructions)
-            .any(|instruction| instruction.span == case.span),
-        "解码后的 TAC 必须从 PC→span 表恢复源码区间"
-    );
 }
 
 #[test]
@@ -290,14 +261,28 @@ fn cmath_intrinsics_round_trip_tac_and_bytecode_without_version_changes() {
     assert_eq!(TAC_VERSION, 1);
     assert_eq!(TAC_BYTECODE_ABI_VERSION, 1);
     assert_eq!(FORMAT_VERSION, 4);
+    assert_eq!(tac.abi.runtime_abi_version, (1 << 16) | 18);
+    assert_eq!(
+        (
+            xiao_bytecode::XIAOC_FORMAT_MAJOR,
+            xiao_bytecode::XIAOC_FORMAT_MINOR
+        ),
+        (1, 0)
+    );
+    assert_eq!(xiao_bytecode::XIAOC_DIRECTORY_VERSION, 1);
     for width in [OperandWidth::Leb128, OperandWidth::FixedU16] {
         let encoded = encode(&tac, width).expect("15 项 cmath TAC 应可编码");
         assert_eq!(encoded.bytes.get(4), Some(&3), "无并发计划时沿用格式 3");
         let decoded = decode(&encoded.bytes).expect("15 项 cmath TAC 应可解码");
+        assert_eq!(
+            decoded, tac,
+            "完整 TAC（含实参类别、结果与 span）必须无损往返"
+        );
+        verify_production(&ir, &decoded).expect("解码产物也必须通过生产校验");
         let rebuilt = decode_encoded(&encoded.bytes).expect("应可重建 PC/span 目录");
-        assert_eq!(rebuilt.bytes, encoded.bytes, "解码后字节应确定性重建");
+        assert_eq!(rebuilt, encoded, "字节与 PC/span 目录必须确定性重建");
 
-        let pc_map = build_pc_map(&tac, width).expect("应从 TAC 建立 PC→span 映射");
+        let pc_map = build_pc_map(&decoded, width).expect("应从解码产物建立 PC→span 映射");
         for case in &cases {
             let (function_index, original_site) = assert_case(&source, &tac, case);
             assert_eq!(
@@ -327,7 +312,7 @@ fn cmath_intrinsics_round_trip_tac_and_bytecode_without_version_changes() {
                 "{} 的 PC→span 映射",
                 case.function
             );
-            assert_decoded_case(&decoded, case, &original_site.arguments);
+            assert_case(&source, &decoded, case);
             println!(
                 "B4-2A-CASE id={} name={} form={} span={}..{} width={width:?} pc={pc} args={:?}",
                 case.id,
@@ -374,16 +359,19 @@ fn cmath_unknown_intrinsic_ids_are_rejected_before_encoding() {
 
         let validation =
             verify_production(&ir, &invalid).expect_err("生产校验必须拒绝未知/墓碑 intrinsic ID");
+        let reason = format!("未知或已废弃的 intrinsic ID {id}");
+        assert_eq!(validation.code, TAC_STRUCTURE_CODE);
         assert!(
-            validation.to_string().contains(&id.to_string()),
+            validation.message.ends_with(&reason),
             "校验错误应指出 ID {id}：{validation}"
         );
-        let encoding = encode(&invalid, OperandWidth::Leb128)
-            .expect_err("编码器必须拒绝未知/墓碑 intrinsic ID");
-        assert!(
-            matches!(encoding, EncodeError::InvalidFormat(ref message) if message.contains(&id.to_string())),
-            "编码错误应指出 ID {id}：{encoding}"
-        );
+        for width in [OperandWidth::Leb128, OperandWidth::FixedU16] {
+            assert_eq!(
+                encode(&invalid, width),
+                Err(EncodeError::InvalidFormat(reason.clone())),
+                "{width:?} 编码错误必须指出 ID {id}"
+            );
+        }
         println!("B4-2A-NEGATIVE id={id} verifier=reject encoder=reject result=passed");
     }
 }
