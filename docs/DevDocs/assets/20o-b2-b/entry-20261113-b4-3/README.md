@@ -4,6 +4,8 @@ B4-3 将动态/静态 cmath 接到既有 C ABI，并使 Float `**` 共用 `cmath
 
 `record.py` 为每次执行记录固定源码摘要、DevDocs 原始与UTF-8/LF摘要、环境、PID、时间、命令、退出码和内容寻址日志。每种变体有独立 target、Runtime、缓存、Xiao Home 和临时目录。`runtime-identity`在冷构建后记录新Runtime静态库的路径、长度和SHA-256；日志对象同摘要只存一份，失败轮次不覆盖。
 
+`runtime-offline-probe.json`记录默认审计不需要fixed-final2 Runtime目录、`--live-runtime`会拒绝缺失归档并在探针结束后恢复它。这是由独立固定任务实跑得到的回执。
+
 
 ## 执行记录
 
