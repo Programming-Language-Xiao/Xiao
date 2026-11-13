@@ -81,7 +81,7 @@ RUN_LABELS = {
     "fixed": {"runtime-build", "native-matrix", "regressions"},
     "fixed-final": {"runtime-build", "native-matrix"},
     FINAL_VARIANT: {
-        "runtime-build", "native-matrix", "regressions", "core-tests", "b1-vm", "b1-native",
+        "runtime-build", "runtime-identity", "native-matrix", "regressions", "core-tests", "b1-vm", "b1-native",
         "clippy", "fmt", "collector-final", "final-docs-release", *HISTORY_AUDITS,
     },
 }
@@ -170,6 +170,9 @@ def expected_argv(label):
     if label == "runtime-build":
         return ["cargo", "+1.96.0", "build", "--locked", "--manifest-path", "core/rust/Cargo.toml",
                 "-p", "xiao-runtime", "--release", "--lib"]
+    if label == "runtime-identity":
+        return ["python", "-B", "-X", "utf8", AUDIT_SCRIPT.replace("audit.py", "runtime-identity.py"),
+                str(TASK_BASE / FINAL_VARIANT / "target" / "release" / "xiao_runtime.lib")]
     if label == "native-matrix":
         return cargo + ["-p", "xiao-driver", "--release", "--test", "20o_b2_b4_cmath_llvm", "--",
                         "--ignored", "--exact", "native_cmath_static_dynamic_o0_o3_and_shared_pow", "--nocapture"]
@@ -214,15 +217,20 @@ def expected_closeout(root, repository, records, logs, preliminary_records, live
     environment = load(root / FINAL_VARIANT / "environment.json")
     runtime_path = Path(environment["overrides"]["XIAO_RUNTIME_LIBRARY"])
     runtime = records[FINAL_VARIANT, "runtime-build"]
+    runtime_identity_record = records[FINAL_VARIANT, "runtime-identity"]
     require(runtime["exit_code"] == 0 and runtime["source_unchanged"], "B4-3 Runtime冷构建失败")
+    require(runtime["finished_utc"] <= runtime_identity_record["started_utc"]
+            and runtime_identity_record["exit_code"] == 0, "B4-3 Runtime identity must follow the cold build")
+    runtime_identity = json.loads(logs[FINAL_VARIANT, "runtime-identity"])
+    require(runtime_identity == {"path": str(runtime_path), "bytes": runtime_identity.get("bytes"),
+                                 "sha256": runtime_identity.get("sha256")}
+            and runtime_identity["bytes"] > 0 and re.fullmatch(r"[0-9a-f]{64}", runtime_identity["sha256"]),
+            "B4-3 Runtime identity receipt is malformed")
     if live_runtime:
-        require(runtime_path.is_file(), "B4-3 task Runtime artifact missing")
-    if runtime_path.exists():
-        runtime_identity = {"path": str(runtime_path), "bytes": runtime_path.stat().st_size,
-                            "sha256": sha(runtime_path.read_bytes())}
-    else:
-        runtime_identity = None
-    require(runtime_identity is not None, "B4-3 Runtime artifact identity missing")
+        require(runtime_path.is_file() and not runtime_path.is_symlink(), "B4-3 task Runtime artifact missing")
+        require(runtime_path.stat().st_size == runtime_identity["bytes"]
+                and sha(runtime_path.read_bytes()) == runtime_identity["sha256"],
+                "B4-3 live Runtime bytes differ from the captured identity")
 
     matrix = logs[FINAL_VARIANT, "native-matrix"]
     rows = re.findall(r"B4-3-MATRIX dynamic=(true|false) optimization=([03]).*cases=(\d+) error_cases=(\d+) pow_inputs=(\d+) bit_or_code=exact", matrix)

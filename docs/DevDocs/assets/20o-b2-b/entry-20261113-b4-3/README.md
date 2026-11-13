@@ -2,7 +2,7 @@
 
 B4-3 将动态/静态 cmath 接到既有 C ABI，并使 Float `**` 共用 `cmath_pow`。ABI保持1.18，生成器21；`stdlib.cmath` 导入仍planned，B4-4、B5和公共发布尚未开始。本目录只记录 Windows x86_64-msvc 内部证据。
 
-`record.py` 为每次执行记录固定源码摘要、DevDocs 原始与UTF-8/LF摘要、环境、PID、时间、命令、退出码和内容寻址日志。每种变体有独立 target、Runtime、缓存、Xiao Home 和临时目录。日志对象同摘要只存一份；失败轮次不覆盖。
+`record.py` 为每次执行记录固定源码摘要、DevDocs 原始与UTF-8/LF摘要、环境、PID、时间、命令、退出码和内容寻址日志。每种变体有独立 target、Runtime、缓存、Xiao Home 和临时目录。`runtime-identity`在冷构建后记录新Runtime静态库的路径、长度和SHA-256；日志对象同摘要只存一份，失败轮次不覆盖。
 
 ## 执行记录
 
@@ -34,6 +34,6 @@ python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261113-b4-3/audit.py --se
 python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261113-b4-3/audit.py --live-runtime
 ```
 
-默认审计读取固定Git对象和回执，不要求当前HEAD或fixed任务目录；`--live-runtime`才核对仍在本机任务根中的Runtime字节。`--collect`是显式生成阶段收口与清单，默认审计不写文件；反例覆盖清单、属性文件、孤立日志、产品摘要、DevDocs绑定、任务路径逃逸和阶段状态。
+默认审计读取固定Git对象、Runtime身份回执和运行回执，不要求当前HEAD或fixed任务目录；`--live-runtime`才要求仍在本机任务根的Runtime静态库存在，并与记录的长度和SHA-256逐字节比对。`--collect`是显式生成阶段收口与清单，默认审计不写文件；反例覆盖清单、属性文件、孤立日志、产品摘要、DevDocs绑定、任务路径逃逸和阶段状态。
 
 Linux、macOS、远端CI、旧721 F10与性能预算未执行；B4-3是Windows本机内部退出，不是三平台/性能通过，也不表示cmath公开导入可用。ABI仍1.18、生成器21；B4-4、B4-5和B5未开始。
