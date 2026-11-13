@@ -11,6 +11,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parent
 REPOSITORY = ROOT.parents[4]
+TOOL_ROOT = Path(r"D:\msys64\ucrt64\bin")
 PRODUCT_ROOTS = [
     "core/rust", "stdlib", "tests/fixtures", "tests/benchmarks", ".github/workflows",
     ".cargo", "tools", "cli/ts", "docs/UseDocs", "docs/module-registry.json",
@@ -265,14 +266,18 @@ def main():
                     "files": files, "tree_sha256": identity(files)})
         write_json(destination / "environment.json", {
             "task_root": str(task), "source_root": str(source),
-            "runtime_library_override_consumed": False,
+                "runtime_library_override_consumed": args.variant == "fixed",
             "cargo_builds_runtime_from_source": True,
             "removed_environment_prefixes": ["XIAO_", "RUST_BIGDECIMAL_"],
             "overrides": {
                 "CARGO_TARGET_DIR": str(task / "target"), "XIAO_HOME": str(task / "home"),
                 "TEMP": str(task / "temp"), "TMP": str(task / "temp"),
-                "XIAO_RUNTIME_LIBRARY": str(task / "runtime" / "not-built.lib"),
+                "XIAO_RUNTIME_LIBRARY": str(task / "target" / "release" / "xiao_runtime.lib"),
                 "XIAO_STDLIB_ROOT": str(source / "stdlib"), "XIAO_B1_F10": "0", "XIAO_B2_A_PERF": "0",
+                "XIAO_CLANG": str(TOOL_ROOT / "clang.exe"),
+                "XIAO_LLVM_AS": str(TOOL_ROOT / "llvm-as.exe"),
+                "XIAO_LLC": str(TOOL_ROOT / "llc.exe"),
+                "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
                 "RUSTUP_TOOLCHAIN": "1.96.0", "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8", "CARGO_TERM_COLOR": "never",
             },
         })
