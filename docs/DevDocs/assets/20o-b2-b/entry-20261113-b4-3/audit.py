@@ -66,8 +66,10 @@ PRELIMINARY_LABELS = {*PRELIMINARY_AUDITS, "collector"}
 PRELIMINARY_LABELS.update({"final-docs", "final-docs-final", "final-docs-verified"})
 PRELIMINARY_REASONS = {label: "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
                        for label in [*PRELIMINARY_AUDITS, "collector"]}
+PRELIMINARY_REASONS["audit-b4-2b"] = "superseded by the serial final B4-2B historical audit"
 PRELIMINARY_REASONS["final-docs"] = "superseded after final evidence auditor and evidence README were committed"
 PRELIMINARY_REASONS["final-docs-final"] = "superseded after final audit corrected the B1 VM command identity"
+PRELIMINARY_REASONS["final-docs-verified"] = "superseded after preliminary-run classification was corrected"
 PRELIMINARY_REASONS["final-docs-verified"] = "superseded after preliminary-run classification was corrected"
 RUN_LABELS = {
     "baseline": {"entry"},
@@ -348,7 +350,7 @@ def read_preliminary(root, repository, source, environment, label):
             and record["runner_sha256"] == sha(git(repository, "show", commit + ":" + SCRIPT)),
             "B4-3 preliminary runner identity mismatch: " + label)
     docs = fixed_devdocs_tree(str(repository), commit)
-    stable_labels = {"final-docs", "final-docs-final", "final-docs-verified", "final-docs-closeout"}
+    stable_labels = {"audit-b4-2b", "final-docs", "final-docs-final", "final-docs-verified", "final-docs-closeout"}
     stable = record["docs_tree_unchanged"] is True if label in stable_labels else record["docs_tree_unchanged"] is False
     require(stable and record["docs_tree_canonical_before"] == docs["canonical_sha256"]
             and record["docs_tree_commit_raw_sha256"] == docs["raw_sha256"]
