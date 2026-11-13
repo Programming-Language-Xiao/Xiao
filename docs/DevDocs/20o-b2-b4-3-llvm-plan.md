@@ -1,6 +1,6 @@
 # 20O-B2-B4-3. cmath LLVM 动态/静态与共享 pow 实施规划
 
-> **B4-2A、FIX1 与 B4-2B 已完成 Windows 本机内部退出；B4-3 尚未开始，B4-4、B5～B7 与 B2-C 后置。**
+> **B4-2A、FIX1 与 B4-2B 已完成 Windows 本机内部退出；B4-3 开工就绪（入口见 §2.1），B4-4、B5～B7 与 B2-C 后置。**
 > 入口为 B4-1 类型/IR、B4-2 的 VM 执行与已冻结的 15 个 Rust-only Runtime 门面；当前 LLVM 尚无 cmath lowering。
 > B4-3 只做 LLVM 动态/静态路径与 float `**` 共核；不接导入/归档/序列化（B4-4），不升 ABI 1.19/21。
 > 30 条 cmath 导入路径仍 planned 拒绝；`language_available=false`。
@@ -46,6 +46,16 @@ B4-3 是 **LLVM 后端内部验收**，不是 `std.cmath` 导入可用。B4-4 �
 4. ABI 1.18/生成器 20/接口 1/cmath planned 未变；
 5. B4-0/B4-1、B3-4、B1/B2/B3 回归可复现；
 6. 唯一任务根、独立 target/Runtime/缓存已建立。
+
+### 2.1 开工单（2026-11-13）
+
+1. 入口：B4-2 Windows 内部退出记录 [closeout](assets/20o-b2-b/entry-20261113-b4-2b/closeout.json)；数学/Runtime 实现 `246bea46`，自审最终产品 `7c49fd65`（模块拒绝消息与测试）；驱动 50/50、Runtime 272/272、VM 35/35、字节码 65/65。开工前复核 `246bea46..7c49fd65` 的产品差异仅限 module_loader 消息、VM 专项测试与说明；若出现其它产品差异，按实际差异重新登记并重跑对应回归。
+2. 现状核对：静态 Float `**` 仍为 `llvm.pow.f64`，sfloat `**` 仍为 `llvm.pow.f32`；34～48 无 LLVM lowering；动态/静态 O0/O3 尚无 cmath 证据。
+3. 必须保留：B4-2 的 15 项 Runtime 门面/VM 分派、FIX1 planned 门控、30 条导入后调用拒绝、22c 29/29、子 VM/归档边界 3 项，以及 B1/B2/B3/B3-4/B4-0/1/B4-2 固定审计；不得靠放宽、删除或忽略测试推进。
+4. 顺序：B4-3A 动态 → B4-3B 静态 → B4-3C 测试 → B4-3D 收口。任一步需要改 checker、intrinsic 表、C ABI 或版本时，先停下另立裁定。
+5. 证据：新建 `assets/20o-b2-b/entry-20261113-b4-3/`；原始日志按 SHA-256 内容寻址，同一内容只存一个对象；每次运行保存 PID、时间、argv、cwd、环境、源码/DevDocs 摘要和退出码。文档修改合并到定稿后只跑一次最终 docs 门禁，中间轮次不重复全量门禁；B4-2/FIX1 历史目录不改写。
+6. 特别核对：静态 `float **` 切到共享 `cmath_pow` 后，`llvm.pow.f64` 不再作为 Float `**` 的第二实现；sfloat 保持 `llvm.pow.f32`；按 B3-2A 的 1075 组差异口径复核 float `**` 与 `cmath.pow` 的位模式与错误一致。
+7. 不做：B4-4 双路径/归档/序列化、ABI 1.19/21、registry/教程、旧 721；Linux/macOS、远端 CI、性能不具备时如实登记。
 
 ## 三、分批执行
 
