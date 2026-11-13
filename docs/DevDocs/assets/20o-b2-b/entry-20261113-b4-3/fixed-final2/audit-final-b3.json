@@ -1,0 +1,33 @@
+{
+  "label": "audit-final-b3",
+  "argv": [
+    "python",
+    "-B",
+    "-X",
+    "utf8",
+    "docs/DevDocs/assets/20o-b2-b/entry-20261108-b3/audit.py"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 16016,
+  "started_utc": "2026-11-13T10:58:43.503573+00:00",
+  "finished_utc": "2026-11-13T10:58:51.410885+00:00",
+  "exit_code": 0,
+  "source_before": "e4cc58cb2dc9ebcac2867d184d46437af2f8a9127eb881e68cd6c4fb0273ced4",
+  "source_after": "e4cc58cb2dc9ebcac2867d184d46437af2f8a9127eb881e68cd6c4fb0273ced4",
+  "source_unchanged": true,
+  "docs_commit": "da074a47410e069132ac8f5478794b1701b05678",
+  "docs_commit_after": "da074a47410e069132ac8f5478794b1701b05678",
+  "docs_tree_before": "21cecbdfdc00443299119220cfa7544136794bd2188c1dce2d1dba74c4d64ec6",
+  "docs_tree_after": "21cecbdfdc00443299119220cfa7544136794bd2188c1dce2d1dba74c4d64ec6",
+  "docs_tree_sha256": "21cecbdfdc00443299119220cfa7544136794bd2188c1dce2d1dba74c4d64ec6",
+  "docs_tree_canonical_before": "bb075bfbf2ad899cc7d1bc1b8d2c3dc121a6609ebeb14caf9d431047397dc2f8",
+  "docs_tree_canonical_after": "bb075bfbf2ad899cc7d1bc1b8d2c3dc121a6609ebeb14caf9d431047397dc2f8",
+  "docs_tree_commit_raw_sha256": "7bf865d57b3f266eb28c57339b48cfcb1ad1ff3c22163d5a958fd0107b731696",
+  "docs_tree_commit_canonical_sha256": "bb075bfbf2ad899cc7d1bc1b8d2c3dc121a6609ebeb14caf9d431047397dc2f8",
+  "docs_tree_unchanged": true,
+  "log_ref": "logs/sha256/8c/8c0600bc48ba55ae300cc16296a5e940c9c1b448942d3b0ca506d7b46f10a12a.log",
+  "log_bytes": 301,
+  "log_sha256": "8c0600bc48ba55ae300cc16296a5e940c9c1b448942d3b0ca506d7b46f10a12a",
+  "runner_sha256": "6ceb53f3cb57209e1fc3e5cd369e456edee54cb1a6ccec37369e675034814b9e",
+  "environment_sha256": "369da11793f19fe72333f316da68df9fe4d1b61abc4a671538f3f1b188cee62e"
+}
