@@ -723,6 +723,13 @@ impl<'a> DynamicGenerator<'a> {
         generator.emit("}".to_owned());
         generator.emit(String::new());
         generator.finalize_frame_storage();
+        self.declarations.extend(
+            generator
+                .declarations
+                .iter()
+                .filter(|declaration| declaration.starts_with("declare i32 @xiao_runtime_cmath_"))
+                .cloned(),
+        );
         self.next_global = generator.next_global;
         self.globals.extend(generator.globals);
         self.function_texts.push(generator.lines.join("\n"));
