@@ -73,10 +73,10 @@
       "log_sha256": "e122f4ab7ad344532a12c3f55e46ef1ed2d29dd36d3051077286fd67146a8898",
       "docs_commit": "7d66157cce1c2d8cd2a1fd46ae19cebe456b9857"
     },
-    "fixed/native-matrix": {
-      "pid": 61152,
+    "fixed/runtime-build": {
+      "pid": 6800,
       "exit_code": 0,
-      "log_sha256": "1e9f41f8f56107556a7aeedfa89c274fb8bbb831c38a560d1d6289c6f50e9e87",
+      "log_sha256": "86a7e46f49c875c60a2946d45009fe2fad61263b8e9a646a38f7de8e3c19a644",
       "docs_commit": "9e7378eeeb501e1aa14d19c867563a233d6eb68b"
     },
     "fixed/regressions": {
@@ -85,17 +85,11 @@
       "log_sha256": "8370cb614534bfd8718c91b05381c303f7529fcce644f1b0d7805a72f8c0ca09",
       "docs_commit": "9e7378eeeb501e1aa14d19c867563a233d6eb68b"
     },
-    "fixed/runtime-build": {
-      "pid": 6800,
+    "fixed/native-matrix": {
+      "pid": 61152,
       "exit_code": 0,
-      "log_sha256": "86a7e46f49c875c60a2946d45009fe2fad61263b8e9a646a38f7de8e3c19a644",
+      "log_sha256": "1e9f41f8f56107556a7aeedfa89c274fb8bbb831c38a560d1d6289c6f50e9e87",
       "docs_commit": "9e7378eeeb501e1aa14d19c867563a233d6eb68b"
-    },
-    "fixed-final/native-matrix": {
-      "pid": 11308,
-      "exit_code": 101,
-      "log_sha256": "4efa6230f574ce8420ffc0b8415c2b4c931c0631f875f0627958f91feb56644e",
-      "docs_commit": "2c0e5fea84c2c641d9b8ce654b33ddf216a34702"
     },
     "fixed-final/runtime-build": {
       "pid": 72168,
@@ -103,58 +97,22 @@
       "log_sha256": "b4695920a4a5a79779ec82da90a608527e9a26353f76cf60fe4a840c4a366fd5",
       "docs_commit": "2c0e5fea84c2c641d9b8ce654b33ddf216a34702"
     },
-    "fixed-final2/core-tests": {
-      "pid": 15716,
-      "exit_code": 0,
-      "log_sha256": "8a117e070e22b9211a6536035fd852a31c2b95713c80930ba9be1917ed43d0d8",
-      "docs_commit": "b157bdf851258ad1b7c9e63f44b61e30bec27403"
+    "fixed-final/native-matrix": {
+      "pid": 11308,
+      "exit_code": 101,
+      "log_sha256": "4efa6230f574ce8420ffc0b8415c2b4c931c0631f875f0627958f91feb56644e",
+      "docs_commit": "2c0e5fea84c2c641d9b8ce654b33ddf216a34702"
     },
-    "fixed-final2/audit-final-b3-wrapper": {
-      "pid": 57768,
+    "fixed-final2/audit-final-b2": {
+      "pid": 69472,
       "exit_code": 0,
-      "log_sha256": "547d9e8ab8b0915ac06ac6c0a126b1f79a7ccc5a42cf916d0c754e4a828cc5cd",
+      "log_sha256": "c208d2433857c833e0ab19552fee06fcd4d5f2b9bfbf3cc300eb9ca3bbfa057a",
       "docs_commit": "da074a47410e069132ac8f5478794b1701b05678"
     },
-    "fixed-final2/runtime-identity": {
-      "pid": 36496,
+    "fixed-final2/b1-vm": {
+      "pid": 58812,
       "exit_code": 0,
-      "log_sha256": "cd282818dafe95da15edabeebb6adb5da8863c137d4598325dcb28aed5087adc",
-      "docs_commit": "cf119b030650ca0f835d37a780282f58d6412814"
-    },
-    "fixed-final2/collector-final": {
-      "pid": 50096,
-      "exit_code": 0,
-      "log_sha256": "c544a654244cd6a544f7d44c583c7de9fbf5638bcc11b54000a6a383e193ce8e",
-      "docs_commit": "da074a47410e069132ac8f5478794b1701b05678"
-    },
-    "fixed-final2/regressions": {
-      "pid": 63728,
-      "exit_code": 0,
-      "log_sha256": "5986828e7a16170f695bb69ff81b3b81c07460576b5b0cca390791cb078347a3",
-      "docs_commit": "b157bdf851258ad1b7c9e63f44b61e30bec27403"
-    },
-    "fixed-final2/fmt": {
-      "pid": 67872,
-      "exit_code": 0,
-      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "docs_commit": "e4b529e38c154ab26c5cd5f8f0a968052b8f64a3"
-    },
-    "fixed-final2/runtime-build": {
-      "pid": 70568,
-      "exit_code": 0,
-      "log_sha256": "a96bb6300812726f274a76d5e81cfa0380da78a208f6a49596906dc72d136599",
-      "docs_commit": "b157bdf851258ad1b7c9e63f44b61e30bec27403"
-    },
-    "fixed-final2/final-docs-runtime": {
-      "pid": 48408,
-      "exit_code": 0,
-      "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
-      "docs_commit": "d0197d6cf7be82d437f22f0d6b231f0980d0f97e"
-    },
-    "fixed-final2/clippy": {
-      "pid": 59324,
-      "exit_code": 0,
-      "log_sha256": "ec61cc2b74c29874d76b3cbe60b14e6339a7886e6dbb70d432182d58ee37d93f",
+      "log_sha256": "9bc2ed03c43e8b8bcf22f56e3842109a564d55cb7e88a12ed6381392d64c4bc7",
       "docs_commit": "b157bdf851258ad1b7c9e63f44b61e30bec27403"
     },
     "fixed-final2/audit-final-b1": {
@@ -163,28 +121,34 @@
       "log_sha256": "444688deca25c129ebc8c01884229068766105e2d746c6eb16d3318a10ff96a6",
       "docs_commit": "da074a47410e069132ac8f5478794b1701b05678"
     },
-    "fixed-final2/audit-final-b3-cabi": {
-      "pid": 63656,
+    "fixed-final2/runtime-build": {
+      "pid": 70568,
       "exit_code": 0,
-      "log_sha256": "42419cd9935a8f78f2795dbd0450c62bb3fd8d3b29a1b2f88a43a97e3e173ec3",
+      "log_sha256": "a96bb6300812726f274a76d5e81cfa0380da78a208f6a49596906dc72d136599",
+      "docs_commit": "b157bdf851258ad1b7c9e63f44b61e30bec27403"
+    },
+    "fixed-final2/native-matrix": {
+      "pid": 67168,
+      "exit_code": 0,
+      "log_sha256": "c909cc2376577748144e612b86e0cfa30ab3b273cb78208216cb29ceec53f576",
+      "docs_commit": "b157bdf851258ad1b7c9e63f44b61e30bec27403"
+    },
+    "fixed-final2/fmt": {
+      "pid": 67872,
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "docs_commit": "e4b529e38c154ab26c5cd5f8f0a968052b8f64a3"
+    },
+    "fixed-final2/audit-final-b3-wrapper": {
+      "pid": 57768,
+      "exit_code": 0,
+      "log_sha256": "547d9e8ab8b0915ac06ac6c0a126b1f79a7ccc5a42cf916d0c754e4a828cc5cd",
       "docs_commit": "da074a47410e069132ac8f5478794b1701b05678"
     },
-    "fixed-final2/audit-final-b4-0-1": {
-      "pid": 73532,
+    "fixed-final2/collector-final": {
+      "pid": 50096,
       "exit_code": 0,
-      "log_sha256": "3a2b125314bdb0908b9ec2bd3c68e6b300f7658126abfbeda60f1b3f066ff657",
-      "docs_commit": "da074a47410e069132ac8f5478794b1701b05678"
-    },
-    "fixed-final2/audit-final-b3": {
-      "pid": 16016,
-      "exit_code": 0,
-      "log_sha256": "8c0600bc48ba55ae300cc16296a5e940c9c1b448942d3b0ca506d7b46f10a12a",
-      "docs_commit": "da074a47410e069132ac8f5478794b1701b05678"
-    },
-    "fixed-final2/audit-final-b2": {
-      "pid": 69472,
-      "exit_code": 0,
-      "log_sha256": "c208d2433857c833e0ab19552fee06fcd4d5f2b9bfbf3cc300eb9ca3bbfa057a",
+      "log_sha256": "c544a654244cd6a544f7d44c583c7de9fbf5638bcc11b54000a6a383e193ce8e",
       "docs_commit": "da074a47410e069132ac8f5478794b1701b05678"
     },
     "fixed-final2/audit-final-b4-2b": {
@@ -193,10 +157,16 @@
       "log_sha256": "bf36fa5161a917e8c0a8708702f34452775eaf3f98365acccf4ddd117958725c",
       "docs_commit": "da074a47410e069132ac8f5478794b1701b05678"
     },
-    "fixed-final2/native-matrix": {
-      "pid": 67168,
+    "fixed-final2/audit-final-b4-0-1": {
+      "pid": 73532,
       "exit_code": 0,
-      "log_sha256": "c909cc2376577748144e612b86e0cfa30ab3b273cb78208216cb29ceec53f576",
+      "log_sha256": "3a2b125314bdb0908b9ec2bd3c68e6b300f7658126abfbeda60f1b3f066ff657",
+      "docs_commit": "da074a47410e069132ac8f5478794b1701b05678"
+    },
+    "fixed-final2/regressions": {
+      "pid": 63728,
+      "exit_code": 0,
+      "log_sha256": "5986828e7a16170f695bb69ff81b3b81c07460576b5b0cca390791cb078347a3",
       "docs_commit": "b157bdf851258ad1b7c9e63f44b61e30bec27403"
     },
     "fixed-final2/b1-native": {
@@ -205,14 +175,109 @@
       "log_sha256": "69aca456d113cc7a4b02081b1e734f069a5d600b2fc6373dc0f8e8252a02fe28",
       "docs_commit": "b157bdf851258ad1b7c9e63f44b61e30bec27403"
     },
-    "fixed-final2/b1-vm": {
-      "pid": 58812,
+    "fixed-final2/clippy": {
+      "pid": 59324,
       "exit_code": 0,
-      "log_sha256": "9bc2ed03c43e8b8bcf22f56e3842109a564d55cb7e88a12ed6381392d64c4bc7",
+      "log_sha256": "ec61cc2b74c29874d76b3cbe60b14e6339a7886e6dbb70d432182d58ee37d93f",
       "docs_commit": "b157bdf851258ad1b7c9e63f44b61e30bec27403"
+    },
+    "fixed-final2/audit-final-b3-cabi": {
+      "pid": 63656,
+      "exit_code": 0,
+      "log_sha256": "42419cd9935a8f78f2795dbd0450c62bb3fd8d3b29a1b2f88a43a97e3e173ec3",
+      "docs_commit": "da074a47410e069132ac8f5478794b1701b05678"
+    },
+    "fixed-final2/core-tests": {
+      "pid": 15716,
+      "exit_code": 0,
+      "log_sha256": "8a117e070e22b9211a6536035fd852a31c2b95713c80930ba9be1917ed43d0d8",
+      "docs_commit": "b157bdf851258ad1b7c9e63f44b61e30bec27403"
+    },
+    "fixed-final2/final-docs-sealed": {
+      "pid": 71264,
+      "exit_code": 0,
+      "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
+      "docs_commit": "05b2890e8ff63bc12c4d5fa88fab4d1c64284370"
+    },
+    "fixed-final2/runtime-identity": {
+      "pid": 36496,
+      "exit_code": 0,
+      "log_sha256": "cd282818dafe95da15edabeebb6adb5da8863c137d4598325dcb28aed5087adc",
+      "docs_commit": "cf119b030650ca0f835d37a780282f58d6412814"
+    },
+    "fixed-final2/audit-final-b3": {
+      "pid": 16016,
+      "exit_code": 0,
+      "log_sha256": "8c0600bc48ba55ae300cc16296a5e940c9c1b448942d3b0ca506d7b46f10a12a",
+      "docs_commit": "da074a47410e069132ac8f5478794b1701b05678"
     }
   },
   "excluded_preliminary_runs": {
+    "audit-b1": {
+      "pid": 26948,
+      "log_sha256": "444688deca25c129ebc8c01884229068766105e2d746c6eb16d3318a10ff96a6",
+      "reason": "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
+    },
+    "audit-b4-2b": {
+      "pid": 72740,
+      "log_sha256": "bf36fa5161a917e8c0a8708702f34452775eaf3f98365acccf4ddd117958725c",
+      "reason": "superseded by the serial final B4-2B historical audit"
+    },
+    "audit-b3-cabi": {
+      "pid": 58996,
+      "log_sha256": "42419cd9935a8f78f2795dbd0450c62bb3fd8d3b29a1b2f88a43a97e3e173ec3",
+      "reason": "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
+    },
+    "final-docs-signed": {
+      "pid": 71116,
+      "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
+      "reason": "superseded after exact B1 target counts were corrected"
+    },
+    "final-docs-final": {
+      "pid": 59976,
+      "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
+      "reason": "superseded after final audit corrected the B1 VM command identity"
+    },
+    "final-docs": {
+      "pid": 73320,
+      "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
+      "reason": "superseded after final evidence auditor and evidence README were committed"
+    },
+    "audit-b2": {
+      "pid": 70316,
+      "log_sha256": "c208d2433857c833e0ab19552fee06fcd4d5f2b9bfbf3cc300eb9ca3bbfa057a",
+      "reason": "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
+    },
+    "final-docs-verified": {
+      "pid": 47892,
+      "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
+      "reason": "superseded after preliminary-run classification was corrected"
+    },
+    "final-docs-stable": {
+      "pid": 56252,
+      "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
+      "reason": "superseded after removing an unrecorded preliminary label from the audit"
+    },
+    "collector": {
+      "pid": 62380,
+      "log_sha256": "c544a654244cd6a544f7d44c583c7de9fbf5638bcc11b54000a6a383e193ce8e",
+      "reason": "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
+    },
+    "final-docs-runtime": {
+      "pid": 48408,
+      "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
+      "reason": "superseded after optional live Runtime audit behavior was clarified"
+    },
+    "audit-b3": {
+      "pid": 48940,
+      "log_sha256": "8c0600bc48ba55ae300cc16296a5e940c9c1b448942d3b0ca506d7b46f10a12a",
+      "reason": "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
+    },
+    "audit-b3-wrapper": {
+      "pid": 60684,
+      "log_sha256": "547d9e8ab8b0915ac06ac6c0a126b1f79a7ccc5a42cf916d0c754e4a828cc5cd",
+      "reason": "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
+    },
     "final-docs-finalized": {
       "pid": 41524,
       "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
@@ -223,19 +288,9 @@
       "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
       "reason": "superseded after preliminary B4-2B audit classification was refined"
     },
-    "audit-b3-wrapper": {
-      "pid": 60684,
-      "log_sha256": "547d9e8ab8b0915ac06ac6c0a126b1f79a7ccc5a42cf916d0c754e4a828cc5cd",
-      "reason": "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
-    },
     "audit-b4-0-1": {
       "pid": 8788,
       "log_sha256": "3a2b125314bdb0908b9ec2bd3c68e6b300f7658126abfbeda60f1b3f066ff657",
-      "reason": "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
-    },
-    "audit-b3": {
-      "pid": 48940,
-      "log_sha256": "8c0600bc48ba55ae300cc16296a5e940c9c1b448942d3b0ca506d7b46f10a12a",
       "reason": "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
     },
     "final-docs-productfix": {
@@ -243,55 +298,15 @@
       "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
       "reason": "superseded after the final self-negative and inventory workflow was corrected"
     },
+    "final-docs-optional-runtime": {
+      "pid": 23172,
+      "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
+      "reason": "superseded after removing an unverified extra Runtime probe"
+    },
     "final-docs-release": {
       "pid": 46824,
       "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
       "reason": "superseded after Runtime identity became an explicit recorded receipt"
-    },
-    "audit-b4-2b": {
-      "pid": 72740,
-      "log_sha256": "bf36fa5161a917e8c0a8708702f34452775eaf3f98365acccf4ddd117958725c",
-      "reason": "superseded by the serial final B4-2B historical audit"
-    },
-    "final-docs-verified": {
-      "pid": 47892,
-      "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
-      "reason": "superseded after preliminary-run classification was corrected"
-    },
-    "collector": {
-      "pid": 62380,
-      "log_sha256": "c544a654244cd6a544f7d44c583c7de9fbf5638bcc11b54000a6a383e193ce8e",
-      "reason": "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
-    },
-    "final-docs": {
-      "pid": 73320,
-      "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
-      "reason": "superseded after final evidence auditor and evidence README were committed"
-    },
-    "audit-b3-cabi": {
-      "pid": 58996,
-      "log_sha256": "42419cd9935a8f78f2795dbd0450c62bb3fd8d3b29a1b2f88a43a97e3e173ec3",
-      "reason": "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
-    },
-    "final-docs-final": {
-      "pid": 59976,
-      "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
-      "reason": "superseded after final audit corrected the B1 VM command identity"
-    },
-    "audit-b2": {
-      "pid": 70316,
-      "log_sha256": "c208d2433857c833e0ab19552fee06fcd4d5f2b9bfbf3cc300eb9ca3bbfa057a",
-      "reason": "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
-    },
-    "final-docs-signed": {
-      "pid": 71116,
-      "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
-      "reason": "superseded after exact B1 target counts were corrected"
-    },
-    "audit-b1": {
-      "pid": 26948,
-      "log_sha256": "444688deca25c129ebc8c01884229068766105e2d746c6eb16d3318a10ff96a6",
-      "reason": "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
     }
   }
 }
