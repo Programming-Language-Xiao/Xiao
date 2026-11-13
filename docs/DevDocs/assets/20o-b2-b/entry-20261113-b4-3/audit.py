@@ -89,7 +89,7 @@ NEGATIVE_REASONS = {
     "attributes": "B4-3 evidence attributes missing or changed",
     "orphan": "B4-3 unreferenced content log object",
     "product": "B4-3 fixed product Git identity mismatch",
-    "docs": "B4-3 DevDocs binding mismatch: fixed-final2/native-matrix",
+    "docs": "B4-3 DevDocs binding mismatch",
     "environment": "B4-3 fixed task path escaped",
     "state": "B4-3 stage state or run result mismatch",
 }
@@ -109,6 +109,11 @@ def historical_audit_passed(label, result):
     if label in {"audit-final-b1", "audit-b1"}:
         return result.get("passed") == result.get("total") == 18
     return result.get("passed") is True
+
+
+def negative_reason(name):
+    suffix = ": fixed-final2/native-matrix" if name == "docs" else ""
+    return NEGATIVE_REASONS[name] + suffix
 
 
 def git_bytes(repository, *args):
@@ -462,7 +467,7 @@ def verify(root, repository, live_runtime=False, preparing=False, check_inventor
     require(preparing or negative_path.is_file(), "B4-3 self-negative report missing")
     if negative_path.exists():
         expected = [{"case": "baseline", "exit_code": 0, "reason": None, "read_only": True}]
-        expected.extend({"case": key, "exit_code": 1, "reason": reason, "read_only": True}
+        expected.extend({"case": key, "exit_code": 1, "reason": negative_reason(key), "read_only": True}
                         for key, reason in NEGATIVE_REASONS.items())
         require(load(negative_path) == {"passed": True, "cases": expected}, "B4-3 self-negative report mismatch")
     require(before == all_entries(root), "B4-3 audit wrote to evidence tree")
@@ -526,8 +531,8 @@ def negative_cases(root, repository):
             else:
                 raise ValueError("B4-3 negative case unexpectedly passed: " + name)
             require(before == all_entries(copied), "B4-3 negative audit wrote to copied evidence")
-            require(actual_reason == reason, "B4-3 negative case rejected for wrong reason: " + name + ": " + actual_reason)
-            cases.append({"case": name, "exit_code": 1, "reason": reason, "read_only": True})
+            require(actual_reason == negative_reason(name), "B4-3 negative case rejected for wrong reason: " + name + ": " + actual_reason)
+            cases.append({"case": name, "exit_code": 1, "reason": negative_reason(name), "read_only": True})
     return {"passed": True, "cases": cases}
 
 
