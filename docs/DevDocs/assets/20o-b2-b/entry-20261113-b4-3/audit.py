@@ -64,7 +64,8 @@ PRELIMINARY_AUDITS = {
 }
 PRELIMINARY_LABELS = {*PRELIMINARY_AUDITS, "collector"}
 PRELIMINARY_LABELS.update({"final-docs", "final-docs-final", "final-docs-verified", "final-docs-closeout",
-                           "final-docs-signed", "final-docs-finalized", "final-docs-productfix", "final-docs-release"})
+                           "final-docs-signed", "final-docs-finalized", "final-docs-productfix", "final-docs-release",
+                           "final-docs-runtime"})
 PRELIMINARY_REASONS = {label: "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
                        for label in [*PRELIMINARY_AUDITS, "collector"]}
 PRELIMINARY_REASONS["audit-b4-2b"] = "superseded by the serial final B4-2B historical audit"
@@ -76,6 +77,7 @@ PRELIMINARY_REASONS["final-docs-signed"] = "superseded after exact B1 target cou
 PRELIMINARY_REASONS["final-docs-finalized"] = "superseded after baseline product-diff audit was corrected"
 PRELIMINARY_REASONS["final-docs-productfix"] = "superseded after the final self-negative and inventory workflow was corrected"
 PRELIMINARY_REASONS["final-docs-release"] = "superseded after Runtime identity became an explicit recorded receipt"
+PRELIMINARY_REASONS["final-docs-runtime"] = "superseded after optional live Runtime audit behavior was clarified"
 PRELIMINARY_REASONS["final-docs-verified"] = "superseded after preliminary-run classification was corrected"
 RUN_LABELS = {
     "baseline": {"entry"},
@@ -83,7 +85,7 @@ RUN_LABELS = {
     "fixed-final": {"runtime-build", "native-matrix"},
     FINAL_VARIANT: {
         "runtime-build", "runtime-identity", "native-matrix", "regressions", "core-tests", "b1-vm", "b1-native",
-        "clippy", "fmt", "collector-final", "final-docs-runtime", *HISTORY_AUDITS,
+        "clippy", "fmt", "collector-final", "final-docs-optional-runtime", *HISTORY_AUDITS,
     },
 }
 NEGATIVE_REASONS = {
@@ -201,7 +203,7 @@ def expected_argv(label):
         return ["python", "-B", "-X", "utf8", SCRIPT, "content-store-self-test"]
     if label in {"final-docs", "final-docs-final", "final-docs-verified", "final-docs-closeout",
                  "final-docs-signed", "final-docs-finalized", "final-docs-productfix", "final-docs-release",
-                 "final-docs-runtime"}:
+                 "final-docs-runtime", "final-docs-optional-runtime"}:
         return ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"]
     if label in HISTORY_AUDITS or label in PRELIMINARY_AUDITS:
         directory = (HISTORY_AUDITS | PRELIMINARY_AUDITS)[label]
@@ -288,7 +290,7 @@ def expected_closeout(root, repository, records, logs, preliminary_records, live
         require(historical_audit_passed(label, result), "B4-3 fixed historical audit failed: " + label)
     require(records[FINAL_VARIANT, "clippy"]["exit_code"] == 0 and records[FINAL_VARIANT, "fmt"]["exit_code"] == 0,
             "B4-3 engineering gates failed")
-    docs = json.loads(logs[FINAL_VARIANT, "final-docs-runtime"])
+    docs = json.loads(logs[FINAL_VARIANT, "final-docs-optional-runtime"])
     require(docs["passed"] is True and not any(row["severity"] == "error" for row in docs["diagnostics"]),
             "B4-3 final repository document gate failed")
 
@@ -382,7 +384,8 @@ def read_preliminary(root, repository, source, environment, label):
     docs = fixed_devdocs_tree(str(repository), commit)
     stable_labels = {"audit-b4-2b", "final-docs", "final-docs-final", "final-docs-verified",
                      "final-docs-closeout", "final-docs-signed", "final-docs-finalized",
-                     "final-docs-productfix", "final-docs-release", "final-docs-runtime"}
+                     "final-docs-productfix", "final-docs-release", "final-docs-runtime",
+                     "final-docs-optional-runtime"}
     stable = record["docs_tree_unchanged"] is True if label in stable_labels else record["docs_tree_unchanged"] is False
     require(stable and record["docs_tree_canonical_before"] == docs["canonical_sha256"]
             and record["docs_tree_commit_raw_sha256"] == docs["raw_sha256"]
