@@ -63,18 +63,19 @@ PRELIMINARY_AUDITS = {
     "audit-b4-2b": "entry-20261113-b4-2b",
 }
 PRELIMINARY_LABELS = {*PRELIMINARY_AUDITS, "collector"}
-PRELIMINARY_LABELS.update({"final-docs", "final-docs-final"})
+PRELIMINARY_LABELS.update({"final-docs", "final-docs-final", "final-docs-verified"})
 PRELIMINARY_REASONS = {label: "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
                        for label in [*PRELIMINARY_AUDITS, "collector"]}
 PRELIMINARY_REASONS["final-docs"] = "superseded after final evidence auditor and evidence README were committed"
 PRELIMINARY_REASONS["final-docs-final"] = "superseded after final audit corrected the B1 VM command identity"
+PRELIMINARY_REASONS["final-docs-verified"] = "superseded after preliminary-run classification was corrected"
 RUN_LABELS = {
     "baseline": {"entry"},
     "fixed": {"runtime-build", "native-matrix", "regressions"},
     "fixed-final": {"runtime-build", "native-matrix"},
     FINAL_VARIANT: {
         "runtime-build", "native-matrix", "regressions", "core-tests", "b1-vm", "b1-native",
-        "clippy", "fmt", "collector-final", "final-docs-verified", *HISTORY_AUDITS,
+        "clippy", "fmt", "collector-final", "final-docs-closeout", *HISTORY_AUDITS,
     },
 }
 NEGATIVE_REASONS = {
@@ -173,7 +174,7 @@ def expected_argv(label):
         return ["cargo", "+1.96.0", "fmt", "--manifest-path", "core/rust/Cargo.toml", "--all", "--", "--check"]
     if label in {"collector", "collector-final"}:
         return ["python", "-B", "-X", "utf8", SCRIPT, "content-store-self-test"]
-    if label in {"final-docs", "final-docs-final", "final-docs-verified"}:
+    if label in {"final-docs", "final-docs-final", "final-docs-verified", "final-docs-closeout"}:
         return ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"]
     if label in HISTORY_AUDITS or label in PRELIMINARY_AUDITS:
         directory = (HISTORY_AUDITS | PRELIMINARY_AUDITS)[label]
@@ -255,7 +256,7 @@ def expected_closeout(root, repository, records, logs, preliminary_records, live
         require(historical_audit_passed(label, result), "B4-3 fixed historical audit failed: " + label)
     require(records[FINAL_VARIANT, "clippy"]["exit_code"] == 0 and records[FINAL_VARIANT, "fmt"]["exit_code"] == 0,
             "B4-3 engineering gates failed")
-    docs = json.loads(logs[FINAL_VARIANT, "final-docs-verified"])
+    docs = json.loads(logs[FINAL_VARIANT, "final-docs-closeout"])
     require(docs["passed"] is True and not any(row["severity"] == "error" for row in docs["diagnostics"]),
             "B4-3 final repository document gate failed")
 
@@ -347,7 +348,7 @@ def read_preliminary(root, repository, source, environment, label):
             and record["runner_sha256"] == sha(git(repository, "show", commit + ":" + SCRIPT)),
             "B4-3 preliminary runner identity mismatch: " + label)
     docs = fixed_devdocs_tree(str(repository), commit)
-    stable_labels = {"final-docs", "final-docs-final"}
+    stable_labels = {"final-docs", "final-docs-final", "final-docs-verified", "final-docs-closeout"}
     stable = record["docs_tree_unchanged"] is True if label in stable_labels else record["docs_tree_unchanged"] is False
     require(stable and record["docs_tree_canonical_before"] == docs["canonical_sha256"]
             and record["docs_tree_commit_raw_sha256"] == docs["raw_sha256"]
