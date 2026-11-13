@@ -12,9 +12,11 @@
 
 `before.json` 保存前三项修复前的真实临时副本执行：基线及3项篡改均退出0；`after.json` 保存修复后基线退出0、3项篡改按准确中文原因退出1。每次比较完整目录项及文件字节，原证据目录不被反例改写。`reproduce.py --expect-rejections` 强制核对错误文本，不能以无关异常算成功。原始输出按SHA-256存一个日志对象，回执记录其引用；文件与摘要由本目录audit再次读取。
 
-当前源码执行点绑定 `checked/source.json` 的固定提交，独立任务根为 `D:\project\Xiao\.b4-2b-review\20261113\checked`，使用此前不存在的target、Xiao Home和TEMP/TMP，清理继承的XIAO/RUST_BIGDECIMAL环境，显式绑定仓库stdlib，两个性能开关为0。重新运行驱动完整50项：VM专项7、wrapper8、前端3、22c29和FIX1边界3；同时重新执行Clippy与fmt。新测试日志必须包含两种解码catch标记和30条planned拒绝。Runtime/VM私有数学实现未改，原归档的272/35、字节码65、数值15通过及3项原生忽略均作为各自固定快照证据核对，不声称本次又跑了一遍。
+最终源码执行点绑定 `final/source.json` 的固定提交，独立任务根为 `D:\project\Xiao\.b4-2b-review\20261113\final`，使用此前不存在的target、Xiao Home和TEMP/TMP，清理继承的XIAO/RUST_BIGDECIMAL环境，显式绑定仓库stdlib，两个性能开关为0。重新运行驱动完整50项：VM专项7、wrapper8、前端3、22c29和FIX1边界3；同时重新执行Clippy与fmt。新测试日志必须包含两种解码catch标记和30条planned拒绝。Runtime/VM私有数学实现未改，原归档的272/35、字节码65、数值15通过及3项原生忽略均作为各自固定快照证据核对，不声称本次又跑了一遍。
 
-`checked/docs` 是本次静态文档和工具统一提交后的单次最终完整门禁。回执记录PID、时间、命令、环境、产品与DevDocs前后raw/规范摘要及Git身份；本README、原目录的新审计器和清单、反例脚本均纳入静态DevDocs，排除本目录运行日志、回执、review/evidence等运行生成物。源码与HEAD运行期间不变，UTF-8/LF规范摘要对照固定Git树，原始字节前后一致。历史docs回执继续绑定其当时文档。
+初轮 `checked` 回归以101退出：归档测试仍返回预期007，但新提示漏掉其严格要求的 `cmath_sqrt` 标识。随后只补回消息标识，保留所有既有断言和错误码；初轮 `checked/source.json`、失败回执及日志保持原样，最终执行另用全新final任务根。自审工具明确核对初轮失败身份，不把它写成50项通过。
+
+`final/docs` 是本次静态文档和工具统一提交后的单次最终完整门禁。回执记录PID、时间、命令、环境、产品与DevDocs前后raw/规范摘要及Git身份；本README、原目录的新审计器和清单、反例脚本均纳入静态DevDocs，排除本目录运行日志、回执、review/evidence等运行生成物。源码与HEAD运行期间不变，UTF-8/LF规范摘要对照固定Git树，原始字节前后一致。历史docs回执继续绑定其当时文档。
 
 从仓库根只读复核当前自审与原归档：
 

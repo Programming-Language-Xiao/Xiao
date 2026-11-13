@@ -17,7 +17,7 @@ record = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(record)
 REPOSITORY = record.REPOSITORY
 ENTRY_PATH = "docs/DevDocs/assets/20o-b2-b/review-20261113-b4-2b"
-TASK = PureWindowsPath(r"D:\project\Xiao\.b4-2b-review\20261113\checked")
+TASK = PureWindowsPath(r"D:\project\Xiao\.b4-2b-review\20261113\final")
 ALLOWED = {
     "core/rust/crates/xiao-driver/src/module_loader.rs",
     "core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs",
@@ -35,8 +35,8 @@ RUNS = {
 
 def verify(root, repository):
     """以固定来源验证本次补充，旧门面与数值内核仍由原始归档证明。"""
-    source = record.load(root / "checked/source.json")
-    environment = record.load(root / "checked/environment.json")
+    source = record.load(root / "final/source.json")
+    environment = record.load(root / "final/environment.json")
     revision = source["revision"]
     record.require(revision == record.git(repository, "rev-parse", revision).decode().strip(), "自审来源不是完整Git身份")
     record.require({p: row["canonical_sha256"] for p, row in source["files"].items()} == record.fixed_files(repository, revision)
@@ -57,6 +57,17 @@ def verify(root, repository):
         relative = path.relative_to(root).as_posix()
         record.require(relative == f"logs/sha256/{digest[:2]}/{digest}.log" and digest not in objects, "自审日志对象路径或摘要不符")
         objects[digest] = relative
+    failed_row = record.load(root / "checked/regressions.json")
+    failed_source = record.load(root / "checked/source.json")
+    record.require({p: row["canonical_sha256"] for p, row in failed_source["files"].items()} == record.fixed_files(repository, failed_source["revision"]), "初轮提示失败来源不符")
+    record.require(failed_row["exit_code"] == 101 and failed_row["source_before"] == failed_row["source_after"] == failed_source["tree_sha256"]
+                   and failed_row["source_unchanged"] is True, "初轮提示失败回执不符")
+    failed_digest = failed_row["log_sha256"]
+    record.require(objects.get(failed_digest) == failed_row["log_ref"], "初轮提示失败日志引用不符")
+    failed_log = (root / failed_row["log_ref"]).read_text(encoding="utf-8")
+    record.require("test archive_rejects_planned_cmath_with_no_output_or_temporary_residue ... FAILED" in failed_log
+                   and "X11-PROTOCOL-007" in failed_log and "2 passed; 1 failed; 0 ignored" in failed_log, "初轮提示失败身份不符")
+    referenced.add(failed_digest)
     expected_reasons = {"redistributed_counts": "逐目标测试计数不符：revised/regressions",
                         "historical_state": "历史审计精确结果不符：b34",
                         "missing_negative_report": "缺少已验收的自反例报告"}
@@ -79,12 +90,12 @@ def verify(root, repository):
             record.require(result["auditor_sha256"] == record.sha(frozen_auditor), "修复后反例不是固定来源审计器")
     docs_cache = {}
     for label, argv in RUNS.items():
-        row = record.load(root / "checked" / (label + ".json"))
+        row = record.load(root / "final" / (label + ".json"))
         record.require(row["argv"] == argv and row["label"] == label and row["exit_code"] == 0,
                        "自审命令或退出码不符：" + label)
         record.require(row["pid"] > 0 and row["started_utc"] < row["finished_utc"] and row["cwd"] == source["source_root"], "自审进程或cwd不符")
         record.require(row["source_unchanged"] is True and row["source_before"] == row["source_after"] == source["tree_sha256"], "自审期间产品字节变化")
-        record.require(row["environment_sha256"] == record.sha((root / "checked/environment.json").read_bytes()), "自审环境摘要变化")
+        record.require(row["environment_sha256"] == record.sha((root / "final/environment.json").read_bytes()), "自审环境摘要变化")
         commit = row["docs_commit"]
         record.require(commit == row["docs_commit_after"] and row["runner_sha256"] == record.sha(record.git(repository, "show", commit + ":" + ENTRY_PATH + "/record.py")), "自审执行器或HEAD变化")
         if commit not in docs_cache:

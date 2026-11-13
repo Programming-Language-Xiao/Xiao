@@ -110,7 +110,8 @@ pub(crate) fn require_executable_standard_module(identity: &str) -> Result<(), S
     if xiao_standard_library::canonical_module_identity(identity).as_deref() == Some("stdlib.cmath")
     {
         return Err(
-            "官方标准库 cmath 仍为 planned：尚未绑定 VM 模块入口，直接原语已接通".to_owned(),
+            "官方标准库 cmath 仍为 planned：cmath_sqrt 等直接原语已接通，尚未绑定 VM 模块入口"
+                .to_owned(),
         );
     }
     Ok(())
