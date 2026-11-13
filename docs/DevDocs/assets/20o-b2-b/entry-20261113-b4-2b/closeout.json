@@ -1,0 +1,168 @@
+{
+  "passed": true,
+  "stage": "B4-2",
+  "b4_2b_closed": true,
+  "b4_2_closed": true,
+  "b4_3_started": false,
+  "b4_closed": false,
+  "language_available": false,
+  "cmath": "planned",
+  "product_commit": "246bea46105ead280aed91e5e085c8f253a8913d",
+  "snapshot_commit": "0b0e9109a5e15a517871ea10c260d54ef605859b",
+  "runtime_abi": "1.18",
+  "codegen_version": 20,
+  "platforms_executed": [
+    "Windows x86_64-msvc"
+  ],
+  "not_executed": [
+    "Linux",
+    "macOS",
+    "remote CI",
+    "performance",
+    "old 721 F10"
+  ],
+  "tests": {
+    "baseline": 43,
+    "driver": 50,
+    "runtime_vm": {
+      "passed": 307,
+      "failed": 0,
+      "ignored": 0
+    },
+    "bytecode": 65,
+    "numeric_regressions": {
+      "passed": 15,
+      "failed": 0,
+      "ignored": 3
+    },
+    "vm_identity_cases": 1440,
+    "heap_cases": 45
+  },
+  "runs": {
+    "baseline/entry": {
+      "pid": 66280,
+      "log_sha256": "8697c182f47f7c49a2fe8f7fa84c2f2cb43e08ec0da754a180454f0a469993dc",
+      "docs_commit": "4beb3fd2b11cc6ae707cbe9242e77b06e60a19a9"
+    },
+    "fixed/regressions": {
+      "pid": 69720,
+      "log_sha256": "fa66d75f5336d21d7dce388ad538a4b5d56fca5c007b34a55aec78a5cf0bde76",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "fixed/runtime_vm": {
+      "pid": 55392,
+      "log_sha256": "14682a0f7f28d4eb4d52fa9153aa103670cbeccb26475fdd4d05c06470c127ed",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "fixed/bytecode": {
+      "pid": 61740,
+      "log_sha256": "0167926fe6f5628558b71242bc4581499b16159ccb02e34a302a676aa945fd82",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "fixed/numeric_regressions": {
+      "pid": 71968,
+      "log_sha256": "19e8d121656f8f70da27912c6befd2959dd0e70a265053e4f2d7b2554c6d47a0",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "fixed/clippy": {
+      "pid": 37216,
+      "log_sha256": "82fc8a3b69acddb801e1664d139dc1cd16be99cb42d387db9952af016a3a6f50",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "fixed/fmt": {
+      "pid": 67380,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "fixed/rustc": {
+      "pid": 72300,
+      "log_sha256": "2efe229f7908c2c19f459ca734101a5b35cb482476b8bee1357f94a18c766078",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "fixed/installed_targets": {
+      "pid": 67224,
+      "log_sha256": "23c920e087a9b3cc50152a10be1114264965ba0d6637c528fa8dba57c4d463fb",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "fixed/collector": {
+      "pid": 69528,
+      "log_sha256": "c544a654244cd6a544f7d44c583c7de9fbf5638bcc11b54000a6a383e193ce8e",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "fixed/collector_repeat": {
+      "pid": 44620,
+      "log_sha256": "c544a654244cd6a544f7d44c583c7de9fbf5638bcc11b54000a6a383e193ce8e",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "fixed/docs": {
+      "pid": 61284,
+      "log_sha256": "a0c99f3a28e0ed02d6c7b7d2dfc3c3b157a8b13fec43ae14dabdfdcbed603257",
+      "docs_commit": "6507afdb67d8f4e6c7b30e61f8195189fdbec52a"
+    },
+    "fixed/b1": {
+      "pid": 61508,
+      "log_sha256": "444688deca25c129ebc8c01884229068766105e2d746c6eb16d3318a10ff96a6",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "fixed/b2": {
+      "pid": 68156,
+      "log_sha256": "c208d2433857c833e0ab19552fee06fcd4d5f2b9bfbf3cc300eb9ca3bbfa057a",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "fixed/b3": {
+      "pid": 57732,
+      "log_sha256": "42419cd9935a8f78f2795dbd0450c62bb3fd8d3b29a1b2f88a43a97e3e173ec3",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "fixed/b34": {
+      "pid": 7836,
+      "log_sha256": "547d9e8ab8b0915ac06ac6c0a126b1f79a7ccc5a42cf916d0c754e4a828cc5cd",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "fixed/b401": {
+      "pid": 68040,
+      "log_sha256": "3a2b125314bdb0908b9ec2bd3c68e6b300f7658126abfbeda60f1b3f066ff657",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "fixed/fix1": {
+      "pid": 50532,
+      "log_sha256": "24b35148ac4d96f08a5ab5f08b192c05f43bba17c08b59caa9d2b8900723a451",
+      "docs_commit": "8d550489cc2c5fe6b01abae36a441a1d55509e60"
+    },
+    "revised/regressions": {
+      "pid": 48188,
+      "log_sha256": "df504c1dc846453b0d3595f5c49f904bd50d1c5d0549022e6438598406d8b82e",
+      "docs_commit": "5ea20b78f3c2d7f6e8a03100d1e52e2cf7f1c2ae"
+    },
+    "revised/runtime_vm": {
+      "pid": 68192,
+      "log_sha256": "ac294f38d6a81a2ef97886bb306a92ebd232742b02e477a97189d47f8cf2fcc6",
+      "docs_commit": "5ea20b78f3c2d7f6e8a03100d1e52e2cf7f1c2ae"
+    },
+    "revised/bytecode": {
+      "pid": 67736,
+      "log_sha256": "69b6d901bc2de73be34dc263b5bcd87849115fa80b34762e3b34c7197595984e",
+      "docs_commit": "5ea20b78f3c2d7f6e8a03100d1e52e2cf7f1c2ae"
+    },
+    "revised/numeric_regressions": {
+      "pid": 46984,
+      "log_sha256": "3508c81fa2c4a13ed7695b47dd3e882b3f56deaf0fc95c092f8a38513a8ba791",
+      "docs_commit": "5ea20b78f3c2d7f6e8a03100d1e52e2cf7f1c2ae"
+    },
+    "revised/clippy": {
+      "pid": 71368,
+      "log_sha256": "5f20923f961d86ecaf70d6c76fd3c0eadbe262111e6fabd8741515b0c7aa0fa8",
+      "docs_commit": "5ea20b78f3c2d7f6e8a03100d1e52e2cf7f1c2ae"
+    },
+    "revised/fmt": {
+      "pid": 39892,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "docs_commit": "5ea20b78f3c2d7f6e8a03100d1e52e2cf7f1c2ae"
+    },
+    "revised/docs": {
+      "pid": 64028,
+      "log_sha256": "6e080e67e4a931adff0134b9736b88d4a62b5ba52a4f9ff6248d783cbb63f711",
+      "docs_commit": "a334eca7037f1b158019b3c51e78fc3e12f3dedd"
+    }
+  }
+}

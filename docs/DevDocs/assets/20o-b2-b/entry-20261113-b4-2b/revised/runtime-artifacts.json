@@ -1,0 +1,22 @@
+{
+  "target": "D:\\project\\Xiao\\.b4-2b\\20261113-runtime-vm\\revised\\target",
+  "runtime_library_override_consumed": false,
+  "cargo_generated_artifacts": {
+    "debug/deps/libxiao_runtime-3277553780f23756.rlib": {
+      "bytes": 18589462,
+      "sha256": "1d2635f96b77eb0424416493e68de38cec483213eae1c2bb0410b152c7edf5fd"
+    },
+    "debug/deps/libxiao_runtime-d56a2478740ee922.rlib": {
+      "bytes": 18611348,
+      "sha256": "5cdc873e1ca7929c1758b3813813d608cd09f9b9d59cd64ccc6c241fcfb623a7"
+    },
+    "debug/deps/xiao_runtime-3277553780f23756.lib": {
+      "bytes": 63193466,
+      "sha256": "3979b945c920fe371a8ceb6ae5bdad650f03344da3068bf8e309aaf4078097e6"
+    },
+    "debug/deps/xiao_runtime-d56a2478740ee922.lib": {
+      "bytes": 63204134,
+      "sha256": "f2b6189a66bef6667fc851747a9f636e6d076feec593ce6033af9f710c1b9ca7"
+    }
+  }
+}
