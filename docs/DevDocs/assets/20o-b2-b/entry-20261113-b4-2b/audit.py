@@ -48,6 +48,12 @@ RUNS = {
 }
 for label, directory in HISTORY.items():
     RUNS["fixed", label] = ["python", "-B", "-X", "utf8", f"docs/DevDocs/assets/20o-b2-b/{directory}/audit.py"]
+NEGATIVE_REASONS = {
+    "manifest": "证据字节清单不符", "attributes": "证据属性缺失或变化",
+    "orphan": "存在没有回执引用的日志对象", "docs": "DevDocs运行字节或提交绑定不符：docs",
+    "source": "固定产品源码身份不符", "state": "阶段结论与实际回执不符",
+    "environment": "执行路径逃出独立任务根", "negative_report": "自反例报告计数或只读结论不符",
+}
 
 
 def inventory(root):
@@ -187,27 +193,44 @@ def verify(root, repository, live_runtime=False):
 
 
 def audit(root, repository, live=False):
-    require((root / ".gitattributes").read_bytes() == b"* -text -whitespace\n*.log -diff\n", "证据属性缺失或变化")
+    require((root / ".gitattributes").is_file()
+            and (root / ".gitattributes").read_bytes() == b"* -text -whitespace\n*.log -diff\n", "证据属性缺失或变化")
     evidence = load(root / "evidence.json")
     require(evidence["files"] == inventory(root), "证据字节清单不符")
     result = verify(root, repository, live)
     require(load(root / "closeout.json") == result, "阶段结论与实际回执不符")
+    report = root / "self-negative-findings.json"
+    if report.exists():
+        expected = [{"case": "baseline", "exit_code": 0, "read_only": True, "reason": None}]
+        expected.extend({"case": name, "exit_code": 1, "read_only": True, "reason": reason}
+                        for name, reason in NEGATIVE_REASONS.items())
+        require(load(report) == {"passed": True, "cases": expected}, "自反例报告计数或只读结论不符")
     return {"passed": True, "files": len(evidence["files"]), "runs": len(RUNS), "log_objects": len({r["log_sha256"] for r in result["runs"].values()}),
-            "b4_2_closed": True, "b4_closed": False, "language_available": False, "live_runtime_checked": live}
+            "b4_2_closed": True, "b4_closed": False, "language_available": False,
+            "self_negative_checked": report.exists(), "live_runtime_checked": live}
+
+
+def all_entries(root):
+    """反例前后同时比较文件字节和目录项，包含空目录及清单自身。"""
+    return {p.relative_to(root).as_posix() + ("/" if p.is_dir() else ""):
+            None if p.is_dir() else sha(p.read_bytes()) for p in root.rglob("*")}
 
 
 def negative(root, repository):
     cases = []
-    mutations = [None, "manifest", "orphan", "docs", "source", "state", "environment"]
-    reasons = {"manifest": "证据字节清单不符", "orphan": "存在没有回执引用的日志对象",
-               "docs": "DevDocs运行字节或提交绑定不符：docs", "source": "固定产品源码身份不符",
-               "state": "阶段结论与实际回执不符", "environment": "执行路径逃出独立任务根"}
+    mutations = [None, *NEGATIVE_REASONS]
+    reasons = NEGATIVE_REASONS
     for mutation in mutations:
         with tempfile.TemporaryDirectory(prefix="xiao-b4-2b-negative-") as temporary:
             copied = Path(temporary) / "evidence"
             shutil.copytree(root, copied)
             if mutation == "manifest":
                 (copied / "evidence.json").write_text('{"files": {}}', encoding="utf-8")
+            elif mutation == "attributes":
+                (copied / ".gitattributes").unlink()
+            elif mutation == "negative_report":
+                (copied / "self-negative-findings.json").write_text(
+                    json.dumps({"passed": True, "cases": [{"case": "baseline", "read_only": False}]}), encoding="utf-8")
             elif mutation == "orphan":
                 raw = b"unreferenced B4-2B object\n"
                 digest = sha(raw)
@@ -225,10 +248,10 @@ def negative(root, repository):
                 (copied / relative).write_text(json.dumps(value), encoding="utf-8")
             if mutation and mutation != "manifest":
                 (copied / "evidence.json").write_text(json.dumps({"files": inventory(copied)}), encoding="utf-8")
-            before = inventory(copied) | {"evidence.json": sha((copied / "evidence.json").read_bytes())}
+            before = all_entries(copied)
             process = subprocess.run([sys.executable, "-B", "-X", "utf8", str(copied / "audit.py"),
                 "--root", str(copied), "--repository-root", str(repository)], capture_output=True, text=True, encoding="utf-8")
-            require(before == inventory(copied) | {"evidence.json": sha((copied / "evidence.json").read_bytes())}, "反例审计写入证据")
+            require(before == all_entries(copied), "反例审计写入证据")
             if mutation is None:
                 require(process.returncode == 0 and json.loads(process.stdout)["passed"] is True, "反例基线失败")
             else:

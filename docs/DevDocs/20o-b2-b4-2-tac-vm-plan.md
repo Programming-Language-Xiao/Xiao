@@ -1,9 +1,9 @@
 # 20O-B2-B4-2. cmath TAC/字节码与 VM 实施规划
 
-> **B4-0/B4-1 已完成；B4-2A 已完成 Windows 本机退出，FIX1 恢复 22c 29/29；B4-2B 开工就绪，B4-3 起、B5～B7 与 B2-C 仍未开始，完整 B4-2 尚未收口。**
-> 入口为 B4-1 产品代码 `c7a45e10` 与证据；类型/IR 已能表达 34～48，声明表已有 `VmBinding::Cmath*` 键，但 VM 分派实现和 LLVM lowering 尚未接通。
+> **B4-0/B4-1 已完成；B4-2A 已完成 Windows 本机退出，FIX1 恢复 22c 29/29；B4-2B 已在 `57ca957c` 完成 Windows 本机内部验收，B4-2 已内部收口；B4-3 起、B5～B7 与 B2-C 仍未开始。**
+> 原入口为 B4-1 产品代码 `c7a45e10` 与证据；当前 34～48 的 TAC/字节码及 VM 分派已接通，15 个 Rust-only Runtime 门面复用共享内核；LLVM lowering 仍留 B4-3。
 > B4-2 只做 TAC/字节码编码、VM 执行和必要的 Rust-only Runtime 调用桥；不接 LLVM、双路径导入/归档、C ABI、ABI 1.19/21 或 registry。
-> 30 条 `std.cmath`/`stdlib.cmath` 导入后调用仍拒绝，FIX1 已恢复子 VM 未使用导入及归档写前拒绝；归属和当前退出见[FIX1 记录](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)。[原自审](assets/20o-b2-b/entry-20261112-b4-2a/review-20261112/README.md)仍保留当时的 27/29，不改写历史。B4-4 才接双路径。
+> 30 条 `std.cmath`/`stdlib.cmath` 导入后调用仍拒绝，FIX1 已恢复子 VM 未使用导入及归档写前拒绝；归属与B4-2A退出见[FIX1记录](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)，完整B4-2当前退出另见[B4-2B记录](assets/20o-b2-b/entry-20261113-b4-2b/README.md)。[原自审](assets/20o-b2-b/entry-20261112-b4-2a/review-20261112/README.md)保留当时的27/29，不改写历史。B4-4才接双路径。
 
 ## 一、入口与范围
 
@@ -11,7 +11,7 @@
 | --- | --- |
 | B4-0 | 正式向量已迁入 `tests/fixtures/docs/cmath/`，逐字节一致 |
 | B4-1 | 15 项类型/IR 接通；`IntrinsicCall` 保留 ID/参数/span |
-| VM/LLVM | 34～48 已登记声明层 VM 键；VM 分派实现与 LLVM lowering 缺失，直接原语可生成 IR 但不能执行 |
+| VM/LLVM | 34～48 直接原语已可经 VM 执行；LLVM lowering 仍未接通 |
 | 导入边界 | 30 条导入后调用仍拒绝；FIX1 后 22c 29/29，边界恢复；`language_available=false` |
 | 本批目标 | TAC/字节码 34～48 编码、VM 15 项执行、错误/span/清理 |
 | 未做 | B4-3 LLVM、B4-4 双路径/归档、B5 版本、B6 性能、B2-C 发布 |
@@ -41,7 +41,7 @@ B4-2 是 VM 内部可执行批，不是 `std.cmath` 模块导入可用批。B4-4
 
 ### 1.3 已确认的 Runtime 入口
 
-星崽已确认以下口径；B4-2A 可先开工，B4-2B 按此冻结签名接线：
+星崽已确认以下口径；B4-2B 已按此冻结签名完成接线，以下保留接口要求：
 
 1. 在 `xiao-runtime`  crate 根暴露 15 个类型化自由函数，与 F-5 原语一一对应；
 2. 返回 `RuntimeResult<f64>`，错误直接复用 Runtime 的 009 等身份；不读写 Runtime ABI 挂起错误槽；
@@ -54,7 +54,7 @@ B4-2 是 VM 内部可执行批，不是 `std.cmath` 模块导入可用批。B4-4
 
 ## 二、开工闸门
 
-以下为批准的要求。原 B4-2A 复跑为 27/29；FIX1 已直接复跑 B3-4 的 29/29 和 B4-1 的 27/29，确认归属，并在 `c4610211` 恢复 29/29、完成 B4-2A 退出。B4-2B 仍未开始；固定历史审计不替代当前运行。
+以下为批准的要求。原 B4-2A 复跑为 27/29；FIX1 已直接复跑 B3-4 的 29/29 和 B4-1 的 27/29，确认归属，并在 `c4610211` 恢复 29/29、完成 B4-2A 退出。后续 B4-2B 已在 `57ca957c` 完成当前运行，见[本机取证](assets/20o-b2-b/entry-20261113-b4-2b/README.md)；以下开工要求保留历史身份，固定历史审计不替代当前运行。
 
 1. B4-0/B4-1 审计通过，代码 `c7a45e10` 未漂移；
 2. 15 项 `IntrinsicCall` 的 ID/参数/span 和 30 条 planned 拒绝可复现；
@@ -62,7 +62,7 @@ B4-2 是 VM 内部可执行批，不是 `std.cmath` 模块导入可用批。B4-4
 4. ABI 1.18/生成器 20/接口 1/cmath planned 未变；
 5. B3-4 wrapper 8/0、22c 29/0、B1/B2/B3 历史审计通过；
 6. 唯一任务根、独立 target/Runtime/缓存已建立。
-7. B4-2B 的调用边界已明确、精确 API 已确认：现有 `value::arithmetic::cmath` 函数是 crate 私有；C ABI 适配器通过状态码报告错误并写 Runtime 挂起错误槽。VM 不得直接跨 crate 调用私有函数，也不得借 C ABI 状态槽转运 VM 错误。星崽已确认采用 15 个类型化 Rust-only 函数、`RuntimeResult<f64>` 返回和内部 API 口径，精确签名见 §1.3；B4-2A 可先开工。
+7. B4-2B 的调用边界已明确、精确 API 已确认：现有 `value::arithmetic::cmath` 函数是 crate 私有；C ABI 适配器通过状态码报告错误并写 Runtime 挂起错误槽。VM 不得直接跨 crate 调用私有函数，也不得借 C ABI 状态槽转运 VM 错误。星崽已确认采用 15 个类型化 Rust-only 函数、`RuntimeResult<f64>` 返回和内部 API 口径，精确签名见 §1.3；当前已据此完成 Runtime/VM 接线。
 
 ## 三、分批执行
 
@@ -174,4 +174,4 @@ core/rust/crates/xiao-driver/tests/                  VM/字节码测试
 docs/DevDocs/assets/20o-b2-b/entry-<date>-b4/        B4-2 证据
 ```
 
-本页只做 B4-2；B4-3 起、B5～B7 与 B2-C 仍后置。
+本页只做 B4-2；Windows 内部退出由 `57ca957c` 和[独立记录](assets/20o-b2-b/entry-20261113-b4-2b/README.md)证明：驱动回归50/50、Runtime272/272、VM35/35、字节码65/65；数值回归15项通过及3项既有原生忽略均独立登记。B4-3 起、B5～B7 与 B2-C 仍后置，未声称三平台或性能验收。

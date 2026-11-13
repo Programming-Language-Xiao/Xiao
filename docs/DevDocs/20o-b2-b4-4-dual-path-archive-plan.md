@@ -1,6 +1,6 @@
 # 20O-B2-B4-4. cmath 双路径、归档与序列化实施规划
 
-> **B4-2A 与 FIX1 已完成 Windows 本机内部退出；B4-2B/B4-3 尚未完成；B4-4 仍未开始，B5～B7 与 B2-C 后置。**
+> **B4-2A 与 FIX1 已完成 Windows 本机内部退出；B4-2B 已在57ca957c完成，B4-3 尚未完成；B4-4 仍未开始，B5～B7 与 B2-C 后置。**
 > 入口为 B4-3 的 LLVM 动态/静态路径、B4-2 的 VM 执行与 B4-1 的类型/IR。
 > B4-4 只做 `std.cmath`/`stdlib.cmath` 双路径、导出/移除、`.xar` 归档、序列化和普通包隔离。
 > 不升 ABI 1.19/21，不升级 registry/教程；`stdlib.cmath` 仍 planned，B2-C 才最终发布。
@@ -10,7 +10,7 @@
 | 项 | 当前状态 |
 | --- | --- |
 | B4-1 | 15 项类型/IR 接通 |
-| B4-2 | VM 15 项执行（待完成） |
+| B4-2 | VM 15 项执行已在57ca957c完成Windows本机内部验收；模块导入仍planned |
 | B4-3 | LLVM 动态/静态与 float `**` 共核（待完成） |
 | 当前导入 | 30 条 `std.cmath`/`stdlib.cmath` 路径仍 planned 拒绝 |
 | 归档 | archive closure 可收集 `stdlib.cmath`，但 `xiao-xar` runner 尚无标准库加载器 |
