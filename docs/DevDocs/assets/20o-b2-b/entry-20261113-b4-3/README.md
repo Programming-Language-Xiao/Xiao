@@ -4,7 +4,6 @@ B4-3 将动态/静态 cmath 接到既有 C ABI，并使 Float `**` 共用 `cmath
 
 `record.py` 为每次执行记录固定源码摘要、DevDocs 原始与UTF-8/LF摘要、环境、PID、时间、命令、退出码和内容寻址日志。每种变体有独立 target、Runtime、缓存、Xiao Home 和临时目录。`runtime-identity`在冷构建后记录新Runtime静态库的路径、长度和SHA-256；日志对象同摘要只存一份，失败轮次不覆盖。
 
-`runtime-offline-probe.json`记录默认审计不需要fixed-final2 Runtime目录、`--live-runtime`会拒绝缺失归档并在探针结束后恢复它。这是由独立固定任务实跑得到的回执。
 
 
 ## 执行记录
@@ -20,7 +19,7 @@ B4-3 将动态/静态 cmath 接到既有 C ABI，并使 Float `**` 共用 `cmath
 
 第一轮六个历史审计和一次内容寻址自测并发运行时，互相可见的临时stdout暂存目录改变了DevDocs运行中摘要；这七条回执和日志保留，但不进入有效结论。采集器将`xiao-log-stage-*`识别为运行期文件后，六个历史审计已串行重跑并通过，内容寻址自测也以`collector-final`通过。另有一条摘要稳定的早期B4-2B审计被串行结果取代；三条早期文档门禁均通过，但因审计器后续更新而保留为前序记录。收口清单记录全部排除原因。
 
-最终源码快照为`e0d5993e7c8214f2277d1bb81f9b05357d9305e0`，包含1,059个受保护产品文件。独立Runtime静态库`xiao_runtime.lib`为27,482,962字节，SHA-256 `27b460d2fde00c0e36f2799474e3a21310d5555530cbc8d7694caf6df220702d`；同一身份由`fixed-final2/runtime-identity.json`固定采集。B1 VM与原生精确入口通过；原生入口内含B2-A/B语料。B1、B2、B3、B3-4、B4-0/1和B4-2B固定历史审计均通过。workspace五个核心crate测试、B4跨阶段回归、workspace Clippy与fmt均通过。绑定最终审计器、Runtime身份回执、终稿README和当前源码快照的完整仓库门禁为`fixed-final2/final-docs-optional-runtime.json`。
+最终源码快照为`e0d5993e7c8214f2277d1bb81f9b05357d9305e0`，包含1,059个受保护产品文件。独立Runtime静态库`xiao_runtime.lib`为27,482,962字节，SHA-256 `27b460d2fde00c0e36f2799474e3a21310d5555530cbc8d7694caf6df220702d`；同一身份由`fixed-final2/runtime-identity.json`固定采集。默认审计读取Runtime身份回执，不访问fixed任务根；`--live-runtime`用于可选的本机归档字节复核。B1 VM与原生精确入口通过；原生入口内含B2-A/B语料。B1、B2、B3、B3-4、B4-0/1和B4-2B固定历史审计均通过。workspace五个核心crate测试、B4跨阶段回归、workspace Clippy与fmt均通过。绑定最终审计器、Runtime身份回执、终稿README和当前源码快照的完整仓库门禁为`fixed-final2/final-docs-no-probe.json`。
 
 在仓库根复核已定稿的记录：
 
