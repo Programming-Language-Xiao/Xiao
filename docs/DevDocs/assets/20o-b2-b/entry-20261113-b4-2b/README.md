@@ -34,6 +34,8 @@ python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261113-b4-2b/audit.py --l
 
 默认审计完全只读，验证固定Git对象及归档证据，不要求当前HEAD等于实施提交，也不要求旧任务目录存在。`--live-runtime` 额外核对仍保留的三套本机Runtime归档字节。支持 `--root`、`--repository-root`。`self-negative-findings.json` 保存9个用例：1个基线及清单、属性文件、孤立日志对象、DevDocs摘要、产品源码、阶段状态、环境逃逸和伪造只读报告8个拒绝反例；即使重建字节清单，仍须按精确错误文本拒绝。每项比较完整文件字节及目录项，审计也强制核对报告的 `read_only=true`、顺序和拒绝身份。
 
-`--collect` 为显式生成模式，从真实运行回执和本机Runtime归档生成 `closeout.json`、Runtime摘要及 `evidence.json`，拒绝覆盖。保存新反例报告后使用 `--refresh-inventory`：它先验证阶段结论不变，只刷新实际字节清单。最终审计应同时返回 `passed=true` 和 `self_negative_checked=true`；报告不存在时会明确返回后者为false。
+`--collect` 为显式生成模式，从真实运行回执和本机Runtime归档生成 `closeout.json`、Runtime摘要及 `evidence.json`，拒绝覆盖。保存新反例报告后使用 `--refresh-inventory`：它先验证阶段结论不变，只刷新实际字节清单。默认只读审计必须同时返回 `passed=true` 和 `self_negative_checked=true`；缺失报告时直接拒绝。只有首次显式 `--collect` 允许在报告产生前预验，不作为最终收口。
+
+2026-11-13 自审补充：原先审计只核对测试总数与历史 `passed`，并允许缺失反例报告。临时副本实际复现了重新分配wrapper/22c计数、篡改历史状态、删报告后重建清单三项旁路；现已改为逐目标计数及过滤/忽略身份、固定Git归档的历史完整结果、默认必需反例报告。原始运行日志、closeout与9项历史反例报告保持原样；审计脚本和真实字节清单更新，修复前后反例及当前补充测试另见[独立自审记录](../review-20261113-b4-2b/README.md)。两种编码解码后的catch路由已补测；模块拒绝消息只澄清“模块入口未接通”，不改变planned门控。
 
 Linux/macOS、远端CI、性能、旧721未执行。ABI仍1.18、生成器20、标准库接口1；没有修改checker、intrinsic表、C ABI、LLVM、模块/归档加载、版本、锁、UseDocs或registry。B4-3是下一入口，B4-4才接真实模块双路径/归档；22C/22D及19/11/22历史债务独立保留。

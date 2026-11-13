@@ -1,0 +1,37 @@
+{
+  "original_archive_commit": "81e45783",
+  "cases": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "read_only": true,
+      "log_ref": "logs/sha256/e2/e2ca066d6c15e60c46b3762597df4f3c61a563961ef9cfecc959ed95abeec58d.log",
+      "log_sha256": "e2ca066d6c15e60c46b3762597df4f3c61a563961ef9cfecc959ed95abeec58d",
+      "stdout": "{\"b4_2_closed\": true, \"b4_closed\": false, \"files\": 63, \"language_available\": false, \"live_runtime_checked\": false, \"log_objects\": 23, \"passed\": true, \"runs\": 25, \"self_negative_checked\": true}"
+    },
+    {
+      "case": "redistributed_counts",
+      "exit_code": 0,
+      "read_only": true,
+      "log_ref": "logs/sha256/e2/e2ca066d6c15e60c46b3762597df4f3c61a563961ef9cfecc959ed95abeec58d.log",
+      "log_sha256": "e2ca066d6c15e60c46b3762597df4f3c61a563961ef9cfecc959ed95abeec58d",
+      "stdout": "{\"b4_2_closed\": true, \"b4_closed\": false, \"files\": 63, \"language_available\": false, \"live_runtime_checked\": false, \"log_objects\": 23, \"passed\": true, \"runs\": 25, \"self_negative_checked\": true}"
+    },
+    {
+      "case": "historical_state",
+      "exit_code": 0,
+      "read_only": true,
+      "log_ref": "logs/sha256/e2/e2ca066d6c15e60c46b3762597df4f3c61a563961ef9cfecc959ed95abeec58d.log",
+      "log_sha256": "e2ca066d6c15e60c46b3762597df4f3c61a563961ef9cfecc959ed95abeec58d",
+      "stdout": "{\"b4_2_closed\": true, \"b4_closed\": false, \"files\": 63, \"language_available\": false, \"live_runtime_checked\": false, \"log_objects\": 23, \"passed\": true, \"runs\": 25, \"self_negative_checked\": true}"
+    },
+    {
+      "case": "missing_negative_report",
+      "exit_code": 0,
+      "read_only": true,
+      "log_ref": "logs/sha256/97/9747f20731ce08453409a4c0f7d27454b72796bb713a5e344ffdffb3c3e23b9d.log",
+      "log_sha256": "9747f20731ce08453409a4c0f7d27454b72796bb713a5e344ffdffb3c3e23b9d",
+      "stdout": "{\"b4_2_closed\": true, \"b4_closed\": false, \"files\": 62, \"language_available\": false, \"live_runtime_checked\": false, \"log_objects\": 23, \"passed\": true, \"runs\": 25, \"self_negative_checked\": false}"
+    }
+  ]
+}

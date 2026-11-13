@@ -1,0 +1,39 @@
+{
+  "original_archive_commit": "81e45783",
+  "cases": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "read_only": true,
+      "log_ref": "logs/sha256/e2/e2ca066d6c15e60c46b3762597df4f3c61a563961ef9cfecc959ed95abeec58d.log",
+      "log_sha256": "e2ca066d6c15e60c46b3762597df4f3c61a563961ef9cfecc959ed95abeec58d",
+      "stdout": "{\"b4_2_closed\": true, \"b4_closed\": false, \"files\": 63, \"language_available\": false, \"live_runtime_checked\": false, \"log_objects\": 23, \"passed\": true, \"runs\": 25, \"self_negative_checked\": true}"
+    },
+    {
+      "case": "redistributed_counts",
+      "exit_code": 1,
+      "read_only": true,
+      "log_ref": "logs/sha256/e7/e723aaf7396c681520866f808424f36a5843c3ce96bc4a063b83a79601d78f42.log",
+      "log_sha256": "e723aaf7396c681520866f808424f36a5843c3ce96bc4a063b83a79601d78f42",
+      "stdout": "逐目标测试计数不符：revised/regressions"
+    },
+    {
+      "case": "historical_state",
+      "exit_code": 1,
+      "read_only": true,
+      "log_ref": "logs/sha256/e4/e4ed40be0b938d5a57c0a64a5ea14f7549734464af3ced72444e7df7e857b6b3.log",
+      "log_sha256": "e4ed40be0b938d5a57c0a64a5ea14f7549734464af3ced72444e7df7e857b6b3",
+      "stdout": "历史审计精确结果不符：b34"
+    },
+    {
+      "case": "missing_negative_report",
+      "exit_code": 1,
+      "read_only": true,
+      "log_ref": "logs/sha256/33/3326d38d13c87f64fce591fb33d4c9480835c789f8c317d7d9c2c782217bb5eb.log",
+      "log_sha256": "3326d38d13c87f64fce591fb33d4c9480835c789f8c317d7d9c2c782217bb5eb",
+      "stdout": "缺少已验收的自反例报告"
+    }
+  ],
+  "auditor_sha256": "95b8f8cbaa1d06a56d5d1694595ba91ec00bb76344b938363c154270228c8500",
+  "expected_rejections_checked": true
+}

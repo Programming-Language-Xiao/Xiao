@@ -14,6 +14,7 @@ from record import (ROOT, REPOSITORY, PRODUCT_ROOTS, SELF_EVIDENCE_ROOT, canonic
 
 FIRST_CODE = "57ca957c"
 CODE = "246bea46"
+ARCHIVE_COMMIT = "81e45783"
 BASE = PureWindowsPath(r"D:\project\Xiao\.b4-2b\20261113-runtime-vm")
 SCRIPT = SELF_EVIDENCE_ROOT + "/record.py"
 ALLOWED = {
@@ -86,6 +87,56 @@ def counts(text):
     require(rows and all(int(row[1]) == 0 for row in rows), "Rust测试失败或缺少结果")
     return {"passed": sum(int(row[0]) for row in rows), "failed": 0,
             "ignored": sum(int(row[2]) for row in rows)}
+
+
+def target_counts(text):
+    """逐Cargo执行目标核对Rust汇总，不能用另一目标的通过数补足缺失测试。"""
+    current, result = None, {}
+    for line in text.splitlines():
+        running = re.match(r"\s*Running (?:unittests |tests[\\/])?.*\((.*)[\\/]([^\\/]+)-[0-9a-f]+\.exe\)$", line)
+        if running:
+            current = running.group(2)
+        if line.lstrip().startswith("Doc-tests "):
+            current = line.split("Doc-tests ", 1)[1].strip() + ":doc"
+        summary = re.match(r"test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored;.* (\d+) filtered out;", line)
+        if summary:
+            require(current is not None and current not in result, "Rust目标缺失、重复或没有执行身份")
+            require(summary[1] == "ok" and summary[3] == summary[5] == "0", "Rust目标失败或存在过滤测试")
+            result[current] = (int(summary[2]), int(summary[4]))
+            current = None
+    return result
+
+
+def verify_target_counts(logs):
+    """固定位于本批的各测试二进制及既有原生忽略身份。"""
+    entry = {"20o_b2_b3_wrapper": (8, 0), "20o_b2_b4_cmath_boundary": (3, 0),
+             "20o_b2_b4_frontend": (3, 0), "22c_vm_concurrency": (29, 0)}
+    require(target_counts(logs["baseline", "entry"]) == entry, "逐目标测试计数不符：baseline/entry")
+    expected = {
+        "regressions": entry | {"20o_b2_b4_cmath_vm": (7, 0)},
+        "runtime_vm": {"xiao_runtime": (272, 0), "xiao_vm": (35, 0)},
+        "bytecode": {"xiao_bytecode": (33, 0), "xiaoc_check": (0, 0), "b0_a_api": (1, 0),
+                     "b4_cmath_tac": (2, 0), "fuzz_xiaoc": (2, 0), "r2_tac": (27, 0), "xiao_bytecode:doc": (0, 0)},
+        "numeric_regressions": {"20o_b2_a1_identity": (1, 1), "20o_b2_a_contract": (12, 1), "20o_b2_b2_divide": (2, 1)},
+    }
+    ignored = {
+        "a1_numeric_values_and_errors_match_native_golden_outputs": "需要本次新构建的Runtime及显式LLVM/平台链接器；既有原生workspace入口可执行",
+        "a5_language_values_match_native_golden_outputs": "需要本任务新Runtime与显式LLVM/平台链接器",
+        "lfloat_divide_matches_native_golden_outputs": "需要本任务新Runtime和显式LLVM工具链；维护原生精确入口调用相同套件",
+    }
+    for variant in ["fixed", "revised"]:
+        for label, expected_counts in expected.items():
+            require(target_counts(logs[variant, label]) == expected_counts, "逐目标测试计数不符：" + variant + "/" + label)
+        actual_ignored = dict(re.findall(r"^test (\S+) \.\.\. ignored, (.+)$", logs[variant, "numeric_regressions"].replace("\r\n", "\n"), re.M))
+        require(actual_ignored == ignored, "既有原生忽略身份不符：" + variant)
+
+
+def verify_history_results(logs, repository):
+    """从不可变归档读取历史完整结果，拒绝只保留passed或篡改阶段状态。"""
+    for label in HISTORY:
+        receipt = json.loads(git(repository, "show", ARCHIVE_COMMIT + ":" + SELF_EVIDENCE_ROOT + "/fixed/" + label + ".json"))
+        frozen = json.loads(git(repository, "show", ARCHIVE_COMMIT + ":" + SELF_EVIDENCE_ROOT + "/" + receipt["log_ref"]))
+        require(json.loads(logs["fixed", label]) == frozen, "历史审计精确结果不符：" + label)
 
 
 def runtime_artifacts(environment):
@@ -165,6 +216,8 @@ def verify(root, repository, live_runtime=False):
         referenced.add(digest)
         logs[variant, label], records[variant, label] = raw.decode("utf-8"), record
     require(referenced == set(objects), "存在没有回执引用的日志对象")
+    verify_target_counts(logs)
+    verify_history_results(logs, repository)
     require(counts(logs["baseline", "entry"]) == {"passed": 43, "failed": 0, "ignored": 0}, "入口回归计数不符")
     require(counts(logs["fixed", "regressions"]) == {"passed": 50, "failed": 0, "ignored": 0}, "VM与边界回归计数不符")
     require(counts(logs["revised", "regressions"]) == {"passed": 50, "failed": 0, "ignored": 0}, "修订快照VM与边界回归计数不符")
@@ -204,7 +257,7 @@ def verify(root, repository, live_runtime=False):
                       "docs_commit": row["docs_commit"]} for (v, label), row in records.items()}}
 
 
-def audit(root, repository, live=False):
+def audit(root, repository, live=False, preparing=False):
     require((root / ".gitattributes").is_file()
             and (root / ".gitattributes").read_bytes() == b"* -text -whitespace\n*.log -diff\n", "证据属性缺失或变化")
     evidence = load(root / "evidence.json")
@@ -212,6 +265,7 @@ def audit(root, repository, live=False):
     result = verify(root, repository, live)
     require(load(root / "closeout.json") == result, "阶段结论与实际回执不符")
     report = root / "self-negative-findings.json"
+    require(report.is_file() or preparing, "缺少已验收的自反例报告")
     if report.exists():
         expected = [{"case": "baseline", "exit_code": 0, "read_only": True, "reason": None}]
         expected.extend({"case": name, "exit_code": 1, "read_only": True, "reason": reason}
@@ -295,7 +349,7 @@ def main():
         temporary = args.root / "evidence.json.tmp"
         write_json(temporary, {"files": inventory(args.root)})
         temporary.replace(args.root / "evidence.json")
-    result = negative(args.root, args.repository_root) if args.self_negative else audit(args.root, args.repository_root, args.live_runtime)
+    result = negative(args.root, args.repository_root) if args.self_negative else audit(args.root, args.repository_root, args.live_runtime, preparing=args.collect)
     if args.write_negative: write_json(args.write_negative, result)
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
 
