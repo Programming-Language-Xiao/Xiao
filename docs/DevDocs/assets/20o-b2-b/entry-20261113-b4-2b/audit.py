@@ -12,7 +12,8 @@ sys.dont_write_bytecode = True
 from record import (ROOT, REPOSITORY, PRODUCT_ROOTS, SELF_EVIDENCE_ROOT, canonical,
                     docs_tree_from_commit, fixed_files, git, identity, load, require, sha, write_json)
 
-CODE = "57ca957c"
+FIRST_CODE = "57ca957c"
+CODE = "246bea46"
 BASE = PureWindowsPath(r"D:\project\Xiao\.b4-2b\20261113-runtime-vm")
 SCRIPT = SELF_EVIDENCE_ROOT + "/record.py"
 ALLOWED = {
@@ -48,6 +49,8 @@ RUNS = {
 }
 for label, directory in HISTORY.items():
     RUNS["fixed", label] = ["python", "-B", "-X", "utf8", f"docs/DevDocs/assets/20o-b2-b/{directory}/audit.py"]
+for label in ["regressions", "runtime_vm", "bytecode", "numeric_regressions", "clippy", "fmt", "docs"]:
+    RUNS["revised", label] = RUNS["fixed", label]
 NEGATIVE_REASONS = {
     "manifest": "证据字节清单不符", "attributes": "证据属性缺失或变化",
     "orphan": "存在没有回执引用的日志对象", "docs": "DevDocs运行字节或提交绑定不符：docs",
@@ -97,7 +100,7 @@ def runtime_artifacts(environment):
 
 def verify(root, repository, live_runtime=False):
     sources, environments, logs, records, referenced, docs_cache = {}, {}, {}, {}, set(), {}
-    for variant in ["baseline", "fixed"]:
+    for variant in ["baseline", "fixed", "revised"]:
         source = load(root / variant / "source.json")
         environment = load(root / variant / "environment.json")
         require(source["revision"] == git(repository, "rev-parse", source["revision"]).decode().strip(), "来源提交必须为完整Git身份")
@@ -125,9 +128,10 @@ def verify(root, repository, live_runtime=False):
         if live_runtime:
             require(runtime_artifacts(environment) == artifacts, "本机Runtime归档字节变化")
         sources[variant], environments[variant] = source, environment
-    changed = set(git(repository, "diff", "--name-only", sources["baseline"]["revision"], sources["fixed"]["revision"]).decode().splitlines())
-    require({p for p in changed if not p.startswith("docs/DevDocs/")} == ALLOWED, "产品改动超出B4-2B允许集合")
-    require({p: r["canonical_sha256"] for p, r in sources["fixed"]["files"].items()} == fixed_files(repository, CODE), "实施快照偏离固定产品提交")
+    for variant, code in [("fixed", FIRST_CODE), ("revised", CODE)]:
+        changed = set(git(repository, "diff", "--name-only", sources["baseline"]["revision"], sources[variant]["revision"]).decode().splitlines())
+        require({p for p in changed if not p.startswith("docs/DevDocs/")} == ALLOWED, "产品改动超出B4-2B允许集合")
+        require({p: r["canonical_sha256"] for p, r in sources[variant]["files"].items()} == fixed_files(repository, code), "实施快照偏离固定产品提交")
     objects = {}
     for path in (root / "logs/sha256").rglob("*"):
         if path.is_file():
@@ -137,7 +141,8 @@ def verify(root, repository, live_runtime=False):
             objects[digest] = relative
     for (variant, label), argv in RUNS.items():
         record = load(root / variant / (label + ".json"))
-        require(record["label"] == label and record["argv"] == argv and record["exit_code"] == 0, "运行命令或退出码不符：" + label)
+        expected_exit = 1 if (variant, label) == ("fixed", "docs") else 0
+        require(record["label"] == label and record["argv"] == argv and record["exit_code"] == expected_exit, "运行命令或退出码不符：" + label)
         require(record["cwd"] == sources[variant]["source_root"] and record["pid"] > 0
                 and record["started_utc"] < record["finished_utc"], "运行进程来源不符：" + label)
         require(record["source_unchanged"] is True and record["source_before"] == record["source_after"] == sources[variant]["tree_sha256"], "运行源码发生变化：" + label)
@@ -162,13 +167,14 @@ def verify(root, repository, live_runtime=False):
     require(referenced == set(objects), "存在没有回执引用的日志对象")
     require(counts(logs["baseline", "entry"]) == {"passed": 43, "failed": 0, "ignored": 0}, "入口回归计数不符")
     require(counts(logs["fixed", "regressions"]) == {"passed": 50, "failed": 0, "ignored": 0}, "VM与边界回归计数不符")
-    require(len(re.findall(r"B3-WRAPPER-IMPORT .*executable=false result=planned-rejected", logs["fixed", "regressions"])) == 30, "30条planned导入拒绝不全")
-    require("B4-2B-VM-IDENTITY cases=1440" in logs["fixed", "regressions"]
-            and "B4-2B-VM-OWNERSHIP cases=45" in logs["fixed", "regressions"], "VM位模式或所有权专项缺失")
-    require("B4-2B-RUNTIME reference_inputs=17243 facades=15 kernel_identity=exact" in logs["fixed", "runtime_vm"], "Runtime门面输入证据缺失")
-    require(counts(logs["fixed", "runtime_vm"])["ignored"] == 0, "Runtime/VM单测存在忽略")
-    require(counts(logs["fixed", "bytecode"])["passed"] == 65, "TAC回归计数不符")
-    numeric = counts(logs["fixed", "numeric_regressions"])
+    require(counts(logs["revised", "regressions"]) == {"passed": 50, "failed": 0, "ignored": 0}, "修订快照VM与边界回归计数不符")
+    require(len(re.findall(r"B3-WRAPPER-IMPORT .*executable=false result=planned-rejected", logs["revised", "regressions"])) == 30, "30条planned导入拒绝不全")
+    require("B4-2B-VM-IDENTITY cases=1440" in logs["revised", "regressions"]
+            and "B4-2B-VM-OWNERSHIP cases=45" in logs["revised", "regressions"], "VM位模式或所有权专项缺失")
+    require("B4-2B-RUNTIME reference_inputs=17243 facades=15 kernel_identity=exact" in logs["revised", "runtime_vm"], "Runtime门面输入证据缺失")
+    require(counts(logs["revised", "runtime_vm"])["ignored"] == 0, "Runtime/VM单测存在忽略")
+    require(counts(logs["revised", "bytecode"])["passed"] == 65, "TAC回归计数不符")
+    numeric = counts(logs["revised", "numeric_regressions"])
     for label in HISTORY:
         history = json.loads(logs["fixed", label])
         require(history.get("passed") is True or label == "b1" and history.get("passed") == history.get("total") == 18, "固定历史审计失败：" + label)
@@ -176,17 +182,22 @@ def verify(root, repository, live_runtime=False):
     require(first["log_ref"] == second["log_ref"] and first["pid"] != second["pid"], "相同采集输出没有共用对象或回执未独立")
     require(json.loads(logs["fixed", "collector"]) == {"passed": True, "distinct_objects": 2,
             "identical_outputs_reused": True, "tampered_object_rejected": True, "docs_tree_static_bound": True}, "采集器自测不符")
-    docs = json.loads(logs["fixed", "docs"])
+    first_docs = json.loads(logs["fixed", "docs"])
+    first_errors = [d for d in first_docs["diagnostics"] if d["severity"] == "error"]
+    require(first_docs["passed"] is False and len(first_errors) == 1
+            and first_errors[0]["code"] == "A0-SIZE-001"
+            and first_errors[0]["path"] == "core/rust/crates/xiao-vm/src/semantics/exec.rs", "初次docs失败身份不符")
+    docs = json.loads(logs["revised", "docs"])
     require(docs["passed"] is True and all(d["code"] == "A0-COVERAGE-002" and d["severity"] == "warning" for d in docs["diagnostics"]), "终稿文档门禁失败或出现新诊断")
-    runtime_log = logs["fixed", "regressions"].replace("/", "\\")
-    require("Compiling xiao-runtime " in runtime_log and str(BASE / "fixed" / "target") in runtime_log, "缺少本任务冷构建Runtime及测试路径")
+    runtime_log = logs["revised", "regressions"].replace("/", "\\")
+    require("Compiling xiao-runtime " in runtime_log and str(BASE / "revised" / "target") in runtime_log, "缺少本任务冷构建Runtime及测试路径")
     return {"passed": True, "stage": "B4-2", "b4_2b_closed": True, "b4_2_closed": True,
             "b4_3_started": False, "b4_closed": False, "language_available": False, "cmath": "planned",
             "product_commit": git(repository, "rev-parse", CODE).decode().strip(),
-            "snapshot_commit": sources["fixed"]["revision"], "runtime_abi": "1.18", "codegen_version": 20,
+            "snapshot_commit": sources["revised"]["revision"], "runtime_abi": "1.18", "codegen_version": 20,
             "platforms_executed": ["Windows x86_64-msvc"],
             "not_executed": ["Linux", "macOS", "remote CI", "performance", "old 721 F10"],
-            "tests": {"baseline": 43, "driver": 50, "runtime_vm": counts(logs["fixed", "runtime_vm"]),
+            "tests": {"baseline": 43, "driver": 50, "runtime_vm": counts(logs["revised", "runtime_vm"]),
                       "bytecode": 65, "numeric_regressions": numeric, "vm_identity_cases": 1440, "heap_cases": 45},
             "runs": {v + "/" + label: {"pid": row["pid"], "log_sha256": row["log_sha256"],
                       "docs_commit": row["docs_commit"]} for (v, label), row in records.items()}}
@@ -238,7 +249,7 @@ def negative(root, repository):
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_bytes(raw)
             elif mutation in {"docs", "source", "state", "environment"}:
-                relative = {"docs": "fixed/docs.json", "source": "fixed/source.json",
+                relative = {"docs": "revised/docs.json", "source": "revised/source.json",
                             "state": "closeout.json", "environment": "fixed/environment.json"}[mutation]
                 value = load(copied / relative)
                 if mutation == "docs": value["docs_tree_sha256"] = "0" * 64
@@ -274,7 +285,7 @@ def main():
     require(not args.write_negative or args.self_negative, "反例输出只允许在反例模式使用")
     if args.collect:
         require(not (args.root / "closeout.json").exists() and not (args.root / "evidence.json").exists(), "拒绝覆盖已收口证据")
-        for variant in ["baseline", "fixed"]:
+        for variant in ["baseline", "fixed", "revised"]:
             write_json(args.root / variant / "runtime-artifacts.json", runtime_artifacts(load(args.root / variant / "environment.json")))
         write_json(args.root / "closeout.json", verify(args.root, args.repository_root, True))
         write_json(args.root / "evidence.json", {"files": inventory(args.root)})
