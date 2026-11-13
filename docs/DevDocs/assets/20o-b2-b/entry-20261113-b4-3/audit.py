@@ -45,6 +45,15 @@ EXPECTED_CODE_PATHS = {
 }
 LOG_DIR = Path("logs/sha256")
 HISTORY_AUDITS = {
+    "audit-final-b1": "entry-20261108-b1",
+    "audit-final-b2": "entry-20261108-b2",
+    "audit-final-b3": "entry-20261108-b3",
+    "audit-final-b3-cabi": "entry-20261109-b3-cabi",
+    "audit-final-b3-wrapper": "entry-20261110-b3-wrapper-final",
+    "audit-final-b4-0-1": "entry-20261110-b4-0-1",
+    "audit-final-b4-2b": "entry-20261113-b4-2b",
+}
+PRELIMINARY_AUDITS = {
     "audit-b1": "entry-20261108-b1",
     "audit-b2": "entry-20261108-b2",
     "audit-b3": "entry-20261108-b3",
@@ -53,13 +62,18 @@ HISTORY_AUDITS = {
     "audit-b4-0-1": "entry-20261110-b4-0-1",
     "audit-b4-2b": "entry-20261113-b4-2b",
 }
+PRELIMINARY_LABELS = {*PRELIMINARY_AUDITS, "collector"}
+PRELIMINARY_LABELS.add("final-docs")
+PRELIMINARY_REASONS = {label: "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
+                       for label in [*PRELIMINARY_AUDITS, "collector"]}
+PRELIMINARY_REASONS["final-docs"] = "superseded after final evidence auditor and evidence README were committed"
 RUN_LABELS = {
     "baseline": {"entry"},
     "fixed": {"runtime-build", "native-matrix", "regressions"},
     "fixed-final": {"runtime-build", "native-matrix"},
     FINAL_VARIANT: {
         "runtime-build", "native-matrix", "regressions", "core-tests", "b1-vm", "b1-native",
-        "clippy", "fmt", "collector", "final-docs", *HISTORY_AUDITS,
+        "clippy", "fmt", "collector-final", "final-docs-final", *HISTORY_AUDITS,
     },
 }
 NEGATIVE_REASONS = {
@@ -140,12 +154,13 @@ def expected_argv(label):
                 "--all-targets", "--locked", "--", "-D", "warnings"]
     if label == "fmt":
         return ["cargo", "+1.96.0", "fmt", "--manifest-path", "core/rust/Cargo.toml", "--all", "--", "--check"]
-    if label == "collector":
+    if label in {"collector", "collector-final"}:
         return ["python", "-B", "-X", "utf8", SCRIPT, "content-store-self-test"]
-    if label == "final-docs":
+    if label in {"final-docs", "final-docs-final"}:
         return ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"]
-    if label in HISTORY_AUDITS:
-        return ["python", "-B", "-X", "utf8", f"docs/DevDocs/assets/20o-b2-b/{HISTORY_AUDITS[label]}/audit.py"]
+    if label in HISTORY_AUDITS or label in PRELIMINARY_AUDITS:
+        directory = (HISTORY_AUDITS | PRELIMINARY_AUDITS)[label]
+        return ["python", "-B", "-X", "utf8", f"docs/DevDocs/assets/20o-b2-b/{directory}/audit.py"]
     if label == "entry":
         return ["cargo", "+1.96.0", "test", "--locked", "--manifest-path", "core/rust/Cargo.toml", "-p",
                 "xiao-driver", "--test", "20o_b2_b4_cmath_vm", "--test", "20o_b2_b3_wrapper", "--test",
@@ -154,7 +169,7 @@ def expected_argv(label):
     raise ValueError("B4-3 unknown execution label: " + label)
 
 
-def expected_closeout(root, repository, records, logs, live_runtime=False):
+def expected_closeout(root, repository, records, logs, preliminary_records, live_runtime=False):
     source = load(root / FINAL_VARIANT / "source.json")
     environment = load(root / FINAL_VARIANT / "environment.json")
     runtime_path = Path(environment["overrides"]["XIAO_RUNTIME_LIBRARY"])
@@ -215,7 +230,7 @@ def expected_closeout(root, repository, records, logs, live_runtime=False):
             "B4-3 B1 native exact entry failed")
     require("B2-B2-DIVIDE backend=native optimization=0,3 intrinsic=33 result=success" in logs[FINAL_VARIANT, "b1-native"],
             "B4-3 B2-B native entry missing")
-    require(parse_target_counts(logs[FINAL_VARIANT, "collector"]) == {} and json.loads(logs[FINAL_VARIANT, "collector"]) == {
+    require(parse_target_counts(logs[FINAL_VARIANT, "collector-final"]) == {} and json.loads(logs[FINAL_VARIANT, "collector-final"]) == {
         "distinct_objects": 2, "docs_tree_static_bound": True, "identical_outputs_reused": True,
         "passed": True, "tampered_object_rejected": True}, "B4-3 content store self-test failed")
     for label in HISTORY_AUDITS:
@@ -223,7 +238,7 @@ def expected_closeout(root, repository, records, logs, live_runtime=False):
         require(result.get("passed") is True, "B4-3 fixed historical audit failed: " + label)
     require(records[FINAL_VARIANT, "clippy"]["exit_code"] == 0 and records[FINAL_VARIANT, "fmt"]["exit_code"] == 0,
             "B4-3 engineering gates failed")
-    docs = json.loads(logs[FINAL_VARIANT, "final-docs"])
+    docs = json.loads(logs[FINAL_VARIANT, "final-docs-final"])
     require(docs["passed"] is True and not any(row["severity"] == "error" for row in docs["diagnostics"]),
             "B4-3 final repository document gate failed")
 
@@ -262,6 +277,9 @@ def expected_closeout(root, repository, records, logs, live_runtime=False):
         "runs": {variant + "/" + label: {"pid": row["pid"], "exit_code": row["exit_code"],
                   "log_sha256": row["log_sha256"], "docs_commit": row["docs_commit"]}
                  for (variant, label), row in records.items()},
+        "excluded_preliminary_runs": {label: {"pid": row["pid"], "log_sha256": row["log_sha256"],
+            "reason": PRELIMINARY_REASONS[label]}
+            for label, row in preliminary_records.items()},
     }
 
 
@@ -297,6 +315,36 @@ def read_run(root, repository, variant, label):
     return record, raw.decode("utf-8")
 
 
+def read_preliminary(root, repository, source, environment, label):
+    """保留并核验并行暂存污染的早期审计尝试，但不采纳其运行结论。"""
+    record = load(root / FINAL_VARIANT / (label + ".json"))
+    require(record["label"] == label and record["argv"] == expected_argv(label)
+            and record["exit_code"] == 0 and record["source_unchanged"] is True
+            and record["source_before"] == record["source_after"] == source["tree_sha256"],
+            "B4-3 preliminary run identity mismatch: " + label)
+    require(record["environment_sha256"] == sha((root / FINAL_VARIANT / "environment.json").read_bytes())
+            and record["pid"] > 0 and record["started_utc"] < record["finished_utc"],
+            "B4-3 preliminary environment/process mismatch: " + label)
+    commit = record["docs_commit"]
+    require(record["docs_commit_after"] == commit and commit == git(repository, "rev-parse", commit).decode().strip()
+            and record["runner_sha256"] == sha(git(repository, "show", commit + ":" + SCRIPT)),
+            "B4-3 preliminary runner identity mismatch: " + label)
+    docs = docs_tree_from_commit(repository, commit)
+    stable = record["docs_tree_unchanged"] is True if label == "final-docs" else record["docs_tree_unchanged"] is False
+    require(stable and record["docs_tree_canonical_before"] == docs["canonical_sha256"]
+            and record["docs_tree_commit_raw_sha256"] == docs["raw_sha256"]
+            and record["docs_tree_commit_canonical_sha256"] == docs["canonical_sha256"]
+            and (record["docs_tree_before"] == record["docs_tree_sha256"] and record["docs_tree_after"] != record["docs_tree_before"]
+                 if label != "final-docs" else record["docs_tree_before"] == record["docs_tree_after"] == record["docs_tree_sha256"]),
+            "B4-3 preliminary instability classification mismatch: " + label)
+    raw = (root / record["log_ref"]).read_bytes()
+    require(record["log_bytes"] == len(raw) and record["log_sha256"] == sha(raw),
+            "B4-3 preliminary log identity mismatch: " + label)
+    output = raw.decode("utf-8")
+    require(json.loads(output).get("passed") is True, "B4-3 preliminary command itself failed: " + label)
+    return record, output
+
+
 def verify(root, repository, live_runtime=False, preparing=False, check_inventory=True):
     before = all_entries(root)
     attributes = root / ".gitattributes"
@@ -325,14 +373,21 @@ def verify(root, repository, live_runtime=False, preparing=False, check_inventor
         sources[variant], environments[variant] = source, environment
         require({path: row["canonical_sha256"] for path, row in source["files"].items()} ==
                 fixed_files(repository, source["revision"]), NEGATIVE_REASONS["product"])
+        expected_files = labels | (PRELIMINARY_LABELS if variant == FINAL_VARIANT else set())
         require({label for path in (root / variant).glob("*.json")
-                 if (label := path.stem) not in {"source", "environment"}} == labels,
+                 if (label := path.stem) not in {"source", "environment"}} == expected_files,
                 NEGATIVE_REASONS["state"] + ": execution set changed " + variant)
         for label in sorted(labels):
             record, text = read_run(root, repository, variant, label)
             key = (variant, label)
             records[key], logs[key] = record, text
             referenced.add(record["log_sha256"])
+
+    preliminary_records = {}
+    for label in sorted(PRELIMINARY_LABELS):
+        record, _ = read_preliminary(root, repository, sources[FINAL_VARIANT], environments[FINAL_VARIANT], label)
+        preliminary_records[label] = record
+        referenced.add(record["log_sha256"])
 
     for revision, final in [(sources["baseline"]["revision"], False), (sources[FINAL_VARIANT]["revision"], True)]:
         changed = set(git(repository, "diff", "--name-only", revision, CODE, "--", *PRODUCT_ROOTS).decode().splitlines())
@@ -358,7 +413,7 @@ def verify(root, repository, live_runtime=False, preparing=False, check_inventor
             "B4-3 retained missing-declaration failure record missing")
     require("passed" in logs["fixed", "native-matrix"] and "cases=18318" in logs["fixed", "native-matrix"],
             "B4-3 first matrix record missing")
-    result = expected_closeout(root, repository, records, logs, live_runtime)
+    result = expected_closeout(root, repository, records, logs, preliminary_records, live_runtime)
     closeout_path = root / "closeout.json"
     require(preparing or closeout_path.is_file(), "B4-3 closeout missing")
     if closeout_path.exists():
@@ -461,7 +516,12 @@ def main():
                 rows[variant, label] = record
         logs = {(variant, label): read_run(args.root, args.repository_root, variant, label)[1]
                 for variant, labels in RUN_LABELS.items() for label in labels}
-        write_json(args.root / "closeout.json", expected_closeout(args.root, args.repository_root, rows, logs, True))
+        final_source = load(args.root / f"{FINAL_VARIANT}/source.json")
+        final_environment = load(args.root / f"{FINAL_VARIANT}/environment.json")
+        preliminary = {label: read_preliminary(args.root, args.repository_root, final_source,
+            final_environment, label)[0] for label in PRELIMINARY_LABELS}
+        write_json(args.root / "closeout.json",
+                   expected_closeout(args.root, args.repository_root, rows, logs, preliminary, True))
         write_json(args.root / "evidence.json", {"files": inventory(args.root)})
     elif args.refresh_inventory:
         require(load(args.root / "closeout.json") == verify(args.root, args.repository_root, args.live_runtime,

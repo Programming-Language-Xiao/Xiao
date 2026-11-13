@@ -110,6 +110,8 @@ def is_runtime_devdocs_artifact(path):
     if not path.startswith(prefix):
         return False
     relative = path[len(prefix):]
+    if relative.split("/", 1)[0].startswith("xiao-log-stage-"):
+        return True
     if (relative.startswith("logs/sha256/") or relative in GENERATED_EVIDENCE_JSON
             or relative.startswith("self-negative-") and relative.endswith(".json")):
         return True
