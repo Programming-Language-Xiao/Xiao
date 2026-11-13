@@ -569,7 +569,7 @@ def main():
         write_json(args.root / "evidence.json", {"files": inventory(args.root)})
     elif args.refresh_inventory:
         require(load(args.root / "closeout.json") == verify(args.root, args.repository_root, args.live_runtime,
-                                                            check_inventory=False),
+                                                            preparing=True, check_inventory=False),
                 "B4-3 inventory refresh cannot change closeout")
         temporary = args.root / "evidence.json.tmp"
         write_json(temporary, {"files": inventory(args.root)})
