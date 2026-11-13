@@ -97,6 +97,84 @@ pub use vm_concurrency::{
     take_vm_detached_errors_for, transfer_error,
 };
 
+/// VM/后端内部 sqrt 门面；非语言公开 API，不承诺 semver，不访问 ABI 挂起槽。
+pub fn cmath_sqrt(value: f64) -> RuntimeResult<f64> {
+    value::arithmetic::cmath::sqrt(value)
+}
+
+/// VM/后端内部 floor 门面；非语言公开 API，不承诺 semver，不访问 ABI 挂起槽。
+pub fn cmath_floor(value: f64) -> RuntimeResult<f64> {
+    value::arithmetic::cmath::floor(value)
+}
+
+/// VM/后端内部 ceil 门面；非语言公开 API，不承诺 semver，不访问 ABI 挂起槽。
+pub fn cmath_ceil(value: f64) -> RuntimeResult<f64> {
+    value::arithmetic::cmath::ceil(value)
+}
+
+/// VM/后端内部最近偶数 round 门面；非语言公开 API，不承诺 semver，不访问 ABI 挂起槽。
+pub fn cmath_round(value: f64) -> RuntimeResult<f64> {
+    value::arithmetic::cmath::round(value)
+}
+
+/// VM/后端内部 trunc 门面；非语言公开 API，不承诺 semver，不访问 ABI 挂起槽。
+pub fn cmath_trunc(value: f64) -> RuntimeResult<f64> {
+    value::arithmetic::cmath::trunc(value)
+}
+
+/// VM/后端内部 abs 门面；非语言公开 API，不承诺 semver，不访问 ABI 挂起槽。
+pub fn cmath_abs(value: f64) -> RuntimeResult<f64> {
+    value::arithmetic::cmath::abs(value)
+}
+
+/// VM/后端内部 min 门面；非语言公开 API，不承诺 semver，不访问 ABI 挂起槽。
+pub fn cmath_min(left: f64, right: f64) -> RuntimeResult<f64> {
+    value::arithmetic::cmath::min(left, right)
+}
+
+/// VM/后端内部 max 门面；非语言公开 API，不承诺 semver，不访问 ABI 挂起槽。
+pub fn cmath_max(left: f64, right: f64) -> RuntimeResult<f64> {
+    value::arithmetic::cmath::max(left, right)
+}
+
+/// VM/后端内部 pow 门面；非语言公开 API，不承诺 semver，不访问 ABI 挂起槽。
+pub fn cmath_pow(base: f64, exponent: f64) -> RuntimeResult<f64> {
+    value::arithmetic::cmath::pow(base, exponent)
+}
+
+/// VM/后端内部弧度 sin 门面；非语言公开 API，不承诺 semver，不访问 ABI 挂起槽。
+pub fn cmath_sin(value: f64) -> RuntimeResult<f64> {
+    value::arithmetic::cmath::sin(value)
+}
+
+/// VM/后端内部弧度 cos 门面；非语言公开 API，不承诺 semver，不访问 ABI 挂起槽。
+pub fn cmath_cos(value: f64) -> RuntimeResult<f64> {
+    value::arithmetic::cmath::cos(value)
+}
+
+/// VM/后端内部弧度 tan 门面；非语言公开 API，不承诺 semver，不访问 ABI 挂起槽。
+pub fn cmath_tan(value: f64) -> RuntimeResult<f64> {
+    value::arithmetic::cmath::tan(value)
+}
+
+/// VM/后端内部 exp 门面；非语言公开 API，不承诺 semver，不访问 ABI 挂起槽。
+pub fn cmath_exp(value: f64) -> RuntimeResult<f64> {
+    value::arithmetic::cmath::exp(value)
+}
+
+/// VM/后端内部 ln 门面；非语言公开 API，不承诺 semver，不访问 ABI 挂起槽。
+pub fn cmath_ln(value: f64) -> RuntimeResult<f64> {
+    value::arithmetic::cmath::ln(value)
+}
+
+/// VM/后端内部 log10 门面；非语言公开 API，不承诺 semver，不访问 ABI 挂起槽。
+pub fn cmath_log10(value: f64) -> RuntimeResult<f64> {
+    value::arithmetic::cmath::log10(value)
+}
+
+#[cfg(test)]
+mod cmath_facade_tests;
+
 /// 安装当前平台的最小未处理异常报告器。
 ///
 /// 原生 ABI 入口会自动调用此初始化；宿主集成测试和嵌入式启动器也可以显式提前安装，

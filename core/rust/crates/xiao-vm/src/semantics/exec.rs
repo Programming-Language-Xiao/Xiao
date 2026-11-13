@@ -34,7 +34,7 @@ mod concurrent;
 /// 模块初始化与上下文切换。
 #[path = "module_exec.rs"]
 mod module_exec;
-/// 显式精度除法的Runtime单入口绑定。
+/// 显式精度除法与 cmath 的 Runtime 单入口绑定。
 #[path = "numeric_intrinsics.rs"]
 mod numeric_intrinsics;
 /// 集合变更 intrinsic 的执行绑定。
@@ -1888,6 +1888,23 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 arguments,
                 SourceSpan::new(span.start, span.end).expect("已验证源码区间"),
             ),
+            VmBinding::CmathSqrt
+            | VmBinding::CmathFloor
+            | VmBinding::CmathCeil
+            | VmBinding::CmathRound
+            | VmBinding::CmathTrunc
+            | VmBinding::CmathAbs
+            | VmBinding::CmathMin
+            | VmBinding::CmathMax
+            | VmBinding::CmathPow
+            | VmBinding::CmathSin
+            | VmBinding::CmathCos
+            | VmBinding::CmathTan
+            | VmBinding::CmathExp
+            | VmBinding::CmathLn
+            | VmBinding::CmathLog10 => numeric_intrinsics::cmath(declaration, arguments)
+                .map(Some)
+                .map_err(|error| attach_fault_span(Fault::Error(error), span.start, span.end)),
             VmBinding::ErrorCode => {
                 if declaration.signature.arity != xiao_intrinsics::Arity::One
                     || declaration.signature.parameter != xiao_intrinsics::ValueType::Error

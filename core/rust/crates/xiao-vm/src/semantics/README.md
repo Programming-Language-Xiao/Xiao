@@ -20,3 +20,8 @@ crate 的规范身份函数，将 `std.text` 等路径统一为 `stdlib.text`，
 
 B2-A1将常量池恢复拆入constants.rs：TAC标签和文本不变，lint/lfloat经共享Runtime接纳。
 语法/预算错误仍在实际加载处进入既有可恢复错误路径；不改释放计划、指令版本或22类协议。
+
+B4-2B 的 `numeric_intrinsics.rs` 将 34～48 依 `cmath_parameters` 绑定到规范形参顺序，
+校验完整调用形状与 `float` 类型，再调用 crate 根的 15 个 Runtime Rust 门面。
+错误由 `exec.rs` 附原调用 span 后通过 `Fault::Error` 展开，不经过 C ABI 挂起槽；
+源码实参求值顺序、释放计划及 planned 模块门控保持既有规则。
