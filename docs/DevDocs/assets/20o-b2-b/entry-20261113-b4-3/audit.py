@@ -63,7 +63,7 @@ PRELIMINARY_AUDITS = {
     "audit-b4-2b": "entry-20261113-b4-2b",
 }
 PRELIMINARY_LABELS = {*PRELIMINARY_AUDITS, "collector"}
-PRELIMINARY_LABELS.update({"final-docs", "final-docs-final", "final-docs-verified", "final-docs-closeout"})
+PRELIMINARY_LABELS.update({"final-docs", "final-docs-final", "final-docs-verified", "final-docs-closeout", "final-docs-signed"})
 PRELIMINARY_REASONS = {label: "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
                        for label in [*PRELIMINARY_AUDITS, "collector"]}
 PRELIMINARY_REASONS["audit-b4-2b"] = "superseded by the serial final B4-2B historical audit"
@@ -71,6 +71,7 @@ PRELIMINARY_REASONS["final-docs"] = "superseded after final evidence auditor and
 PRELIMINARY_REASONS["final-docs-final"] = "superseded after final audit corrected the B1 VM command identity"
 PRELIMINARY_REASONS["final-docs-verified"] = "superseded after preliminary-run classification was corrected"
 PRELIMINARY_REASONS["final-docs-closeout"] = "superseded after preliminary B4-2B audit classification was refined"
+PRELIMINARY_REASONS["final-docs-signed"] = "superseded after exact B1 target counts were corrected"
 PRELIMINARY_REASONS["final-docs-verified"] = "superseded after preliminary-run classification was corrected"
 RUN_LABELS = {
     "baseline": {"entry"},
@@ -78,7 +79,7 @@ RUN_LABELS = {
     "fixed-final": {"runtime-build", "native-matrix"},
     FINAL_VARIANT: {
         "runtime-build", "native-matrix", "regressions", "core-tests", "b1-vm", "b1-native",
-        "clippy", "fmt", "collector-final", "final-docs-signed", *HISTORY_AUDITS,
+        "clippy", "fmt", "collector-final", "final-docs-finalized", *HISTORY_AUDITS,
     },
 }
 NEGATIVE_REASONS = {
@@ -147,6 +148,15 @@ def parse_target_counts(text):
     return result
 
 
+def exact_target_counts(text, target, test_name):
+    require(f"Running tests\\{target}.rs " in text and f"test {test_name} ... ok" in text,
+            "B4-3 exact test identity mismatch: " + target + "/" + test_name)
+    rows = re.findall(r"test result: ok\. (\d+) passed; 0 failed; (\d+) ignored;.* (\d+) filtered out;", text)
+    require(len(rows) == 1 and rows[0][0] == "1" and rows[0][1] == "0",
+            "B4-3 exact test count mismatch: " + target + "/" + test_name)
+    return {target: (1, 0)}
+
+
 def expected_argv(label):
     cargo = ["cargo", "+1.96.0", "test", "--locked", "--manifest-path", "core/rust/Cargo.toml"]
     if label == "runtime-build":
@@ -177,7 +187,7 @@ def expected_argv(label):
         return ["cargo", "+1.96.0", "fmt", "--manifest-path", "core/rust/Cargo.toml", "--all", "--", "--check"]
     if label in {"collector", "collector-final"}:
         return ["python", "-B", "-X", "utf8", SCRIPT, "content-store-self-test"]
-    if label in {"final-docs", "final-docs-final", "final-docs-verified", "final-docs-closeout", "final-docs-signed"}:
+    if label in {"final-docs", "final-docs-final", "final-docs-verified", "final-docs-closeout", "final-docs-signed", "final-docs-finalized"}:
         return ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"]
     if label in HISTORY_AUDITS or label in PRELIMINARY_AUDITS:
         directory = (HISTORY_AUDITS | PRELIMINARY_AUDITS)[label]
@@ -232,7 +242,7 @@ def expected_closeout(root, repository, records, logs, preliminary_records, live
     require(parse_target_counts(logs[FINAL_VARIANT, "core-tests"]) == expected_counts,
             "B4-3 core workspace test targets changed")
     require("B4-3-POW-DIFF rows=1075 same=1011 error_boundary=40 value_bits=24 reference_inputs=exact result=passed"
-            in logs[FINAL_VARIANT, "core-tests"], "B4-3 historical pow fixture not checked")
+            in logs[FINAL_VARIANT, "regressions"], "B4-3 historical pow fixture not checked")
     regression_counts = parse_target_counts(logs[FINAL_VARIANT, "regressions"])
     expected_regressions = {
         "20o_b2_b4_cmath_llvm": (4, 1), "20o_b2_b4_cmath_vm": (7, 0), "20o_b2_b4_frontend": (3, 0),
@@ -243,11 +253,11 @@ def expected_closeout(root, repository, records, logs, preliminary_records, live
     require(regression_counts == expected_regressions, "B4-3 cross-stage regression targets changed")
     require(len(re.findall(r"B3-WRAPPER-IMPORT .* executable=false result=planned-rejected", logs[FINAL_VARIANT, "regressions"])) == 30,
             "B4-3 planned import boundary count mismatch")
-    require(parse_target_counts(logs[FINAL_VARIANT, "b1-vm"]) == {"20o_b1_probe": (1, 0)}
-            and "test b1_capabilities_have_vm_golden_outputs ... ok" in logs[FINAL_VARIANT, "b1-vm"],
+    require(exact_target_counts(logs[FINAL_VARIANT, "b1-vm"], "20o_b1_probe",
+                                "b1_capabilities_have_vm_golden_outputs") == {"20o_b1_probe": (1, 0)},
             "B4-3 B1 VM exact entry failed")
-    require(parse_target_counts(logs[FINAL_VARIANT, "b1-native"]) == {"20o_b1_probe": (1, 0)}
-            and "test b1_capabilities_match_native_golden_outputs ... ok" in logs[FINAL_VARIANT, "b1-native"],
+    require(exact_target_counts(logs[FINAL_VARIANT, "b1-native"], "20o_b1_probe",
+                                "b1_capabilities_match_native_golden_outputs") == {"20o_b1_probe": (1, 0)},
             "B4-3 B1 native exact entry failed")
     require("B2-B2-DIVIDE backend=native optimization=0,3 intrinsic=33 result=success" in logs[FINAL_VARIANT, "b1-native"],
             "B4-3 B2-B native entry missing")
@@ -259,7 +269,7 @@ def expected_closeout(root, repository, records, logs, preliminary_records, live
         require(historical_audit_passed(label, result), "B4-3 fixed historical audit failed: " + label)
     require(records[FINAL_VARIANT, "clippy"]["exit_code"] == 0 and records[FINAL_VARIANT, "fmt"]["exit_code"] == 0,
             "B4-3 engineering gates failed")
-    docs = json.loads(logs[FINAL_VARIANT, "final-docs-signed"])
+    docs = json.loads(logs[FINAL_VARIANT, "final-docs-finalized"])
     require(docs["passed"] is True and not any(row["severity"] == "error" for row in docs["diagnostics"]),
             "B4-3 final repository document gate failed")
 
@@ -352,7 +362,7 @@ def read_preliminary(root, repository, source, environment, label):
             "B4-3 preliminary runner identity mismatch: " + label)
     docs = fixed_devdocs_tree(str(repository), commit)
     stable_labels = {"audit-b4-2b", "final-docs", "final-docs-final", "final-docs-verified",
-                     "final-docs-closeout", "final-docs-signed"}
+                     "final-docs-closeout", "final-docs-signed", "final-docs-finalized"}
     stable = record["docs_tree_unchanged"] is True if label in stable_labels else record["docs_tree_unchanged"] is False
     require(stable and record["docs_tree_canonical_before"] == docs["canonical_sha256"]
             and record["docs_tree_commit_raw_sha256"] == docs["raw_sha256"]
