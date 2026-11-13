@@ -111,7 +111,9 @@ fn type_uses_runtime(ty: &IrType) -> bool {
 pub(crate) fn program_uses_runtime(program: &IrProgram) -> bool {
     if !program.concurrency_calls.is_empty()
         || !program.table_signatures.is_empty()
-        || !program.runtime_checks.is_empty()
+        // 固定宽度numeric_range逐项由静态算术、float有限值与窄化边界检查落实；
+        // 不因检查元数据把纯标量float pow改路由到动态值ABI。其它检查仍启用动态路径。
+        || program.runtime_checks.iter().any(|check| check.kind != "numeric_range")
         || !program.modules.is_empty()
     {
         return true;

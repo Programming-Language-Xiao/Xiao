@@ -21,6 +21,9 @@ use crate::text::{escape_llvm, stable_hash};
 #[path = "dynamic_architecture_tests.rs"]
 /// 锁定动态降低器门面、静态边界和职责子模块的依赖方向。
 mod architecture_tests;
+#[path = "dynamic/cmath.rs"]
+/// cmath 的拥有实参、C ABI 调用及状态传播。
+mod cmath;
 #[path = "dynamic/container.rs"]
 /// 数组、字典、集合、表构造与表描述符发射。
 mod container;

@@ -507,7 +507,7 @@ fn respects_declared_scalar_width() {
 }
 
 #[test]
-/// 浮点幂必须使用 LLVM intrinsic 的二参数声明，并能通过真实汇编器验证。
+/// Float幂改接共享cmath C ABI，保留两实参/独立out并能通过真实汇编器验证。
 fn lowers_float_power_with_valid_intrinsic_signature() {
     let power = IrExpression {
         kind: IrExpressionKind::Binary {
@@ -523,8 +523,10 @@ fn lowers_float_power_with_valid_intrinsic_signature() {
     assert!(
         module
             .text
-            .contains("declare double @llvm.pow.f64(double, double)")
+            .contains("declare i32 @xiao_runtime_cmath_pow(ptr, ptr, ptr)")
     );
+    assert!(module.uses_runtime);
+    assert!(!module.text.contains("llvm.pow.f64"));
     assert!(!module.text.contains("double double"));
     if let Some(llvm_as) = std::env::var_os("XIAO_LLVM_AS") {
         NativeBuild::new()

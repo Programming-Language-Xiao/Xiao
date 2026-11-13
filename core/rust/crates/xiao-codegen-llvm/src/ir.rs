@@ -19,6 +19,9 @@ use crate::error::{CodegenError, Result};
 use crate::optimization::LlvmOptimizationReport;
 use crate::target::TargetDescription;
 use crate::text::{escape_llvm, stable_hash};
+#[path = "static_cmath.rs"]
+/// 静态标量到cmath C ABI的窄桥，不依赖动态降低器。
+mod cmath;
 
 /// 入口结果的观察策略。
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -1210,6 +1213,9 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
             .ok_or_else(|| CodegenError::InvalidIr {
                 message: format!("未知或已废弃的 intrinsic ID {id}"),
             })?;
+        if declaration.kind == xiao_intrinsics::IntrinsicKind::Cmath {
+            return self.emit_cmath_intrinsic(declaration, arguments, expected, span);
+        }
         if declaration.kind != xiao_intrinsics::IntrinsicKind::ScalarConversion {
             return Err(unsupported(
                 format!("静态 intrinsic {}", declaration.public_name),
@@ -1699,12 +1705,11 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         span: IrSpan,
         constant_exponent: Option<i128>,
     ) -> Result<String> {
-        if ty.is_float() {
-            let intrinsic = if ty == Scalar::Float {
-                "llvm.pow.f64"
-            } else {
-                "llvm.pow.f32"
-            };
+        if ty == Scalar::Float {
+            return self.emit_cmath_scalar_call("cmath_pow", &[left, right], span);
+        }
+        if ty == Scalar::Sfloat {
+            let intrinsic = "llvm.pow.f32";
             self.module.declaration(format!(
                 "declare {} @{intrinsic}({}, {})",
                 ty.llvm(),

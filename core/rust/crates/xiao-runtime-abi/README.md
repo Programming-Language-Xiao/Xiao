@@ -41,7 +41,7 @@ getter 只借读指定错误对象的 UTF-8 code，不分配、不 retain/releas
 
 B3内部快照追加15个`xiao_runtime_cmath_*`入口，参数和返回遵守F-5的借读输入、拥有out及状态表。
 纯float成功路径不分配数值载荷；结构错误1/2/3保留out与挂起槽，类型002或数学009使用状态6。
-当前仍为内部ABI1.18/生成器20，B5再统一切1.19/21；不能只凭版本号混用旧Runtime，必须核对内容身份。
+当前为内部ABI1.18/生成器21：B4-3的LLVM lowering文本已变化，ABI布局未变；B5只将ABI切至1.19并执行拒绝/重生成矩阵，不再次升级生成器。不能只凭ABI版本号混用Runtime，必须核对生成器和Runtime内容身份。
 类型/IR/VM/LLVM和`std.cmath`的语言调用留B4，教程与registry继续planned。
 
 ## 允许与禁止依赖
@@ -52,4 +52,4 @@ B3内部快照追加15个`xiao_runtime_cmath_*`入口，参数和返回遵守F-5
 10T 新增独立 `XiaoTableDescriptorV2`、注册式方法回调与值指针字段入口，旧描述符仍为 40 字节。
 新描述符 88 字节、方法项 56 字节；回调返回 i32 状态，receiver/参数借用、结果指针转移所有权。
 
-B2 内部快照追加 `xiao_runtime_lfloat_divide` 的四个借用输入与拥有输出槽声明，成功替换、失败保持 out；只激活 intrinsic 33。ABI 编码仍为 1.18、生成器仍为 20，仅供本批内部验证；B5 才统一切换 1.19/21，不将此快照作为公共发布产物。
+B2历史快照追加`xiao_runtime_lfloat_divide`的四个借用输入与拥有输出槽声明，成功替换、失败保持out；仅激活intrinsic33，固定于ABI1.18/生成器20。B4-3按已授权版本裁定将LLVM生成器升至21、ABI仍为1.18，仅供内部验证，不将旧快照或当前过渡快照作为公共发布产物。

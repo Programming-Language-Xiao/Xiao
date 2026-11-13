@@ -7,6 +7,8 @@
 
 版本 19 按真实模块绑定选择导入及模块内函数调用，避免 math/statistics 等同名入口错绑。
 
+版本21为B4-3的Runtime cmath ABI调用及Float `**`共核；Runtime ABI仍为1.18，sfloat幂保留`llvm.pow.f32`。
+
 22E 的 `native_metadata.rs` / `native_metadata_sections.rs` / `native_metadata_tests.rs`
 保存公开并发产物的有界编解码、ELF/PE/Mach-O 专用节读取与拒绝回归。构建后从真实文件
 重新读取并校验 ABI、最小位集、目标和标准库身份；不执行入口，也不使用外部解析命令。

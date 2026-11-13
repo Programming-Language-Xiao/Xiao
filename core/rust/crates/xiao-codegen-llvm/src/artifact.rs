@@ -1302,6 +1302,7 @@ fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
     if symbol.starts_with("xiao_runtime_value_")
         || symbol.starts_with("xiao_runtime_string_")
         || symbol.starts_with("xiao_runtime_error_")
+        || symbol.starts_with("xiao_runtime_cmath_")
         || symbol.starts_with("xiao_runtime_abi_")
         || symbol.starts_with("xiao_runtime_language_context_")
         || symbol.starts_with("xiao_runtime_fatal_")
