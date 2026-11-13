@@ -41,8 +41,19 @@ pub(super) fn divide(
     .map_err(|error| attach_fault_span(Fault::Error(error), span.start(), span.end()))
 }
 
-/// 按冻结形参绑定 cmath 已求值实参；先校验完整形状/类型，再进入唯一数学内核。
+/// Cmath 的 Rust Result 统一转入 VM 可捕获错误，并附上原调用源码区间。
 pub(super) fn cmath(
+    declaration: &IntrinsicDecl,
+    arguments: &[BoundArgument],
+    span: xiao_ir::IrSpan,
+) -> Result<Option<RuntimeValue>, Fault> {
+    cmath_value(declaration, arguments)
+        .map(Some)
+        .map_err(|error| attach_fault_span(Fault::Error(error), span.start, span.end))
+}
+
+/// 按冻结形参绑定已求值实参；先校验完整形状/类型，再按 VmBinding 进入唯一数学内核。
+fn cmath_value(
     declaration: &IntrinsicDecl,
     arguments: &[BoundArgument],
 ) -> xiao_runtime::RuntimeResult<RuntimeValue> {
