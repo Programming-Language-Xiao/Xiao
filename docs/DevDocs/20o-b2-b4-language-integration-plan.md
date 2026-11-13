@@ -4,7 +4,7 @@
 > 入口为 B3-3 代码 `89d782e1`、B3-4 固定代码 `7d8b85e4` 与其源码收口证据；当前 intrinsic 34～48 仅内部 active，VM/LLVM 未绑定。
 > B4 只做类型/IR/TAC/VM/LLVM/序列化与双路径承载；不升 ABI 1.19/21，不升级 registry，不跑旧 721。
 > `stdlib.cmath` 仍 planned；B4 的通过只作为内部语言验收，B5 切版本，B2-C 才最终发布。
-> 2026-11-12 状态回写：B4-2A 的 34～48 TAC/字节码、FIX1 planned 边界修复及退出门槛已由 `c4610211` 验收；当时 Rust-only Runtime/VM 分派尚未开始；2026-11-13 已由 `57ca957c` 完成 B4-2 内部验收，见[B4-2B记录](assets/20o-b2-b/entry-20261113-b4-2b/README.md)。归属和固定复跑见[FIX1证据](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)。
+> 2026-11-12 状态回写：B4-2A 的 34～48 TAC/字节码、FIX1 planned 边界修复及退出门槛已由 `c4610211` 验收；当时 Rust-only Runtime/VM 分派尚未开始；2026-11-13 已由 `246bea46` 完成 B4-2 内部验收，见[B4-2B记录](assets/20o-b2-b/entry-20261113-b4-2b/README.md)。归属和固定复跑见[FIX1证据](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)。
 
 ## 一、入口与范围
 

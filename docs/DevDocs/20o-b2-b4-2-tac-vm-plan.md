@@ -1,6 +1,6 @@
 # 20O-B2-B4-2. cmath TAC/字节码与 VM 实施规划
 
-> **B4-0/B4-1 已完成；B4-2A 已完成 Windows 本机退出，FIX1 恢复 22c 29/29；B4-2B 已在 `57ca957c` 完成 Windows 本机内部验收，B4-2 已内部收口；B4-3 起、B5～B7 与 B2-C 仍未开始。**
+> **B4-0/B4-1 已完成；B4-2A 已完成 Windows 本机退出，FIX1 恢复 22c 29/29；B4-2B 已在 `246bea46` 完成 Windows 本机内部验收，B4-2 已内部收口；B4-3 起、B5～B7 与 B2-C 仍未开始。**
 > 原入口为 B4-1 产品代码 `c7a45e10` 与证据；当前 34～48 的 TAC/字节码及 VM 分派已接通，15 个 Rust-only Runtime 门面复用共享内核；LLVM lowering 仍留 B4-3。
 > B4-2 只做 TAC/字节码编码、VM 执行和必要的 Rust-only Runtime 调用桥；不接 LLVM、双路径导入/归档、C ABI、ABI 1.19/21 或 registry。
 > 30 条 `std.cmath`/`stdlib.cmath` 导入后调用仍拒绝，FIX1 已恢复子 VM 未使用导入及归档写前拒绝；归属与B4-2A退出见[FIX1记录](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)，完整B4-2当前退出另见[B4-2B记录](assets/20o-b2-b/entry-20261113-b4-2b/README.md)。[原自审](assets/20o-b2-b/entry-20261112-b4-2a/review-20261112/README.md)保留当时的27/29，不改写历史。B4-4才接双路径。
@@ -54,7 +54,7 @@ B4-2 是 VM 内部可执行批，不是 `std.cmath` 模块导入可用批。B4-4
 
 ## 二、开工闸门
 
-以下为批准的要求。原 B4-2A 复跑为 27/29；FIX1 已直接复跑 B3-4 的 29/29 和 B4-1 的 27/29，确认归属，并在 `c4610211` 恢复 29/29、完成 B4-2A 退出。后续 B4-2B 已在 `57ca957c` 完成当前运行，见[本机取证](assets/20o-b2-b/entry-20261113-b4-2b/README.md)；以下开工要求保留历史身份，固定历史审计不替代当前运行。
+以下为批准的要求。原 B4-2A 复跑为 27/29；FIX1 已直接复跑 B3-4 的 29/29 和 B4-1 的 27/29，确认归属，并在 `c4610211` 恢复 29/29、完成 B4-2A 退出。后续 B4-2B 已在 `246bea46` 完成当前运行，见[本机取证](assets/20o-b2-b/entry-20261113-b4-2b/README.md)；以下开工要求保留历史身份，固定历史审计不替代当前运行。
 
 1. B4-0/B4-1 审计通过，代码 `c7a45e10` 未漂移；
 2. 15 项 `IntrinsicCall` 的 ID/参数/span 和 30 条 planned 拒绝可复现；
@@ -174,4 +174,4 @@ core/rust/crates/xiao-driver/tests/                  VM/字节码测试
 docs/DevDocs/assets/20o-b2-b/entry-<date>-b4/        B4-2 证据
 ```
 
-本页只做 B4-2；Windows 内部退出由 `57ca957c` 和[独立记录](assets/20o-b2-b/entry-20261113-b4-2b/README.md)证明：驱动回归50/50、Runtime272/272、VM35/35、字节码65/65；数值回归15项通过及3项既有原生忽略均独立登记。B4-3 起、B5～B7 与 B2-C 仍后置，未声称三平台或性能验收。
+本页只做 B4-2；Windows 内部退出由 `246bea46` 和[独立记录](assets/20o-b2-b/entry-20261113-b4-2b/README.md)证明：驱动回归50/50、Runtime272/272、VM35/35、字节码65/65；数值回归15项通过及3项既有原生忽略均独立登记。B4-3 起、B5～B7 与 B2-C 仍后置，未声称三平台或性能验收。

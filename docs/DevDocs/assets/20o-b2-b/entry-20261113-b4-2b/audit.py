@@ -172,9 +172,10 @@ def verify(root, repository, live_runtime=False):
     require("B4-2B-VM-IDENTITY cases=1440" in logs["revised", "regressions"]
             and "B4-2B-VM-OWNERSHIP cases=45" in logs["revised", "regressions"], "VM位模式或所有权专项缺失")
     require("B4-2B-RUNTIME reference_inputs=17243 facades=15 kernel_identity=exact" in logs["revised", "runtime_vm"], "Runtime门面输入证据缺失")
-    require(counts(logs["revised", "runtime_vm"])["ignored"] == 0, "Runtime/VM单测存在忽略")
+    require(counts(logs["revised", "runtime_vm"]) == {"passed": 307, "failed": 0, "ignored": 0}, "Runtime/VM单测计数不符")
     require(counts(logs["revised", "bytecode"])["passed"] == 65, "TAC回归计数不符")
     numeric = counts(logs["revised", "numeric_regressions"])
+    require(numeric == {"passed": 15, "failed": 0, "ignored": 3}, "数值回归通过或既有忽略计数不符")
     for label in HISTORY:
         history = json.loads(logs["fixed", label])
         require(history.get("passed") is True or label == "b1" and history.get("passed") == history.get("total") == 18, "固定历史审计失败：" + label)
