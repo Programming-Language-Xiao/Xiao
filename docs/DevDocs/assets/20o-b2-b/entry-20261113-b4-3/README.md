@@ -8,12 +8,14 @@ B4-3 将动态/静态 cmath 接到既有 C ABI，并使 Float `**` 共用 `cmath
 
 | 变体 | 固定代码 | 结果 |
 | --- | --- | --- |
-| baseline | `b77b0d5c` | 入口驱动回归通过；提供接线前后比较基点 |
+| baseline | `0a9e68a7` | B4-2入口驱动回归通过；提供接线前比较基点 |
 | fixed | `b77b0d5c` | 原生矩阵通过；合并回归发现两项既有 hex 隔离失败，原日志保留 |
 | fixed-final | `6056fb94` | 移除无条件 cmath 声明后，冷构建通过；原生矩阵发现动态函数局部声明未汇总，失败回执保留 |
-| fixed-final2 | 待固定 | 按需提升实际动态调用声明的修复；完整原生矩阵、回归和门禁待运行 |
+| fixed-final2 | `e0d5993e` | 冷构建、完整矩阵、跨阶段回归、B1 VM/原生、核心测试、Clippy、fmt和固定历史审计通过；定稿后文档门禁由独立回执记录 |
 
-因此，前两个独立原生结果不作为最终通过结论。唯一最终结果应引用`fixed-final2`的成功回执；收口前还需完成 B4-3 固定回归、历史审计及定稿后的文档门禁。
+前两个 fixed 变体分别保留了 hex 模块污染和动态调用声明缺失这两轮失败；它们不作为最终通过结论。`fixed-final2`修复后，四组静态/动态 O0/O3 各核对18,318项，其中3,153项为预期错误结果，并覆盖全部1,075组Float pow历史差异。每个产物都通过位模式或错误码比较；状态0/1/2/3/6/8、动态坏标签out不变、挂起槽不变及七个语言退出/catch示例也通过。
+
+最终源码快照为`e0d5993e7c8214f2277d1bb81f9b05357d9305e0`，包含1,059个受保护产品文件。独立Runtime静态库`xiao_runtime.lib`为27,482,962字节，SHA-256 `27b460d2fde00c0e36f2799474e3a21310d5555530cbc8d7694caf6df220702d`。B1 VM与原生精确入口通过；原生入口内含B2-A/B语料。B1、B2、B3、B3-4、B4-0/1和B4-2B固定历史审计均通过。workspace五个核心crate测试、B4跨阶段回归、workspace Clippy与fmt均通过。
 
 在仓库根复核已定稿的记录：
 
@@ -22,6 +24,14 @@ python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261113-b4-3/record.py con
 python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261113-b4-3/record.py run fixed-final2 native-matrix -- cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --release --test 20o_b2_b4_cmath_llvm -- --ignored --exact native_cmath_static_dynamic_o0_o3_and_shared_pow --nocapture
 ```
 
-原生矩阵应在四个静态/动态 O0/O3 产物各核对18,318项，包括全部1,075组历史pow输入、C ABI错误状态和语言级退出/catch。成功日志、runtime-build回执及源码/文档摘要必须都来自同一 fixed-final2 变体。
+最终只读复核与反例：
 
-Linux、macOS、远端CI和性能预算未执行；B4-3不得据此写成三平台或性能通过，也不表示cmath公开导入可用。
+```powershell
+python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261113-b4-3/audit.py
+python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261113-b4-3/audit.py --self-negative
+python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261113-b4-3/audit.py --live-runtime
+```
+
+默认审计读取固定Git对象和回执，不要求当前HEAD或fixed任务目录；`--live-runtime`才核对仍在本机任务根中的Runtime字节。`--collect`是显式生成阶段收口与清单，默认审计不写文件；反例覆盖清单、属性文件、孤立日志、产品摘要、DevDocs绑定、任务路径逃逸和阶段状态。
+
+Linux、macOS、远端CI、旧721 F10与性能预算未执行；B4-3是Windows本机内部退出，不是三平台/性能通过，也不表示cmath公开导入可用。ABI仍1.18、生成器21；B4-4、B4-5和B5未开始。

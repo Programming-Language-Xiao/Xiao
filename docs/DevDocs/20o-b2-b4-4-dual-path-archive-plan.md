@@ -2,7 +2,7 @@
 
 > **2026-11-13 版本裁定执行：星崽在本会话已批准“B4 升到生成器21，更新规划并调整B5边界”。B4-3改LLVM调用文本，按后端版本规则20→21；ABI仍1.18、接口1。B5只将ABI升1.19并核验既有生成器21的最终拒绝/重生成矩阵，不再次因本批接线递增生成器。下文将21留B5或B4不得升21的旧句均由本裁定替代；签署的冻结正文及历史证据不改写。**
 
-> **B4-2A 与 FIX1 已完成 Windows 本机内部退出；B4-2B 已在246bea46完成，B4-3 尚未完成；B4-4 仍未开始，B5～B7 与 B2-C 后置。**
+> **B4-2A、FIX1、B4-2B与B4-3已完成Windows本机内部退出；B4-4仍未开始，B4-5、B5～B7与B2-C后置。B4-3产品与fixed证据见[独立记录](assets/20o-b2-b/entry-20261113-b4-3/README.md)。**
 > 入口为 B4-3 的 LLVM 动态/静态路径、B4-2 的 VM 执行与 B4-1 的类型/IR。
 > B4-4 只做 `std.cmath`/`stdlib.cmath` 双路径、导出/移除、`.xar` 归档、序列化和普通包隔离。
 > ABI维持1.18，生成器沿用B4-3的21；不升级registry/教程；`stdlib.cmath` 仍 planned，B2-C 才最终发布。
@@ -13,7 +13,7 @@
 | --- | --- |
 | B4-1 | 15 项类型/IR 接通 |
 | B4-2 | VM 15 项执行已在246bea46完成Windows本机内部验收；模块导入仍planned |
-| B4-3 | LLVM 动态/静态与 float `**` 共核（待完成） |
+| B4-3 | Windows内部已退出；LLVM动态/静态与float `**`共核，B4-3不等于cmath模块已开放 |
 | 当前导入 | 30 条 `std.cmath`/`stdlib.cmath` 路径仍 planned 拒绝 |
 | 归档 | archive closure 可收集 `stdlib.cmath`，但 `xiao-xar` runner 尚无标准库加载器 |
 | 本批目标 | 双路径可执行、导出/移除、真实 `.xar`/`.xiaoc`、序列化/隔离 |
