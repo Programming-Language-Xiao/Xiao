@@ -82,7 +82,7 @@ RUN_LABELS = {
     "fixed": {"runtime-build", "native-matrix", "regressions"},
     "fixed-final": {"runtime-build", "native-matrix"},
     FINAL_VARIANT: {
-        "runtime-build", "runtime-identity", "native-matrix", "regressions", "core-tests", "b1-vm", "b1-native",
+        "runtime-build", "runtime-identity", "runtime-offline-probe", "native-matrix", "regressions", "core-tests", "b1-vm", "b1-native",
         "clippy", "fmt", "collector-final", "final-docs-runtime", *HISTORY_AUDITS,
     },
 }
@@ -174,6 +174,8 @@ def expected_argv(label):
     if label == "runtime-identity":
         return ["python", "-B", "-X", "utf8", AUDIT_SCRIPT.replace("audit.py", "runtime-identity.py"),
                 str(TASK_BASE / FINAL_VARIANT / "target" / "release" / "xiao_runtime.lib")]
+    if label == "runtime-offline-probe":
+        return ["python", "-B", "-X", "utf8", AUDIT_SCRIPT.replace("audit.py", "runtime-offline-probe.py")]
     if label == "native-matrix":
         return cargo + ["-p", "xiao-driver", "--release", "--test", "20o_b2_b4_cmath_llvm", "--",
                         "--ignored", "--exact", "native_cmath_static_dynamic_o0_o3_and_shared_pow", "--nocapture"]
@@ -228,6 +230,11 @@ def expected_closeout(root, repository, records, logs, preliminary_records, live
                                  "sha256": runtime_identity.get("sha256")}
             and runtime_identity["bytes"] > 0 and re.fullmatch(r"[0-9a-f]{64}", runtime_identity["sha256"]),
             "B4-3 Runtime identity receipt is malformed")
+    offline_probe = json.loads(logs[FINAL_VARIANT, "runtime-offline-probe"])
+    require(offline_probe == {"default_without_live_runtime": True, "live_mode_rejected_missing_runtime": True,
+                              "passed": True, "runtime_restored": True}
+            and records[FINAL_VARIANT, "runtime-offline-probe"]["exit_code"] == 0,
+            "B4-3 default/live Runtime audit boundary probe failed")
     if live_runtime:
         require(runtime_path.is_file() and not runtime_path.is_symlink(), "B4-3 task Runtime artifact missing")
         require(runtime_path.stat().st_size == runtime_identity["bytes"]
