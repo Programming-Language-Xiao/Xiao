@@ -1,0 +1,24 @@
+{
+  "task_root": "D:\\project\\Xiao\\.b4-2b-review\\20261113\\checked",
+  "source_root": "D:\\project\\Xiao\\Xiao",
+  "runtime_library_override_consumed": false,
+  "cargo_builds_runtime_from_source": true,
+  "removed_environment_prefixes": [
+    "XIAO_",
+    "RUST_BIGDECIMAL_"
+  ],
+  "overrides": {
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.b4-2b-review\\20261113\\checked\\target",
+    "XIAO_HOME": "D:\\project\\Xiao\\.b4-2b-review\\20261113\\checked\\home",
+    "TEMP": "D:\\project\\Xiao\\.b4-2b-review\\20261113\\checked\\temp",
+    "TMP": "D:\\project\\Xiao\\.b4-2b-review\\20261113\\checked\\temp",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.b4-2b-review\\20261113\\checked\\runtime\\not-built.lib",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\Xiao\\stdlib",
+    "XIAO_B1_F10": "0",
+    "XIAO_B2_A_PERF": "0",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "CARGO_TERM_COLOR": "never"
+  }
+}
