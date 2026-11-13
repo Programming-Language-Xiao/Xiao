@@ -65,7 +65,7 @@ PRELIMINARY_AUDITS = {
 PRELIMINARY_LABELS = {*PRELIMINARY_AUDITS, "collector"}
 PRELIMINARY_LABELS.update({"final-docs", "final-docs-final", "final-docs-verified", "final-docs-closeout",
                            "final-docs-signed", "final-docs-finalized", "final-docs-productfix", "final-docs-release",
-                           "final-docs-runtime", "final-docs-optional-runtime"})
+                           "final-docs-runtime", "final-docs-optional-runtime", "final-docs-no-probe"})
 PRELIMINARY_REASONS = {label: "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
                        for label in [*PRELIMINARY_AUDITS, "collector"]}
 PRELIMINARY_REASONS["audit-b4-2b"] = "superseded by the serial final B4-2B historical audit"
@@ -79,6 +79,7 @@ PRELIMINARY_REASONS["final-docs-productfix"] = "superseded after the final self-
 PRELIMINARY_REASONS["final-docs-release"] = "superseded after Runtime identity became an explicit recorded receipt"
 PRELIMINARY_REASONS["final-docs-runtime"] = "superseded after optional live Runtime audit behavior was clarified"
 PRELIMINARY_REASONS["final-docs-optional-runtime"] = "superseded after removing an unverified extra Runtime probe"
+PRELIMINARY_REASONS["final-docs-no-probe"] = "superseded after removing the rejected offline probe source from the static tree"
 PRELIMINARY_REASONS["final-docs-verified"] = "superseded after preliminary-run classification was corrected"
 RUN_LABELS = {
     "baseline": {"entry"},
@@ -86,7 +87,7 @@ RUN_LABELS = {
     "fixed-final": {"runtime-build", "native-matrix"},
     FINAL_VARIANT: {
         "runtime-build", "runtime-identity", "native-matrix", "regressions", "core-tests", "b1-vm", "b1-native",
-        "clippy", "fmt", "collector-final", "final-docs-no-probe", *HISTORY_AUDITS,
+        "clippy", "fmt", "collector-final", "final-docs-stable", *HISTORY_AUDITS,
     },
 }
 NEGATIVE_REASONS = {
@@ -204,7 +205,7 @@ def expected_argv(label):
         return ["python", "-B", "-X", "utf8", SCRIPT, "content-store-self-test"]
     if label in {"final-docs", "final-docs-final", "final-docs-verified", "final-docs-closeout",
                  "final-docs-signed", "final-docs-finalized", "final-docs-productfix", "final-docs-release",
-                 "final-docs-runtime", "final-docs-optional-runtime", "final-docs-no-probe"}:
+                 "final-docs-runtime", "final-docs-optional-runtime", "final-docs-no-probe", "final-docs-stable"}:
         return ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"]
     if label in HISTORY_AUDITS or label in PRELIMINARY_AUDITS:
         directory = (HISTORY_AUDITS | PRELIMINARY_AUDITS)[label]
@@ -291,7 +292,7 @@ def expected_closeout(root, repository, records, logs, preliminary_records, live
         require(historical_audit_passed(label, result), "B4-3 fixed historical audit failed: " + label)
     require(records[FINAL_VARIANT, "clippy"]["exit_code"] == 0 and records[FINAL_VARIANT, "fmt"]["exit_code"] == 0,
             "B4-3 engineering gates failed")
-    docs = json.loads(logs[FINAL_VARIANT, "final-docs-no-probe"])
+    docs = json.loads(logs[FINAL_VARIANT, "final-docs-stable"])
     require(docs["passed"] is True and not any(row["severity"] == "error" for row in docs["diagnostics"]),
             "B4-3 final repository document gate failed")
 
@@ -387,6 +388,7 @@ def read_preliminary(root, repository, source, environment, label):
                      "final-docs-closeout", "final-docs-signed", "final-docs-finalized",
                      "final-docs-productfix", "final-docs-release", "final-docs-runtime",
                      "final-docs-optional-runtime", "final-docs-no-probe"}
+    stable_labels.add("final-docs-stable")
     stable = record["docs_tree_unchanged"] is True if label in stable_labels else record["docs_tree_unchanged"] is False
     require(stable and record["docs_tree_canonical_before"] == docs["canonical_sha256"]
             and record["docs_tree_commit_raw_sha256"] == docs["raw_sha256"]
