@@ -63,17 +63,18 @@ PRELIMINARY_AUDITS = {
     "audit-b4-2b": "entry-20261113-b4-2b",
 }
 PRELIMINARY_LABELS = {*PRELIMINARY_AUDITS, "collector"}
-PRELIMINARY_LABELS.add("final-docs")
+PRELIMINARY_LABELS.update({"final-docs", "final-docs-final"})
 PRELIMINARY_REASONS = {label: "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
                        for label in [*PRELIMINARY_AUDITS, "collector"]}
 PRELIMINARY_REASONS["final-docs"] = "superseded after final evidence auditor and evidence README were committed"
+PRELIMINARY_REASONS["final-docs-final"] = "superseded after final audit corrected the B1 VM command identity"
 RUN_LABELS = {
     "baseline": {"entry"},
     "fixed": {"runtime-build", "native-matrix", "regressions"},
     "fixed-final": {"runtime-build", "native-matrix"},
     FINAL_VARIANT: {
         "runtime-build", "native-matrix", "regressions", "core-tests", "b1-vm", "b1-native",
-        "clippy", "fmt", "collector-final", "final-docs-final", *HISTORY_AUDITS,
+        "clippy", "fmt", "collector-final", "final-docs-verified", *HISTORY_AUDITS,
     },
 }
 NEGATIVE_REASONS = {
@@ -145,7 +146,7 @@ def expected_argv(label):
                 "-p", "xiao-codegen-llvm", "-p", "xiao-runtime", "-p", "xiao-vm", "-p", "xiao-bytecode",
                 "-p", "xiao-intrinsics", "--", "--nocapture"]
     if label in {"b1-vm", "b1-native"}:
-        args = cargo + ["-p", "xiao-driver", "--release", "--test", "20o_b1_probe", "--"]
+        args = cargo + ["-p", "xiao-driver"] + (["--release"] if label == "b1-native" else []) + ["--test", "20o_b1_probe", "--"]
         name = "b1_capabilities_have_vm_golden_outputs" if label == "b1-vm" else "b1_capabilities_match_native_golden_outputs"
         flags = ["--exact", name, "--nocapture"]
         return args + (["--ignored"] if label == "b1-native" else []) + flags
@@ -156,7 +157,7 @@ def expected_argv(label):
         return ["cargo", "+1.96.0", "fmt", "--manifest-path", "core/rust/Cargo.toml", "--all", "--", "--check"]
     if label in {"collector", "collector-final"}:
         return ["python", "-B", "-X", "utf8", SCRIPT, "content-store-self-test"]
-    if label in {"final-docs", "final-docs-final"}:
+    if label in {"final-docs", "final-docs-final", "final-docs-verified"}:
         return ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"]
     if label in HISTORY_AUDITS or label in PRELIMINARY_AUDITS:
         directory = (HISTORY_AUDITS | PRELIMINARY_AUDITS)[label]
@@ -238,7 +239,7 @@ def expected_closeout(root, repository, records, logs, preliminary_records, live
         require(result.get("passed") is True, "B4-3 fixed historical audit failed: " + label)
     require(records[FINAL_VARIANT, "clippy"]["exit_code"] == 0 and records[FINAL_VARIANT, "fmt"]["exit_code"] == 0,
             "B4-3 engineering gates failed")
-    docs = json.loads(logs[FINAL_VARIANT, "final-docs-final"])
+    docs = json.loads(logs[FINAL_VARIANT, "final-docs-verified"])
     require(docs["passed"] is True and not any(row["severity"] == "error" for row in docs["diagnostics"]),
             "B4-3 final repository document gate failed")
 
@@ -330,12 +331,13 @@ def read_preliminary(root, repository, source, environment, label):
             and record["runner_sha256"] == sha(git(repository, "show", commit + ":" + SCRIPT)),
             "B4-3 preliminary runner identity mismatch: " + label)
     docs = docs_tree_from_commit(repository, commit)
-    stable = record["docs_tree_unchanged"] is True if label == "final-docs" else record["docs_tree_unchanged"] is False
+    stable_labels = {"final-docs", "final-docs-final"}
+    stable = record["docs_tree_unchanged"] is True if label in stable_labels else record["docs_tree_unchanged"] is False
     require(stable and record["docs_tree_canonical_before"] == docs["canonical_sha256"]
             and record["docs_tree_commit_raw_sha256"] == docs["raw_sha256"]
             and record["docs_tree_commit_canonical_sha256"] == docs["canonical_sha256"]
             and (record["docs_tree_before"] == record["docs_tree_sha256"] and record["docs_tree_after"] != record["docs_tree_before"]
-                 if label != "final-docs" else record["docs_tree_before"] == record["docs_tree_after"] == record["docs_tree_sha256"]),
+                 if label not in stable_labels else record["docs_tree_before"] == record["docs_tree_after"] == record["docs_tree_sha256"]),
             "B4-3 preliminary instability classification mismatch: " + label)
     raw = (root / record["log_ref"]).read_bytes()
     require(record["log_bytes"] == len(raw) and record["log_sha256"] == sha(raw),
