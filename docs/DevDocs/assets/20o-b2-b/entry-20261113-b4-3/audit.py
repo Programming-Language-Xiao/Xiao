@@ -65,7 +65,7 @@ PRELIMINARY_AUDITS = {
 PRELIMINARY_LABELS = {*PRELIMINARY_AUDITS, "collector"}
 PRELIMINARY_LABELS.update({"final-docs", "final-docs-final", "final-docs-verified", "final-docs-closeout",
                            "final-docs-signed", "final-docs-finalized", "final-docs-productfix", "final-docs-release",
-                           "final-docs-runtime", "final-docs-optional-runtime", "final-docs-no-probe"})
+                           "final-docs-runtime", "final-docs-optional-runtime"})
 PRELIMINARY_REASONS = {label: "parallel temporary log staging changed DevDocs snapshot; retained but not accepted"
                        for label in [*PRELIMINARY_AUDITS, "collector"]}
 PRELIMINARY_REASONS["audit-b4-2b"] = "superseded by the serial final B4-2B historical audit"
@@ -79,7 +79,6 @@ PRELIMINARY_REASONS["final-docs-productfix"] = "superseded after the final self-
 PRELIMINARY_REASONS["final-docs-release"] = "superseded after Runtime identity became an explicit recorded receipt"
 PRELIMINARY_REASONS["final-docs-runtime"] = "superseded after optional live Runtime audit behavior was clarified"
 PRELIMINARY_REASONS["final-docs-optional-runtime"] = "superseded after removing an unverified extra Runtime probe"
-PRELIMINARY_REASONS["final-docs-no-probe"] = "superseded after removing the rejected offline probe source from the static tree"
 PRELIMINARY_REASONS["final-docs-verified"] = "superseded after preliminary-run classification was corrected"
 RUN_LABELS = {
     "baseline": {"entry"},
