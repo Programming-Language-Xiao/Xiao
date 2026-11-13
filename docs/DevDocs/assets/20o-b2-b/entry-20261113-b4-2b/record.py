@@ -21,8 +21,7 @@ SELF_EVIDENCE_ROOT = "docs/DevDocs/assets/20o-b2-b/entry-20261113-b4-2b"
 SELF_EVIDENCE_VARIANTS = {"baseline", "fixed"}
 STABLE_VARIANT_JSON = {"environment.json", "source.json", "targets.json", "toolchain.json"}
 GENERATED_EVIDENCE_JSON = {
-    "attribution.json", "b4-2a-exit.json", "closeout.json", "evidence.json",
-    "self-negative-findings.json",
+    "closeout.json", "evidence.json", "self-negative-findings.json",
 }
 
 
@@ -266,7 +265,8 @@ def main():
                     "files": files, "tree_sha256": identity(files)})
         write_json(destination / "environment.json", {
             "task_root": str(task), "source_root": str(source),
-            "runtime_staticlib_built_or_used": False,
+            "runtime_library_override_consumed": False,
+            "cargo_builds_runtime_from_source": True,
             "removed_environment_prefixes": ["XIAO_", "RUST_BIGDECIMAL_"],
             "overrides": {
                 "CARGO_TARGET_DIR": str(task / "target"), "XIAO_HOME": str(task / "home"),
