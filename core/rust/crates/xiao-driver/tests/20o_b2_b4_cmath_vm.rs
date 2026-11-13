@@ -330,6 +330,35 @@ fn domain_errors_keep_decoded_span_and_observable_cleanup() {
     }
     let source = "def probe(bool fail)\n    held = [\"owned\"]\n    try\n        temporary = \"2.0\"\n        if fail\n            cmath_sqrt(-float(lfloat(temporary)))\n        else\n            cmath_sqrt(float(lfloat(temporary)))\n    catch err as ArithmeticError\n        print(error_code(err))\n    finally\n        print(held[0])\nprobe(true)\nprobe(false)\n";
     let artifact = compile(source);
+    // 解码后的同一失败调用必须真实进入处理器，并执行 finally 与释放计划。
+    for width in [OperandWidth::Leb128, OperandWidth::FixedU16] {
+        let program = lower_program(&artifact.ir);
+        let encoded = encode(&program, width).unwrap();
+        let decoded = decode(&encoded.bytes).unwrap();
+        let result = xiao_vm::run_request(
+            &RunRequest::new(&artifact.ir, &decoded).with_event_capacity(4096),
+        );
+        assert!(result.result.is_success(), "{width:?}: {result:?}");
+        assert_eq!(output(&result.events), "owned\nX06-RUNTIME-009\nowned\n");
+        assert_eq!(
+            result
+                .events
+                .iter()
+                .filter(|event| matches!(event, VmEvent::HandlerMatched {
+            catch_type: Some(kind), .. } if kind == "ArithmeticError"))
+                .count(),
+            1
+        );
+        assert!(
+            result
+                .events
+                .iter()
+                .any(|event| matches!(event, VmEvent::ValueReleased { .. }))
+        );
+        println!(
+            "B4-2B-VM-DECODED-CATCH width={width:?} error=009 handler=ArithmeticError finally=2 releases=present result=passed"
+        );
+    }
     let mut baseline = None;
     for level in [
         xiao_optimizer::OptimizationLevel::O0,
