@@ -1,6 +1,6 @@
 # 20O-B2-B4-2. cmath TAC/字节码与 VM 实施规划
 
-> **B4-0/B4-1 已完成；B4-2A 已完成 Windows 本机退出，FIX1 恢复 22c 29/29；B4-2B、B4-3 起、B5～B7 与 B2-C 仍未开始，完整 B4-2 尚未收口。**
+> **B4-0/B4-1 已完成；B4-2A 已完成 Windows 本机退出，FIX1 恢复 22c 29/29；B4-2B 开工就绪，B4-3 起、B5～B7 与 B2-C 仍未开始，完整 B4-2 尚未收口。**
 > 入口为 B4-1 产品代码 `c7a45e10` 与证据；类型/IR 已能表达 34～48，声明表已有 `VmBinding::Cmath*` 键，但 VM 分派实现和 LLVM lowering 尚未接通。
 > B4-2 只做 TAC/字节码编码、VM 执行和必要的 Rust-only Runtime 调用桥；不接 LLVM、双路径导入/归档、C ABI、ABI 1.19/21 或 registry。
 > 30 条 `std.cmath`/`stdlib.cmath` 导入后调用仍拒绝，FIX1 已恢复子 VM 未使用导入及归档写前拒绝；归属和当前退出见[FIX1 记录](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)。[原自审](assets/20o-b2-b/entry-20261112-b4-2a/review-20261112/README.md)仍保留当时的 27/29，不改写历史。B4-4 才接双路径。

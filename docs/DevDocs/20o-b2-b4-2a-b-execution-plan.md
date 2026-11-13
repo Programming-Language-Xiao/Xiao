@@ -1,6 +1,6 @@
 # 20O-B2-B4-2A/B. cmath TAC/字节码与 VM 执行规划
 
-> **B4-2A 已完成 Windows 本机退出：TAC/字节码 65/65，FIX1 恢复 22c 29/29。B4-2B、B4-3 起、B5～B7 与 B2-C 仍未开始。**
+> **B4-2A 已完成 Windows 本机退出：TAC/字节码 65/65，FIX1 恢复 22c 29/29。B4-2B 开工就绪（入口与开工单见 §3.0），B4-3 起、B5～B7 与 B2-C 仍未开始。**
 > 入口为 B4-1 产品代码 `c7a45e10`、B4-2 边界规划 `162d94ea`、Runtime 入口裁定 `8b8d5e3e` 和完整签名记录 `a5d7c866`。
 > B4-2A 验证 TAC/字节码 34～48 往返；若发现缺口，只修对应 lowering/校验。B4-2B 接入 15 个 Runtime 门面与 VM 分派、错误及清理。
 > 30 条 cmath 导入后调用探测仍拒绝，FIX1 已恢复未使用导入的子 VM/归档拒绝；`language_available=false`，B4-4 才接双路径。
@@ -82,6 +82,15 @@ xiao_runtime::cmath_log10(value: f64) -> RuntimeResult<f64>
 
 ## 三、B4-2B：Runtime 门面与 VM
 
+### 3.0 开工单（2026-11-13）
+
+1. 入口：B4-2A 退出产品 `c4610211`、TAC 测试 `09fa912b`；[FIX1 退出记录](assets/20o-b2-b/entry-20261112-b4-2a-fix1/b4-2a-exit.json)记录 22c 29/29、字节码 65/65、前端 3/3、wrapper 8/8。开工前复核 `c4610211` 到当前 HEAD 的 `core/`、`stdlib/` 无产品差异；如有差异，按实际差异重新登记回归，不能沿用旧回执。
+2. 现状：`VmBinding::Cmath*` 声明键已存在；15 项 VM 分派与 15 个 Rust-only Runtime 函数尚未实现；`language_available=false`。
+3. 必须保留：FIX1 的 planned 门控（`DriverModuleLoader::compile`、归档写前导入扫描）、30 条导入后调用拒绝、22c 29/29 与子 VM/归档边界 3 项；不得靠放宽、删除或忽略测试推进。
+4. 顺序：3.1 Runtime 门面 → 3.2 VM 分派 → 3.3 错误/span/清理/Pure → 证据与退出。任一步发现必须改 checker 或计划外组件时，先停下另立裁定。
+5. 证据：新建 `assets/20o-b2-b/entry-20261113-b4-2b/`；原始日志按 SHA-256 内容寻址，同一内容只存一个对象；每次运行单独保存 PID、时间、argv、cwd、环境、源码/DevDocs 摘要和退出码。文档修改合并到定稿后只跑一次最终 docs 门禁，中间轮次不重复全量门禁；FIX1 历史目录与日志不改写。
+6. 不做：LLVM（B4-3）、双路径/归档接线（B4-4）、C ABI、ABI 1.19/21、registry/教程、旧 721；Linux/macOS/远端 CI 不具备时如实登记。
+
 ### 3.1 Runtime 门面
 
 1. 在 `xiao-runtime` crate 根增加 15 个 `pub fn cmath_*`；
@@ -102,7 +111,8 @@ xiao_runtime::cmath_log10(value: f64) -> RuntimeResult<f64>
 5. 数学域/非有限映射 X06-RUNTIME-009，进入 `Fault::Error`/catch；
 6. source span 附到 fault；成功不清 Runtime ABI 挂起错误；
 7. 不因 `Pure` 删除结果未使用调用；
-8. 30 条导入路径仍拒绝；VM 只执行直接原语/内部 IR。
+8. 30 条导入路径仍拒绝；VM 只执行直接原语/内部 IR；
+9. 若分派改动触及模块加载或归档路径，必须重跑 22c 29/29 与 FIX1 子 VM/归档边界 3 项，不得以本批专项测试替代。
 
 退出：VM 15 项可执行；错误/span/清理一致；导入仍 planned。
 
@@ -117,7 +127,8 @@ xiao_runtime::cmath_log10(value: f64) -> RuntimeResult<f64>
 7. 30 条 planned 导入路径仍拒绝；
 8. B4-0 向量、B4-1 类型/IR、B3-4 wrapper/22c、B1/B2/B3 历史回归；
 9. 保存源码、工具链、目标、PID、日志、前后摘要；FIX1 后的新证据目录按原始日志字节 SHA-256 内容寻址，重复内容只存一个对象；每次运行仍单独保存 label、PID、时间、argv、cwd、环境/源码摘要、退出码，并引用日志对象的路径、字节数和摘要；
-10. 记录 Windows 本机与未执行平台。
+10. 记录 Windows 本机与未执行平台；
+11. 文档修改合并到定稿后再跑最终 docs 门禁，中间轮次不重复全量门禁；FIX1 历史目录不改写。
 
 退出：B4-2 内部证据完整；B4-3 未开始；`language_available=false`。
 
