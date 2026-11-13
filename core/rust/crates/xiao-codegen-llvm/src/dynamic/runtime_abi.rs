@@ -89,16 +89,6 @@ pub(super) fn reachable_runtime_components(text: &str) -> Vec<String> {
 impl<'a> DynamicGenerator<'a> {
     /// 登记 Runtime ABI 声明，并记录可解释组件清单。
     pub(super) fn declare_runtime(&mut self) {
-        for (index, &(name, _, _)) in xiao_intrinsics::CMATH_DECLARATIONS.iter().enumerate() {
-            let id = xiao_intrinsics::IntrinsicId::new(34 + index as u32).expect("固定cmath编号");
-            let count = xiao_intrinsics::cmath_parameters(id)
-                .expect("固定cmath形参")
-                .len();
-            self.declarations.insert(format!(
-                "declare i32 @xiao_runtime_{name}({})",
-                vec!["ptr"; count + 1].join(", ")
-            ));
-        }
         self.declarations
             .insert("declare i32 @xiao_runtime_random_seed(ptr)".to_owned());
         self.declarations.insert(format!(

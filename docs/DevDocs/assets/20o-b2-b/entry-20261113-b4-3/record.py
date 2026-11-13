@@ -19,7 +19,7 @@ PRODUCT_ROOTS = [
 ]
 DEV_DOCS_ROOT = "docs/DevDocs"
 SELF_EVIDENCE_ROOT = "docs/DevDocs/assets/20o-b2-b/entry-20261113-b4-3"
-SELF_EVIDENCE_VARIANTS = {"baseline", "fixed"}
+SELF_EVIDENCE_VARIANTS = {"baseline", "fixed", "fixed-final"}
 STABLE_VARIANT_JSON = {"environment.json", "source.json", "targets.json", "toolchain.json"}
 GENERATED_EVIDENCE_JSON = {
     "closeout.json", "evidence.json", "self-negative-findings.json",
