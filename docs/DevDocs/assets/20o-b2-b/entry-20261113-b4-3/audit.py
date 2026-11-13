@@ -579,7 +579,8 @@ def main():
         if args.write_negative:
             write_json(args.write_negative, result)
     else:
-        verify(args.root, args.repository_root, args.live_runtime, preparing=args.collect or args.prepare)
+        verify(args.root, args.repository_root, args.live_runtime,
+               preparing=args.collect or args.prepare or args.refresh_inventory)
         result = {"passed": True, "files": len(load(args.root / "evidence.json")["files"]),
                   "runs": sum(map(len, RUN_LABELS.values())), "b4_3_closed": True,
                   "b4_closed": False, "language_available": False,
