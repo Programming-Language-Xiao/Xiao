@@ -5,8 +5,8 @@
       "sha256": "ae312d5bd7a0c765270eb23250858435ac151aacad81ded2fb86af38e1e8d87d"
     },
     "audit.py": {
-      "bytes": 38930,
-      "sha256": "1457147d74c0e56d7758b5f0e3db1061f1f705bd515fa5c56acc472cd19ffed1"
+      "bytes": 39135,
+      "sha256": "8b9c4258fd4ac329e8d11f967d960f8529119f411a8bb185697e984f2db40cac"
     },
     "baseline/entry.json": {
       "bytes": 2006,
@@ -21,8 +21,8 @@
       "sha256": "9bbd0dbaeb947d00e97684b52de471d3008850240e4dba6be5faa8e5ca91e383"
     },
     "closeout.json": {
-      "bytes": 12454,
-      "sha256": "904502b7e7268311d48efbf753300646c9832cb153af436aa06f98ff52823e27"
+      "bytes": 12699,
+      "sha256": "61786e7743c27f2ab9e9c44aa7aeccb615bd69d908827350fef1ff26b533946f"
     },
     "fixed/environment.json": {
       "bytes": 1125,
@@ -155,6 +155,10 @@
     "fixed-final2/final-docs-finalized.json": {
       "bytes": 1738,
       "sha256": "6852d6a1823dd44f1cc3c63b3f1bd5781cfd2fbff79ef05959bd74b8dd3629ee"
+    },
+    "fixed-final2/final-docs-finalized2.json": {
+      "bytes": 1739,
+      "sha256": "131d3201340aef05ee952af9598a1a01ebae65619c89abac48d2c672c4fc663b"
     },
     "fixed-final2/final-docs-optional-runtime.json": {
       "bytes": 1745,
@@ -313,8 +317,8 @@
       "sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b"
     },
     "README.md": {
-      "bytes": 4532,
-      "sha256": "10b48a86fbc9fbd88639a072e833c9c50e387360ad03b8761b3d5b56031fe5ee"
+      "bytes": 4543,
+      "sha256": "76ed438ff516b2ed7d11f7aef96b0a30c67be901cf13d197766ca3ef6daf161a"
     },
     "record.py": {
       "bytes": 16383,
