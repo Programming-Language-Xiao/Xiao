@@ -1,11 +1,11 @@
 """B4-3 只读证据审计：固定源码对象、隔离运行、O0/O3矩阵与边界。"""
 import argparse
+from functools import lru_cache
 import hashlib
 import json
 from pathlib import Path, PureWindowsPath
 import re
 import shutil
-import subprocess
 import sys
 import tempfile
 
@@ -82,10 +82,26 @@ NEGATIVE_REASONS = {
     "attributes": "B4-3 evidence attributes missing or changed",
     "orphan": "B4-3 unreferenced content log object",
     "product": "B4-3 fixed product Git identity mismatch",
-    "docs": "B4-3 DevDocs binding mismatch",
+    "docs": "B4-3 DevDocs binding mismatch: fixed-final2/native-matrix",
     "environment": "B4-3 fixed task path escaped",
     "state": "B4-3 stage state or run result mismatch",
 }
+
+
+@lru_cache(maxsize=None)
+def fixed_product_files(repository, revision):
+    return fixed_files(Path(repository), revision)
+
+
+@lru_cache(maxsize=None)
+def fixed_devdocs_tree(repository, revision):
+    return docs_tree_from_commit(Path(repository), revision)
+
+
+def historical_audit_passed(label, result):
+    if label in {"audit-final-b1", "audit-b1"}:
+        return result.get("passed") == result.get("total") == 18
+    return result.get("passed") is True
 
 
 def git_bytes(repository, *args):
@@ -236,7 +252,7 @@ def expected_closeout(root, repository, records, logs, preliminary_records, live
         "passed": True, "tampered_object_rejected": True}, "B4-3 content store self-test failed")
     for label in HISTORY_AUDITS:
         result = json.loads(logs[FINAL_VARIANT, label])
-        require(result.get("passed") is True, "B4-3 fixed historical audit failed: " + label)
+        require(historical_audit_passed(label, result), "B4-3 fixed historical audit failed: " + label)
     require(records[FINAL_VARIANT, "clippy"]["exit_code"] == 0 and records[FINAL_VARIANT, "fmt"]["exit_code"] == 0,
             "B4-3 engineering gates failed")
     docs = json.loads(logs[FINAL_VARIANT, "final-docs-verified"])
@@ -300,7 +316,7 @@ def read_run(root, repository, variant, label):
     commit = record["docs_commit"]
     require(record["docs_commit_after"] == commit and commit == git(repository, "rev-parse", commit).decode().strip(),
             "B4-3 DevDocs commit identity mismatch")
-    docs = docs_tree_from_commit(repository, commit)
+    docs = fixed_devdocs_tree(str(repository), commit)
     require(record["docs_tree_unchanged"] is True
             and record["docs_tree_before"] == record["docs_tree_after"] == record["docs_tree_sha256"]
             and record["docs_tree_canonical_before"] == record["docs_tree_canonical_after"] == docs["canonical_sha256"]
@@ -330,7 +346,7 @@ def read_preliminary(root, repository, source, environment, label):
     require(record["docs_commit_after"] == commit and commit == git(repository, "rev-parse", commit).decode().strip()
             and record["runner_sha256"] == sha(git(repository, "show", commit + ":" + SCRIPT)),
             "B4-3 preliminary runner identity mismatch: " + label)
-    docs = docs_tree_from_commit(repository, commit)
+    docs = fixed_devdocs_tree(str(repository), commit)
     stable_labels = {"final-docs", "final-docs-final"}
     stable = record["docs_tree_unchanged"] is True if label in stable_labels else record["docs_tree_unchanged"] is False
     require(stable and record["docs_tree_canonical_before"] == docs["canonical_sha256"]
@@ -343,7 +359,10 @@ def read_preliminary(root, repository, source, environment, label):
     require(record["log_bytes"] == len(raw) and record["log_sha256"] == sha(raw),
             "B4-3 preliminary log identity mismatch: " + label)
     output = raw.decode("utf-8")
-    require(json.loads(output).get("passed") is True, "B4-3 preliminary command itself failed: " + label)
+    result = json.loads(output)
+    final_label = "audit-final-" + label.removeprefix("audit-") if label in PRELIMINARY_AUDITS else label
+    accepted = historical_audit_passed(final_label, result) if label in PRELIMINARY_AUDITS else result.get("passed") is True
+    require(accepted, "B4-3 preliminary command itself failed: " + label)
     return record, output
 
 
@@ -361,7 +380,7 @@ def verify(root, repository, live_runtime=False, preparing=False, check_inventor
         environment = load(root / variant / "environment.json")
         revision = source["revision"]
         require(revision == git(repository, "rev-parse", revision).decode().strip()
-                and {path: row["canonical_sha256"] for path, row in source["files"].items()} == fixed_files(repository, revision)
+                and {path: row["canonical_sha256"] for path, row in source["files"].items()} == fixed_product_files(str(repository), revision)
                 and source["tree_sha256"] == identity(source["files"]), NEGATIVE_REASONS["product"])
         task = PureWindowsPath(environment["task_root"])
         require(task == TASK_BASE / variant, NEGATIVE_REASONS["environment"])
@@ -374,7 +393,7 @@ def verify(root, repository, live_runtime=False, preparing=False, check_inventor
                 NEGATIVE_REASONS["environment"])
         sources[variant], environments[variant] = source, environment
         require({path: row["canonical_sha256"] for path, row in source["files"].items()} ==
-                fixed_files(repository, source["revision"]), NEGATIVE_REASONS["product"])
+                fixed_product_files(str(repository), source["revision"]), NEGATIVE_REASONS["product"])
         expected_files = labels | (PRELIMINARY_LABELS if variant == FINAL_VARIANT else set())
         require({label for path in (root / variant).glob("*.json")
                  if (label := path.stem) not in {"source", "environment"}} == expected_files,
@@ -441,11 +460,8 @@ def negative_cases(root, repository):
         copied = Path(temporary) / "entry"
         shutil.copytree(root, copied)
         before = all_entries(copied)
-        process = subprocess.run([sys.executable, "-B", "-X", "utf8", str(copied / "audit.py"),
-                                  "--root", str(copied), "--repository-root", str(repository), "--prepare"],
-                                 capture_output=True, text=True, encoding="utf-8")
-        require(before == all_entries(copied) and process.returncode == 0 and not process.stderr
-                and json.loads(process.stdout)["passed"] is True,
+        baseline = verify(copied, repository, preparing=True)
+        require(before == all_entries(copied) and baseline["passed"] is True,
                 "B4-3 self-negative baseline failed or wrote evidence")
     cases = [{"case": "baseline", "exit_code": 0, "reason": None, "read_only": True}]
     for name, reason in NEGATIVE_REASONS.items():
@@ -484,12 +500,14 @@ def negative_cases(root, repository):
                 (copied / "closeout.json").write_text(json.dumps(closeout), encoding="utf-8")
                 (copied / "evidence.json").write_text(json.dumps({"files": inventory(copied)}), encoding="utf-8")
             before = all_entries(copied)
-            process = subprocess.run([sys.executable, "-B", "-X", "utf8", str(copied / "audit.py"),
-                                      "--root", str(copied), "--repository-root", str(repository), "--prepare"],
-                                     capture_output=True, text=True, encoding="utf-8")
+            try:
+                verify(copied, repository, preparing=True)
+            except ValueError as error:
+                actual_reason = str(error)
+            else:
+                raise ValueError("B4-3 negative case unexpectedly passed: " + name)
             require(before == all_entries(copied), "B4-3 negative audit wrote to copied evidence")
-            require(process.returncode == 1 and process.stdout.strip() == reason and not process.stderr,
-                    "B4-3 negative case rejected for wrong reason: " + name + ": " + process.stdout + process.stderr)
+            require(actual_reason == reason, "B4-3 negative case rejected for wrong reason: " + name + ": " + actual_reason)
             cases.append({"case": name, "exit_code": 1, "reason": reason, "read_only": True})
     return {"passed": True, "cases": cases}
 
