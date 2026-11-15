@@ -18,17 +18,17 @@ fn fixture_root() -> PathBuf {
         .ancestors()
         .nth(4)
         .unwrap()
-        .join("tests/fixtures/docs/cmath")
+        .join("tests/fixtures/docs/numeric")
 }
 
 /// 双路径使用同一源码/独立黄金，不从Runtime实现生成期望值。
 fn fixture(prefix: &str) -> (String, String) {
     let root = fixture_root();
     (
-        fs::read_to_string(root.join("library.xiao"))
+        fs::read_to_string(root.join("cmath-library.xiao"))
             .unwrap()
             .replace("std.cmath", &format!("{prefix}.cmath")),
-        fs::read_to_string(root.join("library.stdout"))
+        fs::read_to_string(root.join("cmath-library.stdout"))
             .unwrap()
             .replace("\r\n", "\n"),
     )

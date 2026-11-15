@@ -7,6 +7,7 @@ use std::time::{Duration, Instant};
 use xiao_codegen_llvm::{CodegenOptions, TargetDescription, Toolchain};
 use xiao_driver::{FrontendCompiler, FrontendNativeDriver, FrontendRequest, NativeBuildRequest};
 
+/// 用两条固定官方选择导入路径实际构建O0/O3，逐字核对共享黄金及错误恢复。
 pub fn run() {
     let required =
         |key| PathBuf::from(std::env::var_os(key).unwrap_or_else(|| panic!("缺少{key}")));
