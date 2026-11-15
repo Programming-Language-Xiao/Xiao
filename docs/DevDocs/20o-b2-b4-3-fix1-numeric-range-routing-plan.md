@@ -1,22 +1,22 @@
 # 20O-B2-B4-3-FIX.1. numeric_range 路由回归修复与 B4-5 重跑规划
 
-> **FIX.1 尚未开始；B4-5 已被 workspace 原生断言阻塞，B4-5C/D、B5～B7 与 B2-C 后置。**
-> 触发：B4-5 完整 workspace 在 `n0_b_dynamic_native::generic_value_copy_registers_weak_dependency_only_when_called` 失败；递归用例 `recurse(depth - 1)` 的 `weak` 依赖期望 `true`、实际 `false`。
-> 星崽 2026-11-15 裁定：**收窄 numeric_range 豁免到 float pow**，让整数/固定宽度程序恢复原动态路由与 `weak` 依赖，同时保留 B4-3 的 Float `**` 与 cmath 共享内核。
-> 只修 codegen-llvm 路由与必要测试；不改 cmath 数学、模块加载器、ABI/版本/registry；不跑旧 721。
+> **FIX.1 已完成 Windows 本机路由修复与退出门禁；B4-5旧workspace阻塞已恢复。B4-5C/D须按独立流程重新收口，B5～B7与B2-C后置。**
+> 历史触发：B4-5完整workspace在`n0_b_dynamic_native::generic_value_copy_registers_weak_dependency_only_when_called`失败；递归用例`recurse(depth - 1)`的`weak`期望`true`、实际`false`，旧回执保留。
+> 星崽2026-11-15裁定：**仅豁免与Float `**`节点span精确匹配的numeric_range**，整数/固定宽度检查恢复动态路由与`weak`；sfloat `**`保持既有静态`llvm.pow.f32`行为，共享Float pow仍调用`cmath_pow`。
+> 只修codegen-llvm路由与必要测试；不改cmath数学、模块加载器、ABI/版本/registry；不跑旧721。
 
 ## 一、入口与范围
 
 | 项 | 当前状态 |
 | --- | --- |
 | 最后已知通过 | B3-4 workspace 日志（`7d8b85e4`）中该测试为 ok |
-| 当前产品树 | B4-4 最终产品 `bb0b8196`，1064 个受保护文件，ABI1.18/生成器21/接口1 |
-| 阻塞证据 | `entry-20261115-b4-5/closeout.json`：`blocked=true`、`workspace_gates=blocked_existing_n0_b_dynamic_assertion`、`language_available=false` |
-| 失败位置 | `core/rust/crates/xiao-driver/tests/n0_b_dynamic_native.rs:352`，`runtime_components` 缺少 `weak` |
-| 路由来源 | `4be30eaf` 的 `dynamic/predicate.rs`：所有仅含 `numeric_range` 检查的程序不再强制动态路径 |
+| 当前产品树 | FIX.1 产品 `cfa79381`，仅在B4-4后新增predicate与路由测试两条路径；ABI1.18/生成器21/接口1 |
+| 阻塞证据 | B4-5 `closeout.json` 是FIX.1前历史记录：`blocked=true`；本批workspace与精确重跑已通过 |
+| 历史失败位置 | `core/rust/crates/xiao-driver/tests/n0_b_dynamic_native.rs`递归整数减法路径，`runtime_components`缺少`weak` |
+| 引入路由 | `4be30eaf` 的 `dynamic/predicate.rs` 曾将全部仅含 `numeric_range` 检查的程序改为静态路由 |
 | 覆盖缺口 | B4-3/B4-4 的 core-tests 只跑 codegen/runtime/vm/bytecode/intrinsics/xar，不含 `xiao-driver` 集成测试 |
-| 裁定 | 2026-11-15 收窄豁免到 float pow；不保留全量 `numeric_range` 豁免 |
-| 本批目标 | 恢复整数 `numeric_range` 程序的动态路由与 `weak`、n0_b 全绿、B4-3 矩阵不回退、B4-5 可重跑 |
+| 裁定 | 2026-11-15收窄到Float pow具体span；sfloat行为不变，不保留全量`numeric_range`豁免 |
+| 本批结果 | 整数 `numeric_range` 恢复动态路由与 `weak`；Float pow 保持静态 `cmath_pow`，sfloat pow 保持 `llvm.pow.f32`；n0_b、B4-3矩阵、workspace恢复通过 |
 | 未做 | B4-5C/D、B5、registry/教程、三平台、性能、旧721 |
 
 FIX.1 是 **路由回归修复批**，不是 B4-5 收口批。B4-5 不修改产品源码的边界保持不变；修复完成并恢复 workspace 门槛后，B4-5 从其现有收口流程重新执行。
@@ -25,7 +25,7 @@ FIX.1 是 **路由回归修复批**，不是 B4-5 收口批。B4-5 不修改产�
 
 1. 归因复跑：在 `7d8b85e4`、`c7a45e10`、`4be30eaf` 三个固定提交上，用各自独立任务根/target/Runtime 直接运行 `n0_b_dynamic_native::generic_value_copy_registers_weak_dependency_only_when_called`，记录 PID、时间、环境、源码前后摘要和日志哈希；确认 `4be30eaf` 是引入点；若结果不符，重定归因并停下。
 2. 检查分类：解析该递归用例的 `depth - 1` 与 Float pow 用例各自产生的 `runtime_checks`，列出 kind/span/来源，区分整数或固定宽度的 `numeric_range` 与 Float pow 所需的检查。
-3. 收窄 predicate：只对 Float pow 路径豁免 `numeric_range` 强制动态；整数/固定宽度 `numeric_range` 程序恢复原动态路由与 `weak` 注册。不得恢复 `llvm.pow.f64`，不得改变 `cmath_pow` 共享内核。
+3. 收窄 predicate：只对源码 Float pow 表达式本身的 `numeric_range` 检查按精确span豁免强制动态；整数/固定宽度检查仍触发动态路由与 `weak` 注册。为满足`sfloat **`既有语义不变，sfloat pow检查也保留原静态`llvm.pow.f32`路径。不得恢复 `llvm.pow.f64`，不得改变 `cmath_pow` 共享内核。
 4. 定向回归：新增用例显式断言「整数 numeric_range-only 程序走动态并注册 weak」与「Float pow 静态路径仍调用 `cmath_pow`、无 `llvm.pow.f64`」两条路由；不得只改既有 n0_b 期望。
 5. 回归：`n0_b_dynamic_native` 全绿；B4-3 四组 O0/O3 各 18,318 项与 1,075 组 pow 对账不回退；B1/B2 VM/原生、22c 29/29、B4-4 边界 4 项与双路径/归档回归通过。
 6. 完整 workspace 门禁通过；随后把结果交回 B4-5，由 B4-5 重新运行其收口（B4-5C/D 才能继续）。
@@ -64,7 +64,7 @@ FIX.1 是 **路由回归修复批**，不是 B4-5 收口批。B4-5 不修改产�
 2. 整数/固定宽度 `numeric_range` 程序恢复动态路径与 `weak`；Float pow 保持静态 `cmath_pow`；
 3. 不改变 `uses_runtime`、组件集合与缓存指纹的其他既有行为；若必须改指纹，先停下另裁。
 
-退出：两类程序路由明确且互不串线。
+退出：整数、Float pow、混合范围检查与sfloat四类路由明确且互不串线。
 
 ### FIX-2：定向回归与 B4-3 矩阵
 
@@ -133,5 +133,15 @@ core/rust/crates/xiao-codegen-llvm/src/dynamic/predicate.rs   路由豁免收窄
 core/rust/crates/xiao-driver/tests/                            定向路由回归或既有测试补充
 docs/DevDocs/assets/20o-b2-b/entry-20261115-b4-3-fix1/         FIX.1 证据
 ```
+
+### 九、FIX.1退出结果（2026-11-16）
+
+产品提交`cfa79381`，只改`dynamic/predicate.rs`与`20o_b2_b4_numeric_range_routing.rs`两条受保护路径；ABI1.18、生成器21、接口1、registry、cmath数学内核/模块加载器均未改。三个固定快照直接复跑确认：B3-4 `7d8b85e4`通过，B4-0/1 `c7a45e10`通过，`4be30eaf`首次失败，归因成立。
+
+完整workspace、原生单项、Clippy、fmt、锁和最终docs门禁通过；n0_b 15测试目标13 passed/0 failed/2 ignored。路由测试三项全绿：整数递归检查span`84..93`仍触发dynamic/weak；Float pow检查span`58..74`只匹配pow节点并静态调用`cmath_pow`，无`llvm.pow.f64`；sfloat继续使用`llvm.pow.f32`；混合程序中独立整数检查不能借用pow豁免。B4-3四配置各18,318项/1,075 pow通过；B4-4两路径原生O0/O3、B1 VM/原生精确点通过。
+
+固定pow清单SHA-256`53b751666f42814f94993ed606e3dfe650941b022392d7d04ea57d9f3d16443d`逐项核对：1,011一致、40项边界、24项位模式差异且各1ULP；六种Runtime/VM载体共6,450行与参考/冻结规则逐条一致。28/28守卫为模拟cargo输出计数，未当作产品测试。B4-3/B4-4审计及B4-5旧阻塞证据审计均通过；旧B4-5 closeout保持历史不改写。
+
+FIX.1证据及默认只读审计见[独立记录](assets/20o-b2-b/entry-20261115-b4-3-fix1/README.md)。此退出只恢复B4-5重新收口的门槛；B4-5尚未重跑，因此不声明B4整批关闭或内部`language_available=true`。ABI1.18/生成器21、cmath planned不变；三平台、远端CI、性能、旧721与历史债务仍后置。
 
 本页只做 FIX.1；B4-5 重跑、B5 与后续批次仍后置。
