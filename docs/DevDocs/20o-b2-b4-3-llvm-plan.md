@@ -3,6 +3,7 @@
 > **2026-11-13 版本裁定执行：星崽在本会话已批准“B4 升到生成器21，更新规划并调整B5边界”。B4-3改LLVM调用文本，按后端版本规则20→21；ABI仍1.18、接口1。B5只将ABI升1.19并核验既有生成器21的最终拒绝/重生成矩阵，不再次因本批接线递增生成器。下文将21留B5或B4不得升21的旧句均由本裁定替代；签署的冻结正文及历史证据不改写。**
 
 > **B4-2A、FIX1、B4-2B与B4-3已完成Windows本机内部退出；B4-4、B4-5、B5～B7与B2-C后置。B4-3 fixed-final2 的四组静态/动态O0/O3、回归和只读证据审计均通过，见[实施证据](assets/20o-b2-b/entry-20261113-b4-3/README.md)及其`closeout.json`。**
+> **2026-11-15 回归与修复：B4-3 的全量 `numeric_range` 豁免使 `n0_b_dynamic_native` 递归用例失去 `weak` 依赖，B4-5 因此阻塞；星崽裁定收窄豁免到 float pow，见[FIX.1 规划](20o-b2-b4-3-fix1-numeric-range-routing-plan.md)。fixed-final2 历史证据不改写。**
 > 入口为 B4-1 类型/IR、B4-2 VM 执行和已冻结的 15 个 Rust-only Runtime 门面；当前LLVM静态/动态调用与共享Float pow已通过fixed-final2验证。
 > B4-3 只做 LLVM 动态/静态路径与 float `**` 共核；按已批准版本裁定升生成器20→21，ABI维持1.18；不接导入/归档/序列化（B4-4）。
 > 30条cmath导入路径仍planned拒绝；`language_available=false`。

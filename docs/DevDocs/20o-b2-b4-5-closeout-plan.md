@@ -3,6 +3,7 @@
 > **2026-11-13 版本裁定执行：星崽在本会话已批准“B4 升到生成器21，更新规划并调整B5边界”。B4-3改LLVM调用文本，按后端版本规则20→21；ABI仍1.18、接口1。B5只将ABI升1.19并核验既有生成器21的最终拒绝/重生成矩阵，不再次因本批接线递增生成器。下文将21留B5或B4不得升21的旧句均由本裁定替代；签署的冻结正文及历史证据不改写。**
 
 > **B4-0/B4-1、B4-2A/FIX1、B4-2B、B4-3及B4-4已完成Windows本机内部验收；B4-5已执行收口回归但被既有 `n0_b_dynamic_native::generic_value_copy_registers_weak_dependency_only_when_called` 阻塞，B4-5C/D与B5～B7、B2-C保持后置。**
+> 阻塞修复由[B4-3-FIX.1](20o-b2-b4-3-fix1-numeric-range-routing-plan.md)负责（收窄 numeric_range 豁免到 float pow）；FIX.1与B4-5重跑通过后 B4-5C/D 才可继续。
 > 入口为 B4-0/B4-1 记录及后续 B4-2A/B、B4-3、B4-4 各自完成后生成的最终内部证据。
 > B4-5 只做整批语言收口、证据对账和 B5 交接，不修改产品源码；发现产品问题时退回所属阶段处理。ABI维持1.18、生成器沿用21，不升级registry/教程。
 > 内部 `language_available=true` 不等于最终公共发布；B2-C 才做 721、三平台公共产物和状态升级。
