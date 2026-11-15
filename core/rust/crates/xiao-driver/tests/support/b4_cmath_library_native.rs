@@ -22,7 +22,15 @@ pub fn run() {
         .unwrap();
     let root = super::workspace();
     for prefix in ["std", "stdlib"] {
-        let (source, golden) = super::fixture(prefix);
+        let (mut source, golden) = super::fixture(prefix);
+        // B1已登记原生模块值/限定调用后置；同一语料改用已支持的选择导入别名，
+        // 仍实际执行全部15项的位置/命名调用。VM/xiaoc/xar保留原始模块别名语料。
+        source = source.replace(&format!("import {prefix}.cmath as math\n"), "");
+        for (index, &(primitive, _, _)) in xiao_intrinsics::CMATH_DECLARATIONS.iter().enumerate() {
+            let name = primitive.strip_prefix("cmath_").unwrap();
+            source = source.replace(&format!("math.{name}("), &format!("f{index}("));
+        }
+        assert!(!source.contains("math."));
         let request = FrontendRequest::from_text(source);
         let artifact = FrontendCompiler::new().compile(&request).unwrap();
         for level in [0, 3] {
