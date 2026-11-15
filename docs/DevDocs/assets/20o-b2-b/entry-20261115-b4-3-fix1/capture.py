@@ -19,6 +19,7 @@ HISTORY = {"b0": "entry-20261107", "b1": "entry-20261108-b1", "b2": "entry-20261
 
 MANIFEST = "docs/DevDocs/assets/20o-b2-b/entry-20261109-b3-cabi/baseline/pow-switch-manifest.json"
 MANIFEST_SHA = "53b751666f42814f94993ed606e3dfe650941b022392d7d04ea57d9f3d16443d"
+VARIANT = Path(os.environ["CARGO_TARGET_DIR"]).parent.name
 STAGES = {
     "B4-1": ("b4-0-1", "c7a45e10b76b26915499717563761ed20fda6e6c"),
     "B4-2A/FIX1": ("fix1", "c46102115c63956466361d83243dea8ba3e4e74f"),
@@ -48,7 +49,7 @@ def toolchain():
 
 
 def guards():
-    report_path = ROOT / "final/guards-report.json"
+    report_path = ROOT / VARIANT / "guards-report.json"
     require(not report_path.exists(), "禁止覆盖守卫报告")
     argv = ["pwsh", "-NoProfile", "-File", "tools/gates/b1-probe-guards.ps1", "-BashPath",
             r"D:\msys64\usr\bin\bash.exe", "-ReportPath", str(report_path)]
@@ -56,7 +57,7 @@ def guards():
     report = load(report_path)
     require(report["passed"] == report["total"] == len(report["cases"]) == 28
             and all(row["Passed"] for row in report["cases"]), "守卫没有完整通过")
-    source = load(ROOT / "final/source.json")
+    source = load(ROOT / VARIANT / "source.json")
     print(json.dumps({"passed": True, "scope": "simulated-cargo-output", "source_commit": source["revision"],
         "argv": argv, "stdout": run.stdout, "stderr": run.stderr, "report_sha256": sha(report_path.read_bytes()),
         "workflow_sha256": sha((REPOSITORY / report["workflow"]).read_bytes()),
@@ -64,7 +65,7 @@ def guards():
 
 
 def stages():
-    source = load(ROOT / "final/source.json")
+    source = load(ROOT / VARIANT / "source.json")
     rows = []
     for stage, (name, revision) in STAGES.items():
         directory = "docs/DevDocs/assets/20o-b2-b/" + HISTORY[name]
@@ -84,9 +85,9 @@ def stages():
     rows.append({"stage": "B4-3-FIX1", "product_commit": source["revision"], "allowed_product_paths": sorted(changed),
                  "product_tree_sha256": identity(fixed_files(REPOSITORY, source["revision"])),
                  "runtime_abi": "1.18", "codegen_version": 21, "scope": "current FIX.1 source; execution receipts recorded separately"})
-    write_json(ROOT / "final/stage-reconciliation.json", {"passed": True, "source_commit": source["revision"], "stages": rows})
+    write_json(ROOT / VARIANT / "stage-reconciliation.json", {"passed": True, "source_commit": source["revision"], "stages": rows})
     print(json.dumps({"passed": True, "stages": len(rows), "source_commit": source["revision"],
-        "report_sha256": sha((ROOT / "final/stage-reconciliation.json").read_bytes())}))
+        "report_sha256": sha((ROOT / VARIANT / "stage-reconciliation.json").read_bytes())}))
 
 
 def value(bits):
@@ -187,14 +188,14 @@ def pow_review():
                      "difference": category, "frozen_rule": basis})
     require(dict(summary) == manifest["summary"] == {"same": 1011, "value_or_error_boundary": 40, "value_bits": 24}
             and dict(rules) == manifest["rules"], "pow完整分类不符")
-    report = {"passed": True, "source_commit": load(ROOT / "final/source.json")["revision"], "manifest_sha256": MANIFEST_SHA,
+    report = {"passed": True, "source_commit": load(ROOT / VARIANT / "source.json")["revision"], "manifest_sha256": MANIFEST_SHA,
               "fixture_sha256": sha(path.read_bytes()), "probe_sha256": sha((ROOT / "pow_probe.rs").read_bytes()),
               "build_argv": argv, "executable_sha256": sha(executable.read_bytes()), "cases": 1075,
               "summary": dict(summary), "rules": dict(rules), "vm_cases": 6450, "rows": rows,
               "scope": "internal bit injection for nonfinite and exact binary64; source/native gates separately recorded"}
-    write_json(ROOT / "final/pow-review.json", report)
+    write_json(ROOT / VARIANT / "pow-review.json", report)
     print(json.dumps({"passed": True, "rows": 1075, "summary": dict(summary), "vm_cases": 6450,
-                      "report_sha256": sha((ROOT / "final/pow-review.json").read_bytes())}))
+                      "report_sha256": sha((ROOT / VARIANT / "pow-review.json").read_bytes())}))
 
 
 if __name__ == "__main__":
