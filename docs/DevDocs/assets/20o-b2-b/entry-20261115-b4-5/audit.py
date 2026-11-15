@@ -151,6 +151,10 @@ def check(root=ROOT, repository=REPOSITORY, final_binding=True, sealed=True):
     source = check_product(repository, root)
     environment = load(root / FINAL / "environment.json")
     check_environment(environment)
+    if (root / "evidence.json").exists():
+        for name in load(root / "evidence.json")["files"]:
+            require((root / name).is_file(), REASONS["missing"])
+        require(load(root / "evidence.json") == {"files": inventory(root)}, REASONS["manifest"])
     records = run_records(root)
     logs = {label: check_record(label, row, source, environment, root) for label, row in records.items()}
     expected_ok = {"runtime-build", "clippy", "fmt", "lock", "native-library", "native-matrix", "b1-vm", "b1-native",
