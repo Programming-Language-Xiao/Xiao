@@ -125,13 +125,13 @@ def check(root=ROOT, repository=REPOSITORY, final_binding=True, sealed=True):
     records, logs = records_check(root, source, environment, final_binding)
     details = validate(root, repository, source, environment, records, logs, final_binding)
     result = {**details, "passed": True, "evidence_valid": True, "blocked": False, "stage": "B4-5",
-              "b4_5_closed": True, "b4_closed": True, "language_available": True,
+              "b4_5_closed": final_binding, "b4_closed": final_binding, "language_available": final_binding,
               "runtime_abi": "1.18", "codegen_version": 21, "stdlib_interface": 1, "cmath": "planned",
               "product_commit": PRODUCT_COMMIT, "source_commit": SOURCE_COMMIT,
               "product_files": len(source["files"]), "product_tree_sha256": identity(product_at(repository, PRODUCT_COMMIT)),
               "platforms_executed": ["Windows x86_64-pc-windows-msvc"],
               "not_executed": ["Linux", "macOS", "remote CI", "performance", "old 721 F10"],
-              "blockers": [], "next_stage": "B5 implementation; not started",
+              "blockers": [], "next_stage": "B5 implementation; not started" if final_binding else "final docs and sealed closeout pending",
               "tests": {label: {"exit_code": row["exit_code"], "pid": row["pid"], "log_sha256": row["log_sha256"],
                                 "docs_commit": row["docs_commit"]} for label, row in sorted(records.items())}}
     if sealed:
