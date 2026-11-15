@@ -38,6 +38,35 @@ def counts(text):
     return results
 
 
+def workspace_counts(text):
+    """保留同名crate目标与子进程摘要；每个Cargo目标取最后一条父进程汇总。"""
+    targets, nested, current, summaries = {}, [], None, []
+
+    def finish():
+        if current is not None:
+            require(summaries and current not in targets, "B4-5workspace目标汇总缺失/重复")
+            targets[current] = summaries[-1]
+            nested.extend({"parent": current, "counts": row} for row in summaries[:-1])
+
+    for line in text.splitlines():
+        match = re.search(r"Running .*\((?:.*[\\/])([^\\/]+)-([0-9a-f]+)\.exe\)", line)
+        key = match[1] + "@" + match[2] if match else None
+        if line.lstrip().startswith("Doc-tests "):
+            key = line.split("Doc-tests ", 1)[1].strip() + ":doc"
+        if key:
+            finish()
+            current, summaries = key, []
+        match = re.match(r"test result: (?:ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored;", line)
+        if match:
+            row = [int(value) for value in match.groups()]
+            require(current and row[1] == 0, "B4-5workspace摘要缺失目标或包含失败")
+            summaries.append(row)
+    finish()
+    require(targets, "B4-5workspace没有可核对目标")
+    return {"targets": targets, "nested_summaries": nested,
+            "passed": sum(row[0] for row in targets.values()), "ignored": sum(row[2] for row in targets.values())}
+
+
 def validate(root, repository, source, environment, records, logs, final_binding=True):
     for label, row in records.items():
         require(row["argv"] == COMMANDS[label], "B4-5运行命令不符：" + label)
@@ -94,10 +123,14 @@ def validate(root, repository, source, environment, records, logs, final_binding
                 "n0_b_dynamic_native": [13, 0, 2], "20o_b2_b4_frontend": [3, 0, 0],
                 "20o_b2_b4_cmath_vm": [7, 0, 0]}
     require(regressions == expected and set(regressions) == set(TARGETS), "B4-5当前回归目标/计数不符")
-    workspace = counts(logs["workspace"])
-    require(workspace and all(values[1] == 0 for values in workspace.values())
-            and all(workspace.get(name) == values for name, values in expected.items())
+    workspace = workspace_counts(logs["workspace"])
+    require(all([values for key, values in workspace["targets"].items() if key.startswith(name + "@")] == [values]
+                for name, values in expected.items())
             and "FAILED" not in logs["workspace"], "B4-5完整workspace门禁未通过")
+    parser_report = json.loads(logs["parser-self-test"])
+    require(parser_report == {"passed": True, "duplicate_names_preserved": True,
+                              "nested_summaries_preserved": True, "failed_child_rejected": True,
+                              "missing_summary_rejected": True}, "B4-5workspace解析器自测不符")
     require(counts(logs["tac"]) == {"b4_cmath_tac": [2, 0, 0]}
             and "B4-2A-SUMMARY ids=34..48" in logs["tac"], "B4-5 TAC/字节码往返不符")
     text = logs["regressions"]

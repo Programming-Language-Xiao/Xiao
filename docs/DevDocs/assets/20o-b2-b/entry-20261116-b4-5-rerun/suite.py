@@ -40,6 +40,7 @@ COMMANDS = {
     "b1-native": DRIVER + ["--test", "20o_b1_probe", "--", "--ignored", "--exact", "b1_capabilities_match_native_golden_outputs", "--nocapture"],
     "pow": ["python", "-B", "-X", "utf8", PREFIX + "/capture.py", "pow"],
     "pow-verified": ["python", "-B", "-X", "utf8", PREFIX + "/capture.py", "pow"],
+    "parser-self-test": ["python", "-B", "-X", "utf8", PREFIX + "/parser_check.py"],
     **{"audit-" + name: ["python", "-B", "-X", "utf8", "docs/DevDocs/assets/20o-b2-b/" + directory + "/audit.py"]
        for name, directory in HISTORY.items()},
     "docs-final": ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
