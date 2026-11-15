@@ -120,26 +120,10 @@ def pow_review():
         for line in output.read_text(encoding="utf-8").splitlines():
             if line.startswith("cargo:rustc-link-search="):
                 argv.extend(["-L", line.split("=", 1)[1]])
-    drivers = list(dependencies.glob("libxiao_driver-*.rlib"))
-    require(len(drivers) == 1, "pow宿主必须使用唯一驱动器依赖")
-    fingerprint_root = task / "target/release/.fingerprint"
-    driver_id = drivers[0].stem.removeprefix("libxiao_driver-")
-    driver_metadata = load(fingerprint_root / ("xiao-driver-" + driver_id) / "lib-xiao_driver.json")
-    dependency_identity = {row[1]: row[3] for row in driver_metadata["deps"]}
-    libraries = {"xiao_driver": drivers[0]}
-    # staticlib冷构建与驱动器测试会有不同的Runtime特性；按Cargo记录的依赖指纹选取，
-    # 不能按glob顺序或修改时间猜测，也不能误把另一份Runtime当成VM的类型来源。
-    for name in ["xiao_bytecode", "xiao_runtime", "xiao_vm"]:
-        candidates = []
-        for path in dependencies.glob("lib" + name + "-*.rlib"):
-            suffix = path.stem.removeprefix("lib" + name + "-")
-            metadata = fingerprint_root / (name.replace("_", "-") + "-" + suffix) / ("lib-" + name)
-            if metadata.is_file() and int.from_bytes(bytes.fromhex(metadata.read_text().strip()), "little") == dependency_identity[name]:
-                candidates.append(path)
-        require(len(candidates) == 1, "pow宿主依赖图指纹必须唯一：" + name)
-        libraries[name] = candidates[0]
-    for name, path in libraries.items():
-        argv.extend(["--extern", name + "=" + str(path)])
+    for name in ["xiao_driver", "xiao_bytecode", "xiao_runtime", "xiao_vm"]:
+        libraries = list(dependencies.glob("lib" + name + "-*.rlib"))
+        require(len(libraries) == 1, "pow宿主必须使用唯一release依赖")
+        argv.extend(["--extern", name + "=" + str(libraries[0])])
     subprocess.run(argv, check=True)
     path = REPOSITORY / "tests/fixtures/docs/cmath/pow-legacy-diff.tsv"
     result = subprocess.run([str(executable), str(path)], check=True, capture_output=True, encoding="utf-8")
