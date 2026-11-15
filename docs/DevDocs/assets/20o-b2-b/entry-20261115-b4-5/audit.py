@@ -21,7 +21,7 @@ EXPECTED_LABELS = {
     "native-library", "native-matrix", "b1-vm", "b1-native", "toolchain-retry", "stages-retry",
     "guards-retry", "pow-final", "pow-retry", "audit-b0-retry", "audit-b1-retry", "audit-b2-retry",
     "audit-b3-retry", "audit-b3-cabi-retry", "audit-b3-wrapper-retry", "audit-b4-0-1-retry",
-    "audit-fix1-retry", "audit-b4-2b-retry", "audit-b4-3-retry", "audit-b4-4-retry",
+    "audit-fix1-retry", "audit-b4-2b-retry", "audit-b4-3-retry", "audit-b4-4-retry", "docs-final",
 }
 PRODUCT_BASELINE = "bb0b8196479e90d28d676f1bdefd04403e4ba6eb"
 ALLOWED_STAGE_COMMITS = {
@@ -150,6 +150,8 @@ def check(root=ROOT, repository=REPOSITORY):
     require(all(records[label]["exit_code"] == 0 for label in expected_ok if label in records), REASONS["state"])
     require(records["toolchain"]["exit_code"] == 2 and "capture.py" in logs["toolchain"]
             and records["pow-retry"]["exit_code"] == 1 and "唯一release依赖" in logs["pow-retry"], REASONS["state"])
+    docs_result = json.loads(logs["docs-final"])
+    require(docs_result["passed"] is True and not any(row["severity"] == "error" for row in docs_result["diagnostics"]), REASONS["docs"])
     require(records["workspace"]["exit_code"] == 101 and records["workspace-failure-exact"]["exit_code"] == 101
             and "generic_value_copy_registers_weak_dependency_only_when_called" in logs["workspace"]
             and "left: false" in logs["workspace"] and "right: true" in logs["workspace"], REASONS["workspace"])
