@@ -2,7 +2,7 @@
 
 > **2026-11-13 版本裁定执行：星崽在本会话已批准“B4 升到生成器21，更新规划并调整B5边界”。B4-3改LLVM调用文本，按后端版本规则20→21；ABI仍1.18、接口1。B5只将ABI升1.19并核验既有生成器21的最终拒绝/重生成矩阵，不再次因本批接线递增生成器。下文将21留B5或B4不得升21的旧句均由本裁定替代；签署的冻结正文及历史证据不改写。**
 
-> **B4-0/B4-1、B4-2A/FIX1、B4-2B、B4-3、B4-4及B4-3-FIX.1已完成Windows本机内部验收；B4-5正在FIX.1新快照收口；B5仍未开始，B6、B7与B2-C后置。**
+> **2026-11-16：B4-5已按FIX.1产品`cfa79381`完成Windows内部收口记录，最终入口以[重开证据](assets/20o-b2-b/entry-20261116-b4-5-rerun/README.md)的最终文档回执、closeout及审计全部通过为准。** B5仍未开始；ABI1.18/生成器21/接口1、公共cmath planned，B6、B7与B2-C后置。
 > B5 开工入口必须是 B4-5 内部收口后的固定源码与证据；B4-3前历史版本为ABI1.18/生成器20；B4-3产品接线最终提交为`e0d5993e`，`CODEGEN_VERSION=21`，fixed-final2冷构建、O0/O3矩阵与审计已通过；B4-3退出版本固定为ABI1.18/生成器21、接口1。详情见[B4-3固定证据](assets/20o-b2-b/entry-20261113-b4-3/README.md)。
 > B5只将ABI升级到1.19，CODEGEN_VERSION沿用B4-3的21，完成旧/新产物拒绝、缓存重生成和C ABI加法扩展。
 > B5 不新增 cmath 数学语义或语言接线；B4 全链路内部验收是开工前置。不升级 registry/教程、不跑旧 721；B2-C 才做最终公共发布。
@@ -14,7 +14,7 @@
 | --- | --- |
 | B4-0/B4-1 | 已完成 Windows 本机内部验收；不代表 B4 全链路完成 |
 | B4-2A | 已完成 Windows 本机退出；仅为内部 TAC/字节码批次 |
-| B4-3～B4-5 | B4-3/4与FIX.1已完成Windows内部验收；B4-5旧阻塞由FIX.1恢复，仍须在新快照完成内部收口才是B5开工前置 |
+| B4-3～B4-5 | B4-5以FIX.1新Runtime重跑，内部language_available=true；最终封存见重开证据，旧blocked记录保留历史 |
 | 历史入口版本 | ABI 1.18、`CODEGEN_VERSION=20`、标准库接口1、活动intrinsic1～48 |
 | B4-3退出版本 | ABI 1.18、`CODEGEN_VERSION=21`、标准库接口1；产品提交`e0d5993e`，Windows fixed验收通过 |
 | B5 目标 | ABI1.19（编码`0x0001_0013`）、生成器仍为21、接口1 |
@@ -52,7 +52,7 @@ B5 是 **版本矩阵内部切换批**，不是 B2-C 最终发布。开工前要
 
 1. B4-1～B4-5 审计通过，B4-5 已记录内部 `language_available=true`；最终产品/证据身份固定；
 2. 15 项 cmath 内部语言链路、30 条导入、双路径/归档/序列化可复现；
-3. 当前B4-3已固定为ABI1.18、`CODEGEN_VERSION=21`、接口1、cmath planned；B5仍须等B4-4/B4-5完成后固定最终入口快照；
+3. B4-5重开固定入口`6e172c1e`、产品`cfa79381`；ABI1.18、`CODEGEN_VERSION=21`、接口1、cmath planned。开工前核对其closeout、B5交接与默认只读审计通过，不把旧blocked结果当当前入口；
 4. F-6a 登记的 B1 原始 1.18 `.xiaoc`/`.xar`/原生元数据原件可从归档按原始字节读取并计算摘要；缺失时阻断，不用新版本重造旧原件；
 5. 固定身份旧1.18验证器/Runtime、生成器20历史缓存与1.18/21过渡缓存的源码、构建参数、产物摘要可复现；
 6. F-6a 历史 C ABI 符号/布局/调用约定和 B4当前内部1.18/21过渡符号表分别保存，不能混为同一个版本快照；
@@ -141,7 +141,7 @@ B5 是 **版本矩阵内部切换批**，不是 B2-C 最终发布。开工前要
 7. 使用 Rust `1.96.0` 运行完整 workspace gates：`cargo +1.96.0 test --manifest-path core/rust/Cargo.toml --workspace --locked`、`cargo +1.96.0 clippy --manifest-path core/rust/Cargo.toml --workspace --all-targets --locked -- -D warnings`、`cargo +1.96.0 fmt --manifest-path core/rust/Cargo.toml --all -- --check`、`bun run check:lock` 和 `bun tools/repo-check/src/cli.ts all`；
 8. 保存源码、锁、旧/新 Runtime、工具链、目标、PID、日志及前后摘要；
 9. 记录 Windows 本机与未执行平台；三平台/721 未跑；
-10. 补`numeric_range`检查独占的路由对照：用同一数值表达式构造静态程序，再加与该表达式无关的动态值强制动态降低；断言原IR只含`numeric_range`检查，覆盖正常值、定宽溢出、窄化越界及float非有限结果。VM与原生O0/O3核对结果、009身份和各自源码span；该专项尚无B4-3独立证据，不以cmath矩阵代替。
+10. 补`numeric_range`值/错误差分：FIX.1及B4-5已有整数动态weak、Float pow自身span静态共核、混合程序动态及sfloat不变的专项证据。后续用相同表达式及独立动态值构造对照，覆盖正常值、定宽溢出、窄化越界及float非有限结果，核对VM/原生O0/O3结果、009与源码span；整数检查按已修复规则保持动态，不为构造静态对照重开全量豁免。该补充值/错误矩阵仍待B5实测，cmath矩阵不能代替。
 
 退出：版本矩阵证据完整；B6 未开始；B2-C 未开始。
 

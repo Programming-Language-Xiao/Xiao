@@ -2,15 +2,15 @@
 
 > **2026-11-13 版本裁定执行：星崽在本会话已批准“B4 升到生成器21，更新规划并调整B5边界”。B4-3改LLVM调用文本，按后端版本规则20→21；ABI仍1.18、接口1。B5只将ABI升1.19并核验既有生成器21的最终拒绝/重生成矩阵，不再次因本批接线递增生成器。下文将21留B5或B4不得升21的旧句均由本裁定替代；签署的冻结正文及历史证据不改写。**
 
-> **B4-0/B4-1、B4-2A/FIX1、B4-2B、B4-3、B4-4及B4-3-FIX.1已完成Windows本机内部验收；B4-5目前在FIX.1新快照执行重新收口，B5～B7与B2-C后置。**
-> **2026-11-16 FIX.1已恢复完整workspace门槛。** 旧B4-5 blocked回执仅作历史；当前收口绑定FIX.1产品`cfa79381`与独立新Runtime。B4-5签收前不写`language_available=true`、不开B5。FIX.1结果见[规划](20o-b2-b4-3-fix1-numeric-range-routing-plan.md)与[证据](assets/20o-b2-b/entry-20261115-b4-3-fix1/README.md)。
+> **2026-11-16重开收口：B4-1～B4-4与FIX.1证据链、当前完整workspace及语言全链路回归已通过Windows本机复核。** 本页登记内部`language_available=true`及B5交接；最终签收以[新证据目录](assets/20o-b2-b/entry-20261116-b4-5-rerun/README.md)的`docs-final`、`closeout.json`与默认只读审计全部通过为准。B5～B7与B2-C仍未开始，公共registry/教程仍planned。
+> 固定入口`6e172c1e`的受保护产品树与FIX.1产品`cfa79381`一致；Runtime在全新任务根冷构建。旧B4-5 blocked回执及FIX.1证据保持历史不改写，见[FIX.1规划](20o-b2-b4-3-fix1-numeric-range-routing-plan.md)与[证据](assets/20o-b2-b/entry-20261115-b4-3-fix1/README.md)。
 > 入口为 B4-0/B4-1 记录及后续 B4-2A/B、B4-3、B4-4 各自完成后生成的最终内部证据。
 > B4-5 只做整批语言收口、证据对账和 B5 交接，不修改产品源码；发现产品问题时退回所属阶段处理。ABI维持1.18、生成器沿用21，不升级registry/教程。
 > 内部 `language_available=true` 不等于最终公共发布；B2-C 才做 721、三平台公共产物和状态升级。
 
 > **2026-11-15 收口结果：证据有效但未签收。** 独立任务根已完成 Runtime 冷构建、Clippy、fmt、锁、B4-4 原生 O0/O3、B1 VM/原生、28/28 计数守卫、10 项固定历史审计及 1,075 项 pow 对账。完整 workspace 退出码 101，失败目标为既有 `n0_b_dynamic_native` 断言（实际 `false`、期望 `true`）；精确复跑同样失败。B4-5 未修改 `core/`、`stdlib/` 或测试，保留失败回执并退回原生 lowering 所属阶段。详见 [B4-5 证据](assets/20o-b2-b/entry-20261115-b4-5/README.md)。
 
-> **2026-11-16状态：FIX.1已恢复workspace门槛，B4-5需重新收口。** 上段仅记录旧FIX.1之前的失败，不代表当前结论；B4-5C/D仍未执行。
+> **历史边界：** 上段仅记录FIX.1之前的失败；本轮在新目录重跑A/B并登记C/D，旧失败没有删除或改记通过。
 
 ## 一、入口与范围
 
@@ -80,7 +80,7 @@ Pow 差异的固定对账输入为 [B3-CABI `pow-switch-manifest.json`](assets/2
 5. B4-5 审计从固定 Git commit/tree/blob 校验产品和锁身份，不要求当前 HEAD 等于产品提交；审计只读，不写 evidence/closeout；
 6. 运行收口审计自反例：篡改 evidence 清单、删除已登记文件、伪造阶段提交/源码身份或把 planned/public 状态冒进都须按登记原因拒绝，且基线审计前后证据字节不变；
 7. 保存阶段对账表与身份摘要；
-8. 核对B4-3的`program_uses_runtime`路由依赖：它影响仅含`numeric_range`检查的标量程序，包含非cmath代码。B1/B2 VM及原生语料通过，独立静态/动态对照尚未执行；B5测试清单负责补验。B4-5只登记这项覆盖限制及后续归属，不能把cmath矩阵写成专项证据。
+8. 核对B4-3的`program_uses_runtime`路由依赖：旧全量`numeric_range`豁免已由FIX.1收窄为Float pow自身span；整数检查恢复动态weak、混合程序保持动态、sfloat继续`llvm.pow.f32`。本轮专项3/3与n0_b通过；完整正常值/溢出/窄化/非有限值的VM与原生差分仍留B5，不能用cmath矩阵代替该补充。
 
 退出：B4-1～B4-4 证据链可逐阶段对账。
 
@@ -177,4 +177,18 @@ core/rust/crates/xiao-*/                              B4-1～B4-4 最终产品
 stdlib/cmath.xiao                                     15 个包装
 ```
 
-本页只做 B4-5；B5～B7 与 B2-C 仍后置。
+## 九、2026-11-16 FIX.1后重开收口记录
+
+本轮产品保持`cfa79381`，固定入口`6e172c1e`；独立任务根`D:\project\Xiao\.b4-5\20261116\rerun`的target、Runtime、Home、TEMP均未复用。未修改产品、测试、UseDocs或registry。Runtime摘要为`27b460d2fde00c0e36f2799474e3a21310d5555530cbc8d7694caf6df220702d`，每条运行回执核对相同来源与运行前后身份。
+
+完整workspace共187个Cargo/文档目标，1,747项通过、0失败、54项保持原忽略；同名目标按可执行指纹分别计数，两条子进程摘要单列。Clippy、fmt、锁已通过；release定向9目标76项通过、4项保持原忽略；TAC往返2/2。手动原生门禁另行精确执行通过：动态/静态O0/O3四组各18,318项、双路径O0/O3四组、B1 VM/原生。30条导入、32条子VM、48条删源归档、22c29/29、边界4项与FIX.1路由3项均通过。
+
+固定1,075项pow逐项对账为1,011一致、40项非有限输入错误顺序边界、24项各1ULP；Runtime/cmath门面及六条VM承载结果、冻结规则与独立参考一致。13项历史审计通过；旧B4-5仍记录`stage_passed=false`，本轮成绩与历史结论分开。28/28守卫只模拟Cargo输出，工作流/脚本摘要与报告均登记。
+
+首次pow工具在依赖选择阶段失败，因release目录含两份合法驱动器库；失败回执保留。工具随后按已执行B1程序的Cargo指纹选择依赖，`pow-verified`成功回执绑定报告摘要；产品未修改。workspace解析器自测覆盖同名目标、子进程摘要及失败/缺摘要拒绝。
+
+内部状态为`language_available=true`；`b4_closed=true`仅表示B4的Windows内部范围收口。公共cmath/UseDocs/registry仍planned；本轮未执行Linux/macOS、远端CI、性能或旧721，22C/22D及19/11/22债务保持独立。最终文档先提交定稿，再单次采集`docs-final`并由显式生成器封存closeout、8项只读反例、B5交接和完整清单；默认审计与反例均需核对具体拒绝文本及前后树摘要。
+
+B5交接入口为同一产品和本轮证据：只升ABI1.19、沿用生成器21/接口1，实测旧新拒绝与20→21、1.18→1.19两组缓存重生成；保留已有C符号/布局/调用约定。B6负责资源/性能，B2-C负责新快照完整721、三平台公共产物与教程/registry。B5尚未开始。
+
+本页只做B4-5；B5～B7与B2-C仍后置。
