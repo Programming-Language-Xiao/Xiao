@@ -11,7 +11,7 @@ import sys
 import tempfile
 
 sys.dont_write_bytecode = True
-from record import ROOT, REPOSITORY, PRODUCT_ROOTS, canonical, fixed_files, git, identity, load, require, sha
+from record import ROOT, REPOSITORY, PRODUCT_ROOTS, canonical, fixed_files, git, identity, load, require, sha, write_json
 
 FINAL = "final"
 SOURCE = ROOT / FINAL / "source.json"
@@ -58,7 +58,9 @@ def run_records(root):
             continue
         row = load(path)
         result[row["label"]] = row
-    require(set(result) == EXPECTED_LABELS, REASONS["state"])
+    extra = set(result) - EXPECTED_LABELS
+    require(not extra or all(label.startswith("docs-final-") for label in extra), REASONS["state"])
+    require(EXPECTED_LABELS.issubset(result), REASONS["state"])
     return result
 
 
@@ -66,8 +68,8 @@ def fixed_source(repository, revision):
     return fixed_files(repository, revision)
 
 
-def check_product(repository):
-    source = load(SOURCE)
+def check_product(repository, root=ROOT):
+    source = load(root / FINAL / "source.json")
     revision = source["revision"]
     require(revision == git(repository, "rev-parse", revision).decode().strip()
             and source["sha256"] == identity(source["files"])
@@ -98,51 +100,51 @@ def check_environment(environment):
         require(value == task / relative, REASONS["environment"])
 
 
-def check_record(label, row, source, environment):
+def check_record(label, row, source, environment, root=ROOT):
     require(row["label"] == label and row["cwd"] == source["source_root"] and row["pid"] > 0
             and datetime.fromisoformat(row["started_utc"]) < datetime.fromisoformat(row["finished_utc"]), REASONS["state"])
-    require(row["environment_sha256"] == sha(ENVIRONMENT.read_bytes())
+    require(row["environment_sha256"] == sha((root / FINAL / "environment.json").read_bytes())
             and row["source_before"] == row["source_after"] == source["sha256"] and row["source_unchanged"] is True
             and row["docs_unchanged"] is True, REASONS["source"])
-    raw = (ROOT / row["log_ref"]).read_bytes()
+    raw = (root / row["log_ref"]).read_bytes()
     require(row["log_bytes"] == len(raw) and row["log_sha256"] == sha(raw)
             and row["log_ref"] == f"logs/sha256/{row['log_sha256'][:2]}/{row['log_sha256']}.log", REASONS["manifest"])
     return raw.decode("utf-8")
 
 
-def check_pow():
-    require((ROOT / FINAL / "pow-review.json").is_file(), REASONS["missing"])
-    report = load(ROOT / FINAL / "pow-review.json")
+def check_pow(root=ROOT):
+    require((root / FINAL / "pow-review.json").is_file(), REASONS["missing"])
+    report = load(root / FINAL / "pow-review.json")
     require(report["passed"] is True and report["cases"] == 1075 and report["vm_cases"] == 6450
             and report["manifest_sha256"] == "53b751666f42814f94993ed606e3dfe650941b022392d7d04ea57d9f3d16443d"
             and report["summary"] == {"same": 1011, "value_or_error_boundary": 40, "value_bits": 24}
             and all(row["difference"] != "value_bits" or row["old_new_ulp"] == 1 for row in report["rows"]), REASONS["pow"])
     return {"cases": report["cases"], "summary": report["summary"], "vm_cases": report["vm_cases"],
-            "report_sha256": sha((ROOT / FINAL / "pow-review.json").read_bytes())}
+            "report_sha256": sha((root / FINAL / "pow-review.json").read_bytes())}
 
 
-def check_stages():
-    require((ROOT / FINAL / "stage-reconciliation.json").is_file(), REASONS["missing"])
-    report = load(ROOT / FINAL / "stage-reconciliation.json")
+def check_stages(root=ROOT):
+    require((root / FINAL / "stage-reconciliation.json").is_file(), REASONS["missing"])
+    report = load(root / FINAL / "stage-reconciliation.json")
     require(report["passed"] is True and {row["stage"] for row in report["stages"]} == set(ALLOWED_STAGE_COMMITS)
             and {row["stage"]: row["product_commit"] for row in report["stages"]} == ALLOWED_STAGE_COMMITS, REASONS["state"])
-    return {"stages": len(report["stages"]), "report_sha256": sha((ROOT / FINAL / "stage-reconciliation.json").read_bytes())}
+    return {"stages": len(report["stages"]), "report_sha256": sha((root / FINAL / "stage-reconciliation.json").read_bytes())}
 
 
-def check_guards():
-    require((ROOT / FINAL / "guards-report.json").is_file(), REASONS["missing"])
-    report = load(ROOT / FINAL / "guards-report.json")
+def check_guards(root=ROOT):
+    require((root / FINAL / "guards-report.json").is_file(), REASONS["missing"])
+    report = load(root / FINAL / "guards-report.json")
     require(report["passed"] == report["total"] == 28 and all(row["Passed"] for row in report["cases"]), REASONS["state"])
-    return {"passed": 28, "total": 28, "report_sha256": sha((ROOT / FINAL / "guards-report.json").read_bytes()),
+    return {"passed": 28, "total": 28, "report_sha256": sha((root / FINAL / "guards-report.json").read_bytes()),
             "scope": report["scope"]}
 
 
 def check(root=ROOT, repository=REPOSITORY):
-    source = check_product(repository)
-    environment = load(ENVIRONMENT)
+    source = check_product(repository, root)
+    environment = load(root / FINAL / "environment.json")
     check_environment(environment)
     records = run_records(root)
-    logs = {label: check_record(label, row, source, environment) for label, row in records.items()}
+    logs = {label: check_record(label, row, source, environment, root) for label, row in records.items()}
     expected_ok = {"runtime-build", "clippy", "fmt", "lock", "native-library", "native-matrix", "b1-vm", "b1-native",
                    "toolchain-retry", "stages-retry", "guards-retry", "pow-final", "audit-b0-retry",
                    "audit-b1-retry", "audit-b2-retry", "audit-b3-retry", "audit-b3-cabi-retry", "audit-b3-wrapper-retry",
@@ -150,7 +152,7 @@ def check(root=ROOT, repository=REPOSITORY):
     require(all(records[label]["exit_code"] == 0 for label in expected_ok if label in records), REASONS["state"])
     require(records["toolchain"]["exit_code"] == 2 and "capture.py" in logs["toolchain"]
             and records["pow-retry"]["exit_code"] == 1 and "唯一release依赖" in logs["pow-retry"], REASONS["state"])
-    for docs_label in ["docs-final", "docs-final-confirmed"]:
+    for docs_label in sorted(label for label in records if label.startswith("docs-final")):
         docs_result = json.loads(logs[docs_label])
         require(docs_result["passed"] is True and not any(row["severity"] == "error" for row in docs_result["diagnostics"]), REASONS["docs"])
     require(records["workspace"]["exit_code"] == 101 and records["workspace-failure-exact"]["exit_code"] == 101
@@ -163,7 +165,7 @@ def check(root=ROOT, repository=REPOSITORY):
         "language_available": False, "workspace_gates": "blocked_existing_n0_b_dynamic_assertion",
         "runtime_abi": "1.18", "codegen_version": 21, "stdlib_interface": 1, "cmath": "planned",
         "product_commit": source["revision"], "product_files": len(source["files"]),
-        "pow": check_pow(), "stages": check_stages(), "guards": check_guards(),
+        "pow": check_pow(root), "stages": check_stages(root), "guards": check_guards(root),
         "tests": {label: {"exit_code": row["exit_code"], "log_sha256": row["log_sha256"]} for label, row in sorted(records.items())},
         "platforms_executed": ["Windows x86_64-pc-windows-msvc"],
         "not_executed": ["Linux", "macOS", "remote CI", "performance", "old 721 F10"],
