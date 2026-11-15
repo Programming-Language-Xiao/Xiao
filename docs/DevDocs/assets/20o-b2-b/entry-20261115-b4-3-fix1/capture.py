@@ -28,6 +28,7 @@ STAGES = {
     "B4-4": ("b4-4", "bb0b8196479e90d28d676f1bdefd04403e4ba6eb"),
 }
 FIX_COMMIT = "cfa79381bbae027cec11136ca380e82f66720c34"
+ENTRY_COMMIT = "d41b89b75da608e6bbda213601d6e68128893cbe"
 FIX_PATHS = {
     "core/rust/crates/xiao-codegen-llvm/src/dynamic/predicate.rs",
     "core/rust/crates/xiao-driver/tests/20o_b2_b4_numeric_range_routing.rs",
@@ -79,7 +80,7 @@ def stages():
                      "product_tree_sha256": identity(files), "product_files": len(files),
                      "runtime_abi": closeout["runtime_abi"], "codegen_version": closeout["codegen_version"],
                      "scope": "fixed historical snapshot; current execution recorded separately"})
-    changed = set(git(REPOSITORY, "diff", "--name-only", STAGES["B4-4"][1], source["revision"], "--", *PRODUCT_ROOTS).decode().splitlines())
+    changed = set(git(REPOSITORY, "diff", "--name-only", ENTRY_COMMIT, source["revision"], "--", *PRODUCT_ROOTS).decode().splitlines())
     require(fixed_files(REPOSITORY, source["revision"]) == fixed_files(REPOSITORY, FIX_COMMIT)
             and changed == FIX_PATHS, "FIX.1产品允许路径或提交身份不符")
     rows.append({"stage": "B4-3-FIX1", "product_commit": FIX_COMMIT, "source_snapshot": source["revision"],
