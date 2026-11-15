@@ -12,6 +12,7 @@ import tempfile
 
 sys.dont_write_bytecode = True
 from record import ROOT, REPOSITORY, PRODUCT_ROOTS, canonical, fixed_files, git, identity, load, require, sha, write_json
+from validation import validate
 
 FINAL = "final"
 SOURCE = ROOT / FINAL / "source.json"
@@ -45,7 +46,7 @@ def inventory(root):
     for path in sorted(root.rglob("*")):
         require(not path.is_symlink() and not getattr(path, "is_junction", lambda: False)(), "证据不能含链接")
         require("__pycache__" not in path.parts, "证据不能含Python缓存")
-        if path.is_file() and path.name not in {"evidence.json", "closeout.json"}:
+        if path.is_file() and path.relative_to(root).as_posix() != "evidence.json":
             raw = path.read_bytes()
             files[path.relative_to(root).as_posix()] = {"bytes": len(raw), "sha256": sha(raw)}
     return files
@@ -141,8 +142,11 @@ def check_guards(root=ROOT):
             "scope": report["scope"]}
 
 
-def check(root=ROOT, repository=REPOSITORY):
+def check(root=ROOT, repository=REPOSITORY, final_binding=True, sealed=True):
+    before = {p.relative_to(root).as_posix(): sha(p.read_bytes()) if p.is_file() else "directory" for p in root.rglob("*")}
     if (root / "evidence.json").exists():
+        for name in load(root / "evidence.json")["files"]:
+            require((root / name).is_file(), REASONS["missing"])
         require(load(root / "evidence.json") == {"files": inventory(root)}, REASONS["manifest"])
     source = check_product(repository, root)
     environment = load(root / FINAL / "environment.json")
@@ -164,33 +168,35 @@ def check(root=ROOT, repository=REPOSITORY):
             and "left: false" in logs["workspace"] and "right: true" in logs["workspace"], REASONS["workspace"])
     require(logs["toolchain-retry"].startswith("{") and logs["stages-retry"].startswith("{")
             and logs["guards-retry"].startswith("{") and logs["pow-final"].startswith("B4-5-POW"), REASONS["state"])
+    validate(root, repository, source, records, logs, final_binding)
     result = {
-        "passed": True, "stage": "B4-5", "b4_5_closed": False, "b4_closed": False,
+        "passed": False, "evidence_valid": True, "blocked": True, "stage": "B4-5", "b4_5_closed": False, "b4_closed": False,
         "language_available": False, "workspace_gates": "blocked_existing_n0_b_dynamic_assertion",
         "runtime_abi": "1.18", "codegen_version": 21, "stdlib_interface": 1, "cmath": "planned",
         "product_commit": source["revision"], "product_files": len(source["files"]),
         "pow": check_pow(root), "stages": check_stages(root), "guards": check_guards(root),
         "tests": {label: {"exit_code": row["exit_code"], "log_sha256": row["log_sha256"]} for label, row in sorted(records.items())},
         "platforms_executed": ["Windows x86_64-pc-windows-msvc"],
-        "not_executed": ["Linux", "macOS", "remote CI", "performance", "old 721 F10"],
+        "not_executed": ["Linux", "macOS", "remote CI", "performance", "old 721 F10", "workspace targets after first failure"],
         "blockers": [{"target": "n0_b_dynamic_native::generic_value_copy_registers_weak_dependency_only_when_called",
                       "observed": "false", "expected": "true", "source": "workspace.json", "ownership": "pre-existing product/test stage; B4-5 did not modify core or tests"}],
         "next_stage": "B4-5 blocked; return issue to owning native lowering stage before closeout",
     }
-    if (root / "closeout.json").exists():
+    if sealed and (root / "closeout.json").exists():
         stored = load(root / "closeout.json")
-        require(stored.get("language_available") is False and stored.get("b4_5_closed") is False, REASONS["public"])
+        require(stored.get("passed") is False and stored.get("language_available") is False and stored.get("b4_5_closed") is False, REASONS["public"])
         require(stored == result, REASONS["state"])
+    after = {p.relative_to(root).as_posix(): sha(p.read_bytes()) if p.is_file() else "directory" for p in root.rglob("*")}
+    require(before == after, REASONS["readonly"])
     return result
 
 
-def negative_cases():
-    baseline = {"passed": True, "files": inventory(ROOT)}
+def negative_cases(root=ROOT, repository=REPOSITORY):
     cases = []
     with tempfile.TemporaryDirectory(prefix="b4-5-negative-") as temporary:
         for name in ["manifest", "missing", "source", "public"]:
             copy = Path(temporary) / name
-            shutil.copytree(ROOT, copy)
+            shutil.copytree(root, copy)
             reason = REASONS[name]
             if name == "manifest":
                 (copy / "final" / "pow-review.json").write_bytes(b"tampered")
@@ -206,10 +212,10 @@ def negative_cases():
                 (copy / "evidence.json").write_text(json.dumps({"files": inventory(copy)}, ensure_ascii=False), encoding="utf-8")
             before = {p.relative_to(copy).as_posix(): sha(p.read_bytes()) for p in copy.rglob("*") if p.is_file()}
             run = subprocess.run([sys.executable, "-B", "-X", "utf8", str(Path(__file__).resolve()),
-                                  "--root", str(copy), "--repository-root", str(REPOSITORY)], capture_output=True, encoding="utf-8")
+                                  "--root", str(copy), "--repository-root", str(repository)], capture_output=True, encoding="utf-8")
             after = {p.relative_to(copy).as_posix(): sha(p.read_bytes()) for p in copy.rglob("*") if p.is_file()}
             require(before == after and run.returncode == 1 and run.stderr.strip() == reason, reason)
-            cases.append({"case": name, "exit_code": run.returncode, "reason": reason, "read_only": True})
+            cases.append({"case": name, "exit_code": run.returncode, "reason": reason, "stderr": run.stderr, "read_only": True})
     return {"passed": True, "cases": cases}
 
 
@@ -223,7 +229,7 @@ def main():
         print(json.dumps(negative_cases(), ensure_ascii=False))
         return
     result = check(args.root, args.repository_root)
-    print(json.dumps({"passed": result["passed"], "b4_5_closed": result["b4_5_closed"],
+    print(json.dumps({"passed": True, "evidence_valid": True, "stage_passed": result["passed"], "b4_5_closed": result["b4_5_closed"],
                       "workspace_gates": result["workspace_gates"], "product_commit": result["product_commit"]}, ensure_ascii=False))
 
 
