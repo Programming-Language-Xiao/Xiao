@@ -53,9 +53,13 @@ def artifacts():
             rows.append(row)
     require({kind: sum(r["kind"] == kind for r in rows) for kind in [".xiaoc", ".xar", ".ll", ".exe"]}
             == {".xiaoc": 4, ".xar": 4, ".ll": 4, ".exe": 4}, "真实产物数量不符")
-    write_json(ROOT / "fixed-final/artifacts.json", {"files": rows})
+    manifest = ROOT / "fixed-final/artifact-manifest.json"
+    if manifest.exists():
+        require(load(manifest) == {"files": rows}, "产物清单与实际文件不符")
+    else:
+        write_json(manifest, {"files": rows})
     print(json.dumps({"passed": True, "files": len(rows), "source_removed": True,
-                      "manifest_sha256": sha((ROOT / "fixed-final/artifacts.json").read_bytes())}))
+                      "manifest_sha256": sha((ROOT / "fixed-final/artifact-manifest.json").read_bytes())}))
 
 
 def self_test():
