@@ -10,7 +10,7 @@ import subprocess
 import sys
 
 sys.dont_write_bytecode = True
-from record import ROOT, REPOSITORY, PREFIX, fixed_files, git, identity, load, require, sha, write_json
+from record import ROOT, REPOSITORY, PREFIX, PRODUCT_ROOTS, fixed_files, git, identity, load, require, sha, write_json
 HISTORY = {"b0": "entry-20261107", "b1": "entry-20261108-b1", "b2": "entry-20261108-b2",
            "b3": "entry-20261108-b3", "b3-cabi": "entry-20261109-b3-cabi",
            "b3-wrapper": "entry-20261110-b3-wrapper-final", "b4-0-1": "entry-20261110-b4-0-1",
