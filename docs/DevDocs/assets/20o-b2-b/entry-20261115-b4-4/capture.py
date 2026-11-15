@@ -61,10 +61,16 @@ def artifacts():
         write_json(manifest, {"files": rows})
     decoding_digest = None
     if variant == "fixed-verified":
-        dependencies = task / "target/debug/deps"
+        dependencies = task / "target/release/deps"
         inspector = task / "inspect-artifact.exe"
         command = ["rustc", "+1.96.0", "--edition=2024", "--crate-name", "b4_4_artifact_inspector",
                    str(ROOT / "inspect_artifact.rs"), "-L", "dependency=" + str(dependencies), "-o", str(inspector)]
+        # 复用本任务release依赖图，避免core crate单测产生的多份debug rlib混用。
+        # 同时沿用Cargo构建脚本登记的本机搜索目录（包括Windows目标静态库）。
+        for output in sorted((task / "target/release/build").glob("*/output")):
+            for line in output.read_text(encoding="utf-8").splitlines():
+                if line.startswith("cargo:rustc-link-search="):
+                    command.extend(["-L", line.split("=", 1)[1]])
         for name in ["xiao_bytecode", "xiao_xar"]:
             libraries = list(dependencies.glob("lib" + name + "-*.rlib"))
             require(len(libraries) == 1, "产物解码器依赖必须唯一")
