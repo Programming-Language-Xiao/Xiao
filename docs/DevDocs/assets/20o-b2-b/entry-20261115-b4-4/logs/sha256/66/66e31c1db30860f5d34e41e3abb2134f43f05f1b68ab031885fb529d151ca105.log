@@ -1,0 +1,199 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.24
+   Compiling cfg-if v1.0.5
+   Compiling serde_core v1.0.229
+   Compiling itoa v1.0.18
+   Compiling zmij v1.0.23
+   Compiling version_check v0.9.5
+   Compiling serde v1.0.229
+   Compiling generic-array v0.14.7
+   Compiling syn v3.0.5
+   Compiling memchr v2.8.3
+   Compiling typenum v1.20.1
+   Compiling serde_json v1.0.151
+   Compiling xiao-runtime-abi v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime-abi)
+   Compiling cpufeatures v0.2.17
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling digest v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling xiao-source v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-source)
+   Compiling autocfg v1.5.1
+   Compiling serde_derive v1.0.229
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling num-traits v0.2.19
+   Compiling cc v1.5.1
+   Compiling libm v0.2.16
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling zeroize v1.9.0
+   Compiling rustls-pki-types v1.15.1
+   Compiling num-integer v0.1.47
+   Compiling bigdecimal v0.4.11
+   Compiling getrandom v0.2.17
+   Compiling ring v0.17.14
+   Compiling libc v0.2.189
+   Compiling untrusted v0.9.0
+   Compiling httparse v1.10.1
+   Compiling num-bigint v0.4.8
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-i18n)
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-intrinsics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-syntax)
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-standard-library)
+   Compiling bytes v1.12.1
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-modules)
+   Compiling crc32fast v1.5.2
+   Compiling log v0.4.34
+   Compiling rustls v0.23.45
+   Compiling http v1.5.0
+   Compiling windows-targets v0.52.6
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling rustls-webpki v0.103.15
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-ir)
+   Compiling xiao-lock v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lock)
+   Compiling adler2 v2.0.1
+   Compiling simd-adler32 v0.3.10
+   Compiling once_cell v1.21.4
+   Compiling subtle v2.6.1
+   Compiling base64 v0.23.1
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+   Compiling ureq-proto v0.6.4
+   Compiling miniz_oxide v0.9.1
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+   Compiling windows-sys v0.52.0
+   Compiling xiao-config v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-config)
+   Compiling webpki-roots v1.0.9
+   Compiling filetime v0.2.29
+   Compiling percent-encoding v2.3.2
+   Compiling utf8-zero v0.8.1
+   Compiling tar v0.4.46
+   Compiling ureq v3.4.2
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+   Compiling flate2 v1.1.10
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 48.09s
+     Running tests\20o_b2_b3_wrapper.rs (D:\project\Xiao\.b4-4\20261115\baseline\target\debug\deps\20o_b2_b3_wrapper-a8cece87f2cea900.exe)
+
+running 8 tests
+B3-CMATH-WRAPPER paths=std,stdlib ordinary-package=rejected result=success
+test source_contract_aliases_share_identity_and_reject_package_override ... ok
+B3-WRAPPER-EXPORT	{"function":"sqrt","intrinsic_id":34,"parameter_type":"float","parameters":["value"],"primitive":"cmath_sqrt","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"floor","intrinsic_id":35,"parameter_type":"float","parameters":["value"],"primitive":"cmath_floor","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"ceil","intrinsic_id":36,"parameter_type":"float","parameters":["value"],"primitive":"cmath_ceil","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"round","intrinsic_id":37,"parameter_type":"float","parameters":["value"],"primitive":"cmath_round","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"trunc","intrinsic_id":38,"parameter_type":"float","parameters":["value"],"primitive":"cmath_trunc","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"abs","intrinsic_id":39,"parameter_type":"float","parameters":["value"],"primitive":"cmath_abs","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"min","intrinsic_id":40,"parameter_type":"float","parameters":["left","right"],"primitive":"cmath_min","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"max","intrinsic_id":41,"parameter_type":"float","parameters":["left","right"],"primitive":"cmath_max","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"pow","intrinsic_id":42,"parameter_type":"float","parameters":["base","exponent"],"primitive":"cmath_pow","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"sin","intrinsic_id":43,"parameter_type":"float","parameters":["value"],"primitive":"cmath_sin","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"cos","intrinsic_id":44,"parameter_type":"float","parameters":["value"],"primitive":"cmath_cos","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"tan","intrinsic_id":45,"parameter_type":"float","parameters":["value"],"primitive":"cmath_tan","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"exp","intrinsic_id":46,"parameter_type":"float","parameters":["value"],"primitive":"cmath_exp","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"ln","intrinsic_id":47,"parameter_type":"float","parameters":["value"],"primitive":"cmath_ln","return_type":"float"}
+B3-WRAPPER-EXPORT	{"function":"log10","intrinsic_id":48,"parameter_type":"float","parameters":["value"],"primitive":"cmath_log10","return_type":"float"}
+B3-CMATH-WRAPPER functions=15 validation=AST-interface status=planned result=success
+test source_contract_exports_exactly_fifteen_frozen_forwarders ... ok
+B3-WRAPPER-CONTRACT mutation_cases=10 result=success
+test source_contract_rejects_extra_exports_and_wrong_forwarders ... ok
+B3-CMATH-WRAPPER removals=15 validation=AST-interface result=success
+test source_contract_removing_each_wrapper_invalidates_exports ... ok
+test source_contract_tutorial_tracks_registry_and_requires_verified_evidence ... ok
+B3-CMATH-ISOLATION modules=["stdlib.base64", "stdlib.cmath", "stdlib.csv", "stdlib.dict", "stdlib.fmt", "stdlib.hex", "stdlib.math", "stdlib.os", "stdlib.path", "stdlib.set", "stdlib.statistics", "stdlib.text", "stdlib.url"]
+B3-WRAPPER-IMPORT path=std.cmath function=sqrt stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-CMATH-ISOLATION native=success imported=stdlib.hex preloaded=stdlib.cmath:false
+test existing_hex_import_keeps_native_lowering ... ok
+B3-CMATH-REACHABILITY root=stdlib.hex unreachable=stdlib.path dependency=stdlib.cmath result=success
+test unimported_module_cannot_pull_cmath_into_hex ... ok
+B3-WRAPPER-IMPORT path=std.cmath function=floor stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=ceil stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=round stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=trunc stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=abs stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=min stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=max stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=pow stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=sin stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=cos stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=tan stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=exp stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=ln stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=std.cmath function=log10 stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=sqrt stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=floor stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=ceil stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=round stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=trunc stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=abs stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=min stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=max stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=pow stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=sin stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=cos stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=tan stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=exp stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=ln stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+B3-WRAPPER-IMPORT path=stdlib.cmath function=log10 stage=vm code=X06-RUNTIME-012 executable=false result=planned-rejected
+test b3_handoff_rejects_all_planned_language_imports ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.44s
+
+     Running tests\20o_b2_b4_cmath_boundary.rs (D:\project\Xiao\.b4-4\20261115\baseline\target\debug\deps\20o_b2_b4_cmath_boundary-309a7c14b1733982.exe)
+
+running 3 tests
+FIX1-ISOLATION project_cmath=success unimported_cmath=excluded archive=success
+test unrelated_and_project_cmath_modules_keep_their_existing_boundaries ... ok
+FIX1-ARCHIVE cases=48 code=X11-PROTOCOL-007 output=false residue=false
+test archive_rejects_planned_cmath_with_no_output_or_temporary_residue ... ok
+FIX1-CHILD cases=32 code=X06-RUNTIME-012 loaded=false output=false partial_release=false
+test child_rejects_planned_cmath_imports_before_module_execution ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.65s
+
+     Running tests\22c_vm_concurrency.rs (D:\project\Xiao\.b4-4\20261115\baseline\target\debug\deps\22c_vm_concurrency-bf6ec3282ecfde09.exe)
+
+running 29 tests
+test cancellation_of_completed_thread_is_not_catchable ... ok
+test cancellation_cleanup_error_stays_suppressed ... ok
+test cancellation_of_running_child_executes_finally_once ... ok
+test child_current_runtime_preserves_shared_mut_and_guard_release ... ok
+test concurrency_cancel_cannot_be_swallowed_by_catch ... ok
+test corrupt_plans_are_rejected_before_vm_execution ... ok
+test child_error_and_suppressed_survive_join_and_wait ... ok
+test detached_failure_is_structured_and_does_not_change_exit_code ... ok
+test dropped_unwaited_task_failure_is_reported_before_vm_returns ... ok
+test frozen_runtime_error_codes_remain_structured ... ok
+test detached_activity_is_drained_before_timeout_returns ... ok
+test boundary_failure_cleans_copies_in_ir_order_before_starting_child ... ok
+test isolated_child_loads_project_and_standard_modules ... ok
+B3-CMATH-SPAWN path=std.cmath identity=stdlib.cmath result=planned-rejected
+test nested_runtime_context_is_distinct_and_child_pool_works ... ok
+B3-CMATH-SPAWN path=stdlib.cmath identity=stdlib.cmath result=planned-rejected
+test isolated_child_preserves_cmath_alias_snapshot_identity ... ok
+B3-CMATH-XAR identity=stdlib.cmath aliases=std.cmath result=planned-rejected
+test planned_cmath_xar_is_rejected_before_output ... ok
+test lock_wait_and_completed_handle_cancellation_are_027 ... ok
+test plans_round_trip_and_execute_without_module_function_names ... ok
+test queued_task_cancel_never_runs_body_and_wait_is_027 ... ok
+test real_source_builds_and_runs_xar_with_preflight_features ... ok
+test result_serialization_rejects_mutable_container_instead_of_none ... ok
+test running_pool_task_cancel_waits_for_finally_and_suppressed ... ok
+B3-STDLIB-XAR identity=stdlib.text aliases=std.text index=success execution=planned-rejected
+test real_source_xar_keeps_standard_alias_identity ... ok
+test shared_read_can_cross_runtime_and_survive_source_close ... ok
+test source_threads_pool_aliases_and_values_are_observable ... ok
+test xiaoc_host_missing_features_is_rejected_before_execution ... ok
+test startup_failure_cleans_successful_boundary_copies ... ok
+test external_timeout_interrupts_join_and_child_vm ... ok
+test source_values_and_plans_survive_all_optimization_levels ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.05s
+

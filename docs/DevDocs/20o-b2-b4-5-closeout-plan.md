@@ -15,7 +15,7 @@
 | B4-2A | 已完成 Windows 本机退出；TAC/字节码 34～48 往返与 FIX1 边界门禁 |
 | B4-2B | 已完成Windows本机内部验收；VM15项、002/009/span/清理，见[记录](assets/20o-b2-b/entry-20261113-b4-2b/README.md) |
 | B4-3 | Windows内部退出完成；动态/静态、float `**`共核、O0/O3与B1原生回归见[固定证据](assets/20o-b2-b/entry-20261113-b4-3/README.md) |
-| B4-4 | Windows内部验收完成：`e2f24222`/`eb65a3b6`，双路径、导出/移除、删源归档、子VM与原生选择导入通过，见[证据](assets/20o-b2-b/entry-20261115-b4-4/README.md) |
+| B4-4 | Windows内部验收完成：`e2f24222`/`bb0b8196`，双路径、导出/移除、删源归档、子VM与原生选择导入通过，见[证据](assets/20o-b2-b/entry-20261115-b4-4/README.md) |
 | 版本 | 仍ABI1.18、生成器21、接口1；B5只切ABI至1.19 |
 | 公共状态 | `stdlib.cmath`、UseDocs、registry 仍 planned；旧 721 未跑 |
 

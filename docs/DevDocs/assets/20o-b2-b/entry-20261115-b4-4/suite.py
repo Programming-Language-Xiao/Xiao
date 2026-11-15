@@ -42,7 +42,7 @@ def main():
     args = parser.parse_args()
     for label in args.labels:
         subprocess.run([sys.executable, "-B", "-X", "utf8", str(Path(__file__).with_name("record.py")),
-                        "run", "fixed-final", label, "--", *COMMANDS[label]], check=True)
+                        "run", "fixed-verified", label, "--", *COMMANDS[label]], check=True)
 
 
 if __name__ == "__main__":

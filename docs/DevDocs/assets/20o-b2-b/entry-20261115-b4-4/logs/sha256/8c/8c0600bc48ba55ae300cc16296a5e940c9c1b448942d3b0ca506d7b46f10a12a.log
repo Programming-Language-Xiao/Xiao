@@ -1,0 +1,1 @@
+{"passed": true, "core_only": false, "files": 131, "baseline_commit": "ae1744e5", "code_commit": "88886dd5", "b0_checks": 16, "b1_checks": 17, "exact_entries_per_phase": 4, "reference_cases": 17243, "max_ulp": 1, "live_runtime_checked": false, "scope": "B3-0/B3-1 私有内核；尚未公开接线"}

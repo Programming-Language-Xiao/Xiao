@@ -18,10 +18,12 @@ from suite import COMMANDS, CARGO, HISTORY
 
 BASELINE = "c93f74654c5a956bd9dfbe2083b28dbbe6b52d6a"
 FIRST_CODE = "e2f2422224c59a454e0a9a227d49f1ecd3e183ab"
-CODE = "eb65a3b607e046656e7943e49e6e9c70f3007f3f"
-FINAL = "fixed-final"
-REVISIONS = {"baseline": BASELINE, "fixed": FIRST_CODE, FINAL: CODE}
-RUNS = {"baseline": {"entry"}, "fixed": {"runtime-build", "native-library"}, FINAL: set(COMMANDS)}
+PREVIOUS_CODE = "eb65a3b607e046656e7943e49e6e9c70f3007f3f"
+CODE = "bb0b8196479e90d28d676f1bdefd04403e4ba6eb"
+PREVIOUS = "fixed-final"
+FINAL = "fixed-verified"
+REVISIONS = {"baseline": BASELINE, "fixed": FIRST_CODE, PREVIOUS: PREVIOUS_CODE, FINAL: CODE}
+RUNS = {"baseline": {"entry"}, "fixed": {"runtime-build", "native-library"}, PREVIOUS: set(COMMANDS), FINAL: set(COMMANDS)}
 ALLOWED = {
     "core/rust/crates/xiao-driver/README.md", "core/rust/crates/xiao-driver/src/README.md",
     "core/rust/crates/xiao-driver/src/archive_closure.rs", "core/rust/crates/xiao-driver/src/archive_run.rs",
@@ -32,7 +34,7 @@ ALLOWED = {
     "core/rust/crates/xiao-driver/tests/support/b4_cmath_library_native.rs",
     "core/rust/crates/xiao-xar/README.md", "core/rust/crates/xiao-xar/src/runner.rs",
     "docs/UseDocs/library/README.md", "docs/UseDocs/library/cmath.md", "stdlib/README.md", "stdlib/cmath.md",
-    "tests/fixtures/docs/cmath/README.md", "tests/fixtures/docs/cmath/library.stdout", "tests/fixtures/docs/cmath/library.xiao",
+    "tests/fixtures/docs/numeric/README.md", "tests/fixtures/docs/cmath/README.md", "tests/fixtures/docs/numeric/cmath-library.stdout", "tests/fixtures/docs/numeric/cmath-library.xiao",
 }
 REASONS = {
     "manifest": "B4-4证据清单不符", "attributes": "B4-4证据属性缺失或变化",
@@ -97,7 +99,7 @@ def expected_command(variant, label):
 
 def read_run(root, repository, variant, label, source, environment):
     row = load(root / variant / (label + ".json"))
-    exit_code = 101 if variant == "fixed" and label == "native-library" else 0
+    exit_code = 101 if variant == "fixed" and label == "native-library" else 1 if variant == PREVIOUS and label == "final-docs" else 0
     require(row["variant"] == variant and row["label"] == label and row["argv"] == expected_command(variant, label)
             and row["exit_code"] == exit_code, REASONS["state"])
     require(row["pid"] > 0 and datetime.fromisoformat(row["started_utc"]) < datetime.fromisoformat(row["finished_utc"])
@@ -123,6 +125,7 @@ def read_run(root, repository, variant, label, source, environment):
 
 def check_sources(root, repository):
     for variant, revision in REVISIONS.items():
+        revision = git(repository, "rev-parse", revision).decode().strip()
         source = load(root / variant / "source.json")
         require(source["revision"] == revision and source["sha256"] == identity(source["files"])
                 and {p: r["canonical_sha256"] for p, r in source["files"].items()} == source_at(str(repository), revision), REASONS["source"])
@@ -232,6 +235,9 @@ def conclusions(root, records, logs, live_runtime):
     artifacts = check_artifacts(root, load(root / FINAL / "environment.json"))
     require(json.loads(logs[FINAL, "artifacts"]) == {"passed": True, "files": 16, "source_removed": True,
             "manifest_sha256": sha((root / FINAL / "artifact-manifest.json").read_bytes())}, REASONS["artifact"])
+    old_docs = json.loads(logs[PREVIOUS, "final-docs"])
+    require(old_docs["passed"] is False and {r["code"] for r in old_docs["diagnostics"] if r["severity"] == "error"}
+            == {"A0-LAYOUT-001", "A0-LAYOUT-002", "A0-COVERAGE-001", "A0-COVERAGE-002"}, "B4-4首次文档失败未保留")
     docs = json.loads(logs[FINAL, "final-docs"])
     require(docs["passed"] is True and not any(r["severity"] == "error" for r in docs["diagnostics"]), "B4-4最终文档门禁失败")
     return {"passed": True, "stage": "B4-4", "b4_4_closed": True, "b4_closed": False,
@@ -267,7 +273,7 @@ def verify(root, repository, live_runtime=False, check_inventory=True, check_clo
     require(interruption["accepted_as_run"] is False
             and interruption["original_manifest_path"] == "fixed-final/artifacts.json"
             and interruption["preserved_manifest_path"] == "fixed-final/artifact-manifest.json"
-            and interruption["manifest_sha256"] == sha((root / FINAL / "artifact-manifest.json").read_bytes())
+            and interruption["manifest_sha256"] == sha((root / PREVIOUS / "artifact-manifest.json").read_bytes())
             and interruption["log_sha256"] == sha(interrupted_raw) and interruption["log_bytes"] == len(interrupted_raw),
             "B4-4采集器中断记录不符")
     referenced.add(interruption["log_ref"])
@@ -366,7 +372,7 @@ def main():
     else:
         result = verify(root, repository, args.live_runtime, check_review=not args.core_only)
     print(json.dumps({"passed": result["passed"], "b4_4_closed": result["b4_4_closed"] and not args.core_only, "b4_closed": False,
-                      "files": len(inventory(root)), "runs": len(result["runs"]), "product_commit": CODE}, ensure_ascii=False))
+                      "files": len(inventory(root)), "runs": len(result["runs"]), "product_commit": result["product_commit"]}, ensure_ascii=False))
 
 
 if __name__ == "__main__":
