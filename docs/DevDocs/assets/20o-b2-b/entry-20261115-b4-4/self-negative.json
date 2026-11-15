@@ -1,0 +1,75 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "reason": null,
+      "stderr": "",
+      "read_only": true
+    },
+    {
+      "case": "manifest",
+      "exit_code": 1,
+      "reason": "B4-4证据清单不符",
+      "stderr": "B4-4证据清单不符\n",
+      "read_only": true
+    },
+    {
+      "case": "attributes",
+      "exit_code": 1,
+      "reason": "B4-4证据属性缺失或变化",
+      "stderr": "B4-4证据属性缺失或变化\n",
+      "read_only": true
+    },
+    {
+      "case": "source",
+      "exit_code": 1,
+      "reason": "B4-4固定产品身份不符",
+      "stderr": "B4-4固定产品身份不符\n",
+      "read_only": true
+    },
+    {
+      "case": "environment",
+      "exit_code": 1,
+      "reason": "B4-4隔离环境或路径不符",
+      "stderr": "B4-4隔离环境或路径不符\n",
+      "read_only": true
+    },
+    {
+      "case": "docs",
+      "exit_code": 1,
+      "reason": "B4-4文档字节绑定不符",
+      "stderr": "B4-4文档字节绑定不符\n",
+      "read_only": true
+    },
+    {
+      "case": "runtime",
+      "exit_code": 1,
+      "reason": "B4-4 Runtime身份不符",
+      "stderr": "B4-4 Runtime身份不符\n",
+      "read_only": true
+    },
+    {
+      "case": "state",
+      "exit_code": 1,
+      "reason": "B4-4阶段或运行结果不符",
+      "stderr": "B4-4阶段或运行结果不符\n",
+      "read_only": true
+    },
+    {
+      "case": "orphan",
+      "exit_code": 1,
+      "reason": "B4-4存在未引用日志对象",
+      "stderr": "B4-4存在未引用日志对象\n",
+      "read_only": true
+    },
+    {
+      "case": "artifact",
+      "exit_code": 1,
+      "reason": "B4-4真实产物摘要不符",
+      "stderr": "B4-4真实产物摘要不符\n",
+      "read_only": true
+    }
+  ]
+}

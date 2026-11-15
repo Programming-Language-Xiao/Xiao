@@ -1,0 +1,66 @@
+{
+  "build_argv": [
+    "rustc",
+    "+1.96.0",
+    "--edition=2024",
+    "--crate-name",
+    "b4_4_artifact_inspector",
+    "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261115-b4-4\\inspect_artifact.rs",
+    "-L",
+    "dependency=D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\target\\release\\deps",
+    "-o",
+    "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\inspect-artifact.exe",
+    "-L",
+    "native=D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\target\\release\\build\\ring-e8824e5e901ed37d\\out",
+    "-L",
+    "native=C:\\Users\\xiaoc\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\windows_x86_64_msvc-0.52.6\\lib",
+    "--extern",
+    "xiao_bytecode=D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\target\\release\\deps\\libxiao_bytecode-3da1e2392db7eaba.rlib",
+    "--extern",
+    "xiao_xar=D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\target\\release\\deps\\libxiao_xar-57d92b9af579f0c7.rlib"
+  ],
+  "build_stderr": "",
+  "inspector_sha256": "a3c87436031753dea699b4d1d3b85d8f79d787880f77664248d419f9e7d351ae",
+  "results": [
+    {
+      "object": "artifacts/sha256/1afd3ee2c9552012009368be5e3fbe77f17c704aa068604b52e541facbcf0b88.xar",
+      "kind": ".xar",
+      "stdout": "ids=none identity=canonical bundled_official=false decoded=passed\n"
+    },
+    {
+      "object": "artifacts/sha256/e71682e6a4ea1c650a2e69c524c595551e002feb195c05d11f026a84ac02c6dd.xiaoc",
+      "kind": ".xiaoc",
+      "stdout": "ids=none identity=canonical bundled_official=false decoded=passed\n"
+    },
+    {
+      "object": "artifacts/sha256/03d29d83a035852676bb433b83c2c6b7252196c358a6849267da106af0d68561.xar",
+      "kind": ".xar",
+      "stdout": "ids=34..48 identity=canonical bundled_official=false decoded=passed\n"
+    },
+    {
+      "object": "artifacts/sha256/2c6dcf1f600b47dd96a7fd4c6bf510ccb4914e970a1dec0daa4c531d5554a77a.xiaoc",
+      "kind": ".xiaoc",
+      "stdout": "ids=34..48 identity=canonical bundled_official=false decoded=passed\n"
+    },
+    {
+      "object": "artifacts/sha256/0ad477cb00b0700fd201a636863ff9b14928bc3ad89ac85b7ca111b9af512eb5.xar",
+      "kind": ".xar",
+      "stdout": "ids=none identity=canonical bundled_official=false decoded=passed\n"
+    },
+    {
+      "object": "artifacts/sha256/4eb29ae333dddac89d98ba108adf66c6f06684905f9c4e5c83f854c9255c7c69.xiaoc",
+      "kind": ".xiaoc",
+      "stdout": "ids=none identity=canonical bundled_official=false decoded=passed\n"
+    },
+    {
+      "object": "artifacts/sha256/8f90271806902c891fa13833a3f2f93e84f209d01dcc91d102db034f18e0c5ca.xar",
+      "kind": ".xar",
+      "stdout": "ids=34..48 identity=canonical bundled_official=false decoded=passed\n"
+    },
+    {
+      "object": "artifacts/sha256/4ea20d6c3d1111f7e2302fc26c2353f02197afd3d4f50de4a0c7cc2c26faaae7.xiaoc",
+      "kind": ".xiaoc",
+      "stdout": "ids=34..48 identity=canonical bundled_official=false decoded=passed\n"
+    }
+  ]
+}
