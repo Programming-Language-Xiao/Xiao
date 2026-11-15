@@ -1,5 +1,7 @@
 {
-  "passed": true,
+  "passed": false,
+  "evidence_valid": true,
+  "blocked": true,
   "stage": "B4-5",
   "b4_5_closed": false,
   "b4_closed": false,
@@ -92,7 +94,19 @@
       "exit_code": 0,
       "log_sha256": "e7193d9195389a58de1ed44284b6daa0f6951a2c3ac020755e61dadcd5593727"
     },
+    "docs-final-audited": {
+      "exit_code": 0,
+      "log_sha256": "e7193d9195389a58de1ed44284b6daa0f6951a2c3ac020755e61dadcd5593727"
+    },
     "docs-final-confirmed": {
+      "exit_code": 0,
+      "log_sha256": "e7193d9195389a58de1ed44284b6daa0f6951a2c3ac020755e61dadcd5593727"
+    },
+    "docs-final-final": {
+      "exit_code": 0,
+      "log_sha256": "e7193d9195389a58de1ed44284b6daa0f6951a2c3ac020755e61dadcd5593727"
+    },
+    "docs-final-rebound": {
       "exit_code": 0,
       "log_sha256": "e7193d9195389a58de1ed44284b6daa0f6951a2c3ac020755e61dadcd5593727"
     },
@@ -161,7 +175,8 @@
     "macOS",
     "remote CI",
     "performance",
-    "old 721 F10"
+    "old 721 F10",
+    "workspace targets after first failure"
   ],
   "blockers": [
     {
