@@ -1,0 +1,1377 @@
+{
+  "regressions": {
+    "20o_b2_b3_wrapper": [
+      8,
+      0,
+      0
+    ],
+    "20o_b2_b4_cmath_boundary": [
+      4,
+      0,
+      0
+    ],
+    "20o_b2_b4_cmath_library": [
+      5,
+      0,
+      1
+    ],
+    "20o_b2_b4_cmath_llvm": [
+      4,
+      0,
+      1
+    ],
+    "20o_b2_b4_cmath_vm": [
+      7,
+      0,
+      0
+    ],
+    "20o_b2_b4_frontend": [
+      3,
+      0,
+      0
+    ],
+    "20o_b2_b4_numeric_range_routing": [
+      3,
+      0,
+      0
+    ],
+    "22c_vm_concurrency": [
+      29,
+      0,
+      0
+    ],
+    "n0_b_dynamic_native": [
+      13,
+      0,
+      2
+    ]
+  },
+  "workspace": {
+    "targets": {
+      "xiao_artifacts@88e53382a7fb35a1": [
+        25,
+        0,
+        0
+      ],
+      "xiao_bytecode@9cd6fe4f24d3bb69": [
+        33,
+        0,
+        0
+      ],
+      "xiaoc_check@04bc4ff9b9576c3d": [
+        0,
+        0,
+        0
+      ],
+      "b0_a_api@c7fad84c6cd788a5": [
+        1,
+        0,
+        0
+      ],
+      "b4_cmath_tac@7b9bdee80f8af2d1": [
+        2,
+        0,
+        0
+      ],
+      "fuzz_xiaoc@ef4cdb7c0abf1e52": [
+        2,
+        0,
+        0
+      ],
+      "r2_tac@58e43c4d8e508d83": [
+        27,
+        0,
+        0
+      ],
+      "xiao_codegen_llvm@a6bcce794c6aa5ee": [
+        56,
+        0,
+        0
+      ],
+      "15e_ci_gated@d671e60d5896a785": [
+        0,
+        0,
+        5
+      ],
+      "n0_a@07b9c501c5be802a": [
+        16,
+        0,
+        7
+      ],
+      "n0_b_dynamic@d7c5e8992ef7c5f2": [
+        27,
+        0,
+        1
+      ],
+      "n0_c_errors@26d3f232229278d9": [
+        4,
+        0,
+        2
+      ],
+      "stdlib_bindings@4f6aef6a063ac6e9": [
+        4,
+        0,
+        0
+      ],
+      "xiao_config@70a9c597e18e88da": [
+        8,
+        0,
+        0
+      ],
+      "d05_config@5bf5471672257286": [
+        13,
+        0,
+        0
+      ],
+      "spec_snapshots@6465a0d3add8bc95": [
+        1,
+        0,
+        0
+      ],
+      "xiao_diagnostics@40b4235178321df9": [
+        18,
+        0,
+        0
+      ],
+      "xiao_diagnostics@f27a35a085806a31": [
+        8,
+        0,
+        0
+      ],
+      "xiao_doc_coverage_rust@06fab04f4c9392a0": [
+        7,
+        0,
+        0
+      ],
+      "xiao_doc_coverage_rust@120b485c6f29afbe": [
+        0,
+        0,
+        0
+      ],
+      "xiao_driver@5d86cfce584dd0ac": [
+        66,
+        0,
+        1
+      ],
+      "xiao_core@25d873998fcff658": [
+        0,
+        0,
+        0
+      ],
+      "18b_build_archive@a986e3da13870570": [
+        13,
+        0,
+        0
+      ],
+      "20c_first_modules@3c997782d0024b8e": [
+        12,
+        0,
+        3
+      ],
+      "20d_first_api@b6e87977be977755": [
+        15,
+        0,
+        2
+      ],
+      "20d_process_api@cf887f0344f8d492": [
+        13,
+        0,
+        5
+      ],
+      "20e_archive_wiring@92b63f6226dfb86d": [
+        11,
+        0,
+        0
+      ],
+      "20f_container_parameters@668951aa44c1d94a": [
+        10,
+        0,
+        0
+      ],
+      "20g_set_mutation@92724812eabdf18a": [
+        7,
+        0,
+        0
+      ],
+      "20h_set_methods@403b15d777330e70": [
+        10,
+        0,
+        0
+      ],
+      "20i_indexing_and_text@1a5a17b09c377788": [
+        13,
+        0,
+        0
+      ],
+      "20j_dynamic_dict_keys@74befaef0ab13f2e": [
+        7,
+        0,
+        0
+      ],
+      "20k_dict_write@fe82a14cc5ca713e": [
+        9,
+        0,
+        0
+      ],
+      "20l_dict_methods@4641b66e3a8462c3": [
+        10,
+        0,
+        0
+      ],
+      "20m_text_and_path@e0568018f935cc10": [
+        4,
+        0,
+        2
+      ],
+      "20o_b1_imp_contract@2dfcab1f79907b7f": [
+        9,
+        0,
+        0
+      ],
+      "20o_b1_imp_resources@29cf7055ec1b195c": [
+        17,
+        0,
+        0
+      ],
+      "20o_b1_imp_vm_performance@056d28b349720372": [
+        5,
+        0,
+        0
+      ],
+      "20o_b1_probe@07d771a661c011fb": [
+        10,
+        0,
+        1
+      ],
+      "20o_b2_a1_identity@da31300486b73864": [
+        1,
+        0,
+        1
+      ],
+      "20o_b2_a_contract@5c8002711d8f3487": [
+        12,
+        0,
+        1
+      ],
+      "20o_b2_a_performance_protocol@bf5711471ed4aea1": [
+        3,
+        0,
+        0
+      ],
+      "20o_b2_a_resources@bb66242c8eb0c4e7": [
+        8,
+        0,
+        0
+      ],
+      "20o_b2_b2_divide@c8a2412f366034e7": [
+        2,
+        0,
+        1
+      ],
+      "20o_b2_b3_wrapper@a8cece87f2cea900": [
+        8,
+        0,
+        0
+      ],
+      "20o_b2_b4_cmath_boundary@309a7c14b1733982": [
+        4,
+        0,
+        0
+      ],
+      "20o_b2_b4_cmath_library@972e9379031eb7a9": [
+        5,
+        0,
+        1
+      ],
+      "20o_b2_b4_cmath_llvm@cc2ffd7a052ecbdb": [
+        4,
+        0,
+        1
+      ],
+      "20o_b2_b4_cmath_vm@2c98a2c7bd8ce391": [
+        7,
+        0,
+        0
+      ],
+      "20o_b2_b4_frontend@f6dd88ed772d2bd6": [
+        3,
+        0,
+        0
+      ],
+      "20o_b2_b4_numeric_range_routing@a7bc37824a02cf88": [
+        3,
+        0,
+        0
+      ],
+      "22b_concurrency_wiring@fce284cb564240e7": [
+        15,
+        0,
+        0
+      ],
+      "22c_runtime_gates@44ab823ad6cbe575": [
+        2,
+        0,
+        0
+      ],
+      "22c_vm_concurrency@bf6ec3282ecfde09": [
+        29,
+        0,
+        0
+      ],
+      "22d_llvm_concurrency@5662b9dd1d2efdfd": [
+        6,
+        0,
+        3
+      ],
+      "22e_release@505fba87502f6235": [
+        5,
+        0,
+        1
+      ],
+      "artifact_size_regression@ee82d82f837752c7": [
+        2,
+        0,
+        0
+      ],
+      "b0_c_driver@9229e495f1c43119": [
+        7,
+        0,
+        0
+      ],
+      "b0_d_exit_codes@c9f928bebfde964d": [
+        11,
+        0,
+        0
+      ],
+      "c20_capability_probe@a377499874fea540": [
+        4,
+        0,
+        2
+      ],
+      "compatibility_matrix@2d7e479c3af32fe4": [
+        5,
+        0,
+        0
+      ],
+      "cross_platform_release@c3f1fbed5324fa7b": [
+        4,
+        0,
+        0
+      ],
+      "d17c_archive@184d5bd3e0c688aa": [
+        15,
+        0,
+        0
+      ],
+      "d19a_differential@9e2cd37f323ea377": [
+        8,
+        0,
+        3
+      ],
+      "d19a_regression@e012703465dc4cf2": [
+        9,
+        0,
+        0
+      ],
+      "eighth_batch@98ff69fa8a5e132d": [
+        3,
+        0,
+        1
+      ],
+      "i4a2_module_loading@ffe752f176675d70": [
+        19,
+        0,
+        0
+      ],
+      "i4a2_retry@aa04fa7b4f73ba42": [
+        4,
+        0,
+        0
+      ],
+      "i4b_session@ede3491173fc4d4a": [
+        7,
+        0,
+        0
+      ],
+      "n0_a_native_driver@02788b0f464ca9ef": [
+        3,
+        0,
+        3
+      ],
+      "n0_b_dynamic_native@415d76f709736c98": [
+        13,
+        0,
+        2
+      ],
+      "native_benchmark_probe@3b2eff1e27f66652": [
+        0,
+        0,
+        1
+      ],
+      "ninth_batch@3f9304bb7f2043e9": [
+        2,
+        0,
+        0
+      ],
+      "release_report@4eae7fc4d03e930c": [
+        2,
+        0,
+        0
+      ],
+      "seventh_batch@afbaebe3e6eb8aca": [
+        3,
+        0,
+        1
+      ],
+      "u0_frontend@90af3b5091aef0e8": [
+        4,
+        0,
+        0
+      ],
+      "x0_a_protocol@4604c7a7809bc47a": [
+        9,
+        0,
+        0
+      ],
+      "y3_selector_plan@68275c1a299643b5": [
+        1,
+        0,
+        0
+      ],
+      "xiao_i18n@643d3913290f88f1": [
+        0,
+        0,
+        0
+      ],
+      "catalog@458896f94b54ea2d": [
+        5,
+        0,
+        0
+      ],
+      "language_pack@122396659a40c239": [
+        7,
+        0,
+        0
+      ],
+      "xiao_intrinsics@960031eeb1796bb1": [
+        8,
+        0,
+        0
+      ],
+      "xiao_ir@9434b944ed94e884": [
+        1,
+        0,
+        0
+      ],
+      "fuzz_snapshots@a11be769036506e9": [
+        3,
+        0,
+        0
+      ],
+      "r2_release_reconciliation@ef0b54b2f63567dd": [
+        8,
+        0,
+        0
+      ],
+      "structure_snapshots@78d4e3d3dcc57650": [
+        1,
+        0,
+        0
+      ],
+      "u0_ir@ec4b66e6f5198656": [
+        12,
+        0,
+        0
+      ],
+      "xiao_lifetime@3f117843922300de": [
+        9,
+        0,
+        0
+      ],
+      "a06_lifetime@570263f0b41793be": [
+        38,
+        0,
+        0
+      ],
+      "xiao_lock@210c4ccde5ddac42": [
+        4,
+        0,
+        0
+      ],
+      "xiao_modules@46246fcc05830dd8": [
+        0,
+        0,
+        0
+      ],
+      "c05_tables@9a997e24a90f5e81": [
+        1,
+        0,
+        0
+      ],
+      "d0_modules@bd7388822e2e8087": [
+        12,
+        0,
+        0
+      ],
+      "xiao_optimizer@6dac92741b69e924": [
+        15,
+        0,
+        0
+      ],
+      "boundary_inputs@28ccf05a777a7e02": [
+        4,
+        0,
+        0
+      ],
+      "xiao_package@3b7ed6eb9c456076": [
+        7,
+        0,
+        0
+      ],
+      "d1_package@2b5b23b551c8eeae": [
+        4,
+        0,
+        0
+      ],
+      "e0_environment@af4747cccddec76f": [
+        3,
+        0,
+        0
+      ],
+      "e1_cache@6691c36dba77e12a": [
+        7,
+        0,
+        0
+      ],
+      "e2a_lockfile@d0071c25f884fa9b": [
+        5,
+        0,
+        0
+      ],
+      "e2b_sync@f496c5e528eb5533": [
+        7,
+        0,
+        0
+      ],
+      "e3a_source@fd2341563553db60": [
+        8,
+        0,
+        0
+      ],
+      "e3b_cache@93d70886d72d1f82": [
+        14,
+        0,
+        0
+      ],
+      "e3c_remote@9f5d9ec43f8442e2": [
+        12,
+        0,
+        1
+      ],
+      "e3d1_remote@88649a3a0058781b": [
+        5,
+        0,
+        0
+      ],
+      "e3d_config_edit@cbf3f63b27cbabce": [
+        6,
+        0,
+        0
+      ],
+      "e3d_operations@7b78861d19c86b03": [
+        7,
+        0,
+        0
+      ],
+      "e3d_solver@d0264f1364a70685": [
+        9,
+        0,
+        0
+      ],
+      "e3d_version@229487b0e1b545ee": [
+        3,
+        0,
+        0
+      ],
+      "e4_language_pack@59b56f82424a684e": [
+        3,
+        0,
+        0
+      ],
+      "xiao_platform@96edf1cb91921a01": [
+        0,
+        0,
+        0
+      ],
+      "xiao_runtime@13fd27f6d549fe2b": [
+        272,
+        0,
+        0
+      ],
+      "b06_runtime@76f9719dc9a9b4bf": [
+        9,
+        0,
+        0
+      ],
+      "b1_string_bridge@b8a054057bf03379": [
+        1,
+        0,
+        0
+      ],
+      "b2_a1_identity_allocations@0e89649463628007": [
+        1,
+        0,
+        0
+      ],
+      "n0_c2_error_boundary@87a2e9212109239c": [
+        1,
+        0,
+        1
+      ],
+      "r2a_containers@eef53e73aaead9a3": [
+        17,
+        0,
+        0
+      ],
+      "xiao_runtime_abi@fa9745591bd1c9ff": [
+        11,
+        0,
+        1
+      ],
+      "xiao_source@6b3981710dd11d2a": [
+        5,
+        0,
+        0
+      ],
+      "xiao_standard_library@a607a9079cea2429": [
+        0,
+        0,
+        0
+      ],
+      "xiao_syntax@d90be9672e2c3468": [
+        27,
+        0,
+        0
+      ],
+      "c05_tables@8edae15764fe948f": [
+        3,
+        0,
+        0
+      ],
+      "c0_containers@78e0cb60bfda98bf": [
+        6,
+        0,
+        0
+      ],
+      "c0_snapshots@a085a6d5877c213d": [
+        2,
+        0,
+        0
+      ],
+      "c2a_sets@472f6a94c51a9fcb": [
+        6,
+        0,
+        0
+      ],
+      "c2b_sets@a5ad0bbebb4dc012": [
+        6,
+        0,
+        0
+      ],
+      "c2c_set_operations@d577aec6eb95e749": [
+        3,
+        0,
+        0
+      ],
+      "concurrency_annotations@9c9f6074ae698b20": [
+        3,
+        0,
+        0
+      ],
+      "d0_imports@743ba3aa9e7a8a9b": [
+        6,
+        0,
+        0
+      ],
+      "f04_functions@a48c2ea8a7f6b41a": [
+        14,
+        0,
+        0
+      ],
+      "lexical_snapshots@81fca956a03ef284": [
+        17,
+        0,
+        0
+      ],
+      "p1_expression@f1443814ccc60556": [
+        16,
+        0,
+        0
+      ],
+      "p2_declarations@14c5f4bc998e2b81": [
+        4,
+        0,
+        0
+      ],
+      "p2_snapshots@2e6b15a01755e728": [
+        1,
+        0,
+        0
+      ],
+      "p2_type_parameters@9df619395f63a0a4": [
+        4,
+        0,
+        0
+      ],
+      "parser_snapshots@b32e00f7fbb59d07": [
+        14,
+        0,
+        0
+      ],
+      "xiao_types@bb988a8e60e995e1": [
+        38,
+        0,
+        0
+      ],
+      "c05_tables@e345968a781bbe01": [
+        8,
+        0,
+        0
+      ],
+      "c0_containers@1b248de184054c0d": [
+        15,
+        0,
+        0
+      ],
+      "c0c1_snapshots@928f9da0aa87cd3f": [
+        4,
+        0,
+        0
+      ],
+      "c1_selectors@442091b9ce38907a": [
+        18,
+        0,
+        0
+      ],
+      "c2a_sets@4d329c16358b92b5": [
+        9,
+        0,
+        0
+      ],
+      "c2a_snapshots@8adefcf6e905b57d": [
+        2,
+        0,
+        0
+      ],
+      "c2b_heterogeneous_sets@d3d47c81894cf110": [
+        7,
+        0,
+        0
+      ],
+      "c2b_snapshots@c861ebbd37566a2c": [
+        2,
+        0,
+        0
+      ],
+      "c2c_set_operations@dad721eab5951b7d": [
+        7,
+        0,
+        0
+      ],
+      "c2c_snapshots@a2ca8bbe2602f401": [
+        2,
+        0,
+        0
+      ],
+      "control_flow_snapshots@015c8f60ec7c031a": [
+        1,
+        0,
+        0
+      ],
+      "d19a_fixed_random@b45f2b4f7b07068e": [
+        12,
+        0,
+        0
+      ],
+      "f04_functions@ab5d47f25345ab19": [
+        18,
+        0,
+        0
+      ],
+      "i4a2_external_namespaces@34832248174db78d": [
+        2,
+        0,
+        0
+      ],
+      "s0_types@fa7d0fd49937cf05": [
+        15,
+        0,
+        0
+      ],
+      "xiao_vm@75c1096ae3ade625": [
+        35,
+        0,
+        0
+      ],
+      "b0_b_production@712a19da927b8c7c": [
+        9,
+        0,
+        0
+      ],
+      "b0_e_checkpoint_performance@5a29f19d9a3b35cb": [
+        1,
+        0,
+        0
+      ],
+      "r2_iteration_values@32457f133b071a65": [
+        2,
+        0,
+        0
+      ],
+      "r2_selector_values@5bc1a0dffdf1e7be": [
+        7,
+        0,
+        0
+      ],
+      "r2_set_values@324c83689371dc42": [
+        6,
+        0,
+        0
+      ],
+      "r2_stack@a8f8db0422217a24": [
+        55,
+        0,
+        0
+      ],
+      "r2_table_values@72dba0984d0998d3": [
+        13,
+        0,
+        0
+      ],
+      "r2_vectors@64b660eef6c786e3": [
+        8,
+        0,
+        0
+      ],
+      "xiao_xar@9dc873406b2bd570": [
+        23,
+        0,
+        0
+      ],
+      "fuzz_archive@84570b85d6620f7e": [
+        2,
+        0,
+        0
+      ],
+      "xiao_artifacts:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_bytecode:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_codegen_llvm:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_config:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_diagnostics:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_doc_coverage_rust:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_driver:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_i18n:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_intrinsics:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_ir:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_lifetime:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_lock:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_modules:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_optimizer:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_package:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_platform:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_runtime:doc": [
+        4,
+        0,
+        0
+      ],
+      "xiao_runtime_abi:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_source:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_standard_library:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_syntax:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_types:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_vm:doc": [
+        0,
+        0,
+        0
+      ],
+      "xiao_xar:doc": [
+        0,
+        0,
+        0
+      ]
+    },
+    "nested_summaries": [
+      {
+        "parent": "e3b_cache@93d70886d72d1f82",
+        "counts": [
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "parent": "e3b_cache@93d70886d72d1f82",
+        "counts": [
+          1,
+          0,
+          0
+        ]
+      }
+    ],
+    "passed": 1747,
+    "ignored": 54
+  },
+  "imports": 30,
+  "native_matrix_configs": 4,
+  "pow": {
+    "cases": 1075,
+    "vm_cases": 6450,
+    "summary": {
+      "same": 1011,
+      "value_or_error_boundary": 40,
+      "value_bits": 24
+    },
+    "report_sha256": "fb033ce33fca7c1ea0a15cd24f2250133d0a7404775c642d5c676f7da02b90d1"
+  },
+  "guards": {
+    "passed": 28,
+    "total": 28,
+    "scope": "simulated-cargo-output"
+  },
+  "history_audits": {
+    "b0": {
+      "passed": 18,
+      "total": 18,
+      "files": 50,
+      "baseline_commit": "d08b8460f1941fb82f4ce36b38359fc2ba448f33",
+      "planned_entry_commit": "e596cea8"
+    },
+    "b1": {
+      "passed": 18,
+      "total": 18,
+      "files": 28,
+      "baseline_commit": "d08b8460",
+      "code_commit": "35872782",
+      "source_manifest": "source-manifests/8a3d7472ccaf8bb0a25d6731c8e852d770ef03d4f0267476956a974f2f0b7cc8.json"
+    },
+    "b2": {
+      "passed": true,
+      "files": 99,
+      "checks": 14,
+      "exact_checks": 4,
+      "code_commit": "37b92c5338274121afe98320d4e076620744449f",
+      "abi": "1.18",
+      "codegen": 20,
+      "max_active_intrinsic": 33,
+      "scope": "B2内部单入口"
+    },
+    "b3": {
+      "passed": true,
+      "core_only": false,
+      "files": 131,
+      "baseline_commit": "ae1744e5",
+      "code_commit": "88886dd5",
+      "b0_checks": 16,
+      "b1_checks": 17,
+      "exact_entries_per_phase": 4,
+      "reference_cases": 17243,
+      "max_ulp": 1,
+      "live_runtime_checked": false,
+      "scope": "B3-0/B3-1 私有内核；尚未公开接线"
+    },
+    "b3-cabi": {
+      "passed": true,
+      "core_only": false,
+      "files": 86,
+      "code_commit": "89d782e1",
+      "checks": 22,
+      "exact": 4,
+      "formal_abi_cases": 17243,
+      "runtime_tests": 269,
+      "active_max": 48,
+      "live_runtime_checked": false,
+      "scope": "B3-2A与B3-3A/B内部；B3-4/B4未开始"
+    },
+    "b3-wrapper": {
+      "b3_4_closed": true,
+      "cmath": "planned",
+      "code_commit": "7d8b85e4d8c588b40ec76d641edc865481295032",
+      "identity_source": "fixed Git commit blobs; canonical UTF-8/LF hashes",
+      "language_available": false,
+      "passed": true,
+      "product_files": 1044,
+      "scope": "B3-4源码包装收口；非语言可用性"
+    },
+    "b4-0-1": {
+      "b4_0_1_closed": true,
+      "b4_0_closed": true,
+      "b4_1_closed": true,
+      "b4_closed": false,
+      "cmath": "planned",
+      "fixture_sha256": "0e61a2da361448477b15f5508df6d612a3f01e29a06e50699d6ed48a917d1ed3",
+      "language_available": false,
+      "passed": true,
+      "product_commit": "c7a45e10b76b26915499717563761ed20fda6e6c",
+      "product_files": 1048
+    },
+    "b4-2a-fix1": {
+      "b4_2a_closed": true,
+      "b4_2a_gate_restored": true,
+      "b4_2b_started": false,
+      "code_commit": "c4610211",
+      "files": 152,
+      "fix1_closed": true,
+      "passed": true
+    },
+    "b4-2b": {
+      "b4_2_closed": true,
+      "b4_closed": false,
+      "files": 63,
+      "language_available": false,
+      "live_runtime_checked": false,
+      "log_objects": 23,
+      "passed": true,
+      "runs": 25,
+      "self_negative_checked": true
+    },
+    "b4-3": {
+      "b4_3_closed": true,
+      "b4_closed": false,
+      "files": 84,
+      "language_available": false,
+      "live_runtime_checked": false,
+      "passed": true,
+      "runs": 24,
+      "self_negative_checked": true
+    },
+    "b4-4": {
+      "passed": true,
+      "b4_4_closed": true,
+      "b4_closed": false,
+      "files": 123,
+      "runs": 52,
+      "product_commit": "bb0b8196479e90d28d676f1bdefd04403e4ba6eb"
+    },
+    "b4-3-fix1": {
+      "passed": true,
+      "fix1_closed": true,
+      "b4_5_reopened": true,
+      "b4_closed": false,
+      "language_available": false,
+      "product_commit": "cfa79381bbae027cec11136ca380e82f66720c34"
+    },
+    "b4-5-blocked": {
+      "passed": true,
+      "evidence_valid": true,
+      "stage_passed": false,
+      "b4_5_closed": false,
+      "workspace_gates": "blocked_existing_n0_b_dynamic_assertion",
+      "product_commit": "4b27b7f5bf8fdd0818aad040fbf11efdcc02fb67"
+    }
+  },
+  "runtime": {
+    "path": "D:\\project\\Xiao\\.b4-5\\20261116\\rerun\\target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27482962,
+    "sha256": "27b460d2fde00c0e36f2799474e3a21310d5555530cbc8d7694caf6df220702d"
+  },
+  "passed": true,
+  "evidence_valid": true,
+  "blocked": false,
+  "stage": "B4-5",
+  "b4_5_closed": true,
+  "b4_closed": true,
+  "language_available": true,
+  "runtime_abi": "1.18",
+  "codegen_version": 21,
+  "stdlib_interface": 1,
+  "cmath": "planned",
+  "product_commit": "cfa79381bbae027cec11136ca380e82f66720c34",
+  "source_commit": "6e172c1ecf8b3c4f58cf0c8c18b0aa3ab8b91012",
+  "product_files": 1065,
+  "product_tree_sha256": "20df5c31b49dfa614e279a59e712e85542f86abc17ae81416fe19dc597f4cf7a",
+  "platforms_executed": [
+    "Windows x86_64-pc-windows-msvc"
+  ],
+  "not_executed": [
+    "Linux",
+    "macOS",
+    "remote CI",
+    "performance",
+    "old 721 F10"
+  ],
+  "blockers": [],
+  "next_stage": "B5 implementation; not started",
+  "tests": {
+    "audit-b0": {
+      "exit_code": 0,
+      "pid": 11420,
+      "log_sha256": "d5c48c8cb10b2b0bbc0ac529b188eb3816ea382af97e50b4fc75b22696c0d9aa",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "audit-b1": {
+      "exit_code": 0,
+      "pid": 66496,
+      "log_sha256": "444688deca25c129ebc8c01884229068766105e2d746c6eb16d3318a10ff96a6",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "audit-b2": {
+      "exit_code": 0,
+      "pid": 68028,
+      "log_sha256": "c208d2433857c833e0ab19552fee06fcd4d5f2b9bfbf3cc300eb9ca3bbfa057a",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "audit-b3": {
+      "exit_code": 0,
+      "pid": 75084,
+      "log_sha256": "8c0600bc48ba55ae300cc16296a5e940c9c1b448942d3b0ca506d7b46f10a12a",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "audit-b3-cabi": {
+      "exit_code": 0,
+      "pid": 67704,
+      "log_sha256": "42419cd9935a8f78f2795dbd0450c62bb3fd8d3b29a1b2f88a43a97e3e173ec3",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "audit-b3-wrapper": {
+      "exit_code": 0,
+      "pid": 65936,
+      "log_sha256": "547d9e8ab8b0915ac06ac6c0a126b1f79a7ccc5a42cf916d0c754e4a828cc5cd",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "audit-b4-0-1": {
+      "exit_code": 0,
+      "pid": 67728,
+      "log_sha256": "3a2b125314bdb0908b9ec2bd3c68e6b300f7658126abfbeda60f1b3f066ff657",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "audit-b4-2a-fix1": {
+      "exit_code": 0,
+      "pid": 70272,
+      "log_sha256": "24b35148ac4d96f08a5ab5f08b192c05f43bba17c08b59caa9d2b8900723a451",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "audit-b4-2b": {
+      "exit_code": 0,
+      "pid": 65068,
+      "log_sha256": "bf36fa5161a917e8c0a8708702f34452775eaf3f98365acccf4ddd117958725c",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "audit-b4-3": {
+      "exit_code": 0,
+      "pid": 74948,
+      "log_sha256": "77d4628301541cc5bf541e11f1f497fd2085b95af8ca554c94e41a0cc8eea389",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "audit-b4-3-fix1": {
+      "exit_code": 0,
+      "pid": 55484,
+      "log_sha256": "d128db99f1f337ced2d5642ff4fdc1f0156f2b97dd549b372f5a000d48a5513f",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "audit-b4-4": {
+      "exit_code": 0,
+      "pid": 74312,
+      "log_sha256": "2fcf38be33c4ef3faa52760e3a6b27cccc1834956d662ed5275c2225b1076574",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "audit-b4-5-blocked": {
+      "exit_code": 0,
+      "pid": 75804,
+      "log_sha256": "358517263fe05c65420523c78d31afb8cbfea773a5d85db3e047c1e5646fb500",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "b1-native": {
+      "exit_code": 0,
+      "pid": 56572,
+      "log_sha256": "fa4596097f392c929db61734e5e5475860bfff120b5f78844861b877c4b33139",
+      "docs_commit": "b3f3ec77a39e27cbbfb1e8c015e946534f9ecb4a"
+    },
+    "b1-vm": {
+      "exit_code": 0,
+      "pid": 70092,
+      "log_sha256": "ff6dca2980e13d982098be1984ebf187a2e201f8e6a100d99637d978c78e48d8",
+      "docs_commit": "b3f3ec77a39e27cbbfb1e8c015e946534f9ecb4a"
+    },
+    "clippy": {
+      "exit_code": 0,
+      "pid": 67832,
+      "log_sha256": "a50c79a9475a6b7d33c91b4c82abce99df33dd72eb6730beee5d0a6f7242bfb5",
+      "docs_commit": "83ae931bc9ed9439e47c3663f9357693a9672454"
+    },
+    "docs-final": {
+      "exit_code": 0,
+      "pid": 56524,
+      "log_sha256": "6c8dcf77141a31b15cababda2d1fb478d86c17992584a6a1354a6909ba5113fa",
+      "docs_commit": "f4971770570db981bc4d4ae1644af96114ee268a"
+    },
+    "fmt": {
+      "exit_code": 0,
+      "pid": 52308,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "docs_commit": "83ae931bc9ed9439e47c3663f9357693a9672454"
+    },
+    "guards": {
+      "exit_code": 0,
+      "pid": 19244,
+      "log_sha256": "407d9d44d0e491ab836c92594f0f634f904b987bb225ca1284196064f0813383",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "lock": {
+      "exit_code": 0,
+      "pid": 53428,
+      "log_sha256": "f6f6e9aa8880f036416dc43986342b5ede90b2ba9f72d09d38f83c3c71164369",
+      "docs_commit": "83ae931bc9ed9439e47c3663f9357693a9672454"
+    },
+    "native-library": {
+      "exit_code": 0,
+      "pid": 67704,
+      "log_sha256": "9aac885a9ff5ccd1d61bbb1708e8c99f21b8286ec651886a084faca227a4753f",
+      "docs_commit": "b3f3ec77a39e27cbbfb1e8c015e946534f9ecb4a"
+    },
+    "native-matrix": {
+      "exit_code": 0,
+      "pid": 67792,
+      "log_sha256": "dbc47801e383e331b3333c9f216aab96268ef61806f43a01ddce27f4ffaa2b5f",
+      "docs_commit": "b3f3ec77a39e27cbbfb1e8c015e946534f9ecb4a"
+    },
+    "parser-self-test": {
+      "exit_code": 0,
+      "pid": 50408,
+      "log_sha256": "e8d123fdcfb1489ebbab62005724bc001d8cad593b1d6d2ac9b2cef9938bafa0",
+      "docs_commit": "acf4d709ad55da9ddc33f331328f0ce54c1ba22d"
+    },
+    "pow": {
+      "exit_code": 1,
+      "pid": 68416,
+      "log_sha256": "27b61dae598fe9f427031f1a887e87d501c399f9da53b2e4e509b3e539019296",
+      "docs_commit": "b3f3ec77a39e27cbbfb1e8c015e946534f9ecb4a"
+    },
+    "pow-verified": {
+      "exit_code": 0,
+      "pid": 75664,
+      "log_sha256": "652f2371b960e705c118e25a14dd464024238a6f52ac496272058ffcc2de389f",
+      "docs_commit": "83ae931bc9ed9439e47c3663f9357693a9672454"
+    },
+    "regressions": {
+      "exit_code": 0,
+      "pid": 75264,
+      "log_sha256": "d585409a46039df93c18432cd9016707d7b42c54e1875d29d30e0d2b13905661",
+      "docs_commit": "b3f3ec77a39e27cbbfb1e8c015e946534f9ecb4a"
+    },
+    "runtime-build": {
+      "exit_code": 0,
+      "pid": 70792,
+      "log_sha256": "24e45f9a18c9dfdfb10067f4c86e5d441d1725c3b0870dd10582dfb32e39ce4f",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "stages": {
+      "exit_code": 0,
+      "pid": 70304,
+      "log_sha256": "d4523e9a485e4751fcca0484b7c483bd884acf76e5044c989b37cabfaacf0782",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "tac": {
+      "exit_code": 0,
+      "pid": 23804,
+      "log_sha256": "bddf1ab55aff5f4ab0e6baadb7bdf7d933d2caa2913369ba83e9e170799df440",
+      "docs_commit": "b3f3ec77a39e27cbbfb1e8c015e946534f9ecb4a"
+    },
+    "toolchain": {
+      "exit_code": 0,
+      "pid": 67776,
+      "log_sha256": "854c95e9b9d95763338e70f15abc1226a054f6d1df33265369311f00347d2951",
+      "docs_commit": "1a6c4d7ba4e3c1cd700844c3ca08ee7905f7eb0d"
+    },
+    "workspace": {
+      "exit_code": 0,
+      "pid": 65868,
+      "log_sha256": "7dc702c3514a219c6b8dc9413992d6dc21b178a21e8ced5313ae34274a182633",
+      "docs_commit": "83ae931bc9ed9439e47c3663f9357693a9672454"
+    }
+  }
+}

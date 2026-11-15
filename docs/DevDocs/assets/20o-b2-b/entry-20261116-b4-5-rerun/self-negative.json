@@ -1,0 +1,77 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "reason": null,
+      "stderr": "",
+      "read_only": true,
+      "before_sha256": "7a0b664a52d13b774d954e82859c48aaf2f5043e1c47693d5a981ff36cfe2674",
+      "after_sha256": "7a0b664a52d13b774d954e82859c48aaf2f5043e1c47693d5a981ff36cfe2674"
+    },
+    {
+      "case": "manifest",
+      "exit_code": 1,
+      "reason": "B4-5证据清单不符",
+      "stderr": "B4-5证据清单不符\n",
+      "read_only": true,
+      "before_sha256": "ffde6f3215d0ec425b547add829c5d5ad1f25f9969076c287a26b3bcc1482599",
+      "after_sha256": "ffde6f3215d0ec425b547add829c5d5ad1f25f9969076c287a26b3bcc1482599"
+    },
+    {
+      "case": "missing",
+      "exit_code": 1,
+      "reason": "B4-5已登记文件缺失",
+      "stderr": "B4-5已登记文件缺失\n",
+      "read_only": true,
+      "before_sha256": "a673fbb309889ce6d1066a6819ee6b28f8f667e17df4f3810103c12f0182e1a2",
+      "after_sha256": "a673fbb309889ce6d1066a6819ee6b28f8f667e17df4f3810103c12f0182e1a2"
+    },
+    {
+      "case": "source",
+      "exit_code": 1,
+      "reason": "B4-5固定产品身份不符",
+      "stderr": "B4-5固定产品身份不符\n",
+      "read_only": true,
+      "before_sha256": "f6d0e0aff6947b4e90a09bd9db1009eef70b7977551986d29fcc7170d2331b93",
+      "after_sha256": "f6d0e0aff6947b4e90a09bd9db1009eef70b7977551986d29fcc7170d2331b93"
+    },
+    {
+      "case": "stage",
+      "exit_code": 1,
+      "reason": "B4-5阶段身份不符",
+      "stderr": "B4-5阶段身份不符\n",
+      "read_only": true,
+      "before_sha256": "0fa3ae6edf04a014e9758ea4a681d86980e8f42daed151c3981c0cafcc264bc0",
+      "after_sha256": "0fa3ae6edf04a014e9758ea4a681d86980e8f42daed151c3981c0cafcc264bc0"
+    },
+    {
+      "case": "environment",
+      "exit_code": 1,
+      "reason": "B4-5隔离环境不符",
+      "stderr": "B4-5隔离环境不符\n",
+      "read_only": true,
+      "before_sha256": "53bb3ec65dc104a1a9b1ae328bef50af5a5ed336e51659c1f3da4f64712f39e2",
+      "after_sha256": "53bb3ec65dc104a1a9b1ae328bef50af5a5ed336e51659c1f3da4f64712f39e2"
+    },
+    {
+      "case": "workspace",
+      "exit_code": 1,
+      "reason": "B4-5门禁未通过：workspace",
+      "stderr": "B4-5门禁未通过：workspace\n",
+      "read_only": true,
+      "before_sha256": "3cf3a05059b858a4f222823e8e56068856b1ca5be5edea52f51f91e94329d377",
+      "after_sha256": "3cf3a05059b858a4f222823e8e56068856b1ca5be5edea52f51f91e94329d377"
+    },
+    {
+      "case": "public",
+      "exit_code": 1,
+      "reason": "B4-5公共状态提前升级",
+      "stderr": "B4-5公共状态提前升级\n",
+      "read_only": true,
+      "before_sha256": "04aa5aff1643f0e575b26a85623c62bfd29632ad16ed1a27028efa1d0f164404",
+      "after_sha256": "04aa5aff1643f0e575b26a85623c62bfd29632ad16ed1a27028efa1d0f164404"
+    }
+  ]
+}

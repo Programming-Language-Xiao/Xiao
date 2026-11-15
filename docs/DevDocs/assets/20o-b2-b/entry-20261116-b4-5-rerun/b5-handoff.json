@@ -1,0 +1,40 @@
+{
+  "passed": true,
+  "stage": "B4-5D",
+  "product_commit": "cfa79381bbae027cec11136ca380e82f66720c34",
+  "source_commit": "6e172c1ecf8b3c4f58cf0c8c18b0aa3ab8b91012",
+  "runtime_sha256": "27b460d2fde00c0e36f2799474e3a21310d5555530cbc8d7694caf6df220702d",
+  "runtime_abi": "1.18",
+  "codegen_version": 21,
+  "stdlib_interface": 1,
+  "language_available": true,
+  "public_cmath": "planned",
+  "b5_started": false,
+  "b5_required": [
+    "ABI 1.19 only; keep codegen 21",
+    "old/new exact ABI rejection before execution",
+    "codegen 20 to 21 and ABI 1.18 to 1.19 cache miss/rebuild matrices",
+    "retain existing C symbols/layout/calling conventions",
+    "rerun B1 20 entries on new snapshot"
+  ],
+  "b6_required": [
+    "resource and performance evidence"
+  ],
+  "b2_c_required": [
+    "full 721 F10 on new snapshot",
+    "three-platform public artifacts",
+    "tutorial/registry closeout"
+  ],
+  "retained_boundaries": [
+    "native selected imports only; module-value calls keep B1 limitation",
+    "FIX.1 integer numeric_range/dynamic weak, Float pow/shared kernel, sfloat llvm.pow.f32",
+    "22C/22D and 19/11/22 debts remain independent"
+  ],
+  "not_executed": [
+    "Linux",
+    "macOS",
+    "remote CI",
+    "performance",
+    "old 721 F10"
+  ]
+}
