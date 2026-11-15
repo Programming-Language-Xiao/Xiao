@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261116-b4-5-rerun\capture.py", line 191, in <module>
+    {"toolchain": toolchain, "guards": guards, "stages": stages, "pow": pow_review}[sys.argv[1]]()
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261116-b4-5-rerun\capture.py", line 125, in pow_review
+    require(len(drivers) == 1, "pow宿主必须使用唯一驱动器依赖")
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261113-b4-3\record.py", line 31, in require
+    raise ValueError(message)
+ValueError: pow宿主必须使用唯一驱动器依赖

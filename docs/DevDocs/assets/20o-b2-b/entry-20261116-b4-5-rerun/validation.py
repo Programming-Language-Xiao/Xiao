@@ -41,7 +41,9 @@ def counts(text):
 def validate(root, repository, source, environment, records, logs, final_binding=True):
     for label, row in records.items():
         require(row["argv"] == COMMANDS[label], "B4-5运行命令不符：" + label)
-        require(row["exit_code"] == 0, "B4-5门禁未通过：" + label)
+        require(row["exit_code"] == (1 if label == "pow" else 0), "B4-5门禁未通过：" + label)
+        if label == "pow":
+            require(logs[label].rstrip().endswith("ValueError: pow宿主必须使用唯一驱动器依赖"), "B4-5原pow工具失败形态不符")
         commit = row["docs_commit"]
         docs = docs_at(repository, commit)
         require(row["docs_commit_tree"] == docs and row["docs_before"] == row["docs_after"]
@@ -151,7 +153,7 @@ def validate(root, repository, source, environment, records, logs, final_binding
             and report["manifest_sha256"] == MANIFEST_SHA and len(report["rows"]) == report["cases"] == 1075
             and report["vm_cases"] == 6450 and report["summary"] == frozen["summary"]
             and report["rules"] == frozen["rules"], "B4-5pow对账不符")
-    rows = [line.split("\t")[1:] for line in logs["pow"].splitlines() if line.startswith("B4-5-POW\t")]
+    rows = [line.split("\t")[1:] for line in logs["pow-verified"].splitlines() if line.startswith("B4-5-POW\t")]
     require(len(rows) == 1075 and len({r[0] for r in rows}) == 1075 and all(len(r) == 11 for r in rows),
             "B4-5pow明细不完整")
     actual = {r[0]: r[1:] for r in rows}
@@ -165,11 +167,19 @@ def validate(root, repository, source, environment, records, logs, final_binding
                 and actual[row["id"]] == [old["a_bits"], old["b_bits"], *([expected_value] * 8)]
                 and (row["new_reference_ulp"] is None or row["new_reference_ulp"] <= 4)
                 and (row["difference"] != "value_bits" or row["old_new_ulp"] == 1), "B4-5pow对账不符")
-    summary = json.loads(logs["pow"].splitlines()[-1])
+    summary = json.loads(logs["pow-verified"].splitlines()[-1])
     require(summary["report_sha256"] == sha(report_path.read_bytes()) and summary["report_path"] == "final/pow-review.json"
             and report["fixture_sha256"] == sha(blob(repository, SOURCE_COMMIT, "tests/fixtures/docs/cmath/pow-legacy-diff.tsv"))
-            and report["probe_sha256"] == sha(blob(repository, records["pow"]["docs_commit"], PREFIX + "/pow_probe.rs")),
+            and report["probe_sha256"] == sha(blob(repository, records["pow-verified"]["docs_commit"], PREFIX + "/pow_probe.rs")),
             "B4-5pow报告回执不符")
+    selection = report["dependency_selection"]
+    fingerprints = [row[3] for row in selection["test_fingerprint"]["deps"] if row[1] == "xiao_driver"]
+    require(selection["executed_receipt_sha256"] == sha((root / "final/b1-native.json").read_bytes())
+            and selection["executed_test"] in logs["b1-native"]
+            and fingerprints == [int.from_bytes(bytes.fromhex(selection["driver_fingerprint"]), "little")]
+            and set(selection["libraries"]) == {"xiao_driver", "xiao_bytecode", "xiao_runtime", "xiao_vm"}
+            and all(re.fullmatch("[0-9a-f]{64}", row["sha256"]) for row in selection["libraries"].values()),
+            "B4-5pow依赖未绑定已执行B1程序")
     tools = json.loads(logs["toolchain"])
     require(set(tools) == {"rustc", "cargo", "targets", "clang", "llvm-as", "llc"}
             and "1.96.0" in tools["rustc"]["stdout"] and all(re.fullmatch("[0-9a-f]{64}", row["sha256"]) for row in tools.values()),

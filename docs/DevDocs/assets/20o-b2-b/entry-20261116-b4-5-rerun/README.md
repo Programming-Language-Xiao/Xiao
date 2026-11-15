@@ -6,6 +6,8 @@
 
 先验证B4-1～B4-4、FIX.1及旧blocked历史，再在新Runtime执行当前类型/IR/TAC/VM/LLVM、双路径、归档、子VM、22c/边界与路由回归、B1精确入口、O0/O3矩阵和完整workspace。1,075项pow使用固定清单逐项对账，六条VM承载共6,450项；28/28守卫仅模拟Cargo输出，单独记录工作流和脚本摘要。
 
+首次pow采集在依赖选择阶段失败：新target含多份合法驱动器库，旧工具要求只有一份。失败回执与日志保留；新采集按已执行B1原生测试程序的Cargo指纹选择驱动器及其传递依赖，用独立`pow-verified`回执绑定逐项报告。报告保存测试程序和库摘要，不使用文件时间或任意第一份库。
+
 全部功能与workspace通过后才写内部`language_available=true`及B5交接。公共cmath、UseDocs、registry保持planned；Windows本机证据不代表Linux/macOS、远端CI、性能或最终发布。B1旧721不运行，22C/22D与19/11/22债务不关闭。最终文档定稿提交后只运行一次`docs-final`，回执绑定全部DevDocs正文及本目录静态工具的raw/规范摘要；生成的报告和日志由最终清单覆盖。
 
 只读复核入口：

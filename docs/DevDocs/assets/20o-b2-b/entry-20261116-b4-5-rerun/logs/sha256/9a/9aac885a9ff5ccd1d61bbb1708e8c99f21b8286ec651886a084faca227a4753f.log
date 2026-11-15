@@ -1,0 +1,12 @@
+    Finished `release` profile [optimized] target(s) in 0.27s
+     Running tests\20o_b2_b4_cmath_library.rs (D:\project\Xiao\.b4-5\20261116\rerun\target\release\deps\20o_b2_b4_cmath_library-79a5325eb9df7391.exe)
+
+running 1 test
+B4-4-NATIVE path=std.cmath optimization=0 executable=D:\project\Xiao\.b4-5\20261116\rerun\temp\b4-4-library-62924-0\std-o0.exe stdout=golden errors=009 result=passed
+B4-4-NATIVE path=std.cmath optimization=3 executable=D:\project\Xiao\.b4-5\20261116\rerun\temp\b4-4-library-62924-0\std-o3.exe stdout=golden errors=009 result=passed
+B4-4-NATIVE path=stdlib.cmath optimization=0 executable=D:\project\Xiao\.b4-5\20261116\rerun\temp\b4-4-library-62924-0\stdlib-o0.exe stdout=golden errors=009 result=passed
+B4-4-NATIVE path=stdlib.cmath optimization=3 executable=D:\project\Xiao\.b4-5\20261116\rerun\temp\b4-4-library-62924-0\stdlib-o3.exe stdout=golden errors=009 result=passed
+test cmath_library_matches_native_o0_o3 ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 5.16s
+

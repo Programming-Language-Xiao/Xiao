@@ -6,6 +6,7 @@ import json
 import math
 import os
 from pathlib import Path
+import re
 import shutil
 import struct
 import subprocess
@@ -121,9 +122,24 @@ def pow_review(result_name="pow-review.json"):
         for line in output.read_text(encoding="utf-8").splitlines():
             if line.startswith("cargo:rustc-link-search="):
                 argv.extend(["-L", line.split("=", 1)[1]])
-    drivers = list(dependencies.glob("libxiao_driver-*.rlib"))
-    require(len(drivers) == 1, "pow宿主必须使用唯一驱动器依赖")
     fingerprints = task / "target/release/.fingerprint"
+    executed = load(ROOT / "final/b1-native.json")
+    executed_log = (ROOT / executed["log_ref"]).read_text(encoding="utf-8")
+    matched = re.findall(r"Running tests[\\/]20o_b1_probe\.rs \(([^)]*)\)", executed_log)
+    require(executed["exit_code"] == 0 and len(matched) == 1, "pow缺少唯一已执行B1测试程序")
+    executed_test = Path(matched[0])
+    require(executed_test.parent == dependencies and executed_test.is_file(), "pow执行程序不属于本任务")
+    test_id = executed_test.stem.removeprefix("20o_b1_probe-")
+    test_fingerprint = load(fingerprints / ("xiao-driver-" + test_id) / "test-integration-test-20o_b1_probe.json")
+    expected_driver = [row[3] for row in test_fingerprint["deps"] if row[1] == "xiao_driver"]
+    require(len(expected_driver) == 1, "pow已执行测试缺少唯一驱动器指纹")
+    drivers = []
+    for candidate in dependencies.glob("libxiao_driver-*.rlib"):
+        suffix = candidate.stem.removeprefix("libxiao_driver-")
+        metadata = fingerprints / ("xiao-driver-" + suffix) / "lib-xiao_driver"
+        if metadata.is_file() and int.from_bytes(bytes.fromhex(metadata.read_text().strip()), "little") == expected_driver[0]:
+            drivers.append(candidate)
+    require(len(drivers) == 1, "pow无法唯一匹配已执行测试的驱动器依赖")
     driver_id = drivers[0].stem.removeprefix("libxiao_driver-")
     driver = load(fingerprints / ("xiao-driver-" + driver_id) / "lib-xiao_driver.json")
     dep_identity = {row[1]: row[3] for row in driver["deps"]}
@@ -176,6 +192,10 @@ def pow_review(result_name="pow-review.json"):
     require(dict(summary) == manifest["summary"] == {"same": 1011, "value_or_error_boundary": 40, "value_bits": 24}
             and dict(rules) == manifest["rules"], "pow完整分类不符")
     report = {"passed": True, "source_commit": load(ROOT / "final/source.json")["revision"], "manifest_sha256": MANIFEST_SHA,
+              "dependency_selection": {"executed_receipt_sha256": sha((ROOT / "final/b1-native.json").read_bytes()),
+                  "executed_test": str(executed_test), "executed_test_sha256": sha(executed_test.read_bytes()),
+                  "test_fingerprint": test_fingerprint, "driver_fingerprint": (fingerprints / ("xiao-driver-" + driver_id) / "lib-xiao_driver").read_text().strip(),
+                  "libraries": {name: {"path": str(path), "sha256": sha(path.read_bytes())} for name, path in libraries.items()}},
               "fixture_sha256": sha(path.read_bytes()), "probe_sha256": sha((ROOT / "pow_probe.rs").read_bytes()),
               "build_argv": argv, "executable_sha256": sha(executable.read_bytes()), "cases": 1075,
               "summary": dict(summary), "rules": dict(rules), "vm_cases": 6450, "rows": rows,
