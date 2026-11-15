@@ -80,10 +80,11 @@ def stages():
                      "runtime_abi": closeout["runtime_abi"], "codegen_version": closeout["codegen_version"],
                      "scope": "fixed historical snapshot; current execution recorded separately"})
     changed = set(git(REPOSITORY, "diff", "--name-only", STAGES["B4-4"][1], source["revision"], "--", *PRODUCT_ROOTS).decode().splitlines())
-    require(source["revision"] == git(REPOSITORY, "rev-parse", FIX_COMMIT).decode().strip()
+    require(fixed_files(REPOSITORY, source["revision"]) == fixed_files(REPOSITORY, FIX_COMMIT)
             and changed == FIX_PATHS, "FIX.1产品允许路径或提交身份不符")
-    rows.append({"stage": "B4-3-FIX1", "product_commit": source["revision"], "allowed_product_paths": sorted(changed),
-                 "product_tree_sha256": identity(fixed_files(REPOSITORY, source["revision"])),
+    rows.append({"stage": "B4-3-FIX1", "product_commit": FIX_COMMIT, "source_snapshot": source["revision"],
+                 "allowed_product_paths": sorted(changed),
+                 "product_tree_sha256": identity(fixed_files(REPOSITORY, FIX_COMMIT)),
                  "runtime_abi": "1.18", "codegen_version": 21, "scope": "current FIX.1 source; execution receipts recorded separately"})
     write_json(ROOT / VARIANT / "stage-reconciliation.json", {"passed": True, "source_commit": source["revision"], "stages": rows})
     print(json.dumps({"passed": True, "stages": len(rows), "source_commit": source["revision"],
