@@ -135,7 +135,7 @@ def frozen_rule(a, b, actual):
     return "F-2/F-9:ieee-underflow-and-signed-zero" if value(actual) == 0 else "F-9:shared-libm-and-four-ulp"
 
 
-def pow_review():
+def pow_review(result_name="pow-review.json"):
     task = Path(os.environ["CARGO_TARGET_DIR"]).parent
     dependencies = task / "target/release/deps"
     executable = task / "pow-probe.exe"
@@ -204,10 +204,16 @@ def pow_review():
               "build_argv": argv, "executable_sha256": sha(executable.read_bytes()), "cases": 1075,
               "summary": dict(summary), "rules": dict(rules), "vm_cases": 6450, "rows": rows,
               "scope": "internal bit injection for nonfinite and exact binary64; source/native gates separately recorded"}
-    write_json(ROOT / VARIANT / "pow-review.json", report)
+    require(Path(result_name).name == result_name and result_name.endswith(".json"), "pow结果文件名非法")
+    result_path = ROOT / VARIANT / result_name
+    write_json(result_path, report)
     print(json.dumps({"passed": True, "rows": 1075, "summary": dict(summary), "vm_cases": 6450,
-                      "report_sha256": sha((ROOT / VARIANT / "pow-review.json").read_bytes())}))
+                      "report_path": result_path.relative_to(ROOT).as_posix(), "report_sha256": sha(result_path.read_bytes())}))
 
 
 if __name__ == "__main__":
-    {"toolchain": toolchain, "guards": guards, "stages": stages, "pow": pow_review}[sys.argv[1]]()
+    action = sys.argv[1]
+    if action == "pow":
+        pow_review(sys.argv[2] if len(sys.argv) > 2 else "pow-review.json")
+    else:
+        {"toolchain": toolchain, "guards": guards, "stages": stages}[action]()

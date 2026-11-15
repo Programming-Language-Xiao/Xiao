@@ -9,7 +9,7 @@ import sys
 import tempfile
 
 sys.dont_write_bytecode = True
-from record import ROOT, REPOSITORY, inventory as base_inventory, docs_snapshot, fixed_files, git, identity, load, require, sha
+from record import ROOT, REPOSITORY, docs_snapshot, fixed_files, git, identity, load, require, sha
 from validation import validate
 
 VARIANT_ROOTS = {"b34": "7d8b85e4d8c588b40ec76d641edc865481295032",
@@ -18,10 +18,11 @@ VARIANT_ROOTS = {"b34": "7d8b85e4d8c588b40ec76d641edc865481295032",
                  "fixed": "be95d0d53cec6f07cb1719e426b4173867b2258e"}
 FIXED_REQUIRED = {"runtime-build", "exact", "routing", "codegen-tests", "regressions", "native-matrix", "native-library",
                   "b1-vm", "b1-native", "workspace", "clippy", "fmt", "lock", "capture-toolchain-retry",
-                  "capture-stages-final2", "capture-guards-final", "capture-pow-receipted", "audit-b4-3", "audit-b4-4", "audit-b4-5", "docs"}
+                  "capture-stages-final2", "capture-guards-final", "capture-pow-receipted", "capture-pow-sealed",
+                  "audit-b4-3", "audit-b4-4", "audit-b4-5", "docs"}
 REASONS = {"manifest": "FIX.1证据清单不符", "missing": "FIX.1已登记文件缺失", "readonly": "FIX.1审计改写证据",
            "public": "FIX.1收口/公共状态冒进", "state": "FIX.1运行状态不符"}
-REPORTS = {"guards-report.json", "stage-reconciliation.json", "pow-review.json", "pow-review-unreceipted.json"}
+REPORTS = {"guards-report.json", "stage-reconciliation.json", "pow-review.json", "pow-review-unreceipted.json", "pow-review-sealed.json"}
 
 
 def inventory(root):
@@ -64,12 +65,13 @@ def check(root=ROOT, repository=REPOSITORY, final_docs=True, sealed=True):
         for name in load(root / "evidence.json")["files"]:
             require((root / name).is_file(), REASONS["missing"])
         require(load(root / "evidence.json") == {"files": inventory(root)}, REASONS["manifest"])
-    all_records, all_logs = {}, {}
+    all_records, all_logs, environments = {}, {}, {}
     for variant, revision in VARIANT_ROOTS.items():
         source = load(root / variant / "source.json")
         require(source["revision"] == revision and source["sha256"] == identity(source["files"])
                 and {p: row["canonical_sha256"] for p, row in source["files"].items()} == fixed_files(repository, revision), "FIX.1来源快照不符")
         environment = load(root / variant / "environment.json")
+        environments[variant] = environment
         labels = records_for(root, variant)
         expected = {"runtime-build", "exact"} if variant != "fixed" else FIXED_REQUIRED
         extras = set(labels) - expected
@@ -92,7 +94,7 @@ def check(root=ROOT, repository=REPOSITORY, final_docs=True, sealed=True):
                 require(row["runner_sha256"] == sha(git(repository, "show", tool_commit + ":docs/DevDocs/assets/20o-b2-b/entry-20261115-b4-3-fix1/record.py")), "FIX.1采集器身份不符")
             all_records[variant, label] = row
             all_logs[variant, label] = run_text(root, row)
-    result = validate(root, repository, {v: load(root / v / "source.json") for v in VARIANT_ROOTS}, all_records, all_logs)
+    result = validate(root, repository, {v: load(root / v / "source.json") for v in VARIANT_ROOTS}, environments, all_records, all_logs)
     result["platforms_executed"] = ["Windows x86_64-pc-windows-msvc"]
     result["not_executed"] = ["Linux", "macOS", "remote CI", "performance", "old 721 F10"]
     result["stage"] = "B4-3-FIX1"
