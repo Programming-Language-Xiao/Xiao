@@ -22,8 +22,9 @@ PREVIOUS_CODE = "eb65a3b607e046656e7943e49e6e9c70f3007f3f"
 CODE = "bb0b8196479e90d28d676f1bdefd04403e4ba6eb"
 PREVIOUS = "fixed-final"
 FINAL = "fixed-verified"
-REVISIONS = {"baseline": BASELINE, "fixed": FIRST_CODE, PREVIOUS: PREVIOUS_CODE, FINAL: CODE}
-RUNS = {"baseline": {"entry"}, "fixed": {"runtime-build", "native-library"}, PREVIOUS: set(COMMANDS), FINAL: set(COMMANDS)}
+DOCS = "docs-final"
+REVISIONS = {"baseline": BASELINE, "fixed": FIRST_CODE, PREVIOUS: PREVIOUS_CODE, FINAL: CODE, DOCS: None}
+RUNS = {"baseline": {"entry"}, "fixed": {"runtime-build", "native-library"}, PREVIOUS: set(COMMANDS), FINAL: set(COMMANDS) - {"final-docs"}, DOCS: {"final-docs"}}
 ALLOWED = {
     "core/rust/crates/xiao-driver/README.md", "core/rust/crates/xiao-driver/src/README.md",
     "core/rust/crates/xiao-driver/src/archive_closure.rs", "core/rust/crates/xiao-driver/src/archive_run.rs",
@@ -125,8 +126,8 @@ def read_run(root, repository, variant, label, source, environment):
 
 def check_sources(root, repository):
     for variant, revision in REVISIONS.items():
-        revision = git(repository, "rev-parse", revision).decode().strip()
         source = load(root / variant / "source.json")
+        revision = git(repository, "rev-parse", revision or source["revision"]).decode().strip()
         require(source["revision"] == revision and source["sha256"] == identity(source["files"])
                 and {p: r["canonical_sha256"] for p, r in source["files"].items()} == source_at(str(repository), revision), REASONS["source"])
         environment = load(root / variant / "environment.json")
@@ -142,6 +143,9 @@ def check_sources(root, repository):
                 and PureWindowsPath(overrides["XIAO_STDLIB_ROOT"]) == PureWindowsPath(environment["source_root"]) / "stdlib"
                 and overrides["XIAO_B1_F10"] == overrides["XIAO_B2_A_PERF"] == "0"
                 and overrides["RUSTUP_TOOLCHAIN"] == "1.96.0", REASONS["environment"])
+    docs_revision = load(root / DOCS / "source.json")["revision"]
+    require(set(git(repository, "diff", "--name-only", CODE, docs_revision, "--", *PRODUCT_ROOTS).decode().splitlines())
+            == {"docs/UseDocs/library/cmath.md"}, "B4-4文档收尾超出单页路径修正范围")
     changed = set(git(repository, "diff", "--name-only", BASELINE, CODE, "--", *PRODUCT_ROOTS).decode().splitlines())
     require(changed == ALLOWED, "B4-4受保护产品范围不符")
     # 容器/ABI/生成器/锁与registry均在完整受保护集合中，只有明确的22条路径可变。
@@ -246,12 +250,15 @@ def conclusions(root, records, logs, live_runtime):
     require(len(decoding["results"]) == 8 and sum(r["stdout"].startswith("ids=34..48 ") for r in decoding["results"]) == 4
             and {r["object"] for r in decoding["results"]} == {r["object"] for r in load(root / FINAL / "artifact-manifest.json")["files"] if r["kind"] in {".xiaoc", ".xar"}}
             and all(r["stdout"] in {"ids=34..48 identity=canonical bundled_official=false decoded=passed\n", "ids=none identity=canonical bundled_official=false decoded=passed\n"} for r in decoding["results"]), "B4-4真实归档指令流未解码核对")
-    docs = json.loads(logs[FINAL, "final-docs"])
+    doc_record = records[DOCS, "final-docs"]
+    require(doc_record["runtime_before"] == doc_record["runtime_after"] and doc_record["runtime_before"]["exists"] is False
+            and doc_record["docs_commit"] == load(root / DOCS / "source.json")["revision"], "B4-4最终文档执行点混用Runtime或来源")
+    docs = json.loads(logs[DOCS, "final-docs"])
     require(docs["passed"] is True and not any(r["severity"] == "error" for r in docs["diagnostics"]), "B4-4最终文档门禁失败")
     return {"passed": True, "stage": "B4-4", "b4_4_closed": True, "b4_closed": False,
             "language_available": False, "dual_path_internal_executable": True, "cmath": "planned",
             "runtime_abi": "1.18", "codegen_version": 21, "stdlib_interface": 1,
-            "baseline_commit": BASELINE, "product_commit": CODE, "product_files": 1064,
+            "baseline_commit": BASELINE, "product_commit": CODE, "final_docs_commit": records[DOCS, "final-docs"]["docs_commit"], "product_files": 1064,
             "changed_product_paths": sorted(ALLOWED), "runtime": runtime, "artifacts": artifacts,
             "regressions": {k: list(v) for k, v in expected.items()}, "core_test_targets": {k: list(v) for k, v in core.items()},
             "historical_audits": sorted(HISTORY), "native_module_values": "existing unsupported boundary retained; selected imports tested",
@@ -287,7 +294,7 @@ def verify(root, repository, live_runtime=False, check_inventory=True, check_clo
     referenced.add(interruption["log_ref"])
     require(referenced == {p.relative_to(root).as_posix() for p in (root / "logs").rglob("*") if p.is_file()}, REASONS["orphan"])
     # 最终docs运行必须绑定本批全部静态工具/README；后续HEAD可变化，审计读取固定Git对象。
-    commit = records[FINAL, "final-docs"]["docs_commit"]
+    commit = records[DOCS, "final-docs"]["docs_commit"]
     for path in root.iterdir():
         if path.suffix in {".py", ".md", ".rs"}:
             require(sha(canonical(path.read_bytes())) == sha(canonical(git(repository, "show", commit + ":" + PREFIX + "/" + path.name))), REASONS["docs"])

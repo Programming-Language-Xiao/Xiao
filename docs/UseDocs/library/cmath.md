@@ -29,7 +29,8 @@ B4-4的双路径与归档内部验证见[记录](../../DevDocs/assets/20o-b2-b/e
 
 ## 五分钟运行与完整示例
 
-tests/fixtures/docs/cmath/已保存内部验证的真实选择导入语料和独立黄金；
+tests/fixtures/docs/numeric/cmath-library.xiao及其独立stdout黄金保存内部验证的真实选择导入语料；
+正式数值参考向量仍在tests/fixtures/docs/cmath/；
 示例将覆盖正常值、域错误、负零、每个公开入口、位置/命名调用及已冻结限制。
 原生产品必须分别经过O0/O3，与VM核对稳定stdout、退出码和错误身份；普通超越值按冻结容差独立核对。
 错误契约已确认，最终产品尚未交付；本页完整教程示例与三平台CI验收仍后置。

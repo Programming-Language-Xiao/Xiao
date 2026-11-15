@@ -17,7 +17,7 @@
 | 重放 / 值承载 | 两路径的完整语料及float负零子VM经源码、协议xiaoc/xar与驱动器归档执行；应用源码已删除 |
 | 原生选择导入 | 两路径×O0/O3逐字匹配黄金，逆序命名实参保持求值顺序；009错误可捕获 |
 | 既有回归 | B4-3四组18,318项矩阵、B1/B2 VM与原生精确点、10项固定历史审计通过 |
-| 工程门禁 | workspace Clippy `-D warnings`、fmt通过；定稿后的完整docs/UseDocs/layout由`fixed-verified/final-docs`回执核对 |
+| 工程门禁 | workspace Clippy `-D warnings`、fmt通过；定稿后的完整docs/UseDocs/layout由`docs-final/final-docs`回执核对 |
 
 原生模块值/限定调用沿用B1后置边界。首轮完整模块别名语料在`fixed/native-library`报“名称abs没有动态值槽”，失败不删；最终原生把同语料的限定调用改为已声明的选择导入别名，15项调用和黄金不变，VM/xiaoc/xar仍执行原始模块别名语料。未为本批改LLVM文本或提高生成器版本。
 
@@ -38,3 +38,5 @@ python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261115-b4-4/audit.py --li
 自审修正见[记录](../../../20o-b2-b4-4-self-review.md)。B4-5未开始，B5的numeric_range静态/动态专项、20/21接受/拒绝及缓存重生成继续后置；三平台、最终教程/registry升级与721不得引用本机成绩冒充。
 
 首次完整文档门禁`fixed-final/final-docs`保留4项布局/覆盖率错误：新夹具目录未登记、README缺工程期、原生辅助入口缺Rustdoc及其覆盖率汇总。`bb0b8196`仅补齐入口文档并将逐字节相同语料移入已登记的`tests/fixtures/docs/numeric/`，没有改registry或数学实现；最终以全新`fixed-verified`任务根重跑功能、原生和工程门禁，成功回执与首次失败分别校验。
+
+最终文档执行单列为`docs-final/final-docs`：相对已测产品`bb0b8196`的受保护树仅修正UseDocs/cmath的夹具路径，数学/加载器/测试字节不变；审计按固定Git对象强制这一个路径差异。该执行点使用独立任务根，Runtime前后均不存在，只作docs/UseDocs/layout证据，不冒充Runtime或功能重跑。
