@@ -2,8 +2,8 @@
 
 > **2026-11-13 版本裁定执行：星崽在本会话已批准“B4 升到生成器21，更新规划并调整B5边界”。B4-3改LLVM调用文本，按后端版本规则20→21；ABI仍1.18、接口1。B5只将ABI升1.19并核验既有生成器21的最终拒绝/重生成矩阵，不再次因本批接线递增生成器。下文将21留B5或B4不得升21的旧句均由本裁定替代；签署的冻结正文及历史证据不改写。**
 
-> **B3-4 planned源码包装收口及B4-0/1/2/3均已完成Windows内部退出；B4-4、B4-5尚未开始，B4整批仍未收口。**
-> 入口为 B3-3 代码 `89d782e1`、B3-4 固定代码 `7d8b85e4` 与其源码收口证据；intrinsic34～48仍仅内部active；VM与LLVM已接通，`std.cmath`/`stdlib.cmath`模块导入仍未开放。B4-3最终产品为`e0d5993e`，见[fixed审计与证据](assets/20o-b2-b/entry-20261113-b4-3/README.md)。
+> **B3-4 planned源码包装收口及B4-0/1/2/3均已完成Windows内部退出；B4-4已完成Windows内部双路径/归档验收；B4-5未开始，B4整批仍未收口。**
+> 入口为 B3-3 代码 `89d782e1`、B3-4 固定代码 `7d8b85e4` 与其源码收口证据；intrinsic34～48仍仅内部active；VM与LLVM已接通，`std.cmath`/`stdlib.cmath`模块导入已由B4-4接通内部执行，公共状态仍planned。B4-3最终产品为`e0d5993e`，见[fixed审计与证据](assets/20o-b2-b/entry-20261113-b4-3/README.md)。
 > B4只做类型/IR/TAC/VM/LLVM/序列化与双路径承载；ABI维持1.18，B4-3按裁定升生成器至21；不升级registry，不跑旧721。
 > `stdlib.cmath`仍planned；B4只作内部验收，B5切ABI至1.19，B2-C才最终发布。
 > 2026-11-12 状态回写：B4-2A 的 34～48 TAC/字节码、FIX1 planned 边界修复及退出门槛已由 `c4610211` 验收；当时 Rust-only Runtime/VM 分派尚未开始；2026-11-13 已由 `246bea46` 完成 B4-2 内部验收，见[B4-2B记录](assets/20o-b2-b/entry-20261113-b4-2b/README.md)。归属和固定复跑见[FIX1证据](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)。
@@ -18,7 +18,8 @@
 | 本批目标 | 类型/IR、TAC/字节码、VM、LLVM、序列化、`std.cmath`/`stdlib.cmath` 双路径 |
 | 未做 | B5 ABI版本矩阵、B6资源/性能、B7收口、B2-C 721/最终教程registry |
 | B4-3 | Windows内部退出完成；静态/动态O0/O3及B1/B2/B3历史审计见固定证据；三平台/CI/性能未执行 |
-| 状态 | cmath 仍 planned；最终公共发布不成立 |
+| B4-4 | `e2f24222`接线、`eb65a3b6`最终测试；双路径/归档/子VM与原生选择导入O0/O3通过，见[证据](assets/20o-b2-b/entry-20261115-b4-4/README.md) |
+| 状态 | cmath仍planned；B4-5未开始，最终公共发布不成立 |
 
 B4是`cmath`的**语言全链路内部验收批**，不是最终发布。B5只切ABI1.19，生成器21由B4-3接线升至21后沿用；B2-C才做最终721与状态升级。
 
@@ -197,4 +198,4 @@ tests/fixtures/docs/cmath/                           迁移后的正式向量
 docs/DevDocs/assets/20o-b2-b/entry-<date>-b4/         B4 证据
 ```
 
-B4-0/1/2/3已完成Windows内部验收；B4-4/5仍后置，完整B4未收口、cmath模块语言不可用；B5～B7与B2-C仍后置。
+B4-0/1/2/3/4已完成Windows内部验收；cmath双路径/归档内部可执行，原生模块值保留B1后置边界。B4-5未开始，完整B4未收口；B5～B7与B2-C仍后置。

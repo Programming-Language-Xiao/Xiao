@@ -1,6 +1,6 @@
 # 20O-B2-B. `lfloat_divide`、`cmath` 与 ABI 1.19/21 实施规划
 
-> **B0/B1已交付；B2的lfloat_divide/intrinsic33已在 `37b92c53` 内部实现。B3-2A共享Runtime pow与B3-3A/B C ABI/声明已在 `89d782e1` 完成本机内部验收，见[记录](20o-b2-b3-3a-b-progress.md)；后续B3-4源码包装与B4-0/1/TAC/VM已完成Windows内部验收，B4-2产品为246bea46；B4-3～B4-5、B5～B7及B2-C后置。**
+> **B0/B1已交付；B2的lfloat_divide/intrinsic33已在 `37b92c53` 内部实现。B3-2A共享Runtime pow与B3-3A/B C ABI/声明已在 `89d782e1` 完成本机内部验收，见[记录](20o-b2-b3-3a-b-progress.md)；后续B3-4源码包装与B4-0/1/2/3/4已完成Windows内部验收，B4-2最终产品7c49fd65、B4-3 e0d5993e、B4-4 e2f24222/eb65a3b6；B4-5、B5～B7及B2-C后置。**
 > 初始入口为A7 `5749d6e0`与产品基线`e7bf7a49`；当前内部快照仍是ABI1.18/生成器20，活动intrinsic最大48，最终版本切换由B5集中完成。
 > B2-B 只实现已确认且适用于本批的 F-1～F-12 精表（包括 F-3 资源/性能、F-8 转换、F-10 显示尺度与 F-11 文本边界）；不新增数学裁定，不把 `cmath`/`lfloat_divide` 提前写成已验证。
 > A0 的 `result.json` 失败身份、22C/22D、19/11/22 与 B1 历史债务继续独立保留。
@@ -234,4 +234,4 @@ tests/fixtures/docs/cmath/                             cmath 夹具
 docs/DevDocs/assets/20o-b2-b/entry-<date>/            B2-B 证据（待建）
 ```
 
-本页保留B2-B执行边界；B3与B4-0/1/2已完成Windows内部验收，B4-3～5及B5～B7仍后置，完整B2-B未收口；B2-C仍是后续最终发布批。
+本页保留B2-B执行边界；B3与B4-0/1/2/3/4已完成Windows内部验收，B4-5及B5～B7仍后置，完整B2-B未收口；B2-C仍是后续最终发布批。
