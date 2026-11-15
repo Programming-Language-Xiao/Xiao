@@ -144,6 +144,7 @@ def check_guards(root=ROOT):
 
 def check(root=ROOT, repository=REPOSITORY, final_binding=True, sealed=True):
     before = {p.relative_to(root).as_posix(): sha(p.read_bytes()) if p.is_file() else "directory" for p in root.rglob("*")}
+    require((root / "final/guards-report.json").is_file(), REASONS["missing"])
     if (root / "evidence.json").exists():
         for name in load(root / "evidence.json")["files"]:
             require((root / name).is_file(), REASONS["missing"])
