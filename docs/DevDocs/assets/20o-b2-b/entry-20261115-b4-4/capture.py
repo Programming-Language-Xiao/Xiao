@@ -59,8 +59,31 @@ def artifacts():
         require(load(manifest) == {"files": rows}, "产物清单与实际文件不符")
     else:
         write_json(manifest, {"files": rows})
+    decoding_digest = None
+    if variant == "fixed-verified":
+        dependencies = task / "target/debug/deps"
+        inspector = task / "inspect-artifact.exe"
+        command = ["rustc", "+1.96.0", "--edition=2024", "--crate-name", "b4_4_artifact_inspector",
+                   str(ROOT / "inspect_artifact.rs"), "-L", "dependency=" + str(dependencies), "-o", str(inspector)]
+        for name in ["xiao_bytecode", "xiao_xar"]:
+            libraries = list(dependencies.glob("lib" + name + "-*.rlib"))
+            require(len(libraries) == 1, "产物解码器依赖必须唯一")
+            command.extend(["--extern", name + "=" + str(libraries[0])])
+        built = subprocess.run(command, capture_output=True, encoding="utf-8", check=True)
+        decoded = []
+        for row in rows:
+            if row["kind"] not in {".xiaoc", ".xar"}:
+                continue
+            check = subprocess.run([str(inspector), str(ROOT / row["object"])], check=True,
+                                   capture_output=True, encoding="utf-8")
+            decoded.append({"object": row["object"], "kind": row["kind"], "stdout": check.stdout})
+        require(sum(r["stdout"].startswith("ids=34..48 ") for r in decoded) == 4, "两路径真实产物缺34～48")
+        write_json(ROOT / variant / "artifact-decoding.json", {"build_argv": command, "build_stderr": built.stderr,
+            "inspector_sha256": sha(inspector.read_bytes()), "results": decoded})
+        decoding_digest = sha((ROOT / variant / "artifact-decoding.json").read_bytes())
     print(json.dumps({"passed": True, "files": len(rows), "source_removed": True,
-                      "manifest_sha256": sha(manifest.read_bytes())}))
+                      "manifest_sha256": sha(manifest.read_bytes()),
+                      **({"decoding_sha256": decoding_digest} if decoding_digest else {})}))
 
 
 def self_test():

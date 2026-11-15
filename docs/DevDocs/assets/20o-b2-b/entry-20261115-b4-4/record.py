@@ -28,7 +28,7 @@ def docs_paths(repository, commit=None):
         "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", "docs/DevDocs"]
     names = {name.decode("utf-8") for name in git(repository, *args).split(b"\0") if name}
     return sorted(name for name in names if "/assets/" not in name or
-                  name.startswith(PREFIX + "/") and Path(name).suffix in {".py", ".md"})
+                  name.startswith(PREFIX + "/") and Path(name).suffix in {".py", ".md", ".rs"})
 
 
 def docs_snapshot(repository, commit=None):

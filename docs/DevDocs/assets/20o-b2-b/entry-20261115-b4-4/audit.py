@@ -155,8 +155,8 @@ def check_sources(root, repository):
             and next(r for r in registry["modules"] if r["id"] == "stdlib.cmath")["status"] == "planned", REASONS["state"])
 
 
-def check_artifacts(root, environment):
-    data = load(root / FINAL / "artifact-manifest.json")
+def check_artifacts(root, environment, variant=FINAL):
+    data = load(root / variant / "artifact-manifest.json")
     rows, references = data["files"], set()
     require({k: sum(r["kind"] == k for r in rows) for k in [".xiaoc", ".xar", ".ll", ".exe"]}
             == {".xiaoc": 4, ".xar": 4, ".ll": 4, ".exe": 4}, REASONS["artifact"])
@@ -176,8 +176,7 @@ def check_artifacts(root, environment):
         if row["kind"] == ".xar":
             with zipfile.ZipFile(root / expected) as archive:
                 require(archive.namelist() == row["members"] and "META-INF/xiao/index.pb" in row["members"], REASONS["artifact"])
-    require(references == {p.relative_to(root).as_posix() for p in (root / "artifacts").rglob("*") if p.is_file()}, REASONS["artifact"])
-    return {"xiaoc": 4, "xar": 4, "llvm_ir": 4, "native_executable_hashes": 4}
+    return references
 
 
 def conclusions(root, records, logs, live_runtime):
@@ -232,12 +231,21 @@ def conclusions(root, records, logs, live_runtime):
     require("rustc 1.96.0" in toolchain["rustc"]["stdout"] and "x86_64-pc-windows-msvc" in toolchain["targets"]["stdout"], "B4-4工具链身份不符")
     require(json.loads(logs[FINAL, "collector"]) == {"passed": True, "identical_outputs_reused": True, "distinct_objects": 2,
             "tampered_object_rejected": True, "existing_task_root_rejected": True}, "B4-4采集器自验失败")
-    artifacts = check_artifacts(root, load(root / FINAL / "environment.json"))
+    artifact_references = set()
+    for variant in [PREVIOUS, FINAL]:
+        artifact_references.update(check_artifacts(root, load(root / variant / "environment.json"), variant))
+    require(artifact_references == {p.relative_to(root).as_posix() for p in (root / "artifacts").rglob("*") if p.is_file()}, REASONS["artifact"])
+    artifacts = {"xiaoc": 4, "xar": 4, "llvm_ir": 4, "native_executable_hashes": 4}
     require(json.loads(logs[FINAL, "artifacts"]) == {"passed": True, "files": 16, "source_removed": True,
-            "manifest_sha256": sha((root / FINAL / "artifact-manifest.json").read_bytes())}, REASONS["artifact"])
+            "manifest_sha256": sha((root / FINAL / "artifact-manifest.json").read_bytes()),
+            "decoding_sha256": sha((root / FINAL / "artifact-decoding.json").read_bytes())}, REASONS["artifact"])
     old_docs = json.loads(logs[PREVIOUS, "final-docs"])
     require(old_docs["passed"] is False and {r["code"] for r in old_docs["diagnostics"] if r["severity"] == "error"}
             == {"A0-LAYOUT-001", "A0-LAYOUT-002", "A0-COVERAGE-001", "A0-COVERAGE-002"}, "B4-4首次文档失败未保留")
+    decoding = load(root / FINAL / "artifact-decoding.json")
+    require(len(decoding["results"]) == 8 and sum(r["stdout"].startswith("ids=34..48 ") for r in decoding["results"]) == 4
+            and {r["object"] for r in decoding["results"]} == {r["object"] for r in load(root / FINAL / "artifact-manifest.json")["files"] if r["kind"] in {".xiaoc", ".xar"}}
+            and all(r["stdout"] in {"ids=34..48 identity=canonical bundled_official=false decoded=passed\n", "ids=none identity=canonical bundled_official=false decoded=passed\n"} for r in decoding["results"]), "B4-4真实归档指令流未解码核对")
     docs = json.loads(logs[FINAL, "final-docs"])
     require(docs["passed"] is True and not any(r["severity"] == "error" for r in docs["diagnostics"]), "B4-4最终文档门禁失败")
     return {"passed": True, "stage": "B4-4", "b4_4_closed": True, "b4_closed": False,
@@ -281,7 +289,7 @@ def verify(root, repository, live_runtime=False, check_inventory=True, check_clo
     # 最终docs运行必须绑定本批全部静态工具/README；后续HEAD可变化，审计读取固定Git对象。
     commit = records[FINAL, "final-docs"]["docs_commit"]
     for path in root.iterdir():
-        if path.suffix in {".py", ".md"}:
+        if path.suffix in {".py", ".md", ".rs"}:
             require(sha(canonical(path.read_bytes())) == sha(canonical(git(repository, "show", commit + ":" + PREFIX + "/" + path.name))), REASONS["docs"])
     result = conclusions(root, records, logs, live_runtime)
     if check_closeout:
