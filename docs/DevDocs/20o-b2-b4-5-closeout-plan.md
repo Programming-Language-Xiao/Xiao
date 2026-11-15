@@ -64,7 +64,8 @@ Pow 差异的固定对账输入为 [B3-CABI `pow-switch-manifest.json`](assets/2
 4. 固定 pow-switch-manifest 字节摘要，并核对 1,075 项分类、F-2/F-9 归属及其 B4 VM/LLVM 对应回归；
 5. B4-5 审计从固定 Git commit/tree/blob 校验产品和锁身份，不要求当前 HEAD 等于产品提交；审计只读，不写 evidence/closeout；
 6. 运行收口审计自反例：篡改 evidence 清单、删除已登记文件、伪造阶段提交/源码身份或把 planned/public 状态冒进都须按登记原因拒绝，且基线审计前后证据字节不变；
-7. 保存阶段对账表与身份摘要。
+7. 保存阶段对账表与身份摘要；
+8. 核对 B4-3 的 `program_uses_runtime` 路由改动：补一条仅含 `numeric_range` 检查的静态/动态对照，或明确登记依赖 B1/B2 原生语料的覆盖，不能只靠 cmath 矩阵隐含覆盖。
 
 退出：B4-1～B4-4 证据链可逐阶段对账。
 
@@ -126,7 +127,7 @@ Pow 差异的固定对账输入为 [B3-CABI `pow-switch-manifest.json`](assets/2
 3. 30 条导入路径内部可执行，旧证据保留；
 4. float `**`/cmath.pow 共核，无第二实现；1,075 组差异固定输入逐项对账完成，无未登记行为变化；
 5. 内部 `language_available=true`，公共 registry/教程仍 planned；
-6. 无 ABI 1.19/21、无旧 721、无历史债务关闭；
+6. 不升 ABI 1.19、生成器保持 21，无旧 721、无历史债务关闭；
 7. 当前 B4 源码快照的 28/28 守卫和完整 workspace gates 通过，报告可复核；
 8. B5 入口明确；B5 未开始；
 9. 三平台/性能仍未声称，B2-C 仍未开始。

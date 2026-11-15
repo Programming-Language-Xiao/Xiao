@@ -2,7 +2,7 @@
 
 > **2026-11-13 版本裁定执行：星崽在本会话已批准“B4 升到生成器21，更新规划并调整B5边界”。B4-3改LLVM调用文本，按后端版本规则20→21；ABI仍1.18、接口1。B5只将ABI升1.19并核验既有生成器21的最终拒绝/重生成矩阵，不再次因本批接线递增生成器。下文将21留B5或B4不得升21的旧句均由本裁定替代；签署的冻结正文及历史证据不改写。**
 
-> **B4-2A、FIX1、B4-2B与B4-3已完成Windows本机内部退出；B4-4仍未开始，B4-5、B5～B7与B2-C后置。B4-3产品与fixed证据见[独立记录](assets/20o-b2-b/entry-20261113-b4-3/README.md)。**
+> **B4-2A、FIX1、B4-2B与B4-3已完成Windows本机内部退出；B4-4开工就绪（入口见§2.1），B4-5、B5～B7与B2-C后置。B4-3产品与fixed证据见[独立记录](assets/20o-b2-b/entry-20261113-b4-3/README.md)。**
 > 入口为 B4-3 的 LLVM 动态/静态路径、B4-2 的 VM 执行与 B4-1 的类型/IR。
 > B4-4 只做 `std.cmath`/`stdlib.cmath` 双路径、导出/移除、`.xar` 归档、序列化和普通包隔离。
 > ABI维持1.18，生成器沿用B4-3的21；不升级registry/教程；`stdlib.cmath` 仍 planned，B2-C 才最终发布。
@@ -48,6 +48,16 @@ B4-4 是 **内部语言可用性批**，不是最终发布。B4-5 记录内部 `
 4. `xiao-xar` 当前无标准库加载器，错误为“未注册官方标准库加载器”；
 5. ABI1.18/生成器21/接口1/cmath planned未变；
 6. 唯一任务根、独立 target/Runtime/缓存已建立。
+
+### 2.1 开工单（2026-11-15）
+
+1. 入口：B4-3 Windows 内部退出（`e0d5993e`，ABI1.18/生成器21/接口1，四组O0/O3矩阵、1,075组pow差异、B1/B2回归与7项历史审计通过），B4-3证据见[独立记录](assets/20o-b2-b/entry-20261113-b4-3/README.md)；B4-2最终产品 `246bea46`（数学/Runtime）与 `7c49fd65`（自审）。开工前复核 `e0d5993e` 到当前 HEAD 的 `core/`、`stdlib/` 无产品差异。
+2. 现状：30 条 `std.cmath`/`stdlib.cmath` 导入仍 planned 拒绝；`DriverModuleLoader::compile` 与归档写前扫描仍硬编码 cmath 门控；`xiao-xar` 运行器尚无标准库加载器；archive closure 可收集但未执行。
+3. 必须保留：B4-3 的静态/动态 cmath 与 Float `**`/`cmath_pow` 共核、sfloat `llvm.pow.f32`、无 `llvm.pow.f64` 第二实现、22c 29/29 与子 VM/归档边界；B1/B2/B3/B3-4/B4-0/1/B4-2/B4-3 固定审计。
+4. 门控替换：B4-4 可以撤销 cmath planned 门控，但必须显式替换为双路径可执行路径，并保持其它 planned/未知模块拒绝；30 条 planned 测试改为内部可执行断言时保留旧拒绝证据，不得删除历史或放宽到“任意模块都放行”。
+5. 顺序：B4-4A 双路径/导出 → B4-4B 归档/加载器 → B4-4C 序列化/隔离 → B4-4D 测试、证据与收口。任一步需要改 intrinsic 表、ABI、容器 schema 或 registry 时先停下另立裁定。
+6. 证据：新建 `assets/20o-b2-b/entry-20261115-b4-4/`；原始日志按 SHA-256 内容寻址，同一内容只存一个对象；每次运行保存 PID、时间、argv、cwd、环境、源码/DevDocs 摘要和退出码；文档修改合并到定稿后只跑一次最终 docs 门禁；B4-3/FIX1 历史目录不改写。
+7. 版本与状态：ABI保持1.18、生成器沿用21、接口1；`stdlib.cmath` registry/教程仍 planned；B4-5 才记录内部 `language_available=true`，B5 才切 ABI1.19。Linux/macOS、远端CI、性能与旧721未执行时如实登记。
 
 ## 三、分批执行
 
