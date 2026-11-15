@@ -270,7 +270,7 @@ def verify(root, repository, live_runtime=False, check_inventory=True, check_clo
     records, logs, referenced = {}, {}, set()
     for variant, labels in RUNS.items():
         source, environment = load(root / variant / "source.json"), load(root / variant / "environment.json")
-        actual = {p.stem for p in (root / variant).glob("*.json")} - {"source", "environment", "artifacts"}
+        actual = {p.stem for p in (root / variant).glob("*.json")} - {"source", "environment", "artifact-manifest", "artifact-decoding"}
         require(actual == labels, REASONS["state"])
         for label in sorted(labels):
             row, text = read_run(root, repository, variant, label, source, environment)
