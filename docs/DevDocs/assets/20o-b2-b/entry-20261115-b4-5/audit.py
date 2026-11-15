@@ -57,6 +57,8 @@ def run_records(root):
         if path.name in {"source.json", "environment.json"}:
             continue
         row = load(path)
+        if "label" not in row:
+            continue
         result[row["label"]] = row
     extra = set(result) - EXPECTED_LABELS
     require(not extra or all(label.startswith("docs-final-") for label in extra), REASONS["state"])
@@ -101,7 +103,7 @@ def check_environment(environment):
 
 
 def check_record(label, row, source, environment, root=ROOT):
-    require(row["label"] == label and row["cwd"] == source["source_root"] and row["pid"] > 0
+    require(row["label"] == label and row["cwd"] == environment["source_root"] and row["pid"] > 0
             and datetime.fromisoformat(row["started_utc"]) < datetime.fromisoformat(row["finished_utc"]), REASONS["state"])
     require(row["environment_sha256"] == sha((root / FINAL / "environment.json").read_bytes())
             and row["source_before"] == row["source_after"] == source["sha256"] and row["source_unchanged"] is True
@@ -140,6 +142,8 @@ def check_guards(root=ROOT):
 
 
 def check(root=ROOT, repository=REPOSITORY):
+    if (root / "evidence.json").exists():
+        require(load(root / "evidence.json") == {"files": inventory(root)}, REASONS["manifest"])
     source = check_product(repository, root)
     environment = load(root / FINAL / "environment.json")
     check_environment(environment)
