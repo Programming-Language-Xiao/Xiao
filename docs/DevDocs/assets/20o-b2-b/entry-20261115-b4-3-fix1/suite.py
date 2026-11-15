@@ -12,6 +12,8 @@ EXACT = CARGO + ["-p", "xiao-driver", "--test", "n0_b_dynamic_native", "--", "--
                  "generic_value_copy_registers_weak_dependency_only_when_called", "--nocapture"]
 COMMANDS = {
     "runtime-build": ["cargo", "+1.96.0", "build", "--locked", "--manifest-path", "core/rust/Cargo.toml", "-p", "xiao-runtime", "--release"],
+    "routing": CARGO + ["-p", "xiao-driver", "--test", "20o_b2_b4_numeric_range_routing", "--", "--nocapture"],
+    "codegen-tests": CARGO + ["-p", "xiao-codegen-llvm"],
     "exact": EXACT,
     "regressions": CARGO + ["-p", "xiao-driver"] + sum((["--test", n] for n in [
         "n0_b_dynamic_native", "20o_b2_b4_numeric_range_routing", "20o_b2_b4_cmath_llvm", "20o_b2_b4_cmath_library",
