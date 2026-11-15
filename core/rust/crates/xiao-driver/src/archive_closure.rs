@@ -59,7 +59,7 @@ pub(crate) fn collect_archive_closure(request: FrontendRequest) -> Result<Archiv
     let artifact = FrontendCompiler::new()
         .compile(&request)
         .map_err(|error| error.to_string())?;
-    check_planned_archive_imports(&artifact.ir.body, "entry")?;
+    check_official_archive_imports(&artifact.ir.body, "entry")?;
     let program = lower_program(&artifact.ir);
     xiao_bytecode::verify_for_execution(&artifact.ir, &program)
         .map_err(|error| error.to_string())?;
@@ -98,11 +98,11 @@ pub(crate) fn collect_archive_closure(request: FrontendRequest) -> Result<Archiv
     Ok(analyzer.result)
 }
 
-/// 尚未交付的官方模块不得进入归档，即使导入位于本模块未调用的函数或死分支。
+/// 未登记执行入口的官方模块不得进入归档，即使导入位于本模块未调用的函数或死分支。
 ///
 /// 只检查入口和闭包实际载入模块的语句，不遍历 `IrProgram.modules` 的预载索引；
 /// 无关项目/标准模块内部的 planned 导入不能影响当前归档。
-fn check_planned_archive_imports(
+fn check_official_archive_imports(
     statements: &[xiao_ir::IrStatement],
     owner: &str,
 ) -> Result<(), String> {
@@ -113,7 +113,9 @@ fn check_planned_archive_imports(
                 for item in items {
                     let identity = Analyzer::identity(owner, &item.module);
                     require_executable_standard_module(&identity)?;
-                    if let Some(selected) = &item.selected {
+                    if identity == xiao_vm::STANDARD_LIBRARY_NAMESPACE
+                        && let Some(selected) = &item.selected
+                    {
                         require_executable_standard_module(&format!(
                             "{identity}.{}",
                             selected.text
@@ -124,19 +126,19 @@ fn check_planned_archive_imports(
             IrStatementKind::Function { body, .. }
             | IrStatementKind::Table { body, .. }
             | IrStatementKind::For { body, .. }
-            | IrStatementKind::While { body, .. } => check_planned_archive_imports(body, owner)?,
+            | IrStatementKind::While { body, .. } => check_official_archive_imports(body, owner)?,
             IrStatementKind::If {
                 body,
                 elif_branches,
                 else_body,
                 ..
             } => {
-                check_planned_archive_imports(body, owner)?;
+                check_official_archive_imports(body, owner)?;
                 for branch in elif_branches {
-                    check_planned_archive_imports(&branch.body, owner)?;
+                    check_official_archive_imports(&branch.body, owner)?;
                 }
                 if let Some(body) = else_body {
-                    check_planned_archive_imports(body, owner)?;
+                    check_official_archive_imports(body, owner)?;
                 }
             }
             IrStatementKind::Try {
@@ -144,12 +146,12 @@ fn check_planned_archive_imports(
                 catches,
                 finally_body,
             } => {
-                check_planned_archive_imports(body, owner)?;
+                check_official_archive_imports(body, owner)?;
                 for catch in catches {
-                    check_planned_archive_imports(&catch.body, owner)?;
+                    check_official_archive_imports(&catch.body, owner)?;
                 }
                 if let Some(body) = finally_body {
-                    check_planned_archive_imports(body, owner)?;
+                    check_official_archive_imports(body, owner)?;
                 }
             }
             _ => {}
@@ -200,7 +202,7 @@ impl Analyzer {
         let artifact = FrontendCompiler::new()
             .compile(&request)
             .map_err(|error| error.to_string())?;
-        check_planned_archive_imports(&artifact.ir.body, identity)?;
+        check_official_archive_imports(&artifact.ir.body, identity)?;
         let program = lower_program(&artifact.ir);
         xiao_bytecode::verify_for_execution(&artifact.ir, &program)
             .map_err(|error| error.to_string())?;

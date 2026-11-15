@@ -102,17 +102,34 @@ pub(crate) fn standard_library_root() -> PathBuf {
     xiao_standard_library::source_root()
 }
 
-/// B4 的类型/IR 探测不等于模块可执行；VM 与归档共用同一个 planned 拒绝边界。
-///
-/// 只检查实际请求的官方模块，不能扫描预载索引而污染无关库。B4-4 接通模块全链路
-/// 后再撤销本门控；不在 checker 中拒绝，以保留已验收的直接原语 IR/TAC。
+/// VM和归档共用的可执行官方模块集合；文档registry的planned状态不替代执行接线。
+/// 新增官方模块须在接线与验收齐备时同步登记；未登记源码不能被预载索引意外开放。
+const EXECUTABLE_STANDARD_MODULES: &[&str] = &[
+    "base64",
+    "cmath",
+    "concurrent",
+    "csv",
+    "dict",
+    "fmt",
+    "hex",
+    "math",
+    "os",
+    "path",
+    "set",
+    "statistics",
+    "text",
+    "url",
+];
+
+/// 只核对实际请求的官方模块；项目/包名称不参与，未知或尚未接线模块明确拒绝。
 pub(crate) fn require_executable_standard_module(identity: &str) -> Result<(), String> {
-    if xiao_standard_library::canonical_module_identity(identity).as_deref() == Some("stdlib.cmath")
+    if let Some(canonical) = xiao_standard_library::canonical_module_identity(identity)
+        && canonical != STANDARD_LIBRARY_NAMESPACE
+        && !canonical
+            .strip_prefix("stdlib.")
+            .is_some_and(|name| EXECUTABLE_STANDARD_MODULES.contains(&name))
     {
-        return Err(
-            "官方标准库 cmath 仍为 planned：cmath_sqrt 等直接原语已接通，尚未绑定 VM 模块入口"
-                .to_owned(),
-        );
+        return Err(format!("官方标准库模块 {canonical} 尚未接通执行入口"));
     }
     Ok(())
 }
@@ -184,7 +201,7 @@ mod tests {
     use std::sync::OnceLock;
     use std::sync::atomic::{AtomicU64, Ordering};
 
-    use super::DriverModuleLoader;
+    use super::{DriverModuleLoader, require_executable_standard_module};
     use xiao_vm::ModuleLoader;
 
     /// 避免并行用例创建相同临时标准库目录。
@@ -234,5 +251,111 @@ mod tests {
 
         assert!(!loader.contains("stdlib.text"));
         assert!(loader.compile("stdlib.text").is_err());
+    }
+
+    #[test]
+    /// cmath仅开放冻结模块；未知/后置源码不能因索引存在而自动执行。
+    fn executable_standard_module_registration_is_explicit() {
+        for prefix in ["std", "stdlib"] {
+            assert!(require_executable_standard_module(&format!("{prefix}.cmath")).is_ok());
+            for module in ["json", "toml", "cmath.unknown", "missing"] {
+                let identity = format!("{prefix}.{module}");
+                assert_eq!(
+                    require_executable_standard_module(&identity).unwrap_err(),
+                    format!("官方标准库模块 stdlib.{module} 尚未接通执行入口")
+                );
+            }
+        }
+        assert!(require_executable_standard_module("project:cmath").is_ok());
+    }
+
+    #[test]
+    /// 从真实cmath源码逐项删除导出；VM不能借用预载接口或另一函数补足缺失实现。
+    fn cmath_source_removal_is_observed_by_the_actual_vm_loader() {
+        let original =
+            fs::read_to_string(super::standard_library_root().join("cmath.xiao")).unwrap();
+        let functions = [
+            "sqrt", "floor", "ceil", "round", "trunc", "abs", "min", "max", "pow", "sin", "cos",
+            "tan", "exp", "ln", "log10",
+        ];
+        for name in functions {
+            let root = EmptyStandardLibrary::new();
+            let start = original.find(&format!("def {name}(")).unwrap();
+            let end = original[start + 1..]
+                .find("\ndef ")
+                .map_or(original.len(), |n| start + 1 + n);
+            let modified = format!("{}{}", &original[..start], &original[end..]);
+            fs::write(root.0.join("cmath.xiao"), modified).unwrap();
+            fs::write(
+                root.0.join("json.xiao"),
+                "def fake() -> int\n    return 1\n",
+            )
+            .unwrap();
+            let loader = DriverModuleLoader {
+                project: None,
+                packages: None,
+                standard_library_root: root.0.clone(),
+                standard_library: OnceLock::new(),
+            };
+            assert!(loader.contains("stdlib.json"));
+            assert!(
+                loader
+                    .compile("stdlib.json")
+                    .unwrap_err()
+                    .contains("尚未接通执行入口")
+            );
+            for prefix in ["std", "stdlib"] {
+                for (selected, success) in [
+                    (name, false),
+                    (if name == "abs" { "sqrt" } else { "abs" }, true),
+                ] {
+                    let argument = if selected == "sqrt" { "4.0" } else { "-3.0" };
+                    let source = if success {
+                        format!(
+                            "from {prefix}.cmath import {selected}\nprint({selected}({argument}))\n"
+                        )
+                    } else {
+                        format!("from {prefix}.cmath import {selected}\nprint(7)\n")
+                    };
+                    let request = crate::FrontendRequest::from_text(source);
+                    let artifact = crate::FrontendCompiler::new().compile(&request).unwrap();
+                    let program = xiao_bytecode::lower_program(&artifact.ir);
+                    let outcome = xiao_vm::run_request(
+                        &xiao_vm::RunRequest::new(&artifact.ir, &program)
+                            .with_module_loader(&loader),
+                    );
+                    assert_eq!(
+                        outcome.result.is_success(),
+                        success,
+                        "removed={name} selected={selected}: {outcome:?}"
+                    );
+                    if success {
+                        let output: String = outcome
+                            .events
+                            .iter()
+                            .filter_map(|event| match event {
+                                xiao_vm::VmEvent::IntrinsicOutput { text } => Some(text.as_str()),
+                                _ => None,
+                            })
+                            .collect();
+                        assert_eq!(output, if selected == "sqrt" { "2\n" } else { "3\n" });
+                    } else {
+                        let report = outcome.report.as_ref().unwrap();
+                        assert_eq!(report.code, "X06-RUNTIME-012");
+                        assert!(
+                            report.message.contains(selected) && report.message.contains("导出"),
+                            "{report:?}"
+                        );
+                        assert!(!outcome.events.iter().any(|event| matches!(
+                            event,
+                            xiao_vm::VmEvent::IntrinsicOutput { .. }
+                        )));
+                    }
+                }
+            }
+        }
+        println!(
+            "B4-4-VM-REMOVAL removed=15 paths=2 retained=passed unknown_source=rejected result=passed"
+        );
     }
 }

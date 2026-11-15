@@ -21,8 +21,8 @@
   产品、完整教程与独立黄金由VM及三平台原生O0/O3执行，包含真实导出、移除、归档和普通包隔离。
   固定源码身份的721条F10、生成器20释放与状态提交门禁见[B1-CLOSE](../docs/DevDocs/20o-b1-closeout.md)。
 - `cmath` 保存15个冻结的float包装及对应源码说明；源码包装和内部C ABI/intrinsic已登记，
-  语言类型/IR/VM/LLVM接线仍由B4完成，因此 `stdlib.cmath`、教程与registry继续planned，
-  不得据此写成可执行产品。
+  B4已落地类型/IR/VM/LLVM及双路径/归档的内部接线，B4-4独立取证见[记录](../docs/DevDocs/assets/20o-b2-b/entry-20261115-b4-4/README.md)。
+  `stdlib.cmath`、教程与registry继续planned；B4-5整批语言收口和B2-C最终发布仍后置。
 - `std.concurrent` 是虚拟原生模块：冻结的 17 项签名位于 `xiao-types/src/concurrency.rs`，
   行为由 VM/TAC 计划和 Runtime 实现提供；不新增 `concurrent.xiao`，不作为普通源码对象
   放入归档。公共接口唯一权威页为 [并发执行与共享句柄](../docs/UseDocs/language/concurrency/README.md)，

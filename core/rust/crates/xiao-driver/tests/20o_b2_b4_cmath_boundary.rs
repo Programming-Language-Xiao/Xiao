@@ -1,4 +1,4 @@
-//! B4-2A-FIX1：planned cmath 的子 VM 和归档拒绝，保留 B4-1 类型/IR 能力。
+//! B4-4：将FIX1的planned边界显式迁移为子VM/归档执行；未知模块拒绝仍保留。
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -66,31 +66,18 @@ fn directory_snapshot(root: &Path) -> BTreeMap<PathBuf, Option<Vec<u8>>> {
 }
 
 #[test]
-/// 子 VM 在加载模块前拒绝未使用导入/直接调用，无输出、模块实例或部分导入值释放。
-fn child_rejects_planned_cmath_imports_before_module_execution() {
+/// 相同32条子VM导入/调用形态在O0/O3实际执行并保持规范模块身份。
+fn child_executes_cmath_alias_imports_and_calls() {
     let mut checked = 0;
     for prefix in ["std", "stdlib"] {
         for (index, (import, call)) in import_forms(prefix).into_iter().enumerate() {
             for called in [false, true] {
                 let value = if called { call.as_str() } else { "7.0" };
                 let source = format!(
-                    "from std.concurrent import current_runtime, spawn, join\n\
-                     def work() -> float\n    {import}\n    return {value}\n\
-                     rt = current_runtime()\ntask = spawn(rt, work)\nprint(join(task))\n"
+                    "from std.concurrent import current_runtime, spawn, join\ndef work() -> float\n    {import}\n    return {value}\nrt = current_runtime()\ntask = spawn(rt, work)\nprint(join(task))\n"
                 );
                 let request = FrontendRequest::from_text(source);
-                let artifact = FrontendCompiler::new()
-                    .compile(&request)
-                    .expect("planned 模块的合法类型/IR 必须保留");
-                let child_scopes = artifact
-                    .ir
-                    .ownership
-                    .scopes
-                    .iter()
-                    .filter(|scope| scope.kind == "function")
-                    .map(|scope| scope.id)
-                    .collect::<Vec<_>>();
-                assert!(!child_scopes.is_empty());
+                let artifact = FrontendCompiler::new().compile(&request).unwrap();
                 for level in [OptimizationLevel::O0, OptimizationLevel::O3] {
                     let outcome = FrontendVmDriver::new().run_artifact(
                         &artifact,
@@ -98,39 +85,32 @@ fn child_rejects_planned_cmath_imports_before_module_execution() {
                             .with_timeout(Duration::from_secs(10))
                             .with_optimization_level(level),
                     );
-                    assert_eq!(outcome.code(), Some("X06-RUNTIME-012"), "{outcome:?}");
                     assert!(
-                        outcome.report().is_some_and(|report| {
-                            report.message.contains("官方标准库模块 cmath 加载失败")
-                        }),
+                        outcome.is_success(),
                         "{prefix} shape={index} called={called} {level:?}: {outcome:?}"
                     );
                     let events = outcome.as_executed().unwrap().events();
-                    assert!(!events.iter().any(|event| matches!(event,
-                        VmEvent::ModuleLoaded { module } if module == "stdlib.cmath")));
-                    assert!(!events.iter().any(|event| matches!(
-                        event,
-                        VmEvent::IntrinsicOutput { .. } | VmEvent::BoundaryCopyReleased { .. }
-                    )));
-                    assert!(
-                        !events.iter().any(|event| matches!(event,
-                        VmEvent::ValueReleased { scope, .. } if child_scopes.contains(scope))),
-                        "失败导入不能产生部分子 VM 值释放：{events:?}"
-                    );
+                    let output: String = events
+                        .iter()
+                        .filter_map(|event| match event {
+                            VmEvent::IntrinsicOutput { text } => Some(text.as_str()),
+                            _ => None,
+                        })
+                        .collect();
+                    assert_eq!(output, if called { "2\n" } else { "7\n" });
+                    assert!(!events.iter().any(|event| matches!(event,VmEvent::ModuleLoaded {module} if module=="std.cmath")));
                     checked += 1;
                 }
             }
         }
     }
     assert_eq!(checked, 32);
-    println!(
-        "FIX1-CHILD cases={checked} code=X06-RUNTIME-012 loaded=false output=false partial_release=false"
-    );
+    println!("B4-4-CHILD cases={checked} identity=stdlib.cmath output=exact result=passed");
 }
 
 #[test]
-/// 可达、未调用函数和死分支的导入都在输出/缓存创建前拒绝，两条别名不能绕过。
-fn archive_rejects_planned_cmath_with_no_output_or_temporary_residue() {
+/// 48条直接/未调用函数/死分支导入均可归档；删除应用源码后只用归档与官方加载器。
+fn archive_executes_cmath_without_source_or_bundled_official_bodies() {
     let mut checked = 0;
     for prefix in ["std", "stdlib"] {
         for (import, _) in import_forms(prefix) {
@@ -143,27 +123,60 @@ fn archive_rejects_planned_cmath_with_no_output_or_temporary_residue() {
                     let root = workspace();
                     let input = root.join("main.xiao");
                     std::fs::write(&input, &source).unwrap();
-                    let before = directory_snapshot(&root);
                     let mut request = ArchiveBuildRequest::new(&input);
                     request.output = Some(root.join("out/main.xar"));
                     request.cache_root = Some(root.join("cache"));
                     request.optimization_level = level;
-                    let error = build_archive(&request, &CancellationToken::new())
-                        .expect_err("planned cmath 不能进入归档");
-                    assert_eq!(error.code, "X11-PROTOCOL-007");
-                    assert!(error.message.contains("cmath_sqrt"), "{source:?}: {error}");
-                    assert_eq!(
-                        directory_snapshot(&root),
-                        before,
-                        "拒绝不能留下部分归档、缓存或临时文件"
+                    let archive = build_archive(&request, &CancellationToken::new()).unwrap();
+                    assert!(
+                        archive
+                            .index
+                            .entries
+                            .iter()
+                            .all(|entry| !entry.module.starts_with("stdlib.")
+                                && !entry.module.starts_with("std."))
                     );
+                    let raw = std::fs::read(&archive.output).unwrap();
+                    std::fs::remove_file(&input).unwrap();
+                    let outcome = xiao_driver::run_archive(&raw, Default::default()).unwrap();
+                    assert!(outcome.result.is_success(), "{source:?}: {outcome:?}");
+                    let output: String = outcome
+                        .events
+                        .iter()
+                        .filter_map(|event| match event {
+                            VmEvent::IntrinsicOutput { text } => Some(text.as_str()),
+                            _ => None,
+                        })
+                        .collect();
+                    assert_eq!(output, "1\n");
                     checked += 1;
                 }
             }
         }
     }
     assert_eq!(checked, 48);
-    println!("FIX1-ARCHIVE cases={checked} code=X11-PROTOCOL-007 output=false residue=false");
+    println!(
+        "B4-4-ARCHIVE cases={checked} source_removed=true bundled_official=false result=passed"
+    );
+}
+
+#[test]
+/// 未知及后置官方模块仍在归档写出前拒绝，无部分输出或缓存残留。
+fn unknown_official_imports_fail_without_output_or_temporary_residue() {
+    for prefix in ["std", "stdlib"] {
+        for module in ["json", "toml", "missing_b4_4"] {
+            let root = workspace();
+            let input = root.join("main.xiao");
+            std::fs::write(&input, format!("import {prefix}.{module}\nprint(1)\n")).unwrap();
+            let before = directory_snapshot(&root);
+            let mut request = ArchiveBuildRequest::new(&input);
+            request.output = Some(root.join("out/main.xar"));
+            request.cache_root = Some(root.join("cache"));
+            let error = build_archive(&request, &CancellationToken::new()).unwrap_err();
+            assert_eq!(error.code, "X11-PROTOCOL-007");
+            assert_eq!(directory_snapshot(&root), before, "{error:?}");
+        }
+    }
 }
 
 #[test]

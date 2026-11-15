@@ -1,4 +1,4 @@
-//! B3-4包装的源码契约、移除和语言未接线探测；原生隔离回归独立运行。
+//! B3-4包装源码契约及B4-4双路径可执行回归；旧planned拒绝由固定历史证据保留。
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
@@ -332,65 +332,53 @@ fn source_contract_rejects_extra_exports_and_wrong_forwarders() {
 }
 
 #[test]
-/// B3 当前30条路径必须保持未接线；B4实施时须与可执行语料一起显式更新此边界。
-fn b3_handoff_rejects_all_planned_language_imports() {
-    use std::time::Duration;
+/// B4-4显式迁移30条路径为可执行；B3历史planned证据仍由固定Git对象证明。
+fn b4_handoff_executes_all_thirty_language_imports() {
     use xiao_driver::{DriverRequest, FrontendVmDriver};
-    let mut checked = 0;
+    use xiao_vm::VmEvent;
+    let goldens = [
+        ("sqrt", "4.0", "2"),
+        ("floor", "1.5", "1"),
+        ("ceil", "1.5", "2"),
+        ("round", "2.5", "2"),
+        ("trunc", "-1.5", "-1"),
+        ("abs", "-3.0", "3"),
+        ("min", "7.0, 2.0", "2"),
+        ("max", "7.0, 2.0", "7"),
+        ("pow", "2.0, 3.0", "8"),
+        ("sin", "0.0", "0"),
+        ("cos", "0.0", "1"),
+        ("tan", "0.0", "0"),
+        ("exp", "0.0", "1"),
+        ("ln", "1.0", "0"),
+        ("log10", "1.0", "0"),
+    ];
+    assert_eq!(
+        goldens.iter().map(|r| r.0).collect::<Vec<_>>(),
+        FROZEN.iter().map(|r| r.0).collect::<Vec<_>>()
+    );
     for prefix in ["std", "stdlib"] {
-        for &(name, parameters) in &FROZEN {
-            let arguments = if parameters.len() == 1 {
-                "1.0"
-            } else {
-                "1.0, 2.0"
-            };
+        for (name, arguments, expected) in goldens {
             let request = FrontendRequest::from_text(format!(
                 "from {prefix}.cmath import {name}\nprint({name}({arguments}))\n"
             ));
-            match FrontendCompiler::new().compile(&request) {
-                Ok(artifact) => {
-                    let outcome = FrontendVmDriver::new().run_artifact(
-                        &artifact,
-                        &DriverRequest::new(request).with_timeout(Duration::from_secs(10)),
-                    );
-                    assert!(
-                        !outcome.is_success(),
-                        "B3 planned边界意外接通：{prefix}.{name}: {outcome:?}"
-                    );
-                    assert_eq!(
-                        outcome.code(),
-                        Some("X06-RUNTIME-012"),
-                        "{prefix}.{name}: {outcome:?}"
-                    );
-                    let detail = format!("{outcome:?}");
-                    assert!(
-                        detail.contains(&format!("cmath_{name}")) || detail.contains("尚未绑定 VM"),
-                        "{detail}"
-                    );
-                    println!(
-                        "B3-WRAPPER-IMPORT path={prefix}.cmath function={name} stage=vm code={} executable=false result=planned-rejected",
-                        outcome.code().unwrap_or("none")
-                    );
-                }
-                Err(error) => {
-                    let primitive = format!("cmath_{name}");
-                    let diagnostic = error
-                        .diagnostics()
-                        .iter()
-                        .find(|d| {
-                            d.is_error()
-                                && d.code() == "X02-TYPE-001"
-                                && d.message().contains(&primitive)
-                        })
-                        .unwrap_or_else(|| panic!("失败未指明未接线原语：{error:?}"));
-                    println!(
-                        "B3-WRAPPER-IMPORT path={prefix}.cmath function={name} stage=frontend code={} primitive={primitive} executable=false result=planned-rejected",
-                        diagnostic.code()
-                    );
-                }
-            }
-            checked += 1;
+            let artifact = FrontendCompiler::new().compile(&request).unwrap();
+            let outcome =
+                FrontendVmDriver::new().run_artifact(&artifact, &DriverRequest::new(request));
+            assert!(outcome.is_success(), "{prefix}.{name}: {outcome:?}");
+            let events = outcome.as_executed().unwrap().events();
+            let output: String = events
+                .iter()
+                .filter_map(|event| match event {
+                    VmEvent::IntrinsicOutput { text } => Some(text.as_str()),
+                    _ => None,
+                })
+                .collect();
+            assert_eq!(output, format!("{expected}\n"));
+            assert_eq!(events.iter().filter(|event|matches!(event, VmEvent::ModuleLoaded {module} if module == "stdlib.cmath")).count(), 1);
+            println!(
+                "B4-4-IMPORT path={prefix}.cmath function={name} identity=stdlib.cmath executable=true result=passed"
+            );
         }
     }
-    assert_eq!(checked, 30);
 }
