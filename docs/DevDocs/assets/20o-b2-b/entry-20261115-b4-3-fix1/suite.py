@@ -27,6 +27,8 @@ COMMANDS = {
     "fmt": ["cargo", "+1.96.0", "fmt", "--manifest-path", "core/rust/Cargo.toml", "--all", "--", "--check"],
     "lock": ["bun", "run", "check:lock"],
     "docs": ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    **{"capture-" + label: ["python", "-B", "-X", "utf8", "docs/DevDocs/assets/20o-b2-b/entry-20261115-b4-3-fix1/capture.py", label]
+       for label in ["toolchain", "stages", "guards", "pow"]},
     **{"audit-" + label: ["python", "-B", "-X", "utf8", "docs/DevDocs/assets/20o-b2-b/" + directory + "/audit.py"]
        for label, directory in {"b4-3": "entry-20261113-b4-3", "b4-4": "entry-20261115-b4-4", "b4-5": "entry-20261115-b4-5"}.items()},
 }
