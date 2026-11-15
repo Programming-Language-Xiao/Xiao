@@ -19,7 +19,7 @@ HISTORY = {"b0": "entry-20261107", "b1": "entry-20261108-b1", "b2": "entry-20261
 
 MANIFEST = "docs/DevDocs/assets/20o-b2-b/entry-20261109-b3-cabi/baseline/pow-switch-manifest.json"
 MANIFEST_SHA = "53b751666f42814f94993ed606e3dfe650941b022392d7d04ea57d9f3d16443d"
-VARIANT = Path(os.environ["CARGO_TARGET_DIR"]).parent.name
+VARIANT = Path(os.environ.get("CARGO_TARGET_DIR", r"D:\\project\\Xiao\\.b4-3-fix1\\20261116\\fixed\\target")).parent.name
 STAGES = {
     "B4-1": ("b4-0-1", "c7a45e10b76b26915499717563761ed20fda6e6c"),
     "B4-2A/FIX1": ("fix1", "c46102115c63956466361d83243dea8ba3e4e74f"),
@@ -87,6 +87,15 @@ def stages():
                  "allowed_product_paths": sorted(changed),
                  "product_tree_sha256": identity(fixed_files(REPOSITORY, FIX_COMMIT)),
                  "runtime_abi": "1.18", "codegen_version": 21, "scope": "current FIX.1 source; execution receipts recorded separately"})
+    closeout = {"passed": True, "fix1_closed": True, "workspace_restored": True,
+                "b4_closed": False, "b4_5_restarted": True, "b4_5_closed": False,
+                "language_available": False, "cmath": "planned", "runtime_abi": "1.18",
+                "codegen_version": 21, "stdlib_interface": 1, "product_commit": FIX_COMMIT,
+                "source_snapshot": source["revision"], "old_721_executed": False,
+                "platforms_executed": ["Windows x86_64-pc-windows-msvc"],
+                "not_executed": ["Linux", "macOS", "remote CI", "performance", "B1 721 F10"],
+                "stages": rows}
+    write_json(ROOT / VARIANT / "closeout.json", closeout)
     write_json(ROOT / VARIANT / "stage-reconciliation.json", {"passed": True, "source_commit": source["revision"], "stages": rows})
     print(json.dumps({"passed": True, "stages": len(rows), "source_commit": source["revision"],
         "report_sha256": sha((ROOT / VARIANT / "stage-reconciliation.json").read_bytes())}))

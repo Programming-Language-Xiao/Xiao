@@ -36,7 +36,7 @@ COMMANDS = {
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("variant")
+    parser.add_argument("variant", choices=["b34", "b401", "introduced", "fixed"])
     parser.add_argument("labels", nargs="+", choices=list(COMMANDS))
     args = parser.parse_args()
     for label in args.labels:
