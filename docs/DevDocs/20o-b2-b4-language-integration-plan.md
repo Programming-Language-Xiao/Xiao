@@ -198,4 +198,4 @@ tests/fixtures/docs/cmath/                           迁移后的正式向量
 docs/DevDocs/assets/20o-b2-b/entry-<date>-b4/         B4 证据
 ```
 
-B4-0/1/2/3/4及B4-3-FIX.1已完成Windows内部验收；cmath双路径/归档内部可执行，原生模块值保留B1后置边界。FIX.1恢复workspace门槛；B4-5须在新FIX.1快照重跑并签收，完整B4未收口；B5～B7与B2-C仍后置。
+B4-0/1/2/3/4及B4-3-FIX.1已完成Windows内部验收；cmath双路径/归档内部可执行，原生模块值保留B1后置边界。B4-5正在FIX.1新快照重新收口，完整B4尚未签收；B5～B7与B2-C仍后置。

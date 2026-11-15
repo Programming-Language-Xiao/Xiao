@@ -1,5 +1,6 @@
 """显式生成FIX.1收口/清单和只读反例；默认审计不写盘。"""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -23,6 +24,10 @@ def main():
     with tempfile.TemporaryDirectory(prefix="fix1-collect-") as temporary:
         copy = Path(temporary) / "evidence"
         shutil.copytree(ROOT, copy)
+        for name in outputs:
+            candidate = copy / name
+            if candidate.exists():
+                candidate.unlink()
         result = check(copy, REPOSITORY, final_docs=True, sealed=False)
         write_json(copy / "closeout.json", result)
         (copy / "evidence.json").write_text(json.dumps({"files": inventory(copy)}, ensure_ascii=False, indent=2) + "\n",
@@ -35,6 +40,9 @@ def main():
         if existing:
             for name in existing:
                 previous = ROOT / name.replace(".json", "-previous.json")
+                if previous.exists():
+                    suffix = hashlib.sha256(previous.read_bytes()).hexdigest()[:12]
+                    previous = ROOT / name.replace(".json", "-previous-" + suffix + ".json")
                 require(not previous.exists(), "previous保留文件已存在")
                 (ROOT / name).replace(previous)
         for name in outputs:

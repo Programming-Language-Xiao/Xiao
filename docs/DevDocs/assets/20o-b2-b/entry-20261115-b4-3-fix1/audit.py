@@ -10,7 +10,7 @@ import tempfile
 
 sys.dont_write_bytecode = True
 from record import ROOT, REPOSITORY, docs_snapshot, fixed_files, git, identity, load, require, sha
-from validation import validate
+from validation import PRODUCT_COMMIT, validate
 
 VARIANT_ROOTS = {"b34": "7d8b85e4d8c588b40ec76d641edc865481295032",
                  "b401": "c7a45e10b76b26915499717563761ed20fda6e6c",
@@ -19,9 +19,10 @@ VARIANT_ROOTS = {"b34": "7d8b85e4d8c588b40ec76d641edc865481295032",
 FIXED_REQUIRED = {"runtime-build", "exact", "routing", "codegen-tests", "regressions", "native-matrix", "native-library",
                   "b1-vm", "b1-native", "workspace", "clippy", "fmt", "lock", "capture-toolchain-retry",
                   "capture-stages-final2", "capture-guards-final", "capture-pow-receipted", "capture-pow-sealed",
-                  "audit-b4-3", "audit-b4-4", "audit-b4-5", "docs"}
+                  "audit-b4-3", "audit-b4-4", "audit-b4-5", "docs", "docs-final"}
 REASONS = {"manifest": "FIX.1证据清单不符", "missing": "FIX.1已登记文件缺失", "readonly": "FIX.1审计改写证据",
-           "public": "FIX.1收口/公共状态冒进", "state": "FIX.1运行状态不符"}
+           "public": "FIX.1收口/公共状态冒进", "state": "FIX.1运行状态不符",
+           "source": "FIX.1来源快照不符", "workspace": "FIX.1workspace门禁未全部通过"}
 REPORTS = {"guards-report.json", "stage-reconciliation.json", "pow-review.json", "pow-review-unreceipted.json", "pow-review-sealed.json"}
 
 
@@ -38,6 +39,11 @@ def inventory(root):
 
 def tree(root):
     return {p.relative_to(root).as_posix(): sha(p.read_bytes()) if p.is_file() else "directory" for p in sorted(root.rglob("*"))}
+
+
+def tree_digest(snapshot):
+    encoded = json.dumps(snapshot, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return sha(encoded)
 
 
 def records_for(root, variant):
@@ -74,11 +80,13 @@ def check(root=ROOT, repository=REPOSITORY, final_docs=True, sealed=True):
         environments[variant] = environment
         labels = records_for(root, variant)
         expected = {"runtime-build", "exact"} if variant != "fixed" else FIXED_REQUIRED
+        if variant == "fixed" and not final_docs:
+            expected = expected - {"docs-final"}
         extras = set(labels) - expected
         require(expected <= set(labels) and not extras - {"capture-toolchain", "capture-guards-retry", "capture-pow-final",
             "capture-pow-final2", "capture-pow-retry", "capture-stages-final", "capture-stages-final2",
             "capture-stages-fixed-proof", "capture-stages-retry", "capture-stages-verified", "capture-toolchain-retry",
-            "capture-pow-receipted", "audit-b4-3", "audit-b4-4", "audit-b4-5"}, "FIX.1运行集合不符：" + variant)
+            "capture-pow-receipted", "capture-pow-sealed", "audit-b4-3", "audit-b4-4", "audit-b4-5"}, "FIX.1运行集合不符：" + variant)
         for label, row in labels.items():
             require(row["label"] == label and row["cwd"] == environment["source_root"] and row["pid"] > 0
                     and datetime.fromisoformat(row["started_utc"]) < datetime.fromisoformat(row["finished_utc"]), REASONS["state"])
@@ -94,11 +102,13 @@ def check(root=ROOT, repository=REPOSITORY, final_docs=True, sealed=True):
                 require(row["runner_sha256"] == sha(git(repository, "show", tool_commit + ":docs/DevDocs/assets/20o-b2-b/entry-20261115-b4-3-fix1/record.py")), "FIX.1采集器身份不符")
             all_records[variant, label] = row
             all_logs[variant, label] = run_text(root, row)
-    result = validate(root, repository, {v: load(root / v / "source.json") for v in VARIANT_ROOTS}, environments, all_records, all_logs)
+    result = validate(root, repository, {v: load(root / v / "source.json") for v in VARIANT_ROOTS}, environments,
+                      all_records, all_logs, final_docs=final_docs)
     result["platforms_executed"] = ["Windows x86_64-pc-windows-msvc"]
     result["not_executed"] = ["Linux", "macOS", "remote CI", "performance", "old 721 F10"]
     result["stage"] = "B4-3-FIX1"
     result["passed"] = True
+    result["product_commit"] = PRODUCT_COMMIT
     result["b4_3_fix1_closed"] = True
     result["b4_5_reopened"] = True
     result["b4_5_closed"] = False
@@ -109,11 +119,30 @@ def check(root=ROOT, repository=REPOSITORY, final_docs=True, sealed=True):
     result["historical_audits"] = ["B4-3", "B4-4", "B4-5 evidence"]
     result["logs"] = {variant + "/" + label: {"exit_code": row["exit_code"], "pid": row["pid"], "log_sha256": row["log_sha256"]}
                       for (variant, label), row in sorted(all_records.items())}
-    if sealed and (root / "closeout.json").exists():
-        stored = load(root / "closeout.json")
-        require(stored == result, "FIX.1收口报告与审计重算不符")
-        review = load(root / "self-negative.json")
-        require(review["passed"] is True and len(review["cases"]) == 6 and all(r["read_only"] for r in review["cases"]), "FIX.1反例报告不符")
+    closeout_path = root / "closeout.json"
+    if sealed:
+        require(closeout_path.is_file() and (root / "evidence.json").is_file()
+                and (root / "self-negative.json").is_file(), REASONS["manifest"])
+    if closeout_path.exists():
+        stored = load(closeout_path)
+        require(stored.get("passed") is True and stored.get("b4_3_fix1_closed") is True
+                and stored.get("b4_5_reopened") is True and stored.get("b4_5_closed") is False
+                and stored.get("b4_closed") is False and stored.get("language_available") is False,
+                "FIX.1收口/公共状态冒进")
+        if sealed:
+            require(stored == result, "FIX.1收口报告与审计重算不符")
+            review = load(root / "self-negative.json")
+            expected_cases = {"baseline": (0, None), "manifest": (1, REASONS["manifest"]),
+                              "missing": (1, REASONS["missing"]), "source": (1, REASONS["source"]),
+                              "workspace": (1, REASONS["workspace"]), "public": (1, REASONS["public"])}
+            actual_cases = {row["case"]: row for row in review["cases"]}
+            require(review["passed"] is True and set(actual_cases) == set(expected_cases), "FIX.1反例报告不符")
+            for name, (exit_code, reason) in expected_cases.items():
+                row = actual_cases[name]
+                require(row["exit_code"] == exit_code and row["reason"] == reason
+                        and row["stderr"].strip() == (reason or "") and row["read_only"] is True
+                        and len(row["tree_before_sha256"]) == 64 and row["tree_before_sha256"] == row["tree_after_sha256"],
+                        "FIX.1反例原因/只读摘要不符：" + name)
     require(before == tree(root), REASONS["readonly"])
     return result
 
@@ -129,7 +158,7 @@ def self_negative(root=ROOT, repository=REPOSITORY):
             elif name == "missing":
                 (copy / "fixed/guards-report.json").unlink()
             elif name == "source":
-                row = load(copy / "fixed/source.json"); row["revision"] = INTRODUCED_COMMIT
+                row = load(copy / "fixed/source.json"); row["revision"] = VARIANT_ROOTS["introduced"]
                 (copy / "fixed/source.json").write_text(json.dumps(row), encoding="utf-8")
             elif name == "workspace":
                 row = load(copy / "fixed/workspace.json"); row["exit_code"] = 101
@@ -137,16 +166,20 @@ def self_negative(root=ROOT, repository=REPOSITORY):
             elif name == "public":
                 row = load(copy / "closeout.json"); row["language_available"] = True
                 (copy / "closeout.json").write_text(json.dumps(row), encoding="utf-8")
-            if name != "manifest" and (copy / "evidence.json").exists():
+            if name not in {"manifest", "missing"} and (copy / "evidence.json").exists():
                 (copy / "evidence.json").write_text(json.dumps({"files": inventory(copy)}, ensure_ascii=False), encoding="utf-8")
             before = tree(copy)
+            before_digest = tree_digest(before)
             run = subprocess.run([sys.executable, "-B", "-X", "utf8", str(Path(__file__).resolve()), "--root", str(copy),
                                   "--repository-root", str(repository), "--core-only"], capture_output=True, encoding="utf-8")
             after = tree(copy)
+            after_digest = tree_digest(after)
             reason = None if name == "baseline" else REASONS["manifest"] if name == "manifest" else REASONS["missing"] if name == "missing" else REASONS["source"] if name == "source" else REASONS["workspace"] if name == "workspace" else REASONS["public"]
             require(before == after and run.returncode == (0 if reason is None else 1)
                     and (not run.stderr if reason is None else run.stderr.strip() == reason), "FIX.1反例实际原因不符：" + name)
-            cases.append({"case": name, "exit_code": run.returncode, "reason": reason, "stderr": run.stderr, "read_only": True})
+            cases.append({"case": name, "exit_code": run.returncode, "reason": reason, "stderr": run.stderr,
+                          "read_only": before_digest == after_digest, "tree_before_sha256": before_digest,
+                          "tree_after_sha256": after_digest})
     return {"passed": True, "cases": cases}
 
 
@@ -159,7 +192,7 @@ def main():
     args = parser.parse_args()
     if args.self_negative:
         print(json.dumps(self_negative(args.root, args.repository_root), ensure_ascii=False)); return
-    result = check(args.root, args.repository_root, sealed=not args.core_only)
+    result = check(args.root, args.repository_root, final_docs=not args.core_only, sealed=not args.core_only)
     print(json.dumps({"passed": True, "fix1_closed": result["b4_3_fix1_closed"], "b4_5_reopened": True,
                       "b4_closed": False, "language_available": False, "product_commit": result["product_commit"]}, ensure_ascii=False))
 

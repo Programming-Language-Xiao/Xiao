@@ -1,0 +1,14 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.71s
+     Running tests\20o_b2_b4_numeric_range_routing.rs (D:\project\Xiao\.b4-3-fix1\20261116\fixed\target\debug\deps\20o_b2_b4_numeric_range_routing-a7bc37824a02cf88.exe)
+
+running 3 tests
+FIX1-RANGE class=integer kind=numeric_range span=84..93 expression="depth - 1"
+FIX1-ROUTE class=float-pow check_span=58..74 lowering=static kernel=cmath_pow llvm_pow_f64=false result=passed
+test sfloat_pow_keeps_existing_static_f32_intrinsic ... ok
+test integer_numeric_range_only_keeps_dynamic_weak_runtime ... ok
+FIX1-ROUTE class=mixed integer_range=dynamic float_pow=shared_runtime result=passed
+test float_pow_numeric_range_keeps_static_shared_kernel ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

@@ -64,7 +64,7 @@ def validate_receipt_command(variant, label, row, repository):
     require(row["exit_code"] in {0, 1, 2, 101}, "FIX.1退出码非法")
 
 
-def validate(root, repository, sources, environments, records, logs):
+def validate(root, repository, sources, environments, records, logs, final_docs=True):
     require(sources["b34"]["revision"] == "7d8b85e4d8c588b40ec76d641edc865481295032"
             and sources["b401"]["revision"] == "c7a45e10b76b26915499717563761ed20fda6e6c"
             and sources["introduced"]["revision"] == INTRODUCED_COMMIT, "FIX.1归因提交身份不符")
@@ -115,6 +115,10 @@ def validate(root, repository, sources, environments, records, logs):
     docs_result = json.loads(logs["fixed", "docs"])
     require(records["fixed", "docs"]["exit_code"] == 0 and docs_result["passed"] is True
             and not any(row["severity"] == "error" for row in docs_result["diagnostics"]), "FIX.1最终docs门禁失败")
+    if final_docs:
+        docs_final_result = json.loads(logs["fixed", "docs-final"])
+        require(records["fixed", "docs-final"]["exit_code"] == 0 and docs_final_result["passed"] is True
+                and not any(row["severity"] == "error" for row in docs_final_result["diagnostics"]), "FIX.1最终docs字节门禁失败")
     stage_label = "capture-stages-final2"
     guards_label = "capture-guards-final"
     pow_label = "capture-pow-receipted"
@@ -193,7 +197,7 @@ def validate(root, repository, sources, environments, records, logs):
             and all(row["runtime_before"] == row["runtime_after"] == runtime for (variant, label), row in records.items()
                     if variant == "fixed" and label not in {"runtime-build", "workspace", "clippy", "fmt", "lock", "docs"}),
             "FIX.1运行期间Runtime身份不一致")
-    report_location = "fixed/pow-review.json"
+    report_location = "fixed/pow-review-sealed.json"
     report_sha = sha((root / report_location).read_bytes())
     sealed_summary = [json.loads(line) for line in logs["fixed", "capture-pow-sealed"].splitlines()
                       if line.startswith('{"passed": true, "rows": 1075')]
@@ -207,5 +211,5 @@ def validate(root, repository, sources, environments, records, logs):
     return {"regression_counts": {k: list(v) for k, v in regression_counts.items()}, "pow_cases": 1075,
             "pow_summary": pow_report["summary"], "native_matrix_configs": 4, "guards": "28/28 simulated",
             "stage_report_sha256": sha((root / "fixed/stage-reconciliation.json").read_bytes()),
-            "pow_report_sha256": report_sha, "pow_report_commit": report_commit,
+            "pow_report_sha256": report_sha, "pow_report_commit": records["fixed", "capture-pow-sealed"]["docs_commit"],
             "history_audits": history}

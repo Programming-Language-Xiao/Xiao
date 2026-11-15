@@ -16,10 +16,10 @@
 | 引入路由 | `4be30eaf` 的 `dynamic/predicate.rs` 曾将全部仅含 `numeric_range` 检查的程序改为静态路由 |
 | 覆盖缺口 | B4-3/B4-4 的 core-tests 只跑 codegen/runtime/vm/bytecode/intrinsics/xar，不含 `xiao-driver` 集成测试 |
 | 裁定 | 2026-11-15收窄到Float pow具体span；sfloat行为不变，不保留全量`numeric_range`豁免 |
-| 本批结果 | 整数 `numeric_range` 恢复动态路由与 `weak`；Float pow 保持静态 `cmath_pow`，sfloat pow 保持 `llvm.pow.f32`；n0_b、B4-3矩阵、workspace恢复通过 |
+| 本批结果 | 整数 `numeric_range` 恢复动态路由与 `weak`；Float pow仅对自身span豁免并保持静态 `cmath_pow`，sfloat pow保持 `llvm.pow.f32`；n0_b、B4-3矩阵、workspace恢复通过 |
 | 未做 | B4-5C/D、B5、registry/教程、三平台、性能、旧721 |
 
-FIX.1 是 **路由回归修复批**，不是 B4-5 收口批。B4-5 不修改产品源码的边界保持不变；修复完成并恢复 workspace 门槛后，B4-5 从其现有收口流程重新执行。
+FIX.1 是 **路由回归修复批**，不是 B4-5 收口批。B4-5不修改产品源码的边界保持不变；FIX.1完成并恢复workspace门槛后，B4-5从其收口流程重新执行。
 
 ### 1.1 要做
 

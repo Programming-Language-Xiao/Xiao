@@ -2,8 +2,8 @@
 
 > **2026-11-13 版本裁定执行：星崽在本会话已批准“B4 升到生成器21，更新规划并调整B5边界”。B4-3改LLVM调用文本，按后端版本规则20→21；ABI仍1.18、接口1。B5只将ABI升1.19并核验既有生成器21的最终拒绝/重生成矩阵，不再次因本批接线递增生成器。下文将21留B5或B4不得升21的旧句均由本裁定替代；签署的冻结正文及历史证据不改写。**
 
-> **B4-0/B4-1、B4-2A/FIX1、B4-2B、B4-3及B4-4已完成Windows本机内部验收；B4-3-FIX.1已恢复workspace门槛，B4-5须在新FIX.1快照重新收口，B5～B7与B2-C后置。**
-> **2026-11-16 FIX.1已恢复完整workspace门槛；B4-5必须在FIX.1固定产品/新Runtime下重跑本规划。** 在新的B4-5收口提交前，仍不得写`language_available=true`或进入B5。FIX.1结果见[规划](20o-b2-b4-3-fix1-numeric-range-routing-plan.md)与[证据](assets/20o-b2-b/entry-20261115-b4-3-fix1/README.md)，旧B4-5回执见[历史证据](assets/20o-b2-b/entry-20261115-b4-5/README.md)。
+> **B4-0/B4-1、B4-2A/FIX1、B4-2B、B4-3、B4-4及B4-3-FIX.1已完成Windows本机内部验收；B4-5目前在FIX.1新快照执行重新收口，B5～B7与B2-C后置。**
+> **2026-11-16 FIX.1已恢复完整workspace门槛。** 旧B4-5 blocked回执仅作历史；当前收口绑定FIX.1产品`cfa79381`与独立新Runtime。B4-5签收前不写`language_available=true`、不开B5。FIX.1结果见[规划](20o-b2-b4-3-fix1-numeric-range-routing-plan.md)与[证据](assets/20o-b2-b/entry-20261115-b4-3-fix1/README.md)。
 > 入口为 B4-0/B4-1 记录及后续 B4-2A/B、B4-3、B4-4 各自完成后生成的最终内部证据。
 > B4-5 只做整批语言收口、证据对账和 B5 交接，不修改产品源码；发现产品问题时退回所属阶段处理。ABI维持1.18、生成器沿用21，不升级registry/教程。
 > 内部 `language_available=true` 不等于最终公共发布；B2-C 才做 721、三平台公共产物和状态升级。

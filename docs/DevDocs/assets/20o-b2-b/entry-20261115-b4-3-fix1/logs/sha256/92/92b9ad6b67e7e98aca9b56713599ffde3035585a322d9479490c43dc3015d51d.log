@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261115-b4-3-fix1\capture.py", line 201, in <module>
+    {"toolchain": toolchain, "guards": guards, "stages": stages, "pow": pow_review}[sys.argv[1]]()
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261115-b4-3-fix1\capture.py", line 67, in stages
+    source = load(ROOT / "final/source.json")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261113-b4-3\record.py", line 51, in load
+    return json.loads(path.read_text(encoding="utf-8"))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programs\Python\Python312\Lib\pathlib.py", line 1027, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programs\Python\Python312\Lib\pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261115-b4-3-fix1\\final\\source.json'
