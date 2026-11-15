@@ -294,9 +294,9 @@
 | 20O-B2-B4-3 | [B4-3 LLVM规划](20o-b2-b4-3-llvm-plan.md) / [固定证据](assets/20o-b2-b/entry-20261113-b4-3/README.md) | 动态/静态cmath、Float `**` 共核、1,075组pow差异、O0/O3和状态/清理 | **Windows内部验收完成（2026-11-13）**：fixed-final2四组矩阵各18,318项、B1 VM/原生和固定历史审计通过；ABI1.18/生成器21；Linux/macOS/远端CI/性能及旧721未执行，cmath导入仍planned，B4-4后置 |
 | 20O-B2-B4-4 | [B4-4双路径/归档规划](20o-b2-b4-4-dual-path-archive-plan.md) | std/stdlib双路径、导出/移除、xar加载器、序列化与隔离 | **开工就绪（2026-11-15）**：入口B4-3退出（`e0d5993e`，ABI1.18/生成器21），开工单见规划§2.1；B4-4未开始，registry/教程仍planned，721后置 |
 | 20O-B2-B4-5 | [B4-5内部收口规划](20o-b2-b4-5-closeout-plan.md) | B4-1～B4-4对账、语言全链路回归、内部language_available与B5交接 | **规划稿（2026-11-11）**：B4-5未开始；公共registry/教程仍planned，721后置 |
-| 20O-B2-B5 | [B5版本矩阵规划](20o-b2-b5-version-matrix-plan.md) | ABI1.19（生成器21沿用B4-3）、旧新拒绝、缓存重生成、C ABI加法 | **规划稿（2026-11-13裁定后）**：B5未开始；只升ABI至1.19，生成器沿用21；B6性能/B2-C发布后置 |
-| 20O-B2-B6 | [B6资源性能规划](20o-b2-b6-resource-performance-plan.md) | cmath/lfloat资源错误、VM/原生三平台性能、OS峰值与CI | **规划稿（2026-11-11）**：B6未开始；B7收口/B2-C发布后置 |
-| 20O-B2-B7 | [B7内部收口规划](20o-b2-b7-closeout-plan.md) | B1七库回归、A1～B6对账、教程/registry边界与B2-C交接 | **规划稿（2026-11-11）**：B7未开始；不跑721、不升级registry，B2-C仍后置 |
+| 20O-B2-B5 | [B5版本矩阵规划](20o-b2-b5-version-matrix-plan.md) | 仅ABI升1.19、沿用B4-3生成器21；元数据接受/拒绝、两组缓存重生成、C ABI加法 | **规划更新（2026-11-15）**：B5未开始；B4-3版本过渡证据限于冷构建，20/21元数据接受范围及旧缓存失配待本批实测；numeric_range专项待补，B6性能/B2-C发布后置 |
+| 20O-B2-B6 | [B6资源性能规划](20o-b2-b6-resource-performance-plan.md) | cmath/lfloat资源错误、VM/原生三平台性能、OS峰值与CI | **规划更新（2026-11-15）**：B4-3已完成Windows内部验收，当前1.18/21；B6未开始，须等B5仅升ABI后的版本矩阵；B7/B2-C后置 |
+| 20O-B2-B7 | [B7内部收口规划](20o-b2-b7-closeout-plan.md) | B1七库回归、A1～B6对账、教程/registry边界与B2-C交接 | **规划更新（2026-11-15）**：B4-0/1/2/3已完成Windows内部验收，B7前置尚未齐备；当前1.18/21，B5仅升ABI；B7未开始，B2-C后置 |
 | 20O-B2-C | [B2-C最终公共收口规划](20o-b2-c-final-closeout-plan.md) | 最终721、三平台公共产物、教程/registry、发布证据 | **规划稿（2026-11-11）**：B2-C未开始；依赖B7完成，不关闭历史债务 |
 | 20O-B3 | [B3简单宿主库规划](20o-b3-host-libraries-plan.md) | time/args/cli/fs/env/log、能力/取消/错误、三平台与教程 | **规划稿（2026-11-11）**：B3未开始；依赖B2-C或明确并行授权，B4-B9后置 |
 | 20O-B4 | [B4 JSON/TOML规划](20o-b4-json-toml-plan.md) | 专用值模型、JSON/TOML解析/序列化、双路径/教程 | **规划稿（2026-11-11）**：B4未开始；与B5数值类型分开，B5-B9后置 |
@@ -305,7 +305,7 @@
 | 20O-B7 | [B7安全批规划](20o-b7-security-plan.md) | hash/hmac/CSPRNG/AEAD/TLS基础、安全审阅与依赖审计 | **规划稿（2026-11-11）**：B7未开始；不自研算法、无HTTP/B8，审阅前不verified |
 | 20O-B8 | [B8 HTTP规划](20o-b8-http-plan.md) | HTTP client/server、TLS接线、超时/限制/取消/关闭drain | **规划稿（2026-11-12）**：B8未开始；依赖B3+B7，B9后置 |
 | 20O-B2-A7 | [A7 回归与收口规划](20o-b2-a7-b1-regression-b2a-closeout-plan.md) / [内部收口记录](20o-b2-a7-b2a-closeout.md) / [自审](20o-b2-a7-self-review.md) | B1七库20入口、A0～A6对账、语言参考及版本/状态边界 | **内部1.18/20已收口（2026-11-07）**：18项当前门禁及7项阶段审计、B1双精确/原28守卫和三平台CI通过；产品固定e7bf7a49，最终数值教程/cmath planned，旧721未跑，B2-B/C未开始 |
-| 20O-B2-B | [B2-B 实施规划](20o-b2-b-implementation-plan.md) | lfloat_divide、15项cmath、intrinsic 33～48、ABI1.19/生成器21与旧/新拒绝矩阵 | **B2单入口内部已实现**：lfloat_divide/intrinsic33，ABI1.18/20；B3-2A共享pow与B3-3A/B内部验收完成，仅Windows本机、活动最大48；B3-4及B4～B7、B2-C后置 |
+| 20O-B2-B | [B2-B 实施规划](20o-b2-b-implementation-plan.md) | lfloat_divide、15项cmath、intrinsic33～48、B5仅升ABI至1.19并沿用B4-3生成器21、版本矩阵 | **实施中（2026-11-15）**：B2单入口、B3及B4-0/1/2/3已完成Windows内部验收，当前ABI1.18/生成器21、活动最大48；B4-4开工就绪，B4-5/B5～B7和B2-C后置，cmath仍planned |
 | 20P | [Day-1 官方库架构](20p-day1-library-architecture.md) | 模块/错误/生命周期/能力/发布、每库教程与数据库架构；D-13～D-22 裁定 | **规划中（2026-11-01）**：方向已逐条确认；独立数据库能力位、首批有界连接池、固定教程示例与状态门槛、分平台证据；精确契约待后续批次 |
 | 20C-首批 | [官方库首批模块：`text` 与 `path`](20c-first-modules.md) | 接口已冻结为 `text.contains_char(str text, str needle) -> bool` 与 `path.join(str base, str leaf) -> str`；两模块均为纯 Xiao、无新增 intrinsic。固定 `stdlib.` VM 加载器、LLVM 静态函数接线、移除验证和边界同步已落地；P-5 与覆盖口径订正已登记 | **受控双路径已由维护回归 `38550284761` 复核**（Windows `115806283501` / Linux `115806283515`）；10R 其它遗留证据按各自文档登记 |
 | 20C | [官方 Xiao 库：能力探测、模块清单与兼容身份](20c-official-xiao-library.md) | 10 系列已按七项条件正式关闭，O6/B1/T4/F-3 的剩余证据保留原归属；20C 双路径能力探测、六条冻结、入口骨架、固定标准库加载边界和首批 `text`/`path` 接口已完成；官方模块仍不进入普通依赖图 | **首批实现与受控双路径实跑已完成（2026-10-14）**；维护回归 `38550284761` 已回填，10R 其它遗留证据仍按各自清单登记 |

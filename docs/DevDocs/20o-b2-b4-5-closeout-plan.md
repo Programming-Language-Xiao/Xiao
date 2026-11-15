@@ -65,7 +65,7 @@ Pow 差异的固定对账输入为 [B3-CABI `pow-switch-manifest.json`](assets/2
 5. B4-5 审计从固定 Git commit/tree/blob 校验产品和锁身份，不要求当前 HEAD 等于产品提交；审计只读，不写 evidence/closeout；
 6. 运行收口审计自反例：篡改 evidence 清单、删除已登记文件、伪造阶段提交/源码身份或把 planned/public 状态冒进都须按登记原因拒绝，且基线审计前后证据字节不变；
 7. 保存阶段对账表与身份摘要；
-8. 核对 B4-3 的 `program_uses_runtime` 路由改动：补一条仅含 `numeric_range` 检查的静态/动态对照，或明确登记依赖 B1/B2 原生语料的覆盖，不能只靠 cmath 矩阵隐含覆盖。
+8. 核对B4-3的`program_uses_runtime`路由依赖：它影响仅含`numeric_range`检查的标量程序，包含非cmath代码。B1/B2 VM及原生语料通过，独立静态/动态对照尚未执行；B5测试清单负责补验。B4-5只登记这项覆盖限制及后续归属，不能把cmath矩阵写成专项证据。
 
 退出：B4-1～B4-4 证据链可逐阶段对账。
 
@@ -118,7 +118,7 @@ Pow 差异的固定对账输入为 [B3-CABI `pow-switch-manifest.json`](assets/2
 | 回归 | B1/B2/B3 固定历史审计（只证明各自历史快照）、B4-1～4 当前功能回归；最终快照 28/28 守卫 |
 | workspace gates | workspace 测试、Clippy、fmt、锁、docs/UseDocs/layout 门禁 |
 | 收口审计 | 固定 Git 对象只读审计；清单/缺文件/身份/状态冒进自反例及只读性 |
-| 边界 | ABI1.18/20、registry planned、721 未跑 |
+| 边界 | ABI1.18、生成器沿用B4-3的21、registry planned、721未跑；20/21接受及缓存重生成矩阵待B5实测 |
 
 ## 五、退出条件
 
