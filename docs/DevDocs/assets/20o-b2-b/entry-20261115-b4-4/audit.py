@@ -24,7 +24,7 @@ PREVIOUS = "fixed-final"
 FINAL = "fixed-verified"
 DOCS = "docs-final"
 REVISIONS = {"baseline": BASELINE, "fixed": FIRST_CODE, PREVIOUS: PREVIOUS_CODE, FINAL: CODE, DOCS: None}
-RUNS = {"baseline": {"entry"}, "fixed": {"runtime-build", "native-library"}, PREVIOUS: set(COMMANDS), FINAL: set(COMMANDS) - {"final-docs"}, DOCS: {"final-docs"}}
+RUNS = {"baseline": {"entry"}, "fixed": {"runtime-build", "native-library"}, PREVIOUS: set(COMMANDS), FINAL: set(COMMANDS) - {"final-docs"}, DOCS: {"final-docs", "final-docs-confirmed"}}
 ALLOWED = {
     "core/rust/crates/xiao-driver/README.md", "core/rust/crates/xiao-driver/src/README.md",
     "core/rust/crates/xiao-driver/src/archive_closure.rs", "core/rust/crates/xiao-driver/src/archive_run.rs",
@@ -95,7 +95,7 @@ def expected_command(variant, label):
     if variant == "baseline":
         return CARGO + ["-p", "xiao-driver", "--test", "20o_b2_b3_wrapper", "--test",
                         "20o_b2_b4_cmath_boundary", "--test", "22c_vm_concurrency", "--", "--nocapture"]
-    return COMMANDS[label]
+    return COMMANDS["final-docs" if label == "final-docs-confirmed" else label]
 
 
 def read_run(root, repository, variant, label, source, environment):
@@ -183,7 +183,7 @@ def check_artifacts(root, environment, variant=FINAL):
     return references
 
 
-def conclusions(root, records, logs, live_runtime):
+def conclusions(root, repository, records, logs, live_runtime):
     build = records[FINAL, "runtime-build"]
     runtime = build["runtime_after"]
     require(build["runtime_before"]["exists"] is False and runtime["exists"] is True
@@ -229,7 +229,7 @@ def conclusions(root, records, logs, live_runtime):
             and sum(v[1] for v in core.values()) == 16, "B4-4核心测试目标缺失")
     for name in HISTORY:
         result = json.loads(logs[FINAL, "audit-" + name])
-        require(result.get("passed") == result.get("total") == 18 if name == "b1" else result.get("passed") is True,
+        require(result.get("passed") == result.get("total") == 18 if name in {"b0", "b1"} else result.get("passed") is True,
                 "B4-4历史审计失败：" + name)
     toolchain = json.loads(logs[FINAL, "toolchain"])
     require("rustc 1.96.0" in toolchain["rustc"]["stdout"] and "x86_64-pc-windows-msvc" in toolchain["targets"]["stdout"], "B4-4工具链身份不符")
@@ -250,15 +250,15 @@ def conclusions(root, records, logs, live_runtime):
     require(len(decoding["results"]) == 8 and sum(r["stdout"].startswith("ids=34..48 ") for r in decoding["results"]) == 4
             and {r["object"] for r in decoding["results"]} == {r["object"] for r in load(root / FINAL / "artifact-manifest.json")["files"] if r["kind"] in {".xiaoc", ".xar"}}
             and all(r["stdout"] in {"ids=34..48 identity=canonical bundled_official=false decoded=passed\n", "ids=none identity=canonical bundled_official=false decoded=passed\n"} for r in decoding["results"]), "B4-4真实归档指令流未解码核对")
-    doc_record = records[DOCS, "final-docs"]
+    doc_record = records[DOCS, "final-docs-confirmed"]
     require(doc_record["runtime_before"] == doc_record["runtime_after"] and doc_record["runtime_before"]["exists"] is False
-            and doc_record["docs_commit"] == load(root / DOCS / "source.json")["revision"], "B4-4最终文档执行点混用Runtime或来源")
-    docs = json.loads(logs[DOCS, "final-docs"])
+            and source_at(str(repository), doc_record["docs_commit"]) == source_at(str(repository), load(root / DOCS / "source.json")["revision"]), "B4-4最终文档执行点混用Runtime或来源")
+    docs = json.loads(logs[DOCS, "final-docs-confirmed"])
     require(docs["passed"] is True and not any(r["severity"] == "error" for r in docs["diagnostics"]), "B4-4最终文档门禁失败")
     return {"passed": True, "stage": "B4-4", "b4_4_closed": True, "b4_closed": False,
             "language_available": False, "dual_path_internal_executable": True, "cmath": "planned",
             "runtime_abi": "1.18", "codegen_version": 21, "stdlib_interface": 1,
-            "baseline_commit": BASELINE, "product_commit": CODE, "final_docs_commit": records[DOCS, "final-docs"]["docs_commit"], "product_files": 1064,
+            "baseline_commit": BASELINE, "product_commit": CODE, "final_docs_commit": records[DOCS, "final-docs-confirmed"]["docs_commit"], "product_files": 1064,
             "changed_product_paths": sorted(ALLOWED), "runtime": runtime, "artifacts": artifacts,
             "regressions": {k: list(v) for k, v in expected.items()}, "core_test_targets": {k: list(v) for k, v in core.items()},
             "historical_audits": sorted(HISTORY), "native_module_values": "existing unsupported boundary retained; selected imports tested",
@@ -294,11 +294,11 @@ def verify(root, repository, live_runtime=False, check_inventory=True, check_clo
     referenced.add(interruption["log_ref"])
     require(referenced == {p.relative_to(root).as_posix() for p in (root / "logs").rglob("*") if p.is_file()}, REASONS["orphan"])
     # 最终docs运行必须绑定本批全部静态工具/README；后续HEAD可变化，审计读取固定Git对象。
-    commit = records[DOCS, "final-docs"]["docs_commit"]
+    commit = records[DOCS, "final-docs-confirmed"]["docs_commit"]
     for path in root.iterdir():
         if path.suffix in {".py", ".md", ".rs"}:
             require(sha(canonical(path.read_bytes())) == sha(canonical(git(repository, "show", commit + ":" + PREFIX + "/" + path.name))), REASONS["docs"])
-    result = conclusions(root, records, logs, live_runtime)
+    result = conclusions(root, repository, records, logs, live_runtime)
     if check_closeout:
         require(load(root / "closeout.json") == result, REASONS["state"])
     if check_review:

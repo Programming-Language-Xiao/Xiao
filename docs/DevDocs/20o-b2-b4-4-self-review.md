@@ -13,4 +13,6 @@
 
 B4-4仅完成Windows内部双路径/归档范围。B4整批`b4_closed=false`、`language_available=false`，B4-5未开始；cmath教程/registry仍planned。Linux/macOS、远端CI、性能和721未执行；numeric_range专项及20/21缓存/版本矩阵仍归B5，22C/22D和19/11/22债务独立保留。
 
-最终文档运行单列`docs-final/final-docs`，相对已测产品的受保护路径只变更UseDocs/cmath的夹具位置说明；Runtime未构建也未使用。功能结果继续绑定bb0b8196，文档门禁绑定最终静态文档/工具快照，两个执行点不混用。
+最终文档运行单列`docs-final/final-docs-confirmed`，相对已测产品的受保护路径只变更UseDocs/cmath的夹具位置说明；Runtime未构建也未使用。功能结果继续绑定bb0b8196，文档门禁绑定最终静态文档/工具快照，两个执行点不混用。
+
+收口审计按B0/B1的计数式18/18和后续阶段的布尔式分别核对；B0的18不得与布尔true作身份比较。该判读修正后，全部真实记录和10项临时副本反例预核通过，最终门禁回执单列final-docs-confirmed；先前成功的final-docs回执保留，不冒充最终审计器定稿字节。
