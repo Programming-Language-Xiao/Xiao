@@ -19,7 +19,7 @@ VARIANT_ROOTS = {"b34": "7d8b85e4d8c588b40ec76d641edc865481295032",
 FIXED_REQUIRED = {"runtime-build", "exact", "routing", "codegen-tests", "regressions", "native-matrix", "native-library",
                   "b1-vm", "b1-native", "workspace", "clippy", "fmt", "lock", "capture-toolchain-retry",
                   "capture-stages-final2", "capture-guards-final", "capture-pow-receipted", "capture-pow-sealed",
-                  "audit-b4-3", "audit-b4-4", "audit-b4-5", "docs", "docs-final"}
+                  "audit-b4-3", "audit-b4-4", "audit-b4-5", "docs", "docs-final2"}
 REASONS = {"manifest": "FIX.1证据清单不符", "missing": "FIX.1已登记文件缺失", "readonly": "FIX.1审计改写证据",
            "public": "FIX.1收口/公共状态冒进", "state": "FIX.1运行状态不符",
            "source": "FIX.1来源快照不符", "workspace": "FIX.1workspace门禁未全部通过"}
@@ -81,12 +81,14 @@ def check(root=ROOT, repository=REPOSITORY, final_docs=True, sealed=True):
         labels = records_for(root, variant)
         expected = {"runtime-build", "exact"} if variant != "fixed" else FIXED_REQUIRED
         if variant == "fixed" and not final_docs:
-            expected = expected - {"docs-final"}
+            expected = expected - {"docs-final2"}
         extras = set(labels) - expected
         require(expected <= set(labels) and not extras - {"capture-toolchain", "capture-guards-retry", "capture-pow-final",
             "capture-pow-final2", "capture-pow-retry", "capture-stages-final", "capture-stages-final2",
             "capture-stages-fixed-proof", "capture-stages-retry", "capture-stages-verified", "capture-toolchain-retry",
-            "capture-pow-receipted", "capture-pow-sealed", "audit-b4-3", "audit-b4-4", "audit-b4-5"}, "FIX.1运行集合不符：" + variant)
+            "capture-pow-receipted", "capture-pow-sealed", "audit-b4-3", "audit-b4-4", "audit-b4-5",
+            "docs-final", "docs-final2"},
+                "FIX.1运行集合不符：" + variant)
         for label, row in labels.items():
             require(row["label"] == label and row["cwd"] == environment["source_root"] and row["pid"] > 0
                     and datetime.fromisoformat(row["started_utc"]) < datetime.fromisoformat(row["finished_utc"]), REASONS["state"])

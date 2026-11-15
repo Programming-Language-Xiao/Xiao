@@ -116,8 +116,8 @@ def validate(root, repository, sources, environments, records, logs, final_docs=
     require(records["fixed", "docs"]["exit_code"] == 0 and docs_result["passed"] is True
             and not any(row["severity"] == "error" for row in docs_result["diagnostics"]), "FIX.1最终docs门禁失败")
     if final_docs:
-        docs_final_result = json.loads(logs["fixed", "docs-final"])
-        require(records["fixed", "docs-final"]["exit_code"] == 0 and docs_final_result["passed"] is True
+        docs_final_result = json.loads(logs["fixed", "docs-final2"])
+        require(records["fixed", "docs-final2"]["exit_code"] == 0 and docs_final_result["passed"] is True
                 and not any(row["severity"] == "error" for row in docs_final_result["diagnostics"]), "FIX.1最终docs字节门禁失败")
     stage_label = "capture-stages-final2"
     guards_label = "capture-guards-final"

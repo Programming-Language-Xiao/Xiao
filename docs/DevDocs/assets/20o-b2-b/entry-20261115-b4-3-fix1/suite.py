@@ -28,6 +28,7 @@ COMMANDS = {
     "lock": ["bun", "run", "check:lock"],
     "docs": ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     "docs-final": ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
+    "docs-final2": ["bun", "tools/repo-check/src/cli.ts", "all", "--format", "json"],
     **{"capture-" + label: ["python", "-B", "-X", "utf8", "docs/DevDocs/assets/20o-b2-b/entry-20261115-b4-3-fix1/capture.py", label]
        for label in ["toolchain", "stages", "guards", "pow"]},
     "capture-pow-sealed": ["python", "-B", "-X", "utf8", PREFIX + "/capture.py", "pow", "pow-review-sealed.json"],
