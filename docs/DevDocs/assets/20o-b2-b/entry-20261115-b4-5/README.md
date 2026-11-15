@@ -10,6 +10,6 @@
 
 已通过：独立 Runtime 冷构建、Clippy、fmt、锁、B4-4原生O0/O3、B1 VM/原生、10项历史审计、28/28计数守卫、固定1075项pow逐项对账（Runtime/cmath门面/字节码operator与15个VM载体，6450项）。工具链首次入口错误和pow探针依赖选择错误均保留并以新标签重跑成功。
 
-默认只读审计见 `audit.py`；`collect.py --collect` 才生成 closeout/evidence/self-negative。审计固定Git对象、验证所有运行回执、阶段提交、公共planned边界、pow摘要和真实阻塞，不要求当前HEAD等于产品快照。反例核对实际拒绝文本和副本字节不变。
+默认只读审计见 `audit.py`；`collect.py --collect` 才生成 closeout/evidence/self-negative，文档定稿后若需重新绑定最终回执必须显式使用 `collect.py --collect --refresh`，旧清单会保留为 `*-previous.json`。审计固定Git对象、验证所有运行回执、阶段提交、公共planned边界、pow摘要和真实阻塞，不要求当前HEAD等于产品快照。反例核对实际拒绝文本和副本字节不变。
 
 本批没有内部 `language_available=true`：workspace gate 尚未通过，因此不能进入 B4-5C/D 或 B5。Linux/macOS、远端 CI、性能、旧721仍未执行。

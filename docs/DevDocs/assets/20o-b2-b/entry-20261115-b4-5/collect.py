@@ -11,7 +11,16 @@ from audit import ROOT, check, inventory, negative_cases, sha, write_json
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--collect", action="store_true", required=True)
+    parser.add_argument("--refresh", action="store_true")
     args = parser.parse_args()
+    outputs = ["closeout.json", "self-negative.json", "evidence.json"]
+    if any((ROOT / name).exists() for name in outputs) and not args.refresh:
+        raise ValueError("禁止覆盖已有收口文件；需要明确--refresh")
+    if args.refresh:
+        for name in outputs:
+            path = ROOT / name
+            if path.exists():
+                path.replace(ROOT / name.replace(".json", "-previous.json"))
     result = check()
     write_json(ROOT / "closeout.json", result)
     (ROOT / "evidence.json").write_text(json.dumps({"files": inventory(ROOT)}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
