@@ -202,6 +202,8 @@ def negative_cases():
             else:
                 data = load(copy / "closeout.json"); data["language_available"] = True
                 (copy / "closeout.json").write_text(json.dumps(data), encoding="utf-8")
+            if name != "manifest":
+                (copy / "evidence.json").write_text(json.dumps({"files": inventory(copy)}, ensure_ascii=False), encoding="utf-8")
             before = {p.relative_to(copy).as_posix(): sha(p.read_bytes()) for p in copy.rglob("*") if p.is_file()}
             run = subprocess.run([sys.executable, "-B", "-X", "utf8", str(Path(__file__).resolve()),
                                   "--root", str(copy), "--repository-root", str(REPOSITORY)], capture_output=True, encoding="utf-8")

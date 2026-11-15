@@ -14,6 +14,7 @@ def main():
     args = parser.parse_args()
     result = check()
     write_json(ROOT / "closeout.json", result)
+    (ROOT / "evidence.json").write_text(json.dumps({"files": inventory(ROOT)}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     write_json(ROOT / "self-negative.json", negative_cases())
     (ROOT / "evidence.json").write_text(json.dumps({"files": inventory(ROOT)}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(json.dumps({"passed": True, "closeout_sha256": sha((ROOT / "closeout.json").read_bytes()),
