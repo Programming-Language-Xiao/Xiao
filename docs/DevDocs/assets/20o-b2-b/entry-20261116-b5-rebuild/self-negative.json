@@ -1,0 +1,68 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "reason": null,
+      "stderr": "",
+      "read_only": true,
+      "before_sha256": "8c31799e17a16355cf51d57a2cd5f8d13ff3da9cc5ac7a8ba7031541b2b381ca",
+      "after_sha256": "8c31799e17a16355cf51d57a2cd5f8d13ff3da9cc5ac7a8ba7031541b2b381ca"
+    },
+    {
+      "case": "manifest",
+      "exit_code": 1,
+      "reason": "B5重建证据清单不符",
+      "stderr": "B5重建证据清单不符\n",
+      "read_only": true,
+      "before_sha256": "fd221b094b06abc9d8780127d527f5f60b7c45c015b7edb1e4d2c7faccb645f4",
+      "after_sha256": "fd221b094b06abc9d8780127d527f5f60b7c45c015b7edb1e4d2c7faccb645f4"
+    },
+    {
+      "case": "missing",
+      "exit_code": 1,
+      "reason": "B5重建已登记文件缺失",
+      "stderr": "B5重建已登记文件缺失\n",
+      "read_only": true,
+      "before_sha256": "99a1a2a461daac497ded5d10aa7c8bec22ccbae2716aff86ccd09528fb1b0d5b",
+      "after_sha256": "99a1a2a461daac497ded5d10aa7c8bec22ccbae2716aff86ccd09528fb1b0d5b"
+    },
+    {
+      "case": "source",
+      "exit_code": 1,
+      "reason": "B5重建来源身份不符",
+      "stderr": "B5重建来源身份不符\n",
+      "read_only": true,
+      "before_sha256": "79c271bfeb498f787c97a7cdc59a26814d2c3b473d490e0e0e5768655e80c8f2",
+      "after_sha256": "79c271bfeb498f787c97a7cdc59a26814d2c3b473d490e0e0e5768655e80c8f2"
+    },
+    {
+      "case": "historical",
+      "exit_code": 1,
+      "reason": "B5不得把重建基线称为历史原件",
+      "stderr": "B5不得把重建基线称为历史原件\n",
+      "read_only": true,
+      "before_sha256": "5609b3e7f4aa8cf5b8fa0f3c7085142c5e79234dcd76c9ad31ed06ba4ea4a0bf",
+      "after_sha256": "5609b3e7f4aa8cf5b8fa0f3c7085142c5e79234dcd76c9ad31ed06ba4ea4a0bf"
+    },
+    {
+      "case": "matrix",
+      "exit_code": 1,
+      "reason": "B5版本矩阵不符",
+      "stderr": "B5版本矩阵不符\n",
+      "read_only": true,
+      "before_sha256": "4d7b56ecb49d94c3580b49a56e2b6090f9cdfa98360d7e07e00774d01836fbfb",
+      "after_sha256": "4d7b56ecb49d94c3580b49a56e2b6090f9cdfa98360d7e07e00774d01836fbfb"
+    },
+    {
+      "case": "state",
+      "exit_code": 1,
+      "reason": "B5公共状态冒进",
+      "stderr": "B5公共状态冒进\n",
+      "read_only": true,
+      "before_sha256": "476d9049287f77b5d2a5531129cf58d25b4dd3fbde092e5db4c1093221a7a15e",
+      "after_sha256": "476d9049287f77b5d2a5531129cf58d25b4dd3fbde092e5db4c1093221a7a15e"
+    }
+  ]
+}
