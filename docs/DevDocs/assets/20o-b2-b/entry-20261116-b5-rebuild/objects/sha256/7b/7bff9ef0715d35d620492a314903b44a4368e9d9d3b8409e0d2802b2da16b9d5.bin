@@ -1,0 +1,58 @@
+{
+  "abi": 65555,
+  "artifacts": {
+    "main.exe": "8ac8b318ad9f52680845fabacc590ac0d65a59f0d87ce0bd45e247e6a4a22a8f",
+    "main.meta": "171395ca96a89a99d1f7c21a02ae634adfd8d44efd52844ad9dd50a24783c7fb",
+    "main.xar": "25da75dbce4c456fa262f94d60521bf3be3556a82b55d968a62717d0cb5036a4",
+    "main.xiaoc": "84a9cfeb4e387a93578b9e0431a1c06fbdda9f6b9c52b03f0bcf31db1091de04"
+  },
+  "codegen": 21,
+  "layouts": {
+    "XiaoAbiBytes": 16,
+    "XiaoHandle": 8,
+    "XiaoValue": 16,
+    "XiaoValue_align": 8
+  },
+  "llvm_uses_runtime": true,
+  "minor": 19,
+  "native": {
+    "generator_version": 21,
+    "pointer_width": 64,
+    "required_features": 0,
+    "runtime_abi_max": 65555,
+    "runtime_abi_min": 65555,
+    "stdlib": {
+      "language_version": "0.1.0",
+      "runtime_abi_major": 1,
+      "runtime_abi_minor": 19,
+      "stdlib_interface_version": 1,
+      "target": "portable"
+    },
+    "target": "x86_64-pc-windows-msvc",
+    "version": 1
+  },
+  "native_static_libraries": [
+    "-lkernel32",
+    "-lntdll",
+    "-luserenv",
+    "-lws2_32",
+    "-ldbghelp"
+  ],
+  "runtime_path": "D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\xiao_runtime.lib",
+  "runtime_sha256": "3bcc6081c6a85db867987c9d42ad1abeb0bc3801a6654e4442ef65e1af0697c5",
+  "toolchain_fingerprint": "xiao-fnv1a64-4db23e313e7110f2",
+  "xar": {
+    "runtime_abi_max": 65555,
+    "runtime_abi_min": 65555,
+    "schema_major": 1,
+    "schema_minor": 0,
+    "stdlib_interface": 1
+  },
+  "xiaoc": {
+    "format_major": 1,
+    "format_minor": 0,
+    "instruction_abi": 65555,
+    "runtime_abi_max": 65555,
+    "runtime_abi_min": 65555
+  }
+}

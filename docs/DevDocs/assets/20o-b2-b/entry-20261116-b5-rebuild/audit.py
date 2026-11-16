@@ -49,6 +49,10 @@ EXPECTED_PRODUCT_PATHS = {
 "tests/fixtures/compatibility/b5/b4-main.xar",
 "tests/fixtures/compatibility/b5/b4-main.xiaoc",
 }
+EXPECTED_TEST_DELTA = {
+"core/rust/crates/xiao-driver/tests/22e_release.rs",
+"core/rust/crates/xiao-driver/tests/artifact_size_regression.rs",
+}
 
 
 def inventory(root):
@@ -136,7 +140,8 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
   if variant in {"final","final2","final3"}:
    changed=set(git(repository,"diff","--name-only",VERSIONS["current"],commit,"--",*PRODUCT_ROOTS).decode().splitlines())
    inherited=env["inherited_test_task"]
-   require(changed==set(inherited["test_only_paths"]) and all("/tests/" in p for p in changed)
+   require(changed==set(inherited["test_only_paths"]) and changed==EXPECTED_TEST_DELTA
+    and all("/tests/" in p for p in changed)
     and inherited["source_commit"]==VERSIONS["current"],REASONS["source"])
   for path in sorted((root/variant).glob("*.json")):
    row=load(path)
@@ -260,8 +265,7 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
  require(records["final3","url-resource-isolated-fixed"]["exit_code"]==0
   and "1 passed; 0 failed; 0 ignored;" in logs["final3","url-resource-isolated-fixed"],"B5隔离URL资源复核失败")
  require(records["final3","resources-serial"]["exit_code"]==0 and "17 passed; 0 failed; 0 ignored;" in logs["final3","resources-serial"],"B5资源串行复核未通过")
- require(records["final3","url-resource-isolated-fixed"]["exit_code"]==0
-  and "finished in 56.97s" in logs["final3","url-resource-isolated-fixed"],"B5独立URL隔离时限证据不符")
+ require("finished in 56.97s" in logs["final3","url-resource-isolated-fixed"],"B5独立URL隔离时限证据不符")
  workspace=count_targets(logs["final3","workspace-serial"])
  require(records["final2","size"]["exit_code"]==0,"B5体积门禁失败")
  for label in ["workspace-serial","clippy","fmt","lock"]:require(records["final3",label]["exit_code"]==0,"B5最终门禁失败")
@@ -277,7 +281,7 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
    "new_entry_matrix_cases":12,"cache_matrix_groups":2,"numeric_cases":20,"c_preserved_signatures":len(old),"c_added_signatures":len(current)-len(old),
    "guards":{"passed":28,"actual_output_cases":4,"derived_negatives":24,"scope":"Windows replay of four workflow paths"},
    "default_workspace":{"passed":False,"failure":"URL Unicode result budget hit unchanged 60s watchdog","receipt":"final3/workspace-complete.json"},
-   "resource_serial_replay_passed":True,"isolated_url_exit_code":isolated_url["exit_code"],
+   "resource_serial_replay_passed":True,"isolated_url_exit_code":records["final3","url-resource-isolated-fixed"]["exit_code"],
    "workspace_execution":"all targets serial; unchanged watchdogs; default parallel failure retained",
    "workspace":workspace,"platforms_executed":["Windows x86_64-pc-windows-msvc"],
    "not_executed":["Linux","macOS","remote CI","performance","721 F10"],"b6_started":False,"b2_c_started":False,

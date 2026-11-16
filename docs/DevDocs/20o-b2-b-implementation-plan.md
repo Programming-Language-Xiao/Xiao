@@ -234,4 +234,4 @@ tests/fixtures/docs/cmath/                             cmath 夹具
 docs/DevDocs/assets/20o-b2-b/entry-<date>/            B2-B 证据（待建）
 ```
 
-本页保留B2-B执行边界；B5已登记1.19/21 Windows内部验收，最终签收以B5文档回执与封存审计为准。B6、B7仍未开始，完整B2-B未收口；B2-C仍负责最终公共发布。
+本页保留B2-B执行边界；B5矩阵和串行workspace通过，但默认并发workspace失败、B5未封存，B6/B7不得开始。完整B2-B未收口；B2-C仍负责最终公共发布。
