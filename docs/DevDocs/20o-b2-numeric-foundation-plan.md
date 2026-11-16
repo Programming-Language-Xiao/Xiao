@@ -1,7 +1,7 @@
 # 20O-B2. 数值基础批规划：`lint`/`lfloat` 与 `cmath`
 
 > **这是 B2 的规划，不写产品函数、intrinsic、ABI 或测试实现。**
-> 规划入口基线为 `87bac439`；B1-CLOSE 已收口，Runtime ABI 为 1.18、`CODEGEN_VERSION` 为 20。
+> 规划入口历史基线为 `87bac439`；该时点B1-CLOSE已收口、Runtime ABI为1.18、`CODEGEN_VERSION`为20。当前B2内部已推进至ABI1.19/生成器21，状态见B5规划与证据。
 > B2 的目标是把 `lint`/`lfloat` 从“十进制文本占位”升级为可运算、可转换的数值基础，
 > 并交付 `cmath` 浮点原语；**联合冻结已由F-D实际签字激活，B2-A实施规划已由A-P1/A-P2/A-P3实际批准，A1依赖与值身份已退出；A2/A3内核已完成本批验收；A4转换内核已完成本批验收，A5语言全链路已完成本批验收，A6资源/性能与A7内部1.18/20收口已完成，B2-B已接通lfloat_divide/intrinsic33内部单入口，B3及B4-0/1/2/3/4已完成Windows内部验收（B4-2最终7c49fd65、B4-3 e0d5993e、B4-4 e2f24222/bb0b8196），B4-5、B5～B7与B2-C未开始**。
 > 星崽已逐项确认的精确表与签字状态见[冻结草案](20o-b2-freeze-draft.md)；本页建议不自动变为已冻结契约。
@@ -22,7 +22,7 @@
 | --- | --- |
 | B1-CLOSE | 七库 20/20 产品与教程/registry 均 `verified`；最终 B1 证据见 [收口记录](20o-b1-closeout.md) |
 | 规划入口基线 | 87bac439，规划开工465e213d仅改文档；入口工作区门禁41585868754成功；当前签字状态以F-D证据与Git为准 |
-| Runtime ABI | 1.18；`CODEGEN_VERSION` 20；标准库接口版本 1 |
+| A7历史Runtime ABI | 1.18；`CODEGEN_VERSION`20；标准库接口1；不是当前B5版本 |
 | 数值现状 | `lint`/`lfloat` 以十进制文本保存；一元负号与部分转换可用，`NumericPair` 仍只接受定宽数值，算术、比较和多数转换明确报错 |
 | cmath 现状 | 没有浮点数学 intrinsic；仅有 `float`/`sfloat` 的基础算术和 `**` |
 | B1 遗留 | 721 条 F10 只在 B1 产品/工具身份下有效；22D/22C 历史失败及 19/11/22 债务仍独立 |
@@ -138,7 +138,7 @@ B2-A 预期**不新增 intrinsic、不改变 `XiaoValue` 标签或 C ABI**；若
 
 ### B2-FREEZE：只改文档
 
-当前30条裁定均已确认，F-D已按[冻结收口规划](20o-b2-freeze-closeout-plan.md)实际签字；联合冻结已激活；B2-A规划已批准，A0 Windows本地基线已通过，A1依赖与值身份已完成本批验收，A2/A3内核已完成本批验收；A4转换内核已完成本批验收，A5语言全链路已完成本批验收，A6资源/性能与A7内部1.18/20收口已完成，B2-B已接通lfloat_divide/intrinsic33内部单入口，B3及B4-0/1/2/3/4已完成Windows内部验收（B4-2最终7c49fd65、B4-3 e0d5993e、B4-4 e2f24222/bb0b8196），B4-5、B5～B7与B2-C未开始。
+当前30条裁定均已确认，F-D已签字并激活联合冻结；A0～A7、B2-B/C前序及B4-5 Windows内部收口已完成。B5已实施ABI1.19/21版本、拒绝/缓存矩阵和C ABI验收；完整串行workspace通过，默认并发URL预算用例仍触发60秒看门狗，B5未封存，B6～B7及B2-C未开始。重建基线来源、历史原件缺口和状态见[B5证据](assets/20o-b2-b/entry-20261116-b5-rebuild/README.md)。
 本轮不分配活动编号或写实现，契约台账见
 [冻结草案](20o-b2-freeze-draft.md#二逐条裁定台账)。
 

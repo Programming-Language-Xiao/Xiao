@@ -50,9 +50,12 @@ EXPECTED_PRODUCT_PATHS = {
 "tests/fixtures/compatibility/b5/b4-main.xiaoc",
 }
 EXPECTED_TEST_DELTA = {
-"core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs",
-"core/rust/crates/xiao-driver/tests/22e_release.rs",
-"core/rust/crates/xiao-driver/tests/artifact_size_regression.rs",
+"final":{"core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs"},
+"final2":{"core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs",
+          "core/rust/crates/xiao-driver/tests/artifact_size_regression.rs"},
+"final3":{"core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs",
+          "core/rust/crates/xiao-driver/tests/22e_release.rs",
+          "core/rust/crates/xiao-driver/tests/artifact_size_regression.rs"},
 }
 
 
@@ -141,7 +144,7 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
   if variant in {"final","final2","final3"}:
    changed=set(git(repository,"diff","--name-only",VERSIONS["current"],commit,"--",*PRODUCT_ROOTS).decode().splitlines())
    inherited=env["inherited_test_task"]
-   require(changed==set(inherited["test_only_paths"]) and changed==EXPECTED_TEST_DELTA
+   require(changed==set(inherited["test_only_paths"]) and changed==EXPECTED_TEST_DELTA[variant]
     and all("/tests/" in p for p in changed)
     and inherited["source_commit"]==VERSIONS["current"],REASONS["source"])
   for path in sorted((root/variant).glob("*.json")):

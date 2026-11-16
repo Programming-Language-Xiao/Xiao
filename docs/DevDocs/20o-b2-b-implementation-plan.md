@@ -1,7 +1,7 @@
 # 20O-B2-B. `lfloat_divide`、`cmath` 与 ABI 1.19/21 实施规划
 
 > **2026-11-16：B4-5已完成Windows内部收口；B5获批使用106b99c7来源标记重建基线，ABI1.19/生成器21、版本/缓存/C ABI和完整串行workspace通过。** 默认并发workspace仍有URL Unicode预算用例触发60秒看门狗，B5未封存；历史原件缺口与独立LLVM比较问题保留，详见[B5证据](assets/20o-b2-b/entry-20261116-b5-rebuild/README.md)。接口1与cmath planned不变；B6、B7及B2-C尚未开始。
-> 初始入口为A7 `5749d6e0`与产品基线`e7bf7a49`；A7当时使用ABI1.18/生成器20，后续B3/B4活动intrinsic最大48，最终B5快照已切到ABI1.19/生成器21。
+> 初始入口为A7 `5749d6e0`与产品基线`e7bf7a49`；A7当时使用ABI1.18/生成器20，后续B3/B4活动intrinsic最大48；B5产品快照已切到ABI1.19/生成器21，本页历史子阶段按各自时点读取。
 > B2-B 只实现已确认且适用于本批的 F-1～F-12 精表（包括 F-3 资源/性能、F-8 转换、F-10 显示尺度与 F-11 文本边界）；不新增数学裁定，不把 `cmath`/`lfloat_divide` 提前写成已验证。
 > A0 的 `result.json` 失败身份、22C/22D、19/11/22 与 B1 历史债务继续独立保留。
 

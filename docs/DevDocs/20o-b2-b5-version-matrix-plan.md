@@ -21,7 +21,7 @@
 | B5 目标 | ABI1.19（编码`0x0001_0013`）、生成器仍为21、接口1 |
 | 产物 | `.xiaoc`/`.xar` 精确 1.19、原生元数据 1.19/21、标准库身份 1 |
 | 兼容 | 固定1.18/20、1.18/21及新1.19/21的xiaoc/xar/native元数据均实际执行矩阵；旧产物在用户入口前拒绝、同版本接受。B1标记重建，B4标内部快照 |
-| 缓存 | 两组生产指纹/ArtifactStore/GlobalIndex探针已实际重生成：同ABI20→21，以及21下1.18→1.19；最终审计只采信`cache-matrices-final.json`冻结的索引、对象、Runtime和可执行字节；首轮`cache-matrices.json`留作预检 |
+| 缓存 | 两组生产指纹/ArtifactStore/GlobalIndex探针已实际重生成：同ABI20→21，以及21下1.18→1.19；`cache-matrices-final.json`冻结索引、对象、Runtime与可执行字节。20→21探针由B1代码生成器20链接B4 Runtime；首轮预检另存不作矩阵通过依据 |
 | F-6a本轮执行基线 | 按§2.2批准，用106b99c7和固定工具链的1.18重建基线；历史原件缺失不核销，不声称恢复原始字节 |
 | B4-3退出后内部1.18/21过渡快照 | 已含`xiao_runtime_lfloat_divide`与`xiao_runtime_cmath_*`；不等同于F-6a历史ABI/生成器20集合 |
 | 未做 | B6 资源/性能、B7 收口、B2-C 721/教程/registry/三平台最终发布 |
@@ -69,11 +69,11 @@ B5 是 **版本矩阵内部切换批**，不是 B2-C 最终发布。开工前要
 6. 版本与状态：ABI1.19、生成器21、接口1；registry/教程仍 planned；B6 未开始，B2-C 未开始。
 7. 证据：新建 `assets/20o-b2-b/entry-20261116-b5/`；原始日志按 SHA-256 内容寻址；文档定稿后单次最终 docs 门禁；B4-5/FIX.1 历史目录不改写；Linux/macOS、远端CI、性能与旧721未执行时如实登记。
 
-### 2.3 2026-11-16验收状态（证据有效、阶段阻塞）
+### 2.3 2026-11-16验收状态（证据有效、默认门禁阻塞）
 
 1. B5-0～B5-5的重建来源、版本拒绝、缓存重生成、C ABI、B1新快照回归和Windows内部产物矩阵均已采集；ABI为1.19、生成器21，B1基线标记为重建而非历史原件。
 2. 完整串行workspace 188目标1749通过、0失败、54原忽略；Clippy/fmt/lock通过。默认并发`workspace-complete`的`url_decoding_reaches_the_unicode_result_budget`在60秒测试看门狗下返回`X09-DRIVER-002`，原始回执`final3/workspace-complete.json`保留。
-3. 同目标17项资源测试串行17/17、完整串行workspace均通过；单独URL Unicode用例在原看门狗内56.97秒通过，证明该用例可单独完成，但不能覆盖默认并发workspace中的60秒失败。没有修改用例、输入、预算、看门狗或执行层；B5保持`b5_closed=false`、B5-6未签收，B6不得开始。
+3. 同目标17项资源测试串行17/17、完整串行workspace均通过；单独URL Unicode用例在原看门狗内56.97秒通过，但不能覆盖默认并发workspace中的60秒失败。没有修改用例、输入、预算、看门狗或执行层；B5保持`b5_closed=false`、B5-6未签收，B6不得开始。
 4. B4旧快照已独立复现静态Float比较生成非法`fcmp eq`；B5未改该后端降低。此问题、B1历史原件缺失和默认并发看门狗失败均作为独立遗留交接。
 
 ### 2.2 B1重建基线裁定执行
