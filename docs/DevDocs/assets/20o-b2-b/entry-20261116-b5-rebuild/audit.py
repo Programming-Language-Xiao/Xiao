@@ -14,10 +14,11 @@ from record import ROOT,REPOSITORY,PREFIX,PRODUCT_ROOTS,canonical,fixed_files,gi
 BASE="cfa79381bbae027cec11136ca380e82f66720c34"
 VERSIONS={"b1":"106b99c70e88a88afd0dd9a33f6a9c792e13324c","b4":BASE,
  "current":"71e611f82bbd4d7963c05d83db29b5c6ccb664bd",
- "final":"0dfa97ca3d4ab56a6d8437d35cf64055ad810ecc","final2":"01bde595896925f77e0136a5078eb7f0bb092edc"}
+ "final":"0dfa97ca3d4ab56a6d8437d35cf64055ad810ecc","final2":"01bde595896925f77e0136a5078eb7f0bb092edc",
+ "final3":"5864cbde627f727483ab676c6f4bc1bf0a7819bb"}
 FAILED={("b1","host-build"):1,("b1","host-build-verified"):1,("b4","host-build-verified"):1,
  ("current","c-abi"):1,("current","numeric-range"):101,("current","numeric-range-verified"):101,
- ("current","host-numeric-final"):1,("current","guards"):1,("current","workspace"):101,("final","size"):101}
+ ("current","host-numeric-final"):1,("current","guards"):1,("current","workspace"):101,("final","size"):101,("final2","workspace"):101,("final3","workspace-complete"):101}
 REASONS={"manifest":"B5重建证据清单不符","missing":"B5重建已登记文件缺失","source":"B5重建来源身份不符",
  "historical":"B5不得把重建基线称为历史原件","matrix":"B5版本矩阵不符","state":"B5公共状态冒进","runtime":"B5Runtime身份不符"}
 CASES=["baseline","manifest","missing","source","historical","matrix","state"]
@@ -68,6 +69,14 @@ def count_targets(text):
  flush();require(out,"B5没有目标汇总")
  return {"targets":out,"nested":nested,"passed":sum(v[0] for v in out.values()),"ignored":sum(v[2] for v in out.values())}
 def data(root,row):return json.loads(obj(root,row))
+def handoff(result):
+ return {"passed":True,"stage":"B5-6","runtime_abi":"1.19","codegen_version":21,"stdlib_interface":1,
+   "product_commit":VERSIONS["current"],"final_test_commit":VERSIONS["final3"],"cmath":"planned","b6_started":False,
+   "baseline_kind":"reconstructed_from_B1_source","historical_originals_available":False,
+   "b6_required":["resource/error/atomicity and three-platform performance evidence","retain default workspace watchdog failure and remeasure under controlled conditions"],
+   "b2_c_required":["full 721 F10 on final snapshot","three-platform public artifacts","tutorial/registry closeout"],
+   "independent_issues":[result["known_independent_issue"],result["default_workspace"]],
+   "retained_debts":["22C","22D","19/11/22"]}
 def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
  before=tree(root)
  if (root/"closeout.json").exists():
@@ -92,7 +101,7 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
   for key,suffix in [("CARGO_TARGET_DIR","target"),("XIAO_HOME","home"),("TEMP","temp"),("TMP","temp"),("XIAO_RUNTIME_LIBRARY","target/release/xiao_runtime.lib")]:
    require(PureWindowsPath(env["overrides"][key])==task/suffix,REASONS["source"])
   require(env["overrides"]["XIAO_B1_F10"]==env["overrides"]["XIAO_B2_A_PERF"]=="0" and env["overrides"]["RUSTUP_TOOLCHAIN"]=="1.96.0",REASONS["source"])
-  if variant in {"final","final2"}:
+  if variant in {"final","final2","final3"}:
    changed=set(git(repository,"diff","--name-only",VERSIONS["current"],commit,"--",*PRODUCT_ROOTS).decode().splitlines())
    inherited=env["inherited_test_task"]
    require(changed==set(inherited["test_only_paths"]) and all("/tests/" in p for p in changed)
@@ -114,7 +123,7 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
   cold=records[variant,"libraries"];runtime=cold["runtime_after"]
   require(cold["runtime_before"]["exists"] is False and runtime["exists"] and runtime["bytes"]>0,REASONS["runtime"])
   for (v,label),row in records.items():
-   if (v==variant or variant=="current" and v in {"final","final2"}) and label!="libraries":
+   if (v==variant or variant=="current" and v in {"final","final2","final3"}) and label!="libraries":
     require(row["runtime_before"]==row["runtime_after"]==runtime,REASONS["runtime"])
  baselines={v:load(root/v/"baseline.json") for v in ["b1","b4","current"]}
  for v,baseline in baselines.items():
@@ -152,9 +161,9 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
  require(new["passed"] is True and new["cases"]==len(new["rows"])==12,REASONS["matrix"])
  for row in new["rows"]:
   result=json.loads(logs[row["variant"],"new-entries-"+row["kind"]])
-  require(result["accepted"]==(row["variant"]=="final2") and result["input_unchanged"] is True
+  require(result["accepted"]==(row["variant"]=="final3") and result["input_unchanged"] is True
     and result["input_sha256"]==sha(obj(root,row["input"])),REASONS["matrix"])
-  if row["variant"]!="final2":require(result["executed"] is False,REASONS["matrix"])
+  if row["variant"]!="final3":require(result["executed"] is False,REASONS["matrix"])
  cache=load(root/"cache-matrices.json");require(cache["passed"] is True and len(cache["rows"])==4,"B5缓存矩阵缺失")
  for group in ["generator","abi"]:
   rows=[row for row in cache["rows"] if row["group"]==group]
@@ -204,20 +213,26 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
   v="b1-vm" if row["path"]=="default" else "b1-native";receipt=root/"current"/(v+".json")
   require(row["source_receipt_sha256"]==sha(receipt.read_bytes())
    and row["source_log_sha256"]==records["current",v]["log"]["sha256"]
-   and row["exit_code"]==(0 if row["case"]=="actual" else row["exit_code"]),"B5守卫未绑定真实输出")
- workspace=count_targets(logs["final2","workspace"])
- for label in ["size","workspace","clippy","fmt","lock"]:require(records["final2",label]["exit_code"]==0,"B5最终门禁失败")
+   and (row["exit_code"]==0 if row["case"]=="actual" else row["exit_code"]!=0),"B5守卫未绑定真实输出")
+ require("url_decoding_reaches_the_unicode_result_budget" in logs["final3","workspace-complete"]
+  and "X09-DRIVER-002" in logs["final3","workspace-complete"] and "error: 1 target failed:" in logs["final3","workspace-complete"],"B5默认并发失败记录不符")
+ require(records["final3","resources-serial"]["exit_code"]==0 and "17 passed; 0 failed; 0 ignored;" in logs["final3","resources-serial"],"B5资源串行复核未通过")
+ workspace=count_targets(logs["final3","workspace-serial"])
+ require(records["final2","size"]["exit_code"]==0,"B5体积门禁失败")
+ for label in ["workspace-serial","clippy","fmt","lock"]:require(records["final3",label]["exit_code"]==0,"B5最终门禁失败")
  if final_docs:
-  record=records["final2","docs-final"];value=json.loads(logs["final2","docs-final"])
+  record=records["final3","docs-final"];value=json.loads(logs["final3","docs-final"])
   require(value["passed"] is True and not any(row["severity"]=="error" for row in value["diagnostics"]),"B5最终docs失败")
   for path in root.iterdir():
    if path.suffix in {".py",".rs",".c",".md",".xiao"}:
     require(sha(canonical(path.read_bytes()))==doc_tree(repository,record["tools_commit"]).get(PREFIX+"/"+path.name),"B5最终工具未定稿")
  result={"passed":True,"stage":"B5","b5_closed":final_docs,"runtime_abi":"1.19","codegen_version":21,"stdlib_interface":1,
    "cmath":"planned","language_available":True,"baseline_kind":"reconstructed_from_B1_source","historical_originals_available":False,
-   "product_commit":VERSIONS["current"],"final_test_commit":VERSIONS["final2"],"version_matrix_cases":len(matrices),
+   "product_commit":VERSIONS["current"],"final_test_commit":VERSIONS["final3"],"version_matrix_cases":len(matrices),
    "new_entry_matrix_cases":12,"cache_matrix_groups":2,"numeric_cases":20,"c_preserved_signatures":len(old),"c_added_signatures":len(current)-len(old),
    "guards":{"passed":28,"actual_output_cases":4,"derived_negatives":24,"scope":"Windows replay of four workflow paths"},
+   "default_workspace":{"passed":False,"failure":"URL Unicode result budget hit unchanged 60s watchdog","receipt":"final3/workspace-complete.json"},
+   "resource_serial_replay_passed":True,"workspace_execution":"all targets serial; unchanged watchdogs; default failure retained",
    "workspace":workspace,"platforms_executed":["Windows x86_64-pc-windows-msvc"],
    "not_executed":["Linux","macOS","remote CI","performance","721 F10"],"b6_started":False,"b2_c_started":False,
    "known_independent_issue":{"owner":"static LLVM Float comparison","evidence":"current/numeric-range-verified.json",
@@ -225,7 +240,7 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
  if sealed:
   report=load(root/"closeout.json")
   require(report.get("cmath")=="planned" and report.get("b6_started") is False and report.get("historical_originals_available") is False,REASONS["state"])
-  require(report==result,"B5收口与重算不符")
+  require(report==result and load(root/"b6-handoff.json")==handoff(result),"B5收口或交接与重算不符")
   review=load(root/"self-negative.json")
   require(review["passed"] is True and [r["case"] for r in review["cases"]]==CASES,"B5反例集合不符")
   for row in review["cases"]:

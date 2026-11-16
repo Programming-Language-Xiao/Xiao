@@ -10,13 +10,13 @@ def main():
  base=Path(load(ROOT/"current/environment.json")["task_root"]).parent
  groups=[
   ("generator",[("b1","old",20,"b4"),("b4","new",21,"b4")]),
-  ("abi",[("b4","old",21,"b4"),("final2","new",21,"current")])]
+  ("abi",[("b4","old",21,"b4"),("final3","new",21,"current")])]
  rows=[]
  for group,steps in groups:
   cache=base/("sealed-cache-"+group)
   require(not cache.exists(),"缓存矩阵任务不可复用")
   for variant,label,codegen,run_variant in steps:
-   actual="current" if variant=="final2" else variant
+   actual="current" if variant=="final3" else variant
    argv=[str(base/actual/"b5-host.exe"),"cache",str(cache),str(cache/(label+".exe")),str(codegen),str(base/run_variant/"target/release/xiao_runtime.lib")]
    record_label="cache-"+group+"-sealed-"+label
    subprocess.run([sys.executable,"-B","-X","utf8",str(ROOT/"record.py"),"run",variant,record_label,"--",*argv],check=True)

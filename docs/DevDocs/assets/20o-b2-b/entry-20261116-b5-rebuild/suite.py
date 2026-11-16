@@ -21,6 +21,7 @@ COMMANDS={
  "guards-verified":["python","-B","-X","utf8",PREFIX+"/guards.py"],
  "workspace":CARGO+["--workspace"],
  "workspace-complete":CARGO+["--workspace","--no-fail-fast"],
+ "workspace-serial":CARGO+["--workspace","--no-fail-fast","--","--test-threads=1"],
  "size":CARGO+["-p","xiao-driver","--test","artifact_size_regression","--","--nocapture"],
  "clippy":["cargo","+1.96.0","clippy","--locked","--manifest-path","core/rust/Cargo.toml","--workspace","--all-targets","--","-D","warnings"],
  "fmt":["cargo","+1.96.0","fmt","--manifest-path","core/rust/Cargo.toml","--all","--","--check"],

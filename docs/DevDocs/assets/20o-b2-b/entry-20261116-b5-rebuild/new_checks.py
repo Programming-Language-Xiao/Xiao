@@ -8,11 +8,11 @@ def main():
  base=Path(load(ROOT/"current/environment.json")["task_root"]).parent
  directory=base/"current/artifacts/new-entries"
  rows=[]
- for variant in ["b1","b4","final2"]:
-  actual="current" if variant=="final2" else variant
+ for variant in ["b1","b4","final3"]:
+  actual="current" if variant=="final3" else variant
   for kind,name in [("xiaoc","main.xiaoc"),("xar","main.xar"),("native","main.exe"),("meta","main.meta")]:
    label="new-entries-"+kind
-   argv=[str(base/actual/"b5-host.exe"),"validate",kind,str(directory/name),"accept" if variant=="final2" else "reject"]
+   argv=[str(base/actual/"b5-host.exe"),"validate",kind,str(directory/name),"accept" if variant=="final3" else "reject"]
    subprocess.run([sys.executable,"-B","-X","utf8",str(ROOT/"record.py"),"run",variant,label,"--",*argv],check=True)
    rows.append({"variant":variant,"kind":kind,"receipt":variant+"/"+label+".json",
                 "input":store((directory/name).read_bytes())})
