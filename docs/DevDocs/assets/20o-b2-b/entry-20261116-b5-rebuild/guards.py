@@ -1,5 +1,6 @@
 """对真实Cargo输出回放工作流守卫，派生负例另标，不冒充平台执行。"""
 from pathlib import Path
+import os
 import re
 import subprocess
 import tempfile
@@ -64,8 +65,10 @@ def main():
      mock="cargo() { cat '"+escaped+"'; return "+str(status)+"; }\n"
      script_path.write_text(mock+script,encoding="utf-8")
      argv=[r"D:\msys64\usr\bin\bash.exe",str(script_path).replace("\\","/")]
-    run=subprocess.run(argv,capture_output=True,timeout=20)
-    require((run.returncode==0)==accept,"B5真实输出守卫误判："+platform+"/"+name)
+    environment=dict(os.environ)
+    environment["PATH"]=r"D:\msys64\usr\bin"+os.pathsep+environment.get("PATH","")
+    run=subprocess.run(argv,capture_output=True,timeout=20,env=environment)
+    require((run.returncode==0)==accept,"B5真实输出守卫误判："+platform+"/"+name+"；"+run.stderr.decode("utf-8",errors="replace"))
     rows.append({"path":platform,"case":name,"passed":True,"exit_code":run.returncode,
       "scope":"actual Windows Cargo output replay" if name=="actual" else "negative derived from actual output",
       "source_receipt_sha256":sha((ROOT/"current"/("b1-vm.json" if platform=="default" else "b1-native.json")).read_bytes()),

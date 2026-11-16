@@ -18,6 +18,7 @@ COMMANDS={
  "b1-vm":DRIVER+["--test","20o_b1_probe","--","--exact","b1_capabilities_have_vm_golden_outputs","--nocapture"],
  "b1-native":DRIVER+["--test","20o_b1_probe","--","--ignored","--exact","b1_capabilities_match_native_golden_outputs","--nocapture"],
  "guards":["python","-B","-X","utf8",PREFIX+"/guards.py"],
+ "guards-verified":["python","-B","-X","utf8",PREFIX+"/guards.py"],
  "workspace":CARGO+["--workspace"],
  "clippy":["cargo","+1.96.0","clippy","--locked","--manifest-path","core/rust/Cargo.toml","--workspace","--all-targets","--","-D","warnings"],
  "fmt":["cargo","+1.96.0","fmt","--manifest-path","core/rust/Cargo.toml","--all","--","--check"],
