@@ -1,0 +1,5 @@
+Exception: D:\project\Xiao\.b5\20261116\current\temp\b5-real-output-guards-3tffijqa\Windows-zero.ps1:9
+Line |
+   9 |    throw 'B1 native probe must pass exactly one case without ignoring  …
+     |    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | B1 native probe must pass exactly one case without ignoring it

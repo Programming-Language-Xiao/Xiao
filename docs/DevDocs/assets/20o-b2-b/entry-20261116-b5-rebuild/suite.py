@@ -20,6 +20,7 @@ COMMANDS={
  "guards":["python","-B","-X","utf8",PREFIX+"/guards.py"],
  "guards-verified":["python","-B","-X","utf8",PREFIX+"/guards.py"],
  "workspace":CARGO+["--workspace"],
+ "size":CARGO+["-p","xiao-driver","--test","artifact_size_regression","--","--nocapture"],
  "clippy":["cargo","+1.96.0","clippy","--locked","--manifest-path","core/rust/Cargo.toml","--workspace","--all-targets","--","-D","warnings"],
  "fmt":["cargo","+1.96.0","fmt","--manifest-path","core/rust/Cargo.toml","--all","--","--check"],
  "lock":["bun","run","check:lock"],
@@ -29,11 +30,12 @@ COMMANDS={
 
 def main():
  parser=argparse.ArgumentParser(description=__doc__)
+ parser.add_argument("--variant",default="current",choices=["current","final"])
  parser.add_argument("labels",nargs="+",choices=list(COMMANDS))
  args=parser.parse_args()
  for name in args.labels:
   subprocess.run([sys.executable,"-B","-X","utf8",str(Path(__file__).with_name("record.py")),
-                  "run","current",name,"--",*COMMANDS[name]],check=True)
+                  "run",args.variant,name,"--",*COMMANDS[name]],check=True)
 
 
 if __name__=="__main__":main()

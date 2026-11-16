@@ -120,6 +120,7 @@ def main():
     init.add_argument("revision")
     init.add_argument("--task-root", type=Path, required=True)
     init.add_argument("--worktree", action="store_true")
+    init.add_argument("--inherit-test-task", help="仅测试断言修订时复用同批冷构建Runtime；登记父来源")
     execute = sub.add_parser("run")
     execute.add_argument("variant")
     execute.add_argument("label")
@@ -127,13 +128,24 @@ def main():
     args = parser.parse_args()
     require(Path(args.variant).name == args.variant and args.variant not in {".", ".."}, "B5非法变体")
     if args.action == "init":
-        _base.require_new_task_root(args.task_root)
+        if not args.inherit_test_task:
+            _base.require_new_task_root(args.task_root)
         directory = ROOT / args.variant
         require(not directory.exists(), "B5变体不可复用")
         revision = git(REPOSITORY, "rev-parse", args.revision).decode().strip()
         task = args.task_root
-        for name in ["target", "home", "temp", "artifacts"]:
-            (task / name).mkdir(parents=True)
+        inherited = None
+        if args.inherit_test_task:
+            parent = load(ROOT / args.inherit_test_task / "source.json")
+            config = load(ROOT / args.inherit_test_task / "environment.json")
+            changed = git(REPOSITORY,"diff","--name-only",parent["revision"],revision,"--",*PRODUCT_ROOTS).decode().splitlines()
+            require(changed and all("/tests/" in path for path in changed), "B5只有测试修订可继承任务Runtime")
+            require(task == Path(config["task_root"]) and not args.worktree, "B5测试继承任务不符")
+            inherited = {"variant":args.inherit_test_task,"source_commit":parent["revision"],"test_only_paths":changed,
+                         "runtime":runtime(config),"reason":"same production source; only version assertion changed"}
+        else:
+            for name in ["target", "home", "temp", "artifacts"]:
+                (task / name).mkdir(parents=True)
         source_root = task / "source" if args.worktree else REPOSITORY
         if args.worktree:
             git(REPOSITORY, "worktree", "add", "--detach", str(source_root), revision)
@@ -145,7 +157,10 @@ def main():
                    "files": files, "sha256": identity(files),
                    "baseline_kind": "reconstructed_from_B1_source" if args.variant == "b1" else "internal_source_build",
                    "historical_originals_available": False})
-        write_json(directory / "environment.json", environment(task, source_root))
+        config = environment(task, source_root)
+        if inherited:
+            config["inherited_test_task"] = inherited
+        write_json(directory / "environment.json", config)
         print(json.dumps({"initialized": args.variant, "revision": revision, "files": len(files)}))
     else:
         require(Path(args.label).name == args.label and args.label not in {".", ".."}, "B5非法标签")

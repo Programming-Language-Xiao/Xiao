@@ -261,7 +261,10 @@ fn cmath_intrinsics_round_trip_tac_and_bytecode_without_version_changes() {
     assert_eq!(TAC_VERSION, 1);
     assert_eq!(TAC_BYTECODE_ABI_VERSION, 1);
     assert_eq!(FORMAT_VERSION, 4);
-    assert_eq!(tac.abi.runtime_abi_version, (1 << 16) | 18);
+    assert_eq!(
+        tac.abi.runtime_abi_version,
+        xiao_bytecode::TAC_RUNTIME_ABI_VERSION
+    );
     assert_eq!(
         (
             xiao_bytecode::XIAOC_FORMAT_MAJOR,
