@@ -31,7 +31,7 @@ def expected(variant,label):
   new=label.endswith("-new")
   verified="verified" in label
   cache=BASE/(("sealed-cache-" if "sealed" in label or verified else "cache-")+group+("-verified" if verified else ""))
-  runtime_variant="b1" if group=="generator" and not new and verified else "current" if group=="abi" and new else "b4"
+  runtime_variant="current" if group=="abi" and new else "b4"
   runtime=BASE/runtime_variant/"target/release/xiao_runtime.lib"
   return [str(host),"cache",str(cache),str(cache/("new.exe" if new else "old.exe")),str(20 if group=="generator" and not new else 21),str(runtime)]
  if label.startswith("new-entries-"):
