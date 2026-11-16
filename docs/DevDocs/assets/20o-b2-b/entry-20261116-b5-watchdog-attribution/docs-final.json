@@ -1,0 +1,32 @@
+{
+  "argv": [
+    "bun",
+    "tools/repo-check/src/cli.ts",
+    "all",
+    "--format",
+    "json"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 15152,
+  "started_utc": "2026-11-16T14:19:40.638032+00:00",
+  "finished_utc": "2026-11-16T14:20:28.573004+00:00",
+  "exit_code": 0,
+  "tools_commit": "7d38615a33f2b4db4391cdad1cf24840bc718194",
+  "runner_sha256": "7029a3fbb4a124325648defcd03e0591a1db72fe6bbecfb8197e203735735a20",
+  "source_before": "f423362d5460965c5b30d6d5c09a28e30f716995eb4ee25bfa29b86af10f4b91",
+  "source_after": "f423362d5460965c5b30d6d5c09a28e30f716995eb4ee25bfa29b86af10f4b91",
+  "source_unchanged": true,
+  "docs_before": "6a8d0f41aa6a62874e3e66806e553e37022f724a7bb70140dc404275bf3bf0bf",
+  "docs_after": "6a8d0f41aa6a62874e3e66806e553e37022f724a7bb70140dc404275bf3bf0bf",
+  "docs_unchanged": true,
+  "documents": {
+    "path": "objects/sha256/72/726c54cf97d08eca37dd73c675a27efd13553ec33229547f8f44c82b97090d94.bin",
+    "bytes": 39992,
+    "sha256": "726c54cf97d08eca37dd73c675a27efd13553ec33229547f8f44c82b97090d94"
+  },
+  "log": {
+    "path": "objects/sha256/db/db2705d3e125d132475437717d286a4f832b74d8dc9fbcce68f4d0d5c082e73c.bin",
+    "bytes": 519837,
+    "sha256": "db2705d3e125d132475437717d286a4f832b74d8dc9fbcce68f4d0d5c082e73c"
+  }
+}

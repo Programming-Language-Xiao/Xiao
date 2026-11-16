@@ -1,0 +1,50 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "reason": "",
+      "stderr": "",
+      "read_only": true,
+      "before_sha256": "c7e7608323b02086e3180cd51be34bf0ce0ebded901a26a0905a1acfcaa1ae01",
+      "after_sha256": "c7e7608323b02086e3180cd51be34bf0ce0ebded901a26a0905a1acfcaa1ae01"
+    },
+    {
+      "case": "manifest",
+      "exit_code": 1,
+      "reason": "归因证据清单不符",
+      "stderr": "归因证据清单不符\n",
+      "read_only": true,
+      "before_sha256": "0b5ef94ade967afda18c8ab2eed4f7076202bb5438056fc5e55e934a396fc69c",
+      "after_sha256": "0b5ef94ade967afda18c8ab2eed4f7076202bb5438056fc5e55e934a396fc69c"
+    },
+    {
+      "case": "source",
+      "exit_code": 1,
+      "reason": "产品来源身份不符",
+      "stderr": "产品来源身份不符\n",
+      "read_only": true,
+      "before_sha256": "c075b981d6cca14ff06f0889b60ec109241bdc55ca0916fd3485ef04dbfc11c5",
+      "after_sha256": "c075b981d6cca14ff06f0889b60ec109241bdc55ca0916fd3485ef04dbfc11c5"
+    },
+    {
+      "case": "command",
+      "exit_code": 1,
+      "reason": "命令或标签不符",
+      "stderr": "命令或标签不符\n",
+      "read_only": true,
+      "before_sha256": "0b34beb6820cef80c8782af3b9e630cd2bc45ea7c068e65f78721f6c2cf64b9e",
+      "after_sha256": "0b34beb6820cef80c8782af3b9e630cd2bc45ea7c068e65f78721f6c2cf64b9e"
+    },
+    {
+      "case": "summary",
+      "exit_code": 1,
+      "reason": "摘要不符",
+      "stderr": "摘要不符\n",
+      "read_only": true,
+      "before_sha256": "1c1d3c6dee1fdcf31001b86b205127dc306cb0a385a42b32e9f065ddf3fab16f",
+      "after_sha256": "1c1d3c6dee1fdcf31001b86b205127dc306cb0a385a42b32e9f065ddf3fab16f"
+    }
+  ]
+}
