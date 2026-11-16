@@ -143,7 +143,7 @@ Pow 差异的固定对账输入为 [B3-CABI `pow-switch-manifest.json`](assets/2
 4. float `**`/cmath.pow 共核，无第二实现；1,075 组差异固定输入逐项对账完成，无未登记行为变化；
 5. 内部 `language_available=true`，公共 registry/教程仍 planned；
 6. 不升 ABI 1.19、生成器保持 21，无旧 721、无历史债务关闭；
-7. 当前 B4 源码快照的 28/28 守卫和完整 workspace gates 通过，报告可复核；
+7. 当前 B4 源码快照的 28/28 守卫脚本模拟与完整 workspace gates 通过；守卫为模拟 Cargo 输出，不计入真实 CI/三平台守卫；报告可复核；
 8. B5 入口明确；B5 未开始；
 9. 三平台/性能仍未声称，B2-C 仍未开始。
 
