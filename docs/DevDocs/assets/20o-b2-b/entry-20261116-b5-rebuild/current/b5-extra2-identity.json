@@ -1,0 +1,77 @@
+{
+  "argv": [
+    "rustc",
+    "+1.96.0",
+    "--edition=2024",
+    "--crate-name",
+    "b5_host",
+    "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261116-b5-rebuild\\host.rs",
+    "-L",
+    "dependency=D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps",
+    "-o",
+    "D:\\project\\Xiao\\.b5\\20261116\\current\\b5-extra2.exe",
+    "-L",
+    "native=D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\build\\ring-e8824e5e901ed37d\\out",
+    "-L",
+    "native=C:\\Users\\xiaoc\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\windows_x86_64_msvc-0.52.6\\lib",
+    "--extern",
+    "xiao_driver=D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_driver-429b025896ea6741.rlib",
+    "--extern",
+    "xiao_bytecode=D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_bytecode-3da1e2392db7eaba.rlib",
+    "--extern",
+    "xiao_codegen_llvm=D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_codegen_llvm-827a3aa234d7cb2c.rlib",
+    "--extern",
+    "xiao_runtime=D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_runtime-f63d40da43092f3b.rlib",
+    "--extern",
+    "xiao_runtime_abi=D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_runtime_abi-016b9b60175c9973.rlib",
+    "--extern",
+    "xiao_artifacts=D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_artifacts-53ec0b0438ce9098.rlib",
+    "--extern",
+    "xiao_xar=D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_xar-b95a5ae7abd40662.rlib",
+    "--extern",
+    "serde_json=D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libserde_json-9700d0a1a9f726a5.rlib",
+    "--extern",
+    "xiao_vm=D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_vm-2535ddf808a362b6.rlib"
+  ],
+  "host_source_sha256": "7afd25c174d3b5669e8147fa49e0aebf20b62c737091ec74eae93bc25e19bacb",
+  "executable": "D:\\project\\Xiao\\.b5\\20261116\\current\\b5-extra2.exe",
+  "executable_sha256": "3a27bc0996ccaa5fa4cff8d2b647dbd150865304dfc4255cfc00e39dc44afb24",
+  "libraries": {
+    "xiao_driver": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_driver-429b025896ea6741.rlib",
+      "sha256": "fd9b0c94ba3092d8bdb0de3441233b88d6673a98422939660201bae6bc0002b0"
+    },
+    "xiao_bytecode": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_bytecode-3da1e2392db7eaba.rlib",
+      "sha256": "1d79ee220109e23f60b8fa688e39fbfbbdd1a08d95aa45315a912471757fae4e"
+    },
+    "xiao_codegen_llvm": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_codegen_llvm-827a3aa234d7cb2c.rlib",
+      "sha256": "d4e9d7673281fec0be633068d7dd0eebab1a765044b9e28a45ca5cddad2eb17f"
+    },
+    "xiao_runtime": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_runtime-f63d40da43092f3b.rlib",
+      "sha256": "dc2cec7d855397842364f24af0ddc88237de37466a27b3e95142d7ca96205a3e"
+    },
+    "xiao_runtime_abi": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_runtime_abi-016b9b60175c9973.rlib",
+      "sha256": "da1182f2033844d5a605785649bd27636604df12915b11fdb0aca4d38d7ab5f5"
+    },
+    "xiao_artifacts": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_artifacts-53ec0b0438ce9098.rlib",
+      "sha256": "8850111dee723450c30a9ab0c1a66e4287547196e00faf1089d39cfcce7c84d8"
+    },
+    "xiao_xar": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_xar-b95a5ae7abd40662.rlib",
+      "sha256": "81da6e1054666bcc36b00d5abc8f83023e079134777906f2b17e98296bca07a2"
+    },
+    "serde_json": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libserde_json-9700d0a1a9f726a5.rlib",
+      "sha256": "6f89b1881c363167dea9d3ebd338ac0c39eac67796f7e79112af43015666ceb0"
+    },
+    "xiao_vm": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\deps\\libxiao_vm-2535ddf808a362b6.rlib",
+      "sha256": "65d56d49daaa153d7c8921e3e88c0179b7a22a346204e04f880a9135a7b9d8c1"
+    }
+  }
+}

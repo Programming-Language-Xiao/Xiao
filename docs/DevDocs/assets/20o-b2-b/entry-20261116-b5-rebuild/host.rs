@@ -302,7 +302,7 @@ fn numeric(out: &Path) {
         ),
         (
             "float-ok",
-            "def probe(float a, float b) -> float\n    return a ** b\nprobe(2.0, 3.0) == 8.0\n",
+            "def probe(float a, float b) -> float\n    return a ** b\nprobe(2.0, 3.0)\n",
             false,
         ),
         (
@@ -316,11 +316,14 @@ fn numeric(out: &Path) {
     let mut rows = Vec::new();
     for (name, text, fails) in definitions {
         for forced in [false, true] {
-            let source = if forced {
+            let mut source = if forced {
                 format!("noise = \"independent\"\n{text}")
             } else {
                 text.to_owned()
             };
+            if forced && name == "float-ok" {
+                source.push_str("print(probe(2.0, 3.0))\n");
+            }
             let product = artifact(&source);
             assert!(!product.ir.runtime_checks.is_empty(), "{name}");
             assert!(
@@ -399,7 +402,36 @@ fn numeric(out: &Path) {
                     dynamic,
                     forced || name.starts_with("integer") || name.starts_with("narrow")
                 );
-                let result = Command::new(&executable).output().unwrap();
+                let executed_path = if name == "float-ok" && !forced {
+                    let llvm = out.join(format!("observe-{level}.ll"));
+                    let observer = out.join(format!("observe-{level}.c"));
+                    let observed = out.join(format!("observe-{level}.exe"));
+                    fs::write(
+                        &llvm,
+                        built
+                            .native
+                            .module
+                            .text
+                            .replace("define i32 @main(", "define i32 @b5_program_main("),
+                    )
+                    .unwrap();
+                    fs::write(&observer,"#include <stdint.h>\nextern double xiao_fn_0_probe(double,double);\nint main(void){union{double value;uint64_t bits;} x;x.value=xiao_fn_0_probe(2.0,3.0);return x.bits==0x4020000000000000ULL?1:26;}\n").unwrap();
+                    let result = Command::new(&tools.clang)
+                        .args(["-target", &target.triple, &format!("-O{level}")])
+                        .arg(&llvm)
+                        .arg(&observer)
+                        .arg(tools.runtime_library.as_ref().unwrap())
+                        .args(&tools.native_static_libraries)
+                        .arg("-o")
+                        .arg(&observed)
+                        .output()
+                        .unwrap();
+                    assert!(result.status.success(), "{:?}", result);
+                    observed
+                } else {
+                    executable.clone()
+                };
+                let result = Command::new(&executed_path).output().unwrap();
                 let stderr = String::from_utf8_lossy(&result.stderr);
                 if let Some((start, end)) = span {
                     assert_ne!(result.status.code(), Some(0));
@@ -408,13 +440,17 @@ fn numeric(out: &Path) {
                             && stderr.contains(&format!("span={start}..{end}")),
                         "{name} {forced} O{level}: {stderr}"
                     );
+                } else if name == "float-ok" && forced {
+                    assert_eq!(result.status.code(), Some(0), "{stderr}");
+                    assert_eq!(String::from_utf8_lossy(&result.stdout), "8\n");
                 } else {
                     assert_eq!(result.status.code(), Some(1), "{name}: {stderr}");
                 }
                 rows.push(json!({"case":name,"forced_dynamic":forced,"lowering_dynamic":dynamic,"optimization":level,
                     "source":source,"source_sha256":Digest256::of_bytes(source.as_bytes()).as_hex(),"span":span,
                     "expected_error":if fails{Some("X06-RUNTIME-009")}else{None},"vm_success":vm.result.is_success(),
-                    "native_exit":result.status.code(),"native_stderr":stderr,"executable_sha256":digest(&executable)}));
+                    "vm_value":format!("{:?}",vm.value),"native_exit":result.status.code(),"native_stdout":String::from_utf8_lossy(&result.stdout),
+                    "native_stderr":stderr,"executable_sha256":digest(&executed_path)}));
             }
         }
     }
