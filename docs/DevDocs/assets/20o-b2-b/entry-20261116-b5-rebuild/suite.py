@@ -14,6 +14,7 @@ COMMANDS={
    "20o_b2_b4_cmath_boundary","20o_b2_b3_wrapper","20o_b2_b4_numeric_range_routing",
    "n0_b_dynamic_native","22c_vm_concurrency"]),[])+["--","--nocapture"],
  "url-resource-isolated":CARGO+["-p","xiao-driver","--test","20o_b1_imp_resources","url_decoding_reaches_the_unicode_result_budget","--","--exact","--nocapture"],
+ "url-resource-isolated-fixed":CARGO+["-p","xiao-driver","--test","20o_b1_imp_resources","url_decoding_reaches_the_unicode_result_budget","--","--exact","--nocapture"],
  "native-matrix":DRIVER+["--test","20o_b2_b4_cmath_llvm","--","--ignored","--exact","native_cmath_static_dynamic_o0_o3_and_shared_pow","--nocapture"],
  "native-library":DRIVER+["--test","20o_b2_b4_cmath_library","--","--ignored","--exact","cmath_library_matches_native_o0_o3","--nocapture"],
  "b1-vm":DRIVER+["--test","20o_b1_probe","--","--exact","b1_capabilities_have_vm_golden_outputs","--nocapture"],

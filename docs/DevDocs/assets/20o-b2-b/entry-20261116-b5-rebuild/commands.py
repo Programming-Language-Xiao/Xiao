@@ -43,4 +43,5 @@ def expected(variant,label):
  if label=="versions":return ["cargo","+1.96.0","test","--locked","--manifest-path","core/rust/Cargo.toml","-p","xiao-driver","--release","--test","20o_b2_b5_versions","--test","compatibility_matrix","--test","20o_b2_b4_numeric_range_routing","--","--nocapture"]
  if label=="resources-serial":return ["cargo","+1.96.0","test","--locked","--manifest-path","core/rust/Cargo.toml","-p","xiao-driver","--test","20o_b1_imp_resources","--","--test-threads=1","--nocapture"]
  if label=="url-resource-isolated":return ["cargo","+1.96.0","test","--locked","--manifest-path","core/rust/Cargo.toml","-p","xiao-driver","--test","20o_b1_imp_resources","url_decoding_reaches_the_unicode_result_budget","--","--exact","--nocapture"]
+ if label=="url-resource-isolated-fixed":return ["cargo","+1.96.0","test","--locked","--manifest-path","core/rust/Cargo.toml","-p","xiao-driver","--test","20o_b1_imp_resources","url_decoding_reaches_the_unicode_result_budget","--","--exact","--nocapture"]
  raise ValueError("B5未知运行标签："+variant+"/"+label)
