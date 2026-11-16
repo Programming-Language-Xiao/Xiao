@@ -98,9 +98,11 @@ def count_targets(text):
  return {"targets":out,"nested":nested,"passed":sum(v[0] for v in out.values()),"ignored":sum(v[2] for v in out.values())}
 def data(root,row):return json.loads(obj(root,row))
 def handoff(result):
- return {"passed":True,"stage":"B5-6","runtime_abi":"1.19","codegen_version":21,"stdlib_interface":1,
+ return {"passed":False,"stage":"B5-blocked","runtime_abi":"1.19","codegen_version":21,"stdlib_interface":1,
    "product_commit":VERSIONS["current"],"final_test_commit":VERSIONS["final3"],"cmath":"planned","b6_started":False,
    "baseline_kind":"reconstructed_from_B1_source","historical_originals_available":False,
+   "b6_started":False,"blocker":result["default_workspace"],
+   "next_step":"resolve or explicitly disposition the default parallel workspace watchdog before closing B5; do not start B6",
    "b6_required":["resource/error/atomicity and three-platform performance evidence","retain default workspace watchdog failure and remeasure under controlled conditions"],
    "b2_c_required":["full 721 F10 on final snapshot","three-platform public artifacts","tutorial/registry closeout"],
    "independent_issues":[result["known_independent_issue"],result["default_workspace"]],
