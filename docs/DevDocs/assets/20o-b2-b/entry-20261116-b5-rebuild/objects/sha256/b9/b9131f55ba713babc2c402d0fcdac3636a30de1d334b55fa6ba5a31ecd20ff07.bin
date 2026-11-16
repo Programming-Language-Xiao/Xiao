@@ -1,0 +1,21 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.36s
+     Running tests\artifact_size_regression.rs (D:\project\Xiao\.b5\20261116\current\target\debug\deps\artifact_size_regression-ee82d82f837752c7.exe)
+
+running 2 tests
+test performance_report_hash_matches_baseline_file_bytes ... ok
+
+thread 'deterministic_artifacts_do_not_grow_past_committed_baseline' (71492) panicked at crates\xiao-driver\tests\artifact_size_regression.rs:68:5:
+assertion `left == right` failed: xar 基线变化需显式审查
+  left: 1167
+ right: 1168
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test deterministic_artifacts_do_not_grow_past_committed_baseline ... FAILED
+
+failures:
+
+failures:
+    deterministic_artifacts_do_not_grow_past_committed_baseline
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p xiao-driver --test artifact_size_regression`

@@ -30,7 +30,7 @@ COMMANDS={
 
 def main():
  parser=argparse.ArgumentParser(description=__doc__)
- parser.add_argument("--variant",default="current",choices=["current","final"])
+ parser.add_argument("--variant",default="current",choices=["current","final","final2"])
  parser.add_argument("labels",nargs="+",choices=list(COMMANDS))
  args=parser.parse_args()
  for name in args.labels:
