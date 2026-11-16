@@ -50,6 +50,7 @@ EXPECTED_PRODUCT_PATHS = {
 "tests/fixtures/compatibility/b5/b4-main.xiaoc",
 }
 EXPECTED_TEST_DELTA = {
+"core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs",
 "core/rust/crates/xiao-driver/tests/22e_release.rs",
 "core/rust/crates/xiao-driver/tests/artifact_size_regression.rs",
 }
