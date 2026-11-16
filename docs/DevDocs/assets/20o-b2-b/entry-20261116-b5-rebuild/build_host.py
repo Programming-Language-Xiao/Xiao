@@ -18,6 +18,10 @@ def main():
     dependencies=task/"target/release/deps"
     fingerprints=task/"target/release/.fingerprint"
     driver=list(dependencies.glob("libxiao_driver-*.rlib"))
+    prior=ROOT/args.variant/"host-identity.json"
+    if prior.is_file():
+        bound=load(prior)["libraries"]["xiao_driver"]
+        driver=[path for path in driver if str(path)==bound["path"] and sha(path.read_bytes())==bound["sha256"]]
     require(len(driver)==1,"B5固定构建应仅含一个驱动器库")
     suffix=driver[0].stem.removeprefix("libxiao_driver-")
     meta=load(fingerprints/("xiao-driver-"+suffix)/"lib-xiao_driver.json")

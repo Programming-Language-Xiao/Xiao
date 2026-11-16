@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261116-b5-rebuild\build_host.py", line 59, in <module>
+    if __name__=="__main__":main()
+                            ^^^^^^
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261116-b5-rebuild\build_host.py", line 21, in main
+    require(len(driver)==1,"B5固定构建应仅含一个驱动器库")
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261113-b4-3\record.py", line 31, in require
+    raise ValueError(message)
+ValueError: B5固定构建应仅含一个驱动器库
