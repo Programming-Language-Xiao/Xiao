@@ -1,6 +1,7 @@
 """Collect the final documentation receipt and explicitly seal timing evidence."""
 import argparse
 from datetime import datetime, timezone
+import gzip
 import json
 from pathlib import Path
 import shutil
@@ -11,7 +12,26 @@ import tempfile
 sys.dont_write_bytecode = True
 from audit import (ROOT, REPOSITORY, PREFIX, COMMITS, check, docs_snapshot,
                    inventory, json_bytes, load, negatives, record, require, sha, write_new)
-from collect import store
+
+
+def store(raw):
+    packed = gzip.compress(raw, mtime=0) if len(raw) > 8192 else raw
+    digest = sha(packed)
+    path = ROOT / "objects/sha256" / digest[:2] / (digest + ".bin")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        require(path.read_bytes() == packed, "封存内容对象损坏")
+    else:
+        with path.open("xb") as output:
+            output.write(packed)
+    return {
+        "path": path.relative_to(ROOT).as_posix(),
+        "bytes": len(packed),
+        "sha256": digest,
+        "encoding": "gzip" if len(raw) > 8192 else "identity",
+        "raw_bytes": len(raw),
+        "raw_sha256": sha(raw),
+    }
 
 
 def main():
