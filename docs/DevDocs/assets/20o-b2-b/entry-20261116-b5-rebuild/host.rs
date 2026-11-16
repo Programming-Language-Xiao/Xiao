@@ -80,6 +80,9 @@ fn generate(out: &Path) {
         String::from_utf8_lossy(&out_native.stdout),
         "6\nB5-USER-ENTRY\n"
     );
+    let artifacts = ["main.xiaoc", "main.xar", "main.exe", "main.meta"]
+        .iter().map(|name| (*name, digest(&out.join(name))))
+        .collect::<std::collections::BTreeMap<_, _>>();
     let report = json!({"abi":ABI_ENCODED_VERSION,"minor":ABI_MINOR_VERSION,"codegen":CODEGEN_VERSION,
       "xiaoc":{"format_major":header.header.format_major,"format_minor":header.header.format_minor,
         "runtime_abi_min":header.header.runtime_abi_min,"runtime_abi_max":header.header.runtime_abi_max,
@@ -95,7 +98,7 @@ fn generate(out: &Path) {
                  "XiaoValue_align":std::mem::align_of::<xiao_runtime_abi::XiaoValue>(),
                  "XiaoAbiBytes":std::mem::size_of::<xiao_runtime_abi::XiaoAbiBytes>(),
                  "XiaoHandle":std::mem::size_of::<xiao_runtime_abi::XiaoHandle>()},
-      "artifacts": ["main.xiaoc","main.xar","main.exe","main.meta"].iter().map(|name|(*name,digest(&out.join(name)))).collect::<std::collections::BTreeMap<_,_>>()});
+      "artifacts": artifacts});
     fs::write(
         out.join("report.json"),
         serde_json::to_vec_pretty(&report).unwrap(),
@@ -201,12 +204,7 @@ fn cache(cache: &Path, out: &Path, requested_codegen: u32, runtime: &str) {
     let toolchain = tools(Some(runtime));
     let options = CodegenOptions::for_target(target.clone());
     let module = NativeBuild::new().lower(&program.ir, &options).unwrap();
-    let plan = &module
-        .native_optimization_report
-        .as_ref()
-        .unwrap()
-        .plan
-        .fingerprint;
+    let plan = &module.native_optimization_report.plan.fingerprint;
     let fingerprint = toolchain
         .fingerprint_with_optimization(&target, requested_codegen, 0, plan)
         .to_string();
