@@ -1,0 +1,71 @@
+{
+  "argv": [
+    "rustc",
+    "+1.96.0",
+    "--edition=2024",
+    "--crate-name",
+    "b5_host",
+    "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261116-b5-rebuild\\host.rs",
+    "-L",
+    "dependency=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps",
+    "-o",
+    "D:\\project\\Xiao\\.b5\\20261116\\b1\\b5-host.exe",
+    "-L",
+    "native=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\build\\ring-e8824e5e901ed37d\\out",
+    "-L",
+    "native=C:\\Users\\xiaoc\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\windows_x86_64_msvc-0.52.6\\lib",
+    "--extern",
+    "xiao_driver=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_driver-764680e2f775720e.rlib",
+    "--extern",
+    "xiao_bytecode=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_bytecode-3da1e2392db7eaba.rlib",
+    "--extern",
+    "xiao_codegen_llvm=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_codegen_llvm-827a3aa234d7cb2c.rlib",
+    "--extern",
+    "xiao_runtime=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_runtime-dc9e82a85121e745.rlib",
+    "--extern",
+    "xiao_runtime_abi=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_runtime_abi-016b9b60175c9973.rlib",
+    "--extern",
+    "xiao_artifacts=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_artifacts-53ec0b0438ce9098.rlib",
+    "--extern",
+    "xiao_xar=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_xar-2f780f399abb3e1f.rlib",
+    "--extern",
+    "serde_json=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libserde_json-9700d0a1a9f726a5.rlib"
+  ],
+  "host_source_sha256": "42f5da478a9dc70b065cccc6eb61a21c4382064b566db44bec7ca44d2ec8824c",
+  "executable": "D:\\project\\Xiao\\.b5\\20261116\\b1\\b5-host.exe",
+  "executable_sha256": "94cdab754851454754d6649b63284fd33b5ce8d45891f5a029e1371dcf9a08d8",
+  "libraries": {
+    "xiao_driver": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_driver-764680e2f775720e.rlib",
+      "sha256": "7f12b044552b315a31136d17ceb6a84cc036bd0ee1c5b51933772f73a63f39ce"
+    },
+    "xiao_bytecode": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_bytecode-3da1e2392db7eaba.rlib",
+      "sha256": "6cc0b062d546f62ae28c6e33dbd2ec80bb4d2d96647e90e04bd6d1651c219497"
+    },
+    "xiao_codegen_llvm": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_codegen_llvm-827a3aa234d7cb2c.rlib",
+      "sha256": "2fdda321ef603bf157650d16dfb784006742888f4fffcba1ea40c63997ff6a30"
+    },
+    "xiao_runtime": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_runtime-dc9e82a85121e745.rlib",
+      "sha256": "3160e01272dd587c53e3b055ac36bb5ae87f74ef25512fd5524fe74f0641dfa5"
+    },
+    "xiao_runtime_abi": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_runtime_abi-016b9b60175c9973.rlib",
+      "sha256": "afee49ca89233251627d3119e6b630f9fca3479ad6161896f4fee1359ed2dcdb"
+    },
+    "xiao_artifacts": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_artifacts-53ec0b0438ce9098.rlib",
+      "sha256": "8fa8a3f054d72bd2e29dc01b6a85fdc02648222f9bb6fada79609556c0d7bee4"
+    },
+    "xiao_xar": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_xar-2f780f399abb3e1f.rlib",
+      "sha256": "2fa0acf2098e69e4beb6d8be63520b01f7128b0f43c165e8e249be7e14fdc938"
+    },
+    "serde_json": {
+      "path": "D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libserde_json-9700d0a1a9f726a5.rlib",
+      "sha256": "91153ac305e2009b53ca2095c72d172de5213f8d7a70d514318b720f0f16e54c"
+    }
+  }
+}
