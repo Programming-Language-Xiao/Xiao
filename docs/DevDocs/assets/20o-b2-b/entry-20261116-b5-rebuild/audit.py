@@ -11,6 +11,7 @@ import sys
 import tempfile
 sys.dont_write_bytecode=True
 from record import ROOT,REPOSITORY,PREFIX,PRODUCT_ROOTS,canonical,fixed_files,git,identity,load,require,sha
+from commands import expected as expected_command
 BASE="cfa79381bbae027cec11136ca380e82f66720c34"
 VERSIONS={"b1":"106b99c70e88a88afd0dd9a33f6a9c792e13324c","b4":BASE,
  "current":"71e611f82bbd4d7963c05d83db29b5c6ccb664bd",
@@ -19,9 +20,36 @@ VERSIONS={"b1":"106b99c70e88a88afd0dd9a33f6a9c792e13324c","b4":BASE,
 FAILED={("b1","host-build"):1,("b1","host-build-verified"):1,("b4","host-build-verified"):1,
  ("current","c-abi"):1,("current","numeric-range"):101,("current","numeric-range-verified"):101,
  ("current","host-numeric-final"):1,("current","guards"):1,("current","workspace"):101,("final","size"):101,("final2","workspace"):101,("final3","workspace-complete"):101}
+FAILED["b4","static-float-equality-reproduction"] = 101
 REASONS={"manifest":"B5重建证据清单不符","missing":"B5重建已登记文件缺失","source":"B5重建来源身份不符",
  "historical":"B5不得把重建基线称为历史原件","matrix":"B5版本矩阵不符","state":"B5公共状态冒进","runtime":"B5Runtime身份不符"}
 CASES=["baseline","manifest","missing","source","historical","matrix","state"]
+EXPECTED_PRODUCT_PATHS = {
+"core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs",
+"core/rust/crates/xiao-codegen-llvm/src/native_metadata.rs",
+"core/rust/crates/xiao-driver/src/compatibility.rs",
+"core/rust/crates/xiao-driver/tests/20o_b1_probe.rs",
+"core/rust/crates/xiao-driver/tests/20o_b2_a_support/replay.rs",
+"core/rust/crates/xiao-driver/tests/20o_b2_b2_divide.rs",
+"core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_llvm.rs",
+"core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs",
+"core/rust/crates/xiao-driver/tests/20o_b2_b4_frontend.rs",
+"core/rust/crates/xiao-driver/tests/20o_b2_b5_versions.rs",
+"core/rust/crates/xiao-driver/tests/artifact_size_regression.rs",
+"core/rust/crates/xiao-driver/tests/compatibility_matrix.rs",
+"core/rust/crates/xiao-driver/tests/22e_release.rs",
+"core/rust/crates/xiao-driver/tests/support/b2_divide.rs",
+"core/rust/crates/xiao-runtime-abi/src/lib.rs",
+"core/rust/crates/xiao-runtime/src/abi_tests.rs",
+"tests/fixtures/compatibility/b5/README.md",
+"tests/fixtures/compatibility/b5/b1-main.meta",
+"tests/fixtures/compatibility/b5/b1-main.xar",
+"tests/fixtures/compatibility/b5/b1-main.xiaoc",
+"tests/fixtures/compatibility/b5/b4-main.meta",
+"tests/fixtures/compatibility/b5/b4-main.xar",
+"tests/fixtures/compatibility/b5/b4-main.xiaoc",
+}
+
 
 def inventory(root):
  out={}
@@ -79,6 +107,8 @@ def handoff(result):
    "retained_debts":["22C","22D","19/11/22"]}
 def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
  before=tree(root)
+ changed=set(git(repository,"diff","--name-only",BASE,VERSIONS["final3"],"--",*PRODUCT_ROOTS).decode().splitlines())
+ require(changed==EXPECTED_PRODUCT_PATHS,"B5产品路径超出允许集合")
  if (root/"closeout.json").exists():
   state=load(root/"closeout.json")
   require(state.get("cmath")=="planned" and state.get("b6_started") is False and state.get("historical_originals_available") is False,REASONS["state"])
@@ -115,6 +145,7 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
     and row["docs_unchanged"] and row["docs_before"]==row["docs_after"]
     and row["pid"]>0 and datetime.fromisoformat(row["started_utc"])<datetime.fromisoformat(row["finished_utc"])
     and row["environment_sha256"]==sha((root/variant/"environment.json").read_bytes()),REASONS["source"])
+   require(row["argv"]==expected_command(variant,label),"B5运行命令不符："+variant+"/"+label)
    require(row["exit_code"]==FAILED.get(key,0),"B5运行退出码不符："+variant+"/"+label)
    require(row["runner_sha256"]==sha(git(repository,"show",row["tools_commit"]+":"+PREFIX+"/record.py")),REASONS["source"])
    docs=data(root,row["docs_before"]["files"])
@@ -201,7 +232,13 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
    require(row["expected_error"]=="X06-RUNTIME-009" and row["span"] is not None
     and "code=X06-RUNTIME-009" in row["native_stderr"]
     and ("span=%s..%s"%tuple(row["span"])) in row["native_stderr"],"B5数值span差分不符")
- require("fcmp eq double" in logs["current","numeric-range-verified"],"B5既有LLVM比较缺陷失败记录缺失")
+ issues=load(root/"known-issues.json")
+ require(issues["preexisting_proven"] is True and issues["fixed_in_B5"] is False
+  and issues["old_source_commit"]==BASE
+  and issues["old_receipt_sha256"]==sha((root/issues["old_receipt"]).read_bytes())
+  and issues["new_receipt_sha256"]==sha((root/issues["new_receipt"]).read_bytes())
+  and "fcmp eq double" in logs["current","numeric-range-verified"]
+  and "fcmp eq double" in logs["b4","static-float-equality-reproduction"],"B5既有LLVM比较缺陷直接复现记录缺失")
  for label in ["regressions","native-matrix","native-library","b1-vm","b1-native"]:
   require(records["current",label]["exit_code"]==0,"B5产品回归未通过")
  require(len(re.findall(r"B4-3-MATRIX dynamic=(?:true|false) optimization=[03].*cases=18318 error_cases=3153 pow_inputs=1075 bit_or_code=exact",logs["current","native-matrix"]))==4,"B5原生矩阵缺项")
@@ -217,6 +254,10 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
  require("url_decoding_reaches_the_unicode_result_budget" in logs["final3","workspace-complete"]
   and "X09-DRIVER-002" in logs["final3","workspace-complete"] and "error: 1 target failed:" in logs["final3","workspace-complete"],"B5默认并发失败记录不符")
  require(records["final3","resources-serial"]["exit_code"]==0 and "17 passed; 0 failed; 0 ignored;" in logs["final3","resources-serial"],"B5资源串行复核未通过")
+ isolated_url=records["final3","url-resource-isolated"]
+ require(isolated_url["exit_code"] in {0,101},"B5独立URL用例退出码无效")
+ if isolated_url["exit_code"]==0:require("1 passed; 0 failed; 0 ignored;" in logs["final3","url-resource-isolated"],"B5独立URL成功摘要不符")
+ else:require("X09-DRIVER-002" in logs["final3","url-resource-isolated"],"B5独立URL失败身份不符")
  workspace=count_targets(logs["final3","workspace-serial"])
  require(records["final2","size"]["exit_code"]==0,"B5体积门禁失败")
  for label in ["workspace-serial","clippy","fmt","lock"]:require(records["final3",label]["exit_code"]==0,"B5最终门禁失败")
@@ -226,16 +267,17 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
   for path in root.iterdir():
    if path.suffix in {".py",".rs",".c",".md",".xiao"}:
     require(sha(canonical(path.read_bytes()))==doc_tree(repository,record["tools_commit"]).get(PREFIX+"/"+path.name),"B5最终工具未定稿")
- result={"passed":True,"stage":"B5","b5_closed":final_docs,"runtime_abi":"1.19","codegen_version":21,"stdlib_interface":1,
+ result={"passed":False,"evidence_valid":True,"blocked":True,"stage_passed":False,"stage":"B5","b5_closed":False,"runtime_abi":"1.19","codegen_version":21,"stdlib_interface":1,
    "cmath":"planned","language_available":True,"baseline_kind":"reconstructed_from_B1_source","historical_originals_available":False,
    "product_commit":VERSIONS["current"],"final_test_commit":VERSIONS["final3"],"version_matrix_cases":len(matrices),
    "new_entry_matrix_cases":12,"cache_matrix_groups":2,"numeric_cases":20,"c_preserved_signatures":len(old),"c_added_signatures":len(current)-len(old),
    "guards":{"passed":28,"actual_output_cases":4,"derived_negatives":24,"scope":"Windows replay of four workflow paths"},
    "default_workspace":{"passed":False,"failure":"URL Unicode result budget hit unchanged 60s watchdog","receipt":"final3/workspace-complete.json"},
-   "resource_serial_replay_passed":True,"workspace_execution":"all targets serial; unchanged watchdogs; default failure retained",
+   "resource_serial_replay_passed":True,"isolated_url_exit_code":isolated_url["exit_code"],
+   "workspace_execution":"all targets serial; unchanged watchdogs; default parallel failure retained",
    "workspace":workspace,"platforms_executed":["Windows x86_64-pc-windows-msvc"],
    "not_executed":["Linux","macOS","remote CI","performance","721 F10"],"b6_started":False,"b2_c_started":False,
-   "known_independent_issue":{"owner":"static LLVM Float comparison","evidence":"current/numeric-range-verified.json",
+   "known_independent_issue":{"owner":"static LLVM Float comparison","evidence":"known-issues.json","historical_reproduction":"b4/static-float-equality-reproduction.json",
      "message":"float equality emits fcmp eq; numeric value proof uses explicit C bit observer; product fix deferred to independent batch"}}
  if sealed:
   report=load(root/"closeout.json")
@@ -280,7 +322,7 @@ def main():
  parser.add_argument("--core-only",action="store_true");parser.add_argument("--self-negative",action="store_true");args=parser.parse_args()
  if args.self_negative:print(json.dumps(negatives(args.root,args.repository_root),ensure_ascii=False));return
  value=check(args.root,args.repository_root,final_docs=not args.core_only,sealed=not args.core_only)
- print(json.dumps({k:value[k] for k in ["passed","b5_closed","runtime_abi","codegen_version","baseline_kind","historical_originals_available"]},ensure_ascii=False))
+ print(json.dumps({k:value[k] for k in ["passed","evidence_valid","blocked","stage_passed","b5_closed","runtime_abi","codegen_version","baseline_kind","historical_originals_available"]},ensure_ascii=False))
 if __name__=="__main__":
  try:main()
  except (ValueError,KeyError,OSError,AssertionError) as e:print(str(e),file=sys.stderr);raise SystemExit(1)

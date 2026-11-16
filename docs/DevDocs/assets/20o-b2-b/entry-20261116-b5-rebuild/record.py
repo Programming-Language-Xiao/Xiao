@@ -90,10 +90,11 @@ def run(variant, label, argv):
             require(canonical(path.read_bytes()) == canonical(git(REPOSITORY, "show", tool_commit + ":" + PREFIX + "/" + path.name)),
                     "B5静态工具须先提交：" + path.name)
     runtime_before = runtime(config)
+    process_env = controlled(config)
     started = datetime.now(timezone.utc).isoformat()
     with tempfile.TemporaryDirectory(prefix="b5-stage-", dir=config["overrides"]["TEMP"]) as temporary:
         with (Path(temporary) / "output.log").open("xb") as output:
-            process = subprocess.Popen(argv, cwd=source_root, env=controlled(config), stdout=output, stderr=subprocess.STDOUT)
+            process = subprocess.Popen(argv, cwd=source_root, env=process_env, stdout=output, stderr=subprocess.STDOUT)
             status = process.wait()
         log = store((Path(temporary) / "output.log").read_bytes(), "text/plain; charset=utf-8")
     after = worktree_files(source_root)
