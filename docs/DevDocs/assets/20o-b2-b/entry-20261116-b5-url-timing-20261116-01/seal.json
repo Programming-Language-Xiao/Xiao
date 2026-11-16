@@ -1,0 +1,8 @@
+{
+  "b5_closed": false,
+  "b6_started": false,
+  "docs_receipt": "gates/docs-final.json",
+  "product_commit": "5864cbde627f727483ab676c6f4bc1bf0a7819bb",
+  "self_negative_receipt": "final-self-negative.json",
+  "stage_passed": false
+}

@@ -1,0 +1,48 @@
+{
+  "argv": [
+    "bun",
+    "tools/repo-check/src/cli.ts",
+    "all",
+    "--format",
+    "json"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "docs_after": "83be34f533f7c5119fd9195831d70c0b9f06c2ce7ef77c32b308cbb8022413e0",
+  "docs_before": "83be34f533f7c5119fd9195831d70c0b9f06c2ce7ef77c32b308cbb8022413e0",
+  "docs_unchanged": true,
+  "documents": {
+    "bytes": 18620,
+    "encoding": "gzip",
+    "path": "objects/sha256/73/73c240e3e969fdbdf2818bf8a5ef90a8d650f765051d391846531935446eb825.bin",
+    "raw_bytes": 43369,
+    "raw_sha256": "a292d15d775aa7edbf3bdc696d2cb0802982dbb9f870dd15c331a8c53ea43b2e",
+    "sha256": "73c240e3e969fdbdf2818bf8a5ef90a8d650f765051d391846531935446eb825"
+  },
+  "environment_origin": "06eee789:docs/DevDocs/assets/20o-b2-b/entry-20261116-b5-rebuild/final3/environment.json",
+  "environment_sha256": "3a0bf2fb9112f61977446a24de82629aff4fe5da30f46c3fdd63dbb83876f7a3",
+  "exit_code": 0,
+  "finished_utc": "2026-11-16T16:37:37.393537+00:00",
+  "log": {
+    "bytes": 23129,
+    "encoding": "gzip",
+    "path": "objects/sha256/2a/2addbd1607390e63b775657fbeded70c3367cb2b18eb43cc0a3e978947301239.bin",
+    "raw_bytes": 519837,
+    "raw_sha256": "db2705d3e125d132475437717d286a4f832b74d8dc9fbcce68f4d0d5c082e73c",
+    "sha256": "2addbd1607390e63b775657fbeded70c3367cb2b18eb43cc0a3e978947301239"
+  },
+  "pid": 61260,
+  "products": {
+    "bytes": 67480,
+    "encoding": "gzip",
+    "path": "objects/sha256/9f/9fd9b049d0d828e2b0e5a5fbd376bb19b0b3b2e1b21b838cb1e8eff5d8e68b72.bin",
+    "raw_bytes": 271734,
+    "raw_sha256": "6c0a082de9f40988478d3b9d67f149ab3da90fdbe53d97b41423015f2340cc65",
+    "sha256": "9fd9b049d0d828e2b0e5a5fbd376bb19b0b3b2e1b21b838cb1e8eff5d8e68b72"
+  },
+  "runner_sha256": "5568fb19b81c069c8e34513cf73b80614a022462daa9dd71368a0bdaa6c00002",
+  "source_after": "f423362d5460965c5b30d6d5c09a28e30f716995eb4ee25bfa29b86af10f4b91",
+  "source_before": "f423362d5460965c5b30d6d5c09a28e30f716995eb4ee25bfa29b86af10f4b91",
+  "source_unchanged": true,
+  "started_utc": "2026-11-16T16:36:55.011234+00:00",
+  "tools_commit": "edeb2724f187c5afc2a769f77be1a932a28d9f3f"
+}
