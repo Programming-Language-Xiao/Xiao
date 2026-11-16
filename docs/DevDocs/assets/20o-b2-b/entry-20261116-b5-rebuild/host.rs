@@ -332,8 +332,32 @@ fn numeric(out: &Path) {
                 "{name}: {:?}",
                 product.ir.runtime_checks
             );
-            let tac = xiao_bytecode::lower_program(&product.ir);
-            let vm = xiao_vm::run(&tac, Default::default());
+            let mut tac = xiao_bytecode::lower_program(&product.ir);
+            let index = tac
+                .functions
+                .iter()
+                .position(|function| function.name == "probe")
+                .unwrap();
+            tac.functions.swap(0, index);
+            tac.categories = tac.functions[0].categories.clone();
+            let values = match name {
+                "integer-ok" => vec![xiao_runtime::RuntimeValue::Int(41)],
+                "integer-overflow" => vec![xiao_runtime::RuntimeValue::Int(i64::MAX)],
+                "narrow-overflow" => vec![xiao_runtime::RuntimeValue::Int(2_147_483_648)],
+                "float-ok" => vec![
+                    xiao_runtime::RuntimeValue::Float(2.0),
+                    xiao_runtime::RuntimeValue::Float(3.0),
+                ],
+                _ => vec![
+                    xiao_runtime::RuntimeValue::Float(1e308),
+                    xiao_runtime::RuntimeValue::Float(2.0),
+                ],
+            };
+            let vm = xiao_vm::run_with_values::<xiao_vm::StackCarrier>(
+                &tac,
+                Default::default(),
+                &values,
+            );
             let span = if let xiao_vm::RunResult::Error(error) = &vm.result {
                 let location = error.report().location.unwrap();
                 assert_eq!(error.code(), "X06-RUNTIME-009");
@@ -345,7 +369,11 @@ fn numeric(out: &Path) {
             if !fails {
                 assert!(vm.result.is_success());
                 assert!(
-                    matches!(vm.value, Some(xiao_runtime::RuntimeValue::Bool(true))),
+                    matches!(
+                        vm.value,
+                        Some(xiao_runtime::RuntimeValue::Int(42))
+                            | Some(xiao_runtime::RuntimeValue::Float(8.0))
+                    ),
                     "{:?}",
                     vm.value
                 );

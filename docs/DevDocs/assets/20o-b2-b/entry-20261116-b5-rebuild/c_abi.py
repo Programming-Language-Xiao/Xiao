@@ -25,14 +25,14 @@ def main():
     used=set(re.findall(r"extern\s+\w+\s+(xiao_runtime_\w+)\(",source.read_text()))
     require(used<=set(old),"C调用方使用了非B1符号")
     task=Path(load(ROOT/"current/environment.json")["task_root"])
-    obj=task/"old-caller.obj"
+    obj=task/("old-caller-"+sha(source.read_bytes())[:12]+".obj")
     require(not obj.exists(),"不能重编旧调用方对象")
     compile_argv=[r"D:\msys64\ucrt64\bin\clang.exe","-target","x86_64-pc-windows-msvc","-c",str(source),"-o",str(obj)]
     subprocess.run(compile_argv,check=True)
     obj_sha=sha(obj.read_bytes())
     rows=[]
     for name,baseline in baselines.items():
-        executable=task/("old-caller-"+name+".exe")
+        executable=task/("old-caller-"+name+"-"+obj.stem+".exe")
         report=baseline["report"]
         argv=[r"D:\msys64\ucrt64\bin\clang.exe","-target","x86_64-pc-windows-msvc",str(obj),
               baseline["runtime"]["path"],"-o",str(executable),*report["native_static_libraries"]]
