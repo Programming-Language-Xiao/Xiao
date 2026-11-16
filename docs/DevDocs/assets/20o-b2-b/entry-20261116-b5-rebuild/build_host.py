@@ -25,8 +25,9 @@ def main():
         matched=[]
         for candidate in dependencies.glob("lib"+name+"-*.rlib"):
             key=candidate.stem.removeprefix("lib"+name+"-")
-            fp=fingerprints/(name.replace("_","-")+"-"+key)/("lib-"+name)
-            if fp.is_file() and int.from_bytes(bytes.fromhex(fp.read_text().strip()),"little")==deps[name]:
+            candidates=[fingerprints/(prefix+"-"+key)/("lib-"+name) for prefix in {name,name.replace("_","-")}]
+            fp=next((path for path in candidates if path.is_file()),None)
+            if fp is not None and int.from_bytes(bytes.fromhex(fp.read_text().strip()),"little")==deps[name]:
                 matched.append(candidate)
         require(len(matched)==1,"B5宿主依赖指纹不能唯一匹配："+name)
         libraries[name]=matched[0]

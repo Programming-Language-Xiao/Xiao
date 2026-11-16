@@ -31,8 +31,11 @@ def store(raw, media_type="application/octet-stream"):
     if path.exists():
         require(path.read_bytes() == raw, "B5内容对象损坏")
     else:
-        with path.open("xb") as output:
-            output.write(raw)
+        try:
+            with path.open("xb") as output:
+                output.write(raw)
+        except FileExistsError:
+            require(path.read_bytes() == raw, "B5并发内容对象字节不符")
     return {"path": relative, "bytes": len(raw), "sha256": digest, "media_type": media_type}
 
 
