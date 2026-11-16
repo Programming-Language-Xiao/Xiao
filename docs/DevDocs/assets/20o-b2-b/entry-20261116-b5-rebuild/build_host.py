@@ -11,6 +11,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("variant")
     parser.add_argument("--check",action="store_true")
+    parser.add_argument("--name",default="b5-host")
     args=parser.parse_args()
     environment=load(ROOT/args.variant/"environment.json")
     task=Path(environment["task_root"])
@@ -22,7 +23,7 @@ def main():
     meta=load(fingerprints/("xiao-driver-"+suffix)/"lib-xiao_driver.json")
     deps={row[1]:row[3] for row in meta["deps"]}
     libraries={"xiao_driver":driver[0]}
-    for name in ["xiao_bytecode","xiao_codegen_llvm","xiao_runtime","xiao_runtime_abi","xiao_artifacts","xiao_xar","serde_json"]:
+    for name in ["xiao_bytecode","xiao_codegen_llvm","xiao_runtime","xiao_runtime_abi","xiao_artifacts","xiao_xar","serde_json","xiao_vm"]:
         matched=[]
         for candidate in dependencies.glob("lib"+name+"-*.rlib"):
             key=candidate.stem.removeprefix("lib"+name+"-")
@@ -32,7 +33,8 @@ def main():
                 matched.append(candidate)
         require(len(matched)==1,"B5宿主依赖指纹不能唯一匹配："+name)
         libraries[name]=matched[0]
-    executable=task/("b5-host-check.rmeta" if args.check else "b5-host.exe")
+    require(Path(args.name).name==args.name,"B5非法宿主名")
+    executable=task/(args.name+"-check.rmeta" if args.check else args.name+".exe")
     require(args.check or not executable.exists(),"B5禁止覆盖验证器宿主")
     argv=["rustc","+1.96.0","--edition=2024","--crate-name","b5_host",str(ROOT/"host.rs"),
           "-L","dependency="+str(dependencies),"-o",str(executable)]
@@ -48,7 +50,7 @@ def main():
     if args.check:
         print("B5宿主元数据编译通过")
         return
-    write_json(ROOT/args.variant/"host-identity.json",{"argv":argv,"host_source_sha256":sha((ROOT/"host.rs").read_bytes()),
+    write_json(ROOT/args.variant/("host-identity.json" if args.name=="b5-host" else args.name+"-identity.json"),{"argv":argv,"host_source_sha256":sha((ROOT/"host.rs").read_bytes()),
        "executable":str(executable),"executable_sha256":sha(executable.read_bytes()),
        "libraries":{name:{"path":str(path),"sha256":sha(path.read_bytes())} for name,path in libraries.items()}})
     print("B5验证器宿主编译成功",executable)

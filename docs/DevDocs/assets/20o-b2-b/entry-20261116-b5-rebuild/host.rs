@@ -43,10 +43,13 @@ fn artifact(source: &str) -> xiao_driver::FrontendArtifact {
         .compile(&FrontendRequest::from_text(source))
         .unwrap()
 }
-fn generate(out: &Path) {
+fn generate(out: &Path, supplied_source: Option<&Path>) {
     fs::create_dir(out).unwrap();
     let source = out.join("main.xiao");
-    fs::write(&source, COMMON).unwrap();
+    let text = supplied_source
+        .map(|path| fs::read_to_string(path).unwrap())
+        .unwrap_or_else(|| COMMON.to_owned());
+    fs::write(&source, &text).unwrap();
     let frontend = FrontendRequest::from_file(&source).unwrap();
     let product = FrontendCompiler::new().compile(&frontend).unwrap();
     let tac = xiao_bytecode::lower_program(&product.ir);
@@ -78,10 +81,15 @@ fn generate(out: &Path) {
     assert!(out_native.status.success(), "{out_native:?}");
     assert_eq!(
         String::from_utf8_lossy(&out_native.stdout),
-        "6\nB5-USER-ENTRY\n"
+        if supplied_source.is_some() {
+            "2\n0.333\nB5-USER-ENTRY\n"
+        } else {
+            "6\nB5-USER-ENTRY\n"
+        }
     );
     let artifacts = ["main.xiaoc", "main.xar", "main.exe", "main.meta"]
-        .iter().map(|name| (*name, digest(&out.join(name))))
+        .iter()
+        .map(|name| (*name, digest(&out.join(name))))
         .collect::<std::collections::BTreeMap<_, _>>();
     let report = json!({"abi":ABI_ENCODED_VERSION,"minor":ABI_MINOR_VERSION,"codegen":CODEGEN_VERSION,
       "xiaoc":{"format_major":header.header.format_major,"format_minor":header.header.format_minor,
@@ -274,10 +282,122 @@ fn cache(cache: &Path, out: &Path, requested_codegen: u32, runtime: &str) {
       "index_sha256":digest(&index_path),"library":runtime,"llvm_sha256":Digest256::of_bytes(built.native.module.text.as_bytes()).as_hex()})
     );
 }
+fn numeric(out: &Path) {
+    fs::create_dir(out).unwrap();
+    let definitions = [
+        (
+            "integer-ok",
+            "def probe(int a) -> int\n    return a + 1\nprobe(41) == 42\n",
+            false,
+        ),
+        (
+            "integer-overflow",
+            "def probe(int a) -> int\n    return a + 1\nprobe(9223372036854775807)\n",
+            true,
+        ),
+        (
+            "narrow-overflow",
+            "def probe(int a) -> sint\n    return sint(a)\nprobe(2147483648)\n",
+            true,
+        ),
+        (
+            "float-ok",
+            "def probe(float a, float b) -> float\n    return a ** b\nprobe(2.0, 3.0) == 8.0\n",
+            false,
+        ),
+        (
+            "float-nonfinite",
+            "def probe(float a, float b) -> float\n    return a ** b\nprobe(1e308, 2.0)\n",
+            true,
+        ),
+    ];
+    let target = TargetDescription::host();
+    let tools = tools(None);
+    let mut rows = Vec::new();
+    for (name, text, fails) in definitions {
+        for forced in [false, true] {
+            let source = if forced {
+                format!("noise = \"independent\"\n{text}")
+            } else {
+                text.to_owned()
+            };
+            let product = artifact(&source);
+            assert!(!product.ir.runtime_checks.is_empty(), "{name}");
+            assert!(
+                product
+                    .ir
+                    .runtime_checks
+                    .iter()
+                    .all(|check| check.kind == "numeric_range"),
+                "{name}: {:?}",
+                product.ir.runtime_checks
+            );
+            let tac = xiao_bytecode::lower_program(&product.ir);
+            let vm = xiao_vm::run(&tac, Default::default());
+            let span = if let xiao_vm::RunResult::Error(error) = &vm.result {
+                let location = error.report().location.unwrap();
+                assert_eq!(error.code(), "X06-RUNTIME-009");
+                Some((location.start(), location.end()))
+            } else {
+                assert!(!fails, "{name}: {:?}", vm.result);
+                None
+            };
+            if !fails {
+                assert!(vm.result.is_success());
+                assert!(
+                    matches!(vm.value, Some(xiao_runtime::RuntimeValue::Bool(true))),
+                    "{:?}",
+                    vm.value
+                );
+            }
+            for level in [0, 3] {
+                let options = CodegenOptions::for_target(target.clone())
+                    .with_optimization_level(level)
+                    .unwrap()
+                    .with_entry_observation(xiao_codegen_llvm::EntryObservation::ExitCode);
+                let executable = out.join(format!("{name}-{forced}-{level}.exe"));
+                let request = NativeBuildRequest::new(
+                    FrontendRequest::from_text(&source),
+                    target.clone(),
+                    tools.clone(),
+                    &executable,
+                )
+                .with_codegen_options(options);
+                let built = FrontendNativeDriver::new()
+                    .build_artifact(&product, &request)
+                    .unwrap();
+                let dynamic = built.native.module.text.contains("define void @xiao.fn.");
+                assert_eq!(
+                    dynamic,
+                    forced || name.starts_with("integer") || name.starts_with("narrow")
+                );
+                let result = Command::new(&executable).output().unwrap();
+                let stderr = String::from_utf8_lossy(&result.stderr);
+                if let Some((start, end)) = span {
+                    assert_ne!(result.status.code(), Some(0));
+                    assert!(
+                        stderr.contains("code=X06-RUNTIME-009")
+                            && stderr.contains(&format!("span={start}..{end}")),
+                        "{name} {forced} O{level}: {stderr}"
+                    );
+                } else {
+                    assert_eq!(result.status.code(), Some(1), "{name}: {stderr}");
+                }
+                rows.push(json!({"case":name,"forced_dynamic":forced,"lowering_dynamic":dynamic,"optimization":level,
+                    "source":source,"source_sha256":Digest256::of_bytes(source.as_bytes()).as_hex(),"span":span,
+                    "expected_error":if fails{Some("X06-RUNTIME-009")}else{None},"vm_success":vm.result.is_success(),
+                    "native_exit":result.status.code(),"native_stderr":stderr,"executable_sha256":digest(&executable)}));
+            }
+        }
+    }
+    println!("{}", json!({"passed":true,"cases":rows.len(),"rows":rows}));
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     match args[1].as_str() {
-        "generate" => generate(Path::new(&args[2])),
+        "generate" => generate(Path::new(&args[2]), args.get(3).map(Path::new)),
+        "numeric" => numeric(Path::new(&args[2])),
         "validate" => validate(&args[2], Path::new(&args[3]), &args[4]),
         "cache" => cache(
             Path::new(&args[2]),
