@@ -1,0 +1,3 @@
+* -text -whitespace
+*.log -diff
+*.bin -diff
