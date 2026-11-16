@@ -73,7 +73,7 @@ B5 是 **版本矩阵内部切换批**，不是 B2-C 最终发布。开工前要
 
 1. B5-0～B5-5的重建来源、版本拒绝、缓存重生成、C ABI、B1新快照回归和Windows内部产物矩阵均已采集；ABI为1.19、生成器21，B1基线标记为重建而非历史原件。
 2. 完整串行workspace 188目标1749通过、0失败、54原忽略；Clippy/fmt/lock通过。默认并发`workspace-complete`的`url_decoding_reaches_the_unicode_result_budget`在60秒测试看门狗下返回`X09-DRIVER-002`，原始回执`final3/workspace-complete.json`保留。
-3. 同目标17项资源测试串行17/17、完整串行workspace均通过；没有修改用例、输入、预算、看门狗或执行层。该串行结果不能覆盖默认并发失败，B5保持`b5_closed=false`、`B5-6`未签收，B6不得开始。
+3. 同目标17项资源测试串行17/17、完整串行workspace均通过；单独隔离URL Unicode用例也在原60秒看门狗内通过，说明用例本身可完成，但不能覆盖完整默认workspace中的并发失败。没有修改用例、输入、预算、看门狗或执行层；B5保持`b5_closed=false`、`B5-6`未签收，B6不得开始。
 4. B4旧快照已独立复现静态Float比较生成非法`fcmp eq`；B5未改该后端降低。此问题、B1历史原件缺失和默认并发看门狗失败均作为独立遗留交接。
 
 ### 2.2 B1重建基线裁定执行

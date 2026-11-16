@@ -19,7 +19,7 @@ VERSIONS={"b1":"106b99c70e88a88afd0dd9a33f6a9c792e13324c","b4":BASE,
  "final3":"5864cbde627f727483ab676c6f4bc1bf0a7819bb"}
 FAILED={("b1","host-build"):1,("b1","host-build-verified"):1,("b4","host-build-verified"):1,
  ("current","c-abi"):1,("current","numeric-range"):101,("current","numeric-range-verified"):101,
- ("current","host-numeric-final"):1,("current","guards"):1,("current","workspace"):101,("final","size"):101,("final2","workspace"):101,("final3","workspace-complete"):101}
+ ("current","host-numeric-final"):1,("current","guards"):1,("current","workspace"):101,("final","size"):101,("final2","workspace"):101,("final3","workspace-complete"):101,("final3","url-resource-isolated"):1}
 FAILED["b4","static-float-equality-reproduction"] = 101
 REASONS={"manifest":"B5重建证据清单不符","missing":"B5重建已登记文件缺失","source":"B5重建来源身份不符",
  "historical":"B5不得把重建基线称为历史原件","matrix":"B5版本矩阵不符","state":"B5公共状态冒进","runtime":"B5Runtime身份不符"}
@@ -255,6 +255,10 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
    and (row["exit_code"]==0 if row["case"]=="actual" else row["exit_code"]!=0),"B5守卫未绑定真实输出")
  require("url_decoding_reaches_the_unicode_result_budget" in logs["final3","workspace-complete"]
   and "X09-DRIVER-002" in logs["final3","workspace-complete"] and "error: 1 target failed:" in logs["final3","workspace-complete"],"B5默认并发失败记录不符")
+ require(records["final3","url-resource-isolated"]["exit_code"]==1
+  and "unexpected argument '--exact'" in logs["final3","url-resource-isolated"],"B5错误Cargo参数尝试记录不符")
+ require(records["final3","url-resource-isolated-fixed"]["exit_code"]==0
+  and "1 passed; 0 failed; 0 ignored;" in logs["final3","url-resource-isolated-fixed"],"B5隔离URL资源复核失败")
  require(records["final3","resources-serial"]["exit_code"]==0 and "17 passed; 0 failed; 0 ignored;" in logs["final3","resources-serial"],"B5资源串行复核未通过")
  isolated_url=records["final3","url-resource-isolated"]
  require(isolated_url["exit_code"] in {0,101},"B5独立URL用例退出码无效")
