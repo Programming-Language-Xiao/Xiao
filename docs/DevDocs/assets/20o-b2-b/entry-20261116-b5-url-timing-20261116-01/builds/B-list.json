@@ -1,0 +1,42 @@
+{
+  "argv": [
+    "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\20o_b1_imp_resources-29cf7055ec1b195c.exe",
+    "--list"
+  ],
+  "exit_code": 0,
+  "stderr": {
+    "bytes": 0,
+    "encoding": "identity",
+    "path": "objects/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.bin",
+    "raw_bytes": 0,
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 889,
+    "encoding": "identity",
+    "path": "objects/sha256/56/568dc6a67733c194d148836d6739a0f5cbaef60d6cb2b85f6b2ea6d59f9ffeb0.bin",
+    "raw_bytes": 889,
+    "raw_sha256": "568dc6a67733c194d148836d6739a0f5cbaef60d6cb2b85f6b2ea6d59f9ffeb0",
+    "sha256": "568dc6a67733c194d148836d6739a0f5cbaef60d6cb2b85f6b2ea6d59f9ffeb0"
+  },
+  "tests": [
+    "base64_checks_actual_decoded_size_after_the_last_quartet",
+    "base64_standard_accepts_the_frozen_maximum",
+    "base64_url_safe_accepts_the_frozen_maximum",
+    "csv_accepts_the_maximum_ascii_record",
+    "csv_accepts_the_maximum_field_count",
+    "csv_accepts_the_maximum_multiline_record",
+    "csv_accepts_the_maximum_quoted_record",
+    "csv_accepts_the_maximum_unicode_record",
+    "csv_parse_budget_and_syntax_priority_is_positional",
+    "csv_rejects_every_format_budget_dimension",
+    "fmt_checks_both_radix_bounds_and_padding_argument_domains",
+    "hex_accepts_the_frozen_maximum_input_and_output",
+    "url_decoding_reaches_the_ascii_result_budget",
+    "url_decoding_reaches_the_unicode_result_budget",
+    "url_encoding_reaches_the_ascii_output_budget",
+    "url_encoding_reaches_the_unicode_output_budget",
+    "url_limits_and_mixed_error_order_are_streamed"
+  ]
+}

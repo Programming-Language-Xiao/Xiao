@@ -1,0 +1,415 @@
+{
+  "b5_closed": false,
+  "b6_started": false,
+  "blocked": true,
+  "causal_attribution_proven": false,
+  "conclusion": "both snapshots are close to the original 60-second deadline; no causal attribution",
+  "evidence_valid": true,
+  "groups": {
+    "A": {
+      "completed": 4,
+      "completed_only_max_seconds": 59.7924351,
+      "completed_only_median_seconds": 59.426353899999995,
+      "completed_only_min_seconds": 58.6171271,
+      "observations": [
+        {
+          "right_censored": false,
+          "seconds": 58.6171271
+        },
+        {
+          "right_censored": false,
+          "seconds": 59.7924351
+        },
+        {
+          "right_censored": false,
+          "seconds": 59.077676
+        },
+        {
+          "right_censored": false,
+          "seconds": 59.7750318
+        }
+      ],
+      "right_censored": 0,
+      "runs": 4,
+      "warning": "completed-only statistics exclude censored results and are not an unbiased A/B comparison"
+    },
+    "B": {
+      "completed": 3,
+      "completed_only_max_seconds": 59.3684063,
+      "completed_only_median_seconds": 59.2912152,
+      "completed_only_min_seconds": 58.184357,
+      "observations": [
+        {
+          "right_censored": true,
+          "seconds": 60.0253925
+        },
+        {
+          "right_censored": false,
+          "seconds": 59.3684063
+        },
+        {
+          "right_censored": false,
+          "seconds": 59.2912152
+        },
+        {
+          "right_censored": false,
+          "seconds": 58.184357
+        }
+      ],
+      "right_censored": 1,
+      "runs": 4,
+      "warning": "completed-only statistics exclude censored results and are not an unbiased A/B comparison"
+    }
+  },
+  "runs": [
+    {
+      "completed": true,
+      "driver_seconds": 58.6171271,
+      "index": 1,
+      "resource_counts": {
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 17
+      },
+      "right_censored": false,
+      "snapshot": "A",
+      "url_window_telemetry": {
+        "actual_max_sample_gap_seconds": 0.5341931,
+        "available_physical_bytes": {
+          "max": 5807271936,
+          "min": 5596209152
+        },
+        "private_bytes": {
+          "max": 130617344,
+          "min": 30617600
+        },
+        "processor_queue_length": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "sample_count": 154,
+        "scope": "system and whole 17-test process during URL observation window; not URL thread attribution",
+        "system_context_switches_per_second": {
+          "max": 125856.82090134053,
+          "min": 35122.994491322796
+        },
+        "system_cpu_percent": 46.43220597713626,
+        "url_window_samples": 110,
+        "whole_resource_process_equivalent_cores": 10.646355113700448,
+        "working_set_bytes": {
+          "max": 133492736,
+          "min": 40599552
+        }
+      }
+    },
+    {
+      "completed": false,
+      "driver_seconds": 60.0253925,
+      "index": 2,
+      "resource_counts": {
+        "failed": 1,
+        "filtered": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 16
+      },
+      "right_censored": true,
+      "snapshot": "B",
+      "url_window_telemetry": {
+        "actual_max_sample_gap_seconds": 0.5325828,
+        "available_physical_bytes": {
+          "max": 5733904384,
+          "min": 5368770560
+        },
+        "private_bytes": {
+          "max": 155267072,
+          "min": 34021376
+        },
+        "processor_queue_length": {
+          "max": 1.0,
+          "min": 0.0
+        },
+        "sample_count": 156,
+        "scope": "system and whole 17-test process during URL observation window; not URL thread attribution",
+        "system_context_switches_per_second": {
+          "max": 123812.02846610382,
+          "min": 40062.07756303162
+        },
+        "system_cpu_percent": 47.72099162644887,
+        "url_window_samples": 113,
+        "whole_resource_process_equivalent_cores": 10.508014473647322,
+        "working_set_bytes": {
+          "max": 156590080,
+          "min": 41881600
+        }
+      }
+    },
+    {
+      "completed": true,
+      "driver_seconds": 59.3684063,
+      "index": 3,
+      "resource_counts": {
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 17
+      },
+      "right_censored": false,
+      "snapshot": "B",
+      "url_window_telemetry": {
+        "actual_max_sample_gap_seconds": 0.5332096,
+        "available_physical_bytes": {
+          "max": 5384806400,
+          "min": 5100326912
+        },
+        "private_bytes": {
+          "max": 126627840,
+          "min": 35078144
+        },
+        "processor_queue_length": {
+          "max": 2.0,
+          "min": 0.0
+        },
+        "sample_count": 156,
+        "scope": "system and whole 17-test process during URL observation window; not URL thread attribution",
+        "system_context_switches_per_second": {
+          "max": 134732.21514524234,
+          "min": 35133.3115049068
+        },
+        "system_cpu_percent": 49.88546915996835,
+        "url_window_samples": 112,
+        "whole_resource_process_equivalent_cores": 10.491858532711923,
+        "working_set_bytes": {
+          "max": 130019328,
+          "min": 44834816
+        }
+      }
+    },
+    {
+      "completed": true,
+      "driver_seconds": 59.7924351,
+      "index": 4,
+      "resource_counts": {
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 17
+      },
+      "right_censored": false,
+      "snapshot": "A",
+      "url_window_telemetry": {
+        "actual_max_sample_gap_seconds": 0.5489711,
+        "available_physical_bytes": {
+          "max": 5362032640,
+          "min": 5056528384
+        },
+        "private_bytes": {
+          "max": 156180480,
+          "min": 35463168
+        },
+        "processor_queue_length": {
+          "max": 21.0,
+          "min": 0.0
+        },
+        "sample_count": 156,
+        "scope": "system and whole 17-test process during URL observation window; not URL thread attribution",
+        "system_context_switches_per_second": {
+          "max": 112041.40516005916,
+          "min": 36217.38871647895
+        },
+        "system_cpu_percent": 47.70230889934992,
+        "url_window_samples": 112,
+        "whole_resource_process_equivalent_cores": 10.475540164154806,
+        "working_set_bytes": {
+          "max": 158253056,
+          "min": 46247936
+        }
+      }
+    },
+    {
+      "completed": true,
+      "driver_seconds": 59.077676,
+      "index": 5,
+      "resource_counts": {
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 17
+      },
+      "right_censored": false,
+      "snapshot": "A",
+      "url_window_telemetry": {
+        "actual_max_sample_gap_seconds": 0.5334593,
+        "available_physical_bytes": {
+          "max": 5467549696,
+          "min": 4474327040
+        },
+        "private_bytes": {
+          "max": 164716544,
+          "min": 34750464
+        },
+        "processor_queue_length": {
+          "max": 1.0,
+          "min": 0.0
+        },
+        "sample_count": 156,
+        "scope": "system and whole 17-test process during URL observation window; not URL thread attribution",
+        "system_context_switches_per_second": {
+          "max": 134917.63112667267,
+          "min": 41802.316808020376
+        },
+        "system_cpu_percent": 49.7520383289905,
+        "url_window_samples": 111,
+        "whole_resource_process_equivalent_cores": 10.739822181459186,
+        "working_set_bytes": {
+          "max": 165699584,
+          "min": 43483136
+        }
+      }
+    },
+    {
+      "completed": true,
+      "driver_seconds": 59.2912152,
+      "index": 6,
+      "resource_counts": {
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 17
+      },
+      "right_censored": false,
+      "snapshot": "B",
+      "url_window_telemetry": {
+        "actual_max_sample_gap_seconds": 0.5349384,
+        "available_physical_bytes": {
+          "max": 5155995648,
+          "min": 4949622784
+        },
+        "private_bytes": {
+          "max": 137805824,
+          "min": 38162432
+        },
+        "processor_queue_length": {
+          "max": 1.0,
+          "min": 0.0
+        },
+        "sample_count": 148,
+        "scope": "system and whole 17-test process during URL observation window; not URL thread attribution",
+        "system_context_switches_per_second": {
+          "max": 103331.72196698349,
+          "min": 37116.05730488553
+        },
+        "system_cpu_percent": 45.800026645350385,
+        "url_window_samples": 112,
+        "whole_resource_process_equivalent_cores": 10.46536222461727,
+        "working_set_bytes": {
+          "max": 141611008,
+          "min": 45563904
+        }
+      }
+    },
+    {
+      "completed": true,
+      "driver_seconds": 58.184357,
+      "index": 7,
+      "resource_counts": {
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 17
+      },
+      "right_censored": false,
+      "snapshot": "B",
+      "url_window_telemetry": {
+        "actual_max_sample_gap_seconds": 0.5375185,
+        "available_physical_bytes": {
+          "max": 4775497728,
+          "min": 4239106048
+        },
+        "private_bytes": {
+          "max": 148406272,
+          "min": 29716480
+        },
+        "processor_queue_length": {
+          "max": 1.0,
+          "min": 0.0
+        },
+        "sample_count": 153,
+        "scope": "system and whole 17-test process during URL observation window; not URL thread attribution",
+        "system_context_switches_per_second": {
+          "max": 136795.97116973295,
+          "min": 40394.67222330999
+        },
+        "system_cpu_percent": 48.40232573908326,
+        "url_window_samples": 110,
+        "whole_resource_process_equivalent_cores": 10.49707375074222,
+        "working_set_bytes": {
+          "max": 151543808,
+          "min": 41009152
+        }
+      }
+    },
+    {
+      "completed": true,
+      "driver_seconds": 59.7750318,
+      "index": 8,
+      "resource_counts": {
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 17
+      },
+      "right_censored": false,
+      "snapshot": "A",
+      "url_window_telemetry": {
+        "actual_max_sample_gap_seconds": 0.5340234,
+        "available_physical_bytes": {
+          "max": 4874375168,
+          "min": 4367532032
+        },
+        "private_bytes": {
+          "max": 140488704,
+          "min": 37208064
+        },
+        "processor_queue_length": {
+          "max": 2.0,
+          "min": 0.0
+        },
+        "sample_count": 155,
+        "scope": "system and whole 17-test process during URL observation window; not URL thread attribution",
+        "system_context_switches_per_second": {
+          "max": 143859.95419144127,
+          "min": 36290.24260552306
+        },
+        "system_cpu_percent": 50.63038219242551,
+        "url_window_samples": 113,
+        "whole_resource_process_equivalent_cores": 10.473091686621167,
+        "working_set_bytes": {
+          "max": 143994880,
+          "min": 47800320
+        }
+      }
+    }
+  ],
+  "schedule": [
+    "A",
+    "B",
+    "B",
+    "A",
+    "A",
+    "B",
+    "B",
+    "A"
+  ],
+  "scope": "instrumented default-concurrency resource target; not full workspace",
+  "stage_passed": false,
+  "watchdog_changed": false
+}

@@ -1,0 +1,64 @@
+{
+  "commits": {
+    "A": "cfa79381bbae027cec11136ca380e82f66720c34",
+    "B": "5864cbde627f727483ab676c6f4bc1bf0a7819bb"
+  },
+  "compiler_tools": {
+    "cargo": {
+      "binary": {
+        "bytes": 31347200,
+        "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+        "sha256": "122f18d28a63fa358f3db266abee1ff1d8aabf0ab7f2dd9ac38a38da99977ae5"
+      },
+      "version_argv": [
+        "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+        "-V"
+      ],
+      "version_stderr": "",
+      "version_stdout": "cargo 1.96.0 (30a34c682 2026-05-25)\n"
+    },
+    "rustc": {
+      "binary": {
+        "bytes": 111104,
+        "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+        "sha256": "acb138286bbe20c6cf3ec39a7e0a68c3fab0cd949baa2912cf466514d0d531ab"
+      },
+      "version_argv": [
+        "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+        "-Vv"
+      ],
+      "version_stderr": "",
+      "version_stdout": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-pc-windows-msvc\nrelease: 1.96.0\nLLVM version: 22.1.2\n"
+    }
+  },
+  "created_utc": "2026-11-16T15:38:07.416306+00:00",
+  "host": {
+    "logical_cpu_count": 32,
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+    "python": "3.12.8"
+  },
+  "method": "instrumented resource target; original 17 tests and default concurrency",
+  "sample_interval_seconds": 0.5,
+  "schedule": [
+    "A",
+    "B",
+    "B",
+    "A",
+    "A",
+    "B",
+    "B",
+    "A"
+  ],
+  "task_root": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01",
+  "timeout_seconds": 60,
+  "tools": {
+    "commit": "b6eca0b036ea9347acb4564f9cdd43c804dfb51e",
+    "files": {
+      "collect.py": "195d94b629b2f45abc08c8205cdcc4a4b1602507d577ad6a5be734f8b5300d57",
+      "instrument.py": "447f84695469d7ffe7f8415e82d661dc80585d78c5ea8495d05d48ca307d1032",
+      "winmetrics.py": "219ab39182f98532a4dc9f69c9ce0dbf9714750c41f4597f9996c3082a077bbf"
+    }
+  },
+  "watchdog_changed": false
+}
