@@ -1,0 +1,5 @@
+from std.concurrent import current_runtime
+from std.math import gcd
+runtime = current_runtime()
+print(gcd(48, 18))
+print("B5-USER-ENTRY")

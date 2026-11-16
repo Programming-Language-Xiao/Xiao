@@ -68,7 +68,7 @@ fn both_lowerings_use_fifteen_shared_abi_symbols_and_version21() {
         }
     }
     assert_eq!(xiao_codegen_llvm::CODEGEN_VERSION, 21);
-    assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 18);
+    assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 19);
 }
 
 #[test]

@@ -76,5 +76,5 @@ fn lfloat_divide_requires_the_frozen_public_contract() {
     assert!(
         xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(100).unwrap()).is_none()
     );
-    assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 18);
+    assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 19);
 }
