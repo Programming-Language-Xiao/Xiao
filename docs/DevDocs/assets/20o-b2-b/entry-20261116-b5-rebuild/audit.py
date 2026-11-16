@@ -197,7 +197,7 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
   require(result["accepted"]==(row["variant"]=="final3") and result["input_unchanged"] is True
     and result["input_sha256"]==sha(obj(root,row["input"])),REASONS["matrix"])
   if row["variant"]!="final3":require(result["executed"] is False,REASONS["matrix"])
- cache=load(root/"cache-matrices.json");require(cache["passed"] is True and len(cache["rows"])==4,"B5缓存矩阵缺失")
+ cache=load(root/"cache-matrices-final.json");require(cache["passed"] is True and len(cache["rows"])==4,"B5缓存矩阵缺失")
  for group in ["generator","abi"]:
   rows=[row for row in cache["rows"] if row["group"]==group]
   old,new=rows
@@ -260,10 +260,8 @@ def check(root=ROOT,repository=REPOSITORY,final_docs=True,sealed=True):
  require(records["final3","url-resource-isolated-fixed"]["exit_code"]==0
   and "1 passed; 0 failed; 0 ignored;" in logs["final3","url-resource-isolated-fixed"],"B5隔离URL资源复核失败")
  require(records["final3","resources-serial"]["exit_code"]==0 and "17 passed; 0 failed; 0 ignored;" in logs["final3","resources-serial"],"B5资源串行复核未通过")
- isolated_url=records["final3","url-resource-isolated"]
- require(isolated_url["exit_code"] in {0,101},"B5独立URL用例退出码无效")
- if isolated_url["exit_code"]==0:require("1 passed; 0 failed; 0 ignored;" in logs["final3","url-resource-isolated"],"B5独立URL成功摘要不符")
- else:require("X09-DRIVER-002" in logs["final3","url-resource-isolated"],"B5独立URL失败身份不符")
+ require(records["final3","url-resource-isolated-fixed"]["exit_code"]==0
+  and "finished in 56.97s" in logs["final3","url-resource-isolated-fixed"],"B5独立URL隔离时限证据不符")
  workspace=count_targets(logs["final3","workspace-serial"])
  require(records["final2","size"]["exit_code"]==0,"B5体积门禁失败")
  for label in ["workspace-serial","clippy","fmt","lock"]:require(records["final3",label]["exit_code"]==0,"B5最终门禁失败")

@@ -28,8 +28,9 @@ def expected(variant,label):
  if label.startswith("cache-"):
   group="generator" if "generator" in label else "abi"
   new=label.endswith("-new")
-  cache=BASE/(("sealed-cache-" if "sealed" in label else "cache-")+group)
-  runtime=BASE/("current" if group=="abi" and new else "b4")/"target/release/xiao_runtime.lib"
+  verified="verified" in label
+  cache=BASE/(("sealed-cache-" if "sealed" in label or verified else "cache-")+group+("-verified" if verified else ""))
+  runtime=BASE/("b1" if group=="generator" and not new else "current" if group=="abi" and new else "b4")/"target/release/xiao_runtime.lib"
   return [str(host),"cache",str(cache),str(cache/("new.exe" if new else "old.exe")),str(20 if group=="generator" and not new else 21),str(runtime)]
  if label.startswith("new-entries-"):
   kind=label.removeprefix("new-entries-");name={"xiaoc":"main.xiaoc","xar":"main.xar","native":"main.exe","meta":"main.meta"}[kind]

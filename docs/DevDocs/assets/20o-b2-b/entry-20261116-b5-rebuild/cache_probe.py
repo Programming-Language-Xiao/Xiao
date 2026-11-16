@@ -13,12 +13,12 @@ def main():
   ("abi",[("b4","old",21,"b4"),("final3","new",21,"current")])]
  rows=[]
  for group,steps in groups:
-  cache=base/("sealed-cache-"+group)
+  cache=base/("sealed-cache-"+group+"-verified")
   require(not cache.exists(),"缓存矩阵任务不可复用")
   for variant,label,codegen,run_variant in steps:
    actual="current" if variant=="final3" else variant
    argv=[str(base/actual/"b5-host.exe"),"cache",str(cache),str(cache/(label+".exe")),str(codegen),str(base/run_variant/"target/release/xiao_runtime.lib")]
-   record_label="cache-"+group+"-sealed-"+label
+   record_label="cache-"+group+"-verified-"+label
    subprocess.run([sys.executable,"-B","-X","utf8",str(ROOT/"record.py"),"run",variant,record_label,"--",*argv],check=True)
    receipt=load(ROOT/variant/(record_label+".json"))
    result=json.loads((ROOT/receipt["log"]["path"]).read_bytes())
@@ -27,7 +27,7 @@ def main():
        "index_bytes":store(Path(result["index_path"]).read_bytes()),
        "native_object":store(Path(result["object_path"]).read_bytes()),
        "executable":store(Path(result["executable"]).read_bytes())})
- write_json(ROOT/"cache-matrices.json",{"passed":True,"scope":"production ArtifactStore/GlobalIndex/fingerprint; explicit probe orchestration",
+ write_json(ROOT/"cache-matrices-final.json",{"passed":True,"scope":"production ArtifactStore/GlobalIndex/fingerprint; explicit probe orchestration",
    "no_global_cache":True,"rows":rows})
  print("B5两组缓存索引/对象快照全部冻结")
 
