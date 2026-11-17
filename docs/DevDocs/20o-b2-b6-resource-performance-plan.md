@@ -1,6 +1,6 @@
 # 20O-B2-B6. cmath/lfloat 资源、错误与三平台性能规划
 
-> **B6-1当前状态（2026-11-18）：** Windows的Runtime、VM/归档、资源原子性、Cmath正式参考与包装、A5错误/显式除法原生O0/O3通过；Linux的Runtime、VM/归档、Cmath核心原生及A5错误/显式除法通过，但官方Cmath包装原生被Runtime组件完整性校验阻断；macOS未验证。B6-1未收口，B6-2性能尚未开始，详见[B6-1证据](assets/20o-b2-b/entry-20261117-b6/README.md)。本批保留生成器22，不绕过组件审计。
+> **B6-1当前状态（2026-11-18）：** Windows的Runtime、VM/归档、资源原子性、Cmath正式参考与包装、A5错误/显式除法原生O0/O3通过；Linux的Runtime、VM/归档、Cmath核心原生及A5错误/显式除法通过，但官方Cmath包装原生被Runtime组件完整性校验阻断；macOS未验证。B6-1未收口，B6-2性能尚未开始，详见[B6-1证据](assets/20o-b2-b/entry-20261117-b6/README.md)。本批保留生成器22，不绕过组件审计；修复见[B4-3-FIX.2](20o-b2-b4-3-fix2-runtime-components-plan.md)。
 
 > B5固定1.19/21矩阵和[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)保持只读历史身份；当前产品1.19/22。B6每轮均绑定自己的源码、Runtime和工具身份。B1原件缺口、22C/22D与19/11/22债务独立保留。
 > B5固定测试快照5864cbde为ABI1.19/生成器21/接口1。原17项资源目标及8次直接计时为旧负载历史证据；优化后18项资源目标和完整默认workspace均通过，详见URL优化记录。B6当前测量使用ABI1.19/生成器22 Runtime，并同时对账B5矩阵与21→22增量证据。
@@ -84,7 +84,7 @@ B6 是 **内部资源/性能验收批**，不是 B2-C 最终发布。B6 的测�
 
 Linux包装拒绝为真实退出101，ArtifactVerification报告ELF观察到未登记的Runtime组件containers。独立诊断显示生成LLVM文本包含 call i32 @xiao_runtime_array_new，IR组件清单只有rc/value/weak，链接产物也观察到该符号；绕过驱动器完整性校验的诊断执行只用于定位，不能算产品路径通过。
 
-该遗漏属于B4 LLVM Runtime组件可达性/原生元数据边界，B6冻结入口要求生成器22不变。本批保留失败并阻止B6-1收口，不通过放宽产物审计、删模块语料或跳过包装来取得绿色。修复它需要回所属B4/codegen边界，若生成组件清单或链接产物变化，须先裁定生成器/缓存版本，再回B6重跑受影响矩阵。B6-2性能尚未开始。
+该遗漏属于B4 LLVM Runtime组件可达性/原生元数据边界，B6冻结入口要求生成器22不变。本批保留失败并阻止B6-1收口，不通过放宽产物审计、删模块语料或跳过包装来取得绿色。修复它需要回所属B4/codegen边界，若生成组件清单或链接产物变化，须先裁定生成器/缓存版本，再回B6重跑受影响矩阵。已立案见[B4-3-FIX.2](20o-b2-b4-3-fix2-runtime-components-plan.md)；FIX.2与B6-1重跑通过前B6-2不启动。
 
 ## 三、分批执行
 
