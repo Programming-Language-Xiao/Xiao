@@ -21,26 +21,26 @@ huge = lfloat("1e100000")
 tiny = lfloat("1e-100000")
 odd_tiny = lfloat("3e-100000")
 try
-    print(one / three)
+    one / three
     print("unexpected")
 catch failure as ArithmeticError
     print(error_code(failure))
 finally
     print("exact-divide-clean")
 try
-    print(one / lfloat("0"))
+    one / lfloat("0")
     print("unexpected")
 catch failure as ArithmeticError
     print(error_code(failure))
 try
-    print(huge // tiny)
+    huge // tiny
     print("unexpected")
 catch failure as ResourceError
     print(error_code(failure))
 print(huge % tiny)
 print(huge % odd_tiny)
 try
-    print(lfloat("1e100001"))
+    lfloat("1e100001")
     print("unexpected")
 catch failure as ResourceError
     print(error_code(failure))
