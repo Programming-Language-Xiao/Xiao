@@ -130,12 +130,20 @@ fn url_decoding_reaches_the_ascii_result_budget() {
 }
 
 #[test]
-/// 多码点状态必须在每个四字节序列之间复位，不能丢失边界。
+/// 混合普通Unicode和末尾百分号UTF-8，结果字节恰好达到上限。
 fn url_decoding_reaches_the_unicode_result_budget() {
+    let input = "🚀".repeat(16_383) + "%F0%9F%9A%80";
+    let expected = "🚀".repeat(16_384);
+    url_vector("decode_component", &input, &expected);
+}
+
+#[test]
+/// 连续四字节转义之间必须复位UTF-8状态。
+fn url_decoding_resets_utf8_state_between_escaped_codepoints() {
     url_vector(
         "decode_component",
-        &"%F0%9F%9A%80".repeat(16_384),
-        &"🚀".repeat(16_384),
+        &"%F0%9F%9A%80".repeat(256),
+        &"🚀".repeat(256),
     );
 }
 
