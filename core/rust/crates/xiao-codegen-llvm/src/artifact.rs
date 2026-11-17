@@ -4,7 +4,7 @@
 //! 选定的目标描述，并读取最终文件的对象格式元数据，为 Runtime 裁剪和调试启动提供
 //! 产物层事实。
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::Path;
 
@@ -1297,6 +1297,88 @@ pub(crate) fn components_for_symbols(symbols: &[String]) -> Vec<String> {
     components.into_iter().collect()
 }
 
+/// 从 main 可达函数和基本块中的 Runtime 符号推导组件，支持 LLVM br/switch/indirectbr。
+pub(crate) fn reachable_runtime_components(text: &str) -> Vec<String> {
+    let mut blocks: BTreeMap<(&str, &str), Vec<&str>> = BTreeMap::new();
+    let mut function = None;
+    let mut current = None;
+    for line in text.lines().map(str::trim) {
+        if line.starts_with("define ") {
+            function = line
+                .split_once('@')
+                .and_then(|(_, rest)| rest.split_once('('))
+                .map(|(name, _)| name);
+            current = None;
+        } else if line == "}" {
+            function = None;
+            current = None;
+        } else if let Some(name) = function {
+            if let Some(label) = line.strip_suffix(':') {
+                current = Some(label);
+                blocks.entry((name, label)).or_default();
+            } else if let Some(label) = current {
+                blocks.entry((name, label)).or_default().push(line);
+            }
+        }
+    }
+    let mut symbols = BTreeSet::new();
+    let mut pending = vec![("main", "entry")];
+    let mut visited = BTreeSet::new();
+    while let Some(key) = pending.pop() {
+        if !visited.insert(key) {
+            continue;
+        }
+        let Some(lines) = blocks.get(&key) else {
+            continue;
+        };
+        for line in lines {
+            if line.starts_with("br ")
+                || line.starts_with("switch ")
+                || line.starts_with("indirectbr ")
+            {
+                for target in line.split("label %").skip(1) {
+                    let label = target
+                        .split(|c: char| !c.is_ascii_alphanumeric() && c != '_' && c != '.')
+                        .next()
+                        .unwrap_or("");
+                    pending.push((key.0, label));
+                }
+            }
+            // Descriptors can retain callback addresses; following every function reference
+            // in reachable blocks keeps registered callbacks while excluding unused bodies.
+            if !line.starts_with(';') {
+                for reference in line.split('@').skip(1) {
+                    let symbol = reference
+                        .split(|c: char| !c.is_ascii_alphanumeric() && c != '_' && c != '.')
+                        .next()
+                        .unwrap_or("");
+                    if symbol.starts_with("xiao_runtime_") {
+                        symbols.insert(symbol.to_owned());
+                    }
+                    pending.push((symbol, "entry"));
+                }
+            }
+        }
+    }
+    let mut components = components_for_symbols(&symbols.iter().cloned().collect::<Vec<_>>());
+    if symbols.iter().any(|symbol| {
+        matches!(
+            symbol.as_str(),
+            "xiao_runtime_value_copy"
+                | "xiao_runtime_value_release_any"
+                | "xiao_runtime_concurrency_call"
+                | "xiao_runtime_table_new_v2"
+                | "xiao_runtime_table_new_v2_with_args"
+                | "xiao_runtime_table_call"
+        )
+    }) {
+        components.push("weak".to_owned());
+    }
+    components.sort();
+    components.dedup();
+    components
+}
+
 /// 将一个 Runtime 符号登记到它所属的组件集合。
 fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
     if symbol.starts_with("xiao_runtime_value_")
@@ -1500,8 +1582,8 @@ mod tests {
         ArtifactAcceptanceMode, ArtifactRuntimeComposition, ArtifactVerification,
         SymbolTableComparison, SymbolTableReport, SymbolTableStatus, byte_at,
         compare_symbol_table_reports, components_for_symbols, inspect_symbol_table,
-        normalize_symbol, parse_artifact, unclassified_runtime_symbols, verify_artifact,
-        verify_artifact_mode,
+        normalize_symbol, parse_artifact, reachable_runtime_components,
+        unclassified_runtime_symbols, verify_artifact, verify_artifact_mode,
     };
     use crate::{ObjectFormat, TargetDescription};
 
@@ -1529,6 +1611,50 @@ mod tests {
                 "xiao_runtime_array_new".to_owned(),
                 "xiao_runtime_table_new".to_owned(),
             ]),
+            vec!["containers", "rc", "tables", "value", "weak"]
+        );
+    }
+
+    /// 只登记从入口可达的 Runtime 调用，并稳定去重所有组件族。
+    #[test]
+    fn derives_reachable_runtime_components_from_llvm_control_flow() {
+        let text = r#"
+declare i32 @xiao_runtime_array_new(ptr, i64, ptr)
+declare i32 @xiao_runtime_dict_new(ptr, i64, ptr)
+declare i32 @xiao_runtime_set_new(ptr, i64, ptr)
+declare i32 @xiao_runtime_table_new(ptr, ptr)
+declare i32 @xiao_runtime_value_str(ptr, ptr)
+declare i32 @xiao_runtime_value_copy(ptr, ptr)
+declare i32 @xiao_runtime_concurrency_finish()
+define i32 @main() {
+entry:
+  call void @xiao_entry()
+  ret i32 0
+}
+define void @xiao_entry() {
+entry:
+  call i32 @xiao_runtime_array_new(ptr null, i64 0, ptr null)
+  call i32 @xiao_runtime_dict_new(ptr null, i64 0, ptr null)
+  call i32 @xiao_runtime_set_new(ptr null, i64 0, ptr null)
+  call i32 @xiao_runtime_table_new(ptr null, ptr null)
+  call i32 @xiao_runtime_value_str(ptr null, ptr null)
+  call i32 @xiao_runtime_value_copy(ptr null, ptr null)
+  switch i32 0, label %done [ i32 0, label %container.calls ]
+container.calls:
+  call i32 @xiao_runtime_dict_new(ptr null, i64 0, ptr null)
+  call i32 @xiao_runtime_set_new(ptr null, i64 0, ptr null)
+  indirectbr ptr null, [label %done]
+done:
+  ret void
+}
+define void @unused() {
+entry:
+  call i32 @xiao_runtime_concurrency_finish()
+  ret void
+}
+"#;
+        assert_eq!(
+            reachable_runtime_components(text),
             vec!["containers", "rc", "tables", "value", "weak"]
         );
     }

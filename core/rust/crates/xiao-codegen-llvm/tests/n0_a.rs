@@ -593,6 +593,21 @@ fn lowers_runtime_values_with_abi() {
             .iter()
             .any(|component| component == "value")
     );
+    assert!(
+        !module
+            .runtime_components
+            .iter()
+            .any(|component| component == "containers")
+    );
+}
+
+#[test]
+/// 静态数值错误路径仅登记发射的 Runtime 组件，不声明容器或表组件。
+fn static_runtime_components_follow_emitted_symbols() {
+    let module = lower_program(&compile_overflow_program(), &CodegenOptions::default())
+        .expect("静态数值错误应降低");
+    assert!(module.uses_runtime);
+    assert_eq!(module.runtime_components, vec!["value"]);
 }
 
 #[test]

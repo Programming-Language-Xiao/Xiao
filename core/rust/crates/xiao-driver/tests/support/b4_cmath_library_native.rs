@@ -4,7 +4,9 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
-use xiao_codegen_llvm::{CodegenOptions, TargetDescription, Toolchain};
+use xiao_codegen_llvm::{
+    ArtifactVerification, CodegenOptions, ObjectFormat, TargetDescription, Toolchain,
+};
 use xiao_driver::{FrontendCompiler, FrontendNativeDriver, FrontendRequest, NativeBuildRequest};
 
 /// 用两条固定官方选择导入路径实际构建O0/O3，逐字核对共享黄金及错误恢复。
@@ -46,11 +48,36 @@ pub fn run() {
                 .build_artifact(&artifact, &build)
                 .unwrap();
             assert!(result.native.module.uses_runtime);
+            assert!(
+                result
+                    .native
+                    .module
+                    .runtime_components
+                    .iter()
+                    .any(|component| component == "containers"),
+                "{prefix}.cmath O{level} missing emitted container ABI: {:?}",
+                result.native.module.runtime_components
+            );
+            match result.native.artifact_runtime.verification {
+                ArtifactVerification::Complete => assert_eq!(
+                    result.native.artifact_runtime.declared_components,
+                    result.native.artifact_runtime.observed_components
+                ),
+                ArtifactVerification::UnverifiedCoffExports => {
+                    assert_eq!(
+                        result.native.artifact_runtime.object_format,
+                        ObjectFormat::Coff
+                    );
+                }
+            }
             fs::write(path.with_extension("ll"), &result.native.module.text).unwrap();
             execute(&path, &golden);
             println!(
-                "B4-4-NATIVE path={prefix}.cmath optimization={level} executable={} stdout=golden errors=009 result=passed",
-                path.display()
+                "B4-4-NATIVE path={prefix}.cmath optimization={level} executable={} verification={:?} declared={:?} observed={:?} stdout=golden errors=009 result=passed",
+                path.display(),
+                result.native.artifact_runtime.verification,
+                result.native.artifact_runtime.declared_components,
+                result.native.artifact_runtime.observed_components
             );
         }
     }

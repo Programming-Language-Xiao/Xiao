@@ -498,16 +498,17 @@ impl<'a> ModuleGenerator<'a> {
                 .as_bytes()
             )
         );
+        let runtime_components = if self.uses_runtime {
+            crate::artifact::reachable_runtime_components(&text)
+        } else {
+            Vec::new()
+        };
         Ok(LlvmModule {
             text,
             target: self.options.target.clone(),
             entry_symbol: "xiao_entry".to_owned(),
             uses_runtime: self.uses_runtime,
-            runtime_components: if self.uses_runtime {
-                vec!["value".to_owned()]
-            } else {
-                Vec::new()
-            },
+            runtime_components,
             runtime_abi_version: self.uses_runtime.then_some(ABI_ENCODED_VERSION),
             codegen_fingerprint: fingerprint,
             source_map: source_map_for_program(self.program),
