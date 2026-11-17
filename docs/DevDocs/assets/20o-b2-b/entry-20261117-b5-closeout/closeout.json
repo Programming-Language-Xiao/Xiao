@@ -1,0 +1,156 @@
+{
+  "stage": "B5",
+  "passed": true,
+  "evidence_valid": true,
+  "stage_passed": true,
+  "blocked": false,
+  "b5_closed": true,
+  "b6_entry_open": true,
+  "b6_started": false,
+  "b7_started": false,
+  "b2_c_started": false,
+  "entry_commit": "606bbe6514104068358f9f174d5c6da53ee352b7",
+  "current_code_commit": "67319d61c18b2f02a57f974883c57600f70c724d",
+  "runtime_abi": "1.19",
+  "codegen_version": 22,
+  "stdlib_interface_version": 1,
+  "cmath": "planned",
+  "public_release": false,
+  "components": {
+    "b5_historical_matrix": {
+      "source": "matrix",
+      "code_commit": "5864cbde627f727483ab676c6f4bc1bf0a7819bb",
+      "runtime_abi": "1.19",
+      "codegen_version": 21
+    },
+    "generator_21_to_22": {
+      "source": "fix",
+      "code_commit": "cfab977105273dcfdfc1831332b3a804ccc217d9",
+      "metadata_validation_cases": 4,
+      "cache_rows": 12
+    },
+    "url_optimization": {
+      "source": "url",
+      "code_commit": "67319d61c18b2f02a57f974883c57600f70c724d",
+      "resource_passed": 18,
+      "resource_failed": 0,
+      "unicode_test_seconds": 5.65
+    },
+    "current_default_workspace": {
+      "source": "url",
+      "receipt": "workspace-final.json",
+      "source_commit": "67319d61c18b2f02a57f974883c57600f70c724d"
+    }
+  },
+  "sources": {
+    "matrix": {
+      "commit": "06eee789f9553212de34a70bc2b159b5c807975a",
+      "directory": "docs/DevDocs/assets/20o-b2-b/entry-20261116-b5-rebuild",
+      "manifest": "evidence.json",
+      "manifest_identity": {
+        "bytes": 64176,
+        "sha256": "28a9f0d2545c05ea05792fe0c2f0171eadd760eb6d4ca8c97dde71a8a3bf31a2"
+      },
+      "git_tree": "fba469936757a80aa80c9c533189528d98ddd984",
+      "files_including_manifest": 358,
+      "inventory_sha256": "a7dcaf74ab7331a096cbee62f1f75f0645a479238650332aa9d281982fe7a9d4"
+    },
+    "fix": {
+      "commit": "cba346fc6f3039cbc76889f4907ea8539c38ff48",
+      "directory": "docs/DevDocs/assets/20o-b2-static-float-equality/entry-20261117-fix",
+      "manifest": "evidence-final-r4.json",
+      "manifest_identity": {
+        "bytes": 108381,
+        "sha256": "4027d27044a74d180ced430a398ddcd1b62222248c711b3a0c94b4a64a8d0874"
+      },
+      "git_tree": "351a13f36c72dc74da81d9f5b4450267a4e1491c",
+      "files_including_manifest": 553,
+      "inventory_sha256": "9cbc1a0c79f596c4fd18ab123fa969687c63a4f527358839c1e29d5861b3bad7"
+    },
+    "url": {
+      "commit": "606bbe6514104068358f9f174d5c6da53ee352b7",
+      "directory": "docs/DevDocs/assets/20o-b2-b/entry-20261117-url-optimization",
+      "manifest": "evidence.json",
+      "manifest_identity": {
+        "bytes": 3595,
+        "sha256": "7897479d6ac74f2c0194f2fa45c4e4638d2d266140f8facc3ec311a8527e6e6c"
+      },
+      "git_tree": "933ade60bab584b685d3f5e105167b7ef9880663",
+      "files_including_manifest": 22,
+      "inventory_sha256": "525d676298d4ea5fd9e03032daafad04312bd1294dddc6919b348e05f88047ae"
+    }
+  },
+  "audit_receipts": {
+    "matrix": {
+      "bytes": 2699,
+      "sha256": "7dabd2e5cbfe07272ba72dd9a8e7bd5e834a106e358378a0ac55284cbb952668"
+    },
+    "fix": {
+      "bytes": 2721,
+      "sha256": "01778beb4889ecff553b1f272bf697fd505919edbb065c9dcd446d50d9365f11"
+    },
+    "url": {
+      "bytes": 2710,
+      "sha256": "939b0ad4c1976fddec4933f97fcde788b0d6ed4ee32770f28c5179b4369cf33d"
+    }
+  },
+  "historical_boundary": {
+    "b5_matrix_closed": false,
+    "original_default_workspace_passed": false,
+    "baseline_kind": "reconstructed_from_B1_source",
+    "historical_originals_available": false,
+    "version_cases": 36,
+    "new_entry_cases": 12,
+    "cache_groups": 2,
+    "c_preserved_signatures": 136,
+    "c_added_signatures": 16,
+    "guards_real_output": 4,
+    "guards_derived_negatives": 24,
+    "historical_direct_timing_samples": 8,
+    "causal_attribution_proven": false
+  },
+  "current_workspace": {
+    "receipt": "workspace-final.json",
+    "target_count": 191,
+    "passed": 1754,
+    "failed": 0,
+    "ignored": 55,
+    "test_case_count": 1809,
+    "exit_code": 0,
+    "elapsed_seconds": 625.6880000000237,
+    "pid": 70636
+  },
+  "b6_required_url_load": {
+    "case": "url.decode_unicode",
+    "phase": "maximum",
+    "escaped_codepoints": 16384,
+    "input_utf8_bytes": 196608,
+    "expected_utf8_bytes": 65536,
+    "batches": 5,
+    "vm_release_max_seconds": 10,
+    "native_o0_o3_max_seconds": 2,
+    "resident_delta_max_mib": 64,
+    "platforms": [
+      "Windows",
+      "Linux",
+      "macOS"
+    ],
+    "replacement_by_default_256_or_mixed_case_allowed": false
+  },
+  "platforms_executed": [
+    "Windows x86_64-pc-windows-msvc"
+  ],
+  "not_executed": [
+    "Linux",
+    "macOS",
+    "remote CI",
+    "B6 performance",
+    "721 F10"
+  ],
+  "retained_debts": [
+    "B1 historical originals missing",
+    "22C",
+    "22D",
+    "19/11/22"
+  ]
+}

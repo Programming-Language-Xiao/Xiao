@@ -2,7 +2,7 @@
 
 > **2026-11-13 版本裁定执行：星崽在本会话已批准“B4 升到生成器21，更新规划并调整B5边界”。B4-3改LLVM调用文本，按后端版本规则20→21；ABI仍1.18、接口1。B5只将ABI升1.19并核验既有生成器21的最终拒绝/重生成矩阵，不再次因本批接线递增生成器。下文将21留B5或B4不得升21的旧句均由本裁定替代；签署的冻结正文及历史证据不改写。**
 
-> **2026-11-16重开收口：B4-1～B4-4与FIX.1证据链、当时完整workspace及语言全链路回归已通过Windows本机复核。** 本页登记内部`language_available=true`及B5交接；最终签收见[新证据目录](assets/20o-b2-b/entry-20261116-b4-5-rerun/README.md)的`docs-final`、`closeout.json`与默认只读审计。该结论属于B4-5退出时点；后续B5已实施ABI1.19/21矩阵，默认并发workspace的URL看门狗失败仍待处理，见[B5当前记录](20o-b2-b5-version-matrix-plan.md)。B6/B7/B2-C未开始，公共registry/教程仍planned。
+> **2026-11-16重开收口：B4-1～B4-4与FIX.1证据链、当时完整workspace及语言全链路回归已通过Windows本机复核。** 本页登记内部`language_available=true`及B5交接；最终签收见[新证据目录](assets/20o-b2-b/entry-20261116-b4-5-rerun/README.md)的`docs-final`、`closeout.json`与默认只读审计。该结论属于B4-5退出时点；后续B5已实施ABI1.19/21矩阵；静态比较修复及URL优化后，当前1.19/22的默认workspace通过，B5已完成四类证据联合收口，见[B5当前记录](20o-b2-b5-version-matrix-plan.md)。B6/B7/B2-C未开始，公共registry/教程仍planned。
 > 固定入口`6e172c1e`的受保护产品树与FIX.1产品`cfa79381`一致；Runtime在全新任务根冷构建。旧B4-5 blocked回执及FIX.1证据保持历史不改写，见[FIX.1规划](20o-b2-b4-3-fix1-numeric-range-routing-plan.md)与[证据](assets/20o-b2-b/entry-20261115-b4-3-fix1/README.md)。
 > 入口为 B4-0/B4-1 记录及后续 B4-2A/B、B4-3、B4-4 各自完成后生成的最终内部证据。
 > B4-5 只做整批语言收口、证据对账和 B5 交接，不修改产品源码；发现产品问题时退回所属阶段处理。ABI维持1.18、生成器沿用21，不升级registry/教程。

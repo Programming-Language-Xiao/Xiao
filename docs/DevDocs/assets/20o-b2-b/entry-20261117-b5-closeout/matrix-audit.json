@@ -1,0 +1,66 @@
+{
+  "argv": [
+    "D:\\Programs\\Python\\Python312\\python.exe",
+    "-B",
+    "-X",
+    "utf8",
+    "docs/DevDocs/assets/20o-b2-b/entry-20261116-b5-rebuild/audit.py"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 68036,
+  "started_utc": "2026-11-17T11:48:10.932409+00:00",
+  "finished_utc": "2026-11-17T11:48:37.248783+00:00",
+  "elapsed_seconds": 26.31300000002375,
+  "exit_code": 0,
+  "read_only": true,
+  "product_before": "e62553d5504793550d1450185616dbb478d2a53a400ce5db5217aac1223f6f69",
+  "product_after": "e62553d5504793550d1450185616dbb478d2a53a400ce5db5217aac1223f6f69",
+  "dependency_inputs": {
+    "docs/DevDocs/20o-b2-static-float-equality-fix-plan.md": {
+      "bytes": 10323,
+      "sha256": "495d61ce7bb32b99982e82354f676020eaad7c298b856e58c704beb5e8989957"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261113-b4-3/record.py": {
+      "bytes": 16383,
+      "sha256": "6ceb53f3cb57209e1fc3e5cd369e456edee54cb1a6ccec37369e675034814b9e"
+    }
+  },
+  "stdout": {
+    "path": "objects/sha256/93/939f726abb8ddebeeecbcaf540e427cb43660766aa99f7e600948c804cf5f07c.bin",
+    "bytes": 239,
+    "sha256": "939f726abb8ddebeeecbcaf540e427cb43660766aa99f7e600948c804cf5f07c",
+    "encoding": "identity",
+    "raw_bytes": 239,
+    "raw_sha256": "939f726abb8ddebeeecbcaf540e427cb43660766aa99f7e600948c804cf5f07c"
+  },
+  "stderr": {
+    "path": "objects/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.bin",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "encoding": "identity",
+    "raw_bytes": 0,
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "binary": {
+      "bytes": 104952,
+      "sha256": "1a078825122b059f04b6c1545909f1d3ed0838dd24ab80d1c7fa60ca68ff9af5"
+    }
+  },
+  "collector_sha256": "c68a48bca4d62c6be14d2706cd9cab847ea77fec1495bb32eb97a2ff052bf13d",
+  "source": {
+    "commit": "06eee789f9553212de34a70bc2b159b5c807975a",
+    "directory": "docs/DevDocs/assets/20o-b2-b/entry-20261116-b5-rebuild",
+    "manifest": "evidence.json",
+    "manifest_identity": {
+      "bytes": 64176,
+      "sha256": "28a9f0d2545c05ea05792fe0c2f0171eadd760eb6d4ca8c97dde71a8a3bf31a2"
+    },
+    "git_tree": "fba469936757a80aa80c9c533189528d98ddd984",
+    "files_including_manifest": 358,
+    "inventory_sha256": "a7dcaf74ab7331a096cbee62f1f75f0645a479238650332aa9d281982fe7a9d4"
+  },
+  "source_before": "a7dcaf74ab7331a096cbee62f1f75f0645a479238650332aa9d281982fe7a9d4",
+  "source_after": "a7dcaf74ab7331a096cbee62f1f75f0645a479238650332aa9d281982fe7a9d4"
+}
