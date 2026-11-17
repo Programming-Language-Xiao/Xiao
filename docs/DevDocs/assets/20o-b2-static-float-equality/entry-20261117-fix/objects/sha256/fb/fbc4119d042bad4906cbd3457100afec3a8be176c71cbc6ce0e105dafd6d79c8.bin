@@ -1,0 +1,23 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.02s
+     Running tests\20o_static_float_equality.rs (D:\project\Xiao\.b5\float-equality-fix-20261117-01\target\debug\deps\20o_static_float_equality-2d723e0bb2fc3b33.exe)
+
+running 3 tests
+test native_static_dynamic_comparisons_match_vm_o0_o3 ... ignored, 需要显式LLVM工具及本任务Runtime；独立取证必须精确执行此项
+test generator22_keeps_metadata_readability_separate_from_cache_identity ... ok
+
+thread 'real_parameters_preserve_language_equality_and_ordering' (42140) panicked at crates\xiao-driver\tests\20o_static_float_equality.rs:28:5:
+assertion `left == right` failed: int-sfloat-eq
+  left: "false\n"
+ right: "true\n"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test real_parameters_preserve_language_equality_and_ordering ... FAILED
+
+failures:
+
+failures:
+    real_parameters_preserve_language_equality_and_ordering
+
+test result: FAILED. 1 passed; 1 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_static_float_equality`

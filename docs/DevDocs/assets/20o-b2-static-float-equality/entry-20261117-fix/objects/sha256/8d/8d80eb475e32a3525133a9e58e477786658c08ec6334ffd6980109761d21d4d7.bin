@@ -1,0 +1,129 @@
+; Xiao N0-A LLVM module
+; target = x86_64-pc-windows-msvc
+target triple = "x86_64-pc-windows-msvc"
+
+; xiao.source-map statement 0..72
+; xiao.source-map return 51..71
+; xiao.source-map statement 72..105
+@.xiao.error.message-c2b638b590087a66 = private unnamed_addr constant [32 x i8] c"sfloat \E8\BF\90\E7\AE\97\E4\BA\A7\E7\94\9F\E9\9D\9E\E6\9C\89\E9\99\90\E5\80\BC\00"
+@.xiao.error.operator = private unnamed_addr constant [1 x i8] c"\00"
+
+declare i32 @xiao_runtime_abi_is_compatible(i32, i32)
+declare i32 @xiao_runtime_error_exit_code()
+declare i32 @xiao_runtime_error_raise_numeric(i32, ptr, i64, ptr, i64, i64, i64)
+declare void @exit(i32)
+declare void @xiao_runtime_error_report()
+declare void @xiao_runtime_fatal_abi()
+
+define i1 @xiao_fn_0_compare(float %arg0, float %arg1) {
+entry:
+  %slot0 = alloca float
+  %slot1 = alloca float
+  store float %arg0, ptr %slot0
+  store float %arg1, ptr %slot1
+  %t0 = load float, ptr %slot0
+  %t1 = load float, ptr %slot1
+  %t2 = bitcast float %t0 to i32
+  %t3 = bitcast float %t1 to i32
+  %t4 = icmp ne i32 %t2, %t3
+  ret i1 %t4
+}
+
+define i64 @xiao_entry() {
+entry:
+  %slot0 = alloca i64
+  store i64 0, ptr %slot0
+  %t5 = fptrunc double 0.00000000000000000e0 to float
+  %t6 = fcmp ord float %t5, %t5
+  %t7 = fcmp oge float %t5, -3.4028234663852886e+38
+  %t8 = fcmp ole float %t5, 3.4028234663852886e+38
+  %t9 = and i1 %t7, %t8
+  br i1 %t6, label %finite.ok0, label %finite.trap1
+finite.trap1:
+  %t10 = getelementptr inbounds [1 x i8], ptr @.xiao.error.operator, i64 0, i64 0
+  %t11 = getelementptr inbounds [32 x i8], ptr @.xiao.error.message-c2b638b590087a66, i64 0, i64 0
+  %t12 = call i32 @xiao_runtime_error_raise_numeric(i32 0, ptr %t10, i64 0, ptr %t11, i64 31, i64 80, i64 91)
+  %t13 = icmp eq i32 %t12, 0
+  br i1 %t13, label %xiao.error.report2, label %xiao.error.abi.failure3
+xiao.error.abi.failure3:
+  call void @xiao_runtime_fatal_abi()
+  unreachable
+xiao.error.report2:
+  call void @xiao_runtime_error_report()
+  %t14 = call i32 @xiao_runtime_error_exit_code()
+  call void @exit(i32 %t14)
+  unreachable
+finite.ok0:
+  br i1 %t9, label %finite.continue4, label %finite.range_trap5
+finite.range_trap5:
+  %t15 = getelementptr inbounds [1 x i8], ptr @.xiao.error.operator, i64 0, i64 0
+  %t16 = getelementptr inbounds [32 x i8], ptr @.xiao.error.message-c2b638b590087a66, i64 0, i64 0
+  %t17 = call i32 @xiao_runtime_error_raise_numeric(i32 0, ptr %t15, i64 0, ptr %t16, i64 31, i64 80, i64 91)
+  %t18 = icmp eq i32 %t17, 0
+  br i1 %t18, label %xiao.error.report6, label %xiao.error.abi.failure7
+xiao.error.abi.failure7:
+  call void @xiao_runtime_fatal_abi()
+  unreachable
+xiao.error.report6:
+  call void @xiao_runtime_error_report()
+  %t19 = call i32 @xiao_runtime_error_exit_code()
+  call void @exit(i32 %t19)
+  unreachable
+finite.continue4:
+  %t20 = fptrunc double 0.00000000000000000e0 to float
+  %t21 = fcmp ord float %t20, %t20
+  %t22 = fcmp oge float %t20, -3.4028234663852886e+38
+  %t23 = fcmp ole float %t20, 3.4028234663852886e+38
+  %t24 = and i1 %t22, %t23
+  br i1 %t21, label %finite.ok8, label %finite.trap9
+finite.trap9:
+  %t25 = getelementptr inbounds [1 x i8], ptr @.xiao.error.operator, i64 0, i64 0
+  %t26 = getelementptr inbounds [32 x i8], ptr @.xiao.error.message-c2b638b590087a66, i64 0, i64 0
+  %t27 = call i32 @xiao_runtime_error_raise_numeric(i32 0, ptr %t25, i64 0, ptr %t26, i64 31, i64 93, i64 104)
+  %t28 = icmp eq i32 %t27, 0
+  br i1 %t28, label %xiao.error.report10, label %xiao.error.abi.failure11
+xiao.error.abi.failure11:
+  call void @xiao_runtime_fatal_abi()
+  unreachable
+xiao.error.report10:
+  call void @xiao_runtime_error_report()
+  %t29 = call i32 @xiao_runtime_error_exit_code()
+  call void @exit(i32 %t29)
+  unreachable
+finite.ok8:
+  br i1 %t24, label %finite.continue12, label %finite.range_trap13
+finite.range_trap13:
+  %t30 = getelementptr inbounds [1 x i8], ptr @.xiao.error.operator, i64 0, i64 0
+  %t31 = getelementptr inbounds [32 x i8], ptr @.xiao.error.message-c2b638b590087a66, i64 0, i64 0
+  %t32 = call i32 @xiao_runtime_error_raise_numeric(i32 0, ptr %t30, i64 0, ptr %t31, i64 31, i64 93, i64 104)
+  %t33 = icmp eq i32 %t32, 0
+  br i1 %t33, label %xiao.error.report14, label %xiao.error.abi.failure15
+xiao.error.abi.failure15:
+  call void @xiao_runtime_fatal_abi()
+  unreachable
+xiao.error.report14:
+  call void @xiao_runtime_error_report()
+  %t34 = call i32 @xiao_runtime_error_exit_code()
+  call void @exit(i32 %t34)
+  unreachable
+finite.continue12:
+  %t35 = call i1 @xiao_fn_0_compare(float %t5, float %t20)
+  %t36 = zext i1 %t35 to i64
+  store i64 %t36, ptr %slot0
+  %t37 = load i64, ptr %slot0
+  ret i64 %t37
+}
+
+define i32 @main() {
+entry:
+  %xiao_runtime_abi_status = call i32 @xiao_runtime_abi_is_compatible(i32 1, i32 19)
+  %xiao_runtime_abi_ok = icmp eq i32 %xiao_runtime_abi_status, 1
+  br i1 %xiao_runtime_abi_ok, label %xiao.runtime.ok, label %xiao.runtime.incompatible
+xiao.runtime.incompatible:
+  call void @xiao_runtime_fatal_abi()
+  unreachable
+xiao.runtime.ok:
+  %xiao_exit = call i64 @xiao_entry()
+  %xiao_exit_code = trunc i64 %xiao_exit to i32
+  ret i32 %xiao_exit_code
+}

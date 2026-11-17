@@ -1,0 +1,52 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.87s
+     Running tests\20o_b2_b4_cmath_llvm.rs (D:\project\Xiao\.b5\float-equality-fix-20261117-01\target\debug\deps\20o_b2_b4_cmath_llvm-cc2ffd7a052ecbdb.exe)
+
+running 5 tests
+test native_cmath_static_dynamic_o0_o3_and_shared_pow ... ignored, 需要本任务全新Runtime和显式clang/llvm-as；B4-3独立取证精确执行
+test static_scalar_calls_keep_runtime_link_and_explicit_observation ... ok
+test float_power_uses_runtime_and_sfloat_keeps_existing_intrinsic ... ok
+test historical_float_power_diff_is_bound_to_formal_cmath_vectors ... ok
+test both_lowerings_use_fifteen_shared_abi_symbols_and_current_version ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests\20o_b2_b4_cmath_vm.rs (D:\project\Xiao\.b5\float-equality-fix-20261117-01\target\debug\deps\20o_b2_b4_cmath_vm-2c98a2c7bd8ce391.exe)
+
+running 7 tests
+test all_direct_primitives_execute_in_source_and_production_xiaoc ... ok
+test named_argument_expression_failures_keep_source_evaluation_order ... ok
+test vm_calls_leave_runtime_abi_pending_error_unchanged ... ok
+test failing_cmath_calls_do_not_leak_heap_arguments_or_partial_results ... ok
+test domain_errors_keep_decoded_span_and_observable_cleanup ... ok
+test vm_rejects_invalid_shapes_types_and_unknown_ids ... ok
+test decoded_vm_calls_match_runtime_bits_and_errors_for_all_ids ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+     Running tests\20o_b2_b4_frontend.rs (D:\project\Xiao\.b5\float-equality-fix-20261117-01\target\debug\deps\20o_b2_b4_frontend-f6dd88ed772d2bd6.exe)
+
+running 3 tests
+test cmath_static_call_shape_and_type_errors_are_rejected ... ok
+test cmath_intrinsics_typecheck_and_lower_to_frozen_ir ... ok
+test cmath_wrapper_module_carries_intrinsic_ir_without_enabling_import_execution ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests\20o_b2_b4_numeric_range_routing.rs (D:\project\Xiao\.b5\float-equality-fix-20261117-01\target\debug\deps\20o_b2_b4_numeric_range_routing-a7bc37824a02cf88.exe)
+
+running 3 tests
+test sfloat_pow_keeps_existing_static_f32_intrinsic ... ok
+test integer_numeric_range_only_keeps_dynamic_weak_runtime ... ok
+test float_pow_numeric_range_keeps_static_shared_kernel ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\20o_b2_b5_versions.rs (D:\project\Xiao\.b5\float-equality-fix-20261117-01\target\debug\deps\20o_b2_b5_versions-e171b1ec1f5ab11d.exe)
+
+running 2 tests
+test frozen_abi18_baselines_are_rejected_before_entry ... ok
+test current_artifacts_bind_exact_abi19_and_current_codegen ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+

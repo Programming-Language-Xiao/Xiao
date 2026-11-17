@@ -1,0 +1,15 @@
+{
+  "index": {
+    "path": "objects/sha256/e7/e748e07f5c8308c1661fc52c633af37dd565b0ff3da6878ee302bb618d15ff47.bin",
+    "bytes": 440,
+    "sha256": "e748e07f5c8308c1661fc52c633af37dd565b0ff3da6878ee302bb618d15ff47",
+    "encoding": "identity",
+    "raw_bytes": 440,
+    "raw_sha256": "e748e07f5c8308c1661fc52c633af37dd565b0ff3da6878ee302bb618d15ff47"
+  },
+  "executable": {
+    "path": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\cache-dynamic-o3-r2\\dynamic-o3-g22.exe",
+    "bytes": 1808896,
+    "sha256": "d0d21917df2437e71e59271e9f271a8e8800980c27f66b649f428545390bdd48"
+  }
+}

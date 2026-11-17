@@ -1,0 +1,70 @@
+{
+  "label": "comparisons-default",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_static_float_equality",
+    "--",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 74672,
+  "started_utc": "2026-11-17T02:47:23.417412+00:00",
+  "finished_utc": "2026-11-17T02:48:16.951085+00:00",
+  "exit_code": 0,
+  "environment_overrides": {
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\target",
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_TERM_COLOR": "never",
+    "TEMP": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\temp",
+    "TMP": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\temp",
+    "XIAO_HOME": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\Xiao\\stdlib",
+    "XIAO_B1_F10": "0",
+    "XIAO_B2_A_PERF": "0",
+    "XIAO_CLANG": "D:/msys64/ucrt64/bin/clang.exe",
+    "XIAO_LLVM_AS": "D:/msys64/ucrt64/bin/llvm-as.exe",
+    "XIAO_LLC": "D:/msys64/ucrt64/bin/llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\target\\debug\\xiao_runtime.lib",
+    "XIAO_FLOAT_EQUALITY_OUTPUT": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\native",
+    "RUSTC": "C:/Users/xiaoc/.rustup/toolchains/1.96.0-x86_64-pc-windows-msvc/bin/rustc.exe",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8"
+  },
+  "removed_names": [],
+  "source_before": {
+    "path": "objects/sha256/f5/f5ca2a06f1a11636a032c431a5ba574d643d5b1c50cdd9a453c5d69d3435b0b2.bin",
+    "bytes": 67309,
+    "sha256": "f5ca2a06f1a11636a032c431a5ba574d643d5b1c50cdd9a453c5d69d3435b0b2",
+    "encoding": "gzip",
+    "raw_bytes": 233573,
+    "raw_sha256": "64947639ee56f00ec6728ff5c05473bff1275ad7eb11b5cb8de0c9709d4d5b07"
+  },
+  "source_after": {
+    "path": "objects/sha256/f5/f5ca2a06f1a11636a032c431a5ba574d643d5b1c50cdd9a453c5d69d3435b0b2.bin",
+    "bytes": 67309,
+    "sha256": "f5ca2a06f1a11636a032c431a5ba574d643d5b1c50cdd9a453c5d69d3435b0b2",
+    "encoding": "gzip",
+    "raw_bytes": 233573,
+    "raw_sha256": "64947639ee56f00ec6728ff5c05473bff1275ad7eb11b5cb8de0c9709d4d5b07"
+  },
+  "source_unchanged": true,
+  "runtime_before": null,
+  "runtime_after": null,
+  "log": {
+    "path": "objects/sha256/90/908ab917d7cae6bab7de6fea7832031ded06f85ce38eab82c6fe1adf9e9693c6.bin",
+    "bytes": 4340,
+    "sha256": "908ab917d7cae6bab7de6fea7832031ded06f85ce38eab82c6fe1adf9e9693c6",
+    "encoding": "identity",
+    "raw_bytes": 4340,
+    "raw_sha256": "908ab917d7cae6bab7de6fea7832031ded06f85ce38eab82c6fe1adf9e9693c6"
+  }
+}

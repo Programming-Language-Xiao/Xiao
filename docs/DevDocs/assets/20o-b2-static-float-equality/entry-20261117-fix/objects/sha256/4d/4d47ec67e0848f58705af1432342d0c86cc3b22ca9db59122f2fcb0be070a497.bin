@@ -1,0 +1,6 @@
+
+thread 'main' (34872) panicked at D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-static-float-equality\entry-20261117-fix\version-probe.rs:102:9:
+assertion `left == right` failed
+  left: "xiao-fnv1a64-d02f91c62333af7f"
+ right: "xiao-fnv1a64-1e82bd4566d62047"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

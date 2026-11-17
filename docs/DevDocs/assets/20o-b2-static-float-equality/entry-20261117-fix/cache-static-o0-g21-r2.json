@@ -1,0 +1,51 @@
+{
+  "label": "cache-static-o0-g21-r2",
+  "argv": [
+    "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\generator21-r2.exe",
+    "cache",
+    "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\cache-static-o0-r2",
+    "static",
+    "0"
+  ],
+  "pid": 55472,
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "started_utc": "2026-11-17T03:17:15.220920+00:00",
+  "finished_utc": "2026-11-17T03:17:15.220920+00:00",
+  "exit_code": 0,
+  "environment_overrides": {
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\target",
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_TERM_COLOR": "never",
+    "TEMP": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\temp",
+    "TMP": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\temp",
+    "XIAO_HOME": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\Xiao\\stdlib",
+    "XIAO_B1_F10": "0",
+    "XIAO_B2_A_PERF": "0",
+    "XIAO_CLANG": "D:/msys64/ucrt64/bin/clang.exe",
+    "XIAO_LLVM_AS": "D:/msys64/ucrt64/bin/llvm-as.exe",
+    "XIAO_LLC": "D:/msys64/ucrt64/bin/llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\target\\debug\\xiao_runtime.lib",
+    "XIAO_FLOAT_EQUALITY_OUTPUT": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\native",
+    "RUSTC": "C:/Users/xiaoc/.rustup/toolchains/1.96.0-x86_64-pc-windows-msvc/bin/rustc.exe",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8"
+  },
+  "stdout": {
+    "path": "objects/sha256/32/32d558dd452d400b5c0f0ba39e339d768d5ba8322fedcdcceb13cd8268913944.bin",
+    "bytes": 1434,
+    "sha256": "32d558dd452d400b5c0f0ba39e339d768d5ba8322fedcdcceb13cd8268913944",
+    "encoding": "identity",
+    "raw_bytes": 1434,
+    "raw_sha256": "32d558dd452d400b5c0f0ba39e339d768d5ba8322fedcdcceb13cd8268913944"
+  },
+  "stderr": {
+    "path": "objects/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.bin",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "encoding": "identity",
+    "raw_bytes": 0,
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

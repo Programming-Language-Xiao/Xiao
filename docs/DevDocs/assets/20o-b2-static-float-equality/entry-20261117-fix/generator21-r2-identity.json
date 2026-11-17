@@ -1,0 +1,105 @@
+{
+  "executable": {
+    "path": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\generator21-r2.exe",
+    "bytes": 11930624,
+    "sha256": "66c8f0677be5ae7421a01fe640cb7cb691ff0bda9f53bdde49a884edcea3a425"
+  },
+  "probe": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-static-float-equality\\entry-20261117-fix\\version-probe.rs",
+    "bytes": 7635,
+    "sha256": "867f1b99e4c6c7e5317159370044df9e7210691db96c3ef8b3c6892d36be9535"
+  },
+  "compiler": {
+    "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+    "bytes": 111104,
+    "sha256": "acb138286bbe20c6cf3ec39a7e0a68c3fab0cd949baa2912cf466514d0d531ab"
+  },
+  "driver_fingerprint": {
+    "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\.fingerprint\\xiao-driver-60d0e559fa11f209\\lib-xiao_driver.json",
+    "bytes": 1758,
+    "sha256": "8650d8e2e1db8ccbbf6083f15aed2b81623ac501db4ae4903d488bcb7c9597b3"
+  },
+  "selected_dependency_fingerprints": {
+    "xiao_codegen_llvm": {
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\.fingerprint\\xiao-codegen-llvm-2c732a93ec6b8922\\lib-xiao_codegen_llvm",
+      "bytes": 16,
+      "sha256": "bbfd826ef9a3dcebe7589b06670855625a160a3cdfd6db7316a944719170578e"
+    },
+    "xiao_runtime_abi": {
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\.fingerprint\\xiao-runtime-abi-546b3d6965f0fb81\\lib-xiao_runtime_abi",
+      "bytes": 16,
+      "sha256": "2f0f91f4fa1e4261111b26f5f02fda708daac63260d2cb7ab6d457cc5ac68e42"
+    },
+    "xiao_artifacts": {
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\.fingerprint\\xiao-artifacts-6a60a9b3b885b84c\\lib-xiao_artifacts",
+      "bytes": 16,
+      "sha256": "681bb698a03b88ab7d341744761334673d8e5a401c9ad3c7de8a059fb3f83df3"
+    },
+    "serde_json": {
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\.fingerprint\\serde_json-bcbd7fe80529df76\\lib-serde_json",
+      "bytes": 16,
+      "sha256": "2aee5f9410ef0e9fbd675623c035f55d18ba8c218f194caf21a5b60fbf79ad8b"
+    }
+  },
+  "libraries_before": {
+    "xiao_driver": {
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\libxiao_driver-60d0e559fa11f209.rlib",
+      "bytes": 26169434,
+      "sha256": "031b3ac425c8e8354d6481b2734ca05bf421d94d23fdf86e9e86304b45768e59"
+    },
+    "xiao_codegen_llvm": {
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\libxiao_codegen_llvm-2c732a93ec6b8922.rlib",
+      "bytes": 13268398,
+      "sha256": "3018346e929c615d1c010f8020d56ccf468a2372554c3173f5cf4f39777e16a0"
+    },
+    "xiao_runtime_abi": {
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\libxiao_runtime_abi-546b3d6965f0fb81.rlib",
+      "bytes": 366062,
+      "sha256": "a52b4d5e1e6f775d87b797490f1834d098c0b3f48ff7174937ea063ffae7c221"
+    },
+    "xiao_artifacts": {
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\libxiao_artifacts-6a60a9b3b885b84c.rlib",
+      "bytes": 2303954,
+      "sha256": "01ec8365dd06de4098fa060c65cb37a5101c0270c356a432014abca900b8307d"
+    },
+    "serde_json": {
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\libserde_json-bcbd7fe80529df76.rlib",
+      "bytes": 3265810,
+      "sha256": "037b4aea5dbde398056bfcf896a6c94e152ef1542b39133386b32aeefb54ecfb"
+    }
+  },
+  "libraries_after": {
+    "xiao_driver": {
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\libxiao_driver-60d0e559fa11f209.rlib",
+      "bytes": 26169434,
+      "sha256": "031b3ac425c8e8354d6481b2734ca05bf421d94d23fdf86e9e86304b45768e59"
+    },
+    "xiao_codegen_llvm": {
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\libxiao_codegen_llvm-2c732a93ec6b8922.rlib",
+      "bytes": 13268398,
+      "sha256": "3018346e929c615d1c010f8020d56ccf468a2372554c3173f5cf4f39777e16a0"
+    },
+    "xiao_runtime_abi": {
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\libxiao_runtime_abi-546b3d6965f0fb81.rlib",
+      "bytes": 366062,
+      "sha256": "a52b4d5e1e6f775d87b797490f1834d098c0b3f48ff7174937ea063ffae7c221"
+    },
+    "xiao_artifacts": {
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\libxiao_artifacts-6a60a9b3b885b84c.rlib",
+      "bytes": 2303954,
+      "sha256": "01ec8365dd06de4098fa060c65cb37a5101c0270c356a432014abca900b8307d"
+    },
+    "serde_json": {
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\libserde_json-bcbd7fe80529df76.rlib",
+      "bytes": 3265810,
+      "sha256": "037b4aea5dbde398056bfcf896a6c94e152ef1542b39133386b32aeefb54ecfb"
+    }
+  },
+  "actual_generator": 21,
+  "borrowed_old_build": true,
+  "old_source_build_receipt": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-static-float-equality\\entry-20261117-review\\probe-build.json",
+    "bytes": 10691,
+    "sha256": "db3a19349915033fb89a18ff624bb42f86ad082eea5186959a2bfebb1707924e"
+  }
+}

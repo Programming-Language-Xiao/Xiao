@@ -1,0 +1,36 @@
+; Xiao N0-A LLVM module
+; target = x86_64-pc-windows-msvc
+target triple = "x86_64-pc-windows-msvc"
+
+; xiao.source-map statement 0..66
+; xiao.source-map return 45..65
+; xiao.source-map statement 66..79
+define i1 @xiao_fn_0_compare(i64 %arg0, i64 %arg1) {
+entry:
+  %slot0 = alloca i64
+  %slot1 = alloca i64
+  store i64 %arg0, ptr %slot0
+  store i64 %arg1, ptr %slot1
+  %t0 = load i64, ptr %slot0
+  %t1 = load i64, ptr %slot1
+  %t2 = icmp ne i64 %t0, %t1
+  ret i1 %t2
+}
+
+define i64 @xiao_entry() {
+entry:
+  %slot0 = alloca i64
+  store i64 0, ptr %slot0
+  %t3 = call i1 @xiao_fn_0_compare(i64 1, i64 2)
+  %t4 = zext i1 %t3 to i64
+  store i64 %t4, ptr %slot0
+  %t5 = load i64, ptr %slot0
+  ret i64 %t5
+}
+
+define i32 @main() {
+entry:
+  %xiao_exit = call i64 @xiao_entry()
+  %xiao_exit_code = trunc i64 %xiao_exit to i32
+  ret i32 %xiao_exit_code
+}

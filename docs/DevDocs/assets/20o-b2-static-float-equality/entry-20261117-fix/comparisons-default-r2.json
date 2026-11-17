@@ -1,0 +1,78 @@
+{
+  "label": "comparisons-default-r2",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_static_float_equality",
+    "--",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 56308,
+  "started_utc": "2026-11-17T03:12:23.695355+00:00",
+  "finished_utc": "2026-11-17T03:12:29.377771+00:00",
+  "exit_code": 101,
+  "environment_overrides": {
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\target",
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_TERM_COLOR": "never",
+    "TEMP": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\temp",
+    "TMP": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\temp",
+    "XIAO_HOME": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\Xiao\\stdlib",
+    "XIAO_B1_F10": "0",
+    "XIAO_B2_A_PERF": "0",
+    "XIAO_CLANG": "D:/msys64/ucrt64/bin/clang.exe",
+    "XIAO_LLVM_AS": "D:/msys64/ucrt64/bin/llvm-as.exe",
+    "XIAO_LLC": "D:/msys64/ucrt64/bin/llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\target\\debug\\xiao_runtime.lib",
+    "XIAO_FLOAT_EQUALITY_OUTPUT": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\native",
+    "RUSTC": "C:/Users/xiaoc/.rustup/toolchains/1.96.0-x86_64-pc-windows-msvc/bin/rustc.exe",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8"
+  },
+  "removed_names": [],
+  "source_before": {
+    "path": "objects/sha256/f3/f363ee9f949c84ef6bcb416a736bc46c2a409a5ebfeb5be47dc8a8708d65a685.bin",
+    "bytes": 67316,
+    "sha256": "f363ee9f949c84ef6bcb416a736bc46c2a409a5ebfeb5be47dc8a8708d65a685",
+    "encoding": "gzip",
+    "raw_bytes": 233573,
+    "raw_sha256": "853a43dac60fb906330701426146c2ed0e77a93cdff5cf0a9cea7245a5ea2ce4"
+  },
+  "source_after": {
+    "path": "objects/sha256/f3/f363ee9f949c84ef6bcb416a736bc46c2a409a5ebfeb5be47dc8a8708d65a685.bin",
+    "bytes": 67316,
+    "sha256": "f363ee9f949c84ef6bcb416a736bc46c2a409a5ebfeb5be47dc8a8708d65a685",
+    "encoding": "gzip",
+    "raw_bytes": 233573,
+    "raw_sha256": "853a43dac60fb906330701426146c2ed0e77a93cdff5cf0a9cea7245a5ea2ce4"
+  },
+  "source_unchanged": true,
+  "runtime_before": {
+    "path": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\target\\debug\\xiao_runtime.lib",
+    "bytes": 62756912,
+    "sha256": "b3a00dcc9b2a77828997f320a64fbf59ddf45633517cbd8913ad4f12d7c4ec20"
+  },
+  "runtime_after": {
+    "path": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\target\\debug\\xiao_runtime.lib",
+    "bytes": 62756912,
+    "sha256": "b3a00dcc9b2a77828997f320a64fbf59ddf45633517cbd8913ad4f12d7c4ec20"
+  },
+  "log": {
+    "path": "objects/sha256/fb/fbc4119d042bad4906cbd3457100afec3a8be176c71cbc6ce0e105dafd6d79c8.bin",
+    "bytes": 1213,
+    "sha256": "fbc4119d042bad4906cbd3457100afec3a8be176c71cbc6ce0e105dafd6d79c8",
+    "encoding": "identity",
+    "raw_bytes": 1213,
+    "raw_sha256": "fbc4119d042bad4906cbd3457100afec3a8be176c71cbc6ce0e105dafd6d79c8"
+  }
+}

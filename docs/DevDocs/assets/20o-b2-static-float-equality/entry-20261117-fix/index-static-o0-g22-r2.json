@@ -1,0 +1,15 @@
+{
+  "index": {
+    "path": "objects/sha256/94/94e7a2b15a83dbb3c84f8488eb4eeca15c17b659dd365b0b53bc5b95fcc5f8bd.bin",
+    "bytes": 440,
+    "sha256": "94e7a2b15a83dbb3c84f8488eb4eeca15c17b659dd365b0b53bc5b95fcc5f8bd",
+    "encoding": "identity",
+    "raw_bytes": 440,
+    "raw_sha256": "94e7a2b15a83dbb3c84f8488eb4eeca15c17b659dd365b0b53bc5b95fcc5f8bd"
+  },
+  "executable": {
+    "path": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\cache-static-o0-r2\\static-o0-g22.exe",
+    "bytes": 108032,
+    "sha256": "2389b987283d945dfd2758639a96d802ba92d61b22c5a700626a0628c7780ba4"
+  }
+}
