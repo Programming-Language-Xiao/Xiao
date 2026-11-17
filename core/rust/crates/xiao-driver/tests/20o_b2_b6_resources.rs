@@ -100,3 +100,72 @@ fn b6_numeric_and_cmath_errors_are_catchable_and_atomic_on_both_aliases() {
         );
     }
 }
+
+#[cfg(target_os = "linux")]
+#[test]
+/// 诊断产物组件误报时，绕过FrontendNativeDriver二次门禁核对实际语料/符号/执行结果。
+fn b6_diagnoses_linux_native_cmath_runtime_component_observation() {
+    use std::path::PathBuf;
+    use xiao_codegen_llvm::{CodegenOptions, TargetDescription, Toolchain};
+
+    let mut source = CMATH_LIBRARY.to_owned();
+    source = source.replace("import std.cmath as math\n", "");
+    for (index, &(primitive, _, _)) in xiao_intrinsics::CMATH_DECLARATIONS.iter().enumerate() {
+        let name = primitive.strip_prefix("cmath_").unwrap();
+        source = source.replace(&format!("math.{name}("), &format!("f{index}("));
+    }
+    let request = FrontendRequest::from_text(source);
+    let artifact = FrontendCompiler::new().compile(&request).unwrap();
+    let target = TargetDescription::host();
+    let module =
+        xiao_codegen_llvm::lower_program(&artifact.ir, &CodegenOptions::for_target(target.clone()))
+            .unwrap();
+    let clang = PathBuf::from(std::env::var_os("XIAO_CLANG").unwrap());
+    let llvm_as = PathBuf::from(std::env::var_os("XIAO_LLVM_AS").unwrap());
+    let runtime = PathBuf::from(std::env::var_os("XIAO_RUNTIME_LIBRARY").unwrap());
+    let toolchain = Toolchain::new(clang)
+        .with_llvm_as(llvm_as)
+        .with_runtime_library(&runtime)
+        .probe_native_static_libraries(
+            std::env::var_os("RUSTC").unwrap_or_else(|| "rustc".into()),
+            &target,
+        )
+        .unwrap();
+    let output =
+        std::env::temp_dir().join(format!("b6-component-diagnostic-{}", std::process::id()));
+    let executable = toolchain
+        .compile_with_runtime_components_at_level(
+            &module.text,
+            &target,
+            &output,
+            Some(&runtime),
+            &module.runtime_components,
+            0,
+        )
+        .unwrap();
+    let inspection = xiao_codegen_llvm::inspect_artifact(&executable, &target).unwrap();
+    let array_symbols: Vec<_> = inspection
+        .symbols
+        .iter()
+        .filter(|symbol| symbol.starts_with("xiao_runtime_array_"))
+        .cloned()
+        .collect();
+    println!(
+        "B6-NATIVE-DIAGNOSTIC declared={:?} array_symbols={array_symbols:?}",
+        module.runtime_components
+    );
+    let child = std::process::Command::new(&executable).output().unwrap();
+    assert!(child.status.success(), "{:?}", child.status);
+    assert!(
+        child.stderr.is_empty(),
+        "{}",
+        String::from_utf8_lossy(&child.stderr)
+    );
+    assert_eq!(
+        String::from_utf8(child.stdout)
+            .unwrap()
+            .replace("\r\n", "\n"),
+        CMATH_LIBRARY_GOLDEN.replace("\r\n", "\n")
+    );
+    let _ = std::fs::remove_file(executable);
+}
