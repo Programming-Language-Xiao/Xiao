@@ -12,7 +12,7 @@ Linux 1.96.0 工具链没有安装 Clippy 组件，Clippy 回执为不可执行�
 
 FIX.2 已向 B6-1 交回重跑：B6-1 必须在自己的任务根重跑 Linux 官方包装与相关回归；其既有 `stage_passed=false` / `status=blocked` 历史记录不改写。B6-1 自身通过后才可开始 B6-2；本批没有运行性能、旧 721、macOS 或远端 CI。
 
-任务根分别为 `D:/project/Xiao/.b4/b4-3-fix2-20261118-01/windows` 与 `/home/xiaoczx/.b4/b4-3-fix2-20261118-01`。每条命令使用独立 target、Runtime、临时目录和 PID；日志按 SHA-256 内容寻址。`result.json` 由 `finish.py prepare` 从回执生成。首次完整docs门禁报告通过，但收集器封装失败；随后r2门禁通过，封存校验发现门禁后脚本有修正，因此保留r2及失败尝试，最终门禁重新记录为`docs-final-r3.json`。`finish.py seal`按实际字节生成清单；`audit.py`为只读检查。
+任务根分别为 `D:/project/Xiao/.b4/b4-3-fix2-20261118-01/windows` 与 `/home/xiaoczx/.b4/b4-3-fix2-20261118-01`。每条命令使用独立 target、Runtime、临时目录和 PID；日志按 SHA-256 内容寻址。`result.json` 由 `finish.py prepare` 从回执生成。首次完整docs门禁报告通过但收集器封装失败；r2门禁通过后，封存校验发现脚本有后续修正；r3门禁通过后，首次只读审计因规范化辅助函数调用错误而拒绝。r4门禁通过后，封存器拒绝覆盖先前生成的清单；该旧清单对象留在Git历史，新门禁r5通过后将按实际字节原子更新清单。`audit.py`为只读检查。
 
 复核命令：
 

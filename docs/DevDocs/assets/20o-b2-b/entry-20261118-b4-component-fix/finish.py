@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 import gzip
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -39,8 +40,8 @@ FINAL_LINUX = [
     "fix4-linux-codegen-test-r2", "fix4-linux-driver-regressions",
     "fix4-linux-test-build-r2", "fix4-linux-test-run-r2",
 ]
-DOCS_RECEIPT = "docs-final-r3.json"
-DOCS_LOG = "docs-final-r3.log"
+DOCS_RECEIPT = "docs-final-r5.json"
+DOCS_LOG = "docs-final-r5.log"
 
 
 def require(condition, message):
@@ -350,7 +351,7 @@ def docs_gate():
                    "FIX.2最终文档门禁回执或日志已存在，拒绝覆盖")
     before_docs = docs_snapshot()
     before_product = record.source_snapshot()
-    env, removed = record.environment("docs-final-r3")
+    env, removed = record.environment("docs-final-r5")
     bun = shutil.which("bun", path=env.get("PATH"))
     record.require(bun is not None, "FIX.2最终docs门禁找不到Bun")
     bun_version = subprocess.run([bun, "--version"], capture_output=True,
@@ -418,12 +419,17 @@ def seal():
                 "bytes": len(raw), "sha256": record.sha(raw),
             }
     record.require(".gitattributes" in files, "FIX.2证据清单遗漏.gitattributes")
-    write_new(ROOT / "evidence.json", {
+    manifest = {
         "file_count_excluding_manifest": len(files), "files": files,
         "generated_from_actual_bytes": True,
         "generator": "finish.py seal", "docs_receipt": DOCS_RECEIPT,
         "result": "result.json", "code_commit": CODE,
-    })
+    }
+    manifest_path = ROOT / "evidence.json"
+    temporary_path = ROOT / ".evidence.json.tmp"
+    record.require(not temporary_path.exists(), "FIX.2临时清单路径已存在")
+    write_new(temporary_path, manifest)
+    os.replace(temporary_path, manifest_path)
     print(json.dumps({"sealed_files_excluding_manifest": len(files)}))
 
 

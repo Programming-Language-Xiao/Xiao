@@ -65,7 +65,7 @@ def audit():
     report = json.loads(docs_log.decode("utf-8"))
     require(report["passed"] is True, "FIX.2文档门禁原始报告未通过")
     docs_after = finish.unpack(docs["docs_after"])
-    require(docs_after == finish.record.canonical(finish.docs_snapshot()),
+    require(docs_after == finish.canonical(finish.docs_snapshot()),
             "FIX.2文档门禁后输入树发生变化")
 
     b6_status = result["b6_handoff"]
