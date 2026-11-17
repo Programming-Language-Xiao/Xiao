@@ -22,6 +22,6 @@ comparisons-default-r3.json是最终默认语言回归，comparisons-native.json
 
 复核命令：python -B -X utf8 docs/DevDocs/assets/20o-b2-static-float-equality/entry-20261117-fix/audit.py
 
-产品代码提交为cfab9771。早期生成的evidence.json及evidence-final*.json均作为历史快照保留；权威清单为最后文档门禁后的evidence-final-r3.json，不覆盖历史清单。audit.py只读核对本机回执、精确允许路径、真实拒绝原因、源码/工具/Runtime身份与对象摘要；完整审计还将evidence-final-r3.json工作区字节与最终Git提交blob逐字节比较，覆盖清单自引用缺口。最终成功文档回执为docs-gate-final-r11.json，输入含DevDocs和完整产品源码摘要。bin内容寻址对象按二进制文件处理，摘要对应实际归档字节。首次门禁失败与初轮源码校准记录均保留。
+产品代码提交为cfab9771。早期生成的evidence.json及evidence-final*.json均作为历史快照保留；权威清单为最后文档门禁后的evidence-final-r4.json，不覆盖历史清单。audit-negative.json绑定实际临时副本反例，清单末尾篡改和缺少.gitattributes均按明确理由拒绝，副本及原目录均只读。audit.py完整审计还将权威清单字节与最终Git提交blob逐字节比较，覆盖清单自引用缺口。最终成功文档回执为docs-gate-final-r13.json，输入含DevDocs和完整产品源码摘要。bin内容寻址对象按二进制文件处理，摘要对应实际归档字节。首次门禁失败与初轮源码校准记录均保留。
 
 Linux/macOS、远端CI、完整B1 721条回归未执行；B5和URL阻塞、22C/22D及19/11/22债务均不因本项自动关闭。

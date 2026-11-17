@@ -17,10 +17,10 @@ def identity(raw):
     return {"bytes": len(raw), "sha256": sha(raw)}
 
 
-manifest_path = ROOT / "evidence-final-r3.json"
+manifest_path = ROOT / "evidence-final-r4.json"
 if manifest_path.exists():
     raise ValueError("最终证据清单禁止覆盖")
-docs = json.loads((ROOT / "docs-gate-final-r11.json").read_text(encoding="utf-8"))
+docs = json.loads((ROOT / "docs-gate-final-r13.json").read_text(encoding="utf-8"))
 if docs["exit_code"] != 0 or not docs["source_unchanged"]:
     raise ValueError("最终DevDocs/产品源码门禁未通过")
 plan_name = "docs/DevDocs/20o-b2-static-float-equality-fix-plan.md"

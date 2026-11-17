@@ -143,7 +143,7 @@ def audit(root, repository, receipts_only):
                     "Runtime构建产物未落在全新任务根")
 
     if not receipts_only:
-        docs = load(root / "docs-gate-final-r11.json")
+        docs = load(root / "docs-gate-final-r13.json")
         require(docs["exit_code"] == 0 and docs["source_unchanged"]
                 and docs["source_before"] == docs["source_after"]
                 and docs["pid"] > 0,
@@ -163,6 +163,20 @@ def audit(root, repository, receipts_only):
                 and "core/rust/crates/xiao-codegen-llvm/src/ir.rs" in inputs
                 and "core/rust/crates/xiao-driver/tests/support/float_equality.rs" in inputs,
                 "最终门禁输入未覆盖规划、产品、回归或DevDocs")
+        negative = load(root / "audit-negative.json")
+        require(negative["passed"] is True and negative["source_unchanged"] is True
+                and {row["case"] for row in negative["cases"]}
+                == {"baseline", "tampered-manifest", "missing-gitattributes"}
+                and all(row["read_only"] and row["reason_matches"]
+                        for row in negative["cases"]),
+                "审计自反例未按预期完成")
+        tampered = next(row for row in negative["cases"]
+                        if row["case"] == "tampered-manifest")
+        missing = next(row for row in negative["cases"]
+                       if row["case"] == "missing-gitattributes")
+        require(tampered["expected_reason"] == "工作区证据清单与最终Git对象字节不一致"
+                and missing["expected_reason"] == "证据清单与实际字节不一致",
+                "自反例预期拒绝原因不符")
 
     default_test = stored(root, load(root / "comparisons-default-r3.json")["log"])
     require(b"2 passed; 0 failed; 1 ignored" in default_test,
@@ -232,17 +246,17 @@ def audit(root, repository, receipts_only):
                     "真实缓存失配/重建/控制命中不符：" + mode + str(level))
 
     if not receipts_only:
-        manifest = load(root / "evidence-final-r3.json")
+        manifest = load(root / "evidence-final-r4.json")
         require(manifest["file_count"] == len(manifest["files"])
                 and manifest["files"] == {
-                    name: value for name, value in before.items() if name != "evidence-final-r3.json"
+                    name: value for name, value in before.items() if name != "evidence-final-r4.json"
                 }, "证据清单与实际字节不一致")
         committed_manifest = git_bytes(
             repository,
             "show",
-            "HEAD:docs/DevDocs/assets/20o-b2-static-float-equality/entry-20261117-fix/evidence-final-r3.json",
+            "HEAD:docs/DevDocs/assets/20o-b2-static-float-equality/entry-20261117-fix/evidence-final-r4.json",
         )
-        require((root / "evidence-final-r3.json").read_bytes() == committed_manifest,
+        require((root / "evidence-final-r4.json").read_bytes() == committed_manifest,
                 "工作区证据清单与最终Git对象字节不一致")
         require(".gitattributes" in manifest["files"], "清单缺少.gitattributes")
         plan = (repository / plan_name).read_bytes()

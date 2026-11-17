@@ -1,0 +1,68 @@
+{
+  "collected_utc": "2026-11-17T04:31:42.217426+00:00",
+  "scope": "只对新建临时副本执行清单与缺失文件反例；原目录字节不变",
+  "passed": true,
+  "source_unchanged": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\audit-negative-r4\\baseline\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\audit-negative-r4\\baseline",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 0,
+      "expected_reason": null,
+      "reason_matches": true,
+      "read_only": true,
+      "stdout": "{\"scope\": \"只读Windows本机静态浮点相等修复证据核验\", \"read_only\": true, \"repair_acceptance_passed\": true, \"receipt_only\": false, \"manifest_checked\": true, \"counts\": {\"commands\": 10, \"commands_passed\": 8, \"commands_failed_preserved\": 2}, \"native\": 248, \"cases\": 62, \"generator\": 22, \"runtime_abi\": 65555, \"baseline_commit\": \"5864cbde627f727483ab676c6f4bc1bf0a7819bb\", \"entry_commit\": \"aead9c5501177f17976bf8a54f324ac6091bbff7\", \"product_commit\": \"cfab977105273dcfdfc1831332b3a804ccc217d9\", \"multi_platform_or_ci_passed\": false, \"external_blockers_closed\": false}\n",
+      "stderr": ""
+    },
+    {
+      "case": "tampered-manifest",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\audit-negative-r4\\tampered-manifest\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\audit-negative-r4\\tampered-manifest",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 1,
+      "expected_reason": "工作区证据清单与最终Git对象字节不一致",
+      "reason_matches": true,
+      "read_only": true,
+      "stdout": "",
+      "stderr": "{\"scope\": \"只读本机修复证据核验\", \"failed\": \"工作区证据清单与最终Git对象字节不一致\"}\n"
+    },
+    {
+      "case": "missing-gitattributes",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\audit-negative-r4\\missing-gitattributes\\audit.py",
+        "--root",
+        "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\audit-negative-r4\\missing-gitattributes",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "exit_code": 1,
+      "expected_reason": "证据清单与实际字节不一致",
+      "reason_matches": true,
+      "read_only": true,
+      "stdout": "",
+      "stderr": "{\"scope\": \"只读本机修复证据核验\", \"failed\": \"证据清单与实际字节不一致\"}\n"
+    }
+  ]
+}
