@@ -17,6 +17,8 @@ sys.dont_write_bytecode = True
 import record
 
 ROOT, REPOSITORY, TASK = record.ROOT, record.REPOSITORY, record.TASK
+ARCHIVE_PREFIX = ROOT.relative_to(REPOSITORY).as_posix()
+REVIEW_PREFIX = ROOT.with_name("entry-20261118-b4-component-review").relative_to(REPOSITORY).as_posix()
 BASELINE = "a067bd90b6ff34b050e2a39efaa40f3b692d75fd"
 CODE = "43f18274175ba09ac84e759999c40cde72eae1c5"
 PROTECTED_ROOTS = [
@@ -29,8 +31,12 @@ DOC_FILES = [
     "docs/DevDocs/20o-b2-b4-3-llvm-plan.md",
     "docs/DevDocs/20o-b2-b4-3-fix1-numeric-range-routing-plan.md",
     "docs/DevDocs/20o-b2-b6-resource-performance-plan.md",
+    "docs/DevDocs/20o-b2-b7-closeout-plan.md",
     "docs/DevDocs/20o-official-library-program.md",
     "docs/DevDocs/README.md",
+    REVIEW_PREFIX + "/.gitattributes",
+    REVIEW_PREFIX + "/README.md",
+    REVIEW_PREFIX + "/self_negative.py",
 ]
 FINAL_WINDOWS = [
     "fix4-win-codegen-test-r2", "fix4-win-driver-regressions",
@@ -40,8 +46,8 @@ FINAL_LINUX = [
     "fix4-linux-codegen-test-r2", "fix4-linux-driver-regressions",
     "fix4-linux-test-build-r2", "fix4-linux-test-run-r2",
 ]
-DOCS_RECEIPT = "docs-final-r5.json"
-DOCS_LOG = "docs-final-r5.log"
+DOCS_RECEIPT = "docs-final-r7.json"
+DOCS_LOG = "docs-final-r7.log"
 
 
 def require(condition, message):
@@ -351,7 +357,7 @@ def docs_gate():
                    "FIX.2最终文档门禁回执或日志已存在，拒绝覆盖")
     before_docs = docs_snapshot()
     before_product = record.source_snapshot()
-    env, removed = record.environment("docs-final-r5")
+    env, removed = record.environment(Path(DOCS_RECEIPT).stem)
     bun = shutil.which("bun", path=env.get("PATH"))
     record.require(bun is not None, "FIX.2最终docs门禁找不到Bun")
     bun_version = subprocess.run([bun, "--version"], capture_output=True,

@@ -1,6 +1,6 @@
 # 20O-B2-B6. cmath/lfloat 资源、错误与三平台性能规划
 
-> **B6-1当前状态（2026-11-18）：** FIX.2已修复组件推导，Windows/Linux官方包装两别名O0/O3复跑通过，见[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)。B6-1原阶段仍保持未收口；必须在B6-1自身任务根重跑并复核后才可更新收口状态。macOS未验证，B6-2性能尚未开始。生成器22未变，未绕过组件审计。
+> **B6-1当前状态（2026-11-18）：** FIX.2已完成，生成器保持22，见[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)。Windows官方包装两别名O0/O3功能通过，COFF为`UnverifiedCoffExports`，导出完整性未验证；Linux同矩阵功能通过，ELF为`Complete`，声明与观察组件一致。B6-1自身任务根重跑待执行，原阶段仍未收口；macOS未验证，B6-2性能尚未开始。
 
 > B5固定1.19/21矩阵和[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)保持只读历史身份；当前产品1.19/22。B6每轮均绑定自己的源码、Runtime和工具身份。B1原件缺口、22C/22D与19/11/22债务独立保留。
 > B5固定测试快照5864cbde为ABI1.19/生成器21/接口1。原17项资源目标及8次直接计时为旧负载历史证据；优化后18项资源目标和完整默认workspace均通过，详见URL优化记录。B6当前测量使用ABI1.19/生成器22 Runtime，并同时对账B5矩阵与21→22增量证据。
@@ -24,6 +24,8 @@
 | 公共状态 | `stdlib.cmath`/UseDocs/registry 仍 planned；旧 721 未跑 |
 
 B6 是 **内部资源/性能验收批**，不是 B2-C 最终发布。B6 的测量只绑定本批源码/产物；B2-C 才在新快照重跑完整 721 并做最终三平台公共收口。B6 的 `unverifiable` 是未完成该平台验收，不得写成性能通过。
+
+组件完整性须按产物的`ArtifactVerification`单独登记：Windows COFF为`UnverifiedCoffExports`时只记“功能通过、导出完整性未验证”，即使导出表观察集合等于声明集合也不能升级。只有`Complete`且声明/观察集合一致才记完整组件校验通过。B6-1重跑、B6汇总及B7交接均沿用此限制，保留功能结果与验证等级两个字段。
 
 ### 1.1 要做
 
@@ -66,7 +68,7 @@ B6 是 **内部资源/性能验收批**，不是 B2-C 最终发布。B6 的测�
 ### 2.2 开工单（2026-11-17）
 
 1. 入口：B5四类联合收口（`b5_closed=true`、`b6_entry_open=true`，[记录](assets/20o-b2-b/entry-20261117-b5-closeout/README.md)）；当前产品 `67319d61`，ABI1.19/生成器22/接口1、`cmath` planned。B5固定1.19/21矩阵与[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)分层引用，不把历史矩阵改写成22。开工前复核 `67319d61` 到当前 HEAD 的 `core/`、`stdlib/` 无产品差异。
-2. 现状：B5已封存；B6-1已开始但未收口。Windows本机相关测试通过；Linux官方Cmath包装原生测试在Runtime组件校验处失败，macOS未验证；§2.1全转义Unicode最大负载尚未在B6测量，性能、远端CI和旧721均未执行。
+2. 开工时现状：B5已封存；B6-1已开始但未收口。Windows本机功能测试通过，COFF导出完整性未验证；Linux官方Cmath包装原生测试在Runtime组件校验处失败，macOS未验证。后续FIX.2已完成，B6-1自身重跑待执行；§2.1全转义Unicode最大负载尚未在B6测量，性能、远端CI和旧721均未执行。
 3. 必须保留：B5固定矩阵与21→22增量证据只读；不新增intrinsic 49+/C符号，不改1～48/ID100、ABI1.19、生成器22、接口1、registry/教程；不重开B5历史矩阵，不改cmath数学/边界；不得为过预算缩减场景、改看门狗/阈值/输入或加ignore。
 4. 顺序：B6-1资源/错误/原子性 → B6-2 VM/原生性能 → B6-3边界负载 → B6-4三平台与CI → B6-5收口/B7交接。
 5. 负载清单：实施前冻结完整清单（含§2.1全转义URL、33～48、float `**`、lfloat/转换、B1/A1开销），记录适用范围与SHA-256；测量前固定，事后按应测/实测集合对账，不得按已执行子集反推全量。
@@ -78,7 +80,7 @@ B6 是 **内部资源/性能验收批**，不是 B2-C 最终发布。B6 的测�
 
 | 平台/路径 | 实际结果 |
 | --- | --- |
-| Windows | Runtime release 305 passed/0 failed/1 ignored；B6语言1/1、A6资源8/8、B4 VM/归档/数值路由回归41 passed/0 failed/3 ignored；Cmath原生核心O0/O3、包装O0/O3、A5错误与011受控分配O0/O3、lfloat_divide O0/O3及Clippy通过 |
+| Windows | Runtime release 305 passed/0 failed/1 ignored；B6语言1/1、A6资源8/8、B4 VM/归档/数值路由回归41 passed/0 failed/3 ignored；Cmath原生核心O0/O3、包装O0/O3、A5错误与011受控分配O0/O3、lfloat_divide O0/O3功能通过，Clippy通过；COFF为`UnverifiedCoffExports`，导出完整性未验证 |
 | Linux | Runtime同为305/0/1；B6语言、A6资源和B4 VM/归档/路由回归通过；Cmath原生核心O0/O3、A5错误/011和lfloat_divide O0/O3通过。官方模块包装原生O0/O3由FrontendNativeDriver拒绝 |
 | macOS | 未验证；当前会话没有macOS主机或已配置的远程Mac Runner |
 
