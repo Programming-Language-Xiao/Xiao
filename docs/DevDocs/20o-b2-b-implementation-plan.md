@@ -1,11 +1,13 @@
 # 20O-B2-B. `lfloat_divide`、`cmath` 与B5历史ABI 1.19/21矩阵实施规划
 
-> **2026-11-16历史记录：B4-5已完成Windows内部收口；B5获批使用106b99c7来源标记重建基线，ABI1.19/生成器21、版本/缓存/C ABI和完整串行workspace通过。** 默认并发workspace仍有URL Unicode预算用例触发60秒看门狗，B5未封存；历史原件缺口与独立LLVM比较问题保留，详见[B5证据](assets/20o-b2-b/entry-20261116-b5-rebuild/README.md)。接口1与cmath planned不变；B6、B7及B2-C尚未开始。
+> **2026-11-16历史记录：B4-5已完成Windows内部收口；B5获批使用106b99c7来源标记重建基线，ABI1.19/生成器21、版本/缓存/C ABI和完整串行workspace通过。** 默认并发workspace仍有URL Unicode预算用例触发60秒看门狗，B5未封存；历史原件缺口与独立LLVM比较问题保留，详见[B5证据](assets/20o-b2-b/entry-20261116-b5-rebuild/README.md)。接口1与cmath planned不变；本段为B6开工前历史状态。
 > 初始入口为A7 `5749d6e0`与产品基线`e7bf7a49`；A7当时使用ABI1.18/生成器20，后续B3/B4活动intrinsic最大48；B5产品快照已切到ABI1.19/生成器21，本页历史子阶段按各自时点读取。
 > B2-B 只实现已确认且适用于本批的 F-1～F-12 精表（包括 F-3 资源/性能、F-8 转换、F-10 显示尺度与 F-11 文本边界）；不新增数学裁定，不把 `cmath`/`lfloat_divide` 提前写成已验证。
 > A0 的 `result.json` 失败身份、22C/22D、19/11/22 与 B1 历史债务继续独立保留。
 > **2026-11-17版本同步：本规划B5子阶段的固定产物与版本矩阵是ABI1.19/生成器21；独立静态浮点比较修复使当前产品为ABI1.19/生成器22，见[增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)。B6及后续阶段须以22构建并同时引用B5固定矩阵与21→22证据，不把当前22回写成B5历史产物。**
-> **2026-11-17 URL门禁同步：** 星崽批准仅优化URL Unicode结果预算测试输入表示，不改冻结预算或60秒Driver timeout。资源目标18/18通过；当前1.19/22完整默认workspace为191个测试目标、1,809个测试用例（1,754 passed、0 failed、55 ignored）。B5已由四类证据联合收口，B6的B5前置已满足、尚未开工；B6入口同时绑定固定B5 1.19/21矩阵与21→22证据。
+> **2026-11-17 URL门禁同步：** 星崽批准仅优化URL Unicode结果预算测试输入表示，不改冻结预算或60秒Driver timeout。资源目标18/18通过；当前1.19/22完整默认workspace为191个测试目标、1,809个测试用例（1,754 passed、0 failed、55 ignored）。B5已由四类证据联合收口，B6的B5前置已满足；B6-1于本日开始实施，后续状态见下一条记录；B6入口同时绑定固定B5 1.19/21矩阵与21→22证据。
+> **2026-11-17 B6实施状态：** B6-1已在Windows/Linux启动；Linux官方Cmath包装原生被Runtime组件完整性校验阻断，macOS未验证。B6-1未收口、B6-2性能未启动，完整边界与日志见[B6-1证据](assets/20o-b2-b/entry-20261117-b6/README.md)。本批保持生成器22冻结。
+> **2026-11-18交叉回归：** 两平台Runtime/VM、Linux Cmath核心原生均通过；Linux真实包装原生仍被components清单阻断，未绕开校验；B6-1保持blocked。
 
 ## 一、入口与不变量
 
@@ -237,4 +239,4 @@ tests/fixtures/docs/cmath/                             cmath 夹具
 docs/DevDocs/assets/20o-b2-b/entry-<date>/            B2-B 证据（待建）
 ```
 
-本页保留B2-B执行边界；B5固定1.19/21矩阵保留历史，URL用例优化后当前1.19/22默认workspace通过；B5已联合收口，B6/B7未开始。完整B2-B未收口；B2-C仍负责最终公共发布。
+本页保留B2-B执行边界；B5固定1.19/21矩阵保留历史，URL用例优化后当前1.19/22默认workspace通过；B5已联合收口；B6-1尚未收口且Linux原生包装受阻，B6-2/B7未开始。完整B2-B未收口；B2-C仍负责最终公共发布。

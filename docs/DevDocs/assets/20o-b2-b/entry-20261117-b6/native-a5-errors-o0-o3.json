@@ -1,0 +1,132 @@
+{
+  "label": "native-a5-errors-o0-o3",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--release",
+    "--test",
+    "20o_b2_a_contract",
+    "--",
+    "--ignored",
+    "--exact",
+    "a5_language_values_match_native_golden_outputs",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 5040,
+  "started_utc": "2026-11-17T13:58:54.851358+00:00",
+  "finished_utc": "2026-11-17T13:59:29.974267+00:00",
+  "elapsed_seconds": 35.125,
+  "exit_code": 0,
+  "environment_overrides": {
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "RUSTC": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.b6\\b6-1-20261117-01\\target",
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_TERM_COLOR": "never",
+    "TEMP": "D:\\project\\Xiao\\.b6\\b6-1-20261117-01\\temp",
+    "TMP": "D:\\project\\Xiao\\.b6\\b6-1-20261117-01\\temp",
+    "XIAO_HOME": "D:\\project\\Xiao\\.b6\\b6-1-20261117-01\\home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\Xiao\\stdlib",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.b6\\b6-1-20261117-01\\target\\release\\xiao_runtime.lib",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_B1_F10": "0",
+    "XIAO_B2_A_PERF": "0",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8"
+  },
+  "removed_environment_names": [],
+  "default_libtest_threads": "repository Cargo config RUST_TEST_THREADS=4",
+  "cargo_target_cache": "fresh B6-1 task-root target; reused only within this batch",
+  "source_before": {
+    "path": "objects/sha256/67/675669c34d79fbac293dc6c132b23458b5619ba50a43e76ffa20678ff5d73535.bin",
+    "bytes": 67360,
+    "sha256": "675669c34d79fbac293dc6c132b23458b5619ba50a43e76ffa20678ff5d73535",
+    "encoding": "gzip",
+    "raw_bytes": 233803,
+    "raw_sha256": "d9ffb818b7e3ef78e0b4517100bdac556de3f70b42151a173d912883ef740c45"
+  },
+  "source_after": {
+    "path": "objects/sha256/67/675669c34d79fbac293dc6c132b23458b5619ba50a43e76ffa20678ff5d73535.bin",
+    "bytes": 67360,
+    "sha256": "675669c34d79fbac293dc6c132b23458b5619ba50a43e76ffa20678ff5d73535",
+    "encoding": "gzip",
+    "raw_bytes": 233803,
+    "raw_sha256": "d9ffb818b7e3ef78e0b4517100bdac556de3f70b42151a173d912883ef740c45"
+  },
+  "source_unchanged": true,
+  "tools": {
+    "rustc": {
+      "binary": {
+        "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+        "bytes": 111104,
+        "sha256": "acb138286bbe20c6cf3ec39a7e0a68c3fab0cd949baa2912cf466514d0d531ab"
+      },
+      "stdout": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-pc-windows-msvc\nrelease: 1.96.0\nLLVM version: 22.1.2\n"
+    },
+    "cargo": {
+      "binary": {
+        "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+        "bytes": 31347200,
+        "sha256": "122f18d28a63fa358f3db266abee1ff1d8aabf0ab7f2dd9ac38a38da99977ae5"
+      },
+      "stdout": "cargo 1.96.0 (30a34c682 2026-05-25)\nrelease: 1.96.0\ncommit-hash: 30a34c6821b57de0aaec83a901aca39f88f6778c\ncommit-date: 2026-05-25\nhost: x86_64-pc-windows-msvc\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.19.0-DEV (sys:0.4.87+curl-8.19.0 vendored ssl:Schannel)\nos: Windows 10.0.26200 (Windows 11 Professional) [64-bit]\n"
+    },
+    "XIAO_CLANG": {
+      "binary": {
+        "path": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+        "bytes": 157296,
+        "sha256": "574047f1b98d62bea1da8ae9340fea1ef06d262c3186e1d72d87e5401166c833"
+      },
+      "stdout": "clang version 22.1.2 (https://github.com/msys2/MINGW-packages 4f19d31560faf73257116b7c95f0b322ba83d720)\nTarget: x86_64-w64-windows-gnu\nThread model: posix\nInstalledDir: D:/msys64/ucrt64/bin\n"
+    },
+    "XIAO_LLVM_AS": {
+      "binary": {
+        "path": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+        "bytes": 40741,
+        "sha256": "63f559db3d87798fa4f26923c4cd5839ddc41b40905d884ee341c74a8bd858e9"
+      },
+      "stdout": "LLVM (http://llvm.org/):\n  LLVM version 22.1.2\n  Optimized build.\n"
+    },
+    "XIAO_LLC": {
+      "binary": {
+        "path": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+        "bytes": 211961,
+        "sha256": "df1409fabacdc625b2c2fefe50712de4ba140e07bf2bb4192101189498152869"
+      },
+      "stdout": "LLVM (http://llvm.org/):\n  LLVM version 22.1.2\n  Optimized build.\n  Default target: x86_64-w64-windows-gnu\n  Host CPU: znver5\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - AMD GCN GPUs\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv32be   - 32-bit big endian RISC-V\n    riscv64     - 64-bit RISC-V\n    riscv64be   - 64-bit big endian RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    spirv       - SPIR-V Logical\n    spirv32     - SPIR-V 32-bit\n    spirv64     - SPIR-V 64-bit\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore\n"
+    }
+  },
+  "runtime_before": {
+    "path": "D:\\project\\Xiao\\.b6\\b6-1-20261117-01\\target\\release\\xiao_runtime.lib",
+    "bytes": 27483016,
+    "sha256": "fa493d79b129cf7fa600993605381830f6abeaab23ec0ea48c0a910554de0fff"
+  },
+  "runtime_after": {
+    "path": "D:\\project\\Xiao\\.b6\\b6-1-20261117-01\\target\\release\\xiao_runtime.lib",
+    "bytes": 27483016,
+    "sha256": "fa493d79b129cf7fa600993605381830f6abeaab23ec0ea48c0a910554de0fff"
+  },
+  "recorder": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261117-b6\\record.py",
+    "bytes": 7899,
+    "sha256": "9364199533f7c70745af3a0f67de92ef4122fffd21021ad0970781736584a393"
+  },
+  "log": {
+    "path": "objects/sha256/3a/3ad3da85c7a308a2a064172398e0fcc59991c115de8ef7d479d892045880d0fb.bin",
+    "bytes": 7183,
+    "sha256": "3ad3da85c7a308a2a064172398e0fcc59991c115de8ef7d479d892045880d0fb",
+    "encoding": "identity",
+    "raw_bytes": 7183,
+    "raw_sha256": "3ad3da85c7a308a2a064172398e0fcc59991c115de8ef7d479d892045880d0fb"
+  }
+}

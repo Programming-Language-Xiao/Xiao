@@ -1,0 +1,21 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `release` profile [optimized] target(s) in 2.87s
+     Running tests\20o_b2_b6_resources.rs (D:\project\Xiao\.b6\b6-1-20261117-01\target\release\deps\20o_b2_b6_resources-987715b02d397e8d.exe)
+
+running 1 test
+
+thread 'b6_numeric_and_cmath_errors_are_catchable_and_atomic_on_both_aliases' (34864) panicked at crates\xiao-driver\tests\20o_b2_b6_resources.rs:97:9:
+assertion `left == right` failed: std
+  left: "2\n2\n2\n1\n1\n1\n2\n2\n2\n2\n2\n2\n-1\n-1\n-1\n3\n3\n3\n2\n2\n2\n7\n7\n7\n8\n8\n8\n0\n0\n0\n1\n1\n1\n0\n0\n0\n1\n1\n1\n0\n0\n0\n0\n0\n0\nexponent\nbase\n8\n2\n2\n2\nclean\nX06-RUNTIME-009\nexact-divide-clean\nX06-RUNTIME-034\nX06-RUNTIME-013\nX06-RUNTIME-033\n0\n1e-100000\nX06-RUNTIME-033\n0.3\n1.00\n3\nb6-1-continued\n"
+ right: "2\n2\n2\n1\n1\n1\n2\n2\n2\n2\n2\n2\n-1\n-1\n-1\n3\n3\n3\n2\n2\n2\n7\n7\n7\n8\n8\n8\n0\n0\n0\n1\n1\n1\n0\n0\n0\n1\n1\n1\n0\n0\n0\n0\n0\n0\nexponent\nbase\n8\n2\n2\n2\nclean\nX06-RUNTIME-009\nX06-RUNTIME-034\nexact-divide-clean\nX06-RUNTIME-013\nX06-RUNTIME-033\n0\n1e-100000\nX06-RUNTIME-033\n0.3\n1.00\n3\nb6-1-continued\n"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test b6_numeric_and_cmath_errors_are_catchable_and_atomic_on_both_aliases ... FAILED
+
+failures:
+
+failures:
+    b6_numeric_and_cmath_errors_are_catchable_and_atomic_on_both_aliases
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b2_b6_resources`

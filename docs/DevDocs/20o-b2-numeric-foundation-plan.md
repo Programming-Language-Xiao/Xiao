@@ -3,9 +3,12 @@
 > **这是 B2 的规划，不写产品函数、intrinsic、ABI 或测试实现。**
 > 规划入口历史基线为 `87bac439`；该时点B1-CLOSE已收口、Runtime ABI为1.18、`CODEGEN_VERSION`为20。当前B2内部为ABI1.19/生成器22；B5固定矩阵保留1.19/21历史身份，阶段状态见B5联合收口记录。
 > B2 的目标是把 `lint`/`lfloat` 从“十进制文本占位”升级为可运算、可转换的数值基础，
-> 并交付 `cmath` 浮点原语；**联合冻结已由F-D实际签字激活，B2-A实施规划已由A-P1/A-P2/A-P3实际批准，A1依赖与值身份已退出；A2/A3内核已完成本批验收；A4转换内核已完成本批验收，A5语言全链路已完成本批验收，A6资源/性能与A7内部1.18/20收口已完成，B2-B已接通lfloat_divide/intrinsic33内部单入口，B3及B4-0/1/2/3/4已完成Windows内部验收（B4-2最终7c49fd65、B4-3 e0d5993e、B4-4 e2f24222/bb0b8196），B4-5已完成Windows内部范围；B5固定1.19/21矩阵与21→22增量、URL优化及当前完整默认workspace已联合收口，当前1.19/22，B6/B7/B2-C未开始**。
+> 并交付 `cmath` 浮点原语；**联合冻结已由F-D实际签字激活，B2-A实施规划已由A-P1/A-P2/A-P3实际批准，A1依赖与值身份已退出；A2/A3内核已完成本批验收；A4转换内核已完成本批验收，A5语言全链路已完成本批验收，A6资源/性能与A7内部1.18/20收口已完成，B2-B已接通lfloat_divide/intrinsic33内部单入口，B3及B4-0/1/2/3/4已完成Windows内部验收，B4-5已完成Windows内部范围；B5固定1.19/21矩阵、21→22增量与当前默认workspace已联合收口，当前产品1.19/22；B6-1已开始但未收口（Linux包装原生受阻、macOS未验证），B6-2/B7/B2-C未开始**。
 > 星崽已逐项确认的精确表与签字状态见[冻结草案](20o-b2-freeze-draft.md)；本页建议不自动变为已冻结契约。
+> **2026-11-18当前实施状态：** B6-1处于部分验证、未收口状态。Windows范围通过，Linux官方Cmath包装原生O0/O3受Runtime组件核验阻断，macOS未验证；B6-2尚未开始。详见[B6-1实测记录](assets/20o-b2-b/entry-20261117-b6/README.md)。
 > F-A/F-B/F-C裁定30/0，F-D已签字；B2-A规划已获三项实际批准，A0 Windows本地基线已通过，A1已退出，A2/A3内核实施进度见[实施记录](20o-b2-a2-a3-arithmetic-progress.md)（2026-11-06）。
+> **2026-11-17 B6-1实施同步：** B5四类证据已收口并开启B6。Windows资源/错误/原子性与相关原生O0/O3回归通过；Linux VM和Runtime参考通过，但官方Cmath包装原生在Runtime组件清单校验处失败；macOS未验证。B6-1未收口，B6-2未开始，见[B6-1证据](assets/20o-b2-b/entry-20261117-b6/README.md)。
+> **2026-11-18实测更新：** Windows/Linux Runtime各305/0/1；Linux官方包装原生被IR漏记containers阻断，B6-1仍未收口，性能与macOS未验证。
 >
 > 本批不包含 `decimal`、`fractions`、浮点 `statistics`、确定性 `random`（B5）、
 > `time`/`args`/`fs`/`env`/`log`（B3）、JSON/TOML（B4）、`regex`/`compression`（B6）、
@@ -138,7 +141,9 @@ B2-A 预期**不新增 intrinsic、不改变 `XiaoValue` 标签或 C ABI**；若
 
 ### B2-FREEZE：只改文档
 
-当前30条裁定均已确认，F-D已签字并激活联合冻结；A0～A7、B2-B/C前序及B4-5 Windows内部收口已完成。B5固定1.19/21版本、拒绝/缓存矩阵和C ABI证据保留历史；21→22修复、URL优化与当前默认workspace的1,754/0/55已绑定至[联合收口](assets/20o-b2-b/entry-20261117-b5-closeout/README.md)，b5_closed=true。B6的B5前置已满足，B6/B7及B2-C未开始。重建基线来源、历史原件缺口和状态见[B5证据](assets/20o-b2-b/entry-20261116-b5-rebuild/README.md)。
+以下B2-FREEZE阶段记录当时的前序状态，不作为当前B6状态；B6-1现已开始但尚未收口，见本页最新日期附注。
+
+当前30条裁定均已确认，F-D已签字并激活联合冻结；A0～A7、B2-B/C前序及B4-5 Windows内部收口已完成。B5固定1.19/21版本、拒绝/缓存矩阵和C ABI证据保留历史；21→22修复、URL优化与当前默认workspace的1,754/0/55已绑定至[联合收口](assets/20o-b2-b/entry-20261117-b5-closeout/README.md)，b5_closed=true。B6的B5前置已满足；该段记录时B6尚未开始。重建基线来源、历史原件缺口和状态见[B5证据](assets/20o-b2-b/entry-20261116-b5-rebuild/README.md)。
 本轮不分配活动编号或写实现，契约台账见
 [冻结草案](20o-b2-freeze-draft.md#二逐条裁定台账)。
 
@@ -150,6 +155,8 @@ B2-A 预期**不新增 intrinsic、不改变 `XiaoValue` 标签或 C ABI**；若
 6. 通过 docs/usedocs/layout 门禁；**不写产品代码**。
 
 ### B2-A：`lint`/`lfloat` 基础
+
+以下A阶段执行摘要形成于B6开工前；当前B6-1状态见页首2026-11-18更新。
 
 执行规划见[B2-A数值运行时基础实施规划](20o-b2-a-implementation-plan.md)；[A0工作快照与基线记录](20o-b2-a0-baseline-plan.md)已保存Windows契约9/9、资源17/17、VM/原生精确点、workspace与28/28守卫的实际通过；A1规划见[A1依赖、适配层与值身份实施规划](20o-b2-a1-dependency-value-identity-plan.md)；A2/A3规划见[A2/A3算术实施规划](20o-b2-a2-a3-arithmetic-plan.md)；A4规划见[A4转换矩阵实施规划](20o-b2-a4-conversions-plan.md)；A5规划见[A5语言全链路实施规划](20o-b2-a5-language-integration-plan.md)；A6规划见[A6资源与性能实施规划](20o-b2-a6-resource-performance-plan.md)；A7规划见[A7 B1回归与B2-A收口规划](20o-b2-a7-b1-regression-b2a-closeout-plan.md)。A0的Linux/macOS本地缺口保留；A1实施与平台证据独立登记；A2/A3内核已完成本批验收；A4转换内核已完成本批验收，A5语言全链路已完成本批验收，A6资源/性能与A7内部收口已完成；B2-B规划见[B2-B实施规划](20o-b2-b-implementation-plan.md)，B2-B已接通lfloat_divide/intrinsic33内部单入口，B3及B4-0/1/2/3/4已完成Windows内部验收（B4-2最终7c49fd65、B4-3 e0d5993e、B4-4 e2f24222/bb0b8196），B4-5已完成Windows内部范围；B5固定1.19/21矩阵与21→22增量、URL优化及当前完整默认workspace已联合收口，当前1.19/22，B6/B7/B2-C未开始。
 

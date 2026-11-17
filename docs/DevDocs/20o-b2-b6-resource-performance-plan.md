@@ -1,6 +1,8 @@
 # 20O-B2-B6. cmath/lfloat 资源、错误与三平台性能规划
 
-> **2026-11-17入口同步：** B5已在[联合收口记录](assets/20o-b2-b/entry-20261117-b5-closeout/README.md)绑定四类证据，`b5_closed=true`、`b6_entry_open=true`，B6开工就绪（入口见§2.2）、尚未开始。B5固定矩阵保持1.19/21历史身份；当前产品为1.19/22，资源目标18/18及完整默认workspace通过（191个目标、1,754 passed、0 failed、55原忽略）。B6须同时引用B5矩阵与[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)，并执行§2.1规定的全转义Unicode最大负载。B1原件缺口和重建标记保留。
+> **B6-1当前状态（2026-11-18）：** Windows的Runtime、VM/归档、资源原子性、Cmath正式参考与包装、A5错误/显式除法原生O0/O3通过；Linux的Runtime、VM/归档、Cmath核心原生及A5错误/显式除法通过，但官方Cmath包装原生被Runtime组件完整性校验阻断；macOS未验证。B6-1未收口，B6-2性能尚未开始，详见[B6-1证据](assets/20o-b2-b/entry-20261117-b6/README.md)。本批保留生成器22，不绕过组件审计。
+
+> B5固定1.19/21矩阵和[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)保持只读历史身份；当前产品1.19/22。B6每轮均绑定自己的源码、Runtime和工具身份。B1原件缺口、22C/22D与19/11/22债务独立保留。
 > B5固定测试快照5864cbde为ABI1.19/生成器21/接口1。原17项资源目标及8次直接计时为旧负载历史证据；优化后18项资源目标和完整默认workspace均通过，详见URL优化记录。B6当前测量使用ABI1.19/生成器22 Runtime，并同时对账B5矩阵与21→22增量证据。
 > B6 只做资源、错误、原子性、三平台性能与 CI 证据；不新增数学语义、不改 ABI/registry/教程。
 > 不跑旧 721；完整 721、最终教程/registry 和公共发布留 B2-C。
@@ -13,7 +15,9 @@
 | B4-2A | 已完成 Windows 本机退出；不含 VM/LLVM/公开模块接线 |
 | B4-3 | 已完成Windows内部验收；LLVM动态/静态与Float `**`共享pow |
 | B4-4～B4-5 | B4-5以FIX.1产品cfa79381重跑并记录内部language_available=true；最终文档/封存审计见重开证据，B5仍是B6前置 |
-| B5 | 四类证据联合收口、b5_closed=true；固定1.19/21矩阵与当前1.19/22增量分层，B6的B5前置已满足，B6未执行 |
+| B5 | 四类证据联合收口、b5_closed=true；固定1.19/21矩阵与当前1.19/22增量分层，B6开工前置满足 |
+| B6-1 | Windows范围通过；Linux Runtime/VM及直接C ABI核心回归通过，但官方Cmath包装原生被组件完整性校验阻断；macOS未验证；阶段未收口 |
+| 后续批次 | B6-2性能、B6-3边界守卫、B6-4三平台/CI、B6-5收口均未开始 |
 | 测量入口版本/工具链 | 当前快照ABI1.19/生成器22/接口1；同时引用B5固定1.19/21拒绝/缓存矩阵与静态比较21→22增量证据。intrinsic1～48、Rust1.96.0与Cargo `--locked`；每轮测量固定源码/Runtime工具身份，优化后另建快照并重测受影响项 |
 | 本批目标 | cmath/lfloat 资源/错误/原子性、VM/原生三平台性能与 CI 证据 |
 | 未做 | B7 收口、B2-C 721/教程/registry/最终公共发布 |
@@ -62,13 +66,25 @@ B6 是 **内部资源/性能验收批**，不是 B2-C 最终发布。B6 的测�
 ### 2.2 开工单（2026-11-17）
 
 1. 入口：B5四类联合收口（`b5_closed=true`、`b6_entry_open=true`，[记录](assets/20o-b2-b/entry-20261117-b5-closeout/README.md)）；当前产品 `67319d61`，ABI1.19/生成器22/接口1、`cmath` planned。B5固定1.19/21矩阵与[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)分层引用，不把历史矩阵改写成22。开工前复核 `67319d61` 到当前 HEAD 的 `core/`、`stdlib/` 无产品差异。
-2. 现状：B5已封存、B6未开始；当前完整默认workspace 1,754/0/55、资源目标18/18；§2.1全转义Unicode最大负载尚未在B6测量，三平台/性能/旧721均未执行。
+2. 现状：B5已封存；B6-1已开始但未收口。Windows本机相关测试通过；Linux官方Cmath包装原生测试在Runtime组件校验处失败，macOS未验证；§2.1全转义Unicode最大负载尚未在B6测量，性能、远端CI和旧721均未执行。
 3. 必须保留：B5固定矩阵与21→22增量证据只读；不新增intrinsic 49+/C符号，不改1～48/ID100、ABI1.19、生成器22、接口1、registry/教程；不重开B5历史矩阵，不改cmath数学/边界；不得为过预算缩减场景、改看门狗/阈值/输入或加ignore。
 4. 顺序：B6-1资源/错误/原子性 → B6-2 VM/原生性能 → B6-3边界负载 → B6-4三平台与CI → B6-5收口/B7交接。
 5. 负载清单：实施前冻结完整清单（含§2.1全转义URL、33～48、float `**`、lfloat/转换、B1/A1开销），记录适用范围与SHA-256；测量前固定，事后按应测/实测集合对账，不得按已执行子集反推全量。
 6. 证据：新建 `assets/20o-b2-b/entry-20261117-b6/`；原始日志按SHA-256内容寻址；每个平台/后端/优化级别/负载/规模/批次独占输出路径，保存PID、源码/Runtime/工具链/实际可执行文件/OS原始单位摘要；文档定稿后单次最终docs门禁；B5/FIX.1/静态比较/URL优化历史目录不改写。
 7. 平台与状态：Windows/Linux/macOS实际执行或明确标 `unverifiable`；缺平台、校准不足、无可靠OS峰值或预算失败均不得写 `perf_pass` 或B6三平台通过；B7/B2-C仍后置，旧721未跑。
 8. 守卫口径：28/28为工作流计数自检（4项真实B1输出回放+24项派生负例），不代替B6产品测试；B5模拟/派生口径不得改写为真实CI成绩。
+
+### 2.3 B6-1首轮执行及阻断
+
+| 平台/路径 | 实际结果 |
+| --- | --- |
+| Windows | Runtime release 305 passed/0 failed/1 ignored；B6语言1/1、A6资源8/8、B4 VM/归档/数值路由回归41 passed/0 failed/3 ignored；Cmath原生核心O0/O3、包装O0/O3、A5错误与011受控分配O0/O3、lfloat_divide O0/O3及Clippy通过 |
+| Linux | Runtime同为305/0/1；B6语言、A6资源和B4 VM/归档/路由回归通过；Cmath原生核心O0/O3、A5错误/011和lfloat_divide O0/O3通过。官方模块包装原生O0/O3由FrontendNativeDriver拒绝 |
+| macOS | 未验证；当前会话没有macOS主机或已配置的远程Mac Runner |
+
+Linux包装拒绝为真实退出101，ArtifactVerification报告ELF观察到未登记的Runtime组件containers。独立诊断显示生成LLVM文本包含 call i32 @xiao_runtime_array_new，IR组件清单只有rc/value/weak，链接产物也观察到该符号；绕过驱动器完整性校验的诊断执行只用于定位，不能算产品路径通过。
+
+该遗漏属于B4 LLVM Runtime组件可达性/原生元数据边界，B6冻结入口要求生成器22不变。本批保留失败并阻止B6-1收口，不通过放宽产物审计、删模块语料或跳过包装来取得绿色。修复它需要回所属B4/codegen边界，若生成组件清单或链接产物变化，须先裁定生成器/缓存版本，再回B6重跑受影响矩阵。B6-2性能尚未开始。
 
 ## 三、分批执行
 
