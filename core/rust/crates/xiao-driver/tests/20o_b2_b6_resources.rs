@@ -144,6 +144,12 @@ fn b6_diagnoses_linux_native_cmath_runtime_component_observation() {
         )
         .unwrap();
     let inspection = xiao_codegen_llvm::inspect_artifact(&executable, &target).unwrap();
+    let array_calls_ir: Vec<_> = module
+        .text
+        .lines()
+        .filter(|line| line.contains("@xiao_runtime_array_"))
+        .map(str::trim)
+        .collect();
     let array_symbols: Vec<_> = inspection
         .symbols
         .iter()
@@ -151,8 +157,8 @@ fn b6_diagnoses_linux_native_cmath_runtime_component_observation() {
         .cloned()
         .collect();
     println!(
-        "B6-NATIVE-DIAGNOSTIC declared={:?} array_symbols={array_symbols:?}",
-        module.runtime_components
+        "B6-NATIVE-DIAGNOSTIC declared={:?} array_calls_ir={array_calls_ir:?} array_symbols={array_symbols:?}",
+        module.runtime_components,
     );
     let child = std::process::Command::new(&executable).output().unwrap();
     assert!(child.status.success(), "{:?}", child.status);
