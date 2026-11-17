@@ -1,0 +1,90 @@
+{
+  "scope": "获批优化URL资源用例；不代表产品URL性能改善或B5阶段签收",
+  "authorization": "星崽：优化用例，不改窗口或预算",
+  "baseline_commit": "cba346fc6f3039cbc76889f4907ea8539c38ff48",
+  "code_commit": "67319d61c18b2f02a57f974883c57600f70c724d",
+  "allowed_code_changes": [
+    "core/rust/crates/xiao-driver/tests/20o_b1_imp_resources.rs"
+  ],
+  "runtime_abi": 65555,
+  "codegen_version": 22,
+  "stdlib_interface_version": 1,
+  "workspace": {
+    "receipt": "workspace-final.json",
+    "target_count": 191,
+    "passed": 1754,
+    "failed": 0,
+    "ignored": 55,
+    "test_case_count": 1809,
+    "exit_code": 0,
+    "elapsed_seconds": 625.6880000000237,
+    "pid": 70636
+  },
+  "resource_target": {
+    "passed": 18,
+    "failed": 0,
+    "ignored": 0,
+    "test_seconds": 140.3,
+    "command_seconds_observed": 140.9214468,
+    "log": {
+      "path": "objects/sha256/5d/5d55d050aeec16316a7153a316302a177ab07828fd0cae55c3646852284b8ebf.bin",
+      "bytes": 1402,
+      "sha256": "5d55d050aeec16316a7153a316302a177ab07828fd0cae55c3646852284b8ebf",
+      "encoding": "identity",
+      "raw_bytes": 1402,
+      "raw_sha256": "5d55d050aeec16316a7153a316302a177ab07828fd0cae55c3646852284b8ebf"
+    },
+    "scope": "较早独立默认并发资源目标；无PID，仅作补充"
+  },
+  "unicode_budget_single": {
+    "passed": 1,
+    "failed": 0,
+    "test_seconds": 5.65,
+    "command_seconds_observed": 6.4054744,
+    "log": {
+      "path": "objects/sha256/f5/f58e633fce442c0948cc1c57a371e7afb17d387b222b0c7731e9cc1ad586f618.bin",
+      "bytes": 403,
+      "sha256": "f58e633fce442c0948cc1c57a371e7afb17d387b222b0c7731e9cc1ad586f618",
+      "encoding": "identity",
+      "raw_bytes": 403,
+      "raw_sha256": "f58e633fce442c0948cc1c57a371e7afb17d387b222b0c7731e9cc1ad586f618"
+    },
+    "scope": "较早单项诊断；不替代完整默认workspace"
+  },
+  "earlier_workspace": {
+    "target_count": 191,
+    "passed": 1754,
+    "failed": 0,
+    "ignored": 55,
+    "command_seconds_observed": 622.4126253,
+    "log": {
+      "path": "objects/sha256/9a/9a964053860ff7beac84c69e4ddb34e948b5180c068fafa0d292cc4d3ccaab28.bin",
+      "bytes": 37041,
+      "sha256": "9a964053860ff7beac84c69e4ddb34e948b5180c068fafa0d292cc4d3ccaab28",
+      "encoding": "gzip",
+      "raw_bytes": 172015,
+      "raw_sha256": "8157f9c428dbc4d475120ea3809ddf087ac5bddb92a07f00972dd72c3aa5e025"
+    },
+    "scope": "无PID的较早完整运行；权威结论引用workspace-final.json"
+  },
+  "source": {
+    "path": "objects/sha256/d3/d32b392562a8f879b357350b8307236d237411c5912e1eef3953d6b6e6d2efbc.bin",
+    "bytes": 67307,
+    "sha256": "d32b392562a8f879b357350b8307236d237411c5912e1eef3953d6b6e6d2efbc",
+    "encoding": "gzip",
+    "raw_bytes": 233573,
+    "raw_sha256": "94f96f3c87f9972e3b30477a43a635357533723f13ecb5990a7aa283a05b2d35"
+  },
+  "input_bytes": 65544,
+  "expected_utf8_bytes": 65536,
+  "expected_codepoints": 16384,
+  "separate_utf8_reset_codepoints": 256,
+  "driver_timeout_seconds": 60,
+  "url_implementation_changed": false,
+  "resource_limits_changed": false,
+  "workflow_or_f10_thresholds_changed": false,
+  "b5_historical_1_19_21_evidence_rewritten": false,
+  "b5_closed": false,
+  "b6_started": false,
+  "multi_platform_or_ci_passed": false
+}

@@ -1,0 +1,8 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.39s
+     Running tests\20o_b1_imp_resources.rs (D:/project/Xiao/.b5/url-case-opt-20261118-01/target\debug\deps\20o_b1_imp_resources-29cf7055ec1b195c.exe)
+
+running 1 test
+test url_decoding_reaches_the_unicode_result_budget ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 17 filtered out; finished in 5.65s
+
