@@ -1,5 +1,5 @@
 {
-  "file_count_excluding_manifest": 106,
+  "file_count_excluding_manifest": 108,
   "files": {
     ".gitattributes": {
       "bytes": 21,
@@ -15,7 +15,7 @@
     },
     "audit.py": {
       "bytes": 21123,
-      "sha256": "de0443bc2131b07e127a53e19f43fdd0834602801e202d69eefbc5b1219ab80d"
+      "sha256": "25411cf802869ff13103b31966c0f9789c88f0421f7d8b6c40d9f0c7f745a121"
     },
     "collect.py": {
       "bytes": 11383,
@@ -37,6 +37,10 @@
       "bytes": 3458,
       "sha256": "090c5ec6e8aa7a0f254093afb2e3d8bc2cc7671376f0df36f591deffd2bd2e85"
     },
+    "docs-final-r9.json": {
+      "bytes": 3458,
+      "sha256": "06bfbd50864c614ea4fcd8864b05d3910d38bd4cbaee272aa649432a4e4b386b"
+    },
     "driver-b6-language-r2.json": {
       "bytes": 7393,
       "sha256": "0382c2a7117da2fd894538588346ca2350dfb2b9a8467b36e6ac78425166138f"
@@ -55,7 +59,7 @@
     },
     "finish.py": {
       "bytes": 5589,
-      "sha256": "8f0fd649e4ffdf117271bd9f27d70345a4e0800d13e33bb6cd5faa11a0a845ca"
+      "sha256": "3c53db1854442570a8a5593f3066d01574561c5ef06ac183ed508ad3c94b3e24"
     },
     "linux-linux-driver-vm-regressions-final-r2.json": {
       "bytes": 4023,
@@ -208,6 +212,10 @@
     "objects/sha256/33/3328725e4b1d2ce47a9db40e45bf55266c8ef1e29dbb5b5e81384d5d2a6dc916.bin": {
       "bytes": 1597,
       "sha256": "3328725e4b1d2ce47a9db40e45bf55266c8ef1e29dbb5b5e81384d5d2a6dc916"
+    },
+    "objects/sha256/35/3518042f7b83e7fae2838297cafeca558c7c089844aa2b36c285a430b8181d8f.bin": {
+      "bytes": 3552,
+      "sha256": "3518042f7b83e7fae2838297cafeca558c7c089844aa2b36c285a430b8181d8f"
     },
     "objects/sha256/3a/3ad3da85c7a308a2a064172398e0fcc59991c115de8ef7d479d892045880d0fb.bin": {
       "bytes": 7183,
@@ -370,8 +378,8 @@
       "sha256": "f55088c3a2087308478fea25856af3494ca9b3af94d8499a21d5b9c09a9b06fd"
     },
     "README.md": {
-      "bytes": 4574,
-      "sha256": "d369ff260c47a8d851fb0780c1f3e26a4e31d8d6ff3d78e639dbbf14998dcbda"
+      "bytes": 4604,
+      "sha256": "110c6612fe98d33cb84a5588b58b33a01a16b310c5832c36990fd7ebdfefda45"
     },
     "record.py": {
       "bytes": 7899,
@@ -398,8 +406,8 @@
       "sha256": "8978051567bde4d021a017b2deb228061cc375d7b899abfff36a42f75f9922ed"
     },
     "self_negative.py": {
-      "bytes": 4465,
-      "sha256": "1664272b28ead6750feb713c54ffc089d65f7f1f19920d84d7b2ccda3172009c"
+      "bytes": 4700,
+      "sha256": "e6f35da43a458b6c73cd5c820a1d85da5e8a71818eb8cdd03657a40fa72e2a4e"
     },
     "windows-b6-language-final-r2.json": {
       "bytes": 7410,
@@ -428,6 +436,6 @@
   },
   "generated_from_actual_bytes": true,
   "generator": "finish.py seal",
-  "docs_receipt": "docs-final-r8.json",
+  "docs_receipt": "docs-final-r9.json",
   "result": "result-final-r5.json"
 }

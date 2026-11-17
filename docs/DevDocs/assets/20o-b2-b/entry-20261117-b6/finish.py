@@ -43,8 +43,8 @@ def docs_source():
 
 
 def docs_gate():
-    receipt_path = ROOT / "docs-final-r8.json"
-    log_path = TASK / "logs/docs-final-r8.log"
+    receipt_path = ROOT / "docs-final-r9.json"
+    log_path = TASK / "logs/docs-final-r9.log"
     record.require(not receipt_path.exists() and not log_path.exists(),
                    "B6最终文档门禁回执禁止覆盖")
     before_docs, before_product = docs_source(), record.source()
@@ -86,7 +86,7 @@ def docs_gate():
 
 
 def seal():
-    value = json.loads((ROOT / "docs-final-r8.json").read_text(encoding="utf-8"))
+    value = json.loads((ROOT / "docs-final-r9.json").read_text(encoding="utf-8"))
     packed_docs = (ROOT / value["docs_after"]["path"]).read_bytes()
     record.require(value["exit_code"] == 0 and value["source_unchanged"]
                    and record.sha(packed_docs) == value["docs_after"]["sha256"]
@@ -105,7 +105,7 @@ def seal():
     manifest = {
         "file_count_excluding_manifest": len(files), "files": files,
         "generated_from_actual_bytes": True,
-        "generator": "finish.py seal", "docs_receipt": "docs-final-r8.json",
+        "generator": "finish.py seal", "docs_receipt": "docs-final-r9.json",
         "result": "result-final-r5.json",
     }
     manifest_path = ROOT / "evidence.json"

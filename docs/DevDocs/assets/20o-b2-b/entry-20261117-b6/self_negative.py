@@ -63,7 +63,10 @@ def main():
                                 encoding="utf-8", newline="\n")
             elif case == "manifest":
                 path = copy / "evidence.json"
-                path.write_bytes(path.read_bytes() + b"\n")
+                manifest = json.loads(path.read_text(encoding="utf-8"))
+                manifest["files"]["README.md"]["sha256"] = "0" * 64
+                path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+                                encoding="utf-8", newline="\n")
             else:
                 path = copy / "result-final-r5.json"
                 result = json.loads(path.read_text(encoding="utf-8"))

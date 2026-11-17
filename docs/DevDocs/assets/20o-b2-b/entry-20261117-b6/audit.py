@@ -349,7 +349,7 @@ def audit(root, repository, prepare):
                 "B6固定Git清单字节不符")
     result = recompute(root, repository)
     if not prepare:
-        docs = load(root, "docs-final-r8.json")
+        docs = load(root, "docs-final-r9.json")
         require(docs["exit_code"] == 0 and docs["source_unchanged"]
                 and docs["argv"][1:] ==
                 ["tools/repo-check/src/cli.ts", "all", "--format", "json"],

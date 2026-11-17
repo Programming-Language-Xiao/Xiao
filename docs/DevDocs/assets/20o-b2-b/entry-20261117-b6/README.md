@@ -14,11 +14,11 @@ macOS、远端CI、性能五批、OS驻留峰值和完整721未执行。全转�
 
 Linux失败定位：优化版本Runtime组件清单只记rc/value/weak，Cmath真实包装IR还直接调用xiao_runtime_array_new，ELF也包含该符号；因此驱动器拒绝包装产物。独立诊断直接经工具链链接并执行同一黄金，只用于定位，不替代FrontendNativeDriver完整性验收。该边界交回B4/codegen维护，不在B6绕过。
 
-review-final-r8.json记录封存前清单缺失、阶段冒进和Linux失败冒进反例的实际拒绝原因。封存后的文件数错误、清单改写和重算清单反例由self_negative.py单独验证并打印；审计不写回证据目录。finish.py在唯一最终docs门禁通过后生成实际字节清单，提交后审计固定Git清单对象。
+review-final-r8.json记录封存前清单缺失、阶段冒进和Linux失败冒进反例的实际拒绝原因。封存后的文件数错误、清单条目摘要错误和更新清单后偏离固定Git对象三类反例由self_negative.py分别验证；审计不写回证据目录。finish.py在最终docs门禁通过后按实际字节原子重建清单，提交后审计固定Git清单对象。
 
 Windows任务根为D:/project/Xiao/.b6/b6-1-20261117-01；WSL任务根为/home/xiaoczx/.b6/b6-1-20261117-01。每条命令记录PID、UTC时间、命令、完整受保护树前后摘要、工具和Runtime身份、隔离环境与原始输出SHA-256内容对象；复跑日志不覆盖。首次语言回归因finally/catch黄金顺序不符而失败，修正观察顺序后两别名通过；Linux Runtime组件阻断两轮原生包装复跑均保留。
 
-定稿正文和所有结果后，运行唯一完整docs门禁docs-final-r8.json并生成实际字节清单。最终代码及版本身份列于result-final-r5.json；Windows/WSL运行后的测试二进制、Runtime库、LLVM与Xiao临时原生产物摘要列于artifacts-final-r5.json。Linux默认线程数由Cargo仓库配置设为4，本批没有用命令参数覆盖。审核器不运行性能，也不把B6-1阻断提升为通过。
+定稿正文和所有结果后，运行完整docs门禁docs-final-r9.json并生成实际字节清单。最终代码及版本身份列于result-final-r5.json；Windows/WSL运行后的测试二进制、Runtime库、LLVM与Xiao临时原生产物摘要列于artifacts-final-r5.json。Linux默认线程数由Cargo仓库配置设为4，本批没有用命令参数覆盖。审核器不运行性能，也不把B6-1阻断提升为通过。
 
     python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261117-b6/audit.py
     python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261117-b6/self_negative.py
