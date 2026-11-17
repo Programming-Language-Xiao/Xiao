@@ -1,0 +1,16 @@
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+error[E0432]: unresolved import `super::emitted_runtime_components`
+    --> crates\xiao-codegen-llvm\src\artifact.rs:1584:63
+     |
+1584 |         compare_symbol_table_reports, components_for_symbols, emitted_runtime_components,
+     |                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^ no `emitted_runtime_components` in `artifact`
+     |
+help: a similar name exists in the module
+     |
+1584 -         compare_symbol_table_reports, components_for_symbols, emitted_runtime_components,
+1584 +         compare_symbol_table_reports, components_for_symbols, reachable_runtime_components,
+     |
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `xiao-codegen-llvm` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

@@ -1,8 +1,8 @@
 # 20O-B2-B4-3-FIX.2. 静态 Runtime 组件登记修复与 B6-1 重跑规划
 
-> **FIX.2 尚未开始；B6-1 被 Linux 官方 Cmath 包装的产物组件完整性校验阻断，B6-2 性能未开始。**
-> 触发：B6-1 在 Linux 真实 `std.cmath`/`stdlib.cmath` 包装 O0/O3 上被 `ArtifactVerification` 拒绝；IR 调用 `xiao_runtime_array_new`/`array_push`，ELF 也导出该符号，但 IR 声明组件只有 `rc`/`value`/`weak`，缺少 `containers`。
-> 当前假设：静态 `LlvmModule.runtime_components` 未从实际发射的 Runtime 符号推导（静态路径当前只声明固定集合），动态路径已有 `reachable_runtime_components` 可从文本符号推导；Windows 同包装通过，必须先解释平台差异，不能只在 Linux 侧补 `containers`。
+> **FIX.2 已完成（2026-11-18），产品提交 `43f18274175ba09ac84e759999c40cde72eae1c5`；B6-1 自有任务根重跑待执行，B6-2 性能未开始。** 详见[FIX.2收口证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)。
+> FIX-0复现确认：Linux真实 `std.cmath`/`stdlib.cmath` 包装 O0/O3 原先被 `ArtifactVerification` 拒绝；IR与ELF含 `xiao_runtime_array_new`/`array_push`，组件声明漏 `containers`。Windows同语料通过，但COFF状态为 `UnverifiedCoffExports`，不能证明完整符号表一致。
+> 根因：既有 Runtime 组件遍历跟随 `br`，未跟随 Cmath 状态路径发出的 LLVM `switch`；FIX.2将 `br`/`switch`/`indirectbr` 可达性与共享符号映射用于静态、动态模块组件登记，保留未调用函数和未注册回调裁剪。
 > 只修 codegen-llvm 的组件推导/登记与必要测试；不改 cmath 数学、资源上限、ABI1.19/生成器22/接口1、registry/教程；不跑旧721。
 
 ## 一、入口与范围
@@ -136,4 +136,4 @@ core/rust/crates/xiao-driver/tests/                          平台包装/组件
 docs/DevDocs/assets/20o-b2-b/entry-20261118-b4-component-fix/ FIX.2证据
 ```
 
-本页只做 FIX.2；B6-1 重跑、B6-2 与后续批次仍后置。
+FIX.2 已按本页范围完成并收口；B6-1 仍需在自身任务根重跑，B6-2 与后续批次仍后置。

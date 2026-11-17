@@ -1,0 +1,10 @@
+
+running 1 test
+B4-4-NATIVE path=std.cmath optimization=0 executable=D:\project\Xiao\.b4\b4-3-fix2-20261118-01\windows\temp\b4-4-library-59068-0\std-o0.exe stdout=golden errors=009 result=passed
+B4-4-NATIVE path=std.cmath optimization=3 executable=D:\project\Xiao\.b4\b4-3-fix2-20261118-01\windows\temp\b4-4-library-59068-0\std-o3.exe stdout=golden errors=009 result=passed
+B4-4-NATIVE path=stdlib.cmath optimization=0 executable=D:\project\Xiao\.b4\b4-3-fix2-20261118-01\windows\temp\b4-4-library-59068-0\stdlib-o0.exe stdout=golden errors=009 result=passed
+B4-4-NATIVE path=stdlib.cmath optimization=3 executable=D:\project\Xiao\.b4\b4-3-fix2-20261118-01\windows\temp\b4-4-library-59068-0\stdlib-o3.exe stdout=golden errors=009 result=passed
+test cmath_library_matches_native_o0_o3 ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 6.52s
+

@@ -1,0 +1,15 @@
+
+running 1 test
+
+thread 'cmath_library_matches_native_o0_o3' (1572) panicked at crates/xiao-driver/tests/support/b4_cmath_library_native.rs:47:18:
+called `Result::unwrap()` on an `Err` value: Backend(ArtifactVerification { path: "/home/xiaoczx/.b4/b4-3-fix2-20261118-01/temp/b4-4-library-1571-0/std-o0", message: "产物观察到未由 IR 登记的 Runtime 组件：containers" })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test cmath_library_matches_native_o0_o3 ... FAILED
+
+failures:
+
+failures:
+    cmath_library_matches_native_o0_o3
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 2.34s
+

@@ -1,0 +1,15 @@
+
+running 1 test
+
+thread 'cmath_library_matches_native_o0_o3' (1552) panicked at crates/xiao-driver/tests/20o_b2_b4_cmath_library.rs:45:27:
+called `Result::unwrap()` on an `Err` value: Os { code: 17, kind: AlreadyExists, message: "File exists" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test cmath_library_matches_native_o0_o3 ... FAILED
+
+failures:
+
+failures:
+    cmath_library_matches_native_o0_o3
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.86s
+

@@ -12,6 +12,7 @@
 > **2026-11-16 B5历史记录：星崽批准方案2，以106b99c7固定源码和工具链重建并标记B1 1.18/20基线；历史原件缺口仍保留。** B5当时升ABI1.19并沿用生成器21；版本/缓存/C ABI和串行workspace通过，当时默认workspace的URL超时使B5未封存。后续比较修复和URL优化见下一条当前状态；B6/B7/B2-C未开始，公共cmath仍planned。
 > **2026-11-17 B5收口时点记录：** B5固定产物和版本/缓存矩阵为1.19/21历史证据；静态比较独立修复后的当前产品为1.19/22。按星崽裁定优化URL测试负载后，18项资源目标及当前版本完整默认workspace通过（191个测试目标、1,809个测试用例：1,754 passed、0 failed、55 ignored），未改60秒timeout或预算；B5已完成[四类证据联合收口](assets/20o-b2-b/entry-20261117-b5-closeout/README.md)，B6的B5前置已满足；该收口快照形成时B6尚未开始。
 > **2026-11-18 B6-1审定与对账：** Windows与Linux Runtime测试均305 passed、0 failed、1 ignored；A6资源/原子性8/8。Windows规定范围通过；Linux VM/归档、Cmath核心原生及数值原生回归通过，但官方Cmath包装原生被Runtime组件完整性校验阻断，诊断确认IR调用数组Runtime入口而组件清单漏记；B6-1保持blocked，B6-2、macOS、远端CI和完整721未执行。详见[B6-1证据](assets/20o-b2-b/entry-20261117-b6/README.md)。
+> **2026-11-18 B4-3-FIX.2交接：** LLVM Runtime组件推导修复已在Windows/Linux真实包装两别名O0/O3验证；B6-1历史状态不改写，需由B6-1在自有任务根重跑后再决定是否收口。详见[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)。
 > **已确认（2026-11-01）：D-1 取甲（成熟 Rust 数值库）、B1 首批范围、
 > D-7 取专用 `json_value` 类型、B7→B8→B9 后置**。B0 已逐条询问并记录其余方向裁定，
 > 见 §五及 20P §六；具体 API 不因此自动冻结。基线、探测、教程与待审草案见

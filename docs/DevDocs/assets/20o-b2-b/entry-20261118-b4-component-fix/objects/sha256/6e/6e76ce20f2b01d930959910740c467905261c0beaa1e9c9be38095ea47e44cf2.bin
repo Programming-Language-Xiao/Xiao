@@ -1,0 +1,14 @@
+   Compiling xiao-codegen-llvm v0.1.0 (/mnt/d/project/Xiao/Xiao/core/rust/crates/xiao-codegen-llvm)
+warning: unused import: `BTreeMap`
+ --> crates/xiao-codegen-llvm/src/artifact.rs:7:24
+  |
+7 | use std::collections::{BTreeMap, BTreeSet};
+  |                        ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling xiao-package v0.1.0 (/mnt/d/project/Xiao/Xiao/core/rust/crates/xiao-package)
+   Compiling xiao-driver v0.1.0 (/mnt/d/project/Xiao/Xiao/core/rust/crates/xiao-driver)
+warning: `xiao-codegen-llvm` (lib) generated 1 warning (run `cargo fix --lib -p xiao-codegen-llvm` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 53.96s
+  Executable tests/20o_b2_b4_cmath_library.rs (/home/xiaoczx/.b4/b4-3-fix2-20261118-01/target/release/deps/20o_b2_b4_cmath_library-30c8f5469fe72884)

@@ -1,6 +1,6 @@
 # 20O-B2-B6. cmath/lfloat 资源、错误与三平台性能规划
 
-> **B6-1当前状态（2026-11-18）：** Windows的Runtime、VM/归档、资源原子性、Cmath正式参考与包装、A5错误/显式除法原生O0/O3通过；Linux的Runtime、VM/归档、Cmath核心原生及A5错误/显式除法通过，但官方Cmath包装原生被Runtime组件完整性校验阻断；macOS未验证。B6-1未收口，B6-2性能尚未开始，详见[B6-1证据](assets/20o-b2-b/entry-20261117-b6/README.md)。本批保留生成器22，不绕过组件审计；修复见[B4-3-FIX.2](20o-b2-b4-3-fix2-runtime-components-plan.md)。
+> **B6-1当前状态（2026-11-18）：** FIX.2已修复组件推导，Windows/Linux官方包装两别名O0/O3复跑通过，见[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)。B6-1原阶段仍保持未收口；必须在B6-1自身任务根重跑并复核后才可更新收口状态。macOS未验证，B6-2性能尚未开始。生成器22未变，未绕过组件审计。
 
 > B5固定1.19/21矩阵和[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)保持只读历史身份；当前产品1.19/22。B6每轮均绑定自己的源码、Runtime和工具身份。B1原件缺口、22C/22D与19/11/22债务独立保留。
 > B5固定测试快照5864cbde为ABI1.19/生成器21/接口1。原17项资源目标及8次直接计时为旧负载历史证据；优化后18项资源目标和完整默认workspace均通过，详见URL优化记录。B6当前测量使用ABI1.19/生成器22 Runtime，并同时对账B5矩阵与21→22增量证据。
@@ -16,7 +16,7 @@
 | B4-3 | 已完成Windows内部验收；LLVM动态/静态与Float `**`共享pow |
 | B4-4～B4-5 | B4-5以FIX.1产品cfa79381重跑并记录内部language_available=true；最终文档/封存审计见重开证据，B5仍是B6前置 |
 | B5 | 四类证据联合收口、b5_closed=true；固定1.19/21矩阵与当前1.19/22增量分层，B6开工前置满足 |
-| B6-1 | Windows范围通过；Linux Runtime/VM及直接C ABI核心回归通过，但官方Cmath包装原生被组件完整性校验阻断；macOS未验证；阶段未收口 |
+| B6-1 | FIX.2修复已完成；B6-1自身任务根重跑待执行；原阶段未收口，macOS未验证 |
 | 后续批次 | B6-2性能、B6-3边界守卫、B6-4三平台/CI、B6-5收口均未开始 |
 | 测量入口版本/工具链 | 当前快照ABI1.19/生成器22/接口1；同时引用B5固定1.19/21拒绝/缓存矩阵与静态比较21→22增量证据。intrinsic1～48、Rust1.96.0与Cargo `--locked`；每轮测量固定源码/Runtime工具身份，优化后另建快照并重测受影响项 |
 | 本批目标 | cmath/lfloat 资源/错误/原子性、VM/原生三平台性能与 CI 证据 |
@@ -84,7 +84,7 @@ B6 是 **内部资源/性能验收批**，不是 B2-C 最终发布。B6 的测�
 
 Linux包装拒绝为真实退出101，ArtifactVerification报告ELF观察到未登记的Runtime组件containers。独立诊断显示生成LLVM文本包含 call i32 @xiao_runtime_array_new，IR组件清单只有rc/value/weak，链接产物也观察到该符号；绕过驱动器完整性校验的诊断执行只用于定位，不能算产品路径通过。
 
-该遗漏属于B4 LLVM Runtime组件可达性/原生元数据边界，B6冻结入口要求生成器22不变。本批保留失败并阻止B6-1收口，不通过放宽产物审计、删模块语料或跳过包装来取得绿色。修复它需要回所属B4/codegen边界，若生成组件清单或链接产物变化，须先裁定生成器/缓存版本，再回B6重跑受影响矩阵。已立案见[B4-3-FIX.2](20o-b2-b4-3-fix2-runtime-components-plan.md)；FIX.2与B6-1重跑通过前B6-2不启动。
+该遗漏属于B4 LLVM Runtime组件可达性/原生元数据边界。本批以FIX.2完成组件推导修复，保留原失败并不放宽产物审计、删模块语料或跳过包装。B6-1须在自身任务根重跑受影响矩阵并重新审定；完成前B6-2不启动。
 
 ## 三、分批执行
 
