@@ -1,7 +1,7 @@
 # 20O-B2-B7. B2-B 内部收口与 B2-C 交接规划
 
 > **2026-11-16历史状态：B5版本/缓存/C ABI矩阵及完整串行workspace通过，但默认并发workspace的URL Unicode用例触发60秒看门狗，B5未封存。** 失败记录、B1历史原件缺失/重建来源标记和独立LLVM比较问题见[B5证据](assets/20o-b2-b/entry-20261116-b5-rebuild/README.md)；B6闸门未开，B7/B2-C未开始。
-> **2026-11-18实施同步：** B5矩阵固定绑定ABI1.19/生成器21；当前产品ABI1.19/生成器22，B5已联合收口。FIX.2已完成且生成器保持22；B6-1自身任务根重跑待执行，仍未收口，macOS未验证，B6-2性能未开始。FIX.2的Windows结果只记“功能通过、导出完整性未验证”（COFF `UnverifiedCoffExports`）；Linux ELF为`Complete`，声明与观察组件一致。B7等待B6收口，并引用B5固定矩阵、[21→22增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)及[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)。
+> **2026-11-18实施同步：** B5矩阵固定绑定ABI1.19/生成器21；当前产品ABI1.19/生成器22，B5已联合收口。FIX.2已完成且生成器保持22；B6-1自身任务根重跑待执行（见[B6-1重跑规划](20o-b2-b6-1-rerun-plan.md)），仍未收口，macOS未验证，B6-2性能未开始。FIX.2的Windows结果只记“功能通过、导出完整性未验证”（COFF `UnverifiedCoffExports`）；Linux ELF为`Complete`，声明与观察组件一致。B7等待B6收口，并引用B5固定矩阵、[21→22增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)及[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)。
 > B7 只做 B2-B 内部收口、B1 回归、B2-A 与 B2-B 前序阶段证据对账和 B2-C 交接。
 > 不运行旧 721、不升级 registry/教程、不关闭历史债务；B2-C 才做最终三平台、721 和公共发布。
 

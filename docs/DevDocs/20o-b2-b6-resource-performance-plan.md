@@ -1,6 +1,6 @@
 # 20O-B2-B6. cmath/lfloat 资源、错误与三平台性能规划
 
-> **B6-1当前状态（2026-11-18）：** FIX.2已完成，生成器保持22，见[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)。Windows官方包装两别名O0/O3功能通过，COFF为`UnverifiedCoffExports`，导出完整性未验证；Linux同矩阵功能通过，ELF为`Complete`，声明与观察组件一致。B6-1自身任务根重跑待执行，原阶段仍未收口；macOS未验证，B6-2性能尚未开始。
+> **B6-1当前状态（2026-11-18）：** FIX.2已完成，生成器保持22，见[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)。Windows官方包装两别名O0/O3功能通过，COFF为`UnverifiedCoffExports`，导出完整性未验证；Linux同矩阵功能通过，ELF为`Complete`，声明与观察组件一致。B6-1自身任务根重跑待执行，见[B6-1重跑规划](20o-b2-b6-1-rerun-plan.md)；原阶段仍未收口，macOS未验证，B6-2性能尚未开始。
 
 > B5固定1.19/21矩阵和[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)保持只读历史身份；当前产品1.19/22。B6每轮均绑定自己的源码、Runtime和工具身份。B1原件缺口、22C/22D与19/11/22债务独立保留。
 > B5固定测试快照5864cbde为ABI1.19/生成器21/接口1。原17项资源目标及8次直接计时为旧负载历史证据；优化后18项资源目标和完整默认workspace均通过，详见URL优化记录。B6当前测量使用ABI1.19/生成器22 Runtime，并同时对账B5矩阵与21→22增量证据。
