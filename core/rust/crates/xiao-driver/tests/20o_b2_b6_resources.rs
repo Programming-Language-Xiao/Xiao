@@ -64,8 +64,8 @@ fn output(events: &[VmEvent]) -> String {
 /// 两条官方导入路径都贯通数值错误、精确/显式除法、独立余数与finally清理。
 fn b6_numeric_and_cmath_errors_are_catchable_and_atomic_on_both_aliases() {
     let expected_tail = concat!(
-        "X06-RUNTIME-034\n",
         "exact-divide-clean\n",
+        "X06-RUNTIME-034\n",
         "X06-RUNTIME-013\n",
         "X06-RUNTIME-033\n",
         "0\n",
