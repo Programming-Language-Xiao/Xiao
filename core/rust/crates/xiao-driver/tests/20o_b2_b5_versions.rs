@@ -52,9 +52,9 @@ fn frozen_abi18_baselines_are_rejected_before_entry() {
 
 #[test]
 /// 新头、指令流、归档索引和原生元数据使用同一个精确版本，schema保持既有常量。
-fn current_artifacts_bind_exact_abi19_and_codegen21() {
+fn current_artifacts_bind_exact_abi19_and_current_codegen() {
     assert_eq!(ABI_MINOR_VERSION, 19);
-    assert_eq!(CODEGEN_VERSION, 21);
+    assert_eq!(CODEGEN_VERSION, 22);
     let source = "print(\"B5-current\")\n";
     let product = FrontendCompiler::new()
         .compile(&FrontendRequest::from_text(source))
@@ -69,6 +69,7 @@ fn current_artifacts_bind_exact_abi19_and_codegen21() {
         ABI_ENCODED_VERSION
     );
     let metadata = NativeMetadata::for_program(&product.ir, &TargetDescription::host()).unwrap();
+    assert_eq!(metadata.generator_version, CODEGEN_VERSION);
     assert_eq!(metadata.runtime_abi_min, ABI_ENCODED_VERSION);
     assert_eq!(metadata.runtime_abi_max, ABI_ENCODED_VERSION);
     assert_eq!(metadata.stdlib.runtime_abi_minor, 19);

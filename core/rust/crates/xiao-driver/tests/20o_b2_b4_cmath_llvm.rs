@@ -39,7 +39,7 @@ pub fn probes(dynamic: bool) -> xiao_ir::IrProgram {
 
 #[test]
 /// 两种降低都发射15个既有C符号；静态仍为标量函数，动态仍为拥有值槽。
-fn both_lowerings_use_fifteen_shared_abi_symbols_and_version21() {
+fn both_lowerings_use_fifteen_shared_abi_symbols_and_current_version() {
     for dynamic in [false, true] {
         let module =
             xiao_codegen_llvm::lower_program(&probes(dynamic), &CodegenOptions::default()).unwrap();
@@ -49,7 +49,10 @@ fn both_lowerings_use_fifteen_shared_abi_symbols_and_version21() {
             module.runtime_abi_version,
             Some(xiao_runtime_abi::ABI_ENCODED_VERSION)
         );
-        assert!(module.codegen_fingerprint.starts_with("xiao-codegen-21-"));
+        assert!(module.codegen_fingerprint.starts_with(&format!(
+            "xiao-codegen-{}-",
+            xiao_codegen_llvm::CODEGEN_VERSION
+        )));
         for &(primitive, _, _) in xiao_intrinsics::CMATH_DECLARATIONS.iter() {
             let symbol = format!("@xiao_runtime_{primitive}(");
             assert!(
@@ -67,7 +70,7 @@ fn both_lowerings_use_fifteen_shared_abi_symbols_and_version21() {
             assert!(module.text.contains("define double @xiao_fn_0_probe0"));
         }
     }
-    assert_eq!(xiao_codegen_llvm::CODEGEN_VERSION, 21);
+    assert_eq!(xiao_codegen_llvm::CODEGEN_VERSION, 22);
     assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 19);
 }
 

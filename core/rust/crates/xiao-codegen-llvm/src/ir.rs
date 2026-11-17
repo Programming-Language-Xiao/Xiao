@@ -1356,15 +1356,34 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
                 .ok_or_else(|| unsupported("比较类型", Some(span)))?;
             let left = self.cast_value(left, left_ty, common, span)?;
             let right = self.cast_value(right, right_ty, common, span)?;
+            if common.is_float() && matches!(operator, "==" | "!=") {
+                // Runtime 的语言相等在数值提升后比较位模式，必须保留异号零的区别。
+                // bitcast 不改变数值或精度，也不放宽非有限值的既有入口检查。
+                let bits_ty = if common == Scalar::Float {
+                    "i64"
+                } else {
+                    "i32"
+                };
+                let left_bits = self.module.next_temp();
+                let right_bits = self.module.next_temp();
+                self.emit_line(format!(
+                    "  {left_bits} = bitcast {} {left} to {bits_ty}",
+                    common.llvm()
+                ));
+                self.emit_line(format!(
+                    "  {right_bits} = bitcast {} {right} to {bits_ty}",
+                    common.llvm()
+                ));
+                let predicate = if operator == "==" { "eq" } else { "ne" };
+                let temp = self.module.next_temp();
+                self.emit_line(format!(
+                    "  {temp} = icmp {predicate} {bits_ty} {left_bits}, {right_bits}"
+                ));
+                return Ok((temp, Scalar::Bool));
+            }
             let predicate = match operator {
                 "==" => "eq",
-                "!=" => {
-                    if common.is_float() {
-                        "une"
-                    } else {
-                        "ne"
-                    }
-                }
+                "!=" => "ne",
                 "<" => {
                     if common.is_float() {
                         "olt"

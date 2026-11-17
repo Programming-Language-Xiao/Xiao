@@ -139,7 +139,7 @@ fn all_direct_primitives_execute_in_source_and_production_xiaoc() {
     assert!(result.result.is_success(), "{result:?}");
     assert_eq!(output(&result.events), golden);
     assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 19);
-    assert_eq!(xiao_codegen_llvm::CODEGEN_VERSION, 21);
+    assert_eq!(xiao_codegen_llvm::CODEGEN_VERSION, 22);
     println!("B4-2B-VM primitives=15 source=O0,O3 xiaoc=production result=passed");
 }
 
