@@ -10,7 +10,7 @@
 
 共 765 次语言执行，按黄金输出、错误身份、源码字节区间和适用的诊断细节逐项核对。非有限实参由既有 Runtime、VM 注入和原生位模式入口覆盖。每平台重跑 17,243 条正式参考，原生共享幂路径另核对 1,075 条。C 探针记录状态 0/1/2/3/6、输出槽和挂起槽，另由独立进程验证 Fatal 状态 8 和进程退出 4。受控分配失败 011 由既有故障注入验证。[原始回执与日志](boundaries.zip)
 
-三平台 B1 的 20 个产品入口、18 项资源、VM 和原生两条精确入口均通过。精确入口覆盖七库及别名、字符串索引两个辅助夹具。B4 包装两个别名分别通过 O0/O3。维护工作流计数守卫为 28/28，包括四条实际 Cargo 输出回放和 24 条派生负例。
+三平台 B1 的 20 个产品入口、18 项资源、VM 和原生两条精确入口均通过。精确入口覆盖七库及别名、字符串索引两个辅助夹具。B4 包装两个别名分别通过 O0/O3。维护工作流计数守卫在 Windows 回放通过 28/28，使用四条实际 Cargo 输出和 24 条派生负例。
 
 ## 执行记录
 
@@ -20,7 +20,7 @@ macOS 最终五项作业均通过。首轮回归重建了 Cargo 输出目录内�
 
 证据包内的 `evidence.json` 将原始路径映射到 SHA-256，包含 16,514 条记录和 7,041 个对象。原生执行文件、LLVM 文本、Rust 与 LLVM 工具和平台 Runtime 以实际摘要登记。进程回执记录原始内存单位。B6-3 验收资源接纳和错误契约，B6-2 性能结果仍绑定 `79ea0375`。
 
-`repo-check.zip` 保存完整仓库门禁的回执和原始输出。回执记录本批变更的 DevDocs 页面以及本目录证据在运行前后的 SHA-256，文本亦记录 UTF-8/LF 摘要。回执压缩包在运行后生成。
+`repo-check.zip` 保存 `55c818fd` 收口时的完整仓库门禁回执和原始输出。回执记录 17 个文件的运行前后 SHA-256，文本亦记录 UTF-8/LF 摘要。审计用固定 Git 对象复核这些文件。自审定稿门禁另见 `review/repo-check.json`。[原门禁归档](repo-check.zip)
 
 ## 复核与交接
 
@@ -30,6 +30,14 @@ macOS 最终五项作业均通过。首轮回归重建了 Cargo 输出目录内�
 cmd /c git fetch origin codex/b6-boundary-runner
 python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/audit.py
 ```
+
+同一审计也核对 `--archive` 和 `--repo-check` 指定的归档副本。原样副本通过，八个反例逐项核对实际异常文本、退出码和只读性。自审核对照固定汇总、门禁文件清单、构建目标、独占原生产物路径、F-12 消息标识和计数守卫的实际拒绝原因。[反例回执](review/negative-cases.json)
+
+```text
+python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/review/self_negative.py
+```
+
+macOS 自审核重新下载最终运行的五份 ZIP。ZIP 摘要与 GitHub API 一致，包内 2,306 个文件与 `boundaries.zip` 逐字节对账。原件可用 `gh api repos/Programming-Language-Xiao/Xiao/actions/artifacts/<产物 ID>/zip` 下载。按 `<产物 ID>.zip` 命名后，可用审计的 `--macos-artifacts` 参数复核。[产物 ID 与摘要](review/macos-artifacts.json)
 
 复跑使用新任务根与本机 LLVM 工具目录。Windows 和 Linux 的入口都使用冻结的 `58176ff5` 重建。
 

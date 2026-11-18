@@ -1,0 +1,222 @@
+{
+  "archive_read_only": true,
+  "cases": {
+    "baseline": {
+      "exit_code": 0,
+      "expected_reason": null,
+      "finished_utc": "2026-11-18T12:54:20.255635+00:00",
+      "inputs": {
+        "boundaries.zip": {
+          "bytes": 7199480,
+          "sha256": "78b3d2ef58fd0cca6f1845e510ba05d981506e1e0bbd52da05bb76f7627bc1e7"
+        },
+        "repo-check.zip": {
+          "bytes": 26128,
+          "sha256": "96e2293e4031a63ec07777d02ffdc54e44e1f7d70c9a8a5431b9a83117f6a228"
+        }
+      },
+      "outcome": {
+        "language_runs": 765,
+        "verified": true
+      },
+      "pid": 77104,
+      "read_only": true,
+      "started_utc": "2026-11-18T12:54:09.483932+00:00"
+    },
+    "missing_attempt_rehashed": {
+      "exit_code": 1,
+      "expected_reason": "边界归档与固定收口汇总不符",
+      "finished_utc": "2026-11-18T12:54:22.574673+00:00",
+      "inputs": {
+        "boundaries.zip": {
+          "bytes": 7197527,
+          "sha256": "27a0e4dcba31c63aca9058ccce4d5cefc90fe576d50cc52e55ce14b426825924"
+        },
+        "repo-check.zip": {
+          "bytes": 26128,
+          "sha256": "96e2293e4031a63ec07777d02ffdc54e44e1f7d70c9a8a5431b9a83117f6a228"
+        }
+      },
+      "outcome": {
+        "stderr_last_line": "ValueError: 边界归档与固定收口汇总不符",
+        "verified": false
+      },
+      "pid": 79492,
+      "read_only": true,
+      "started_utc": "2026-11-18T12:54:14.252491+00:00"
+    },
+    "missing_object": {
+      "exit_code": 1,
+      "expected_reason": "证据包清单不符",
+      "finished_utc": "2026-11-18T12:54:15.215632+00:00",
+      "inputs": {
+        "boundaries.zip": {
+          "bytes": 7196800,
+          "sha256": "f91d2417bcc5d3f44d444e49f2b3a42c03f5377c3c414797e6496636bef6cfaf"
+        },
+        "repo-check.zip": {
+          "bytes": 26128,
+          "sha256": "96e2293e4031a63ec07777d02ffdc54e44e1f7d70c9a8a5431b9a83117f6a228"
+        }
+      },
+      "outcome": {
+        "stderr_last_line": "ValueError: 证据包清单不符",
+        "verified": false
+      },
+      "pid": 51264,
+      "read_only": true,
+      "started_utc": "2026-11-18T12:54:14.160568+00:00"
+    },
+    "missing_repo_check": {
+      "exit_code": 1,
+      "expected_reason": "仓库门禁归档缺失",
+      "finished_utc": "2026-11-18T12:54:37.685692+00:00",
+      "inputs": {
+        "boundaries.zip": {
+          "bytes": 7199480,
+          "sha256": "78b3d2ef58fd0cca6f1845e510ba05d981506e1e0bbd52da05bb76f7627bc1e7"
+        }
+      },
+      "outcome": {
+        "stderr_last_line": "ValueError: 仓库门禁归档缺失",
+        "verified": false
+      },
+      "pid": 80684,
+      "read_only": true,
+      "started_utc": "2026-11-18T12:54:29.690513+00:00"
+    },
+    "missing_repo_check_path": {
+      "exit_code": 1,
+      "expected_reason": "仓库门禁文件清单不符",
+      "finished_utc": "2026-11-18T12:54:40.358454+00:00",
+      "inputs": {
+        "boundaries.zip": {
+          "bytes": 7199480,
+          "sha256": "78b3d2ef58fd0cca6f1845e510ba05d981506e1e0bbd52da05bb76f7627bc1e7"
+        },
+        "repo-check.zip": {
+          "bytes": 26057,
+          "sha256": "408b38fac61f3a6823072bca0271b38b1d353c0fe7228412ef13f05fd809365d"
+        }
+      },
+      "outcome": {
+        "stderr_last_line": "ValueError: 仓库门禁文件清单不符",
+        "verified": false
+      },
+      "pid": 83308,
+      "read_only": true,
+      "started_utc": "2026-11-18T12:54:31.941344+00:00"
+    },
+    "reused_native_output": {
+      "exit_code": 1,
+      "expected_reason": "原生产物或组件核对不符：windows/all/o0/bytes-exact",
+      "finished_utc": "2026-11-18T12:54:31.891982+00:00",
+      "inputs": {
+        "boundaries.zip": {
+          "bytes": 7199525,
+          "sha256": "762963c84441cba4e31269714c645c25c8fd889545fcf067d5dc977f320b01b2"
+        },
+        "repo-check.zip": {
+          "bytes": 26128,
+          "sha256": "96e2293e4031a63ec07777d02ffdc54e44e1f7d70c9a8a5431b9a83117f6a228"
+        }
+      },
+      "outcome": {
+        "stderr_last_line": "ValueError: 原生产物或组件核对不符：windows/all/o0/bytes-exact",
+        "verified": false
+      },
+      "pid": 83000,
+      "read_only": true,
+      "started_utc": "2026-11-18T12:54:24.809587+00:00"
+    },
+    "unrelated_guard_failure": {
+      "exit_code": 1,
+      "expected_reason": "计数守卫拒绝原因不符：windows/zero",
+      "finished_utc": "2026-11-18T12:54:35.008763+00:00",
+      "inputs": {
+        "boundaries.zip": {
+          "bytes": 7199354,
+          "sha256": "d51c1e6097004facaa86c9b9f28d0e5670226f986ab0b2aa1f2ef1ead999cb07"
+        },
+        "repo-check.zip": {
+          "bytes": 26128,
+          "sha256": "96e2293e4031a63ec07777d02ffdc54e44e1f7d70c9a8a5431b9a83117f6a228"
+        }
+      },
+      "outcome": {
+        "stderr_last_line": "ValueError: 计数守卫拒绝原因不符：windows/zero",
+        "verified": false
+      },
+      "pid": 52408,
+      "read_only": true,
+      "started_utc": "2026-11-18T12:54:26.982205+00:00"
+    },
+    "wrong_build_target": {
+      "exit_code": 1,
+      "expected_reason": "构建回执不符：windows/runtime-build",
+      "finished_utc": "2026-11-18T12:54:24.602580+00:00",
+      "inputs": {
+        "boundaries.zip": {
+          "bytes": 7199482,
+          "sha256": "a05fa5becd4c80941a8b286bda87c7f2fcb678aff18eb102bdd48e18325504a1"
+        },
+        "repo-check.zip": {
+          "bytes": 26128,
+          "sha256": "96e2293e4031a63ec07777d02ffdc54e44e1f7d70c9a8a5431b9a83117f6a228"
+        }
+      },
+      "outcome": {
+        "stderr_last_line": "ValueError: 构建回执不符：windows/runtime-build",
+        "verified": false
+      },
+      "pid": 83660,
+      "read_only": true,
+      "started_utc": "2026-11-18T12:54:17.435771+00:00"
+    },
+    "wrong_message_id": {
+      "exit_code": 1,
+      "expected_reason": "F-12 消息标识不符：windows/all/vm/digits-over",
+      "finished_utc": "2026-11-18T12:54:29.657735+00:00",
+      "inputs": {
+        "boundaries.zip": {
+          "bytes": 7199488,
+          "sha256": "bc38a50793ddcd935ca38eb9cd39ab96e60d1068237be5729dcff6b82c394338"
+        },
+        "repo-check.zip": {
+          "bytes": 26128,
+          "sha256": "96e2293e4031a63ec07777d02ffdc54e44e1f7d70c9a8a5431b9a83117f6a228"
+        }
+      },
+      "outcome": {
+        "stderr_last_line": "ValueError: F-12 消息标识不符：windows/all/vm/digits-over",
+        "verified": false
+      },
+      "pid": 63848,
+      "read_only": true,
+      "started_utc": "2026-11-18T12:54:22.492372+00:00"
+    }
+  },
+  "original": {
+    "audit.py": {
+      "bytes": 34653,
+      "sha256": "1b3f9f15e19ec1f588a5cd73898fc7202d7c7ab52764ea67089e3f497b2ce38f"
+    },
+    "boundaries.zip": {
+      "bytes": 7199480,
+      "sha256": "78b3d2ef58fd0cca6f1845e510ba05d981506e1e0bbd52da05bb76f7627bc1e7"
+    },
+    "repo-check.zip": {
+      "bytes": 26128,
+      "sha256": "96e2293e4031a63ec07777d02ffdc54e44e1f7d70c9a8a5431b9a83117f6a228"
+    },
+    "summary.json": {
+      "bytes": 5175,
+      "sha256": "e4a42c615031416eeb351bb8126c11de34d7d4114a664aa279657dc20d059b92"
+    }
+  },
+  "passed": true,
+  "script": {
+    "bytes": 8097,
+    "sha256": "1150c919fce1a70e82acbb73d9e013fa3dbbe492f678a090cd084a3b7be8c83b"
+  }
+}

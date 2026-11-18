@@ -10,10 +10,10 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 sys.dont_write_bytecode = True
 
-from guards import scripts, variants
+from guards import GUARD_SOURCE, scripts, variants
 from matrix import LANGUAGE_BACKENDS, REGRESSION, catalog
 from prepare import (
-    INPUTS, PRODUCT, REPO, ROOT, SHARED, SOURCE_SHA, file_identity, git, require, snapshot,
+    BUILD_OPTIONS, INPUTS, PRODUCT, REPO, ROOT, SHARED, SOURCE_SHA, file_identity, git, require, snapshot,
     source_digest, write_json,
 )
 from run import frames, observe_native, observe_suite, observe_vm, satisfies, suite_command
@@ -23,6 +23,7 @@ from b2_b6_macos import sha
 RECIPE = "8385893f8b1805c369817fee0c4e5840df28a4b8"
 LOCAL_RECIPE = "724ed80dd2e9e4a3f669c50e69172acd1668ab72"
 MATRIX_COMMIT = "682beb6f1e538fcf03195c5ad7f71eed03e4ccab"
+CLOSEOUT = "55c818fdd9b37369699a55b28441e4d95cbdb4d5"
 RUNNER = "ddccdbee82daeb2c406dc7128889a7e921bedfd3"
 RUN_ID = 44284131624
 JOBS = {"vm": 134732268701, "o0": 134732268646, "o3": 134732268489,
@@ -32,6 +33,15 @@ HOSTS = {"windows": ("x86_64-pc-windows-msvc", "coff", "unverified-coff-exports"
          "linux": ("x86_64-unknown-linux-gnu", "elf", "complete", "getrusage", "KiB"),
          "macos": ("aarch64-apple-darwin", "macho", "complete", "getrusage", "bytes")}
 RAW_SUFFIXES = {".json", ".log", ".stdin", ".stdout", ".stderr", ".xiao", ".sh", ".ps1"}
+MESSAGE_IDS = {
+    "X06-RUNTIME-002": "runtime.type_mismatch",
+    "X06-RUNTIME-009": "runtime.numeric_overflow",
+    "X06-RUNTIME-011": "runtime.allocation",
+    "X06-RUNTIME-012": "runtime.invalid_value",
+    "X06-RUNTIME-013": "runtime.division_by_zero",
+    "X06-RUNTIME-033": "runtime.numeric_limit",
+    "X06-RUNTIME-034": "runtime.non_terminating_division",
+}
 
 
 def digest(data):
@@ -40,6 +50,51 @@ def digest(data):
 
 def normalized(path):
     return path.replace(chr(92), "/").removeprefix("//?/")
+
+
+def valid_identity(item):
+    return item["bytes"] > 0 and re.fullmatch(r"[0-9a-f]{64}", item["sha256"]) is not None
+
+
+def closeout_file(name):
+    return git("show", f"{CLOSEOUT}:{ROOT.relative_to(REPO).as_posix()}/{name}")
+
+
+def verify_repo_check(path):
+    require(path.is_file(), "仓库门禁归档缺失")
+    with ZipFile(path) as bundle:
+        outputs = ("stdout.json", "stderr.log")
+        require(sorted(bundle.namelist()) == sorted(("receipt.json", *outputs)), "仓库门禁归档清单不符")
+        receipt = json.loads(bundle.read("receipt.json"))
+        require(receipt["schema_version"] == 1 and receipt["passed"] is True and receipt["exit_code"] == 0
+                and receipt["pid"] > 0 and receipt["started_utc"] <= receipt["finished_utc"]
+                and receipt["base_commit"] == RECIPE and receipt["product_commit"] == PRODUCT
+                and receipt["argv"][1:] == ["tools/repo-check/src/cli.ts", "all", "--format", "json"],
+                "仓库门禁进程回执不符")
+        require(receipt["outputs"] == {name: digest(bundle.read(name)) for name in outputs},
+                "仓库门禁输出身份不符")
+        report = json.loads(bundle.read("stdout.json"))
+        diagnostics = Counter(item["severity"] for item in report["diagnostics"])
+        require(report["checker"] == "xiao-repo-check" and report["passed"] is True
+                and not bundle.read("stderr.log") and not diagnostics["error"]
+                and diagnostics == receipt["diagnostics_by_severity"], "仓库门禁实际输出不符")
+
+    changed = set(git("diff", "--name-only", MATRIX_COMMIT + "~1", CLOSEOUT, "--", "docs/DevDocs")
+                  .decode("utf-8").splitlines())
+    changed.remove((ROOT / "repo-check.zip").relative_to(REPO).as_posix())
+    sources = receipt["source_after"]
+    require(sources == receipt["source_before"] and set(sources) == changed, "仓库门禁文件清单不符")
+    for name, info in sources.items():
+        committed = git("show", f"{CLOSEOUT}:{name}")
+        require(digest(committed) == info.get("utf8_lf", info), f"仓库门禁固定文件身份不符：{name}")
+    require(path.read_bytes() == closeout_file("repo-check.zip"), "仓库门禁归档与固定收口不符")
+
+
+def verify_closeout(result, repo_check):
+    summary = closeout_file("summary.json")
+    require((ROOT / "summary.json").read_bytes() == summary, "发布汇总与固定收口不符")
+    require(result == json.loads(summary), "边界归档与固定收口汇总不符")
+    verify_repo_check(repo_check)
 
 
 def collect(archive, sources):
@@ -126,16 +181,26 @@ def verify_setup(evidence, root, host, source, recipe):
             and normalized(overrides["CARGO_TARGET_DIR"]) == f"{task}/target"
             and normalized(overrides["XIAO_STDLIB_ROOT"]) == f"{source_root}/stdlib"
             and normalized(overrides["XIAO_HOME"]) == f"{task}/home"
+            and overrides["RUSTUP_TOOLCHAIN"] == "1.96.0" and overrides["XIAO_TARGET_TRIPLE"] == target
+            and overrides["RUSTC"] == tools["rustc"]["path"]
+            and all(overrides[name] == tools[name]["path"] for name in ("XIAO_CLANG", "XIAO_LLC", "XIAO_LLVM_AS"))
             and overrides["XIAO_B1_F10"] == overrides["XIAO_B2_A_PERF"] == "0",
             f"执行身份或任务根不符：{root}")
     require(tools["rustc"]["version"].startswith("rustc 1.96.0")
             and f"host: {target}" in tools["rustc"]["version"]
-            and all(re.fullmatch(r"[0-9a-f]{64}", tool["sha256"]) and tool["bytes"] > 0 for tool in tools.values()),
+            and tools["cargo"]["version"].startswith("cargo 1.96.0")
+            and all(valid_identity(tool) for tool in tools.values())
+            and all(valid_identity(built[name]) for name in ("runtime", "core")),
             f"工具链身份不符：{root}")
-    for label, before in (("runtime-build", None), ("core-build", built["runtime"])):
+    for label, before, target_args in (
+        ("runtime-build", None, ["-p", "xiao-runtime"]),
+        ("core-build", built["runtime"], ["-p", "xiao-driver", "--bin", "xiao-core"]),
+    ):
         command = evidence.read(f"{root}/{label}.json")
-        require(command["exit_code"] == 0 and command["pid"] > 0 and "--locked" in command["argv"]
-                and "--release" in command["argv"] and command["argv"][0] == tools["cargo"]["path"]
+        require(command["exit_code"] == 0 and command["pid"] > 0
+                and command["started_utc"] <= command["finished_utc"]
+                and command["argv"] == [tools["cargo"]["path"], "build", *BUILD_OPTIONS, *target_args]
+                and normalized(command["temp"]) == f"{task}/temp-{label}"
                 and command["source_after_sha256"] == SOURCE_SHA and normalized(command["cwd"]) == source_root
                 and command["runtime_before"] == before and command["runtime_after"] == built["runtime"]
                 and command["log"] == {"name": label + ".log", **evidence.entries[f"{root}/{label}.log"]},
@@ -163,7 +228,7 @@ def wrapper_span(actual, response, source):
     return [start, source.index(b")", start) + 1]
 
 
-def verify_language(evidence, root, host, environment, backend, specs, retained, cmath):
+def verify_language(evidence, root, host, environment, mode, backend, specs, retained, cmath):
     ids = set(specs)
     require({row["case"] for row in retained} == ids and len(retained) == len(ids)
             and all(row["backend"] == backend for row in retained), f"语言负载清单不全：{host}/{backend}")
@@ -174,6 +239,7 @@ def verify_language(evidence, root, host, environment, backend, specs, retained,
         name = row["case"]
         spec = specs[name]
         folder = f"{root}/{backend}/{name}"
+        directory = f"{normalized(environment['task_root'])}/evidence/{mode}/{backend}/{name}"
         require(evidence.read(f"{folder}/result.json") == row, f"单项与汇总不符：{folder}")
         source = evidence.raw(f"{folder}/input.xiao")
         require(sha(source) == spec["source_sha256"] and digest(source) == row["source"],
@@ -186,30 +252,40 @@ def verify_language(evidence, root, host, environment, backend, specs, retained,
                 and (reply["versions"]["runtime_abi"], reply["versions"]["codegen"]) == (65555, 22)
                 and request["request_id"] == response["request_id"] == name
                 and request["source"]["text"].encode() == source
-                and normalized(request["source"]["path"]) == normalized(command["cwd"]) + "/input.xiao"
+                and normalized(command["cwd"]) == directory
+                and normalized(request["source"]["path"]) == directory + "/input.xiao"
                 and request["target"]["triple"] == environment["target"]
                 and request["target"]["object_format"] == HOSTS[host][1],
                 f"真实编译/执行请求不符：{folder}")
         if backend == "vm":
             require(request["type"] == response["operation"] == "run", f"VM 入口不符：{folder}")
             actual = observe_vm(response)
+            message_id = (response.get("report") or {}).get("message_id")
         else:
-            program, _, out, err = evidence.command(folder, "program", host)
+            program, inp, out, err = evidence.command(folder, "program", host)
+            executable = directory + ("/program.exe" if host == "windows" else "/program")
+            llvm = directory + "/program.ll"
             artifact = response["artifact"]
             composition = artifact["artifact_runtime"]
             require(response["exit_code"] == 0 and request["type"] == response["operation"] == "build"
                     and request["toolchain"]["runtime_library"] == environment["runtime"]
                     and artifact["object_digest"] == row["executable"]["sha256"]
+                    and valid_identity(row["executable"]) and valid_identity(row["llvm"])
                     and artifact["optimization_level"] == request["optimization"]["level"] == int(backend[1])
-                    and program["argv"] == [artifact["executable"]]
-                    and normalized(program["cwd"]) == normalized(command["cwd"])
+                    and normalized(request["output"]) == normalized(artifact["executable"]) == executable
+                    and normalized(request["llvm_ir_output"]) == normalized(artifact["llvm_ir_output"]) == llvm
+                    and not inp and list(map(normalized, program["argv"])) == [executable]
+                    and normalized(program["cwd"]) == directory
                     and composition == row["artifact"] and composition["verification"] == verify
                     and composition["object_format"] == HOSTS[host][1]
                     and (verify != "complete" or composition["declared_components"] == composition["observed_components"]),
                     f"原生产物或组件核对不符：{folder}")
             actual = observe_native(program, out, err)
+            message_id = actual["message_id"]
             command = program
-        if spec["expected"]["code"] and spec["expected"]["span"] is None:
+        code = spec["expected"]["code"]
+        require(message_id == MESSAGE_IDS.get(code), f"F-12 消息标识不符：{folder}")
+        if code and spec["expected"]["span"] is None:
             require(actual["span"] == wrapper_span(actual, response, cmath), f"cmath 包装错误位置不符：{folder}")
         passed = satisfies(actual, spec["expected"])
         require(actual == row["actual"] and row["status"] == ("passed" if passed else "failed"),
@@ -241,13 +317,21 @@ def verify_suite(evidence, root, label, environment):
 
 def verify_abi(evidence, root, host, fixed, retained, environment):
     folder = f"{root}/abi"
-    link, _, _, _ = evidence.command(folder, "link", host)
-    normal, _, out, err = evidence.command(folder, "normal", host)
-    fatal, _, fatal_out, fatal_err = evidence.command(folder, "fatal", host)
-    executable = normal["argv"][0]
-    require(link["exit"] == normal["exit"] == 0 and not err
-            and environment["runtime"] in link["argv"] and link["argv"][-1] == executable
-            and normal["argv"] == [executable] and fatal["argv"] == [executable, "fatal"],
+    link, link_in, _, _ = evidence.command(folder, "link", host)
+    normal, normal_in, out, err = evidence.command(folder, "normal", host)
+    fatal, fatal_in, fatal_out, fatal_err = evidence.command(folder, "fatal", host)
+    mode = root.rsplit("/", 1)[-1]
+    directory = f"{normalized(environment['task_root'])}/evidence/{mode}/abi"
+    executable = directory + ("/abi_probe.exe" if host == "windows" else "/abi_probe")
+    prefix = [environment["environment"]["XIAO_CLANG"], "-target", environment["target"], "-std=c11", "-Werror"]
+    require(link["exit"] == normal["exit"] == 0 and not (link_in or normal_in or fatal_in or err)
+            and link["argv"][:5] == prefix and normalized(link["argv"][5]).endswith("/abi_probe.c")
+            and link["argv"][6] == environment["runtime"] and link["argv"][-2] == "-o"
+            and normalized(link["argv"][-1]) == executable
+            and list(map(normalized, normal["argv"])) == [executable]
+            and list(map(normalized, fatal["argv"])) == [executable, "fatal"]
+            and all(normalized(row["cwd"]) == directory for row in (link, normal, fatal))
+            and valid_identity(retained["executable"]),
             "C ABI 探针链接或进程身份不符")
     observed = {}
     for line in out.decode().splitlines():
@@ -308,7 +392,9 @@ def verify_ci(evidence):
     artifacts = evidence.read(f"{prefix}/artifact-api.json")["artifacts"]
     require(workflow["databaseId"] == RUN_ID and workflow["headSha"] == RUNNER and workflow["attempt"] == 1
             and workflow["status"] == "completed" and workflow["conclusion"] == "success"
-            and {job["name"]: job["databaseId"] for job in workflow["jobs"] if job["conclusion"] == "success"}
+            and len(workflow["jobs"]) == len(JOBS)
+            and {job["name"]: job["databaseId"] for job in workflow["jobs"]
+                 if job["status"] == "completed" and job["conclusion"] == "success"}
             == {f"B6-3 macOS {mode}": identifier for mode, identifier in JOBS.items()}
             and {item["name"] for item in artifacts} == {f"b6-3-macos-{mode}-{RUN_ID}-1" for mode in JOBS},
             "macOS Runner 作业或产物身份不符")
@@ -332,10 +418,35 @@ def verify_ci(evidence):
     return {"run": RUN_ID, "attempt": 1, "runner": RUNNER, "jobs": JOBS}
 
 
+def verify_macos_artifacts(archive, directory):
+    with ZipFile(archive) as bundle:
+        entries = json.loads(bundle.read("evidence.json"))
+        api = entries[f"ci-{RUN_ID}/artifact-api.json"]
+        artifacts = json.loads(bundle.read("objects/" + api["sha256"]))["artifacts"]
+    rows = {}
+    for item in artifacts:
+        name = item["name"]
+        path = directory / f"{item['id']}.zip"
+        identity = file_identity(path)
+        require(identity == {"bytes": item["size_in_bytes"], "sha256": item["digest"].removeprefix("sha256:")},
+                f"macOS 原始产物摘要不符：{name}")
+        prefix = f"macos/{name}/"
+        archived = {key.removeprefix(prefix): info for key, info in entries.items() if key.startswith(prefix)}
+        with ZipFile(path) as artifact:
+            members = [info for info in artifact.infolist() if not info.is_dir()]
+            observed = {info.filename: digest(artifact.read(info)) for info in members}
+        require(len(members) == len(observed) and observed == archived, f"macOS 原件与归档文件不符：{name}")
+        rows[name] = {"artifact_id": item["id"], "zip": identity, "files": len(observed),
+                      "manifest_sha256": sha(json.dumps(observed, sort_keys=True, separators=(",", ":")).encode())}
+    return {"run": RUN_ID, "attempt": 1, "runner": RUNNER, "artifacts": rows,
+            "files": sum(row["files"] for row in rows.values())}
+
+
 def verify_guards(evidence, sources):
     summary = evidence.read("guards/summary.json")
     workflow, bodies = scripts()
-    require(summary["workflow_sha256"] == sha(workflow) and summary["passed"] == 28
+    require(summary["source_commit"] == GUARD_SOURCE and summary["workflow_sha256"] == sha(workflow)
+            and summary["passed"] == 28
             and (summary["actual"], summary["derived"]) == (4, 24) and len(summary["rows"]) == 28,
             "计数守卫范围不符")
     for path, source in sources.items():
@@ -346,8 +457,26 @@ def verify_guards(evidence, sources):
             script = "guard.ps1" if path == "windows" else "guard.sh"
             prefix = (f"function cargo {{ Get-Content -LiteralPath 'cargo-output.log'; $global:LASTEXITCODE = {cargo_exit} }}\n"
                       if path == "windows" else f"cargo() {{ cat cargo-output.log; return {cargo_exit}; }}\n")
-            row, _, _, _ = evidence.command(folder, "guard", "windows")
+            row, inp, stdout, stderr = evidence.command(folder, "guard", "windows")
             recorded = summary["rows"][name]
+            cwd = normalized(row["cwd"])
+            shell = normalized(row["argv"][0]).rsplit("/", 1)[-1].lower()
+            arguments = list(map(normalized, row["argv"][1:]))
+            require(cwd.endswith(f"/{name}") and not inp
+                    and (shell == "pwsh.exe" and arguments == ["-NoProfile", "-File", f"{cwd}/{script}"]
+                         if path == "windows" else shell == "bash.exe" and arguments == [script])
+                    and stdout.replace(b"\r\n", b"\n").rstrip(b"\n") == adjusted.rstrip(b"\n"),
+                    f"计数守卫命令或输出不符：{name}")
+            expected_exit = cargo_exit if path == "windows" and cargo_exit else int(case != "actual")
+            if case != "actual" and cargo_exit == 0 and path == "windows":
+                reason = stderr.decode("utf-8").splitlines()[-1:]
+                reason_ok = [line.strip() for line in reason] == [
+                    "| B1 native probe must pass exactly one case without ignoring it"]
+            elif case != "actual" and cargo_exit == 0 and path in ("linux", "macos"):
+                reason_ok = stderr.strip() == b"Native test did not execute exactly one case: b1_capabilities_match_native_golden_outputs"
+            else:
+                reason_ok = not stderr
+            require(row["exit"] == expected_exit and reason_ok, f"计数守卫拒绝原因不符：{name}")
             require(evidence.raw(f"{folder}/cargo-output.log") == adjusted
                     and evidence.raw(f"{folder}/{script}") == (prefix + bodies[path]).encode()
                     and recorded == {"accepted": row["exit"] == 0, "expected": case == "actual", "exit": row["exit"],
@@ -391,7 +520,8 @@ def audit(archive):
                 if mode == "all" or mode in LANGUAGE_BACKENDS:
                     for backend in LANGUAGE_BACKENDS if mode == "all" else (mode,):
                         retained = [row for row in summary["language"] if row["backend"] == backend]
-                        language[backend] = verify_language(evidence, base, host, environment, backend, specs, retained, cmath)
+                        language[backend] = verify_language(evidence, base, host, environment, mode, backend,
+                                                            specs, retained, cmath)
                 if mode in ("all", "runtime"):
                     abi = verify_abi(evidence, base, host, fixed, summary["abi"], environment)
                     runtime = verify_suite(evidence, base, "runtime", environment)
@@ -430,6 +560,8 @@ def audit(archive):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--archive", type=Path, default=ROOT / "boundaries.zip")
+    parser.add_argument("--repo-check", type=Path, default=ROOT / "repo-check.zip", help="复核仓库门禁归档副本")
+    parser.add_argument("--macos-artifacts", type=Path, help="将产物 ID 命名的 ZIP 原件与收口归档逐文件对账")
     parser.add_argument("--collect", nargs="+", metavar="LABEL=DIR")
     parser.add_argument("--report", type=Path, help="独占生成汇总回执")
     args = parser.parse_args()
@@ -437,10 +569,12 @@ def main():
         sources = [(label, Path(path)) for label, path in (entry.split("=", 1) for entry in args.collect)]
         collect(args.archive, sources)
     result = audit(args.archive)
+    if not args.collect:
+        verify_closeout(result, args.repo_check)
+    if args.macos_artifacts:
+        result["macos_artifacts"] = verify_macos_artifacts(args.archive, args.macos_artifacts)
     if args.report:
         write_json(args.report, result)
-    elif args.archive.resolve() == ROOT / "boundaries.zip":
-        require(result == json.loads((ROOT / "summary.json").read_bytes()), "汇总回执与审计不符")
     print(json.dumps(result, ensure_ascii=False))
 
 
