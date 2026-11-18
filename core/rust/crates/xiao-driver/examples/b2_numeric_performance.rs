@@ -76,7 +76,7 @@ fn main() {
     while let Some(argument) = arguments.next() {
         match argument.as_str() {
             "--worker-vm" => {
-                worker::vm(&PathBuf::from(arguments.next().expect("缺少字节码")));
+                worker::vm(&PathBuf::from(arguments.next().expect("缺少字节码")), None);
                 return;
             }
             "--backend" => backend = arguments.next().expect("缺少backend"),
@@ -160,7 +160,7 @@ fn main() {
         ));
     } else {
         for level in [0, 3] {
-            let executable = native::build(root, &directory, &artifact, level);
+            let (executable, _) = native::build(root, &directory, &artifact, level);
             report.artifacts.push(identity::file(&executable));
             executables.push((level, executable, Vec::new()));
         }

@@ -120,6 +120,23 @@ pub fn sources(repository: &Path) -> BTreeMap<String, String> {
     files
 }
 
+/// B6 额外固定 B1、F-9、A1 教程和两份锁，沿用 A6 的实际标准库根校验。
+#[allow(dead_code)] // A6 的独立入口沿用原有清单。
+pub fn sources_b6(repository: &Path) -> BTreeMap<String, String> {
+    let mut files = sources(repository);
+    for name in [
+        "tests/fixtures",
+        "tests/spec",
+        "tests/benchmarks/Cargo.lock",
+        "docs/UseDocs/language/basics/types/conversions.md",
+    ] {
+        let path = repository.join(name);
+        assert!(path.exists(), "B6 缺少 {}", path.display());
+        walk(repository, &path, &mut files);
+    }
+    files
+}
+
 /// release可执行文件、Runtime与真实Rust版本一起记录；不改全局环境。
 pub fn capture(repository: &Path) -> Identity {
     let rustc_path = std::env::var_os("RUSTC").map_or_else(

@@ -17,6 +17,11 @@ mod frontend;
 /// 统一前端向 VM 提供按需模块编译的接线。
 mod module_loader;
 
+/// 为使用自定义 VM 事件接收器的宿主提供当前任务的官方模块加载器。
+pub fn standard_library_module_loader() -> impl xiao_vm::ModuleLoader {
+    module_loader::DriverModuleLoader::new(None, None)
+}
+
 /// `-debug` 独立诊断进程与终端启动编排。
 pub mod diagnostics;
 

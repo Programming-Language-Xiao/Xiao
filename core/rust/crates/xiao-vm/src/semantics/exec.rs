@@ -270,6 +270,13 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         vm
     }
 
+    /// 为自定义事件接收器的宿主装入只读模块加载器。
+    #[must_use]
+    pub fn with_module_loader(mut self, loader: &'p dyn ModuleLoader) -> Self {
+        self.set_module_loader(Some(loader));
+        self
+    }
+
     /// 返回当前运行指标。
     #[must_use]
     pub const fn metrics(&self) -> VmMetrics {
