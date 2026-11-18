@@ -1,6 +1,6 @@
 # 20O-B2-B6. cmath/lfloat 资源、错误与三平台性能规划
 
-> **B6当前状态（2026-11-18）**　B6-1 为 `restricted`，`stage_passed=false`。官方包装两别名 O0/O3 在三平台功能通过。Linux ELF 与 macOS Mach-O 均为 `Complete`，Windows COFF 导出完整性未验证，Linux Clippy 未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，固定 `79ea0375` 的九组性能测量通过，见 §2.7；B6-3 边界负载见[B6-3规划](20o-b2-b6-3-boundary-plan.md)。[Windows/Linux 限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)、[macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)、[B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)
+> **B6当前状态（2026-11-18）**　B6-1 为 `restricted`，`stage_passed=false`。官方包装两别名 O0/O3 在三平台功能通过。Linux ELF 与 macOS Mach-O 均为 `Complete`，Windows COFF 导出完整性未验证，Linux Clippy 未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，固定 `79ea0375` 的九组性能测量通过，见 §2.7；B6-3 边界负载见[B6-3规划](20o-b2-b6-3-boundary-plan.md)；B6-4 工程门禁见[B6-4规划](20o-b2-b6-4-ci-gates-plan.md)。[Windows/Linux 限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)、[macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)、[B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)
 
 > B5固定1.19/21矩阵和[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)保持只读历史身份；当前产品1.19/22。B6每轮均绑定自己的源码、Runtime和工具身份。B1原件缺口、22C/22D与19/11/22债务独立保留。
 > B5固定测试快照5864cbde为ABI1.19/生成器21/接口1。原17项资源目标及8次直接计时为旧负载历史证据；优化后18项资源目标和完整默认workspace均通过，详见URL优化记录。B6当前测量使用ABI1.19/生成器22 Runtime，并同时对账B5矩阵与21→22增量证据。
