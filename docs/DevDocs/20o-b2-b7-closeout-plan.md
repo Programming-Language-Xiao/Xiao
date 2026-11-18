@@ -1,7 +1,7 @@
 # 20O-B2-B7. B2-B 内部收口与 B2-C 交接规划
 
 > **2026-11-16历史状态：B5版本/缓存/C ABI矩阵及完整串行workspace通过，但默认并发workspace的URL Unicode用例触发60秒看门狗，B5未封存。** 失败记录、B1历史原件缺失/重建来源标记和独立LLVM比较问题见[B5证据](assets/20o-b2-b/entry-20261116-b5-rebuild/README.md)；B6闸门未开，B7/B2-C未开始。
-> **2026-11-18实施同步**　B5 固定矩阵绑定 ABI 1.19、生成器 21。当前产品为 1.19/22，B5 已联合收口。FIX.2 保持生成器 22。B6-1 为 `restricted`，`stage_passed=false`，三平台功能通过。Windows COFF 导出完整性未验证，Linux Clippy 未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，九组性能结果绑定 `79ea0375`。B7 等待 B6 整批收口。[B6-1 限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)、[macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)、[B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)、[21→22 增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)、[FIX.2 证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)
+> **2026-11-18实施同步**　B5 固定矩阵绑定 ABI 1.19、生成器 21。当前产品为 1.19/22，B5 已联合收口。FIX.2 保持生成器 22。B6-1 为 `restricted`，`stage_passed=false`，三平台功能通过。Windows COFF 导出完整性未验证，Linux Clippy 未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，九组性能结果绑定 `79ea0375`；B6-3 边界负载待执行。B7 等待 B6 整批收口。[B6-1 限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)、[macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)、[B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)、[21→22 增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)、[FIX.2 证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)
 > B7 只做 B2-B 内部收口、B1 回归、B2-A 与 B2-B 前序阶段证据对账和 B2-C 交接。
 > 不运行旧 721、不升级 registry/教程、不关闭历史债务；B2-C 才做最终三平台、721 和公共发布。
 
