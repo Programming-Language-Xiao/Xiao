@@ -1,7 +1,7 @@
 # 20O-B2-B7. B2-B 内部收口与 B2-C 交接规划
 
 > **2026-11-16历史状态：B5版本/缓存/C ABI矩阵及完整串行workspace通过，但默认并发workspace的URL Unicode用例触发60秒看门狗，B5未封存。** 失败记录、B1历史原件缺失/重建来源标记和独立LLVM比较问题见[B5证据](assets/20o-b2-b/entry-20261116-b5-rebuild/README.md)；B6闸门未开，B7/B2-C未开始。
-> **2026-11-18实施同步：** B5矩阵固定绑定ABI1.19/生成器21；当前产品ABI1.19/生成器22，B5已联合收口。FIX.2已完成且生成器保持22。B6-1三平台功能通过，Linux ELF和macOS Mach-O为`Complete`，Windows COFF为`UnverifiedCoffExports`。B6-2九组性能测量通过，B7等待B6整批收口。[B6-1限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)、[macOS专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)、[B6-2实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)、[21→22增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)、[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)
+> **2026-11-18实施同步**　B5 固定矩阵绑定 ABI 1.19、生成器 21。当前产品为 1.19/22，B5 已联合收口。FIX.2 保持生成器 22。B6-1 为 `restricted`，`stage_passed=false`，三平台功能通过。Windows COFF 导出完整性未验证，Linux Clippy 未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，九组性能结果绑定 `79ea0375`。B7 等待 B6 整批收口。[B6-1 限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)、[macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)、[B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)、[21→22 增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)、[FIX.2 证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)
 > B7 只做 B2-B 内部收口、B1 回归、B2-A 与 B2-B 前序阶段证据对账和 B2-C 交接。
 > 不运行旧 721、不升级 registry/教程、不关闭历史债务；B2-C 才做最终三平台、721 和公共发布。
 
@@ -11,7 +11,7 @@
 | --- | --- |
 | B4 | B4-5以cfa79381产品和新Runtime重跑，内部language_available=true；最终签收以重开证据的文档回执与封存审计通过为准 |
 | B5历史矩阵 | ABI1.19/21产品71e611f8、最终测试5864cbde；版本/缓存/C ABI与串行workspace通过，原默认workspace失败保留；URL优化后的当前22完整workspace已通过，B5已通过四类证据联合收口 |
-| B6 | B6-1三平台功能通过，Windows COFF完整性及Linux Clippy缺项保留。B6-2固定清单1,647项均通过，B6-3～B6-5待执行 |
+| B6 | B6-1 为 `restricted`，`stage_passed=false`。三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 未执行。B6-2 固定 `79ea0375` 的 1,647 项均通过，B6-3～B6-5 待执行 |
 | 当前版本 | ABI1.19/生成器22、接口1、intrinsic1～48；B7仍须等B6完成，且引用B5固定1.19/21矩阵与21→22增量 |
 | 本批目标 | B1 20入口回归、A0～A7与B0～B6证据对账、语言/教程/registry边界、B2-C交接 |
 | 未做 | B2-C 721、最终三平台公共产物、registry/教程 verified、历史债务关闭 |
@@ -87,6 +87,7 @@ cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver 
 6. B7只读审计以固定Git提交/tree/blob核对产品与锁，不要求当前HEAD与历史产品相同，也不改写 `evidence.json`/`closeout.json`；清单由独立生成器按实际字节生成，包含 `.gitattributes`，审计输出与收口回执逐项同义；
 7. 在临时副本验证改清单、删已登记文件、伪造阶段身份/状态及子集冒充全量的自反例；即使重建清单，语义错误也须按预期原因拒绝；核对实际退出码、拒绝文本及审计前后字节不变；
 8. 保存阶段对账表、摘要、逐项通过/失败/不可验证及后续归属，不把不同阶段/平台证据拼成B2-C或721成绩。
+9. B6-1 对账保留受限状态与两项缺口，并引用 B6-2 开工裁定。B6-2 引用 `79ea0375` 的实测、源码差异证明及自反例回执。最终受保护树与已核对范围不符时，按 B6 所属路径补验。[B6-2 自审补证](assets/20o-b2-b/entry-20261118-b6-2/review/README.md)
 
 退出：前序证据链与B7最终产品可逐阶段对账；取证完整性、功能验收及性能/平台结论分开，不跨阶段覆盖或冒充。
 
@@ -98,6 +99,7 @@ cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver 
 4. 页面既有 verified 范围不自动扩展到 B2-B 新增段落；
 5. B2-C 再按最终721/三平台证据升级对应新增范围；不把整份registry概称planned或重新升级既有verified条目；
 6. 保存状态核对与文档门禁。
+7. 核对 B6-5 的产品差异及语言拒绝回执，确认 B6-2 新增的两个模块加载器接口仅属于 Rust 宿主 API。
 
 退出：语言/教程/registry 状态与内部证据一致；cmath 仍 planned。
 

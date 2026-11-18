@@ -24,7 +24,7 @@ Windows、Linux 和 macOS 的 VM、O0、O3 各通过 183 项，共 1,647 项和 
 
 每个平台、后端均在相同的三个 F-9 输入上比较 `std.cmath.pow`、`stdlib.cmath.pow` 与浮点 `**`。输入覆盖有限非零结果、零结果与 009 域错误，九组均通过。逐路中位数和驻留增量见回执的 `pow` 字段。[机器可读回执](summary.json)
 
-Windows COFF 导出完整性仍未验证，Linux Clippy 未执行。B6-3 边界负载、B6-4 工程门禁和 B6-5 收口待各批验收。
+B6-1 仍为 `restricted`，`stage_passed=false`。三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 未执行。B6-2 按星崽裁定在 macOS 专项通过后启动。
 
 ## 复跑与审计
 
@@ -37,6 +37,8 @@ python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-2/audit.py
 
 Windows 在宿主机、Linux 在同一机器的 WSL Ubuntu 26.04 执行，任务独立，部分时段重叠。macOS 采用独立 `macos-15` ARM64 Runner，VM、O0、O3 分别为作业 `134616425164`、`134616425573`、`134616425472`。三个作业均为 [运行 44249501458](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44249501458) 的 attempt 1，Runner 提交为 `6eddee2d1b2677fac5d2665a15cb56166a638fd0`。
 
-证据包含 26,425 条记录，按 SHA-256 去重后为 18,181 个对象。归档保留 Runner 回执、构建、每项黄金验证、原始输出、进程、工具、源码与产物摘要。审计复算归一中位数、驻留峰值、适用的翻倍比并核对九组完整目录。临时副本的对象缺失和字节改动均触发对应的审计拒绝。[原始证据包](measurements.zip)
+证据包含 26,425 条记录，按 SHA-256 去重后为 18,181 个对象。归档保留 Runner 回执、构建、每项黄金验证、原始输出、进程、工具、源码与产物摘要。审计复算归一中位数、驻留峰值、适用的翻倍比并核对九组完整目录。[原始证据包](measurements.zip)
+
+采样后四处源码差异、两个 Rust 接口的语言探测及四条审计反例已有独立回执，原始测量和采样身份按 `79ea0375` 保存。[自审补证与复跑命令](review/README.md)
 
 Windows 试跑发现三个返回数组的负载使用了错误的结果槽声明，已修正。两次使用开发工作区的试跑在源码变化时中止。正式测量从固定 Git 对象导出至独占任务根后执行。

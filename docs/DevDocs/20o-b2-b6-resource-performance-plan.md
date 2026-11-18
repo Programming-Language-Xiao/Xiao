@@ -1,6 +1,6 @@
 # 20O-B2-B6. cmath/lfloat 资源、错误与三平台性能规划
 
-> **B6当前状态（2026-11-18）：** B6-1的Windows/Linux[限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)及[macOS专项补验](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)均已完成。官方包装两别名O0/O3在三平台功能通过，Linux ELF与macOS Mach-O均为`Complete`。Windows COFF导出完整性为`UnverifiedCoffExports`，Linux Clippy未执行。[B6-2固定清单](assets/20o-b2-b/entry-20261118-b6-2/README.md)三平台九组性能测量通过，见§2.7。
+> **B6当前状态（2026-11-18）**　B6-1 为 `restricted`，`stage_passed=false`。官方包装两别名 O0/O3 在三平台功能通过。Linux ELF 与 macOS Mach-O 均为 `Complete`，Windows COFF 导出完整性未验证，Linux Clippy 未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，固定 `79ea0375` 的九组性能测量通过，见 §2.7。[Windows/Linux 限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)、[macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)、[B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)
 
 > B5固定1.19/21矩阵和[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)保持只读历史身份；当前产品1.19/22。B6每轮均绑定自己的源码、Runtime和工具身份。B1原件缺口、22C/22D与19/11/22债务独立保留。
 > B5固定测试快照5864cbde为ABI1.19/生成器21/接口1。原17项资源目标及8次直接计时为旧负载历史证据；优化后18项资源目标和完整默认workspace均通过，详见URL优化记录。B6当前测量使用ABI1.19/生成器22 Runtime，并同时对账B5矩阵与21→22增量证据。
@@ -16,7 +16,7 @@
 | B4-3 | 已完成Windows内部验收；LLVM动态/静态与Float `**`共享pow |
 | B4-4～B4-5 | B4-5以FIX.1产品cfa79381重跑并记录内部language_available=true；最终文档/封存审计见重开证据，B5仍是B6前置 |
 | B5 | 四类证据联合收口、b5_closed=true；固定1.19/21矩阵与当前1.19/22增量分层，B6开工前置满足 |
-| B6-1 | Windows/Linux限定重跑与macOS专项通过；Windows COFF导出完整性与Linux Clippy仍单列 |
+| B6-1 | `restricted`，`stage_passed=false`。三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 未执行 |
 | B6-2 | 固定`79ea0375`，三平台各测VM、O0、O3，每组183项通过，`perf_pass=true` |
 | 后续批次 | B6-3边界守卫、B6-4三平台/CI、B6-5收口 |
 | 测量入口版本/工具链 | 当前快照ABI1.19/生成器22/接口1；同时引用B5固定1.19/21拒绝/缓存矩阵与静态比较21→22增量证据。intrinsic1～48、Rust1.96.0与Cargo `--locked`；每轮测量固定源码/Runtime工具身份，优化后另建快照并重测受影响项 |
@@ -117,6 +117,10 @@ B6-2使用`tools/gates/b2_b6_performance.py`从同一固定源码重建三平台
 
 三平台九组各183项，共1,647项和8,235个独立测量进程。九组的黄金输出、时间、驻留增量及适用翻倍比均通过。全转义URL最大输入在Windows VM的归一化中位数为8.367秒，三个原生O0及三个原生O3中位数均低于1秒。B1 20入口与A1三条完整示例登记的是本次快照的开销，历史成绩未参与计算。B6-2的`perf_pass=true`绑定该固定快照，B6-3～B6-5另行验收。[B6-2测量与只读审计](assets/20o-b2-b/entry-20261118-b6-2/README.md)
 
+星崽裁定在 macOS 专项通过后启动 B6-2。B6-1 阶段仍为 `restricted`，`stage_passed=false`，三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 未执行。
+
+固定 Git 对象复核了 `79ea0375` 到 `58176ff5` 的 Rustdoc 与加载器方法移位，`1c4bb4a7` 的受保护树与移位提交一致。从 `1c4bb4a7` 新建 Windows release 核心与测量器，生成的 183 项目录一致并通过八条语言探测。B6-2 的 `perf_pass` 继续绑定 `79ea0375`。反例复跑覆盖对象缺失、改写、重建清单后伪造源码快照及缺失后端。[自审补证](assets/20o-b2-b/entry-20261118-b6-2/review/README.md)
+
 ## 三、分批执行
 
 ### B6-1：资源、错误与原子性
@@ -158,6 +162,7 @@ B6-2使用`tools/gates/b2_b6_performance.py`从同一固定源码重建三平台
 4. 按 F-5/F-12 验证 C ABI 状态0/1/2/3/6及 out/挂起槽；Fatal/8 仅按既有可达路径在独立进程中取证，不当作可恢复状态，也不将普通失败的 out 保留保证扩大到 Fatal 或悬空指针；
 5. B1 20入口/资源18/双精确/28守卫、B4 cmath 回归；28/28 是维护工作流计数逻辑自检，不代替产品功能测试；
 6. 不跑旧721；B5拒绝矩阵只作固定历史输入。B6每次运行绑定自身ABI1.19/生成器22源码、Runtime摘要，并引用本批21→22增量证据。
+7. B6-3 的实际执行绑定本批源码与 Runtime。引用 B6-2 时记录实测提交 `79ea0375`，以 §2.7 的源码差异证据核对本批快照。超出已核对差异的变化由本批重新对账，并补测受影响路径。
 
 退出：边界负载/错误身份稳定；失败/不可验证结果保留；没有用松上界或预算通过掩盖超限。
 
@@ -174,12 +179,13 @@ B6-2使用`tools/gates/b2_b6_performance.py`从同一固定源码重建三平台
 
 ### B6-5：收口与 B7 交接
 
-1. 汇总资源/错误/原子性/性能/CI；
+1. 汇总资源、错误、原子性、性能与 CI。B6-1 单列 `restricted`、`stage_passed=false`、三平台功能通过、Windows COFF 导出完整性未验证、Linux Clippy 未执行，并登记 B6-2 的开工裁定。
 2. 分平台记录执行/未执行/失败样本；
-3. 复核无 cmath 语义、ABI/registry/教程变化；
+3. 复核 cmath 语义、ABI、registry 与教程边界。对照生产差异和语言拒绝回执，确认 `Vm::with_module_loader` 与 `xiao_driver::standard_library_module_loader` 仅在 Rust 宿主层公开。[Rust API 边界](assets/20o-b2-b/entry-20261118-b6-2/review/README.md)
 4. 复核旧721未跑、历史债务未核销；
 5. 在 B6 最终源码上运行完整 workspace gates：`cargo +1.96.0 test --manifest-path core/rust/Cargo.toml --workspace --locked`、`cargo +1.96.0 clippy --manifest-path core/rust/Cargo.toml --workspace --all-targets --locked -- -D warnings`、`cargo +1.96.0 fmt --manifest-path core/rust/Cargo.toml --all -- --check`、`bun run check:lock`、`bun tools/repo-check/src/cli.ts all`；最大负载由独立 release 测量入口执行，不塞入默认 debug 测试；
 6. 形成 B7 入口：整批收口、教程/registry 状态与 B2-C 交接。
+7. 核对 B6-2 的固定实测提交与最终受保护树，复跑只读审计和自反例。性能回执用 `79ea0375` 和实际 Runtime 标识。源码差异证明随交接引用，后续变化导致性能路径不对应时按所属批次补测。
 
 退出：B6 内部证据完整；所有要求的资源/性能阈值通过，或明确以未通过/不可验证状态交接；失败项有后续处理归属。存在未通过/不可验证项时不得标 B6 性能验收通过；B7 与 B2-C 状态分别记录。
 
