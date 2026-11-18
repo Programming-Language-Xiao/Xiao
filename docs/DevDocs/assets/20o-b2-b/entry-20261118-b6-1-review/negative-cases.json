@@ -1,0 +1,243 @@
+{
+  "passed": true,
+  "archive_read_only": true,
+  "case_count": 8,
+  "cases": [
+    {
+      "case": "baseline",
+      "expected_reason": null,
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b6-1-rerun\\audit.py",
+        "--root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b6-1-rerun-negative-5uoa2xga\\baseline",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "pid": 75820,
+      "started_utc": "2026-11-18T00:46:53.761663+00:00",
+      "finished_utc": "2026-11-18T00:46:55.598917+00:00",
+      "elapsed_seconds": 1.827999999979511,
+      "exit_code": 0,
+      "stdout": "{\"passed\": true, \"read_only\": true, \"sealed\": true, \"rerun_closed\": true, \"stage_passed\": false, \"b6_1_status\": \"restricted\", \"linux_blocker_resolved\": true, \"windows_export_integrity\": \"unverifiable\", \"macos\": \"unverifiable\", \"b6_2_started\": false, \"files_excluding_manifest\": 94}\n",
+      "stderr": "",
+      "read_only": true,
+      "outcome": {
+        "passed": true,
+        "read_only": true,
+        "sealed": true,
+        "rerun_closed": true,
+        "stage_passed": false,
+        "b6_1_status": "restricted",
+        "linux_blocker_resolved": true,
+        "windows_export_integrity": "unverifiable",
+        "macos": "unverifiable",
+        "b6_2_started": false,
+        "files_excluding_manifest": 94
+      }
+    },
+    {
+      "case": "missing_attributes",
+      "expected_reason": "RERUN证据缺少.gitattributes",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b6-1-rerun\\audit.py",
+        "--root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b6-1-rerun-negative-5uoa2xga\\missing_attributes",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "pid": 11252,
+      "started_utc": "2026-11-18T00:46:55.913922+00:00",
+      "finished_utc": "2026-11-18T00:46:56.203181+00:00",
+      "elapsed_seconds": 0.29699999996228144,
+      "exit_code": 1,
+      "stdout": "{\"passed\": false, \"reason\": \"RERUN证据缺少.gitattributes\", \"read_only\": true}\n",
+      "stderr": "",
+      "read_only": true,
+      "outcome": {
+        "passed": false,
+        "reason": "RERUN证据缺少.gitattributes",
+        "read_only": true
+      }
+    },
+    {
+      "case": "missing_file",
+      "expected_reason": "RERUN清单文件缺失",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b6-1-rerun\\audit.py",
+        "--root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b6-1-rerun-negative-5uoa2xga\\missing_file",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "pid": 74908,
+      "started_utc": "2026-11-18T00:46:56.502963+00:00",
+      "finished_utc": "2026-11-18T00:46:56.791119+00:00",
+      "elapsed_seconds": 0.28100000001722947,
+      "exit_code": 1,
+      "stdout": "{\"passed\": false, \"reason\": \"RERUN清单文件缺失\", \"read_only\": true}\n",
+      "stderr": "",
+      "read_only": true,
+      "outcome": {
+        "passed": false,
+        "reason": "RERUN清单文件缺失",
+        "read_only": true
+      }
+    },
+    {
+      "case": "file_count",
+      "expected_reason": "RERUN清单文件数不符",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b6-1-rerun\\audit.py",
+        "--root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b6-1-rerun-negative-5uoa2xga\\file_count",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "pid": 9484,
+      "started_utc": "2026-11-18T00:46:57.099096+00:00",
+      "finished_utc": "2026-11-18T00:46:57.388822+00:00",
+      "elapsed_seconds": 0.2970000000204891,
+      "exit_code": 1,
+      "stdout": "{\"passed\": false, \"reason\": \"RERUN清单文件数不符\", \"read_only\": true}\n",
+      "stderr": "",
+      "read_only": true,
+      "outcome": {
+        "passed": false,
+        "reason": "RERUN清单文件数不符",
+        "read_only": true
+      }
+    },
+    {
+      "case": "manifest_digest",
+      "expected_reason": "RERUN清单与实际字节不符",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b6-1-rerun\\audit.py",
+        "--root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b6-1-rerun-negative-5uoa2xga\\manifest_digest",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "pid": 51376,
+      "started_utc": "2026-11-18T00:46:57.696146+00:00",
+      "finished_utc": "2026-11-18T00:46:57.996340+00:00",
+      "elapsed_seconds": 0.3130000000237487,
+      "exit_code": 1,
+      "stdout": "{\"passed\": false, \"reason\": \"RERUN清单与实际字节不符\", \"read_only\": true}\n",
+      "stderr": "",
+      "read_only": true,
+      "outcome": {
+        "passed": false,
+        "reason": "RERUN清单与实际字节不符",
+        "read_only": true
+      }
+    },
+    {
+      "case": "forged_windows_complete",
+      "expected_reason": "RERUN Windows导出完整性被冒进升级",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b6-1-rerun\\audit.py",
+        "--root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b6-1-rerun-negative-5uoa2xga\\forged_windows_complete",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "pid": 50428,
+      "started_utc": "2026-11-18T00:46:58.353250+00:00",
+      "finished_utc": "2026-11-18T00:46:58.661825+00:00",
+      "elapsed_seconds": 0.3130000000237487,
+      "exit_code": 1,
+      "stdout": "{\"passed\": false, \"reason\": \"RERUN Windows导出完整性被冒进升级\", \"read_only\": true}\n",
+      "stderr": "",
+      "read_only": true,
+      "outcome": {
+        "passed": false,
+        "reason": "RERUN Windows导出完整性被冒进升级",
+        "read_only": true
+      }
+    },
+    {
+      "case": "forged_platform_or_stage",
+      "expected_reason": "RERUN未验证平台或B6-2状态被冒进升级",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b6-1-rerun\\audit.py",
+        "--root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b6-1-rerun-negative-5uoa2xga\\forged_platform_or_stage",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "pid": 71160,
+      "started_utc": "2026-11-18T00:46:59.025400+00:00",
+      "finished_utc": "2026-11-18T00:46:59.316507+00:00",
+      "elapsed_seconds": 0.29699999996228144,
+      "exit_code": 1,
+      "stdout": "{\"passed\": false, \"reason\": \"RERUN未验证平台或B6-2状态被冒进升级\", \"read_only\": true}\n",
+      "stderr": "",
+      "read_only": true,
+      "outcome": {
+        "passed": false,
+        "reason": "RERUN未验证平台或B6-2状态被冒进升级",
+        "read_only": true
+      }
+    },
+    {
+      "case": "rewritten_file_and_manifest",
+      "expected_reason": "RERUN固定Git清单字节不符",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b6-1-rerun\\audit.py",
+        "--root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b6-1-rerun-negative-5uoa2xga\\rewritten_file_and_manifest",
+        "--repository-root",
+        "D:\\project\\Xiao\\Xiao"
+      ],
+      "pid": 16612,
+      "started_utc": "2026-11-18T00:46:59.666932+00:00",
+      "finished_utc": "2026-11-18T00:47:01.156434+00:00",
+      "elapsed_seconds": 1.4850000000442378,
+      "exit_code": 1,
+      "stdout": "{\"passed\": false, \"reason\": \"RERUN固定Git清单字节不符\", \"read_only\": true}\n",
+      "stderr": "",
+      "read_only": true,
+      "outcome": {
+        "passed": false,
+        "reason": "RERUN固定Git清单字节不符",
+        "read_only": true
+      }
+    }
+  ],
+  "source_manifest_commit": "383b9a14dca2dd7e0e7cec355fc3be02f91312c0",
+  "source_manifest_sha256": "033b748458a2054831a4b70117c9453df73c6978abe66954b6a908887c106c1d",
+  "audit_sha256": "e78758a66dc83c3e9ce8472faf57c4be0d26ba601a344abbe02023dbb1cabf79",
+  "script_sha256": "c8ce8e42ec84533ec4d0896c258f50034d161aa2e03838c53733abdf457d34e2"
+}
