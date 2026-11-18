@@ -6,6 +6,7 @@
 > B5固定测试快照5864cbde为ABI1.19/生成器21/接口1。原17项资源目标及8次直接计时为旧负载历史证据；优化后18项资源目标和完整默认workspace均通过，详见URL优化记录。B6当前测量使用ABI1.19/生成器22 Runtime，并同时对账B5矩阵与21→22增量证据。
 > B6 只做资源、错误、原子性、三平台性能与 CI 证据；不新增数学语义、不改 ABI/registry/教程。
 > 不跑旧 721；完整 721、最终教程/registry 和公共发布留 B2-C。
+> **2026-11-18后续选择：星崽选择“等macOS可用后再开工”。** B6-2继续未开始，不启动Windows/Linux受限性能跑；先补齐固定快照的macOS专项执行入口与B6-1实测证据，再复核开工条件。仓库已有GitHub托管macOS作业，当前缺的是本批专项回执，不等于macOS产品已失败。
 
 ## 一、入口与范围
 
@@ -93,6 +94,20 @@ Linux包装拒绝为真实退出101，ArtifactVerification报告ELF观察到未�
 [本批重跑证据](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)固定产品43f18274，在Windows/Linux各自的新源码/target/Runtime/任务stdlib下执行。两平台官方包装两别名O0/O3与黄金/009均通过；Linux为ELF Complete且声明=观察，Windows仍为COFF UnverifiedCoffExports。Runtime各305/0/1，资源/VM/归档回归Windows42/0/3、Linux43/0/3，A6资源8/8；codegen109/0/15、额外driver17/0/3及原生核心、错误/011和显式除法O0/O3通过。
 
 Windows首次Clippy因导出漏协议编译夹具退出101，补齐固定Git原字节后同命令通过；失败保留。Linux缺Clippy，macOS未验证。RERUN本批完成，B6-1仍以restricted/stage_passed=false受限交接，B6整批未收口；后续B6-2仅可按冻结协议开展Windows/Linux受限测量，三平台条件未满足。本批未启动B6-2，五批性能、OS峰值和§2.1全转义最大URL仍待执行。
+
+### 2.5 后续采集的源码完整性与工程门禁
+
+1. 后续批次的`prepare.py`必须将`tests/spec`与`tests/fixtures`、`tests/benchmarks`一并纳入固定Git源码导出、工作树漂移检查及执行前后摘要；`tests/spec/11x0-protocol`是`xiao-driver --all-targets`的编译输入，不得等Clippy失败后再补。源码解包后、冷构建前按固定Git清单核对必需文件及实际字节，缺少协议夹具立即拒绝；历史RERUN导出器和失败/补验记录保持原样。
+2. B6-1重跑的Linux Rust1.96工具链未安装Clippy，因此Linux Clippy为`not_run`，Windows Clippy通过不替代该项。B6/B7的工程门禁逐平台单列测试、Clippy和fmt状态；缺项保留为未执行，不能因功能矩阵、docs或审计通过升级为工程门禁通过。后续若补装并执行，另存实际工具/源码身份与新回执，不改写本轮缺项。
+3. 星崽已选择“等macOS可用后再开工”，B6-2保持未开始；暂不启动Windows/Linux受限测量。先补齐本批固定快照的macOS专项入口与B6-1实测回执，再复核B6-2条件。仓库维护工作流已有`macos-15`、平台复现工作流已有`macos-26`托管runner；已有普通维护或A6作业不自动等于B6专项验收。Windows COFF完整性和Linux既有Clippy缺项继续单列，不能据现有两平台成绩签收三平台性能或工程门禁通过。
+
+### 2.6 macOS缺项的具体含义
+
+缺项是当前固定产品的B6专项执行和回执。已有[维护工作流](../../.github/workflows/maintenance-regression.yml)配置`macos-15`，[平台复现工作流](../../.github/workflows/platform-reproduction.yml)配置`macos-26`，均支持手动触发；本轮只读查询确认两工作流处于active状态，不据此推断runner当前排队、额度或本批测试已通过。
+
+最近一次维护运行[42968522784](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42968522784)绑定2026-11-11旧快照`ade486ffb3d820db7ecdcbb53c22a09796b35f1f`。其macOS作业实际退出101，失败为`22c_vm_concurrency`中的两条旧planned-cmath拒绝断言；当前源码已改为执行cmath包装和归档。该历史失败不能直接归因于macOS，也不能作为当前43f18274的失败或通过证据。
+
+现有RERUN采集器只支持Windows/WSL，任务根、目标三元组和LLVM路径写死为这两平台；不能原样拿到macOS执行。补验需适配macOS入口并复用已有托管runner，绑定固定源码、新target/Runtime/stdlib、Rust1.96及实际LLVM身份，导出包括`tests/spec`的完整编译输入，运行B6-1资源/错误/原子性与两别名O0/O3矩阵，记录Mach-O实际组件验证等级以及run/job/attempt。现有普通维护和A6性能模式不能替代该专项。完成补验后再复核B6-2开工，本次未调度远端作业或启动性能测量。
 
 ## 三、分批执行
 
