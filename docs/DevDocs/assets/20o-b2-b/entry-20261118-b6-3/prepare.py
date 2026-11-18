@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import shutil
 import sys
 
 
@@ -59,7 +60,7 @@ def prepare(task, llvm_bin):
     task = task.resolve()
     task.mkdir()
     source, target, evidence = (task / name for name in ("source", "target", "evidence"))
-    for folder in (source, evidence, task / "home"):
+    for folder in (source, evidence, task / "home", task / "bin"):
         folder.mkdir()
     files = snapshot(revision, source)
     require(source_digest(files) == SOURCE_SHA and live_source(source) == files, "B6-3 固定源码不符")
@@ -68,7 +69,7 @@ def prepare(task, llvm_bin):
     rustc = Path(command_output(["rustup", "which", "--toolchain", "1.96.0", "rustc"], env))
     cargo = rustc.with_name("cargo" + suffix)
     runtime = target / "release" / library
-    core = target / "release" / ("xiao-core" + suffix)
+    core = task / "bin" / ("xiao-core" + suffix)
     llvm_bin = llvm_bin.resolve(strict=True)
     overrides = {"RUSTUP_TOOLCHAIN": "1.96.0", "RUSTC": str(rustc), "CARGO_TERM_COLOR": "never",
                  "CARGO_TARGET_DIR": str(target), "XIAO_HOME": str(task / "home"),
@@ -95,6 +96,11 @@ def prepare(task, llvm_bin):
         code = run_command([cargo, "build", *BUILD_OPTIONS, *extra], source, task / f"temp-{label}",
                            env, evidence, label, runtime, files)
         require(code == 0, f"{label} 退出 {code}，见 {evidence / (label + '.log')}")
+    # Cargo integration tests may rebuild target/release/xiao-core with dev features.
+    # Keep the product binary used by boundary probes outside Cargo's target tree.
+    cargo_core = target / "release" / core.name
+    shutil.copy2(cargo_core, core)
+    require(file_identity(cargo_core) == file_identity(core), "核心副本与本次 release 构建不符")
     write_json(evidence / "build.json", {"core": file_identity(core), "runtime": file_identity(runtime)})
 
 
