@@ -1,0 +1,32 @@
+---
+id: language.compiler.ir
+title: IR 快照
+status: verified
+audience: contributor
+module: rust.xiao-ir
+stage: "08A"
+version: "0.1.0"
+related:
+  - ../README.md
+  - ../frontend/README.md
+  - ../../../../DevDocs/08a-u0-frontend-implementation.md
+---
+
+# IR 快照
+
+状态：`verified`，快照版本：`1`。
+
+类型化 IR 是后端的唯一输入。它携带类型、控制流、选择器、模块、所有权、释放计划、
+运行时检查和源码区间。快照使用稳定 JSON；字段顺序、节点遍历和内部编号均由前端
+规范化，不能把宿主地址或哈希表迭代顺序写入文件。
+
+表声明还携带前端确定的成员签名、类型和可见性；方法函数保留含 `self` 的完整参数。
+没有表时省略这项可选信息，既有快照不变。后端直接使用这些事实，不从运行期字段值反推接口。
+
+集合在 IR 中仍然无序，不能生成索引选择器；`?x` 与 `!?x` 保留不同的随机模式。`try`、
+`catch`、`finally` 和 `raise` 沿用统一错误与释放计划，不会被后端重新解释。
+
+## 限制
+
+当前页面只说明静态产物。类型化 IR 由字节码 VM 与 LLVM 原生后端消费，两者的用户命令
+已由 11/X0 接入，见[命令行参考](../../../tooling/cli/README.md)。

@@ -17,10 +17,12 @@ import tempfile
 REPO = Path(__file__).resolve().parents[2]
 BASELINE = Path(__file__).with_name("b2-b6-baseline.json")
 SOURCE_ROOTS = (".cargo", ".gitattributes", "LICENSE", "core/rust", "stdlib",
-                "tests", "docs/module-registry.json")
+                "tests", "docs/UseDocs", "docs/module-registry.json")
 REQUIRED = ("core/rust/Cargo.lock", "tests/benchmarks/Cargo.lock", "stdlib/cmath.xiao",
             "tests/fixtures/docs/cmath/reference-vectors.tsv",
-            "tests/spec/11x0-protocol/hello-request.json")
+            "tests/spec/11x0-protocol/hello-request.json",
+            "docs/UseDocs/language/basics/types/conversions.md",
+            "docs/UseDocs/language/basics/p1-expressions/operators.md")
 DRIVER_TESTS = ("20o_b2_b6_resources", "20o_b2_a_resources", "20o_b2_a_contract",
                 "20o_b2_b2_divide", "20o_b2_b4_cmath_vm", "20o_b2_b4_cmath_library",
                 "20o_b2_b4_cmath_boundary", "20o_b2_b4_numeric_range_routing")
