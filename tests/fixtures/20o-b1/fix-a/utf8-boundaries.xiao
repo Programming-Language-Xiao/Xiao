@@ -1,0 +1,89 @@
+# 探测 UTF-8 字节验证/组装，不实现 URL API 或公开字节类型。
+from stdlib.text import find, length, lower_ascii
+
+def probe_utf8([int] bytes) -> str
+    count = 0
+    for counted in bytes
+        count = count + 1
+    cursor = 0
+    result = ""
+    while cursor < count
+        first = bytes[cursor]
+        width = 1
+        codepoint = first
+        lower = 0
+        if first < 0 or first > 255
+            raise Error(code = "URL_INVALID_UTF8")
+        if first >= 128
+            if first >= 194 and first <= 223
+                width = 2
+                codepoint = first % 32
+                lower = 128
+            else
+                if first >= 224 and first <= 239
+                    width = 3
+                    codepoint = first % 16
+                    lower = 2048
+                else
+                    if first >= 240 and first <= 244
+                        width = 4
+                        codepoint = first % 8
+                        lower = 65536
+                    else
+                        raise Error(code = "URL_INVALID_UTF8")
+        if cursor + width > count
+            raise Error(code = "URL_INVALID_UTF8")
+        offset = 1
+        while offset < width
+            continuation = bytes[cursor + offset]
+            if continuation < 128 or continuation > 191
+                raise Error(code = "URL_INVALID_UTF8")
+            codepoint = codepoint * 64 + continuation - 128
+            offset = offset + 1
+        if codepoint < lower or codepoint > 1114111 or (codepoint >= 55296 and codepoint <= 57343)
+            raise Error(code = "URL_INVALID_UTF8")
+        result = result + chr(codepoint)
+        cursor = cursor + width
+    return result
+
+def probe_rejects([int] bytes) -> bool
+    try
+        probe_utf8(bytes)
+    catch invalid as Error
+        return true
+    return false
+
+def probe_percent_pair(str pair) -> int
+    if length(pair) != 2
+        raise Error(code = "URL_INVALID_ESCAPE")
+    digits = "0123456789abcdef"
+    high = find(digits, lower_ascii(pair[0]))
+    low = find(digits, lower_ascii(pair[1]))
+    if high < 0 or low < 0
+        raise Error(code = "URL_INVALID_ESCAPE")
+    return high * 16 + low
+
+decoded = probe_utf8([0, 65, 127, 194, 128, 223, 191, 224, 160, 128, 237, 159, 191, 238, 128, 128, 239, 191, 191, 240, 144, 128, 128, 244, 143, 191, 191])
+for scalar in decoded
+    print(int(scalar))
+print(probe_rejects([128]))
+print(probe_rejects([192, 175]))
+print(probe_rejects([224, 128, 175]))
+print(probe_rejects([237, 160, 128]))
+print(probe_rejects([240, 128, 128, 175]))
+print(probe_rejects([244, 144, 128, 128]))
+print(probe_rejects([245, 128, 128, 128]))
+print(probe_rejects([226, 130]))
+print(probe_rejects([226, 40, 161]))
+print(probe_rejects([-1]))
+print(probe_rejects([256]))
+print(probe_percent_pair("e9"))
+print(probe_percent_pair("AA"))
+try
+    print(probe_percent_pair("G0"))
+catch bad_hex as Error
+    print("caught-invalid-escape")
+try
+    print(probe_percent_pair("0"))
+catch short_pair as Error
+    print("caught-short-escape")

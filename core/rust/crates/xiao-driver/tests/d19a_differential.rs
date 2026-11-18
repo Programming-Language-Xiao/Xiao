@@ -1,0 +1,1264 @@
+//! 19A 多路差分回归：源码、REPL、未优化 `.xiaoc`、优化 `.xiaoc`、`.xar` 和原生。
+//!
+//! 比较的是可观察结果（输出、退出码、错误身份、`drop` 顺序），不是字节。不一致时
+//! 报告指出是哪两路。原生一路依赖 15E 的外部工具链：环境不齐时由独立用例写出
+//! “未覆盖”及原因，真实构建与比较放在 `#[ignore]` 用例里，不把少跑一路当成通过。
+
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::process::Command;
+
+use xiao_artifacts::{
+    ArchiveEntry, ArchiveIndex, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR, ObjectKind,
+};
+use xiao_bytecode::{
+    XiaocMetadata, XiaocOptions, encode_xiaoc, encode_xiaoc_with_options, lower_program,
+};
+use xiao_codegen_llvm::{TargetDescription, Toolchain};
+use xiao_driver::{
+    CORE_VERSION, DriverOutcome, DriverRequest, FrontendCompiler, FrontendNativeDriver,
+    FrontendRequest, FrontendVmDriver, NativeBuildRequest, PROTOCOL_VERSION, ProtocolRequest,
+    ProtocolResponse, ProtocolTarget, RunOptions, SourceIdentity, dispatch, run,
+};
+use xiao_optimizer::{
+    DifferentialObservation, OptimizationConfig, OptimizationLevel, compare_named_observations,
+    normalize_process_termination,
+};
+use xiao_runtime::{start_release_trace, take_release_events};
+use xiao_runtime_abi::ABI_ENCODED_VERSION;
+use xiao_xar::{XarObject, encode_xar};
+
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+struct Observation {
+    output: String,
+    error: Option<String>,
+    exit_code: i32,
+    termination: String,
+    drops: Vec<String>,
+}
+
+/// 一个差分用例，以及基线必须呈现的内容，防止“全是空结果”的空洞一致。
+struct Case {
+    label: &'static str,
+    source: &'static str,
+    output: &'static str,
+    error: Option<&'static str>,
+    has_drops: bool,
+}
+
+const CASES: [Case; 54] = [
+    Case {
+        label: "table-temporary-drop-caught",
+        source: "[[Item]]\n    value = 7\n    def read(self) -> int\n        return self.value\n    def drop(self) -> none\n        raise ArithmeticError(code = \"DROP\")\ntry\n    print((new Item()).read())\ncatch err as TableError\n    print(\"caught\")\nprint(\"after\")\n",
+        output: "7\ncaught\nafter\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-temporary-condition",
+        source: "[[Item]]\n    value = 7\n    def ready(self) -> bool\n        return false\n    def drop(self) -> none\n        print(\"drop\")\nif (new Item()).ready()\n    print(\"unexpected\")\nprint(\"after\")\n",
+        output: "after\ndrop\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-heap-default-arguments",
+        source: "[[Item]]\n    value = 7\n    def echo(self, str text = \"hello\") -> str\n        return text\nitem = new Item()\nprint(item.echo(), item.echo())\n",
+        output: "hello hello\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "function-for-rebind",
+        source: "def visit(values) -> none\n    for value in values\n        print(value)\n        values = [9, 8]\nvisit([1, 2])\n",
+        output: "1\n8\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-temporary-receiver",
+        source: "[[Item]]\n    value = 7\n    def read(self) -> int\n        return self.value\n    def drop(self) -> none\n        print(\"drop\")\nprint((new Item()).read())\n",
+        output: "7\ndrop\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-temporary-field",
+        source: "[[Item]]\n    value = 7\n    def drop(self) -> none\n        print(\"drop\")\nprint((new Item()).value)\n",
+        output: "7\ndrop\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-temporary-heap-return",
+        source: "[[Item]]\n    text = \"held\"\n    def read(self) -> str\n        return self.text\n    def drop(self) -> none\n        print(\"drop\")\nprint((new Item()).read())\n",
+        output: "held\ndrop\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-unused-definition",
+        source: "[[Unused]]\n    value = 7\n    def read(self) -> int\n        values = [1, 2]\n        return values[1]\n",
+        output: "",
+        error: None,
+        has_drops: false,
+    },
+    Case {
+        label: "dictionary-key-selectors",
+        source: "mapping = {\"first\" = 5, \"second\" = 9}\ncolumn = <first = 7, second = 11>\nprint(mapping[first] + column[second])\n",
+        output: "16\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-methods-private-default",
+        source: "[[Item]]\n    value = 2\n    def _read(self) -> int\n        return self.value\n    def add(self, int amount = 3) -> int\n        self.value += amount\n        return self._read()\n[[Other]]\n    value = 40\n    def _read(self) -> int\n        return self.value\n    def read(self) -> int\n        return self._read()\nitem = new Item()\nother = new Other()\nprint(item.add() + item.add(amount = 4) + other.read())\n",
+        output: "54\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-fields-init-order",
+        source: "[[Item]]\n    first = 3\n    second = 7\n    def init(self) -> none\n        self.second += self.first\n    def read(self) -> int\n        return self.second\nitem = new Item()\nprint(item.read())\n",
+        output: "10\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-shared-drop-order",
+        source: "[[First]]\n    value = 11\n    def drop(self) -> none\n        print(self.value)\n[[Second]]\n    value = 22\n    def drop(self) -> none\n        print(self.value)\nfirst = new First()\nsecond = new Second()\nalias = first\n",
+        output: "22\n11\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-return-heap",
+        source: "[[Item]]\n    text = \"held\"\n    def read(self) -> str\n        return self.text\nitem = new Item()\nprint(item.read())\n",
+        output: "held\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-return-finally",
+        source: "[[Item]]\n    value = 1\n    def read(self) -> str\n        try\n            return \"old\"\n        finally\n            return \"new\"\nitem = new Item()\nprint(item.read())\n",
+        output: "new\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-method-raises",
+        source: "[[Item]]\n    value = 1\n    def fail(self, str text) -> none\n        raise ArithmeticError(code = \"METHOD\")\nitem = new Item()\nitem.fail(\"payload\")\n",
+        output: "",
+        error: Some("METHOD"),
+        has_drops: true,
+    },
+    Case {
+        label: "table-init-failure",
+        source: "[[Item]]\n    value = 7\n    def init(self) -> none\n        raise ArithmeticError(code = \"INIT\")\n    def drop(self) -> none\n        print(\"cleanup\")\n        raise ArithmeticError(code = \"DROP\")\nitem = new Item()\n",
+        output: "cleanup\n",
+        error: Some("X06-RUNTIME-007"),
+        has_drops: true,
+    },
+    Case {
+        label: "table-drop-failure",
+        source: "[[Item]]\n    value = 7\n    def drop(self) -> none\n        raise ArithmeticError(code = \"DROP\")\nitem = new Item()\n",
+        output: "",
+        error: Some("X06-RUNTIME-008"),
+        has_drops: true,
+    },
+    Case {
+        label: "table-drop-calls-read",
+        source: "[[Item]]\n    value = 7\n    def read(self) -> int\n        return self.value\n    def drop(self) -> none\n        print(self.read())\nitem = new Item()\n",
+        output: "7\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-drop-explicit-return",
+        source: "[[Item]]\n    value = 7\n    def drop(self) -> none\n        print(\"drop\")\n        return\nitem = new Item()\n",
+        output: "drop\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-user-drop",
+        source: "[[Item]]\n    value = 7\n    def drop(self) -> none\n        print(\"drop\")\nitem = new Item()\n",
+        output: "drop\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "selector-multiple-exact",
+        source: "values = [3, 7, 11, 19]\nselected = values[0, 2]\nprint(selected[1])\n",
+        output: "11\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "function-heap-return-overridden",
+        source: "def f() -> str\n    try\n        return \"old\"\n    finally\n        return \"new\"\nprint(f())\n",
+        output: "new\n",
+        error: None,
+        has_drops: false,
+    },
+    Case {
+        label: "function-heap-return-error",
+        source: "def f() -> str\n    try\n        return \"old\"\n    finally\n        raise ArithmeticError(code = \"FINAL\")\nresult = f()\n",
+        output: "",
+        error: Some("FINAL"),
+        has_drops: false,
+    },
+    Case {
+        label: "function-scope-isolation",
+        source: "def first() -> str\n    value = \"first\"\n    try\n        return value\n    finally\n        cleanup = \"one\"\ndef second() -> str\n    value = \"second\"\n    try\n        return value\n    finally\n        cleanup = \"two\"\nprint(first())\nprint(second())\n",
+        output: "first\nsecond\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "function-return-heap",
+        source: "def f() -> str\n    payload = \"value\"\n    try\n        return payload\n    finally\n        cleanup = \"cleanup\"\nprint(f())\n",
+        output: "value\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "function-finally-overrides-return",
+        source: "def f() -> int\n    try\n        payload = \"try\"\n        return 1\n    finally\n        cleanup = \"finally\"\n        return 2\nprint(f())\n",
+        output: "2\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "function-finally-raises",
+        source: "def f() -> int\n    try\n        payload = \"try\"\n        return 1\n    finally\n        raise ArithmeticError(code = \"FINAL\")\nresult = f()\n",
+        output: "",
+        error: Some("FINAL"),
+        has_drops: true,
+    },
+    Case {
+        label: "function-finally-overrides-error",
+        source: "def f() -> int\n    try\n        payload = \"try\"\n        raise ArithmeticError(code = \"PRIMARY\")\n    finally\n        return 2\nprint(f())\n",
+        output: "2\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "function-empty-return",
+        source: "def f() -> none\n    payload = \"local\"\n    return\nf()\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "held-tuple",
+        source: "value = (\"held\",)\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "held-dict-table",
+        source: "value = {name = \"held\"}\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "held-dict-column",
+        source: "value = <name = \"held\">\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "held-set",
+        source: "value = {\"held\"}\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "held-table-instance",
+        source: "[[Item]]\n    value = 7\nitem = new Item()\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "finally-normal",
+        source: "try\n    payload = \"try\"\nfinally\n    cleanup = \"finally\"\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "held-string",
+        source: "payload = \"held\"\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "held-array",
+        source: "values = [1, 2]\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "print",
+        source: "print(\"19A differential\")\n",
+        output: "19A differential\n",
+        error: None,
+        has_drops: false,
+    },
+    Case {
+        label: "overflow",
+        source: "def square(int value) -> int\n    return value * value\nresult = square(4000000000)\n",
+        output: "",
+        error: Some("X06-RUNTIME-009"),
+        has_drops: false,
+    },
+    Case {
+        label: "nested-finally-drops",
+        source: "def f() -> int\n    try\n        outer_try_payload = \"outer-try-payload\"\n        try\n            payload = \"inner-payload\"\n        finally\n            return 2\n    finally\n        outer_payload = \"outer-payload\"\nresult = f()\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "caught",
+        source: "payload = \"held\"\ntry\n    raise ArithmeticError(code = \"CAUGHT\")\ncatch err as ArithmeticError\n    handled = \"yes\"\nfinally\n    cleanup = \"done\"\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "unmatched",
+        source: "payload = \"held\"\nraise ArithmeticError(code = \"UNMATCHED\")\n",
+        output: "",
+        error: Some("UNMATCHED"),
+        has_drops: true,
+    },
+    Case {
+        label: "function-dynamic-arithmetic",
+        source: "def add(value) -> int\n    return value + 1\nprobe = add(2)\n",
+        output: "",
+        error: None,
+        has_drops: false,
+    },
+    Case {
+        label: "function-dynamic-condition",
+        source: "def check(values) -> int\n    for item in values\n        if item\n            return 1\n    return 0\nprobe = check([1])\n",
+        output: "",
+        error: Some("X06-RUNTIME-002"),
+        has_drops: true,
+    },
+    Case {
+        label: "dynamic-dict-member-error-identity",
+        source: "def read(value) -> int\n    return value.member\nprint(read({member = 1}))\n",
+        output: "",
+        error: Some("X06-RUNTIME-002"),
+        has_drops: true,
+    },
+    Case {
+        label: "selector-range-downstream",
+        source: "values = [1, 2, 3, 4]\npart = values[1~2]\ntotal = 0\nfor item in part\n    total = total + item\nprint(total)\n",
+        output: "5\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "selector-random-downstream",
+        source: "values = [1, 2, 3, 4]\npart = values[?2]\ntotal = 0\nfor item in part\n    total = total + item\nprint(total)\n",
+        output: "7\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        // 全选与源数组值相同；本例仅守释放路径，值区分度由聚合用例负责。
+        label: "selector-all-downstream",
+        source: "values = [1, 2, 3, 4]\npart = values[=]\nprint(part[3])\n",
+        output: "4\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "selector-open-range-downstream",
+        source: "values = [1, 2, 3, 4]\npart = values[<2]\ntotal = 0\nfor item in part\n    total = total + item\nprint(total)\n",
+        output: "3\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-constructor-positional",
+        source: "[[Item]]\n    value = 0\n    def init(self, int amount) -> none\n        self.value = amount\n    def read(self) -> int\n        return self.value\nitem = new Item(9)\nprint(item.read())\n",
+        output: "9\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-constructor-default",
+        source: "[[Item]]\n    value = 0\n    def init(self, int amount = 4) -> none\n        self.value = amount\n    def read(self) -> int\n        return self.value\nitem = new Item()\nprint(item.read())\n",
+        output: "4\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-constructor-keyword",
+        source: "[[Item]]\n    value = 0\n    def init(self, int amount, int bonus = 1) -> none\n        self.value = amount + bonus\n    def read(self) -> int\n        return self.value\nitem = new Item(amount = 5, bonus = 3)\nprint(item.read())\n",
+        output: "8\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-constructor-failure",
+        source: "[[Item]]\n    value = 0\n    def init(self, int amount) -> none\n        raise ArithmeticError(code = \"INIT_ARG\")\n    def drop(self) -> none\n        print(\"cleanup\")\nitem = new Item(2)\n",
+        output: "cleanup\n",
+        error: Some("X06-RUNTIME-007"),
+        has_drops: true,
+    },
+    Case {
+        label: "table-constructor-evaluation-order",
+        source: "def mark(int value) -> int\n    print(value)\n    return value\n[[Item]]\n    value = 0\n    def init(self, int first, int second) -> none\n        self.value = first + second\nitem = new Item(mark(1), mark(2))\n",
+        output: "1\n2\n",
+        error: None,
+        has_drops: true,
+    },
+];
+
+fn outcome_observation(outcome: &DriverOutcome) -> Observation {
+    let mut observed = Observation {
+        exit_code: i32::from(outcome.exit_code().as_process_code()),
+        termination: normalize_process_termination(
+            Some(i32::from(outcome.exit_code().as_process_code())),
+            None,
+        ),
+        error: outcome.code().map(ToOwned::to_owned),
+        ..Observation::default()
+    };
+    if let DriverOutcome::Executed(execution) = outcome {
+        for event in execution.events() {
+            match event {
+                xiao_vm::VmEvent::IntrinsicOutput { text } => observed.output.push_str(text),
+                xiao_vm::VmEvent::ValueReleased {
+                    scope, exit, kind, ..
+                } => observed.drops.push(format!("{scope}:{exit}:{kind}")),
+                _ => {}
+            }
+        }
+    }
+    observed
+}
+
+fn source_observation(source: &str, level: OptimizationLevel) -> Observation {
+    outcome_observation(&run(&DriverRequest::new(FrontendRequest::from_text(
+        source,
+    ))
+    .with_optimization_level(level)))
+}
+
+/// 将 19A 观察值映射到共享优化器差分模型。
+fn optimizer_observation(observation: &Observation) -> DifferentialObservation {
+    DifferentialObservation {
+        output: observation.output.clone(),
+        error: observation.error.clone(),
+        exit_code: observation.exit_code,
+        termination: observation.termination.clone(),
+        drops: observation.drops.clone(),
+    }
+}
+
+/// 以第一路为基线，逐路比较；每条不一致都点名基线与偏离的那一路。
+fn disagreements(sides: &[(&str, Observation)]) -> Vec<String> {
+    let converted = sides
+        .iter()
+        .map(|(name, observation)| (*name, optimizer_observation(observation)))
+        .collect::<Vec<_>>();
+    let differences = compare_named_observations(&converted);
+    let mut reports: Vec<(String, String, Vec<String>)> = Vec::new();
+    for difference in differences {
+        let field = match difference.field.as_str() {
+            "output" => format!("输出 {:?} ≠ {:?}", difference.baseline, difference.compared),
+            "error" => format!("错误身份 {} ≠ {}", difference.baseline, difference.compared),
+            "exit_code" => format!("退出码 {} ≠ {}", difference.baseline, difference.compared),
+            "drops" => format!(
+                "drop 顺序 {} ≠ {}",
+                difference.baseline, difference.compared
+            ),
+            other => format!(
+                "字段 {other}：{} ≠ {}",
+                difference.baseline, difference.compared
+            ),
+        };
+        if let Some((baseline, compared, fields)) = reports.last_mut()
+            && baseline == &difference.baseline_side
+            && compared == &difference.compared_side
+        {
+            fields.push(field);
+        } else {
+            reports.push((
+                difference.baseline_side,
+                difference.compared_side,
+                vec![field],
+            ));
+        }
+    }
+    reports
+        .into_iter()
+        .map(|(baseline, compared, fields)| {
+            format!(
+                "「{baseline}」与「{compared}」不一致：{}",
+                fields.join("；")
+            )
+        })
+        .collect()
+}
+
+fn assert_sides_agree(case: &str, sides: &[(&str, Observation)]) {
+    let problems = disagreements(sides);
+    assert!(
+        problems.is_empty(),
+        "用例 {case}：\n{}",
+        problems.join("\n")
+    );
+}
+
+/// 基线必须真的呈现用例声明的内容，否则“一致”可能只是都为空。
+fn assert_baseline_matches_case(case: &Case, baseline: &Observation) {
+    assert_eq!(baseline.output, case.output, "{} 的基线输出", case.label);
+    assert_eq!(
+        baseline.error.as_deref(),
+        case.error,
+        "{} 的基线错误身份",
+        case.label
+    );
+    assert_eq!(
+        baseline.exit_code != 0,
+        case.error.is_some(),
+        "{} 的基线退出码",
+        case.label
+    );
+    assert_eq!(
+        !baseline.drops.is_empty(),
+        case.has_drops,
+        "{} 的基线 drop：{:?}",
+        case.label,
+        baseline.drops
+    );
+}
+
+fn materialize(source: &str, level: OptimizationLevel) -> Vec<u8> {
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(source))
+        .expect("差分源码应通过前端");
+    let program = lower_program(artifact.ir());
+    let program = if level == OptimizationLevel::O0 {
+        program
+    } else {
+        xiao_bytecode::optimize_bytecode_checked(
+            artifact.ir(),
+            &program,
+            OptimizationConfig::baseline("host").with_level(level),
+        )
+        .expect("差分优化应通过验证")
+        .program
+    };
+    let config = OptimizationConfig::baseline("host").with_level(level);
+    let fingerprint = config.fingerprint().expect("优化指纹").as_str().to_owned();
+    encode_xiaoc(
+        &program,
+        XiaocMetadata::new("d19a").with_optimization_fingerprint(fingerprint),
+    )
+    .expect("差分 `.xiaoc` 应可编码")
+}
+
+fn artifact_observation(path: &Path, archive: bool) -> Observation {
+    let response = if archive {
+        dispatch(ProtocolRequest::RunArchive {
+            request_id: "d19a-xar".to_owned(),
+            protocol_version: PROTOCOL_VERSION,
+            core_version: CORE_VERSION,
+            locale: Some("zh-CN".to_owned()),
+            path: path.display().to_string(),
+            options: RunOptions::default(),
+            diagnostics: None,
+            debug: false,
+        })
+    } else {
+        dispatch(ProtocolRequest::RunXiaoc {
+            request_id: "d19a-xiaoc".to_owned(),
+            protocol_version: PROTOCOL_VERSION,
+            core_version: CORE_VERSION,
+            locale: Some("zh-CN".to_owned()),
+            path: path.display().to_string(),
+            options: RunOptions::default(),
+            diagnostics: None,
+            debug: false,
+        })
+    };
+    response_observation(response)
+}
+
+fn response_observation(response: ProtocolResponse) -> Observation {
+    let ProtocolResponse::Result {
+        exit_code,
+        events,
+        report,
+        ..
+    } = response
+    else {
+        panic!("差分产物运行必须返回统一 result");
+    };
+    let mut observed = Observation {
+        exit_code: i32::from(exit_code),
+        termination: normalize_process_termination(Some(i32::from(exit_code)), None),
+        error: report.map(|report| report.code),
+        ..Observation::default()
+    };
+    for event in events {
+        match event.kind.as_str() {
+            "intrinsic_output" => {
+                if let Some(text) = event.data.get("text").and_then(serde_json::Value::as_str) {
+                    observed.output.push_str(text);
+                }
+            }
+            "value_released" => {
+                let field = |name: &str| {
+                    event
+                        .data
+                        .get(name)
+                        .map(|value| {
+                            value
+                                .as_str()
+                                .map_or_else(|| value.to_string(), str::to_owned)
+                        })
+                        .unwrap_or_default()
+                };
+                observed.drops.push(format!(
+                    "{}:{}:{}",
+                    field("scope"),
+                    field("exit"),
+                    field("kind")
+                ));
+            }
+            _ => {}
+        }
+    }
+    observed
+}
+
+fn repl_observation(source: &str) -> Observation {
+    response_observation(dispatch(ProtocolRequest::Run {
+        request_id: "d19a-repl".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        locale: Some("zh-CN".to_owned()),
+        target: ProtocolTarget::host(),
+        optimization: xiao_driver::OptimizationConfig::default(),
+        source: SourceIdentity {
+            module: "repl".to_owned(),
+            path: None,
+            text: source.to_owned(),
+        },
+        options: RunOptions::default(),
+    }))
+}
+
+fn write_archive(path: &Path, xiaoc: Vec<u8>) {
+    let object = XarObject::from_bytes(ObjectKind::Xiaoc, xiaoc);
+    let index = ArchiveIndex {
+        schema_major: INDEX_SCHEMA_MAJOR,
+        schema_minor: INDEX_SCHEMA_MINOR,
+        entry: "main.xiaoc".to_owned(),
+        entries: vec![ArchiveEntry {
+            logical_path: "main.xiaoc".to_owned(),
+            object_kind: ObjectKind::Xiaoc,
+            digest: object.digest,
+            module: "main".to_owned(),
+            target: "portable".to_owned(),
+            length: object.bytes.len() as u64,
+        }],
+        dependency_lock_digest: "0000000000000000000000000000000000000000000000000000000000000000"
+            .to_owned(),
+        runtime_abi_min: ABI_ENCODED_VERSION,
+        runtime_abi_max: ABI_ENCODED_VERSION,
+        platform: "portable".to_owned(),
+        debug_activation: false,
+        language_locale: "zh-CN".to_owned(),
+        stdlib_interface_version: 1,
+        language_version: "0.1.0".to_owned(),
+        stdlib_modules: Vec::new(),
+        required_capabilities: 0,
+        required_features: 0,
+    };
+    fs::write(path, encode_xar(&index, &[object]).expect("编码归档")).expect("写入归档");
+}
+
+/// 跑完除原生外的所有路径，返回按“名称 → 观察”排列的列表，基线在最前。
+fn vm_side_observations(label: &str, source: &str) -> Vec<(&'static str, Observation)> {
+    let unoptimized = materialize(source, OptimizationLevel::O0);
+    let optimized = materialize(source, OptimizationLevel::O1);
+    let root = std::env::temp_dir().join(format!(
+        "xiao-19a-differential-{label}-{}",
+        std::process::id()
+    ));
+    fs::create_dir_all(&root).expect("创建差分目录");
+    let unoptimized_path = root.join("unoptimized.xiaoc");
+    let optimized_path = root.join("optimized.xiaoc");
+    let archive_path = root.join("program.xar");
+    fs::write(&unoptimized_path, &unoptimized).expect("写入未优化产物");
+    fs::write(&optimized_path, &optimized).expect("写入优化产物");
+    write_archive(&archive_path, optimized);
+
+    let sides = vec![
+        (
+            "源码 -O0",
+            source_observation(source, OptimizationLevel::O0),
+        ),
+        (
+            "源码 -O1",
+            source_observation(source, OptimizationLevel::O1),
+        ),
+        ("REPL", repl_observation(source)),
+        (
+            "未优化 .xiaoc",
+            artifact_observation(&unoptimized_path, false),
+        ),
+        ("优化 .xiaoc", artifact_observation(&optimized_path, false)),
+        ("优化 .xar", artifact_observation(&archive_path, true)),
+    ];
+    let _ = fs::remove_dir_all(root);
+    sides
+}
+
+#[test]
+fn all_vm_sides_agree_on_every_case() {
+    for case in &CASES {
+        let sides = vm_side_observations(case.label, case.source);
+        assert_baseline_matches_case(case, &sides[0].1);
+        assert_sides_agree(case.label, &sides);
+    }
+}
+
+#[test]
+fn a3_vm_boundary_observations() {
+    let sources = [
+        (
+            "member-value",
+            "[[Item]]\n    def read(self) -> int\n        return 1\nitem = new Item()\nvalue = item.read\n",
+        ),
+        (
+            "assigned-value",
+            "[[Item]]\n    def read(self) -> int\n        return 1\nitem = new Item()\nvalue = item.read\nprint(value)\n",
+        ),
+        (
+            "passed-value",
+            "def take(value) -> none\n    print(value)\n[[Item]]\n    def read(self) -> int\n        return 1\nitem = new Item()\ntake(item.read)\n",
+        ),
+        (
+            "callee-value",
+            "[[Item]]\n    def read(self) -> int\n        return 1\nitem = new Item()\nvalue = item.read()\nprint(value)\n",
+        ),
+    ];
+    for (label, source) in sources {
+        let observation = source_observation(source, OptimizationLevel::O0);
+        eprintln!(
+            "10W-A3 {label}: output={:?} error={:?} exit={}",
+            observation.output, observation.error, observation.exit_code
+        );
+        if label == "callee-value" {
+            assert_eq!(observation.output, "1\n");
+            assert_eq!(observation.error, None);
+            assert_eq!(observation.exit_code, 0);
+        } else {
+            assert_eq!(observation.output, "");
+            assert_eq!(observation.error.as_deref(), Some("X09-BYTECODE-003"));
+            assert_eq!(observation.exit_code, 2);
+        }
+    }
+}
+
+#[test]
+fn a2_remaining_shape_vm_observations() {
+    let sources = [
+        (
+            "missing-init",
+            "[[Item]]\n    value = 1\nitem = new Item(2)\n",
+        ),
+        (
+            "unsupported-kind",
+            "[[Item]]\n    value = 0\n    def init(self, int amount) -> none\n        self.value = amount\nitem = new Item(other = 2)\n",
+        ),
+    ];
+    for (label, source) in sources {
+        let observation = source_observation(source, OptimizationLevel::O0);
+        eprintln!(
+            "10W-A2 {label}: output={:?} error={:?} exit={}",
+            observation.output, observation.error, observation.exit_code
+        );
+        assert_eq!(observation.output, "");
+        assert_eq!(observation.exit_code, 1);
+        assert_eq!(
+            observation.error.as_deref(),
+            Some(match label {
+                "missing-init" => "X05-TYPE-004",
+                "unsupported-kind" => "X05-TYPE-004",
+                _ => unreachable!(),
+            })
+        );
+    }
+}
+
+/// 原拒绝用例进入统一差分清单；默认门禁检查真实源码会注册 drop 回调。
+#[test]
+fn table_drop_registers_a_real_callback() {
+    let case = CASES
+        .iter()
+        .find(|case| case.label == "table-user-drop")
+        .expect("drop 用例必须在完整差分清单中");
+    let baseline = source_observation(case.source, OptimizationLevel::O0);
+    assert_baseline_matches_case(case, &baseline);
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(case.source))
+        .expect("drop 前端");
+    let module = xiao_codegen_llvm::lower_program(artifact.ir(), &Default::default())
+        .expect("真实 drop 应降低");
+    assert!(module.text.contains("@xiao_runtime_table_new_v2("));
+    assert!(module.text.contains("ptr @xiao.table.0.method.0"));
+    assert!(module.text.contains("define i32 @xiao.table.0.method.0("));
+}
+
+#[test]
+fn disagreement_report_names_the_two_sides_and_the_field() {
+    let base = Observation {
+        output: "a\n".to_owned(),
+        ..Observation::default()
+    };
+    let drifted = Observation {
+        exit_code: 1,
+        error: Some("X06-RUNTIME-009".to_owned()),
+        ..base.clone()
+    };
+    let sides = [
+        ("源码 -O0", base.clone()),
+        ("优化 .xiaoc", base),
+        ("优化 .xar", drifted),
+    ];
+    let problems = disagreements(&sides);
+    assert_eq!(problems.len(), 1, "{problems:?}");
+    assert!(problems[0].contains("「源码 -O0」"), "{problems:?}");
+    assert!(problems[0].contains("「优化 .xar」"), "{problems:?}");
+    assert!(!problems[0].contains("「优化 .xiaoc」"), "{problems:?}");
+    assert!(problems[0].contains("错误身份"), "{problems:?}");
+    assert!(problems[0].contains("退出码"), "{problems:?}");
+    assert!(!problems[0].contains("输出"), "{problems:?}");
+}
+
+#[test]
+fn baseline_check_rejects_a_vacuous_agreement() {
+    let case = CASES.iter().find(|case| case.label == "print").unwrap();
+    let empty = Observation::default();
+    let result = std::panic::catch_unwind(|| assert_baseline_matches_case(case, &empty));
+    assert!(result.is_err(), "没有 drop 的基线不应被接受为该用例的基线");
+}
+
+#[test]
+fn xiaoc_summaries_are_reproducible_and_level_debug_distinct() {
+    let source = "value = 1\n";
+    let levels = [
+        materialize(source, OptimizationLevel::O0),
+        materialize(source, OptimizationLevel::O1),
+        materialize(source, OptimizationLevel::O2),
+        materialize(source, OptimizationLevel::O3),
+    ];
+    let repeated = materialize(source, OptimizationLevel::O2);
+    assert_eq!(levels[2], repeated);
+    let digests = levels
+        .iter()
+        .map(|bytes| xiao_artifacts::Digest256::of_bytes(bytes).as_hex())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        digests
+            .iter()
+            .collect::<std::collections::BTreeSet<_>>()
+            .len(),
+        4
+    );
+
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(source))
+        .expect("源码应通过前端");
+    let program = lower_program(artifact.ir());
+    let standard = encode_xiaoc(&program, XiaocMetadata::new("debug-difference")).unwrap();
+    let debug = encode_xiaoc_with_options(
+        &program,
+        XiaocMetadata::new("debug-difference").with_debug("d19a"),
+        XiaocOptions {
+            debug_symbols: Some(b"debug-symbols".to_vec()),
+            source: Some(source.as_bytes().to_vec()),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    assert_ne!(
+        xiao_artifacts::Digest256::of_bytes(&standard),
+        xiao_artifacts::Digest256::of_bytes(&debug)
+    );
+}
+
+const NATIVE_ENV: [&str; 3] = ["XIAO_CLANG", "XIAO_RUNTIME_LIBRARY", "XIAO_TARGET_TRIPLE"];
+
+/// 原生一路缺少哪些 15E 环境变量；为空表示可以构建。
+fn missing_native_environment() -> Vec<&'static str> {
+    NATIVE_ENV
+        .iter()
+        .copied()
+        .filter(|name| std::env::var_os(name).is_none())
+        .collect()
+}
+
+/// 原生一路的覆盖状态，供人读和断言共用。
+fn native_coverage_report(missing: &[&str]) -> String {
+    if missing.is_empty() {
+        "原生一路：已配置 15E 环境，由 ignored 用例实际构建并比较".to_owned()
+    } else {
+        format!(
+            "原生一路：未覆盖。缺少环境变量 {}；准备方式见 10D §4，\
+             运行 `cargo test -p xiao-driver --test d19a_differential -- --ignored` 以覆盖",
+            missing.join("、")
+        )
+    }
+}
+
+#[test]
+fn native_side_reports_coverage_instead_of_silently_skipping() {
+    let report = native_coverage_report(&missing_native_environment());
+    eprintln!("[19A 差分] {report}");
+    assert!(report.starts_with("原生一路："));
+    let simulated = native_coverage_report(&["XIAO_CLANG", "XIAO_TARGET_TRIPLE"]);
+    assert!(simulated.contains("未覆盖"), "{simulated}");
+    assert!(simulated.contains("XIAO_CLANG"), "{simulated}");
+    assert!(simulated.contains("XIAO_TARGET_TRIPLE"), "{simulated}");
+    assert!(!simulated.contains("XIAO_RUNTIME_LIBRARY"), "{simulated}");
+}
+
+fn configured_native() -> (TargetDescription, Toolchain) {
+    let runtime =
+        PathBuf::from(std::env::var_os("XIAO_RUNTIME_LIBRARY").expect("XIAO_RUNTIME_LIBRARY"));
+    assert!(
+        runtime.is_file(),
+        "XIAO_RUNTIME_LIBRARY 必须指向已构建的 staticlib"
+    );
+    let target = TargetDescription::host();
+    assert_eq!(
+        std::env::var("XIAO_TARGET_TRIPLE").expect("XIAO_TARGET_TRIPLE"),
+        target.triple,
+        "XIAO_TARGET_TRIPLE 必须与当前 Rust 编译目标一致"
+    );
+    let rustc = std::env::var_os("RUSTC").unwrap_or_else(|| "rustc".into());
+    let toolchain = Toolchain::new(std::env::var_os("XIAO_CLANG").expect("XIAO_CLANG"))
+        .with_runtime_library(runtime)
+        .probe_native_static_libraries(rustc, &target)
+        .expect("rustc 应报告 Runtime staticlib 的原生库清单");
+    (target, toolchain)
+}
+
+fn native_error_code(stderr: &str) -> Option<String> {
+    let line = stderr
+        .lines()
+        .find(|line| line.starts_with("xiao-error "))?;
+    let (_, rest) = line.split_once(" code=")?;
+    Some(rest.split_once(' ')?.0.to_owned())
+}
+
+#[cfg(unix)]
+/// 读取 Unix 进程的退出码或信号并规范化。
+fn native_termination(status: &std::process::ExitStatus) -> String {
+    use std::os::unix::process::ExitStatusExt;
+    let signal = status.signal().map(|signal| format!("SIG{signal}"));
+    normalize_process_termination(status.code(), signal.as_deref())
+}
+
+#[cfg(not(unix))]
+/// 在没有 POSIX 信号字段的平台使用退出码规范化。
+fn native_termination(status: &std::process::ExitStatus) -> String {
+    normalize_process_termination(status.code(), None)
+}
+
+fn release_tuples(text: &str) -> Vec<String> {
+    text.lines()
+        .filter(|line| !line.trim().is_empty())
+        .map(|line| line.replace('\t', ":"))
+        .collect()
+}
+
+/// 原生已能构建但释放序列仍与 VM 不同的后续缺口。
+enum NativeGap {
+    /// 说明差异来源，保持差分用例运行并如实登记。
+    Diverges {
+        reason: &'static str,
+        fields: &'static [GapField],
+    },
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum GapField {
+    Drops,
+}
+
+const DROPS_ONLY: &[GapField] = &[GapField::Drops];
+
+fn native_gap(label: &str) -> Option<NativeGap> {
+    let reason = match label {
+        "dynamic-dict-member-error-identity" => {
+            "B1：错误身份已与 VM 对齐。原生侧无 destroy 事件（对象未归零），VM 在事件 4 销毁对象 1；事件数 VM 5 / 原生 4，对象数 1。性质待判：泄漏还是追踪口径，见 10Z-Z1。仅豁免 Drops"
+        }
+        "selector-range-downstream" | "selector-open-range-downstream" => {
+            "10T：名称迭代来源已借用并逐轮重读；剩余 selector_bounds 多一次源释放、iterable 检查多一次结果释放，共多两次。两对象销毁顺序一致，沿用 10S 成对依据并在 10T 回填新读数，仅豁免 Drops"
+        }
+        "selector-random-downstream" => {
+            "10T：随机 value_select 批量借用转换相较 VM 逐路径读取少一次源释放，iterable 检查多一次结果释放；总数相同但完整轨迹仍不同。名称来源额外 SSA 持有已移除，机制见 10S/10T，仅豁免 Drops"
+        }
+        _ => return None,
+    };
+    Some(NativeGap::Diverges {
+        reason,
+        fields: DROPS_ONLY,
+    })
+}
+
+#[test]
+#[ignore = "需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
+fn native_side_matches_the_vm_sides_on_every_case() {
+    compare_native_cases(&CASES.iter().collect::<Vec<_>>(), 0, false, true);
+}
+
+/// A1 的构造、方法与生命周期用例；普通表也必须在优化后保持完整释放轨迹。
+fn table_cases() -> Vec<&'static Case> {
+    CASES
+        .iter()
+        .filter(|case| case.label.starts_with("table-") || case.label == "held-table-instance")
+        .collect()
+}
+
+#[test]
+#[ignore = "需要受控原生工具链；准备方式见 10D §4"]
+/// O0 由全量原生差分覆盖，本例逐级验证 O1–O3 的值、错误与完整释放轨迹。
+fn native_table_methods_o1_o3_match_vm() {
+    for level in 1..=3 {
+        compare_native_cases(&table_cases(), level, false, true);
+    }
+}
+
+#[test]
+#[ignore = "需要受控工具链、XIAO_DIAGNOSTICS_PATH 和终端；准备方式见 10D §4"]
+/// 调试产物在 O0–O3 实际执行同一方法/生命周期矩阵；没有终端时必须由工作流显式跳过。
+fn native_table_methods_debug_execution_o0_o3() {
+    for level in 0..=3 {
+        compare_native_cases(&table_cases(), level, true, true);
+    }
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+#[ignore = "需要受控原生工具链与 XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4"]
+/// macOS 的独立调试构建证据，仅验证链接/符号/产物，不冒充无 GUI 宿主上的运行。
+fn native_table_methods_macos_debug_builds_o0_o3() {
+    for level in 0..=3 {
+        compare_native_cases(&table_cases(), level, true, false);
+    }
+}
+
+/// 共用严格比较器，优化和调试矩阵不得另立更宽松的值/错误/释放比较规则。
+fn compare_native_cases(cases: &[&Case], level: u8, debug: bool, execute: bool) {
+    let missing = missing_native_environment();
+    assert!(missing.is_empty(), "{}", native_coverage_report(&missing));
+    let (target, toolchain) = configured_native();
+    let mut problems = Vec::new();
+    for case in cases {
+        let gap = native_gap(case.label);
+        let frontend_request = FrontendRequest::from_text(case.source);
+        let artifact = FrontendCompiler::new()
+            .compile(&frontend_request)
+            .expect("差分源码应通过前端");
+        let root = std::env::temp_dir().join(format!(
+            "xiao-19a-native-{}-o{}-debug{}-{}",
+            case.label,
+            level,
+            debug,
+            std::process::id()
+        ));
+        fs::create_dir_all(&root).expect("创建原生差分目录");
+        let output = root.join(if cfg!(windows) {
+            "program.exe"
+        } else {
+            "program"
+        });
+        let mut options = xiao_codegen_llvm::CodegenOptions::for_target(target.clone());
+        options.optimization_level = level;
+        if debug {
+            let diagnostics = std::env::var_os("XIAO_DIAGNOSTICS_PATH")
+                .expect("调试矩阵必须配置诊断组件，见 10D §4");
+            assert!(Path::new(&diagnostics).is_file(), "诊断组件必须已构建");
+            options = options.with_debug_startup(diagnostics.to_string_lossy());
+        }
+        let request = NativeBuildRequest::new(
+            frontend_request.clone(),
+            target.clone(),
+            toolchain.clone(),
+            &output,
+        )
+        .with_codegen_options(options);
+        let native = match FrontendNativeDriver::new().build_artifact(&artifact, &request) {
+            Ok(native) => native,
+            Err(error) => {
+                let text = format!("{error:?}");
+                problems.push(format!("用例 {}：原生构建失败：{text}", case.label));
+                let _ = fs::remove_dir_all(root);
+                continue;
+            }
+        };
+
+        if !execute {
+            eprintln!(
+                "10T-DEBUG-BUILD {} O{level} target={} built=true executed=false（独立构建证据）",
+                case.label, target.triple
+            );
+            let _ = fs::remove_dir_all(root);
+            continue;
+        }
+        eprintln!(
+            "10T-MODE {} O{level} debug={debug} target={}",
+            case.label, target.triple
+        );
+        let trace_guard = start_release_trace();
+        let vm =
+            FrontendVmDriver::new().run_artifact(&artifact, &DriverRequest::new(frontend_request));
+        let vm_release = take_release_events();
+        drop(trace_guard);
+        let baseline = outcome_observation(&vm);
+        assert_baseline_matches_case(case, &baseline);
+
+        let trace_path = root.join("release-events.tsv");
+        let run_output = Command::new(&native.native.executable)
+            .env("XIAO_RUNTIME_RELEASE_TRACE_PATH", &trace_path)
+            .output()
+            .expect("应能启动原生程序");
+        let stderr = String::from_utf8_lossy(&run_output.stderr);
+        if case.label == "table-init-failure" {
+            assert!(
+                stderr.contains("INIT") && stderr.contains("DROP"),
+                "初始化原因与清理错误都必须出现在原生报告中：{stderr}"
+            );
+        }
+        let native_side = Observation {
+            output: String::from_utf8_lossy(&run_output.stdout).into_owned(),
+            error: native_error_code(&stderr),
+            exit_code: run_output.status.code().unwrap_or(-1),
+            termination: native_termination(&run_output.status),
+            drops: Vec::new(),
+        };
+        let vm_side = Observation {
+            drops: Vec::new(),
+            ..baseline
+        };
+        let mut case_problems = Vec::new();
+        let found = disagreements(&[("VM（源码）", vm_side), ("原生", native_side)]);
+        if !found.is_empty() {
+            let first_line = stderr.lines().next().unwrap_or_default();
+            case_problems.push(format!(
+                "{}（原生 stderr 首行：{first_line:?}）",
+                found.join("；")
+            ));
+        }
+
+        let vm_tuples = vm_release
+            .iter()
+            .map(|event| {
+                format!(
+                    "{}:{}:{}",
+                    event.sequence,
+                    event.object_id,
+                    event.action.as_str()
+                )
+            })
+            .collect::<Vec<_>>();
+        let native_tuples = match fs::read_to_string(&trace_path) {
+            Ok(text) => release_tuples(&text),
+            // 纯静态产物不会生成轨迹；无堆生命周期用例即使因数值检查链接 Runtime，
+            // 只要 VM 也没有释放事件，就不应强求一个空轨迹文件。
+            Err(error)
+                if error.kind() == std::io::ErrorKind::NotFound
+                    && (!native.native.module.uses_runtime || !case.has_drops)
+                    && vm_tuples.is_empty() =>
+            {
+                Vec::new()
+            }
+            Err(error) => {
+                if debug
+                    && run_output.status.code() == Some(70)
+                    && stderr.contains("X11-DIAGNOSTIC-START-001")
+                {
+                    eprintln!(
+                        "10T-DEBUG-STARTUP {} O{level}: 稳定诊断启动失败路径，跳过运行轨迹比较",
+                        case.label
+                    );
+                    let _ = fs::remove_dir_all(root);
+                    continue;
+                }
+                problems.push(format!(
+                    "用例 {} O{level} debug={debug}：原生释放轨迹读取失败（不适用 Drops 豁免）：{}：{error}；进程状态={:?}；已发现差异={}；stderr={stderr:?}",
+                    case.label,
+                    trace_path.display(),
+                    run_output.status,
+                    case_problems.join("；")
+                ));
+                let _ = fs::remove_dir_all(root);
+                continue;
+            }
+        };
+        eprintln!(
+            "10R-TRACE {} VM={vm_tuples:?} NATIVE={native_tuples:?}",
+            case.label
+        );
+        let release_mismatch = vm_tuples != native_tuples;
+        let _ = fs::remove_dir_all(root);
+
+        match gap {
+            Some(NativeGap::Diverges { reason, fields }) => {
+                if release_mismatch && fields.contains(&GapField::Drops) {
+                    eprintln!(
+                        "[19A 差分] 原生未覆盖 {}：{reason}；VM（源码）={vm_tuples:?}；原生={native_tuples:?}",
+                        case.label
+                    );
+                } else if release_mismatch {
+                    case_problems.push(format!("「VM（源码）」与「原生」的 Runtime 释放序列不一致：{vm_tuples:?} ≠ {native_tuples:?}"));
+                } else if fields.contains(&GapField::Drops) {
+                    case_problems.push(
+                        "登记的 Drops 差异已消失，请移除 native_gap；其他字段仍严格比较".to_owned(),
+                    );
+                }
+                problems.extend(
+                    case_problems
+                        .into_iter()
+                        .map(|problem| format!("用例 {}：{problem}", case.label)),
+                );
+            }
+            None => {
+                if release_mismatch {
+                    case_problems.push(format!("「VM（源码）」与「原生」的 Runtime 释放序列不一致：{vm_tuples:?} ≠ {native_tuples:?}"));
+                }
+                problems.extend(
+                    case_problems
+                        .into_iter()
+                        .map(|problem| format!("用例 {}：{problem}", case.label)),
+                );
+            }
+        }
+    }
+    assert!(problems.is_empty(), "\n{}", problems.join("\n"));
+}

@@ -1,0 +1,8 @@
+from stdlib.text import length, repeat
+
+print("[" + repeat("小😀", -3) + "]")
+print("[" + repeat("小😀", 0) + "]")
+print("[" + repeat("小😀", 1) + "]")
+print("[" + repeat("小😀", 3) + "]")
+print("[" + repeat("", 3) + "]")
+print(length(repeat("小😀", 128)))

@@ -1,0 +1,77 @@
+# `xiao-codegen-llvm/src/dynamic`
+
+## 工程期
+
+本目录承载 N0-B 动态值、容器、表和正常退出释放计划的 LLVM 降低实现。它只消费已经
+验证的 `xiao-ir`，通过 `xiao-runtime-abi` 的固定 `%xiao.value` 形状发射 Runtime 调用；
+不改变类型规则、所有权计划或 Runtime ABI，也不负责 N0-C 的统一异常展开。
+
+## 模块职责
+
+```text
+dynamic.rs          门面：生成器状态、生成流程和底层发射原语
+predicate.rs        纯 IR 谓词：Runtime/容器使用判断、字段标签和名称键
+text.rs             动态路径文本解析、字符串转义和 Cast 安全判断
+runtime_abi.rs      Runtime 声明、COFF 间接返回和 ABI 调用适配
+entry.rs            xiao_entry、C main 适配器和入口观察值
+slot.rs             槽收集、表字段初始化、作用域边界和槽读写
+release.rs          临时值释放、所有权释放计划和退出边
+control.rs          顶层语句、条件、if/elif/else、while、break/continue
+expression.rs       表达式、字面量、字符串和表字段读写
+imports.rs          从入口导入出发的模块闭包、标准库别名归一和导入环去重
+container.rs        数组/元组、字典、集合、表构造和表描述符
+methods.rs          表方法与字段回调、参数绑定、弱只读 receiver 和失败清理
+```
+
+## 依赖边界
+
+`dynamic.rs` 是稳定门面，保存 `DynamicGenerator` 的状态和生成顺序；各职责模块通过
+`impl DynamicGenerator` 扩展实现，不能把实现重新塞回门面。`imports.rs`、`predicate.rs` 和 `text.rs`
+保持无状态，容器/表达式模块只能消费它们的纯辅助；其他子模块可以访问门面提供的内部
+状态、常量和发射原语，但不得互相形成控制流、表达式、容器、释放或 ABI 的反向依赖。
+
+静态降低器位于同级 `ir.rs`，只依赖 crate 级 `text.rs` 的公共纯函数，禁止反向依赖
+`dynamic.rs` 或本目录。crate 级 `text.rs` 是 `escape_llvm` 和 `stable_hash` 的唯一来源，
+动态文本解析只保留在本目录的 `text.rs`。
+
+模块导入可以消费 `xiao-standard-library` 的纯身份元数据以统一 std 别名；不依赖
+驱动器或 VM，也不执行 Runtime 来解析模块身份。
+
+标准库函数只为入口导入可达的文件模块建立绑定。`imports.rs` 从 `program.body`
+收集边，再逐个展开可达模块体；完整模块索引只供查找，不能把不可达模块的导入混入闭包。
+函数、表和控制流中的语法导入保守保留，不做运行时分支裁剪；访问集合使导入环有限终止。
+
+## 验收
+
+`dynamic_architecture_tests.rs` 在测试构建时锁定门面模块登记、静态/动态依赖方向和
+禁止的兄弟模块导入；`tests/n0_a.rs` 与 `tests/n0_b_dynamic.rs` 继续作为 LLVM 文本、
+Runtime ABI 和静态/动态边界的行为证据。结构拆分只移动实现，不升 `CODEGEN_VERSION`，生成的
+LLVM 文本和 Runtime 组件清单必须保持不变。会改变调用文本、trampoline 或 Runtime 组件的 lowering
+实现需要递增代码生成版本。
+
+10T 将字段初始化映射为独立帧，方法与普通函数共用返回和异常清理；固定回调为四个指针/长度参数返回 i32。
+构造处已接通独立 V2 描述符并移除方法拒绝；版本 4 指纹区分实际生命周期与帧清理，版本 5 为 22D 并发 trampoline lowering，版本 6/7 修正导入别名绑定，版本 8 接入 native Runtime 收尾与 finally 主/次错误 checkpoint，版本 9 继续隔离当前收尾和差分 lowering 行为，版本 10 修正 finally 控制转移与并发 ABI 声明，版本 11 将入口 checkpoint 重置与普通错误清理分离，保留 finally 内 helper 返回时的调用方主错误。
+返回和语句临时值均有入口分配的拥有槽，终止/错误边统一归还；Runtime 组件从入口可达调用及注册回调地址计算。
+
+22D-FIX.1 的版本 13 将固定大小 ABI scratch 分配移到函数入口，循环重用栈空间；
+边界复制源在普通退出动作之后归还，静态归类为 stack、在动态 ABI 中物化的 tuple 盒子
+也参与帧清理。静态所有权事实和 Runtime ABI 保持原样。
+
+22E 的版本 14 收紧固定分配分类：只有字面量元素数量能移动到入口，动态 SSA 数量
+保持原支配关系；聚合类型中的逗号不作为数量分隔符。
+
+20O-B1-FIX-B 的版本 15 在 `expression.rs` 新增 error_code 借读后复制与失败清理，
+`predicate.rs` 选择动态路径，`runtime_abi.rs` 声明 ABI 1.18 getter；借用视图不作为
+Xiao 字符串返回。读取不使用 take/snapshot/clear，普通异常路由仍使用既有挂起槽机制。
+
+B1-IMP 的既有 std 别名前置修复将 `control.rs` 的模块初始化及选取函数查找统一到
+`stdlib.` 规范身份；版本 16 隔离更新后的原生降低指纹，Runtime ABI 仍为 1.18。
+
+版本 17 的固定参数命名调用经共享 `arguments.rs` 生成绑定排列；`expression.rs`
+仍按源码顺序求值、保存和释放实参槽，只在实际 call 中按形参顺序传递这些槽。
+
+版本 18 修正精确下标路径中负数字面量的重复反转，与字节码仅应用一次符号的规则一致。
+字符串的常量时间字符读取由 Runtime 私有不可变索引提供，ABI 保持 1.18。
+
+版本 19 对所有选择导入应用模块绑定，包含未改名导入；缺少实际函数体时明确拒绝。
+同名定义按真实节点分别发射，模块函数的内部名称在自己的模块中解析。

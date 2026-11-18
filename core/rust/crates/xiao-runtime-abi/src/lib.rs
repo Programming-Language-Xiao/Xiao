@@ -1,0 +1,1577 @@
+//! Xiao 原生程序使用的稳定 C ABI 边界。
+//!
+//! 本 crate 只定义固定布局和外部符号声明。对象头、引用计数、字符串内容以及容器字段
+//! 全部由 `xiao-runtime` 实现；这里不能依赖 Runtime，也不能把 Rust enum 或对象字段
+//! 暴露成语言契约。所有拥有句柄的入口都在注释中写明了空指针和释放责任。
+//!
+//! 句柄参数还有一条不可省略的调用约定：只能传入 Runtime 返回、尚未归还的 live
+//! 句柄；`release`/`weak_release` 之后不得再次使用同一地址。Runtime 盒子中的魔数和
+//! 种类标记只用于拦截仍可读的明显类型错配，不能把任意外部地址或释放后的悬空指针
+//! 变成安全输入。
+//!
+//! 普通 N0-B `XiaoHandle` 继承 06B 的单线程、非原子引用计数约束，不得跨线程传递或并发调用。
+//! 22D 的 Runtime/线程/任务/共享值另用 `XiaoConcurrencyHandle` 和并发入口；这不改变普通
+//! 句柄规则，也不暴露 Rust `Arc`/`Mutex` 或共享头字段。
+//!
+//! 稳定 C ABI 的输出契约：`*mut XiaoValue` 输出必须指向已初始化且仍拥有其载荷的值槽；
+//! `*mut XiaoHandle` 输出必须指向已初始化的空槽或有效强句柄槽。成功写入会释放旧载荷并
+//! 替换槽位，失败通常保持旧槽不变，具体例外由入口文档说明。普通数值/固定布局结构输出
+//! 只要求指向可写内存，成功时覆盖；按值返回的 `xiao_runtime_value_*` 类型包装器无法返回
+//! 状态码，句柄或类型错误以 `XiaoValueTag::None` 哨兵表示。快照中的 `XiaoAbiBytes` 借用
+//! 错误对象内部存储，只能用到错误槽清除或变更为止，调用方需要长期保存时必须自行复制。
+
+/// 当前 ABI 的主版本。
+pub const ABI_MAJOR_VERSION: u32 = 1;
+/// 当前 ABI 的次版本；新增兼容入口只递增此字段。
+pub const ABI_MINOR_VERSION: u32 = 19;
+/// 兼容旧调用方的主版本常量。
+pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
+/// ABI 版本编码的高位宽度。
+pub const ABI_VERSION_MINOR_BITS: u32 = 16;
+
+/// 返回一个可比较的主/次版本编码。
+#[must_use]
+pub const fn encoded_abi_version(major: u32, minor: u32) -> u64 {
+    ((major as u64) << ABI_VERSION_MINOR_BITS) | (minor as u64)
+}
+
+/// 当前 ABI 的可比较版本编码。
+pub const ABI_ENCODED_VERSION: u64 = encoded_abi_version(ABI_MAJOR_VERSION, ABI_MINOR_VERSION);
+
+/// `.xar`/`.xiaoc` 并发必需能力位：线程入口。
+pub const REQUIRED_FEATURE_THREADS: u64 = 0x0002;
+/// `.xar`/`.xiaoc` 并发必需能力位：共享句柄。
+pub const REQUIRED_FEATURE_SHARED_HANDLES: u64 = 0x0004;
+/// `.xar`/`.xiaoc` 并发必需能力位：任务池。
+pub const REQUIRED_FEATURE_TASK_POOL: u64 = 0x0008;
+/// `.xar`/`.xiaoc` 并发必需能力位：多 Runtime。
+pub const REQUIRED_FEATURE_MULTI_RUNTIME: u64 = 0x0010;
+/// `.xar`/`.xiaoc` 并发必需能力位：XCON v1 序列化。
+pub const REQUIRED_FEATURE_SERIALIZATION_V1: u64 = 0x0020;
+/// `.xar`/`.xiaoc` 并发必需能力位：取消/等待。
+pub const REQUIRED_FEATURE_CANCEL_WAIT: u64 = 0x0040;
+/// 22C 当前支持的并发能力位集合。
+pub const SUPPORTED_CONCURRENCY_FEATURES: u64 = REQUIRED_FEATURE_THREADS
+    | REQUIRED_FEATURE_SHARED_HANDLES
+    | REQUIRED_FEATURE_TASK_POOL
+    | REQUIRED_FEATURE_MULTI_RUNTIME
+    | REQUIRED_FEATURE_SERIALIZATION_V1
+    | REQUIRED_FEATURE_CANCEL_WAIT;
+
+/// 按冻结的 `.xar`/native 位表给出操作实际依赖；未知操作不得静默获得空位集。
+#[must_use]
+pub fn concurrency_operation_features(operation: &str) -> Option<u64> {
+    Some(match operation {
+        "runtime_create" => REQUIRED_FEATURE_MULTI_RUNTIME,
+        "current_runtime" | "runtime_close" => 0,
+        "spawn" | "join" | "detach" => {
+            REQUIRED_FEATURE_THREADS
+                | REQUIRED_FEATURE_SERIALIZATION_V1
+                | REQUIRED_FEATURE_CANCEL_WAIT
+        }
+        "pool_create" | "shutdown" => REQUIRED_FEATURE_TASK_POOL,
+        "submit" | "wait" => {
+            REQUIRED_FEATURE_TASK_POOL
+                | REQUIRED_FEATURE_SERIALIZATION_V1
+                | REQUIRED_FEATURE_CANCEL_WAIT
+        }
+        "shared_read" | "shared_mut" | "read" | "lock_read" | "lock_write" => {
+            REQUIRED_FEATURE_SHARED_HANDLES | REQUIRED_FEATURE_SERIALIZATION_V1
+        }
+        "lock" => REQUIRED_FEATURE_SHARED_HANDLES | REQUIRED_FEATURE_CANCEL_WAIT,
+        "cancel" => REQUIRED_FEATURE_CANCEL_WAIT,
+        _ => return None,
+    })
+}
+
+/// `.xiaoc` 独立 feature 表：线程入口。
+pub const XIAOC_REQUIRED_FEATURE_THREADS: u64 = 0x0001;
+/// `.xiaoc` 独立 feature 表：共享句柄。
+pub const XIAOC_REQUIRED_FEATURE_SHARED_HANDLES: u64 = 0x0002;
+/// `.xiaoc` 独立 feature 表：任务池。
+pub const XIAOC_REQUIRED_FEATURE_TASK_POOL: u64 = 0x0004;
+/// `.xiaoc` 独立 feature 表：多 Runtime。
+pub const XIAOC_REQUIRED_FEATURE_MULTI_RUNTIME: u64 = 0x0008;
+/// `.xiaoc` 独立 feature 表：XCON v1 序列化。
+pub const XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1: u64 = 0x0010;
+/// `.xiaoc` 独立 feature 表：取消/等待。
+pub const XIAOC_REQUIRED_FEATURE_CANCEL_WAIT: u64 = 0x0020;
+/// 当前 `.xiaoc` 解码器支持的并发 feature。
+pub const XIAOC_SUPPORTED_CONCURRENCY_FEATURES: u64 = XIAOC_REQUIRED_FEATURE_THREADS
+    | XIAOC_REQUIRED_FEATURE_SHARED_HANDLES
+    | XIAOC_REQUIRED_FEATURE_TASK_POOL
+    | XIAOC_REQUIRED_FEATURE_MULTI_RUNTIME
+    | XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1
+    | XIAOC_REQUIRED_FEATURE_CANCEL_WAIT;
+
+/// 判断必需能力是否为当前 Runtime 支持的子集。
+#[must_use]
+pub const fn are_required_features_supported(required: u64) -> bool {
+    required & !SUPPORTED_CONCURRENCY_FEATURES == 0
+}
+
+/// 22A/22C 共享对象头的 C ABI 视图；Runtime 内部使用原子存储实现同一布局。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoSharedHeader {
+    /// 强引用计数。
+    pub strong: u64,
+    /// 弱引用计数。
+    pub weak: u64,
+    /// `1=ordinary`、`2=shared_read`、`3=shared_mut`。
+    pub tag: u64,
+    /// 低 4B 锁状态，高 4B 保留。
+    pub lock_state: u32,
+    /// ABI 对齐保留字段。
+    pub reserved: u32,
+}
+
+/// shared 句柄包装；Runtime ID 不进入共享对象头。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoSharedHandle {
+    /// 来源 Runtime 的实际 ID。
+    pub runtime_id: u64,
+    /// 指向共享对象头的私有指针。
+    pub object_ptr: *mut u8,
+}
+
+/// 编译期锁定 C ABI 共享头尺寸。
+const _: () = assert!(std::mem::size_of::<XiaoSharedHeader>() == 32);
+/// 编译期锁定 C ABI 共享头对齐。
+const _: () = assert!(std::mem::align_of::<XiaoSharedHeader>() == 8);
+/// 编译期锁定 C ABI 共享句柄包装尺寸。
+const _: () = assert!(std::mem::size_of::<XiaoSharedHandle>() == 16);
+
+/// 判断给定 Runtime 主/次版本是否满足产物要求；旧 Runtime 不接受较新的入口。
+#[must_use]
+pub const fn is_abi_compatible(
+    required_major: u32,
+    required_minor: u32,
+    actual_major: u32,
+    actual_minor: u32,
+) -> bool {
+    required_major == actual_major && required_minor <= actual_minor
+}
+
+/// C ABI 函数的稳定状态码。
+#[repr(i32)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum XiaoAbiStatus {
+    /// 调用成功。
+    Ok = 0,
+    /// 必需的指针为空或长度不合法。
+    Null = 1,
+    /// 标签或描述符字段不受支持。
+    InvalidArgument = 2,
+    /// 句柄类型与入口要求不一致，或对象已释放。
+    InvalidHandle = 3,
+    /// UTF-8 输入无法解码。
+    InvalidUtf8 = 4,
+    /// 目标索引或键不存在。
+    OutOfBounds = 5,
+    /// Runtime 内部操作失败。
+    RuntimeError = 6,
+    /// 请求的 ABI 主版本不兼容。
+    VersionMismatch = 7,
+    /// Runtime 报告了不可恢复故障；调用方不得把它路由到 Xiao `catch`。
+    Fatal = 8,
+}
+
+impl XiaoAbiStatus {
+    /// 返回 C ABI 中的整数状态码。
+    #[must_use]
+    pub const fn code(self) -> i32 {
+        self as i32
+    }
+}
+
+/// 一个只可由 Runtime 实现解释的不透明强句柄。
+///
+/// 该类型没有可构造的公开字段。调用方只能把 Runtime 返回的地址原样传回，并且必须
+/// 为每个成功获得的强句柄调用一次 `xiao_runtime_release`；释放后不得再次传回任何
+/// 句柄入口。
+#[repr(C)]
+pub struct XiaoOpaqueHandle {
+    _private: [u8; 0],
+}
+
+/// 一个只可由 Runtime 实现解释的不透明弱句柄。
+///
+/// 弱句柄不拥有目标载荷；调用方必须用 `xiao_runtime_weak_release` 归还自身的弱引用，
+/// 不能把它当作强句柄传给普通 `retain`/`release`，且归还后不得再次传给弱句柄入口。
+#[repr(C)]
+pub struct XiaoOpaqueWeakHandle {
+    _private: [u8; 0],
+}
+
+/// C ABI 中使用的不透明强句柄指针类型。
+pub type XiaoHandle = *mut XiaoOpaqueHandle;
+/// C ABI 中使用的不透明弱句柄指针类型。
+pub type XiaoWeakHandle = *mut XiaoOpaqueWeakHandle;
+
+/// 并发值专用的不透明句柄；它与单线程 `XiaoHandle` 使用不同的 ABI 入口。
+///
+/// 该类型只表示一个由 Runtime 管理的并发对象盒子。LLVM 和宿主不得读取其内容，
+/// 也不得把它传给普通强/弱句柄入口。
+#[repr(C)]
+pub struct XiaoConcurrencyOpaqueHandle {
+    _private: [u8; 0],
+}
+
+/// C ABI 中使用的不透明并发句柄指针类型。
+pub type XiaoConcurrencyHandle = *mut XiaoConcurrencyOpaqueHandle;
+
+/// Runtime trampoline 的稳定函数指针约定。
+///
+/// `context` 由调用方拥有，Runtime 只在一次执行期间借用；参数和结果槽遵循
+/// `XiaoValue` 的既有借用/拥有规则。
+pub type XiaoConcurrencyEntry = unsafe extern "C" fn(
+    context: *mut core::ffi::c_void,
+    arguments: *const XiaoValue,
+    argument_count: usize,
+    out: *mut XiaoValue,
+) -> i32;
+
+/// 用于 ABI 边界的固定宽度源码区间。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoAbiSpan {
+    /// 起始字节偏移。
+    pub start: u64,
+    /// 结束字节偏移（不包含）。
+    pub end: u64,
+}
+
+/// 错误位置是否包含有效源码区间。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoAbiErrorLocation {
+    /// 源码字节区间。
+    pub span: XiaoAbiSpan,
+    /// 非零表示 `span` 有效。
+    pub present: u8,
+    /// 为固定布局保留的字节。
+    pub _reserved: [u8; 7],
+}
+
+impl XiaoAbiErrorLocation {
+    /// 创建一个没有源码位置的错误位置。
+    #[must_use]
+    pub const fn none() -> Self {
+        Self {
+            span: XiaoAbiSpan { start: 0, end: 0 },
+            present: 0,
+            _reserved: [0; 7],
+        }
+    }
+
+    /// 创建一个带源码区间的错误位置。
+    #[must_use]
+    pub const fn from_span(span: XiaoAbiSpan) -> Self {
+        Self {
+            span,
+            present: 1,
+            _reserved: [0; 7],
+        }
+    }
+}
+
+/// 错误报告的机器类别。
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub struct XiaoErrorClass(u32);
+
+#[allow(non_upper_case_globals)]
+impl XiaoErrorClass {
+    /// 没有挂起错误。
+    pub const None: Self = Self(0);
+    /// 可被 Xiao `catch` 捕获的错误。
+    pub const Recoverable: Self = Self(1);
+    /// 不得被 Xiao `catch` 捕获的致命故障。
+    pub const Fatal: Self = Self(2);
+
+    /// 从 ABI 原始值构造类别。
+    #[must_use]
+    pub const fn from_raw(raw: u32) -> Self {
+        Self(raw)
+    }
+
+    /// 返回 ABI 原始类别。
+    #[must_use]
+    pub const fn raw(self) -> u32 {
+        self.0
+    }
+}
+
+/// 错误参数的机器值类别。
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub struct XiaoErrorParamKind(u32);
+
+#[allow(non_upper_case_globals)]
+impl XiaoErrorParamKind {
+    /// 文本参数。
+    pub const Text: Self = Self(1);
+    /// 有符号整数参数。
+    pub const Integer: Self = Self(2);
+    /// 布尔参数。
+    pub const Boolean: Self = Self(3);
+
+    /// 从 ABI 原始值构造参数类别。
+    #[must_use]
+    pub const fn from_raw(raw: u32) -> Self {
+        Self(raw)
+    }
+
+    /// 返回 ABI 原始参数类别。
+    #[must_use]
+    pub const fn raw(self) -> u32 {
+        self.0
+    }
+}
+
+/// 错误报告的固定宽度摘要；其中的字节视图只在当前 ABI 调用期间有效。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoAbiErrorSnapshot {
+    /// 可恢复、致命或无错误类别。
+    pub class: XiaoErrorClass,
+    /// Runtime 错误类别的稳定数值。
+    pub kind: u32,
+    /// 进程内错误事件编号。
+    pub error_id: u64,
+    /// 稳定错误码。
+    pub code: XiaoAbiBytes,
+    /// 消息目录键。
+    pub message_id: XiaoAbiBytes,
+    /// 源码位置。
+    pub location: XiaoAbiErrorLocation,
+    /// 对应宿主进程退出码；无错误时为零。
+    pub exit_code: i32,
+    /// 调用栈帧数量。
+    pub stack_depth: u32,
+    /// 结构化参数数量。
+    pub param_count: u32,
+}
+
+/// 一个结构化错误参数；文本视图只在当前 ABI 调用期间有效。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoAbiErrorParam {
+    /// 稳定参数名。
+    pub key: XiaoAbiBytes,
+    /// 参数值类别。
+    pub kind: XiaoErrorParamKind,
+    /// 整数或布尔参数的固定宽度载荷。
+    pub integer: i64,
+    /// 文本参数视图；非文本参数为空。
+    pub text: XiaoAbiBytes,
+}
+
+/// 一个统一堆栈帧摘要；所有字符串视图只在当前 ABI 调用期间有效。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoAbiStackFrame {
+    /// 模块名。
+    pub module: XiaoAbiBytes,
+    /// 函数名。
+    pub function: XiaoAbiBytes,
+    /// 源文件名；缺失时为空。
+    pub source: XiaoAbiBytes,
+    /// 源码位置。
+    pub location: XiaoAbiErrorLocation,
+    /// 字节码偏移；缺失时为 `-1`。
+    pub bytecode_offset: i64,
+    /// 原生地址；缺失时为 `-1`。
+    pub native_address: i64,
+    /// 内联深度；缺失时为 `-1`。
+    pub inline_depth: i32,
+    /// 用户帧为 `0`，Runtime 帧为 `1`。
+    pub frame_kind: u32,
+}
+
+/// 原生 Runtime 发出的诊断事件；实现侧转交给既有诊断会话，不负责本地化。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoAbiDiagnosticEvent {
+    /// 稳定事件类型。
+    pub event_type: XiaoAbiBytes,
+    /// 可选错误码。
+    pub code: XiaoAbiBytes,
+    /// 可选消息目录键。
+    pub message_id: XiaoAbiBytes,
+    /// 事件源码位置。
+    pub location: XiaoAbiErrorLocation,
+}
+
+/// 一个不拥有输入内存的 UTF-8 字节视图。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoAbiBytes {
+    /// 字节起始地址；长度为零时可以为空。
+    pub ptr: *const u8,
+    /// 字节长度。
+    pub len: usize,
+}
+
+/// 一个不拥有输入或输出内存的可变字节视图。
+#[repr(C)]
+#[derive(Debug, Eq, PartialEq)]
+pub struct XiaoAbiMutBytes {
+    /// 可写缓冲区起始地址；容量为零时可以为空。
+    pub ptr: *mut u8,
+    /// 缓冲区容量。
+    pub capacity: usize,
+}
+
+/// `RuntimeValue` 在 ABI 线上的显式标签。
+///
+/// 数值固定后不得重排。标签是线格式的一部分，不由 LLVM 后端根据 Rust enum 判别式
+/// 推断；新增变体只能追加编号，并且要同步更新 Runtime 的穷举转换测试。
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub struct XiaoValueTag(u32);
+
+#[allow(non_upper_case_globals)]
+impl XiaoValueTag {
+    /// 空值。
+    pub const None: Self = Self(0);
+    /// 布尔值，载荷使用 `u8` 的 0/1。
+    pub const Bool: Self = Self(1);
+    /// 64 位有符号整数。
+    pub const Int: Self = Self(2);
+    /// 32 位有符号整数。
+    pub const Sint: Self = Self(3);
+    /// 任意精度整数文本对象。
+    pub const Lint: Self = Self(4);
+    /// 64 位浮点。
+    pub const Float: Self = Self(5);
+    /// 32 位浮点。
+    pub const Sfloat: Self = Self(6);
+    /// 任意精度浮点文本对象。
+    pub const Lfloat: Self = Self(7);
+    /// UTF-8 字符串对象强句柄。
+    pub const Str: Self = Self(8);
+    /// 表实例强句柄。
+    pub const Table: Self = Self(9);
+    /// 析构观察视图弱句柄。
+    pub const TableDropView: Self = Self(10);
+    /// 数组强句柄。
+    pub const Array: Self = Self(11);
+    /// 元组强句柄。
+    pub const Tuple: Self = Self(12);
+    /// 字典表强句柄。
+    pub const DictTable: Self = Self(13);
+    /// 字典列强句柄。
+    pub const DictColumn: Self = Self(14);
+    /// 集合强句柄。
+    pub const Set: Self = Self(15);
+    /// 可恢复错误对象句柄。
+    pub const Error: Self = Self(16);
+    /// 外部资源强句柄；首批种类由 Runtime 盒子内部标签区分。
+    pub const ExternalResource: Self = Self(17);
+    /// Runtime 管理的不透明并发句柄；种类由 `XiaoConcurrencyKind` 区分。
+    pub const Concurrency: Self = Self(18);
+
+    /// 从 ABI 原始标签构造值；未知标签由 Runtime 入口拒绝。
+    #[must_use]
+    pub const fn from_raw(raw: u32) -> Self {
+        Self(raw)
+    }
+
+    /// 返回 ABI 原始标签。
+    #[must_use]
+    pub const fn raw(self) -> u32 {
+        self.0
+    }
+
+    /// 判断标签是否属于当前 ABI 版本。
+    #[must_use]
+    pub const fn is_known(self) -> bool {
+        self.0 <= Self::Concurrency.0
+    }
+}
+
+/// 并发不透明句柄的稳定种类标签。
+///
+/// 数值只追加不重排；句柄内部状态仍由 `xiao-runtime` 管理，不能把这些标签当作
+/// Rust 枚举布局或共享头字段暴露给 LLVM。
+#[repr(u32)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum XiaoConcurrencyKind {
+    /// 进程内 Runtime 别名。
+    Runtime = 1,
+    /// OS 线程句柄。
+    Thread = 2,
+    /// 任务池任务句柄。
+    Task = 3,
+    /// 固定容量任务池。
+    Pool = 4,
+    /// 只读共享句柄。
+    Shared = 5,
+    /// 共享可变句柄。
+    SharedMut = 6,
+    /// 作用域锁守卫。
+    LockGuard = 7,
+}
+
+impl XiaoConcurrencyKind {
+    /// 从 C ABI 原始标签解析种类。
+    #[must_use]
+    pub const fn from_raw(raw: u32) -> Option<Self> {
+        match raw {
+            1 => Some(Self::Runtime),
+            2 => Some(Self::Thread),
+            3 => Some(Self::Task),
+            4 => Some(Self::Pool),
+            5 => Some(Self::Shared),
+            6 => Some(Self::SharedMut),
+            7 => Some(Self::LockGuard),
+            _ => None,
+        }
+    }
+
+    /// 返回稳定 C ABI 原始值。
+    #[must_use]
+    pub const fn raw(self) -> u32 {
+        self as u32
+    }
+}
+
+impl XiaoValueTag {
+    /// 返回该标签是否携带一个强拥有句柄。
+    #[must_use]
+    pub const fn owns_strong_handle(self) -> bool {
+        matches!(
+            self,
+            Self::Str
+                | Self::Table
+                | Self::Array
+                | Self::Tuple
+                | Self::DictTable
+                | Self::DictColumn
+                | Self::Set
+                | Self::Lint
+                | Self::Lfloat
+                | Self::ExternalResource
+        )
+    }
+
+    /// 返回该标签是否携带专用并发盒子；并发值使用 concurrency release 入口。
+    #[must_use]
+    pub const fn owns_concurrency_handle(self) -> bool {
+        matches!(self, Self::Concurrency)
+    }
+
+    /// 返回该标签是否携带一个弱句柄。
+    #[must_use]
+    pub const fn owns_weak_handle(self) -> bool {
+        matches!(self, Self::TableDropView)
+    }
+}
+
+/// 标签对应的固定 64 位 ABI 载荷。
+///
+/// 读取 union 字段前必须先检查 [`XiaoValue::tag`]；Runtime 入口会再次校验标签，避免把
+/// 一个句柄按数值解释。union 只承载标量位或不透明指针，不暴露 Rust 对象布局。
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub union XiaoValuePayload {
+    /// 64 位整数载荷。
+    pub i64_value: i64,
+    /// 32 位整数载荷。
+    pub i32_value: i32,
+    /// 64 位浮点载荷。
+    pub f64_value: f64,
+    /// 32 位浮点载荷。
+    pub f32_value: f32,
+    /// 布尔载荷，合法值只有 0 和 1。
+    pub bool_value: u8,
+    /// 强句柄载荷。
+    pub handle: XiaoHandle,
+    /// 弱句柄载荷。
+    pub weak_handle: XiaoWeakHandle,
+    /// 用于清零和调试的原始机器字。
+    pub raw: usize,
+}
+
+impl std::fmt::Debug for XiaoValuePayload {
+    /// 只打印载荷地址数值，避免在未知标签下误读 union 字段。
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("XiaoValuePayload")
+            .finish_non_exhaustive()
+    }
+}
+
+/// 动态值的稳定 C 布局。
+#[repr(C)]
+#[derive(Debug)]
+pub struct XiaoValue {
+    /// 解释 payload 的固定标签。
+    pub tag: XiaoValueTag,
+    /// 与标签配套的标量位或不透明句柄。
+    pub payload: XiaoValuePayload,
+}
+
+impl XiaoValue {
+    /// 构造空值；不产生 Runtime 所有权。
+    #[must_use]
+    pub const fn none() -> Self {
+        Self {
+            tag: XiaoValueTag::None,
+            payload: XiaoValuePayload { raw: 0 },
+        }
+    }
+
+    /// 构造内联 64 位整数值。
+    #[must_use]
+    pub const fn int(value: i64) -> Self {
+        Self {
+            tag: XiaoValueTag::Int,
+            payload: XiaoValuePayload { i64_value: value },
+        }
+    }
+
+    /// 构造内联 32 位整数值。
+    #[must_use]
+    pub const fn sint(value: i32) -> Self {
+        Self {
+            tag: XiaoValueTag::Sint,
+            payload: XiaoValuePayload { i32_value: value },
+        }
+    }
+
+    /// 构造内联 64 位浮点值。
+    #[must_use]
+    pub const fn float(value: f64) -> Self {
+        Self {
+            tag: XiaoValueTag::Float,
+            payload: XiaoValuePayload { f64_value: value },
+        }
+    }
+
+    /// 构造内联 32 位浮点值。
+    #[must_use]
+    pub const fn sfloat(value: f32) -> Self {
+        Self {
+            tag: XiaoValueTag::Sfloat,
+            payload: XiaoValuePayload { f32_value: value },
+        }
+    }
+
+    /// 构造内联布尔值。
+    #[must_use]
+    pub const fn bool(value: bool) -> Self {
+        Self {
+            tag: XiaoValueTag::Bool,
+            payload: XiaoValuePayload {
+                bool_value: value as u8,
+            },
+        }
+    }
+}
+
+/// 表定义中的字段类型标签；它只描述 ABI 构造所需的有限静态类型。
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoFieldType(u32);
+
+#[allow(non_upper_case_globals)]
+impl XiaoFieldType {
+    /// 动态字段，可保存任意 `XiaoValue`。
+    pub const Dynamic: Self = Self(0);
+    /// 64 位整数。
+    pub const Int: Self = Self(1);
+    /// 32 位整数。
+    pub const Sint: Self = Self(2);
+    /// 64 位浮点。
+    pub const Float: Self = Self(3);
+    /// 32 位浮点。
+    pub const Sfloat: Self = Self(4);
+    /// 布尔值。
+    pub const Bool: Self = Self(5);
+    /// UTF-8 字符串。
+    pub const Str: Self = Self(6);
+
+    /// 从 ABI 原始字段类型构造值。
+    #[must_use]
+    pub const fn from_raw(raw: u32) -> Self {
+        Self(raw)
+    }
+
+    /// 返回 ABI 原始字段类型。
+    #[must_use]
+    pub const fn raw(self) -> u32 {
+        self.0
+    }
+
+    /// 判断字段类型是否受当前 ABI 支持。
+    #[must_use]
+    pub const fn is_known(self) -> bool {
+        self.0 <= Self::Str.0
+    }
+}
+
+/// C ABI 表字段描述符；所有指针只在构造调用期间借用。
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct XiaoTableFieldDescriptor {
+    /// 字段名的 UTF-8 字节视图。
+    pub name: XiaoAbiBytes,
+    /// 字段类型标签。
+    pub ty: XiaoFieldType,
+    /// `1` 表示公开字段，`0` 表示私有字段。
+    pub public: u8,
+}
+
+/// C ABI 表定义描述符；Runtime 会复制名称和字段元数据。
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct XiaoTableDescriptor {
+    /// 表名的 UTF-8 字节视图。
+    pub name: XiaoAbiBytes,
+    /// `0` 表示 singleton，`1` 表示 instance。
+    pub kind: u32,
+    /// 字段描述数组；字段数量为零时可以为空。
+    pub fields: *const XiaoTableFieldDescriptor,
+    /// 字段描述数量。
+    pub field_count: usize,
+}
+
+/// 新表描述符的独立布局版本；旧 `XiaoTableDescriptor` 保持原布局。
+pub const TABLE_DESCRIPTOR_VERSION: u32 = 1;
+
+/// 方法元数据中的动态类型；其他值使用既有 `XiaoValueTag`，不新增值标签。
+pub const TABLE_METHOD_DYNAMIC_TYPE: u32 = u32::MAX;
+
+/// 表方法、字段初始化和生命周期回调的统一 C 调用约定。
+///
+/// receiver 与 arguments 仅在调用期间借用；需要持有时显式复制。out 指向已初始化
+/// 的 none 槽，成功返回唯一拥有的结果，失败保持 none。析构 receiver 为弱只读视图，
+/// 不得复活、写入、逃逸或跨线程。回调代码必须在全部相关实例存活期间有效。
+pub type XiaoTableCallback = unsafe extern "C" fn(
+    receiver: *const XiaoValue,
+    arguments: *const XiaoValue,
+    argument_count: usize,
+    out: *mut XiaoValue,
+) -> i32;
+
+/// 注册式表方法描述；名称和参数类型数组由 Runtime 复制。
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct XiaoTableMethodDescriptor {
+    /// 含名字空间前缀的规范成员名。
+    pub name: XiaoAbiBytes,
+    /// 由 `table_method_signature_id` 生成的签名标识。
+    pub signature_id: u64,
+    /// 不含 receiver 的参数值标签；动态参数使用 `TABLE_METHOD_DYNAMIC_TYPE`。
+    pub parameter_types: *const u32,
+    /// 固定参数个数，零参数时 parameter_types 可为空。
+    pub parameter_count: usize,
+    /// 返回值标签，规则同 parameter_types。
+    pub return_type: u32,
+    /// 1 为公开，0 为私有；后端仍须完成静态可见性检查。
+    pub public: u8,
+    /// 必须非空的方法实现。
+    pub callback: Option<XiaoTableCallback>,
+}
+
+/// 独立的表方法描述符；只由新增入口消费，不改变旧描述符的所有权契约。
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct XiaoTableDescriptorV2 {
+    /// 本结构的字节大小，用于拒绝截短或未知布局。
+    pub struct_size: u32,
+    /// 必须等于 `TABLE_DESCRIPTOR_VERSION`。
+    pub version: u32,
+    /// 原有名称、种类和字段元数据，保持原结构布局。
+    pub fields: XiaoTableDescriptor,
+    /// 稳定排序的方法数组；数量为零时可为空。
+    pub methods: *const XiaoTableMethodDescriptor,
+    /// 方法数组长度。
+    pub method_count: usize,
+    /// 字段初始化回调，执行于 FieldsInitializing 状态，返回 none。
+    pub initialize_fields: Option<XiaoTableCallback>,
+    /// 零显式参数的 init 回调；须与方法表 ascii:init 一致。
+    pub init: Option<XiaoTableCallback>,
+    /// drop 回调；须与方法表 ascii:drop 一致，接收弱只读视图。
+    pub drop: Option<XiaoTableCallback>,
+}
+
+/// 对 ABI 类型标签和参数顺序生成确定性的签名 ID；不依赖主机字节序或地址。
+#[must_use]
+pub fn table_method_signature_id(parameters: &[u32], result: u32) -> u64 {
+    let mut hash = 0xcbf2_9ce4_8422_2325_u64;
+    for byte in (parameters.len() as u64)
+        .to_le_bytes()
+        .into_iter()
+        .chain(parameters.iter().flat_map(|tag| tag.to_le_bytes()))
+        .chain(result.to_le_bytes())
+    {
+        hash = (hash ^ u64::from(byte)).wrapping_mul(0x0100_0000_01b3);
+    }
+    hash
+}
+
+// ABI 版本兼容检查：新增入口使用次版本，改变布局/标签/所有权契约必须升主版本。
+// 这些声明由 `xiao-runtime` 提供实现；ABI crate 本身不定义同名符号，避免出现两份
+// Runtime。调用方必须保证 `required_major`/`required_minor` 是编译产物记录的版本。
+unsafe extern "C" {
+    /// 统一原生并发入口；操作名来自已验证 IR 计划，不按源码名称推断。
+    ///
+    /// # Safety
+    /// `arguments` 在 `argument_count > 0` 时必须指向对应数量的 live `XiaoValue`；
+    /// 参数只在调用期间借用，不被消费。`out` 必须指向已初始化的 `XiaoValue::none()`
+    /// 或当前调用方拥有的有效值槽；Runtime 会先释放该槽，再写入新结果。
+    pub fn xiao_runtime_concurrency_call(
+        operation: XiaoAbiBytes,
+        arguments: *const XiaoValue,
+        argument_count: usize,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 带 trampoline 函数指针的不透明并发调用入口。
+    ///
+    /// # Safety
+    /// 除 `xiao_runtime_concurrency_call` 的参数/输出槽约束外，`entry` 必须是有效的
+    /// `XiaoConcurrencyEntry`，且 `context` 必须在该执行单元 join/wait 或 detached
+    /// 收尾完成前保持有效；Runtime 会异步调用入口。
+    pub fn xiao_runtime_concurrency_call_with_entry(
+        operation: XiaoAbiBytes,
+        entry: Option<XiaoConcurrencyEntry>,
+        context: *mut core::ffi::c_void,
+        arguments: *const XiaoValue,
+        argument_count: usize,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 保留并发不透明句柄；每次成功调用须配对 `xiao_runtime_concurrency_release`。
+    pub fn xiao_runtime_concurrency_retain(handle: XiaoConcurrencyHandle) -> XiaoConcurrencyHandle;
+    /// 释放并发不透明句柄；空指针安全。
+    pub fn xiao_runtime_concurrency_release(handle: XiaoConcurrencyHandle);
+    /// 返回并发句柄的稳定种类，未知/失效句柄返回零。
+    pub fn xiao_runtime_concurrency_kind(handle: XiaoConcurrencyHandle) -> u32;
+    /// 在当前执行单元消费一个 `safe_point`/`wait`/`lock_wait` 取消检查。
+    pub fn xiao_runtime_concurrency_cancellation_check(operation: XiaoAbiBytes) -> i32;
+    /// 开启当前 native 入口的 Runtime 所有权追踪窗口。
+    pub fn xiao_runtime_concurrency_entry_begin();
+    /// 结束 native 入口的当前 Runtime，执行关闭 drain 并消费已到达的 detached 通道。
+    pub fn xiao_runtime_concurrency_finish() -> i32;
+    /// 读取 detached 错误通道中属于指定 Runtime 集合的下一条结构化错误。
+    pub fn xiao_runtime_concurrency_detached_error_take(
+        runtime_ids: *const u64,
+        runtime_id_count: usize,
+        runtime_id_out: *mut u64,
+        error_out: *mut XiaoValue,
+    ) -> i32;
+    /// 取出有界 detached 错误通道的丢弃计数并清零。
+    pub fn xiao_runtime_concurrency_detached_error_drops_take(out: *mut usize) -> i32;
+    /// 创建一个 Runtime 并返回 `XiaoValueTag::Concurrency` 值。
+    pub fn xiao_runtime_concurrency_runtime_create(out: *mut XiaoValue) -> i32;
+    /// 取得当前执行上下文的 Runtime 别名。
+    pub fn xiao_runtime_concurrency_current_runtime(out: *mut XiaoValue) -> i32;
+    /// 关闭 Runtime；输入和输出槽遵循统一并发调用的借用规则。
+    pub fn xiao_runtime_concurrency_runtime_close(
+        runtime: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 创建固定容量任务池。
+    pub fn xiao_runtime_concurrency_pool_create(
+        runtime: *const XiaoValue,
+        capacity: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 关闭任务池并等待其 worker drain。
+    pub fn xiao_runtime_concurrency_shutdown(pool: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// Runtime trampoline 的线程创建入口；函数指针和上下文均为不透明借用。
+    pub fn xiao_runtime_concurrency_spawn(
+        runtime: XiaoConcurrencyHandle,
+        entry: Option<XiaoConcurrencyEntry>,
+        context: *mut core::ffi::c_void,
+        arguments: *const XiaoValue,
+        argument_count: usize,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 任务池 trampoline 提交入口。
+    pub fn xiao_runtime_concurrency_submit(
+        pool: XiaoConcurrencyHandle,
+        entry: Option<XiaoConcurrencyEntry>,
+        context: *mut core::ffi::c_void,
+        arguments: *const XiaoValue,
+        argument_count: usize,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 等待线程句柄。
+    pub fn xiao_runtime_concurrency_join(thread: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 分离线程句柄。
+    pub fn xiao_runtime_concurrency_detach(thread: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 取消线程或任务句柄。
+    pub fn xiao_runtime_concurrency_cancel(handle: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 创建只读共享句柄。
+    pub fn xiao_runtime_concurrency_shared_read(
+        value: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 读取只读共享句柄的值拷贝。
+    pub fn xiao_runtime_concurrency_read(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 创建共享可变句柄。
+    pub fn xiao_runtime_concurrency_shared_mut_create(
+        value: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 获取共享可变锁守卫。
+    pub fn xiao_runtime_concurrency_lock(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 读取锁守卫载荷。
+    pub fn xiao_runtime_concurrency_lock_read(guard: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 写入锁守卫载荷。
+    pub fn xiao_runtime_concurrency_lock_write(
+        guard: *const XiaoValue,
+        value: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 等待任务句柄。
+    pub fn xiao_runtime_concurrency_wait(task: *const XiaoValue, out: *mut XiaoValue) -> i32;
+
+    /// 设置当前线程原生会话的确定性随机种子；接受非负 int/sint/lint，失败不改变状态。
+    pub fn xiao_runtime_random_seed(value: *const XiaoValue) -> i32;
+    /// 复制 V2 元数据并经既有状态机执行字段初始化、零参数 init 与失败回滚。
+    /// out 必须指向已初始化的 null 槽；失败保持 null，成功后调用方唯一拥有表强句柄。
+    pub fn xiao_runtime_table_new_v2(
+        descriptor: *const XiaoTableDescriptorV2,
+        out: *mut XiaoHandle,
+    ) -> i32;
+    /// 带初始化参数的新表入口；参数数组在调用期间借用，失败保持 null。
+    pub fn xiao_runtime_table_new_v2_with_args(
+        descriptor: *const XiaoTableDescriptorV2,
+        arguments: *const XiaoValue,
+        argument_count: usize,
+        out: *mut XiaoHandle,
+    ) -> i32;
+    /// 调用静态检查过的方法；校验名称、签名 ID、参数个数/标签，失败输出 none。
+    /// receiver 和参数借用，返回结果唯一拥有；drop 只能由生命周期状态机触发。
+    pub fn xiao_runtime_table_call(
+        receiver: *const XiaoValue,
+        method: XiaoAbiBytes,
+        signature_id: u64,
+        arguments: *const XiaoValue,
+        argument_count: usize,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 读取普通表或析构弱只读视图字段；字段访问已经过静态可见性检查。
+    pub fn xiao_runtime_table_get_value(
+        receiver: *const XiaoValue,
+        field: XiaoAbiBytes,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 写入普通表字段；拒绝析构弱只读视图。
+    pub fn xiao_runtime_table_set_value(
+        receiver: *const XiaoValue,
+        field: XiaoAbiBytes,
+        value: *const XiaoValue,
+    ) -> i32;
+    /// 归还回调中可能是强值或析构弱只读视图的临时拥有值，并清空槽。
+    pub fn xiao_runtime_value_release_any(value: *mut XiaoValue);
+    /// 返回 Runtime 支持的 ABI 主版本。
+    pub fn xiao_runtime_abi_version() -> u32;
+    /// 返回 Runtime 支持的 ABI 次版本。
+    pub fn xiao_runtime_abi_minor_version() -> u32;
+    /// 判断一个生成产物所需版本是否可由当前 Runtime 满足。
+    pub fn xiao_runtime_abi_is_compatible(required_major: u32, required_minor: u32) -> i32;
+
+    /// 仅清除当前线程的挂起错误，保留调用方 finally checkpoint。
+    pub fn xiao_runtime_error_clear();
+    /// 重置当前线程遗留的 finally checkpoint，不改变当前挂起错误。
+    /// 仅独立程序入口在执行用户代码前调用；普通函数及 finally 清理不得调用。
+    pub fn xiao_runtime_error_checkpoint_reset();
+    /// 暂存 pending error，供原生 finally 主错误/次生清理错误合并。
+    pub fn xiao_runtime_error_checkpoint_begin();
+    /// 恢复 checkpoint 的主错误并把清理错误加入 suppressed，返回当前错误类别。
+    pub fn xiao_runtime_error_checkpoint_finish() -> u32;
+    /// 丢弃被 finally 中的非局部控制转移覆盖的 checkpoint。
+    pub fn xiao_runtime_error_checkpoint_discard();
+    /// 返回当前线程挂起错误的机器类别：`0` 无错误、`1` 可恢复、`2` 致命。
+    pub fn xiao_runtime_error_class() -> u32;
+    /// 为挂起的 Runtime 错误补上触发它的源码位置。
+    pub fn xiao_runtime_error_attach_span(start: u64, end: u64) -> i32;
+    /// 创建一个可恢复错误值；`FatalError` 或未知错误类型不会伪装成可恢复值。
+    pub fn xiao_runtime_error_new(
+        type_name: XiaoAbiBytes,
+        code: XiaoAbiBytes,
+        message: XiaoAbiBytes,
+        location: *const XiaoAbiErrorLocation,
+    ) -> XiaoValue;
+    /// 从借用的 Runtime 文本值构造可恢复错误；缺省参数传空指针，调用方保留值所有权。
+    pub fn xiao_runtime_error_new_values(
+        type_name: XiaoAbiBytes,
+        code: *const XiaoValue,
+        message: *const XiaoValue,
+        location: *const XiaoAbiErrorLocation,
+    ) -> XiaoValue;
+    /// 创建一个可恢复错误并放入当前线程的挂起错误槽。
+    pub fn xiao_runtime_error_raise_type(
+        type_name: XiaoAbiBytes,
+        code: XiaoAbiBytes,
+        message: XiaoAbiBytes,
+        location: XiaoAbiErrorLocation,
+    ) -> i32;
+    /// 将 `XiaoValueTag::Error` 值复制为当前线程的挂起错误。
+    pub fn xiao_runtime_error_raise_value(
+        value: *const XiaoValue,
+        location: XiaoAbiErrorLocation,
+    ) -> i32;
+    /// 构造数值类可恢复错误并附加固定宽度源码区间。
+    ///
+    /// `kind=0` 表示数值溢出/非有限结果，`kind=1` 表示除数为零；`operator` 只在后者
+    /// 使用。文本视图只在当前调用期间有效，Runtime 不保存调用方指针。
+    pub fn xiao_runtime_error_raise_numeric(
+        kind: u32,
+        operator: *const u8,
+        operator_len: usize,
+        message: *const u8,
+        message_len: usize,
+        start: u64,
+        end: u64,
+    ) -> i32;
+    /// 判断挂起的可恢复错误是否匹配给定的语言错误类型名。
+    pub fn xiao_runtime_error_matches(error_type: XiaoAbiBytes) -> i32;
+    /// 把挂起的可恢复错误取成拥有的 `XiaoValueTag::Error` 值；`out` 必须是已初始化且
+    /// 不含弱表观察值的槽，弱表观察值只能由 `xiao_runtime_value_copy` 覆盖；失败时保留挂起错误。
+    pub fn xiao_runtime_error_take(out: *mut XiaoValue) -> i32;
+    /// 借读指定 Error 值的 code。输入须保持存活直到复制视图完成，out 不得与 value 重叠。
+    /// getter 不分配、不 retain/release、不触碰挂起槽；失败保持 out 原值。
+    /// 状态 1 仅表示 value/out 指针为空，2 为非 Error 标签，3 为无有效错误句柄。
+    pub fn xiao_runtime_error_code(value: *const XiaoValue, out: *mut XiaoAbiBytes) -> i32;
+    /// B2 内部单入口：四个实参借读，out 已初始化、拥有且与输入不重叠。
+    /// 成功0释放替换out，失败1/2/3不触碰挂起槽；语义失败6保留out并正常传播错误。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_lfloat_divide(
+        numerator: *const XiaoValue,
+        denominator: *const XiaoValue,
+        precision: *const XiaoValue,
+        rounding: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// B3内部cmath sqrt：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_cmath_sqrt(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath floor：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_cmath_floor(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath ceil：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_cmath_ceil(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath round：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_cmath_round(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath trunc：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_cmath_trunc(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath abs：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_cmath_abs(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath min：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_cmath_min(
+        left: *const XiaoValue,
+        right: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// B3内部cmath max：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_cmath_max(
+        left: *const XiaoValue,
+        right: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// B3内部cmath pow：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_cmath_pow(
+        base: *const XiaoValue,
+        exponent: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// B3内部cmath sin：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_cmath_sin(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath cos：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_cmath_cos(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath tan：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_cmath_tan(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath exp：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_cmath_exp(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath ln：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_cmath_ln(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// B3内部cmath log10：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
+    /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
+    pub fn xiao_runtime_cmath_log10(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 读取当前线程挂起错误的机器字段。
+    pub fn xiao_runtime_error_snapshot(out: *mut XiaoAbiErrorSnapshot) -> i32;
+    /// 读取当前线程挂起错误的第 `index` 个结构化参数。
+    pub fn xiao_runtime_error_param(index: usize, out: *mut XiaoAbiErrorParam) -> i32;
+    /// 读取当前线程挂起错误的第 `index` 个堆栈帧。
+    pub fn xiao_runtime_error_stack_frame(index: usize, out: *mut XiaoAbiStackFrame) -> i32;
+    /// 返回当前线程挂起错误对应的稳定宿主退出码。
+    pub fn xiao_runtime_error_exit_code() -> i32;
+    /// 将当前挂起错误写成既有诊断路径可消费的机器摘要。
+    pub fn xiao_runtime_error_report();
+    /// 将一个诊断事件交给已建立的诊断会话；无会话时仍保留确定性失败状态。
+    pub fn xiao_runtime_diagnostic_event(event: *const XiaoAbiDiagnosticEvent) -> i32;
+    /// 为动态原生产物建立本机诊断会话；失败时返回稳定的启动失败退出码。
+    pub fn xiao_runtime_diagnostic_prepare() -> i32;
+    /// 等待独立诊断进程完成握手；成功前不得执行用户代码。
+    pub fn xiao_runtime_diagnostic_ready() -> i32;
+    /// 发送最终指标并关闭原生诊断会话。
+    pub fn xiao_runtime_diagnostic_finish();
+    /// 设置当前原生入口使用的不可变语言上下文。
+    pub fn xiao_runtime_language_context_set(locale: XiaoAbiBytes) -> i32;
+    /// 按 `XIAO_RUNTIME_RELEASE_TRACE_PATH` 开启当前线程的释放事件追踪。
+    pub fn xiao_runtime_release_trace_begin();
+    /// 将当前线程的释放事件写入追踪文件并清空事件缓冲。
+    pub fn xiao_runtime_release_trace_flush();
+    /// 处理 ABI/平台边界致命故障；该函数不会返回，也不会进入 Xiao `catch`。
+    pub fn xiao_runtime_fatal_abi() -> !;
+
+    /// 保留一个强句柄并返回同一 ABI 盒子地址；每次成功调用都必须配对一次 release。
+    pub fn xiao_runtime_retain(handle: XiaoHandle) -> XiaoHandle;
+    /// 释放一个强句柄；空指针安全，无需调用方先判断。
+    pub fn xiao_runtime_release(handle: XiaoHandle);
+    /// 从强句柄创建一个弱句柄；失败时返回空指针。
+    pub fn xiao_runtime_weak(handle: XiaoHandle) -> XiaoWeakHandle;
+    /// 保留一个弱句柄并返回同一 ABI 盒子地址；每次成功调用都必须配对一次 release。
+    pub fn xiao_runtime_weak_retain(handle: XiaoWeakHandle) -> XiaoWeakHandle;
+    /// 释放一个弱句柄；它不会释放目标载荷，空指针安全。
+    pub fn xiao_runtime_weak_release(handle: XiaoWeakHandle);
+    /// 尝试把弱句柄升级为新的强句柄；目标已销毁时返回空指针。
+    pub fn xiao_runtime_weak_upgrade(handle: XiaoWeakHandle) -> XiaoHandle;
+
+    /// 按标签复制一个 ABI 值并增加其句柄引用；标量只做位复制。
+    ///
+    /// `out` 必须指向已经初始化的 `XiaoValue` 槽（通常先写入 `none`），成功时会先
+    /// 释放槽中原有的拥有值再写入副本；失败时保留原值。`value` 与 `out` 不得重叠。
+    pub fn xiao_runtime_value_copy(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 释放一个 ABI 值拥有的句柄；标量和空值无操作。
+    pub fn xiao_runtime_value_release(value: *mut XiaoValue);
+    /// 只释放 ABI 值中的强句柄；弱值保持不变，标量重置为空值。
+    pub fn xiao_runtime_value_release_strong(value: *mut XiaoValue);
+    /// 只释放 ABI 值中的弱句柄；强值或标量返回错误码且不改变值。
+    pub fn xiao_runtime_value_release_weak(value: *mut XiaoValue) -> i32;
+    /// 从弱句柄构造析构观察值并增加一次弱引用。
+    pub fn xiao_runtime_value_weak(handle: XiaoWeakHandle) -> XiaoValue;
+    /// 从错误强句柄构造 `XiaoValueTag::Error`；句柄所有权转移到返回值。
+    pub fn xiao_runtime_value_error(handle: XiaoHandle) -> XiaoValue;
+    /// 构造内联 64 位整数值。
+    pub fn xiao_runtime_value_int(value: i64) -> XiaoValue;
+    /// 构造内联 32 位整数值。
+    pub fn xiao_runtime_value_sint(value: i32) -> XiaoValue;
+    /// 构造内联 64 位浮点值。
+    pub fn xiao_runtime_value_float(value: f64) -> XiaoValue;
+    /// 构造内联 32 位浮点值。
+    pub fn xiao_runtime_value_sfloat(value: f32) -> XiaoValue;
+    /// 构造内联布尔值；非零输入变成 `true`。
+    pub fn xiao_runtime_value_bool(value: u8) -> XiaoValue;
+    /// 构造空值。
+    pub fn xiao_runtime_value_none() -> XiaoValue;
+    /// 按 Runtime 唯一算子表执行二元运算；`op` 使用稳定 ASCII 名称，`out` 为已初始化值槽。
+    pub fn xiao_runtime_value_binary(
+        op: XiaoAbiBytes,
+        left: *const XiaoValue,
+        right: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 按 Runtime 唯一算子表执行一元运算；`out` 为已初始化值槽。
+    pub fn xiao_runtime_value_unary(
+        op: XiaoAbiBytes,
+        value: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 执行显式标量转换；`target` 使用 `ScalarType::as_str()` 的稳定名称。
+    pub fn xiao_runtime_value_cast(
+        target: XiaoAbiBytes,
+        value: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 执行一个前端登记的动态检查；检查失败写入统一 Runtime 错误槽。
+    pub fn xiao_runtime_dynamic_check(kind: XiaoAbiBytes, value: *const XiaoValue) -> i32;
+    /// 返回动态可迭代值的元素数量。
+    pub fn xiao_runtime_value_iter_len(value: *const XiaoValue, out: *mut usize) -> i32;
+    /// 在集合迭代开始时复制元素到独立数组值。
+    pub fn xiao_runtime_value_iter_snapshot(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 复制动态可迭代值的指定元素。
+    pub fn xiao_runtime_value_iter_get(
+        value: *const XiaoValue,
+        index: i64,
+        out: *mut XiaoValue,
+    ) -> i32;
+
+    /// 从 UTF-8 字节复制字符串对象并返回强句柄值。
+    ///
+    /// `out` 必须指向已初始化的句柄槽（空指针或有效强句柄）；成功时会释放旧句柄并
+    /// 写入新句柄，失败时保留旧槽位。
+    pub fn xiao_runtime_string_new(bytes: XiaoAbiBytes, out: *mut XiaoHandle) -> i32;
+    /// 返回字符串 Unicode 标量数量；失败时写零并返回错误码。
+    pub fn xiao_runtime_string_len(handle: XiaoHandle, out: *mut usize) -> i32;
+    /// 把字符串 UTF-8 字节复制到调用方缓冲区；容量不足时返回 `OutOfBounds`。
+    pub fn xiao_runtime_string_copy(
+        handle: XiaoHandle,
+        buffer: XiaoAbiMutBytes,
+        written: *mut usize,
+    ) -> i32;
+    /// 从字符串强句柄构造 `XiaoValueTag::Str`。
+    /// 错误句柄或类型不符时返回 `XiaoValueTag::None`；需要状态码时使用 `string_new`。
+    pub fn xiao_runtime_value_str(handle: XiaoHandle) -> XiaoValue;
+    /// 消费字符串强句柄并构造 `XiaoValueTag::Str`；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_str_owned(handle: XiaoHandle) -> XiaoValue;
+    /// 从字符串强句柄构造任意精度整数文本值。
+    /// 错误句柄或类型不符时返回 `XiaoValueTag::None`。
+    pub fn xiao_runtime_value_lint(handle: XiaoHandle) -> XiaoValue;
+    /// 消费字符串强句柄并构造任意精度整数文本值；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_lint_owned(handle: XiaoHandle) -> XiaoValue;
+    /// 从字符串强句柄构造任意精度浮点文本值。
+    /// 错误句柄或类型不符时返回 `XiaoValueTag::None`。
+    pub fn xiao_runtime_value_lfloat(handle: XiaoHandle) -> XiaoValue;
+    /// 消费字符串强句柄并构造任意精度浮点文本值；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_lfloat_owned(handle: XiaoHandle) -> XiaoValue;
+
+    /// 从值数组构造数组对象；Runtime 会复制每个输入值的所有权。`out` 遵循字符串构造
+    /// 入口的已初始化句柄槽契约。
+    pub fn xiao_runtime_array_new(
+        values: *const XiaoValue,
+        length: usize,
+        out: *mut XiaoHandle,
+    ) -> i32;
+    /// 返回数组长度；`out` 非空时失败会写零。
+    pub fn xiao_runtime_array_len(handle: XiaoHandle, out: *mut usize) -> i32;
+    /// 复制数组指定元素到调用方；`out` 必须是已初始化且不含弱表观察值的槽，成功时替换并释放旧值。
+    pub fn xiao_runtime_array_get(handle: XiaoHandle, index: usize, out: *mut XiaoValue) -> i32;
+    /// 从数组强句柄构造 `XiaoValueTag::Array`。
+    pub fn xiao_runtime_value_array(handle: XiaoHandle) -> XiaoValue;
+    /// 消费数组强句柄并构造 `XiaoValueTag::Array`；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_array_owned(handle: XiaoHandle) -> XiaoValue;
+
+    /// 从值数组构造元组对象；`out` 遵循已初始化句柄槽契约。
+    pub fn xiao_runtime_tuple_new(
+        values: *const XiaoValue,
+        length: usize,
+        out: *mut XiaoHandle,
+    ) -> i32;
+    /// 返回元组长度；`out` 非空时失败会写零。
+    pub fn xiao_runtime_tuple_len(handle: XiaoHandle, out: *mut usize) -> i32;
+    /// 复制元组指定元素到调用方；`out` 必须是已初始化且不含弱表观察值的槽，成功时替换并释放旧值。
+    pub fn xiao_runtime_tuple_get(handle: XiaoHandle, index: usize, out: *mut XiaoValue) -> i32;
+    /// 从元组强句柄构造 `XiaoValueTag::Tuple`。
+    pub fn xiao_runtime_value_tuple(handle: XiaoHandle) -> XiaoValue;
+    /// 消费元组强句柄并构造 `XiaoValueTag::Tuple`；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_tuple_owned(handle: XiaoHandle) -> XiaoValue;
+
+    /// 按表或列形态从键值数组构造字典；`out` 遵循已初始化句柄槽契约。
+    pub fn xiao_runtime_dict_new(
+        kind: u32,
+        keys: *const XiaoAbiBytes,
+        values: *const XiaoValue,
+        length: usize,
+        out: *mut XiaoHandle,
+    ) -> i32;
+    /// 返回字典条目数量；`out` 非空时失败会写零。
+    pub fn xiao_runtime_dict_len(handle: XiaoHandle, out: *mut usize) -> i32;
+    /// 按 UTF-8 键复制字典值；`out` 必须是已初始化且不含弱表观察值的槽，成功时替换并释放旧值。
+    pub fn xiao_runtime_dict_get(handle: XiaoHandle, key: XiaoAbiBytes, out: *mut XiaoValue)
+    -> i32;
+    /// 按 UTF-8 键读取动态成员；表值走字段读取，其他值返回 `table` 类型错误。
+    pub fn xiao_runtime_dynamic_member_get(
+        value: *const XiaoValue,
+        key: XiaoAbiBytes,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 从字典强句柄构造对应标签的 ABI 值。
+    pub fn xiao_runtime_value_dict(handle: XiaoHandle, kind: u32) -> XiaoValue;
+    /// 消费字典强句柄并构造对应标签的 ABI 值；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_dict_owned(handle: XiaoHandle, kind: u32) -> XiaoValue;
+
+    /// 从值数组构造集合并执行可哈希与去重检查；`out` 遵循已初始化句柄槽契约。
+    pub fn xiao_runtime_set_new(
+        values: *const XiaoValue,
+        length: usize,
+        out: *mut XiaoHandle,
+    ) -> i32;
+    /// 返回集合元素数量；`out` 非空时失败会写零。
+    pub fn xiao_runtime_set_len(handle: XiaoHandle, out: *mut usize) -> i32;
+    /// 判断集合是否包含给定值。
+    pub fn xiao_runtime_set_contains(
+        handle: XiaoHandle,
+        value: *const XiaoValue,
+        out: *mut u8,
+    ) -> i32;
+    /// 向 ABI 集合值插入一个元素；重复元素保持无操作。
+    pub fn xiao_runtime_set_add(set: *const XiaoValue, value: *const XiaoValue) -> i32;
+    /// 从 ABI 集合值删除一个元素；`out` 返回是否实际删除。
+    pub fn xiao_runtime_set_remove(
+        set: *const XiaoValue,
+        value: *const XiaoValue,
+        out: *mut u8,
+    ) -> i32;
+    /// 从集合强句柄构造 `XiaoValueTag::Set`。
+    pub fn xiao_runtime_value_set(handle: XiaoHandle) -> XiaoValue;
+    /// 消费集合强句柄并构造 `XiaoValueTag::Set`；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_set_owned(handle: XiaoHandle) -> XiaoValue;
+
+    /// 按静态字段描述构造一个表实例或单例表；`out` 遵循已初始化句柄槽契约。
+    pub fn xiao_runtime_table_new(
+        descriptor: *const XiaoTableDescriptor,
+        out: *mut XiaoHandle,
+    ) -> i32;
+    /// 按字段名读取表字段并复制值；`out` 必须是已初始化且不含弱表观察值的槽，成功时替换并释放旧值。
+    pub fn xiao_runtime_table_get(
+        handle: XiaoHandle,
+        field: XiaoAbiBytes,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 按字段名写入表字段；Runtime 会复制输入值。
+    pub fn xiao_runtime_table_set(
+        handle: XiaoHandle,
+        field: XiaoAbiBytes,
+        value: *const XiaoValue,
+    ) -> i32;
+    /// 从表强句柄构造 `XiaoValueTag::Table`。
+    pub fn xiao_runtime_value_table(handle: XiaoHandle) -> XiaoValue;
+    /// 消费表强句柄并构造 `XiaoValueTag::Table`；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_table_owned(handle: XiaoHandle) -> XiaoValue;
+
+    /// 把一个固定宽度整数写到标准输出，返回 C 风格状态码。
+    pub fn xiao_runtime_write_i64(value: i64) -> i32;
+    /// 把一组值按空格分隔并追加换行后写到标准输出。
+    pub fn xiao_runtime_print_values(values: *const XiaoValue, count: usize) -> i32;
+    /// 带能力掩码把一组值写到标准输出；缺少 stdout 位时返回 RuntimeError。
+    pub fn xiao_runtime_print_values_with_capabilities(
+        values: *const XiaoValue,
+        count: usize,
+        capabilities: u64,
+    ) -> i32;
+    /// 可选提示后从标准输入读取一行；失败时返回 `none` 并写入挂起错误槽。
+    pub fn xiao_runtime_input(prompt: *const XiaoValue, has_prompt: u8) -> XiaoValue;
+    /// 带能力掩码从标准输入读取一行；缺少 stdin 位时返回 `none` 并写入错误槽。
+    pub fn xiao_runtime_input_with_capabilities(
+        prompt: *const XiaoValue,
+        has_prompt: u8,
+        capabilities: u64,
+    ) -> XiaoValue;
+    /// 按当前能力上下文打开文件；缺少 filesystem 或宿主打开失败时返回 none 并设置错误槽。
+    pub fn xiao_runtime_resource_open_file_with_capabilities(
+        path: *const XiaoValue,
+        capabilities: u64,
+    ) -> XiaoValue;
+    /// 验证并打开目录路径；目录首版保存已验证路径而不暴露宿主目录句柄。
+    pub fn xiao_runtime_resource_open_directory_with_capabilities(
+        path: *const XiaoValue,
+        capabilities: u64,
+    ) -> XiaoValue;
+    /// 按当前能力上下文关闭文件或目录资源；重复关闭成功。
+    pub fn xiao_runtime_resource_close_with_capabilities(
+        value: *const XiaoValue,
+        capabilities: u64,
+    ) -> i32;
+    /// 按当前能力上下文读取文件的完整 UTF-8 文本；失败时返回 none 并设置错误槽。
+    pub fn xiao_runtime_resource_read_text_with_capabilities(
+        value: *const XiaoValue,
+        capabilities: u64,
+    ) -> XiaoValue;
+}
+
+#[cfg(test)]
+/// ABI 布局和版本策略的单元测试。
+mod tests {
+    use super::{
+        ABI_ENCODED_VERSION, ABI_MAJOR_VERSION, ABI_MINOR_VERSION, XiaoConcurrencyKind, XiaoValue,
+        XiaoValueTag,
+    };
+
+    #[test]
+    /// 标签/载荷结构保持两个机器字大小，便于 LLVM 以固定布局传递。
+    fn value_layout_is_two_machine_words() {
+        assert_eq!(std::mem::size_of::<XiaoValue>(), 16);
+        assert_eq!(std::mem::align_of::<XiaoValue>(), 8);
+    }
+
+    #[test]
+    /// 版本编码能区分主版本并保留次版本比较空间。
+    fn version_encoding_is_stable() {
+        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0013);
+        assert_eq!(ABI_MAJOR_VERSION, 1);
+        assert_eq!(ABI_MINOR_VERSION, 19);
+    }
+
+    #[test]
+    /// 并发值追加在既有标签之后，句柄种类保持固定数值。
+    fn concurrency_tag_and_kinds_are_append_only() {
+        assert_eq!(XiaoValueTag::ExternalResource.raw(), 17);
+        assert_eq!(XiaoValueTag::Concurrency.raw(), 18);
+        assert!(XiaoValueTag::Concurrency.is_known());
+        assert_eq!(XiaoConcurrencyKind::Runtime.raw(), 1);
+        assert_eq!(XiaoConcurrencyKind::LockGuard.raw(), 7);
+        assert_eq!(
+            XiaoConcurrencyKind::from_raw(7),
+            Some(XiaoConcurrencyKind::LockGuard)
+        );
+        assert_eq!(XiaoConcurrencyKind::from_raw(99), None);
+    }
+
+    #[test]
+    /// 首次产生资源的 1.14 产物必须在 1.13 Runtime 的启动比较处被拒绝。
+    fn resource_api_requires_runtime_1_14() {
+        assert!(!super::is_abi_compatible(1, 14, 1, 13));
+        assert!(super::is_abi_compatible(1, 14, 1, 14));
+        assert!(super::is_abi_compatible(1, 13, 1, 14));
+        assert!(!super::is_abi_compatible(1, 14, 2, 14));
+    }
+
+    #[test]
+    /// 进程入口生成的 1.15 产物拒绝 1.14 Runtime，旧产物仍兼容新 Runtime。
+    fn process_api_requires_runtime_1_15() {
+        assert!(!super::is_abi_compatible(1, 15, 1, 14));
+        assert!(super::is_abi_compatible(1, 15, 1, 15));
+        assert!(super::is_abi_compatible(1, 14, 1, 15));
+        assert!(!super::is_abi_compatible(1, 15, 2, 15));
+    }
+
+    #[test]
+    /// 资源动态种类检查要求 1.16，避免旧 Runtime 忽略新增的检查语义。
+    fn resource_type_checks_require_runtime_1_16() {
+        assert!(!super::is_abi_compatible(1, 16, 1, 15));
+        assert!(super::is_abi_compatible(1, 16, 1, 16));
+        assert!(super::is_abi_compatible(1, 15, 1, 16));
+    }
+
+    #[test]
+    /// 并发 Runtime ABI 需要 1.17，旧 Runtime 必须在执行前拒绝。
+    fn concurrency_runtime_requires_runtime_1_17() {
+        assert!(!super::is_abi_compatible(1, 17, 1, 16));
+        assert!(super::is_abi_compatible(1, 17, 1, 17));
+        assert!(super::is_abi_compatible(1, 16, 1, 17));
+    }
+
+    #[test]
+    /// error_code 与新增 error_value 检查要求 1.18；低层 ABI 的旧版本比较规则不重写。
+    fn error_code_requires_runtime_1_18() {
+        assert!(!super::is_abi_compatible(1, 18, 1, 17));
+        assert!(super::is_abi_compatible(1, 18, 1, 18));
+        assert!(super::is_abi_compatible(1, 17, 1, 18));
+    }
+
+    #[test]
+    /// 并发 required-feature 位必须是已支持位的子集，且不能借用 bit 0。
+    fn concurrency_required_features_are_exact_subset() {
+        assert!(super::are_required_features_supported(
+            super::REQUIRED_FEATURE_THREADS | super::REQUIRED_FEATURE_SERIALIZATION_V1
+        ));
+        assert!(!super::are_required_features_supported(0x0001));
+        assert!(!super::are_required_features_supported(0x0080));
+    }
+
+    #[test]
+    /// 新布局与旧描述符分别锁定，避免新增回调意外改变旧 ABI。
+    fn table_callback_layout_is_independent() {
+        use super::{XiaoTableDescriptor, XiaoTableDescriptorV2, XiaoTableMethodDescriptor};
+        use std::mem::{align_of, offset_of, size_of};
+        assert_eq!(size_of::<XiaoTableDescriptor>(), 40);
+        assert_eq!(size_of::<XiaoTableMethodDescriptor>(), 56);
+        assert_eq!(offset_of!(XiaoTableMethodDescriptor, callback), 48);
+        assert_eq!(size_of::<XiaoTableDescriptorV2>(), 88);
+        assert_eq!(align_of::<XiaoTableDescriptorV2>(), 8);
+        assert_eq!(offset_of!(XiaoTableDescriptorV2, fields), 8);
+        assert_eq!(offset_of!(XiaoTableDescriptorV2, methods), 48);
+        assert_eq!(offset_of!(XiaoTableDescriptorV2, drop), 80);
+    }
+
+    #[test]
+    #[ignore = "需要 XIAO_CLANG；准备方式见 10D §4，交叉验证 MSVC/Linux/macOS C ABI 布局"]
+    /// 使用实际 clang 三目标布局规则，回调只返回 i32，所有聚合值通过指针传递。
+    fn table_callback_c_layout_matches_three_targets() {
+        use std::io::Write;
+        use std::process::{Command, Stdio};
+        let clang = std::env::var_os("XIAO_CLANG").expect("必须配置 XIAO_CLANG，见 10D §4");
+        let source = r#"
+typedef __SIZE_TYPE__ usize;
+typedef unsigned int u32;
+typedef unsigned long long u64;
+typedef struct { u32 tag; u64 payload; } Value;
+typedef struct { const unsigned char *ptr; usize len; } Bytes;
+typedef int (*Callback)(const Value *, const Value *, usize, Value *);
+typedef struct { Bytes name; u32 kind; const void *fields; usize count; } Old;
+typedef struct { Bytes name; u64 signature; const u32 *types; usize count;
+                 u32 result; unsigned char visible; Callback callback; } Method;
+typedef struct { u32 size; u32 version; Old fields; const Method *methods;
+                 usize count; Callback fields_init; Callback init; Callback drop; } New;
+_Static_assert(sizeof(Value) == 16, "value");
+_Static_assert(sizeof(Old) == 40, "old descriptor");
+_Static_assert(sizeof(Method) == 56, "method");
+_Static_assert(__builtin_offsetof(Method, callback) == 48, "callback offset");
+_Static_assert(sizeof(New) == 88, "new descriptor");
+_Static_assert(_Alignof(New) == 8, "alignment");
+_Static_assert(__builtin_offsetof(New, fields) == 8, "old fields offset");
+_Static_assert(__builtin_offsetof(New, methods) == 48, "methods offset");
+_Static_assert(__builtin_offsetof(New, drop) == 80, "drop offset");
+int invoke(Callback fn, const Value *receiver, const Value *args, usize count, Value *out) {
+    return fn(receiver, args, count, out);
+}
+"#;
+        for target in [
+            "x86_64-pc-windows-msvc",
+            "x86_64-unknown-linux-gnu",
+            "aarch64-apple-darwin",
+        ] {
+            let mut child = Command::new(&clang)
+                .args([
+                    "-target",
+                    target,
+                    "-x",
+                    "c",
+                    "-std=c11",
+                    "-fsyntax-only",
+                    "-",
+                ])
+                .stdin(Stdio::piped())
+                .stderr(Stdio::piped())
+                .spawn()
+                .expect("运行 clang");
+            child
+                .stdin
+                .take()
+                .expect("stdin")
+                .write_all(source.as_bytes())
+                .expect("写入 C 布局探针");
+            let output = child.wait_with_output().expect("等待 clang");
+            assert!(
+                output.status.success(),
+                "{target}: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+    }
+
+    #[test]
+    /// 参数数量、顺序及返回标签均进入稳定签名，调用方不能用错误签名调用回调。
+    fn table_signature_distinguishes_argument_and_result_types() {
+        use super::table_method_signature_id as signature;
+        assert_ne!(signature(&[1, 2], 3), signature(&[2, 1], 3));
+        assert_ne!(signature(&[1], 2), signature(&[1, 2], 0));
+        assert_ne!(signature(&[1], 2), signature(&[1], 3));
+    }
+}

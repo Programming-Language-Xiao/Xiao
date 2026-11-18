@@ -1,0 +1,1182 @@
+//! 动态降低器的语句、条件与控制流发射。
+
+use xiao_diagnostics::{CatchTypeKind, error_kind_of};
+use xiao_ir::{
+    IrCatchClause, IrExpression, IrExpressionKind, IrSpan, IrStatement, IrStatementKind, IrType,
+};
+
+use super::{CleanupContext, DynamicGenerator, LoopLabels, VALUE_TYPE};
+use crate::error::{CodegenError, Result};
+
+/// 一个控制转移的最终目的地。
+#[derive(Clone, Debug)]
+enum ControlExitTarget {
+    /// 返回动态入口的观察值或成功退出。
+    Return,
+    /// 跳转到已生成的循环或合流块。
+    Branch(String),
+}
+
+/// 一条受保护区域的清理发射参数。
+struct TryCleanup<'a> {
+    /// 要执行的 `finally` 主体。
+    region: CleanupContext<'a>,
+    /// 当前退出边名称。
+    protected_exit: &'static str,
+    /// 清理成功后的目标块。
+    success_target: String,
+    /// 清理失败后的外层错误派发块。
+    failure_target: String,
+    /// 生成标签的稳定前缀。
+    label_prefix: String,
+}
+
+/// 清理失败路径上的作用域和退出类别。
+struct CleanupFailure {
+    /// 第一个待释放作用域。
+    first_scope: Option<u32>,
+    /// 第二个待释放作用域。
+    second_scope: Option<u32>,
+    /// 可恢复错误的释放计划类别。
+    recoverable_exit: &'static str,
+    /// 清理完成后的错误派发目标。
+    failure_target: String,
+}
+
+impl<'a> DynamicGenerator<'a> {
+    /// 发射一条顶层语句；异常展开留给 N0-C。
+    fn emit_statement(&mut self, statement: &'a IrStatement) -> Result<()> {
+        // 子执行单元在动态函数的语句边界消费 22B safe_point。Root 入口没有
+        // Runtime 取消 token 时该检查是空操作；线程/任务执行时由 Runtime TLS
+        // 提供同一取消身份，027 仍走不可捕获的错误出口并经过 finally 清理。
+        // VM 的 finally 子程序不逐指令投递取消；其中普通 helper 进入独立函数时
+        // 仍有安全点。原生保留同一边界，由 Runtime 区分首次和已投递的取消。
+        if self.function_mode
+            && !self.concurrency_plan.is_empty()
+            && self.error_checkpoint_depth == 0
+        {
+            let operation = self.emit_operation_argument("safe_point");
+            self.checked_status_call_at(
+                format!("@xiao_runtime_concurrency_cancellation_check({operation})"),
+                statement.span,
+            );
+        }
+        let outer_temporaries = std::mem::take(&mut self.statement_temporaries);
+        match &statement.kind {
+            IrStatementKind::Assignment { target, value }
+            | IrStatementKind::ConstDeclaration { target, value, .. } => {
+                let value_type = value.ty.clone();
+                let emitted = self.emit_expression(value)?;
+                self.record_observation(&emitted, &value_type);
+                self.store_slot(target, emitted)?;
+            }
+            IrStatementKind::Declaration { target, value, .. } => {
+                let (emitted, value_type) = if let Some(value) = value {
+                    let value_type = value.ty.clone();
+                    (self.emit_expression(value)?, Some(value_type))
+                } else {
+                    (self.none_value(), None)
+                };
+                if let Some(value_type) = value_type {
+                    self.record_observation(&emitted, &value_type);
+                }
+                self.store_slot(target, emitted)?;
+            }
+            IrStatementKind::Expression { value } => {
+                let value_type = value.ty.clone();
+                let emitted = self.emit_expression(value)?;
+                self.record_observation(&emitted, &value_type);
+                if !self.statement_temporaries.is_empty()
+                    && super::predicate::is_heap_temporary(value)
+                {
+                    self.own_statement_temporary(value, &emitted);
+                } else {
+                    self.release_value(emitted);
+                }
+            }
+            IrStatementKind::Table {
+                body, table_kind, ..
+            } if body.is_empty() && table_kind != "singleton" => {}
+            IrStatementKind::Table {
+                name, table_kind, ..
+            } => {
+                if table_kind == "singleton" {
+                    let callee = IrExpression {
+                        kind: IrExpressionKind::Name { name: name.clone() },
+                        ty: IrType::Table {
+                            name: name.text.clone(),
+                            kind: "constructor".to_owned(),
+                        },
+                        span: name.span,
+                    };
+                    let value = self.emit_new_call(&callee, &[], statement.span)?;
+                    self.store_slot(name, value)?;
+                }
+            }
+            IrStatementKind::Return { value } => {
+                if let Some(value) = value {
+                    let emitted = self.emit_expression(value)?;
+                    if let (true, Some(_slot), Some(_label)) = (
+                        self.function_mode,
+                        self.function_return_slot.clone(),
+                        self.function_return_label.clone(),
+                    ) {
+                        self.emit("  call void @xiao_runtime_error_clear()".to_owned());
+                        // 名称读取已复制引用；临时结果则在最终 return 时复制，
+                        // 与 VM 读取返回寄存器后归还帧内临时引用的次序一致。
+                        let mut returned = value;
+                        while let IrExpressionKind::Group { expression } = &returned.kind {
+                            returned = expression;
+                        }
+                        let temporary = !matches!(returned.kind, IrExpressionKind::Name { .. });
+                        self.store_return_site(value, &emitted, temporary);
+                        self.emit_nonlocal_exit_from_depth("return", ControlExitTarget::Return, 0)?;
+                        self.terminated = true;
+                    } else {
+                        let value_type = value.ty.clone();
+                        self.record_observation(&emitted, &value_type);
+                        self.release_value(emitted);
+                        self.emit_nonlocal_exit_from_depth("return", ControlExitTarget::Return, 0)?;
+                        self.terminated = true;
+                    }
+                } else if self.function_mode {
+                    if let (Some(slot), Some(_label)) = (
+                        self.function_return_slot.clone(),
+                        self.function_return_label.clone(),
+                    ) {
+                        let none = self.none_value();
+                        self.emit("  store ptr null, ptr %xiao.return.source".to_owned());
+                        self.emit("  call void @xiao_runtime_error_clear()".to_owned());
+                        self.emit(format!(
+                            "  call void @xiao_runtime_value_release_strong(ptr {slot})"
+                        ));
+                        self.emit(format!("  store {VALUE_TYPE} {none}, ptr {slot}"));
+                        self.emit("  store i1 false, ptr %xiao.return.temporary".to_owned());
+                        self.emit_nonlocal_exit_from_depth("return", ControlExitTarget::Return, 0)?;
+                        self.terminated = true;
+                    }
+                } else {
+                    self.emit_nonlocal_exit_from_depth("return", ControlExitTarget::Return, 0)?;
+                    self.terminated = true;
+                }
+            }
+            IrStatementKind::If {
+                condition,
+                body,
+                elif_branches,
+                else_body,
+            } => self.emit_if(condition, body, elif_branches, else_body.as_deref())?,
+            IrStatementKind::While { condition, body } => self.emit_while(condition, body)?,
+            IrStatementKind::For {
+                target,
+                iterable,
+                body,
+            } => self.emit_for(target, iterable, body, statement.span)?,
+            IrStatementKind::Function { .. } => {}
+            IrStatementKind::Import { items, .. } => {
+                for item in items {
+                    // `std.concurrent` 的函数身份已经冻结在 `IrConcurrencyCall`；
+                    // 原生后端只消费计划，不物化尚未实现函数体的标准库模块。
+                    if matches!(item.module.as_str(), "std.concurrent" | "stdlib.concurrent") {
+                        continue;
+                    }
+                    let module_identity =
+                        xiao_standard_library::canonical_module_identity(&item.module)
+                            .unwrap_or_else(|| item.module.clone());
+                    if self.initialized_modules.insert(module_identity.clone()) {
+                        let Some(module) = self
+                            .program
+                            .modules
+                            .iter()
+                            .find(|module| module.name == module_identity)
+                        else {
+                            return Err(CodegenError::Unsupported {
+                                feature: format!("原生模块 {} 不在前端模块图中", item.module),
+                                span: Some(statement.span),
+                            });
+                        };
+                        self.emit_statements(&module.body)?;
+                        if item.selected.is_none() {
+                            let namespace = self.emit_module_namespace(module)?;
+                            self.store_slot(&item.binding, namespace)?;
+                            continue;
+                        }
+                    }
+                    if let Some(selected) = &item.selected {
+                        let module_function = self
+                            .module_function_definitions
+                            .get(&(module_identity.clone(), selected.text.clone()))
+                            .copied();
+                        if let Some(function) = module_function {
+                            // 无别名的选择导入也必须按模块身份绑定，不能沿用其它模块的同名函数。
+                            self.function_definitions
+                                .insert(item.binding.text.clone(), function);
+                            continue;
+                        }
+                        if module_identity.starts_with("stdlib.")
+                            && self.program.modules.iter().any(|module| {
+                                module.name == module_identity
+                                    && module.symbols.iter().any(|symbol| {
+                                        symbol.name == selected.text && symbol.kind == "function"
+                                    })
+                            })
+                        {
+                            return Err(CodegenError::Unsupported {
+                                feature: format!(
+                                    "官方函数 {module_identity}.{} 未静态链接",
+                                    selected.text
+                                ),
+                                span: Some(statement.span),
+                            });
+                        }
+                        if selected.text != item.binding.text
+                            || selected.backticked != item.binding.backticked
+                        {
+                            if let Some(function) =
+                                self.function_definitions.get(&selected.text).copied()
+                            {
+                                // 静态链接的标准库函数没有运行时值槽；把别名
+                                // 直接映射到同一个函数定义，避免把函数名误当
+                                // 成模块成员槽读取。
+                                self.function_definitions
+                                    .insert(item.binding.text.clone(), function);
+                            } else {
+                                let value = self.load_slot(selected)?;
+                                self.store_slot(&item.binding, value)?;
+                            }
+                        }
+                        continue;
+                    }
+                }
+            }
+            IrStatementKind::Try {
+                body,
+                catches,
+                finally_body,
+            } => self.emit_try(body, catches, finally_body.as_deref(), statement.span)?,
+            IrStatementKind::Raise { value } => self.emit_raise(value, statement.span)?,
+            IrStatementKind::ExtendedAssignment {
+                target,
+                operator,
+                value,
+            } => {
+                if let IrExpressionKind::Name { name } = &target.kind {
+                    let combined = IrExpression {
+                        kind: IrExpressionKind::Binary {
+                            operator: operator.strip_suffix('=').unwrap_or(operator).to_owned(),
+                            left: Box::new(target.clone()),
+                            right: Box::new(value.clone()),
+                        },
+                        ty: target.ty.clone(),
+                        span: target.span,
+                    };
+                    let result = self.emit_expression(&combined)?;
+                    // 只有完整运算成功才替换原绑定，失败时保留原值。
+                    self.store_slot(name, result)?;
+                } else if operator == "="
+                    && let IrExpressionKind::Selector {
+                        source,
+                        selector,
+                        step: None,
+                        ..
+                    } = &target.kind
+                    && selector.items.len() == 1
+                    && let xiao_ir::IrSelectorItem::ExactExpression {
+                        expression: index, ..
+                    } = &selector.items[0]
+                {
+                    let source_value = self.emit_expression(source)?;
+                    let index_value = self.emit_expression(index)?;
+                    let item_value = self.emit_expression(value)?;
+                    self.emit_dynamic_index_set(
+                        &source_value,
+                        &index_value,
+                        &item_value,
+                        statement.span,
+                    );
+                    self.release_value(item_value);
+                    self.release_value(index_value);
+                    self.release_value(source_value);
+                } else {
+                    let IrExpressionKind::Member { object, member } = &target.kind else {
+                        return Err(CodegenError::Unsupported {
+                            feature: "动态扩展赋值".to_owned(),
+                            span: Some(statement.span),
+                        });
+                    };
+                    if operator == "=" {
+                        self.emit_table_set(object, member, value, statement.span)?;
+                    } else {
+                        self.emit_table_compound_set(target, operator, value, statement.span)?;
+                    }
+                }
+            }
+            IrStatementKind::Break => {
+                let Some(labels) = self.loop_stack.last().cloned() else {
+                    return Err(CodegenError::InvalidIr {
+                        message: "动态 break 不在循环中".to_owned(),
+                    });
+                };
+                self.emit_nonlocal_exit_from_depth(
+                    "break",
+                    ControlExitTarget::Branch(labels.end),
+                    labels.cleanup_depth,
+                )?;
+                self.terminated = true;
+            }
+            IrStatementKind::Continue => {
+                let Some(labels) = self.loop_stack.last().cloned() else {
+                    return Err(CodegenError::InvalidIr {
+                        message: "动态 continue 不在循环中".to_owned(),
+                    });
+                };
+                self.emit_nonlocal_exit_from_depth(
+                    "continue",
+                    ControlExitTarget::Branch(labels.condition),
+                    labels.cleanup_depth,
+                )?;
+                self.terminated = true;
+            }
+        }
+        if !self.terminated {
+            self.flush_statement_temporaries(statement.span);
+        }
+        self.statement_temporaries = outer_temporaries;
+        Ok(())
+    }
+
+    /// 在当前基本块依次发射语句，遇到终止边后停止。
+    pub(super) fn emit_statements(&mut self, statements: &'a [IrStatement]) -> Result<()> {
+        for statement in statements {
+            if self.terminated {
+                break;
+            }
+            self.emit_statement(statement)?;
+        }
+        Ok(())
+    }
+
+    /// 发射主动 `raise`，先把错误值交给 Runtime，再跳入当前最内层错误派发块。
+    fn emit_raise(&mut self, expression: &IrExpression, span: IrSpan) -> Result<()> {
+        let value = self.emit_expression(expression)?;
+        let input = self.next_temp();
+        self.emit(format!("  {input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {input}"));
+        let location = self.emit_error_location(span);
+        let status = self.next_temp();
+        self.emit(format!(
+            "  {status} = call i32 @xiao_runtime_error_raise_value(ptr {input}, ptr {location})"
+        ));
+        self.emit(format!(
+            "  call void @xiao_runtime_value_release_strong(ptr {input})"
+        ));
+        self.check_status_at(&status, span);
+        self.emit(format!("  br label %{}", self.error_target()));
+        self.terminated = true;
+        Ok(())
+    }
+
+    /// 发射原生 `try`/`catch`/`finally` 展开。
+    ///
+    /// 每条进入处理器的路径都保持 `finally -> drop -> catch/继续传播`；Fatal
+    /// 在派发入口直接进入统一终点，不执行普通处理器或释放计划。
+    fn emit_try(
+        &mut self,
+        body: &'a [IrStatement],
+        catches: &'a [IrCatchClause],
+        finally_body: Option<&'a [IrStatement]>,
+        span: IrSpan,
+    ) -> Result<()> {
+        for catch in catches {
+            if !matches!(
+                error_kind_of(&catch.error_type.text),
+                Some(CatchTypeKind::AnyRecoverable | CatchTypeKind::Recoverable(_))
+            ) {
+                return Err(CodegenError::Unsupported {
+                    feature: format!("原生 catch 类型 {}", catch.error_type.text),
+                    span: Some(catch.error_type.span),
+                });
+            }
+        }
+
+        let outer_target = self.error_target();
+        let dispatch = self.next_label("dynamic.try.dispatch");
+        let normal_exit = self.next_label("dynamic.try.normal");
+        let continuation = self.next_label("dynamic.try.continue");
+        let try_scope = self.region_scope(span, "try");
+        let finally_scope = self.region_scope(span, "finally");
+
+        let cleanup_snapshot = self.cleanup_stack.clone();
+        self.cleanup_stack.push(CleanupContext {
+            finally_body,
+            finally_scope,
+            protected_scope: try_scope,
+            failure_target: outer_target.clone(),
+        });
+        self.push_error_context(dispatch.clone());
+        self.emit_statements(body)?;
+        self.pop_error_context();
+        self.cleanup_stack = cleanup_snapshot;
+        if !self.terminated {
+            self.emit(format!("  br label %{normal_exit}"));
+            self.terminated = true;
+        }
+
+        self.terminated = true;
+        self.emit_label(&normal_exit);
+        self.emit_try_cleanup(TryCleanup {
+            region: CleanupContext {
+                finally_body,
+                finally_scope,
+                protected_scope: try_scope,
+                failure_target: outer_target.clone(),
+            },
+            protected_exit: "normal",
+            success_target: continuation.clone(),
+            failure_target: outer_target.clone(),
+            label_prefix: "dynamic.try.normal.finally".to_owned(),
+        })?;
+
+        if !self.terminated {
+            self.emit(format!("  br label %{continuation}"));
+            self.terminated = true;
+        }
+        self.emit_label(&dispatch);
+        let class = self.next_temp();
+        self.emit(format!("  {class} = call i32 @xiao_runtime_error_class()"));
+        let fatal = self.next_temp();
+        let recoverable = self.next_label("dynamic.try.recoverable");
+        self.emit(format!("  {fatal} = icmp eq i32 {class}, 2"));
+        self.emit(format!(
+            "  br i1 {fatal}, label %{}, label %{recoverable}",
+            self.error_terminal_label
+        ));
+        self.emit_label(&recoverable);
+
+        let unmatched = self.next_label("dynamic.try.unmatched");
+        let catch_labels = catches
+            .iter()
+            .enumerate()
+            .map(|(index, _)| self.next_label(&format!("dynamic.try.catch{index}")))
+            .collect::<Vec<_>>();
+        let mut next_match = recoverable;
+        for (index, catch) in catches.iter().enumerate() {
+            if index > 0 {
+                self.emit_label(&next_match);
+            }
+            let error_type = self.emit_bytes_value(catch.error_type.text.as_bytes());
+            let error_type = self.emit_bytes_argument(&error_type);
+            let matched = self.next_temp();
+            self.emit(format!(
+                "  {matched} = call i32 @xiao_runtime_error_matches({error_type})"
+            ));
+            let is_match = self.next_temp();
+            let next = if index + 1 == catches.len() {
+                unmatched.clone()
+            } else {
+                self.next_label("dynamic.try.next-catch")
+            };
+            self.emit(format!("  {is_match} = icmp eq i32 {matched}, 1"));
+            self.emit(format!(
+                "  br i1 {is_match}, label %{}, label %{next}",
+                catch_labels[index]
+            ));
+            next_match = next;
+        }
+        if catches.is_empty() {
+            self.emit(format!("  br label %{unmatched}"));
+            self.terminated = true;
+        }
+
+        self.emit_label(&unmatched);
+        self.emit_try_cleanup(TryCleanup {
+            region: CleanupContext {
+                finally_body,
+                finally_scope,
+                protected_scope: try_scope,
+                failure_target: outer_target.clone(),
+            },
+            protected_exit: "unmatched_error",
+            success_target: outer_target.clone(),
+            failure_target: outer_target.clone(),
+            label_prefix: "dynamic.try.unmatched.finally".to_owned(),
+        })?;
+
+        if !self.terminated {
+            self.emit(format!("  br label %{outer_target}"));
+            self.terminated = true;
+        }
+
+        for (index, catch) in catches.iter().enumerate() {
+            self.emit_label(&catch_labels[index]);
+            let catch_body_label = self.next_label(&format!("dynamic.try.catch{index}.body"));
+            self.emit_try_cleanup(TryCleanup {
+                region: CleanupContext {
+                    finally_body,
+                    finally_scope,
+                    protected_scope: try_scope,
+                    failure_target: outer_target.clone(),
+                },
+                protected_exit: "catch",
+                success_target: catch_body_label.clone(),
+                failure_target: outer_target.clone(),
+                label_prefix: format!("dynamic.try.catch{index}.finally"),
+            })?;
+            self.emit_label(&catch_body_label);
+
+            let error_slot = self.next_temp();
+            self.emit(format!("  {error_slot} = alloca {VALUE_TYPE}"));
+            self.emit(format!(
+                "  store {VALUE_TYPE} zeroinitializer, ptr {error_slot}"
+            ));
+            let take_status = self.next_temp();
+            self.emit(format!(
+                "  {take_status} = call i32 @xiao_runtime_error_take(ptr {error_slot})"
+            ));
+            self.check_status_at(&take_status, catch.span);
+            let error_value = self.next_temp();
+            self.emit(format!(
+                "  {error_value} = load {VALUE_TYPE}, ptr {error_slot}"
+            ));
+            self.store_slot(&catch.binding, error_value)?;
+
+            let catch_failure = self.next_label(&format!("dynamic.try.catch{index}.fail"));
+            let catch_scope = self.region_scope(catch.span, "catch");
+            let cleanup_snapshot = self.cleanup_stack.clone();
+            self.cleanup_stack.push(CleanupContext {
+                finally_body: None,
+                finally_scope: None,
+                protected_scope: catch_scope,
+                failure_target: outer_target.clone(),
+            });
+            self.push_error_context(catch_failure.clone());
+            self.emit_statements(&catch.body)?;
+            self.pop_error_context();
+            self.cleanup_stack = cleanup_snapshot;
+            if !self.terminated {
+                self.release_for_scope(catch_scope, "normal")?;
+                self.emit(format!("  br label %{continuation}"));
+                self.terminated = true;
+            }
+            self.emit_label(&catch_failure);
+            self.emit_error_cleanup_failure(CleanupFailure {
+                first_scope: catch_scope,
+                second_scope: None,
+                recoverable_exit: "unmatched_error",
+                failure_target: outer_target.clone(),
+            })?;
+            self.terminated = true;
+        }
+
+        self.emit_label(&continuation);
+        Ok(())
+    }
+
+    /// 发射一条 `finally` 后接作用域释放的路径。
+    fn emit_try_cleanup(&mut self, cleanup: TryCleanup<'a>) -> Result<()> {
+        let TryCleanup {
+            region,
+            protected_exit,
+            success_target,
+            failure_target,
+            label_prefix,
+        } = cleanup;
+        if let Some(finally_body) = region.finally_body {
+            let failure = self.next_label(&format!("{label_prefix}.fail"));
+            let success = self.next_label(&format!("{label_prefix}.success"));
+            self.emit("  call void @xiao_runtime_error_checkpoint_begin()".to_owned());
+            let stack_save = self.begin_finally_stack_frame();
+            let cleanup_snapshot = self.cleanup_stack.clone();
+            self.cleanup_stack.push(CleanupContext {
+                finally_body: None,
+                finally_scope: region.finally_scope,
+                protected_scope: region.protected_scope,
+                failure_target: region.failure_target.clone(),
+            });
+            self.push_error_context(failure.clone());
+            self.error_checkpoint_depth = self.error_checkpoint_depth.saturating_add(1);
+            self.emit_statements(finally_body)?;
+            self.error_checkpoint_depth = self.error_checkpoint_depth.saturating_sub(1);
+            self.pop_error_context();
+            self.cleanup_stack = cleanup_snapshot;
+            let continues = !self.terminated;
+            if continues {
+                self.emit("  call i32 @xiao_runtime_error_checkpoint_finish()".to_owned());
+                self.restore_finally_stack_frame();
+                self.release_for_scope_with_target(
+                    region.finally_scope,
+                    "normal",
+                    &region.failure_target,
+                )?;
+                self.release_for_scope_with_target(
+                    region.protected_scope,
+                    protected_exit,
+                    &region.failure_target,
+                )?;
+                self.emit(format!("  br label %{success}"));
+                self.terminated = true;
+            }
+            self.emit_label(&failure);
+            self.emit("  call i32 @xiao_runtime_error_checkpoint_finish()".to_owned());
+            self.restore_finally_stack_frame();
+            self.emit_error_cleanup_failure(CleanupFailure {
+                first_scope: region.finally_scope,
+                second_scope: region.protected_scope,
+                recoverable_exit: "unmatched_error",
+                failure_target,
+            })?;
+            if continues {
+                self.emit_label(&success);
+                self.emit(format!("  br label %{success_target}"));
+                self.terminated = true;
+            }
+            self.finish_finally_stack_frame(&stack_save);
+        } else {
+            self.release_for_scope_with_target(
+                region.finally_scope,
+                protected_exit,
+                &region.failure_target,
+            )?;
+            self.release_for_scope_with_target(
+                region.protected_scope,
+                protected_exit,
+                &region.failure_target,
+            )?;
+            if !self.terminated {
+                self.emit(format!("  br label %{success_target}"));
+                self.terminated = true;
+            }
+        }
+        Ok(())
+    }
+
+    /// 发射一条非局部退出边，并依次完成当前受保护作用域的清理。
+    fn emit_nonlocal_exit_from_depth(
+        &mut self,
+        exit: &str,
+        target: ControlExitTarget,
+        cleanup_depth: usize,
+    ) -> Result<()> {
+        if cleanup_depth > self.cleanup_stack.len() {
+            return Err(CodegenError::InvalidIr {
+                message: format!("动态 {exit} 退出的清理深度无效"),
+            });
+        }
+        let pending_snapshot = self.pending_return_releases.clone();
+        while self.cleanup_stack.len() > cleanup_depth {
+            let region = self
+                .cleanup_stack
+                .pop()
+                .ok_or_else(|| CodegenError::InvalidIr {
+                    message: format!("动态 {exit} 退出缺少作用域清理区域"),
+                })?;
+            self.emit_cleanup_context(region, exit, &target)?;
+            if self.terminated {
+                self.pending_return_releases = pending_snapshot;
+                return Ok(());
+            }
+        }
+
+        // return/break/continue from a finally overrides the pending primary error.
+        // The corresponding lexical finally checkpoint must therefore be discarded.
+        for _ in 0..self.error_checkpoint_depth {
+            self.emit("  call void @xiao_runtime_error_checkpoint_discard()".to_owned());
+        }
+        let finally_saves = self
+            .finally_stack_saves
+            .iter()
+            .rev()
+            .take(self.error_checkpoint_depth)
+            .cloned()
+            .collect::<Vec<_>>();
+        for save in finally_saves {
+            self.emit(format!("  call void @llvm.stackrestore(ptr {save})"));
+        }
+
+        match target {
+            ControlExitTarget::Return => {
+                if self.function_mode {
+                    let pending = std::mem::take(&mut self.pending_return_releases);
+                    for (scope, release_exit) in pending {
+                        self.release_for_scope(scope, &release_exit)?;
+                    }
+                    self.pending_return_releases = pending_snapshot;
+                    if let Some(label) = self.function_return_label.clone() {
+                        self.emit(format!("  br label %{label}"));
+                        return Ok(());
+                    }
+                }
+                self.with_error_target(self.error_terminal_label.clone(), |generator| {
+                    generator.release_for_exit("return")
+                })?;
+                self.release_frame_temporaries();
+                self.check_pending_error_at(self.program.span);
+                self.emit_observation_return();
+            }
+            ControlExitTarget::Branch(label) => {
+                self.emit(format!("  br label %{label}"));
+            }
+        }
+        Ok(())
+    }
+
+    /// 发射一个已弹出区域的 `finally -> drop` 清理链。
+    fn emit_cleanup_context(
+        &mut self,
+        region: CleanupContext<'a>,
+        protected_exit: &str,
+        _target: &ControlExitTarget,
+    ) -> Result<()> {
+        if let Some(finally_body) = region.finally_body {
+            let failure = self.next_label("dynamic.nonlocal.finally.fail");
+            let success = self.next_label("dynamic.nonlocal.finally.success");
+            self.emit("  call void @xiao_runtime_error_checkpoint_begin()".to_owned());
+            let stack_save = self.begin_finally_stack_frame();
+            let cleanup_snapshot = self.cleanup_stack.clone();
+            self.cleanup_stack.push(CleanupContext {
+                finally_body: None,
+                finally_scope: region.finally_scope,
+                protected_scope: region.protected_scope,
+                failure_target: region.failure_target.clone(),
+            });
+            self.push_error_context(failure.clone());
+            self.error_checkpoint_depth = self.error_checkpoint_depth.saturating_add(1);
+            self.emit_statements(finally_body)?;
+            self.error_checkpoint_depth = self.error_checkpoint_depth.saturating_sub(1);
+            self.pop_error_context();
+            self.cleanup_stack = cleanup_snapshot;
+            let continues = !self.terminated;
+            if continues {
+                self.emit("  call i32 @xiao_runtime_error_checkpoint_finish()".to_owned());
+                self.restore_finally_stack_frame();
+                self.release_for_scope_with_target(
+                    region.finally_scope,
+                    "normal",
+                    &region.failure_target,
+                )?;
+                if self.function_mode && protected_exit == "return" {
+                    self.pending_return_releases
+                        .push((region.protected_scope, protected_exit.to_owned()));
+                } else {
+                    self.release_for_scope_with_target(
+                        region.protected_scope,
+                        protected_exit,
+                        &region.failure_target,
+                    )?;
+                }
+                self.emit(format!("  br label %{success}"));
+                self.terminated = true;
+            }
+            self.emit_label(&failure);
+            self.emit("  call i32 @xiao_runtime_error_checkpoint_finish()".to_owned());
+            self.restore_finally_stack_frame();
+            self.emit_error_cleanup_failure(CleanupFailure {
+                first_scope: region.finally_scope,
+                second_scope: region.protected_scope,
+                recoverable_exit: "unmatched_error",
+                failure_target: region.failure_target,
+            })?;
+            if continues {
+                self.emit_label(&success);
+            }
+            self.finish_finally_stack_frame(&stack_save);
+        } else {
+            if region.finally_scope.is_some() {
+                self.restore_finally_stack_frame();
+            }
+            if self.function_mode && protected_exit == "return" {
+                self.pending_return_releases
+                    .push((region.finally_scope, protected_exit.to_owned()));
+                self.pending_return_releases
+                    .push((region.protected_scope, protected_exit.to_owned()));
+                return Ok(());
+            }
+            self.release_for_scope_with_target(
+                region.finally_scope,
+                protected_exit,
+                &region.failure_target,
+            )?;
+            self.release_for_scope_with_target(
+                region.protected_scope,
+                protected_exit,
+                &region.failure_target,
+            )?;
+        }
+        Ok(())
+    }
+
+    /// 在指定错误目标下发射释放计划，避免重新进入已经离开的 `try`。
+    fn release_for_scope_with_target(
+        &mut self,
+        scope: Option<u32>,
+        exit: &str,
+        error_target: &str,
+    ) -> Result<()> {
+        self.with_error_target(error_target.to_owned(), |generator| {
+            generator.release_for_scope(scope, exit)
+        })
+    }
+
+    /// 临时切换当前 ABI 失败边的目标块。
+    fn with_error_target<T>(
+        &mut self,
+        target: String,
+        operation: impl FnOnce(&mut Self) -> Result<T>,
+    ) -> Result<T> {
+        self.push_error_context(target);
+        let result = operation(self);
+        self.pop_error_context();
+        result
+    }
+
+    /// 清理错误路径上的两个嵌套作用域；Fatal 仍直接终止。
+    fn emit_error_cleanup_failure(&mut self, cleanup: CleanupFailure) -> Result<()> {
+        let class = self.next_temp();
+        self.emit(format!("  {class} = call i32 @xiao_runtime_error_class()"));
+        let fatal = self.next_temp();
+        let recoverable = self.next_label("dynamic.error-cleanup.recoverable");
+        self.emit(format!("  {fatal} = icmp eq i32 {class}, 2"));
+        self.emit(format!(
+            "  br i1 {fatal}, label %{}, label %{recoverable}",
+            self.error_terminal_label
+        ));
+        self.emit_label(&recoverable);
+        self.release_for_scope_with_target(
+            cleanup.first_scope,
+            cleanup.recoverable_exit,
+            &cleanup.failure_target,
+        )?;
+        self.release_for_scope_with_target(
+            cleanup.second_scope,
+            cleanup.recoverable_exit,
+            &cleanup.failure_target,
+        )?;
+        self.emit(format!("  br label %{}", cleanup.failure_target));
+        self.terminated = true;
+        Ok(())
+    }
+
+    /// 查找由前端生命周期分析登记的区域作用域。
+    fn region_scope(&self, span: IrSpan, kind: &str) -> Option<u32> {
+        self.program
+            .ownership
+            .scopes
+            .iter()
+            .find(|scope| scope.kind == kind && scope.span == span)
+            .map(|scope| scope.id)
+    }
+
+    /// 发射布尔 `if`/`elif`/`else` 链并在可达分支汇合。
+    fn emit_if(
+        &mut self,
+        condition: &IrExpression,
+        body: &'a [IrStatement],
+        elif_branches: &'a [xiao_ir::IrElifBranch],
+        else_body: Option<&'a [IrStatement]>,
+    ) -> Result<()> {
+        let condition = self.emit_condition(condition)?;
+        let then_label = self.next_label("dynamic.if.then");
+        let else_label = self.next_label("dynamic.if.next");
+        let merge_label = self.next_label("dynamic.if.merge");
+        self.emit(format!(
+            "  br i1 {condition}, label %{then_label}, label %{else_label}"
+        ));
+        self.terminated = true;
+        self.emit_label(&then_label);
+        let cleanup_snapshot = self.cleanup_stack.clone();
+        self.emit_statements(body)?;
+        self.cleanup_stack = cleanup_snapshot;
+        if !self.terminated {
+            self.emit(format!("  br label %{merge_label}"));
+            self.terminated = true;
+        }
+        self.emit_label(&else_label);
+        if elif_branches.is_empty() {
+            if let Some(else_body) = else_body {
+                self.emit_statements(else_body)?;
+            }
+        } else {
+            self.emit_elif_chain(elif_branches, else_body, &merge_label)?;
+        }
+        if !self.terminated {
+            self.emit(format!("  br label %{merge_label}"));
+            self.terminated = true;
+        }
+        self.emit_label(&merge_label);
+        Ok(())
+    }
+
+    /// 递归发射 `elif` 链。
+    fn emit_elif_chain(
+        &mut self,
+        branches: &'a [xiao_ir::IrElifBranch],
+        else_body: Option<&'a [IrStatement]>,
+        merge_label: &str,
+    ) -> Result<()> {
+        let branch = &branches[0];
+        let condition = self.emit_condition(&branch.condition)?;
+        let then_label = self.next_label("dynamic.elif.then");
+        let next_label = self.next_label("dynamic.elif.next");
+        self.emit(format!(
+            "  br i1 {condition}, label %{then_label}, label %{next_label}"
+        ));
+        self.terminated = true;
+        self.emit_label(&then_label);
+        let cleanup_snapshot = self.cleanup_stack.clone();
+        self.emit_statements(&branch.body)?;
+        self.cleanup_stack = cleanup_snapshot;
+        if !self.terminated {
+            self.emit(format!("  br label %{merge_label}"));
+            self.terminated = true;
+        }
+        self.emit_label(&next_label);
+        if branches.len() > 1 {
+            self.emit_elif_chain(&branches[1..], else_body, merge_label)?;
+        } else if let Some(else_body) = else_body {
+            self.emit_statements(else_body)?;
+        }
+        Ok(())
+    }
+
+    /// 发射 `while` 基本块，并为 `break`/`continue` 暴露当前循环目标。
+    fn emit_while(&mut self, condition: &IrExpression, body: &'a [IrStatement]) -> Result<()> {
+        let condition_label = self.next_label("dynamic.while.cond");
+        let body_label = self.next_label("dynamic.while.body");
+        let end_label = self.next_label("dynamic.while.end");
+        self.emit(format!("  br label %{condition_label}"));
+        self.terminated = true;
+        self.emit_label(&condition_label);
+        let condition = self.emit_condition(condition)?;
+        self.emit(format!(
+            "  br i1 {condition}, label %{body_label}, label %{end_label}"
+        ));
+        self.terminated = true;
+        self.emit_label(&body_label);
+        let cleanup_snapshot = self.cleanup_stack.clone();
+        self.loop_stack.push(LoopLabels {
+            condition: condition_label.clone(),
+            end: end_label.clone(),
+            cleanup_depth: self.cleanup_stack.len(),
+        });
+        let body_result = self.emit_statements(body);
+        self.cleanup_stack = cleanup_snapshot;
+        self.loop_stack.pop();
+        body_result?;
+        if !self.terminated {
+            self.emit(format!("  br label %{condition_label}"));
+            self.terminated = true;
+        }
+        self.emit_label(&end_label);
+        Ok(())
+    }
+
+    /// 发射 `for target in iterable`；来源只求值一次，索引和长度走 Runtime ABI。
+    fn emit_for(
+        &mut self,
+        target: &xiao_ir::IrName,
+        iterable: &IrExpression,
+        body: &'a [IrStatement],
+        span: IrSpan,
+    ) -> Result<()> {
+        let outer_target = self.error_target();
+        let loop_scope = self.region_scope(span, "loop");
+        let borrowed_source = self.borrow_named_slot(iterable);
+        let source = if let Some(slot) = &borrowed_source {
+            let value = self.next_temp();
+            self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {slot}"));
+            value
+        } else {
+            self.emit_expression(iterable)?
+        };
+        // 非名称来源移入帧槽：return 等非局部出口也能归还，不能只依赖循环尾的 SSA 清理。
+        let source_owner = borrowed_source
+            .is_none()
+            .then(|| self.own_generated_temporary(&source));
+        let failure_label = self.next_label("dynamic.for.fail");
+        let continuation_label = self.next_label("dynamic.for.continue");
+        self.push_error_context(failure_label.clone());
+        self.emit_dynamic_check("iterable", &source, iterable.span);
+        let is_set_snapshot = matches!(iterable.ty, IrType::Set { .. });
+        let iteration_source = if is_set_snapshot {
+            self.emit_iter_snapshot(&source, iterable.span)?
+        } else {
+            source.clone()
+        };
+        let length = self.emit_iter_len(&iteration_source, iterable.span);
+        let index_slot = self.next_temp();
+        self.emit(format!("  {index_slot} = alloca i64"));
+        self.emit(format!("  store i64 0, ptr {index_slot}"));
+        let condition_label = self.next_label("dynamic.for.cond");
+        let body_label = self.next_label("dynamic.for.body");
+        let advance_label = self.next_label("dynamic.for.advance");
+        let end_label = self.next_label("dynamic.for.end");
+        self.emit(format!("  br label %{condition_label}"));
+        self.terminated = true;
+        self.emit_label(&condition_label);
+        let index = self.next_temp();
+        self.emit(format!("  {index} = load i64, ptr {index_slot}"));
+        let condition = self.next_temp();
+        self.emit(format!("  {condition} = icmp ult i64 {index}, {length}"));
+        self.emit(format!(
+            "  br i1 {condition}, label %{body_label}, label %{end_label}"
+        ));
+        self.terminated = true;
+        self.emit_label(&body_label);
+        // VM 的名称来源保留绑定寄存器；循环体重新赋值后，下一轮读取同一个绑定的新值。
+        let current_source = if is_set_snapshot {
+            iteration_source.clone()
+        } else if let Some(slot) = &borrowed_source {
+            let value = self.next_temp();
+            self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {slot}"));
+            value
+        } else {
+            source.clone()
+        };
+        let element = self.emit_iter_get(&current_source, &index, target.span);
+        self.store_slot(target, element)?;
+        self.loop_stack.push(LoopLabels {
+            condition: advance_label.clone(),
+            end: end_label.clone(),
+            cleanup_depth: self.cleanup_stack.len(),
+        });
+        let cleanup_snapshot = self.cleanup_stack.clone();
+        self.cleanup_stack.push(CleanupContext {
+            finally_body: None,
+            finally_scope: None,
+            protected_scope: loop_scope,
+            failure_target: failure_label.clone(),
+        });
+        let body_result = self.emit_statements(body);
+        self.cleanup_stack = cleanup_snapshot;
+        self.loop_stack.pop();
+        body_result?;
+        if !self.terminated {
+            self.release_for_scope(loop_scope, "normal")?;
+            self.emit(format!("  br label %{advance_label}"));
+            self.terminated = true;
+        }
+        self.emit_label(&advance_label);
+        let next = self.next_temp();
+        self.emit(format!("  {next} = add i64 {index}, 1"));
+        self.emit(format!("  store i64 {next}, ptr {index_slot}"));
+        self.emit(format!("  br label %{condition_label}"));
+        self.terminated = true;
+        self.emit_label(&end_label);
+        if let Some(owner) = &source_owner {
+            let release = self.value_release_symbol();
+            self.emit(format!("  call void @{release}(ptr {owner})"));
+        }
+        self.emit(format!("  br label %{continuation_label}"));
+        self.terminated = true;
+        self.pop_error_context();
+        self.emit_label(&failure_label);
+        let source_cleanup = self.next_label("dynamic.for.source-cleanup");
+        self.emit_error_cleanup_failure(CleanupFailure {
+            first_scope: loop_scope,
+            second_scope: None,
+            recoverable_exit: "unmatched_error",
+            failure_target: source_cleanup.clone(),
+        })?;
+        self.emit_label(&source_cleanup);
+        if let Some(owner) = source_owner {
+            let release = self.value_release_symbol();
+            self.emit(format!("  call void @{release}(ptr {owner})"));
+        }
+        self.emit(format!("  br label %{outer_target}"));
+        self.terminated = true;
+        self.emit_label(&continuation_label);
+        Ok(())
+    }
+
+    /// 为集合迭代建立独立的数组快照。
+    fn emit_iter_snapshot(&mut self, source: &str, span: IrSpan) -> Result<String> {
+        let source_slot = self.next_temp();
+        self.emit(format!("  {source_slot} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {source}, ptr {source_slot}"));
+        let slot = self.next_temp();
+        self.emit(format!("  {slot} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} zeroinitializer, ptr {slot}"));
+        self.checked_status_call_at(
+            format!("@xiao_runtime_value_iter_snapshot(ptr {source_slot}, ptr {slot})"),
+            span,
+        );
+        let value = self.next_temp();
+        self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {slot}"));
+        let owner = self.own_generated_temporary(&value);
+        let held = self.next_temp();
+        self.emit(format!("  {held} = load {VALUE_TYPE}, ptr {owner}"));
+        Ok(held)
+    }
+
+    /// 从 ABI 动态值读取已类型检查的布尔载荷。
+    pub(super) fn emit_condition(&mut self, expression: &IrExpression) -> Result<String> {
+        let outer = std::mem::take(&mut self.statement_temporaries);
+        let result = self.emit_condition_value(expression)?;
+        // VM 的条件临时寄存器跨控制流边由帧持有；不混入普通语句末尾的刷新列表。
+        self.statement_temporaries = outer;
+        Ok(result)
+    }
+
+    /// 发射条件值，不提前归还控制流边上的堆接收者。
+    fn emit_condition_value(&mut self, expression: &IrExpression) -> Result<String> {
+        if !matches!(&expression.ty, IrType::Scalar { name } if name == "bool") {
+            let value = self.emit_expression(expression)?;
+            self.emit_dynamic_check("boolean_condition", &value, expression.span);
+            let payload = self.next_temp();
+            self.emit(format!(
+                "  {payload} = extractvalue {VALUE_TYPE} {value}, 1"
+            ));
+            let output = self.next_temp();
+            self.emit(format!("  {output} = trunc i64 {payload} to i1"));
+            self.release_value(value);
+            return Ok(output);
+        }
+        match &expression.kind {
+            IrExpressionKind::Unary { operator, operand } if operator == "not" => {
+                let value = self.emit_condition(operand)?;
+                let output = self.next_temp();
+                self.emit(format!("  {output} = xor i1 {value}, true"));
+                Ok(output)
+            }
+            IrExpressionKind::Binary {
+                operator,
+                left,
+                right,
+            } if matches!(operator.as_str(), "==" | "!=")
+                && matches!(&left.ty, IrType::Scalar { name } if name == "bool")
+                && matches!(&right.ty, IrType::Scalar { name } if name == "bool") =>
+            {
+                let left = self.emit_condition(left)?;
+                let right = self.emit_condition(right)?;
+                let output = self.next_temp();
+                let predicate = if operator == "==" { "eq" } else { "ne" };
+                self.emit(format!("  {output} = icmp {predicate} i1 {left}, {right}"));
+                Ok(output)
+            }
+            _ => {
+                let value = self.emit_expression(expression)?;
+                let tag = self.next_temp();
+                self.emit(format!("  {tag} = extractvalue {VALUE_TYPE} {value}, 0"));
+                let tag_ok = self.next_temp();
+                self.emit(format!("  {tag_ok} = icmp eq i32 {tag}, 1"));
+                let valid_label = self.next_label("dynamic.bool.ok");
+                let failure_target = self.error_target();
+                self.emit(format!(
+                    "  br i1 {tag_ok}, label %{valid_label}, label %{failure_target}"
+                ));
+                self.terminated = true;
+                self.emit_label(&valid_label);
+                let payload = self.next_temp();
+                self.emit(format!(
+                    "  {payload} = extractvalue {VALUE_TYPE} {value}, 1"
+                ));
+                let output = self.next_temp();
+                self.emit(format!("  {output} = trunc i64 {payload} to i1"));
+                // `emit_expression` 返回拥有的 ABI 值；条件只借用其位载荷，
+                // 在离开条件块前归还临时值，避免每次判断泄漏句柄。
+                self.release_value(value);
+                Ok(output)
+            }
+        }
+    }
+}

@@ -1,0 +1,10 @@
+{
+  "stage": "P2",
+  "cases": [
+    { "name": "typed-initialized", "source": "int count = 1\n", "expect": "declaration", "diagnostics": [] },
+    { "name": "typed-uninitialized", "source": "str name", "expect": "declaration", "diagnostics": [] },
+    { "name": "const-inferred", "source": "const PI = 3.14", "expect": "const", "diagnostics": [] },
+    { "name": "const-explicit", "source": "const bool enabled = true", "expect": "const", "diagnostics": [] },
+    { "name": "missing-const-value", "source": "const value", "expect": "error", "diagnostics": ["X02-PARSE-002"] }
+  ]
+}

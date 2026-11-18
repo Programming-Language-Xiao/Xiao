@@ -1,0 +1,32 @@
+# `xiao-runtime/src`
+
+放置 Rust Runtime 的值、表、内存、引用计数、错误展开和测试驱动器。06-B 提供对象头与
+生命周期基础，10B 已在此接入固定 C ABI 实现；后续 03 容器语义、07 错误报告、09 VM、
+10/15 LLVM 和 11C 调试/国际化按子目录继续接入。
+
+## 子目录
+
+- `value/`：标量、`str`、统一值和 `ExternalResource`（`file`/`directory`/`process` 承载，进程退出码缓存）。
+- `resources.rs`：VM 与原生 ABI 共用的文件/目录和进程操作，以及 filesystem/process 能力检查。
+- `abi_resource.rs`：资源的带能力 ABI 包装，负责参数解码、结果拥有权与错误槽。
+- `abi_version.rs`：ABI 版本查询及启动兼容比较，委托 ABI crate 的参数化规则。
+- `abi_error_code_tests.rs`：FIX-B 指定错误读取的 C 状态、零分配、挂起槽、别名借用期与结果复制失败测试。
+- `allocation_testing.rs`：仅测试配置下的线程局部一次性字符串分配失败，RAII 恢复先前状态，不进入默认生产静态库。
+- `lib.rs` 的 15 个 `cmath_*` 是 B4-2B 供 VM/后端使用的内部 Rust 门面，只转发私有数学内核并返回 `RuntimeResult<f64>`；不访问 C ABI 挂起槽，不承诺语言级 semver。`cmath_facade_tests.rs` 验证全部正式输入、非有限操作数与挂起槽隔离。
+- `memory/`：不透明对象头、强/弱句柄和计数策略。
+- `tables/`：静态表签名与构造状态机。
+- `containers/`：数组、元组、字典表、字典列和集合（工程期 09R2）。
+- `abi.rs`：10B 固定 C ABI 的核心符号与句柄实现（含 `XiaoValueTag::ExternalResource = 17`）；数组、元组、字典、集合和旧表入口在 `abi_collections.rs`；动态检查、迭代/字符串入口在旁置的
+  `abi_dynamic.rs`，原生诊断握手与事件入口在 `abi_diagnostics.rs`；异常对象与展开仍留给 N0-C。
+  20O-REM 的值桥接对 str 只保留强句柄并验证载荷，不复制整串；lint/lfloat 继续按原文本表示复制。
+- `errors/`：结构化 Runtime 错误和展开累加器。
+- `testing/`：只用于规格测试的释放计划驱动器。
+- `vm_concurrency.rs`：22C-FIX.1 的单线程 VM 句柄、可发送 XCON 信封和结构化子执行结果；
+  `vm_concurrency_tests.rs` 验证复制字节、锁守卫寿命、消费身份和限制。
+- `scheduler.rs` / `scheduler_tests.rs`：Runtime、线程和任务池调度及四位置取消回归；
+  `abi_concurrency.rs` / `abi_concurrency_tests.rs`：原生并发 C ABI 及边界、错误、释放回归。
+  22D-FIX.1 验证真实 finish 失败、宿主阻塞取消及 64 层 XCON；finally/drop 共用错误
+  checkpoint，清理中的 helper 不重复投递取消，保持原主错误和 suppressed 顺序。
+
+- `abi_tables.rs`：10T 注册式表方法、元数据复制、弱只读析构视图与错误边界；
+  `abi_table_tests.rs` 覆盖初始化回滚、别名、视图失效和非法元数据。

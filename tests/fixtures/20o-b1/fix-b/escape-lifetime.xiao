@@ -1,0 +1,12 @@
+def captured() -> str
+    try
+        raise Error(code = "saved-after-catch_雪😀")
+    catch local as Error
+        return error_code(local)
+
+saved = captured()
+index = 0
+while index < 64
+    replacement = str(index) + "replacement allocation"
+    index = index + 1
+print(saved)

@@ -1,0 +1,7 @@
+def format_int(int value) -> str
+    result = "n="
+    for c in str(value)
+        result = result + c
+    return result
+
+print(format_int(42))

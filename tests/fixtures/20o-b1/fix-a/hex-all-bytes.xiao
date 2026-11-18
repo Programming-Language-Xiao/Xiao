@@ -1,0 +1,42 @@
+# 256 字节的独立黄金，以及大小写/坏字符边界，不提供官方模块。
+from stdlib.text import find, length, lower_ascii
+
+def probe_hex_byte(int value) -> str
+    if value < 0 or value > 255
+        raise Error(code = "HEX_INVALID_BYTE")
+    digits = "0123456789abcdef"
+    return digits[value // 16] + digits[value % 16]
+
+def probe_hex_pair(str pair) -> int
+    if length(pair) != 2
+        raise Error(code = "HEX_INVALID_LENGTH")
+    digits = "0123456789abcdef"
+    high = find(digits, lower_ascii(pair[0]))
+    low = find(digits, lower_ascii(pair[1]))
+    if high < 0 or low < 0
+        raise Error(code = "HEX_INVALID_CHARACTER")
+    return high * 16 + low
+
+encoded = ""
+value = 0
+checksum = 0
+while value <= 255
+    pair = probe_hex_byte(value)
+    encoded = encoded + pair
+    checksum = checksum + probe_hex_pair(pair)
+    value = value + 1
+print(encoded)
+print(checksum)
+print(probe_hex_pair("fF"))
+try
+    print(probe_hex_pair("0"))
+catch odd_length as Error
+    print("caught-odd-length")
+try
+    print(probe_hex_pair("g0"))
+catch invalid_character as Error
+    print("caught-invalid-character")
+try
+    print(probe_hex_byte(256))
+catch invalid_byte as Error
+    print("caught-invalid-byte")

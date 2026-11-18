@@ -1,0 +1,3 @@
+{
+  "stdout": "a,\"b,c\",\"d\"\"e\",,\"\r\n\",雪😀, é ,﻿bom,\u0000\ntrue\n[a]\n[b,c]\n[d\"e]\n[]\n[\r\n]\n[雪😀]\n[ é ]\n[﻿bom]\n[\u0000]\n[]\n[]\n[]\n[]\n[a]\n[]\n[]\n[a,b]\n[c]\n[a\"b]\n[x\r\ny]\n[﻿ a ]\n[ b ]\n[\u0000]\n[é😀]\ntrue\n ,﻿\n2\nCSV_EMPTY_FIELDS\nCSV_INVALID_RECORD\nCSV_INVALID_RECORD\nCSV_INVALID_RECORD\nCSV_INVALID_RECORD\nCSV_INVALID_RECORD\nCSV_INVALID_RECORD\nCSV_INVALID_RECORD\nCSV_INVALID_RECORD\nCSV_INVALID_RECORD\nCSV_INVALID_RECORD\nCSV_INVALID_RECORD\nCSV_LIMIT_EXCEEDED\nCSV_LIMIT_EXCEEDED\nCSV_LIMIT_EXCEEDED\nCSV_LIMIT_EXCEEDED\nCSV_LIMIT_EXCEEDED\nCSV_LIMIT_EXCEEDED\na,\"b,c\"\n"
+}

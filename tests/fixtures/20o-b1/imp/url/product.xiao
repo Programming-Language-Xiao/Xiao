@@ -1,0 +1,63 @@
+from std.url import encode_component, decode_component
+
+print(encode_component("AZaz09-._~"))
+print(encode_component(text = " /+%?#=&:"))
+print(encode_component("雪😀é"))
+print(decode_component("one%20two+three"))
+print(decode_component(text = "%e9%9b%aa"))
+print(decode_component("雪+é"))
+print(decode_component("%2e%2e%2f"))
+print(encode_component("") == "")
+print(decode_component("") == "")
+for point in [0, 127, 128, 2047, 2048, 55295, 57344, 65535, 65536, 1114111]
+    print(encode_component(chr(point)))
+for encoded_point in ["%00", "%7F", "%C2%80", "%DF%BF", "%E0%A0%80", "%ED%9F%BF", "%EE%80%80", "%EF%BF%BF", "%F0%90%80%80", "%F4%8F%BF%BF"]
+    print(int(decode_component(encoded_point)))
+print(encode_component(chr(65279) + "a"))
+bom = decode_component("%EF%BB%BFa")
+print(int(bom[0]))
+print(bom[1])
+print(decode_component("%65%CC%81") == "é")
+for invalid_escape in ["%", "%0", "%G0", "%0g", "%雪0", "abc%2", "%F"]
+    try
+        print(decode_component(invalid_escape))
+    catch escape_error as Error
+        print(error_code(escape_error))
+for invalid_utf8 in ["%80", "%BF", "%C0%AF", "%C1%BF", "%C2", "%E0%80%80", "%E0%A0", "%ED%A0%80", "%F0%80%80%80", "%F4%90%80%80", "%F5%80%80%80", "%F8%88%80%80%80", "%FE", "%FF", "%E2%28%A1", "%E2%C2%A1", "%C2A", "%E2雪", "%F0%90%80"]
+    try
+        print(decode_component(invalid_utf8))
+    catch utf8_error as Error
+        print(error_code(utf8_error))
+for first_utf8 in ["%FF%G0", "%E0%80%G0", "%ED%A0%G0", "%F4%90%G0"]
+    try
+        print(decode_component(first_utf8))
+    catch earlier_utf8 as Error
+        print(error_code(earlier_utf8))
+for first_escape in ["%G0%FF", "%C2%G0"]
+    try
+        print(decode_component(first_escape))
+    catch earlier_escape as Error
+        print(error_code(earlier_escape))
+large = "x"
+doublings = 0
+while doublings < 16
+    large = large + large
+    doublings = doublings + 1
+try
+    print(encode_component(large + "x"))
+catch encode_limit as ResourceError
+    print(error_code(encode_limit))
+very_large = ""
+block = "x"
+remaining = 196609
+while remaining > 0
+    if remaining % 2 == 1
+        very_large = very_large + block
+    remaining = remaining // 2
+    if remaining > 0
+        block = block + block
+try
+    print(decode_component(very_large))
+catch decode_limit as ResourceError
+    print(error_code(decode_limit))
+print(decode_component("%2B"))

@@ -1,0 +1,54 @@
+# B1 整数数学：只导出六个冻结入口，不提升数值宽度。
+
+def abs(int value) -> int
+    if value < 0
+        return -value
+    return value
+
+def min(int left, int right) -> int
+    if left < right
+        return left
+    return right
+
+def max(int left, int right) -> int
+    if left > right
+        return left
+    return right
+
+def clamp(int value, int lower, int upper) -> int
+    if lower > upper
+        raise Error(code = "MATH_INVALID_BOUNDS")
+    if value < lower
+        return lower
+    if value > upper
+        return upper
+    return value
+
+def gcd(int left, int right) -> int
+    # 非正域包含 MIN；只有最终转为正数时才可能产生不可表示的结果。
+    if left > 0
+        left = -left
+    if right > 0
+        right = -right
+    while right != 0
+        # MIN % -1 不可执行，但其数学 gcd 已确定为 1。
+        if right == -1
+            return 1
+        remainder = left % right
+        left = right
+        right = remainder
+    return -left
+
+def pow(int base, int exponent) -> int
+    if exponent < 0
+        raise Error(code = "MATH_NEGATIVE_EXPONENT")
+    result = 1
+    factor = base
+    remaining = exponent
+    while remaining > 0
+        if remaining % 2 == 1
+            result = result * factor
+        remaining = remaining // 2
+        if remaining > 0
+            factor = factor * factor
+    return result

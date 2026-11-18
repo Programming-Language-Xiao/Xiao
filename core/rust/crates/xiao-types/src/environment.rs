@@ -1,0 +1,429 @@
+//! 作用域、绑定状态与类型方案环境。
+//!
+//! 环境只管理名称到类型方案的关系，不知道名称来自普通标识符还是反引号
+//! 语法；调用方负责在传入前完成名称规范化。这样语法模块不会依赖类型层。
+
+use std::collections::{BTreeMap, BTreeSet};
+use std::fmt::{self, Display, Formatter};
+
+use crate::containers::PathConstraintTree;
+use crate::functions::FunctionSignature;
+use crate::types::{Type, TypeScheme, TypeVarId};
+
+/// 一个名称绑定及其初始化/可变状态。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Binding {
+    /// 名称对应的 HM 类型方案。
+    pub scheme: TypeScheme,
+    /// 当前路径上是否已经写入值。
+    pub initialized: bool,
+    /// 是否允许后续普通赋值。
+    pub mutable: bool,
+    /// 是否为编译期常量。
+    pub constant: bool,
+    /// 绑定上的数组路径约束；普通标量绑定为空。
+    pub container_constraints: PathConstraintTree,
+    namespace_origin: Option<NamespaceOrigin>,
+    imported_function: Option<FunctionSignature>,
+    imported_module: Option<String>,
+    imported_function_module: Option<String>,
+}
+
+/// 区分环境包预登记与可合并的项目目录根，避免普通绑定误合并。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum NamespaceOrigin {
+    /// 尚未被显式项目导入覆盖的环境包根。
+    Package,
+    /// 未带别名的项目导入所绑定的根名称。
+    ImportedRoot,
+}
+
+impl Binding {
+    /// 创建一个普通可变绑定。
+    #[must_use]
+    pub fn mutable(scheme: TypeScheme, initialized: bool) -> Self {
+        Self {
+            scheme,
+            initialized,
+            mutable: true,
+            constant: false,
+            container_constraints: PathConstraintTree::new(),
+            namespace_origin: None,
+            imported_function: None,
+            imported_module: None,
+            imported_function_module: None,
+        }
+    }
+
+    /// 创建一个不可变常量绑定。
+    #[must_use]
+    pub fn constant(scheme: TypeScheme) -> Self {
+        Self {
+            scheme,
+            initialized: true,
+            mutable: false,
+            constant: true,
+            container_constraints: PathConstraintTree::new(),
+            namespace_origin: None,
+            imported_function: None,
+            imported_module: None,
+            imported_function_module: None,
+        }
+    }
+
+    /// 建立只供隐式包命名空间使用的预登记绑定。
+    pub(crate) fn package_root() -> Self {
+        let mut binding = Self::constant(TypeScheme::monomorphic(Type::Dynamic));
+        binding.namespace_origin = Some(NamespaceOrigin::Package);
+        binding
+    }
+
+    /// 建立允许其他同根项目导入合并的限定符绑定。
+    pub(crate) fn imported_root() -> Self {
+        let mut binding = Self::constant(TypeScheme::monomorphic(Type::Dynamic));
+        binding.namespace_origin = Some(NamespaceOrigin::ImportedRoot);
+        binding
+    }
+
+    /// 返回绑定来源，普通名称与显式别名均为 `None`。
+    pub(crate) const fn namespace_origin(&self) -> Option<NamespaceOrigin> {
+        self.namespace_origin
+    }
+
+    /// 为导入函数保留完整参数形状；不把它登记成本模块函数定义。
+    pub(crate) fn with_imported_function(mut self, signature: FunctionSignature) -> Self {
+        self.scheme = TypeScheme::monomorphic(Type::Function {
+            parameters: signature
+                .parameters
+                .iter()
+                .map(|parameter| parameter.ty.clone())
+                .collect(),
+            return_type: Box::new(signature.return_type.clone()),
+        });
+        self.imported_function = Some(signature);
+        self
+    }
+
+    /// 保留导入函数所属模块；前端据此区分 `std.concurrent` 与同名普通函数。
+    pub(crate) fn with_imported_function_module(mut self, module: impl Into<String>) -> Self {
+        self.imported_function_module = Some(module.into());
+        self
+    }
+
+    /// 返回导入函数的来源模块。
+    pub(crate) fn imported_function_module(&self) -> Option<&str> {
+        self.imported_function_module.as_deref()
+    }
+
+    /// 保留命名空间导入的真实模块路径，支持别名及逐级限定访问。
+    pub(crate) fn with_imported_module(mut self, module: String) -> Self {
+        self.imported_module = Some(module);
+        self
+    }
+
+    /// 当前绑定仍指向导入函数时返回它的完整签名。
+    pub(crate) fn imported_function(&self) -> Option<&FunctionSignature> {
+        self.imported_function.as_ref()
+    }
+
+    /// 当前绑定仍指向导入模块时返回真实路径。
+    pub(crate) fn imported_module(&self) -> Option<&str> {
+        self.imported_module.as_deref()
+    }
+
+    /// 赋值复制导入值时同步接口身份；普通赋值传入空值以清除旧身份。
+    pub(crate) fn set_imported_interfaces(
+        &mut self,
+        function: Option<FunctionSignature>,
+        module: Option<String>,
+    ) {
+        self.imported_function = function;
+        self.imported_module = module;
+        self.imported_function_module = None;
+    }
+
+    /// 返回绑定的实例化前方案。
+    #[must_use]
+    pub const fn scheme(&self) -> &TypeScheme {
+        &self.scheme
+    }
+}
+
+/// 作用域操作失败的结构化原因。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum EnvironmentError {
+    /// 当前作用域已有同名绑定。
+    Duplicate(String),
+    /// 所有作用域都找不到该名称。
+    Unknown(String),
+    /// 尝试修改不可变常量。
+    Immutable(String),
+}
+
+impl Display for EnvironmentError {
+    /// 生成开发者可读的环境错误文本。
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Duplicate(name) => write!(formatter, "duplicate binding: {name}"),
+            Self::Unknown(name) => write!(formatter, "unknown binding: {name}"),
+            Self::Immutable(name) => write!(formatter, "immutable binding: {name}"),
+        }
+    }
+}
+
+impl std::error::Error for EnvironmentError {}
+
+/// 按内层优先查找的类型环境。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct TypeEnvironment {
+    scopes: Vec<BTreeMap<String, Binding>>,
+}
+
+impl Default for TypeEnvironment {
+    /// 默认建立一个全局作用域。
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl TypeEnvironment {
+    /// 创建只含全局作用域的环境。
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            scopes: vec![BTreeMap::new()],
+        }
+    }
+
+    /// 返回当前作用域层数。
+    #[must_use]
+    pub fn depth(&self) -> usize {
+        self.scopes.len()
+    }
+
+    /// 开启一个嵌套作用域。
+    pub fn push_scope(&mut self) {
+        self.scopes.push(BTreeMap::new());
+    }
+
+    /// 退出最近作用域；全局作用域不能被弹出。
+    pub fn pop_scope(&mut self) -> Option<BTreeMap<String, Binding>> {
+        (self.scopes.len() > 1).then(|| self.scopes.pop().expect("嵌套作用域存在"))
+    }
+
+    /// 在当前作用域声明一个绑定。
+    pub fn declare(
+        &mut self,
+        name: impl Into<String>,
+        binding: Binding,
+    ) -> Result<(), EnvironmentError> {
+        let name = name.into();
+        let scope = self.scopes.last_mut().expect("至少有全局作用域");
+        if scope.contains_key(&name) {
+            return Err(EnvironmentError::Duplicate(name));
+        }
+        scope.insert(name, binding);
+        Ok(())
+    }
+
+    /// 显式导入可覆盖包预登记；无别名的同根项目导入共享一个限定符。
+    pub(crate) fn declare_import(
+        &mut self,
+        name: String,
+        binding: Binding,
+        merge_root: bool,
+    ) -> Result<(), EnvironmentError> {
+        let scope = self.scopes.last_mut().expect("至少有全局作用域");
+        match scope.entry(name) {
+            std::collections::btree_map::Entry::Vacant(entry) => {
+                entry.insert(binding);
+                Ok(())
+            }
+            std::collections::btree_map::Entry::Occupied(mut entry) => {
+                match entry.get().namespace_origin() {
+                    Some(NamespaceOrigin::Package) => {
+                        entry.insert(binding);
+                        Ok(())
+                    }
+                    Some(NamespaceOrigin::ImportedRoot) if merge_root => Ok(()),
+                    _ => Err(EnvironmentError::Duplicate(entry.key().clone())),
+                }
+            }
+        }
+    }
+
+    /// 声明一个普通可变名称。
+    pub fn declare_mutable(
+        &mut self,
+        name: impl Into<String>,
+        ty: Type,
+        initialized: bool,
+    ) -> Result<(), EnvironmentError> {
+        self.declare(
+            name,
+            Binding::mutable(TypeScheme::monomorphic(ty), initialized),
+        )
+    }
+
+    /// 声明带数组路径约束的普通可变名称。
+    pub fn declare_mutable_with_constraints(
+        &mut self,
+        name: impl Into<String>,
+        ty: Type,
+        initialized: bool,
+        constraints: PathConstraintTree,
+    ) -> Result<(), EnvironmentError> {
+        self.declare(
+            name,
+            Binding {
+                scheme: TypeScheme::monomorphic(ty),
+                initialized,
+                mutable: true,
+                constant: false,
+                container_constraints: constraints,
+                namespace_origin: None,
+                imported_function: None,
+                imported_module: None,
+                imported_function_module: None,
+            },
+        )
+    }
+
+    /// 声明一个编译期常量方案。
+    pub fn declare_constant(
+        &mut self,
+        name: impl Into<String>,
+        scheme: TypeScheme,
+    ) -> Result<(), EnvironmentError> {
+        self.declare(name, Binding::constant(scheme))
+    }
+
+    /// 替换一个已经存在绑定的类型方案。
+    ///
+    /// 函数签名在函数体检查前会以类型变量占位，函数体检查完成后需要把
+    /// 统一后的方案写回环境；普通变量不会通过此接口隐式改变类型。
+    pub fn replace_scheme(
+        &mut self,
+        name: &str,
+        scheme: TypeScheme,
+    ) -> Result<(), EnvironmentError> {
+        let binding = self
+            .lookup_mut(name)
+            .ok_or_else(|| EnvironmentError::Unknown(name.to_owned()))?;
+        binding.scheme = scheme;
+        Ok(())
+    }
+
+    /// 在内层到外层作用域中查找绑定。
+    #[must_use]
+    pub fn lookup(&self, name: &str) -> Option<&Binding> {
+        self.scopes.iter().rev().find_map(|scope| scope.get(name))
+    }
+
+    /// 只在当前最内层作用域查找绑定，不穿透外层作用域。
+    #[must_use]
+    pub fn lookup_current(&self, name: &str) -> Option<&Binding> {
+        self.scopes.last().and_then(|scope| scope.get(name))
+    }
+
+    /// 判断任一可见作用域是否包含名称。
+    #[must_use]
+    pub fn contains(&self, name: &str) -> bool {
+        self.lookup(name).is_some()
+    }
+
+    /// 判断当前最内层作用域是否已经声明名称。
+    #[must_use]
+    pub fn contains_current(&self, name: &str) -> bool {
+        self.lookup_current(name).is_some()
+    }
+
+    /// 返回名称绑定的方案；名称不存在时返回 `None`。
+    #[must_use]
+    pub fn scheme(&self, name: &str) -> Option<&TypeScheme> {
+        self.lookup(name).map(Binding::scheme)
+    }
+
+    /// 可变地查找绑定，用于赋值状态更新。
+    pub fn lookup_mut(&mut self, name: &str) -> Option<&mut Binding> {
+        self.scopes
+            .iter_mut()
+            .rev()
+            .find_map(|scope| scope.get_mut(name))
+    }
+
+    /// 标记一个已存在的绑定已经初始化。
+    pub fn mark_initialized(&mut self, name: &str) -> Result<(), EnvironmentError> {
+        let binding = self
+            .lookup_mut(name)
+            .ok_or_else(|| EnvironmentError::Unknown(name.to_owned()))?;
+        binding.initialized = true;
+        Ok(())
+    }
+
+    /// 检查并更新普通赋值的初始化状态。
+    pub fn assign(&mut self, name: &str) -> Result<(), EnvironmentError> {
+        let binding = self
+            .lookup_mut(name)
+            .ok_or_else(|| EnvironmentError::Unknown(name.to_owned()))?;
+        if !binding.mutable {
+            return Err(EnvironmentError::Immutable(name.to_owned()));
+        }
+        binding.initialized = true;
+        binding.imported_function = None;
+        binding.imported_module = None;
+        Ok(())
+    }
+
+    /// 收集环境中所有方案主体的自由类型变量。
+    #[must_use]
+    pub fn free_type_vars(&self) -> BTreeSet<TypeVarId> {
+        let mut variables = BTreeSet::new();
+        for scope in &self.scopes {
+            for binding in scope.values() {
+                let mut binding_variables = binding.scheme.ty.free_vars();
+                for quantified in &binding.scheme.quantified {
+                    binding_variables.remove(quantified);
+                }
+                variables.extend(binding_variables);
+            }
+        }
+        variables
+    }
+}
+
+#[cfg(test)]
+/// 覆盖作用域遮蔽和绑定状态的单元测试。
+mod tests {
+    use super::{Binding, EnvironmentError, TypeEnvironment};
+    use crate::types::{Type, TypeScheme};
+    use xiao_syntax::ScalarType;
+
+    #[test]
+    /// 验证嵌套作用域遮蔽、重复声明和常量不可变约束。
+    fn manages_scopes_and_mutability() {
+        let mut environment = TypeEnvironment::new();
+        environment
+            .declare_mutable("value", Type::scalar(ScalarType::Int), false)
+            .expect("首次声明应成功");
+        assert!(matches!(
+            environment.declare_mutable("value", Type::scalar(ScalarType::Int), true),
+            Err(EnvironmentError::Duplicate(_))
+        ));
+        environment.push_scope();
+        environment
+            .declare(
+                "value",
+                Binding::constant(TypeScheme::monomorphic(Type::scalar(ScalarType::Str))),
+            )
+            .expect("内层遮蔽应成功");
+        assert!(environment.contains_current("value"));
+        assert_eq!(environment.depth(), 2);
+        assert!(matches!(
+            environment.assign("value"),
+            Err(EnvironmentError::Immutable(_))
+        ));
+        environment.pop_scope();
+        assert!(environment.assign("value").is_ok());
+    }
+}

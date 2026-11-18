@@ -1,0 +1,6 @@
+{
+  "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "next_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "tag": "v1",
+  "statuses": ["fresh", "cached", "unavailable"]
+}

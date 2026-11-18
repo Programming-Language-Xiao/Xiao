@@ -1,0 +1,181 @@
+//! Xiao N0-A LLVM 原生后端。
+//!
+//! 后端只消费已经由 `xiao-driver` 生成并验证的 [`xiao_ir::IrProgram`]，把 N0-A 支持的
+//! 静态标量和控制流写成 LLVM IR 文本。LLVM 开发库不是 Rust 编译期依赖；验证、目标文件
+//! 生成和链接都通过调用方显式注入的外部工具链完成。
+
+/// 固定位置/命名实参的共享绑定计划。
+mod arguments;
+/// 链接后原生产物的对象格式、符号和 Runtime 组成检查。
+mod artifact;
+/// 15B 固定条件性能基线与噪声阈值。
+mod baseline;
+/// 原生产物构建请求和运行观察适配。
+mod build;
+/// cmath 的冻结形参绑定；静态与动态路径共同消费。
+mod cmath;
+/// 动态值、容器、表和正常释放计划的 Runtime ABI 降低。
+mod dynamic;
+/// 后端结构化错误定义。
+mod error;
+/// 类型化 IR 到 LLVM 文本的降低实现。
+mod ir;
+/// 同源 IR 的原生并发调用计划与 fail-closed 校验。
+mod native_concurrency;
+/// 22E 自描述原生元数据与不执行入口的校验器。
+mod native_metadata;
+/// 原生并发产物的正式元数据 codec、读取和验收接口。
+pub use native_metadata::{
+    NATIVE_METADATA_VERSION, NativeMetadata, NativeMetadataError, NativeRuntimeSupport,
+    read_native_metadata, read_native_metadata_bytes, validate_native_metadata_file,
+};
+/// 15A LLVM Pass 映射、开关和 Runtime 裁剪报告。
+mod optimization;
+/// 15B 可复现构建比较与差异白名单。
+mod reproducible;
+/// 规范化目标描述和固定宽度约束。
+mod target;
+/// LLVM 文本转义和构建指纹的共用纯函数。
+mod text;
+/// 外部 LLVM 工具链调用和指纹。
+mod toolchain;
+
+/// 产物层符号、依赖和 Runtime 组成验证接口。
+pub use artifact::{
+    ArtifactAcceptanceMode, ArtifactInspection, ArtifactModeReport, ArtifactRuntimeComposition,
+    ArtifactVerification, SymbolTableComparison, SymbolTableReport, SymbolTableStatus,
+    compare_symbol_table_reports, inspect_artifact, inspect_symbol_table, verify_artifact,
+    verify_artifact_mode,
+};
+/// 性能基线模型。
+pub use baseline::{
+    BaselineCondition, BaselineError, PerformanceBaseline, PerformanceSample, PerformanceSpread,
+    measure_baseline,
+};
+/// 构建请求、原生产物和运行观察接口。
+pub use build::{BuildRequest, NativeArtifact, NativeBuild, NativeRun, NativeRunResult};
+/// 后端失败类型和统一结果别名。
+pub use error::{CodegenError, Result};
+/// LLVM 文本降低选项、入口观察策略和降低入口。
+pub use ir::{
+    BASELINE_OPTIMIZATION_LEVEL, CodegenOptions, EntryObservation, LlvmModule, NativeInlineFrame,
+    NativeSourceMapEntry, NativeStartup, validate_program,
+};
+/// LLVM 并发 lowering 消费的同源 IR 计划。
+pub use native_concurrency::{
+    NATIVE_CONCURRENCY_OPERATIONS, NativeConcurrencyCall, NativeConcurrencyPlan,
+    native_concurrency_plan,
+};
+/// LLVM Pass 计划和可证明 Runtime 裁剪报告。
+pub use optimization::{
+    LlvmOptimizationPlan, LlvmOptimizationReport, LlvmPassKind, LlvmPassSwitches,
+};
+/// 可复现构建比较模型。
+pub use reproducible::{
+    ArtifactReproducibilityReport, ReproducibilityReport, ReproducibleDifference,
+    ReproducibleDifferenceKind, compare_artifact_bytes, compare_reproducible_builds,
+    normalize_llvm_text,
+};
+/// 目标字节序、对象格式和规范化目标描述。
+pub use target::{Endian, ObjectFormat, TargetDescription};
+/// 计算跨模块复用的稳定 FNV-1a 文本哈希。
+pub use text::stable_hash;
+/// 外部 LLVM 工具链描述、版本和构建指纹。
+pub use toolchain::{
+    Toolchain, ToolchainFingerprint, ToolchainVersions, parse_native_static_libraries,
+    query_native_static_libraries,
+};
+/// 共享优化器的稳定报告类型。
+pub use xiao_optimizer::OptimizationReport;
+
+/// 后端接口版本；参与原生产物指纹。
+///
+/// 版本 4 接通 ABI 1.8 表生命周期与返回帧；版本 3 只生成回调并保留构造拒绝。
+/// 保留版本 2 的 COFF `sret`/间接参数约定。
+/// 版本 11 分离入口 checkpoint 重置；版本 12 增加 native 栈帧和边界复制源槽释放。
+/// 版本 13 对齐边界复制源/stack tuple 清理，并把固定 ABI scratch 分配移到函数入口。
+/// 版本 14 接入公开并发元数据与最小位集，收紧动态数量分配的移动规则。
+/// 版本 15 接入 intrinsic 32 的只读错误字节视图与 ABI 1.18。
+/// 版本 16 统一 std 别名与规范模块的初始化身份及原生函数绑定。
+/// 版本 17 接通固定参数命名调用，保持源码求值顺序并隔离新绑定指纹。
+/// 版本 21 接通 B4-3 cmath C ABI 调用及 Float ** 共享pow；Runtime ABI仍为1.18。
+/// 版本 22 使静态 Float/Sfloat 相等与不等在数值提升后按位比较，保留异号零语义。
+/// 当前版本进入工具链/产物指纹。
+pub const CODEGEN_VERSION: u32 = 22;
+
+/// 将同一份类型化 IR 降低为静态标量或 Runtime ABI LLVM 模块。
+pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {
+    // 并发入口必须先从同一份类型化 IR 建立唯一计划。这样即使后端尚未支持某个
+    // 新入口，也会在 lowering 前以结构化错误停止，而不会退化成普通函数调用。
+    let concurrency_plan = NativeConcurrencyPlan::from_program(program)?;
+    for call in concurrency_plan.calls() {
+        concurrency_plan.require_known_operation(call)?;
+    }
+    let required_features = xiao_ir::required_concurrency_features(program)
+        .map_err(|message| CodegenError::InvalidIr { message })?;
+    let requires_metadata = !concurrency_plan.is_empty() || required_features != 0;
+    if requires_metadata && options.target.pointer_width != 64 {
+        return Err(CodegenError::NativeMetadata {
+            code: "X20-TARGET-001".to_owned(),
+            message: "并发原生目标必须为 64 位".to_owned(),
+        });
+    }
+    xiao_intrinsics::validate_capability_mask(options.capabilities).map_err(|error| {
+        CodegenError::InvalidIr {
+            message: format!("能力上下文无效：{error}"),
+        }
+    })?;
+    let level = xiao_optimizer::OptimizationLevel::try_from(options.optimization_level).map_err(
+        |error| CodegenError::Unsupported {
+            feature: error.to_string(),
+            span: None,
+        },
+    )?;
+    let mut config =
+        xiao_optimizer::OptimizationConfig::baseline(options.target.fingerprint_fields())
+            .with_level(level);
+    config.debug_info = options.debug_startup.is_some();
+    config.diagnostic_events = options.debug_startup.is_some();
+    let native_config = config.clone();
+    let pipeline = xiao_optimizer::OptimizationPipeline::new(config).map_err(|error| {
+        CodegenError::InvalidIr {
+            message: error.to_string(),
+        }
+    })?;
+    let optimized = pipeline
+        .run(program)
+        .map_err(|error| CodegenError::InvalidIr {
+            message: error.to_string(),
+        })?;
+    let mut module = if dynamic::program_uses_runtime(&optimized.program) {
+        dynamic::lower_program_with_concurrency(
+            &optimized.program,
+            options,
+            &NativeConcurrencyPlan::from_program(&optimized.program)?,
+        )?
+    } else {
+        ir::lower_static_program(&optimized.program, options)?
+    };
+    module.optimization_report = optimized.report;
+    let plan = LlvmOptimizationPlan::from_config(&native_config, &options.target, "unknown")
+        .map_err(|message| CodegenError::InvalidIr { message })?;
+    module.native_optimization_report =
+        LlvmOptimizationReport::from_plan(plan, &module.runtime_components);
+    if requires_metadata {
+        let metadata = NativeMetadata::for_program(program, &options.target).map_err(|error| {
+            CodegenError::NativeMetadata {
+                code: error.code.to_owned(),
+                message: error.message,
+            }
+        })?;
+        module.text.push_str(
+            &native_metadata::emit(&metadata, options.target.object_format).map_err(|error| {
+                CodegenError::NativeMetadata {
+                    code: error.code.to_owned(),
+                    message: error.message,
+                }
+            })?,
+        );
+    }
+    Ok(module)
+}

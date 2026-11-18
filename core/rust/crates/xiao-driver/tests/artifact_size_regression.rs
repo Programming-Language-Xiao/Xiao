@@ -1,0 +1,97 @@
+//! 19C 体积回归：固定输入下的 `.xiaoc`/`.xar` 提交基线。
+
+use std::fs;
+use std::path::PathBuf;
+
+use xiao_artifacts::{
+    ArchiveEntry, ArchiveIndex, Digest256, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR, ObjectKind,
+};
+use xiao_bytecode::{XiaocMetadata, encode_xiaoc, lower_program};
+use xiao_driver::{FrontendCompiler, FrontendRequest};
+use xiao_runtime_abi::ABI_ENCODED_VERSION;
+use xiao_xar::{XarObject, encode_xar};
+
+/// 生成基线时使用的稳定源码，修改源码必须同时重新审查该回归上限。
+const SIZE_REGRESSION_SOURCE: &str = "print(\"19C size baseline\")\n";
+/// 2026-10-06 Windows 基线：固定源码的规范 `.xiaoc` 字节数。
+const XIAOC_BASELINE_BYTES: usize = 1_256;
+/// B5的ABI1.19改变头/指令版本和摘要，实测DEFLATE后归档1,168→1,167字节。
+/// `.xiaoc`仍为1,256字节，容器格式与索引schema未变；历史基线保留在固定提交。
+const XAR_BASELINE_BYTES: usize = 1_167;
+
+fn artifacts() -> (Vec<u8>, Vec<u8>) {
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(SIZE_REGRESSION_SOURCE))
+        .expect("体积基线源码应通过前端");
+    let xiaoc = encode_xiaoc(
+        &lower_program(artifact.ir()),
+        XiaocMetadata::new("19c-size-baseline").with_optimization_fingerprint("19c-baseline"),
+    )
+    .expect("应编码体积基线 xiaoc");
+    let object = XarObject::from_bytes(ObjectKind::Xiaoc, xiaoc.clone());
+    let index = ArchiveIndex {
+        schema_major: INDEX_SCHEMA_MAJOR,
+        schema_minor: INDEX_SCHEMA_MINOR,
+        entry: "main.xiaoc".to_owned(),
+        entries: vec![ArchiveEntry {
+            logical_path: "main.xiaoc".to_owned(),
+            object_kind: ObjectKind::Xiaoc,
+            digest: object.digest,
+            module: "19c-size-baseline".to_owned(),
+            target: "portable".to_owned(),
+            length: object.bytes.len() as u64,
+        }],
+        dependency_lock_digest: "0".repeat(64),
+        runtime_abi_min: ABI_ENCODED_VERSION,
+        runtime_abi_max: ABI_ENCODED_VERSION,
+        platform: "portable".to_owned(),
+        debug_activation: false,
+        language_locale: "zh-CN".to_owned(),
+        stdlib_interface_version: 1,
+        language_version: "0.1.0".to_owned(),
+        stdlib_modules: Vec::new(),
+        required_capabilities: 0,
+        required_features: 0,
+    };
+    let xar = encode_xar(&index, &[object]).expect("应编码体积基线 xar");
+    (xiaoc, xar)
+}
+
+#[test]
+fn deterministic_artifacts_do_not_grow_past_committed_baseline() {
+    let (xiaoc, xar) = artifacts();
+    assert_eq!(
+        xiaoc.len(),
+        XIAOC_BASELINE_BYTES,
+        "xiaoc 基线变化需显式审查"
+    );
+    assert_eq!(xar.len(), XAR_BASELINE_BYTES, "xar 基线变化需显式审查");
+}
+
+#[test]
+fn performance_report_hash_matches_baseline_file_bytes() {
+    let manifest_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let repository_root = manifest_directory
+        .ancestors()
+        .nth(4)
+        .expect("xiao-driver crate 应位于仓库 core/rust/crates 下");
+    let baseline_bytes = fs::read(repository_root.join("tests/benchmarks/baseline.json"))
+        .expect("读取 19D 基线文件");
+    assert!(
+        !baseline_bytes.windows(2).any(|pair| pair == b"\r\n"),
+        "baseline.json 由 .gitattributes 固定为 LF，摘要按文件原始 UTF-8 字节计算"
+    );
+    let report: serde_json::Value = serde_json::from_slice(
+        &fs::read(repository_root.join("tests/benchmarks/reports/19d-performance.json"))
+            .expect("读取 19D 性能报告"),
+    )
+    .expect("19D 性能报告必须是 JSON");
+    let recorded_digest = report["baseline"]["sha256"]
+        .as_str()
+        .expect("报告必须登记基线摘要");
+    assert_eq!(
+        Digest256::of_bytes(&baseline_bytes).as_hex(),
+        recorded_digest,
+        "报告摘要必须匹配 baseline.json 的原始 UTF-8 字节"
+    );
+}

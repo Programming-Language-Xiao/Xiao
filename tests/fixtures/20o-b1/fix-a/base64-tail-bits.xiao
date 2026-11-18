@@ -1,0 +1,49 @@
+# 只探测一个四字符分组的严格判据和模式选择，不是完整编解码器。
+from stdlib.text import find, length
+
+def probe_quartet(str group, bool url_safe) -> bool
+    if length(group) != 4
+        return false
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    if url_safe
+        alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+    first = find(alphabet, group[0])
+    second = find(alphabet, group[1])
+    if first < 0 or second < 0
+        return false
+    if group[2] == "="
+        return group[3] == "=" and second % 16 == 0
+    third = find(alphabet, group[2])
+    if third < 0
+        return false
+    if group[3] == "="
+        return third % 4 == 0
+    return find(alphabet, group[3]) >= 0
+
+print(probe_quartet("Zg==", false))
+print(probe_quartet("Zh==", false))
+print(probe_quartet("Zm8=", false))
+print(probe_quartet("Zm9=", false))
+print(probe_quartet("Zm9v", false))
+print(probe_quartet("Zg=", false))
+print(probe_quartet("=g==", false))
+print(probe_quartet("Zg===", false))
+print(probe_quartet("Zg==", true))
+print(probe_quartet("++//", false))
+print(probe_quartet("--__", true))
+print(probe_quartet("--__", false))
+print(probe_quartet("++//", true))
+print(probe_quartet("+_8=", false))
+print(probe_quartet("+_8=", true))
+print(probe_quartet("Z g=", false))
+print(probe_quartet("Zg=\n", false))
+
+standard = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+safe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+packed = 251 * 65536 + 239 * 256 + 255
+a = packed // 262144
+b = packed // 4096 % 64
+c = packed // 64 % 64
+d = packed % 64
+print(standard[a] + standard[b] + standard[c] + standard[d])
+print(safe[a] + safe[b] + safe[c] + safe[d])

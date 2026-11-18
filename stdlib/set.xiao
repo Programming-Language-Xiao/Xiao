@@ -1,0 +1,33 @@
+# Xiao 官方 set 模块（20F/20G 通用容器参数与集合入口）。
+#
+# 八个入口都由调用点实例化；只有 add/remove 复用集合变更 intrinsic，
+# 其余入口继续使用迭代器、比较和集合运算。
+def size<T>(set<T> values) -> int
+    count = 0
+    for value in values
+        count = count + 1
+    return count
+
+def is_empty<T>(set<T> values) -> bool
+    return size(values) == 0
+
+def add<T>(set<T> values, T value) -> none
+    return set_add(values, value)
+
+def remove<T>(set<T> values, T value) -> none
+    removed = set_remove(values, value)
+    if not removed
+        raise Error(code = "SET_ELEMENT_MISSING")
+    return none
+
+def contains<T>(set<T> values, T value) -> bool
+    return value in values
+
+def union<T>(set<T> left, set<T> right) -> set<T>
+    return left + right
+
+def intersection<T>(set<T> left, set<T> right) -> set<T>
+    return left & right
+
+def difference<T>(set<T> left, set<T> right) -> set<T>
+    return left - right

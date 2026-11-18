@@ -1,0 +1,381 @@
+//! 11A-E3D：多源 SemVer 选择与回溯的独立规格测试。
+
+use xiao_package::{
+    ArtifactReference, ConfiguredSource, IndexDependency, IndexPackage,
+    OFFICIAL_LIBRARY_DEPENDENCY_CODE, OFFICIAL_STANDARD_LIBRARY_PACKAGE, SOURCE_AMBIGUOUS_CODE,
+    SOURCE_INVALID_CODE, SnapshotStatus, SolveRequirement, SourceDescriptor, SourceSnapshot,
+    VERSION_UNSATISFIED_CODE, federate, solve_dependencies,
+};
+
+fn source(alias: &str, order: usize) -> ConfiguredSource {
+    ConfiguredSource {
+        descriptor: SourceDescriptor::new(
+            "static",
+            &format!("https://{alias}.example"),
+            Some(alias),
+            None,
+            1,
+        )
+        .unwrap(),
+        config_order: order,
+        imported_from: None,
+    }
+}
+
+fn package(name: &str, version: &str, dependencies: &[(&str, &str, Option<&str>)]) -> IndexPackage {
+    IndexPackage {
+        name: name.to_owned(),
+        version: version.to_owned(),
+        variant: "any".to_owned(),
+        withdrawn: false,
+        dependencies: dependencies
+            .iter()
+            .map(|(name, version, source)| IndexDependency {
+                name: (*name).to_owned(),
+                version: (*version).to_owned(),
+                source: source.map(str::to_owned),
+            })
+            .collect(),
+        features: Vec::new(),
+        target: None,
+        abi: None,
+        xiao_range: None,
+        runtime_range: None,
+        source_artifact: ArtifactReference {
+            location: format!("objects/{name}/{version}"),
+            length: 1,
+            digest: "a".repeat(64),
+        },
+        binary_artifacts: Vec::new(),
+    }
+}
+
+fn snapshot(source: &ConfiguredSource, candidates: Vec<IndexPackage>) -> SourceSnapshot {
+    let queried_packages = candidates
+        .iter()
+        .map(|package| package.name.clone())
+        .collect();
+    SourceSnapshot {
+        config_order: source.config_order,
+        source_id: source.descriptor.source.source_id.clone(),
+        snapshot_id: Some("snapshot".to_owned()),
+        snapshot_digest: Some("b".repeat(64)),
+        status: SnapshotStatus::Fresh,
+        candidates,
+        queried_packages,
+    }
+}
+
+fn requirement(name: &str, version: &str, source: Option<&str>) -> SolveRequirement {
+    SolveRequirement {
+        name: name.to_owned(),
+        version: version.to_owned(),
+        source: source.map(str::to_owned),
+    }
+}
+
+#[test]
+/// 官方标准库保留名不得由普通索引候选解析，且失败使用独立稳定诊断。
+fn official_standard_library_is_rejected_by_normal_dependency_solver() {
+    let first = source("first", 0);
+    let sources = [first.clone()];
+    let direct_snapshot = [snapshot(
+        &first,
+        vec![package(OFFICIAL_STANDARD_LIBRARY_PACKAGE, "1.0.0", &[])],
+    )];
+    let direct_records = federate(&direct_snapshot).unwrap();
+    let direct_error = solve_dependencies(
+        &sources,
+        &direct_snapshot,
+        &direct_records,
+        &[requirement(OFFICIAL_STANDARD_LIBRARY_PACKAGE, "*", None)],
+        None,
+    )
+    .expect_err("官方标准库不能作为直接普通依赖解析");
+    assert_eq!(direct_error.code, OFFICIAL_LIBRARY_DEPENDENCY_CODE);
+    assert_eq!(OFFICIAL_LIBRARY_DEPENDENCY_CODE, "X05-PACKAGE-006");
+
+    let transitive_snapshot = [snapshot(
+        &first,
+        vec![
+            package(
+                "app",
+                "1.0.0",
+                &[(OFFICIAL_STANDARD_LIBRARY_PACKAGE, "*", None)],
+            ),
+            package(OFFICIAL_STANDARD_LIBRARY_PACKAGE, "1.0.0", &[]),
+        ],
+    )];
+    let transitive_records = federate(&transitive_snapshot).unwrap();
+    let transitive_error = solve_dependencies(
+        &sources,
+        &transitive_snapshot,
+        &transitive_records,
+        &[requirement("app", "*", None)],
+        None,
+    )
+    .expect_err("传递依赖也不能把官方标准库加入普通依赖图");
+    assert_eq!(transitive_error.code, OFFICIAL_LIBRARY_DEPENDENCY_CODE);
+}
+
+#[test]
+fn first_source_wins_before_any_cross_source_version_comparison() {
+    let first = source("first", 0);
+    let second = source("second", 1);
+    let sources = [first.clone(), second.clone()];
+    let snapshots = [
+        snapshot(&first, vec![package("lib", "1.2.0", &[])]),
+        snapshot(&second, vec![package("lib", "9.0.0", &[])]),
+    ];
+    let records = federate(&snapshots).unwrap();
+    let first_result = solve_dependencies(
+        &sources,
+        &snapshots,
+        &records,
+        &[requirement("lib", "*", None)],
+        None,
+    )
+    .unwrap();
+    assert_eq!(first_result["lib"].package.version, "1.2.0");
+    assert_eq!(
+        first_result["lib"].source_id,
+        first.descriptor.source.source_id
+    );
+    let fallback = solve_dependencies(
+        &sources,
+        &snapshots,
+        &records,
+        &[requirement("lib", ">=2", None)],
+        None,
+    )
+    .unwrap();
+    assert_eq!(fallback["lib"].package.version, "9.0.0");
+    let second_result = solve_dependencies(
+        &sources,
+        &snapshots,
+        &records,
+        &[requirement("lib", "1", Some("second"))],
+        None,
+    );
+    assert_eq!(second_result.unwrap_err().code, VERSION_UNSATISFIED_CODE);
+    let second_result = solve_dependencies(
+        &sources,
+        &snapshots,
+        &records,
+        &[requirement("lib", "9", Some("second"))],
+        None,
+    )
+    .unwrap();
+    assert_eq!(second_result["lib"].package.version, "9.0.0");
+}
+
+#[test]
+fn backtracks_when_new_transitive_constraint_conflicts_with_prior_choice() {
+    let first = source("first", 0);
+    let sources = [first.clone()];
+    let snapshots = [snapshot(
+        &first,
+        vec![
+            package("app", "2.0.0", &[("lib", "1", None)]),
+            package("app", "1.0.0", &[("lib", "2", None)]),
+            package("lib", "1.5.0", &[]),
+            package("lib", "2.3.0", &[]),
+        ],
+    )];
+    let records = federate(&snapshots).unwrap();
+    let input = [requirement("app", "*", None), requirement("lib", "2", None)];
+    let solve = || solve_dependencies(&sources, &snapshots, &records, &input, None).unwrap();
+    assert_eq!(solve(), solve());
+    assert_eq!(solve()["app"].package.version, "1.0.0");
+    assert_eq!(solve()["lib"].package.version, "2.3.0");
+}
+
+#[test]
+fn missing_solution_and_equal_precedence_are_distinct_errors() {
+    let first = source("first", 0);
+    let sources = [first.clone()];
+    let snapshots = [snapshot(
+        &first,
+        vec![
+            package("lib", "1.0.0+first", &[]),
+            package("lib", "1.0.0+second", &[]),
+        ],
+    )];
+    let records = federate(&snapshots).unwrap();
+    assert_eq!(
+        solve_dependencies(
+            &sources,
+            &snapshots,
+            &records,
+            &[requirement("lib", "1", None)],
+            None,
+        )
+        .unwrap_err()
+        .code,
+        SOURCE_AMBIGUOUS_CODE
+    );
+    assert_eq!(
+        solve_dependencies(
+            &sources,
+            &snapshots,
+            &records,
+            &[requirement("lib", "2", None)],
+            None,
+        )
+        .unwrap_err()
+        .code,
+        VERSION_UNSATISFIED_CODE
+    );
+}
+
+#[test]
+fn separate_constraints_share_prerelease_admission() {
+    let first = source("first", 0);
+    let sources = [first.clone()];
+    let snapshots = [snapshot(&first, vec![package("lib", "1.2.3-alpha.2", &[])])];
+    let records = federate(&snapshots).unwrap();
+    let result = solve_dependencies(
+        &sources,
+        &snapshots,
+        &records,
+        &[
+            requirement("lib", ">=1.2.3-alpha.1", None),
+            requirement("lib", "<2", None),
+        ],
+        None,
+    )
+    .unwrap();
+    assert_eq!(result["lib"].package.version, "1.2.3-alpha.2");
+}
+
+#[test]
+fn conflicting_transitive_sources_can_backtrack() {
+    let first = source("first", 0);
+    let second = source("second", 1);
+    let sources = [first.clone(), second.clone()];
+    let snapshots = [
+        snapshot(
+            &first,
+            vec![
+                package("app", "2.0.0", &[("lib", "1", Some("second"))]),
+                package("app", "1.0.0", &[("lib", "1", Some("first"))]),
+                package("lib", "1.0.0", &[]),
+            ],
+        ),
+        snapshot(&second, vec![package("lib", "1.0.0", &[])]),
+    ];
+    let records = federate(&snapshots).unwrap();
+    let result = solve_dependencies(
+        &sources,
+        &snapshots,
+        &records,
+        &[
+            requirement("app", "*", None),
+            requirement("lib", "1", Some("first")),
+        ],
+        None,
+    )
+    .unwrap();
+    assert_eq!(result["app"].package.version, "1.0.0");
+    assert_eq!(result["lib"].source_id, first.descriptor.source.source_id);
+}
+
+#[test]
+fn cyclic_highest_candidate_backtracks_to_acyclic_release() {
+    let first = source("first", 0);
+    let sources = [first.clone()];
+    let snapshots = [snapshot(
+        &first,
+        vec![
+            package("app", "2.0.0", &[("helper", "1", None)]),
+            package("app", "1.0.0", &[]),
+            package("helper", "1.0.0", &[("app", "*", None)]),
+        ],
+    )];
+    let records = federate(&snapshots).unwrap();
+    let result = solve_dependencies(
+        &sources,
+        &snapshots,
+        &records,
+        &[requirement("app", "*", None)],
+        None,
+    )
+    .unwrap();
+    assert_eq!(result["app"].package.version, "1.0.0");
+    assert!(!result.contains_key("helper"));
+}
+
+#[test]
+fn conditional_releases_are_not_selected_without_compatibility_context() {
+    let first = source("first", 0);
+    let sources = [first.clone()];
+    let lower = package("lib", "1.0.0", &[]);
+    let mut conditional = package("lib", "2.0.0", &[]);
+    for kind in ["features", "target", "abi", "xiao", "runtime"] {
+        conditional.features.clear();
+        conditional.target = None;
+        conditional.abi = None;
+        conditional.xiao_range = None;
+        conditional.runtime_range = None;
+        match kind {
+            "features" => conditional.features.push("gpu".to_owned()),
+            "target" => conditional.target = Some("other-target".to_owned()),
+            "abi" => conditional.abi = Some("other-abi".to_owned()),
+            "xiao" => conditional.xiao_range = Some(">=9.0.0".to_owned()),
+            "runtime" => conditional.runtime_range = Some(">=9.0.0".to_owned()),
+            _ => unreachable!(),
+        }
+        let snapshots = [snapshot(&first, vec![lower.clone(), conditional.clone()])];
+        let records = federate(&snapshots).unwrap();
+        let requirement = [requirement("lib", "*", None)];
+        let chosen = solve_dependencies(
+            &sources,
+            &snapshots,
+            &records,
+            &requirement,
+            Some("our-target"),
+        )
+        .unwrap();
+        assert_eq!(chosen["lib"].package.version, "1.0.0", "{kind}");
+
+        let snapshots = [snapshot(&first, vec![conditional.clone()])];
+        let records = federate(&snapshots).unwrap();
+        assert_eq!(
+            solve_dependencies(&sources, &snapshots, &records, &requirement, None)
+                .unwrap_err()
+                .code,
+            VERSION_UNSATISFIED_CODE,
+            "{kind}"
+        );
+    }
+}
+
+#[test]
+fn record_key_must_match_package_identity() {
+    let first = source("first", 0);
+    let sources = [first.clone()];
+    let snapshots = [snapshot(&first, vec![package("lib", "1.0.0", &[])])];
+    let verified = federate(&snapshots).unwrap();
+    for mismatched_field in ["name", "version", "variant"] {
+        let mut records = verified.clone();
+        match mismatched_field {
+            "name" => records[0].package.name = "shadow".to_owned(),
+            "version" => records[0].package.version = "2.0.0".to_owned(),
+            "variant" => records[0].package.variant = "other".to_owned(),
+            _ => unreachable!(),
+        }
+        assert_eq!(
+            solve_dependencies(
+                &sources,
+                &snapshots,
+                &records,
+                &[requirement("lib", "*", None)],
+                None,
+            )
+            .unwrap_err()
+            .code,
+            SOURCE_INVALID_CODE,
+            "{mismatched_field}"
+        );
+    }
+}

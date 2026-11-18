@@ -1,0 +1,29 @@
+{
+  "type": "package",
+  "request_id": "fixture-package-1",
+  "protocol_version": 1,
+  "core_version": 1,
+  "operation": "sync",
+  "project_root": "/workspace/project",
+  "active_environment": "/workspace/project/dev",
+  "config_text": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n",
+  "keep_extra": true,
+  "locked": false,
+  "frozen": true,
+  "target": {
+    "triple": "x86_64-unknown-linux-gnu",
+    "pointer_width": 64,
+    "endian": "little",
+    "object_format": "elf"
+  },
+  "toolchain": {
+    "clang": "clang",
+    "llvm_as": null,
+    "llc": null,
+    "runtime_library": null,
+    "native_static_libraries": [],
+    "rustc": null,
+    "diagnostics_path": null,
+    "versions": { "clang": "clang 18", "llvm_as": null, "llc": null, "rustc": null }
+  }
+}

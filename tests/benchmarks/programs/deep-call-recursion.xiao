@@ -1,0 +1,7 @@
+def step(int depth, int first, int second, int third, int fourth) -> int
+    if depth == 0
+        return first + second + third + fourth
+    return step(depth - 1, first + 1, second + 2, third + 3, fourth + 4)
+
+def benchmark(int depth) -> int
+    return step(depth, 1, 2, 3, 4)

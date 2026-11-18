@@ -1,0 +1,8 @@
+[
+  {"id":"success","source":"","stdout":"65\n0\n38634\n128512\n65279\n65\n0\n38634\n128512\n101\n769\n65279\n"},
+  {"id":"with-bounds","source":"","stdout":"65\n0\n38634\n128512\n65279\n65\n0\n38634\n128512\n101\n769\n65279\nX06-RUNTIME-017\nX06-RUNTIME-017\nX06-RUNTIME-017\n"},
+  {"id":"nested-jumps","source":"","stdout":"a\nb\na\nb\n"},
+  {"id":"temporary-return","source":"","stdout":"a\n1\n"},
+  {"id":"selector-errors","source":"","stdout":"c\nX06-RUNTIME-017\nX06-RUNTIME-013\nab\n"},
+  {"id":"loop-body-error","source":"","stdout":"X06-RUNTIME-017\nab\n"}
+]

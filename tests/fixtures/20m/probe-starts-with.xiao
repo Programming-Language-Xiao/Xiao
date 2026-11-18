@@ -1,0 +1,12 @@
+from stdlib.text import find
+
+# 候选可由一个既有表达式组合，验证后交冻结表裁剪。
+def probe_starts_with(str text, str needle) -> bool
+    return find(text, needle) == 0
+
+print(probe_starts_with("", ""))
+print(probe_starts_with("小😀雪", ""))
+print(probe_starts_with("小😀雪", "小😀"))
+print(probe_starts_with("小😀雪", "😀"))
+print(probe_starts_with("小😀雪", "小😀雪长"))
+print(probe_starts_with("", "a"))

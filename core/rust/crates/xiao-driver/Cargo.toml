@@ -1,0 +1,61 @@
+[package]
+name = "xiao-driver"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Xiao compiler and runtime driver interfaces"
+
+[lints]
+workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "xiao-core"
+path = "src/protocol_main.rs"
+
+[[bin]]
+name = "process_child_exit7"
+path = "src/bin/process_child_exit7.rs"
+test = false
+bench = false
+
+[[bin]]
+name = "process_child_abort"
+path = "src/bin/process_child_abort.rs"
+test = false
+bench = false
+
+[dependencies]
+xiao-diagnostics = { path = "../xiao-diagnostics" }
+xiao-artifacts = { path = "../xiao-artifacts" }
+xiao-i18n = { path = "../xiao-i18n" }
+xiao-source = { path = "../xiao-source" }
+xiao-config = { path = "../xiao-config" }
+xiao-syntax = { path = "../xiao-syntax" }
+xiao-types = { path = "../xiao-types" }
+xiao-modules = { path = "../xiao-modules" }
+xiao-lifetime = { path = "../xiao-lifetime" }
+xiao-ir = { path = "../xiao-ir" }
+xiao-intrinsics = { path = "../xiao-intrinsics" }
+xiao-bytecode = { path = "../xiao-bytecode" }
+xiao-vm = { path = "../xiao-vm" }
+xiao-xar = { path = "../xiao-xar" }
+xiao-optimizer = { path = "../xiao-optimizer" }
+xiao-codegen-llvm = { path = "../xiao-codegen-llvm" }
+xiao-package = { path = "../xiao-package" }
+xiao-standard-library = { path = "../xiao-standard-library" }
+xiao-runtime = { path = "../xiao-runtime" }
+xiao-runtime-abi = { path = "../xiao-runtime-abi" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[dev-dependencies]
+xiao-ir = { path = "../xiao-ir" }
+xiao-runtime = { path = "../xiao-runtime", features = ["test-failpoints"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"

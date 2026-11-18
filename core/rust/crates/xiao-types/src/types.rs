@@ -1,0 +1,455 @@
+//! 类型表示与 Hindley–Milner 类型方案。
+//!
+//! 本模块只描述类型，不保存源码、变量值或运行时对象。类型检查器、统一器
+//! 和后端都通过这些可复制/可比较的值通信，从而避免把宿主语言布局泄漏到
+//! Xiao 的语义接口中。
+
+use std::collections::BTreeSet;
+use std::fmt::{self, Display, Formatter};
+
+use xiao_syntax::{ResourceKind, ScalarType};
+
+use crate::containers::{ArrayType, DictType};
+use crate::set_types::SetType;
+use crate::tables::TableType;
+
+/// HM 类型变量的稳定编号。
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct TypeVarId(u32);
+
+impl TypeVarId {
+    /// 从原始编号创建类型变量身份。
+    #[must_use]
+    pub const fn new(raw: u32) -> Self {
+        Self(raw)
+    }
+
+    /// 返回类型变量的原始编号。
+    #[must_use]
+    pub const fn get(self) -> u32 {
+        self.0
+    }
+}
+
+/// P2 及后续阶段共享的类型表示。
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub enum Type {
+    /// 一个 Xiao 标量类型。
+    Scalar(ScalarType),
+    /// `none`/无返回值类型。
+    None,
+    /// 尚未统一的 HM 类型变量。
+    Variable(TypeVarId),
+    /// 函数类型；函数语法在 F1 才开放，但统一器现在即可处理它。
+    Function {
+        /// 参数类型，按声明顺序排列。
+        parameters: Vec<Type>,
+        /// 返回类型。
+        return_type: Box<Type>,
+    },
+    /// 数组类型；可以是同构、异构或未知形状。
+    Array(ArrayType),
+    /// 元组类型。
+    Tuple(Vec<Type>),
+    /// 无序字典表类型。
+    DictTable(DictType),
+    /// 保持顺序的字典列类型。
+    DictColumn(DictType),
+    /// 无序集合类型；元素类型由 [`SetType`] 描述。
+    Set(SetType),
+    /// 表声明、构造目标或已构造实例的静态身份。
+    Table(TableType),
+    /// 外部资源类型；`file`/`directory` 是名义子类型，`resource` 是父类型。
+    Resource(ResourceKind),
+    /// 动态值边界或错误恢复类型。
+    Dynamic,
+    /// 线程句柄，携带线程返回值类型。
+    Thread(Box<Type>),
+    /// 任务句柄，携带任务返回值类型。
+    Task(Box<Type>),
+    /// 可复制的 Runtime 句柄。
+    Runtime,
+    /// 任务池句柄。
+    Pool,
+    /// 只读共享句柄，携带共享值类型。
+    Shared(Box<Type>),
+    /// 可变共享句柄，携带共享值类型。
+    SharedMut(Box<Type>),
+    /// 作用域锁守卫，携带受保护值类型。
+    LockGuard(Box<Type>),
+    /// 不可跨线程传递的普通运行时句柄（内部类型）。
+    OrdinaryHandle,
+}
+
+impl Type {
+    /// 创建标量类型。
+    #[must_use]
+    pub const fn scalar(scalar: ScalarType) -> Self {
+        Self::Scalar(scalar)
+    }
+
+    /// 从标量类型构造类型值的别名，便于泛型 API 书写。
+    #[must_use]
+    pub const fn from_scalar(scalar: ScalarType) -> Self {
+        Self::Scalar(scalar)
+    }
+
+    /// 如果类型是标量，返回其标量枚举。
+    #[must_use]
+    pub const fn as_scalar(&self) -> Option<ScalarType> {
+        match self {
+            Self::Scalar(scalar) => Some(*scalar),
+            _ => None,
+        }
+    }
+
+    /// 创建类型变量。
+    #[must_use]
+    pub const fn variable(id: TypeVarId) -> Self {
+        Self::Variable(id)
+    }
+
+    /// 创建长度未知的同构数组类型。
+    #[must_use]
+    pub fn array(element: Type) -> Self {
+        Self::Array(ArrayType::homogeneous(element))
+    }
+
+    /// 创建异构数组类型。
+    #[must_use]
+    pub fn array_literal(elements: impl Into<Vec<Type>>) -> Self {
+        Self::Array(ArrayType::heterogeneous(elements))
+    }
+
+    /// 创建指定元素类型的同构集合类型。
+    #[must_use]
+    pub fn set(element: Type) -> Self {
+        Self::Set(SetType::homogeneous(element))
+    }
+
+    /// 创建尚未确定元素类型的空集合类型。
+    #[must_use]
+    pub const fn unknown_set() -> Self {
+        Self::Set(SetType::Unknown)
+    }
+
+    /// 创建线程句柄类型。
+    #[must_use]
+    pub fn thread(result: Type) -> Self {
+        Self::Thread(Box::new(result))
+    }
+
+    /// 创建任务句柄类型。
+    #[must_use]
+    pub fn task(result: Type) -> Self {
+        Self::Task(Box::new(result))
+    }
+
+    /// 创建只读共享句柄类型。
+    #[must_use]
+    pub fn shared(value: Type) -> Self {
+        Self::Shared(Box::new(value))
+    }
+
+    /// 创建可变共享句柄类型。
+    #[must_use]
+    pub fn shared_mut(value: Type) -> Self {
+        Self::SharedMut(Box::new(value))
+    }
+
+    /// 创建锁守卫类型。
+    #[must_use]
+    pub fn lock_guard(value: Type) -> Self {
+        Self::LockGuard(Box::new(value))
+    }
+
+    /// 判断是否为并发句柄族类型。
+    #[must_use]
+    pub const fn is_concurrency_handle(&self) -> bool {
+        matches!(
+            self,
+            Self::Thread(_)
+                | Self::Task(_)
+                | Self::Runtime
+                | Self::Pool
+                | Self::Shared(_)
+                | Self::SharedMut(_)
+                | Self::LockGuard(_)
+                | Self::OrdinaryHandle
+        )
+    }
+
+    /// 判断是否为数组、元组、集合或字典容器。
+    #[must_use]
+    pub const fn is_container(&self) -> bool {
+        matches!(
+            self,
+            Self::Array(_)
+                | Self::Tuple(_)
+                | Self::Set(_)
+                | Self::DictTable(_)
+                | Self::DictColumn(_)
+        )
+    }
+
+    /// 判断是否为动态边界类型。
+    #[must_use]
+    pub const fn is_dynamic(&self) -> bool {
+        matches!(self, Self::Dynamic)
+    }
+
+    /// 判断是否为集合类型。
+    #[must_use]
+    pub const fn is_set(&self) -> bool {
+        matches!(self, Self::Set(_))
+    }
+
+    /// 判断是否为表值类型。
+    #[must_use]
+    pub const fn is_table(&self) -> bool {
+        matches!(self, Self::Table(_))
+    }
+
+    /// 判断是否为布尔类型。
+    #[must_use]
+    pub const fn is_bool(&self) -> bool {
+        matches!(self, Self::Scalar(ScalarType::Bool))
+    }
+
+    /// 判断是否为整数族标量。
+    #[must_use]
+    pub const fn is_integer(&self) -> bool {
+        matches!(
+            self,
+            Self::Scalar(ScalarType::Sint | ScalarType::Int | ScalarType::Lint)
+        )
+    }
+
+    /// 判断是否为浮点族标量。
+    #[must_use]
+    pub const fn is_float(&self) -> bool {
+        matches!(
+            self,
+            Self::Scalar(ScalarType::Sfloat | ScalarType::Float | ScalarType::Lfloat)
+        )
+    }
+
+    /// 判断是否为任意数值标量。
+    #[must_use]
+    pub const fn is_numeric(&self) -> bool {
+        self.is_integer() || self.is_float()
+    }
+
+    /// 判断值本身或容器成员是否包含资源；函数签名中的资源类型不是资源值。
+    pub(crate) fn contains_resource_value(&self) -> bool {
+        match self {
+            Self::Resource(_) => true,
+            Self::Array(ArrayType::Homogeneous { element, .. }) => {
+                element.contains_resource_value()
+            }
+            Self::Array(ArrayType::Heterogeneous { elements }) | Self::Tuple(elements) => {
+                elements.iter().any(Self::contains_resource_value)
+            }
+            Self::DictTable(dictionary) | Self::DictColumn(dictionary) => dictionary
+                .entries
+                .iter()
+                .any(|entry| entry.value.contains_resource_value()),
+            Self::Set(set) => set
+                .member_types()
+                .any(|member| member.contains_resource_value()),
+            Self::Thread(value)
+            | Self::Task(value)
+            | Self::Shared(value)
+            | Self::SharedMut(value)
+            | Self::LockGuard(value) => value.contains_resource_value(),
+            _ => false,
+        }
+    }
+
+    /// 收集类型中自由出现的变量。
+    pub fn collect_free_vars(&self, output: &mut BTreeSet<TypeVarId>) {
+        match self {
+            Self::Variable(id) => {
+                output.insert(*id);
+            }
+            Self::Function {
+                parameters,
+                return_type,
+            } => {
+                for parameter in parameters {
+                    parameter.collect_free_vars(output);
+                }
+                return_type.collect_free_vars(output);
+            }
+            Self::Tuple(items) => {
+                for item in items {
+                    item.collect_free_vars(output);
+                }
+            }
+            Self::Array(array) => match array {
+                ArrayType::Homogeneous { element, .. } => element.collect_free_vars(output),
+                ArrayType::Heterogeneous { elements } => {
+                    for element in elements {
+                        element.collect_free_vars(output);
+                    }
+                }
+                ArrayType::Unknown => {}
+            },
+            Self::DictTable(dictionary) | Self::DictColumn(dictionary) => {
+                for entry in &dictionary.entries {
+                    entry.value.collect_free_vars(output);
+                }
+            }
+            Self::Set(set) => {
+                for element in set.member_types() {
+                    element.collect_free_vars(output);
+                }
+            }
+            Self::Thread(value)
+            | Self::Task(value)
+            | Self::Shared(value)
+            | Self::SharedMut(value)
+            | Self::LockGuard(value) => value.collect_free_vars(output),
+            Self::Table(_)
+            | Self::Resource(_)
+            | Self::Runtime
+            | Self::Pool
+            | Self::OrdinaryHandle => {}
+            Self::Scalar(_) | Self::None | Self::Dynamic => {}
+        }
+    }
+
+    /// 返回类型中自由变量的集合。
+    #[must_use]
+    pub fn free_vars(&self) -> BTreeSet<TypeVarId> {
+        let mut vars = BTreeSet::new();
+        self.collect_free_vars(&mut vars);
+        vars
+    }
+}
+
+impl Display for Type {
+    /// 以稳定的 Xiao 风格文本格式化类型。
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Scalar(scalar) => formatter.write_str(scalar.as_str()),
+            Self::None => formatter.write_str("none"),
+            Self::Variable(id) => write!(formatter, "'t{}", id.get()),
+            Self::Function {
+                parameters,
+                return_type,
+            } => {
+                formatter.write_str("(")?;
+                for (index, parameter) in parameters.iter().enumerate() {
+                    if index > 0 {
+                        formatter.write_str(", ")?;
+                    }
+                    parameter.fmt(formatter)?;
+                }
+                write!(formatter, ") -> {return_type}")
+            }
+            Self::Tuple(items) => {
+                formatter.write_str("(")?;
+                for (index, item) in items.iter().enumerate() {
+                    if index > 0 {
+                        formatter.write_str(", ")?;
+                    }
+                    item.fmt(formatter)?;
+                }
+                formatter.write_str(")")
+            }
+            Self::Array(array) => array.fmt(formatter),
+            Self::DictTable(dictionary) => write_dictionary(formatter, dictionary, false),
+            Self::DictColumn(dictionary) => write_dictionary(formatter, dictionary, true),
+            Self::Set(set) => set.fmt(formatter),
+            Self::Table(table) => table.fmt(formatter),
+            Self::Resource(resource) => formatter.write_str(resource.as_str()),
+            Self::Dynamic => formatter.write_str("dynamic"),
+            Self::Thread(value) => write!(formatter, "thread<{value}>"),
+            Self::Task(value) => write!(formatter, "task<{value}>"),
+            Self::Runtime => formatter.write_str("runtime"),
+            Self::Pool => formatter.write_str("pool"),
+            Self::Shared(value) => write!(formatter, "shared<{value}>"),
+            Self::SharedMut(value) => write!(formatter, "shared_mut<{value}>"),
+            Self::LockGuard(value) => write!(formatter, "lock_guard<{value}>"),
+            Self::OrdinaryHandle => formatter.write_str("ordinary_handle"),
+        }
+    }
+}
+
+/// 格式化两种字典类型的稳定摘要。
+fn write_dictionary(
+    formatter: &mut Formatter<'_>,
+    dictionary: &DictType,
+    ordered: bool,
+) -> fmt::Result {
+    if let Some(value) = dictionary.open_value() {
+        return write!(formatter, "dict<str, {value}>");
+    }
+    formatter.write_str(if ordered { "<" } else { "{" })?;
+    for (index, entry) in dictionary.entries.iter().enumerate() {
+        if index > 0 {
+            formatter.write_str(", ")?;
+        }
+        write!(formatter, "{} = {}", entry.key, entry.value)?;
+    }
+    formatter.write_str(if ordered { ">" } else { "}" })
+}
+
+/// 一个可被环境保存的 HM 类型方案。
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct TypeScheme {
+    /// 被泛化、实例化时需要替换的变量。
+    pub quantified: Vec<TypeVarId>,
+    /// 方案主体类型。
+    pub ty: Type,
+}
+
+impl TypeScheme {
+    /// 创建单态方案。
+    #[must_use]
+    pub fn monomorphic(ty: Type) -> Self {
+        Self {
+            quantified: Vec::new(),
+            ty,
+        }
+    }
+
+    /// 创建指定量化变量的方案。
+    #[must_use]
+    pub fn quantified(quantified: impl Into<Vec<TypeVarId>>, ty: Type) -> Self {
+        Self {
+            quantified: quantified.into(),
+            ty,
+        }
+    }
+
+    /// 判断方案是否包含量化变量。
+    #[must_use]
+    pub fn is_polymorphic(&self) -> bool {
+        !self.quantified.is_empty()
+    }
+}
+
+/// `Scheme` 是类型方案的简短别名，便于实现 HM 算法的调用方使用。
+pub type Scheme = TypeScheme;
+
+#[cfg(test)]
+/// 覆盖类型展示和自由变量收集的单元测试。
+mod tests {
+    use super::{Type, TypeScheme, TypeVarId};
+    use xiao_syntax::ScalarType;
+
+    #[test]
+    /// 确认标量、变量和函数类型的展示及自由变量收集稳定。
+    fn displays_and_collects_type_variables() {
+        let variable = Type::variable(TypeVarId::new(3));
+        let function = Type::Function {
+            parameters: vec![variable.clone(), Type::scalar(ScalarType::Int)],
+            return_type: Box::new(variable.clone()),
+        };
+        assert_eq!(function.to_string(), "('t3, int) -> 't3");
+        assert_eq!(function.free_vars().len(), 1);
+        assert!(TypeScheme::quantified(vec![TypeVarId::new(3)], function).is_polymorphic());
+    }
+}

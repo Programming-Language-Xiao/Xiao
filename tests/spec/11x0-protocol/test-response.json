@@ -1,0 +1,45 @@
+{
+  "type": "test_result",
+  "request_id": "fixture-test-1",
+  "operation": "test",
+  "exit_code": 1,
+  "exit_name": "source_rejected",
+  "total": 2,
+  "passed": 1,
+  "failed": 1,
+  "tests": [
+    {
+      "path": "tests/nested/a-first.xiao",
+      "module": "tests/nested/a-first",
+      "exit_code": 0,
+      "exit_name": "success",
+      "diagnostics": [],
+      "report": null,
+      "events": [],
+      "metrics": null,
+      "value": null,
+      "error": null
+    },
+    {
+      "path": "tests/z-last.xiao",
+      "module": "tests/z-last",
+      "exit_code": 1,
+      "exit_name": "source_rejected",
+      "diagnostics": [],
+      "report": null,
+      "events": [],
+      "metrics": null,
+      "value": null,
+      "error": {
+        "code": "X11-PROTOCOL-002",
+        "message_id": "x11.protocol.request",
+        "message": "测试源码被拒绝",
+        "phase": "request",
+        "next_step": "检查测试源码后重试",
+        "details": {
+          "path": "tests/z-last.xiao"
+        }
+      }
+    }
+  ]
+}

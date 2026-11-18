@@ -1,0 +1,9 @@
+def find_separator(str base, str leaf) -> str
+    combined = base + "/" + leaf
+    marker = "?"
+    for c in combined
+        if c == "/"
+            marker = c
+    return marker
+
+print(find_separator("lib", "core"))

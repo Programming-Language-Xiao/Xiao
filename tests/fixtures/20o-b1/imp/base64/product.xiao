@@ -1,0 +1,105 @@
+from std.base64 import encode, decode
+
+for sample in ["", "f", "fo", "foo", "foob", "fooba", "foobar"]
+    sample_bytes = []
+    for character in sample
+        array_push(sample_bytes, int(character))
+    print(encode(sample_bytes, false))
+    print(encode(sample_bytes, true))
+for encoded_text in ["", "Zg==", "Zm8=", "Zm9v", "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"]
+    restored_text = ""
+    for decoded_byte in decode(encoded_text, false)
+        restored_text = restored_text + chr(decoded_byte)
+    print(restored_text)
+values = [251, 255, 255]
+alias = values
+print(encode(values, false))
+print(encode(values, true))
+print(encode(url_safe = true, bytes = [251, 255]))
+print(alias[0])
+for standard_byte in decode(text = "+///", url_safe = false)
+    print(standard_byte)
+for safe_byte in decode(url_safe = true, text = "-___")
+    print(safe_byte)
+for zero_byte in decode("AA==", false)
+    print(zero_byte)
+empty_count = 0
+for empty_byte in decode("", true)
+    empty_count = empty_count + 1
+print(empty_count)
+all_values = []
+next_byte = 0
+while next_byte < 256
+    array_push(all_values, next_byte)
+    next_byte = next_byte + 1
+print(encode(all_values, false))
+print(encode(all_values, true))
+expected_byte = 0
+for whole_byte in decode("AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w==", false)
+    if whole_byte != expected_byte
+        raise Error(code = "BASE64_GOLDEN_MISMATCH")
+    expected_byte = expected_byte + 1
+print(expected_byte)
+safe_count = 0
+for whole_safe_byte in decode("AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0-P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn-AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq-wsbKztLW2t7i5uru8vb6_wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t_g4eLj5OXm5-jp6uvs7e7v8PHy8_T19vf4-fr7_P3-_w==", true)
+    if whole_safe_byte != safe_count
+        raise Error(code = "BASE64_SAFE_GOLDEN_MISMATCH")
+    safe_count = safe_count + 1
+print(safe_count)
+extra_count = 0
+while extra_count < 129
+    array_push(all_values, 0)
+    extra_count = extra_count + 1
+print(encode(all_values, false) == "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==")
+first = decode("AA==", false)
+second = decode("AA==", false)
+array_push(first, 255)
+second_count = 0
+for second_byte in second
+    second_count = second_count + 1
+print(second_count)
+bad = [7, 256]
+try
+    print(encode(bad, false))
+catch bad_byte as Error
+    print(error_code(bad_byte))
+print(bad[1])
+try
+    print(encode([-1], true))
+catch negative_byte as Error
+    print(error_code(negative_byte))
+for invalid_text in ["Zg", "Zg=", "Zg===", " Zg==", "Zg==\n", "A===", "=AAA", "AA=A", "Zg==AAAA", "Zh==", "Zm9=", "-___", "AA_/", "éAAA", "AA A", "!!!!", "AB=="]
+    try
+        print(decode(invalid_text, false))
+    catch invalid_encoding as Error
+        print(error_code(invalid_encoding))
+for invalid_safe_text in ["+///", "+___", "/w==", "AA+/", "Zh=="]
+    try
+        print(decode(invalid_safe_text, true))
+    catch invalid_safe_encoding as Error
+        print(error_code(invalid_safe_encoding))
+over = [256]
+over_count = 0
+while over_count < 65536
+    array_push(over, 0)
+    over_count = over_count + 1
+try
+    print(encode(over, true))
+catch encode_limit as ResourceError
+    print(error_code(encode_limit))
+print(over[0])
+large = ""
+block = "A"
+remaining = 87385
+while remaining > 0
+    if remaining % 2 == 1
+        large = large + block
+    remaining = remaining // 2
+    if remaining > 0
+        block = block + block
+try
+    print(decode(large, false))
+catch decode_limit as ResourceError
+    print(error_code(decode_limit))
+for recovered_byte in decode("AQ==", true)
+    print(recovered_byte)

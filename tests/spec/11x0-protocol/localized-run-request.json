@@ -1,0 +1,18 @@
+{
+  "type": "run",
+  "request_id": "fixture-locale-1",
+  "protocol_version": 1,
+  "core_version": 1,
+  "language_version": "0.1.0",
+  "runtime_version": "0.1.0",
+  "locale": "en-US",
+  "target": {
+    "triple": "x86_64-pc-windows-msvc",
+    "pointer_width": 64,
+    "endian": "little",
+    "object_format": "coff"
+  },
+  "optimization": { "level": 0, "debug": false, "diagnostics": null },
+  "source": { "module": "main", "path": "main.xiao", "text": "value = 1\n" },
+  "options": { "max_call_depth": 1024, "event_capacity": 256, "timeout_ms": null }
+}

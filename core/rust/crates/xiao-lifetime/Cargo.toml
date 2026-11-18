@@ -1,0 +1,21 @@
+[package]
+name = "xiao-lifetime"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Xiao static ownership, escape and deterministic release analysis"
+
+[lints]
+workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+xiao-diagnostics = { path = "../xiao-diagnostics" }
+xiao-intrinsics = { path = "../xiao-intrinsics" }
+xiao-source = { path = "../xiao-source" }
+xiao-syntax = { path = "../xiao-syntax" }
+xiao-types = { path = "../xiao-types" }

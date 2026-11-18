@@ -1,0 +1,13 @@
+from stdlib.text import length, slice
+
+def probe_basename(str path) -> str
+    start = 0
+    index = 0
+    for c in path
+        if c == "/"
+            start = index + 1
+        index = index + 1
+    return slice(path, start, length(path))
+
+for path in ["", "name", "/", "/name", "a/", "a/b", "a//b", "//", "a//", ".env", "dir.x/.env", "a.tar.gz", "file.", ".", "..", "a/../b", "C:\\tmp\\file.txt", "目录/小😀.x"]
+    print("[" + probe_basename(path) + "]")

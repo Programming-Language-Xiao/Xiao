@@ -1,0 +1,12 @@
+from stdlib.text import length, slice
+
+# 长度守卫依赖既有短路规则，避免负切片。
+def probe_ends_with(str text, str needle) -> bool
+    return length(needle) <= length(text) and slice(text, length(text) - length(needle), length(text)) == needle
+
+print(probe_ends_with("", ""))
+print(probe_ends_with("小😀雪", ""))
+print(probe_ends_with("小😀雪", "😀雪"))
+print(probe_ends_with("小😀雪", "😀"))
+print(probe_ends_with("小😀雪", "长小😀雪"))
+print(probe_ends_with("", "a"))

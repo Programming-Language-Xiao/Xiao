@@ -1,0 +1,9 @@
+explicit = Error(code = "explicit-object")
+try
+    try
+        raise Error(code = "pending-error")
+    finally
+        print(error_code(explicit))
+catch pending as Error
+    print(error_code(pending))
+print(error_code(explicit))

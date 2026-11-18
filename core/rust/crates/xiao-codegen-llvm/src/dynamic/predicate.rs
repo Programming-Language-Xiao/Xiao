@@ -1,0 +1,400 @@
+//! 动态降低器的 IR 谓词与静态边界判断。
+//!
+//! 本模块只消费类型化 IR，不持有 LLVM 发射器状态。
+
+use std::collections::BTreeSet;
+use xiao_ir::{
+    IrExpression, IrExpressionKind, IrName, IrProgram, IrSelectorItem, IrStatement,
+    IrStatementKind, IrType,
+};
+
+/// 把 IR 字段类型映射到 `xiao-runtime-abi` 的稳定字段标签。
+///
+/// 这些数值与 ABI crate 中的 `XiaoFieldType` 一一对应；不在 N0-B 描述范围内的
+/// 类型返回 `None`，避免把复杂类型错误地降级为 dynamic。
+pub(super) fn abi_field_type(ty: &IrType) -> Option<u32> {
+    match ty {
+        IrType::Dynamic => Some(0),
+        IrType::Scalar { name } => match name.as_str() {
+            "int" => Some(1),
+            "sint" => Some(2),
+            "float" => Some(3),
+            "sfloat" => Some(4),
+            "bool" => Some(5),
+            "str" => Some(6),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+/// 返回与生命周期分析相同的稳定绑定键。
+///
+/// `IrName::text` 只保留展示文本，而 `IrOwnership` 使用 `ascii:`/`backtick:` 前缀区分
+/// 两类绑定；动态槽必须消费同一键，否则释放计划无法找到前端登记的值。
+pub(super) fn name_key(name: &IrName) -> String {
+    format!(
+        "{}:{}",
+        if name.backticked { "backtick" } else { "ascii" },
+        name.text
+    )
+}
+
+/// 与 VM 临时寄存器的边界一致：名称是已有绑定，其余堆值表达式拥有语句级临时值。
+pub(super) fn is_heap_temporary(expression: &IrExpression) -> bool {
+    match &expression.kind {
+        IrExpressionKind::Group { expression } => is_heap_temporary(expression),
+        IrExpressionKind::Name { .. } => false,
+        _ => type_uses_runtime(&expression.ty),
+    }
+}
+
+/// 判断一个生命周期作用域是否是另一个作用域的祖先。
+pub(super) fn scope_is_ancestor(
+    scopes: &[xiao_ir::IrScope],
+    ancestor: u32,
+    descendant: u32,
+) -> bool {
+    let mut current = Some(descendant);
+    while let Some(id) = current {
+        if id == ancestor {
+            return true;
+        }
+        current = scopes
+            .iter()
+            .find(|scope| scope.id == id)
+            .and_then(|scope| scope.parent);
+    }
+    false
+}
+
+/// 返回最近的函数或表字段辅助帧；程序及模块入口为 None，不混用不同帧的同名槽。
+pub(super) fn scope_function_owner(scopes: &[xiao_ir::IrScope], id: u32) -> Option<u32> {
+    let mut current = Some(id);
+    while let Some(id) = current {
+        let scope = scopes.iter().find(|scope| scope.id == id)?;
+        if matches!(scope.kind.as_str(), "function" | "table") {
+            return Some(id);
+        }
+        current = scope.parent;
+    }
+    None
+}
+
+/// 判断类型是否需要 Runtime 对象或 ABI 值。
+fn type_uses_runtime(ty: &IrType) -> bool {
+    match ty {
+        IrType::None => false,
+        IrType::Scalar { name } => matches!(name.as_str(), "str" | "lint" | "lfloat"),
+        IrType::Dynamic
+        | IrType::Array { .. }
+        | IrType::Tuple { .. }
+        | IrType::DictTable { .. }
+        | IrType::DictColumn { .. }
+        | IrType::Set { .. }
+        | IrType::Table { .. }
+        | IrType::Resource { .. }
+        | IrType::Variable { .. } => true,
+        IrType::Function {
+            parameters,
+            return_type,
+        } => parameters.iter().any(type_uses_runtime) || type_uses_runtime(return_type),
+        IrType::Thread { value }
+        | IrType::Task { value }
+        | IrType::Shared { value }
+        | IrType::SharedMut { value }
+        | IrType::LockGuard { value } => type_uses_runtime(value),
+        IrType::Runtime | IrType::Pool | IrType::OrdinaryHandle => true,
+    }
+}
+
+/// 递归检查程序是否含有动态值、容器或表。
+pub(crate) fn program_uses_runtime(program: &IrProgram) -> bool {
+    let floating_pow_checks = floating_pow_check_spans(program);
+    if !program.concurrency_calls.is_empty()
+        || !program.table_signatures.is_empty()
+        || program.runtime_checks.iter().any(|check| {
+            check.kind != "numeric_range" || !floating_pow_checks.contains(&check.span)
+        })
+        || !program.modules.is_empty()
+    {
+        return true;
+    }
+    program.body.iter().any(statement_uses_runtime)
+}
+
+/// 只豁免源码 Float/Sfloat `**` 本身登记的 numeric_range；其它范围检查仍走原动态路由。
+fn floating_pow_check_spans(program: &IrProgram) -> BTreeSet<xiao_ir::IrSpan> {
+    fn expression(node: &IrExpression, output: &mut BTreeSet<xiao_ir::IrSpan>) {
+        use xiao_ir::IrExpressionKind as E;
+        match &node.kind {
+            E::Binary {
+                operator,
+                left,
+                right,
+            } => {
+                if operator == "**"
+                    && is_floating(&node.ty)
+                    && is_floating(&left.ty)
+                    && is_floating(&right.ty)
+                {
+                    output.insert(node.span);
+                }
+                expression(left, output);
+                expression(right, output);
+            }
+            E::Group { expression: inner }
+            | E::Unary { operand: inner, .. }
+            | E::Cast {
+                expression: inner, ..
+            } => expression(inner, output),
+            E::Array { elements } | E::Tuple { elements } | E::Set { elements } => {
+                for element in elements {
+                    expression(element, output);
+                }
+            }
+            E::DictTable { entries } | E::DictColumn { entries } => {
+                for entry in entries {
+                    expression(&entry.value, output);
+                }
+            }
+            E::Call { callee, arguments } | E::NewCall { callee, arguments } => {
+                expression(callee, output);
+                for argument in arguments {
+                    expression(&argument.value, output);
+                }
+            }
+            E::IntrinsicCall { arguments, .. } | E::DictBuiltin { arguments, .. } => {
+                for argument in arguments {
+                    expression(&argument.value, output);
+                }
+            }
+            E::Member { object, .. } => expression(object, output),
+            E::Selector {
+                source,
+                selector,
+                step,
+                ..
+            } => {
+                expression(source, output);
+                if let Some(step) = step {
+                    expression(step, output);
+                }
+                for item in &selector.items {
+                    if let xiao_ir::IrSelectorItem::ExactExpression {
+                        expression: item, ..
+                    } = item
+                    {
+                        expression(item, output);
+                    }
+                }
+            }
+            E::Literal { .. } | E::Name { .. } => {}
+        }
+    }
+
+    fn statements(items: &[IrStatement], output: &mut BTreeSet<xiao_ir::IrSpan>) {
+        use xiao_ir::IrStatementKind as S;
+        for statement in items {
+            match &statement.kind {
+                S::Expression { value } | S::Return { value: Some(value) } | S::Raise { value } => {
+                    expression(value, output)
+                }
+                S::Assignment { value, .. } | S::ConstDeclaration { value, .. } => {
+                    expression(value, output)
+                }
+                S::ExtendedAssignment { target, value, .. } => {
+                    expression(target, output);
+                    expression(value, output);
+                }
+                S::Declaration {
+                    value: Some(value), ..
+                } => expression(value, output),
+                S::Function { body, .. } | S::Table { body, .. } => statements(body, output),
+                S::If {
+                    condition,
+                    body,
+                    elif_branches,
+                    else_body,
+                } => {
+                    expression(condition, output);
+                    statements(body, output);
+                    for branch in elif_branches {
+                        expression(&branch.condition, output);
+                        statements(&branch.body, output);
+                    }
+                    if let Some(body) = else_body {
+                        statements(body, output);
+                    }
+                }
+                S::For { iterable, body, .. } => {
+                    expression(iterable, output);
+                    statements(body, output);
+                }
+                S::While { condition, body } => {
+                    expression(condition, output);
+                    statements(body, output);
+                }
+                S::Try {
+                    body,
+                    catches,
+                    finally_body,
+                } => {
+                    statements(body, output);
+                    for catch in catches {
+                        statements(&catch.body, output);
+                    }
+                    if let Some(body) = finally_body {
+                        statements(body, output);
+                    }
+                }
+                S::Return { value: None }
+                | S::Declaration { value: None, .. }
+                | S::Import { .. }
+                | S::Break
+                | S::Continue => {}
+            }
+        }
+    }
+
+    fn is_floating(ty: &IrType) -> bool {
+        matches!(ty, IrType::Scalar { name } if name == "float" || name == "sfloat")
+    }
+
+    let mut spans = BTreeSet::new();
+    statements(&program.body, &mut spans);
+    for module in &program.modules {
+        statements(&module.body, &mut spans);
+    }
+    spans
+}
+
+/// 递归检查语句是否含有动态值。
+fn statement_uses_runtime(statement: &IrStatement) -> bool {
+    match &statement.kind {
+        IrStatementKind::Expression { value }
+        | IrStatementKind::Assignment { value, .. }
+        | IrStatementKind::ConstDeclaration { value, .. } => expression_uses_runtime(value),
+        IrStatementKind::ExtendedAssignment { target, value, .. } => {
+            expression_uses_runtime(target) || expression_uses_runtime(value)
+        }
+        IrStatementKind::Declaration {
+            declared_type,
+            value,
+            ..
+        } => {
+            type_uses_runtime(declared_type) || value.as_ref().is_some_and(expression_uses_runtime)
+        }
+        IrStatementKind::If {
+            condition,
+            body,
+            elif_branches,
+            else_body,
+        } => {
+            expression_uses_runtime(condition)
+                || body.iter().any(statement_uses_runtime)
+                || elif_branches.iter().any(|branch| {
+                    expression_uses_runtime(&branch.condition)
+                        || branch.body.iter().any(statement_uses_runtime)
+                })
+                || else_body
+                    .as_deref()
+                    .is_some_and(|body| body.iter().any(statement_uses_runtime))
+        }
+        IrStatementKind::While { condition, body } => {
+            expression_uses_runtime(condition) || body.iter().any(statement_uses_runtime)
+        }
+        IrStatementKind::For { iterable, body, .. } => {
+            expression_uses_runtime(iterable) || body.iter().any(statement_uses_runtime)
+        }
+        IrStatementKind::Return { value } => value.as_ref().is_some_and(expression_uses_runtime),
+        IrStatementKind::Raise { .. } => true,
+        IrStatementKind::Try { .. } => true,
+        IrStatementKind::Table { .. } => true,
+        IrStatementKind::Function {
+            parameters,
+            return_type,
+            body,
+            ..
+        } => {
+            parameters
+                .iter()
+                .any(|parameter| type_uses_runtime(&parameter.ty))
+                || type_uses_runtime(return_type)
+                || body.iter().any(statement_uses_runtime)
+        }
+        IrStatementKind::Import { .. } => true,
+        IrStatementKind::Break | IrStatementKind::Continue => false,
+    }
+}
+
+/// 递归检查表达式是否含有动态值。
+fn expression_uses_runtime(expression: &IrExpression) -> bool {
+    type_uses_runtime(&expression.ty)
+        || match &expression.kind {
+            IrExpressionKind::Array { elements }
+            | IrExpressionKind::Tuple { elements }
+            | IrExpressionKind::Set { elements } => elements.iter().any(expression_uses_runtime),
+            IrExpressionKind::DictTable { entries } | IrExpressionKind::DictColumn { entries } => {
+                entries
+                    .iter()
+                    .any(|entry| expression_uses_runtime(&entry.value))
+            }
+            IrExpressionKind::Group { expression }
+            | IrExpressionKind::Cast { expression, .. }
+            | IrExpressionKind::Unary {
+                operand: expression,
+                ..
+            } => expression_uses_runtime(expression),
+            IrExpressionKind::Binary { left, right, .. } => {
+                expression_uses_runtime(left) || expression_uses_runtime(right)
+            }
+            IrExpressionKind::Call { callee, arguments }
+            | IrExpressionKind::NewCall { callee, arguments } => {
+                expression_uses_runtime(callee)
+                    || arguments
+                        .iter()
+                        .any(|argument| expression_uses_runtime(&argument.value))
+            }
+            IrExpressionKind::IntrinsicCall { id, arguments } => {
+                let intrinsic_requires_runtime = xiao_intrinsics::IntrinsicId::new(*id)
+                    .and_then(xiao_intrinsics::active_by_id)
+                    .is_some_and(|declaration| {
+                        matches!(
+                            declaration.kind,
+                            xiao_intrinsics::IntrinsicKind::Print
+                                | xiao_intrinsics::IntrinsicKind::Input
+                                | xiao_intrinsics::IntrinsicKind::CharConstructor
+                                | xiao_intrinsics::IntrinsicKind::SetConstructor
+                                | xiao_intrinsics::IntrinsicKind::SetAdd
+                                | xiao_intrinsics::IntrinsicKind::SetRemove
+                                | xiao_intrinsics::IntrinsicKind::ArrayPush
+                                | xiao_intrinsics::IntrinsicKind::ErrorConstructor
+                                | xiao_intrinsics::IntrinsicKind::ErrorCode
+                                | xiao_intrinsics::IntrinsicKind::LfloatDivide
+                        )
+                    });
+                intrinsic_requires_runtime
+                    || arguments
+                        .iter()
+                        .any(|argument| expression_uses_runtime(&argument.value))
+            }
+            IrExpressionKind::DictBuiltin { arguments, .. } => arguments
+                .iter()
+                .any(|argument| expression_uses_runtime(&argument.value)),
+            IrExpressionKind::Member { object, .. } => expression_uses_runtime(object),
+            IrExpressionKind::Selector {
+                source,
+                selector,
+                step,
+                ..
+            } => {
+                expression_uses_runtime(source)
+                    || step.as_deref().is_some_and(expression_uses_runtime)
+                    || selector.items.iter().any(|item| {
+                        matches!(item, IrSelectorItem::ExactExpression { expression, .. } if expression_uses_runtime(expression))
+                    })
+            }
+            IrExpressionKind::Literal { .. } | IrExpressionKind::Name { .. } => false,
+        }
+}

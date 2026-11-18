@@ -1,0 +1,9 @@
+{
+  "source": "name\n`新变量 1`",
+  "statements": [
+    {"kind": "expression", "start": 0, "end": 4, "leading_docs": [], "expression": {"kind": "name", "start": 0, "end": 4, "text": "name", "backticked": false}},
+    {"kind": "expression", "start": 5, "end": 18, "leading_docs": [], "expression": {"kind": "name", "start": 5, "end": 18, "text": "`新变量 1`", "backticked": true}}
+  ],
+  "orphan_doc_comments": [],
+  "diagnostics": []
+}

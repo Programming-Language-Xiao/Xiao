@@ -1,0 +1,9 @@
+[package]
+name = "xiao-concurrency-prototype"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Keep this experiment independent even if the repository gains a root
+# Cargo workspace in the future.
+[workspace]

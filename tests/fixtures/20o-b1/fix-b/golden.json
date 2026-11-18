@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "cases": {
+    "default-and-custom": {"stdout": "X06-RUNTIME-013\nX07-RUNTIME-ERROR\nMiXeD_雪😀\nMiXeD_雪😀\nsame-class-other-code\ntemporary\n"},
+    "nested-rethrow": {"stdout": "outer\ninner\ninner\nouter\nouter\nouter\n"},
+    "escape-lifetime": {"stdout": "saved-after-catch_雪😀\n"},
+    "pending-finally": {"stdout": "explicit-object\npending-error\nexplicit-object\n"},
+    "dynamic-types": {"stdout": "X06-RUNTIME-002\nX06-RUNTIME-002\nX06-RUNTIME-002\nstill-no-members\n"},
+    "long-code": {"stdout": "true\n1024\ntrue\n"},
+    "abi-requirements": {"stdout": "abi-required\n"}
+  },
+  "allocation_failure_stdout": "X06-RUNTIME-011\nX07-RUNTIME-ERROR\n"
+}

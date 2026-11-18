@@ -1,0 +1,27 @@
+# B0 探测 24 位分组、余数补位及反向查表；不是完整 Base64 API。
+from stdlib.text import find
+
+alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+bytes = [102, 111, 111]
+packed = bytes[0] * 65536 + bytes[1] * 256 + bytes[2]
+a = packed // 262144
+b = packed // 4096 % 64
+c = packed // 64 % 64
+d = packed % 64
+print(alphabet[a] + alphabet[b] + alphabet[c] + alphabet[d])
+one = bytes[0]
+one_a = one // 4
+one_b = one % 4 * 16
+print(alphabet[one_a] + alphabet[one_b] + "==")
+two = bytes[0] * 256 + bytes[1]
+two_a = two // 1024
+two_b = two // 16 % 64
+two_c = two % 16 * 4
+print(alphabet[two_a] + alphabet[two_b] + alphabet[two_c] + "=")
+decoded = find(alphabet, "Z") * 262144 + find(alphabet, "m") * 4096 + find(alphabet, "9") * 64 + find(alphabet, "v")
+print(decoded // 65536)
+print(decoded // 256 % 256)
+print(decoded % 256)
+print(find(alphabet, "!"))
+print(find(alphabet, "g") % 16 == 0)
+print(find(alphabet, "h") % 16 == 0)
