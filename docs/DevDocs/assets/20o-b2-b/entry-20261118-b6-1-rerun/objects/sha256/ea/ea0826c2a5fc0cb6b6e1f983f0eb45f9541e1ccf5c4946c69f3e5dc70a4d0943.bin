@@ -1,0 +1,1 @@
+{"passed": true, "sealed": true, "b5_closed": true, "b6_entry_open": true, "b6_started": false, "code_commit": "67319d61c18b2f02a57f974883c57600f70c724d", "runtime_abi": "1.19", "codegen_version": 22, "workspace": [1754, 0, 55], "resource_tests": 18, "files_including_manifest": 18, "multi_platform_or_ci_passed": false, "read_only": true}

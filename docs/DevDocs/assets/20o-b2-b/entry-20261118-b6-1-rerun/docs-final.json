@@ -1,0 +1,70 @@
+{
+  "argv": [
+    "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+    "tools/repo-check/src/cli.ts",
+    "all",
+    "--format",
+    "json"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 64736,
+  "exit_code": 0,
+  "started_utc": "2026-11-18T00:44:12.453967+00:00",
+  "finished_utc": "2026-11-18T00:44:50.475128+00:00",
+  "elapsed_seconds": 37.625,
+  "environment_overrides": {
+    "TEMP": "D:\\project\\Xiao\\.b6\\b6-1-rerun-20261118-01\\windows\\docs",
+    "TMP": "D:\\project\\Xiao\\.b6\\b6-1-rerun-20261118-01\\windows\\docs",
+    "XIAO_B1_F10": "0",
+    "XIAO_B2_A_PERF": "0"
+  },
+  "removed_environment_names": [],
+  "bun": {
+    "path": "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+    "bytes": 88825944,
+    "sha256": "627d2e4775c24bdedee2cd7ccc18dcadae061e5345274ab6e3c4c797927bfb8f"
+  },
+  "docs_before": {
+    "path": "objects/sha256/be/be3200c1ae490a4026ce0569757f6386dd59ab8e817c08f877f7629651b3f8b5.bin",
+    "bytes": 2813,
+    "sha256": "2c2578b4e667ecbd539959665bdd0e89c699dbcaf476cc41e721320f3d791439",
+    "encoding": "gzip",
+    "raw_bytes": 11692,
+    "raw_sha256": "be3200c1ae490a4026ce0569757f6386dd59ab8e817c08f877f7629651b3f8b5"
+  },
+  "docs_after": {
+    "path": "objects/sha256/be/be3200c1ae490a4026ce0569757f6386dd59ab8e817c08f877f7629651b3f8b5.bin",
+    "bytes": 2813,
+    "sha256": "2c2578b4e667ecbd539959665bdd0e89c699dbcaf476cc41e721320f3d791439",
+    "encoding": "gzip",
+    "raw_bytes": 11692,
+    "raw_sha256": "be3200c1ae490a4026ce0569757f6386dd59ab8e817c08f877f7629651b3f8b5"
+  },
+  "product_before": {
+    "path": "objects/sha256/9e/9e71709c12f00b56c71872ac2d6f94485c8e14a92b3c4ffeaa70364bf7fc45b0.bin",
+    "bytes": 67261,
+    "sha256": "925d98a85ed82f5e99e0b4f3560ba0d36e3b2cfd8c6bc46888a892c52311aa83",
+    "encoding": "gzip",
+    "raw_bytes": 233803,
+    "raw_sha256": "9e71709c12f00b56c71872ac2d6f94485c8e14a92b3c4ffeaa70364bf7fc45b0"
+  },
+  "product_after": {
+    "path": "objects/sha256/9e/9e71709c12f00b56c71872ac2d6f94485c8e14a92b3c4ffeaa70364bf7fc45b0.bin",
+    "bytes": 67261,
+    "sha256": "925d98a85ed82f5e99e0b4f3560ba0d36e3b2cfd8c6bc46888a892c52311aa83",
+    "encoding": "gzip",
+    "raw_bytes": 233803,
+    "raw_sha256": "9e71709c12f00b56c71872ac2d6f94485c8e14a92b3c4ffeaa70364bf7fc45b0"
+  },
+  "source_unchanged": true,
+  "report_passed": true,
+  "result_sha256": "14bfa19a0c7010cc37f6c022a04d0d75d07aad610c118d9b62c9b57e3154ebde",
+  "log": {
+    "path": "objects/sha256/37/3716da9af9085a4f5791fcd67b253f734f2593166bb5e4b4e6501a92e021a854.bin",
+    "bytes": 23232,
+    "sha256": "ba103c42368f97340c19b6aa53c09fb92548a762c70729308126118877fc4778",
+    "encoding": "gzip",
+    "raw_bytes": 521857,
+    "raw_sha256": "3716da9af9085a4f5791fcd67b253f734f2593166bb5e4b4e6501a92e021a854"
+  }
+}

@@ -1,0 +1,41 @@
+    Finished `release` profile [optimized] target(s) in 0.25s
+     Running tests\20o_b2_b4_cmath_llvm.rs (D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\target\release\deps\20o_b2_b4_cmath_llvm-e51e7f765f8a6349.exe)
+
+running 1 test
+B4-3-MATRIX dynamic=false optimization=0 executable=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\b4-3-native-72056-1794962150574285000\matrix-false-o0.exe B4-3-NATIVE cases=18318 error_cases=3153 pow_inputs=1075 bit_or_code=exact
+
+B4-3-MATRIX dynamic=false optimization=3 executable=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\b4-3-native-72056-1794962150574285000\matrix-false-o3.exe B4-3-NATIVE cases=18318 error_cases=3153 pow_inputs=1075 bit_or_code=exact
+
+dynamic=false optimization=0 B4-3-STATUS statuses=0,1,2,3,6,8 semantic=009 structural=fatal result=passed
+
+dynamic=false optimization=3 B4-3-STATUS statuses=0,1,2,3,6,8 semantic=009 structural=fatal result=passed
+
+B4-3-MATRIX dynamic=true optimization=0 executable=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\b4-3-native-72056-1794962150574285000\matrix-true-o0.exe B4-3-NATIVE cases=18318 error_cases=3153 pow_inputs=1075 bit_or_code=exact
+
+B4-3-MATRIX dynamic=true optimization=3 executable=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\b4-3-native-72056-1794962150574285000\matrix-true-o3.exe B4-3-NATIVE cases=18318 error_cases=3153 pow_inputs=1075 bit_or_code=exact
+
+dynamic=true optimization=0 B4-3-STATUS wrong_tag=2 out=preserved pending=untouched fatal=boundary result=passed
+B4-3-STATUS statuses=0,1,2,3,6,8 semantic=009 structural=fatal result=passed
+
+dynamic=true optimization=3 B4-3-STATUS wrong_tag=2 out=preserved pending=untouched fatal=boundary result=passed
+B4-3-STATUS statuses=0,1,2,3,6,8 semantic=009 structural=fatal result=passed
+
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=native optimization=0 artifact=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\xiao-b2-a5-native-72056-1794962163643474200\a5_integer_arithmetic-o0.exe result=success
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=native optimization=3 artifact=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\xiao-b2-a5-native-72056-1794962163643474200\a5_integer_arithmetic-o3.exe result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=native optimization=0 artifact=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\xiao-b2-a5-native-72056-1794962163643474200\a5_decimal_arithmetic-o0.exe result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=native optimization=3 artifact=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\xiao-b2-a5-native-72056-1794962163643474200\a5_decimal_arithmetic-o3.exe result=success
+B2-A5-LANGUAGE case=a5_conversions backend=native optimization=0 artifact=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\xiao-b2-a5-native-72056-1794962163643474200\a5_conversions-o0.exe result=success
+B2-A5-LANGUAGE case=a5_conversions backend=native optimization=3 artifact=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\xiao-b2-a5-native-72056-1794962163643474200\a5_conversions-o3.exe result=success
+B2-A5-LANGUAGE case=a5_carriers backend=native optimization=0 artifact=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\xiao-b2-a5-native-72056-1794962163643474200\a5_carriers-o0.exe result=success
+B2-A5-LANGUAGE case=a5_carriers backend=native optimization=3 artifact=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\xiao-b2-a5-native-72056-1794962163643474200\a5_carriers-o3.exe result=success
+B2-A5-LANGUAGE case=a5_errors backend=native optimization=0 artifact=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\xiao-b2-a5-native-72056-1794962163643474200\a5_errors-o0.exe result=success
+B2-A5-LANGUAGE case=a5_errors backend=native optimization=3 artifact=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\xiao-b2-a5-native-72056-1794962163643474200\a5_errors-o3.exe result=success
+B2-A5-LANGUAGE case=a5_matrix backend=native optimization=0 artifact=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\xiao-b2-a5-native-72056-1794962163643474200\a5_matrix-o0.exe result=success
+B2-A5-LANGUAGE case=a5_matrix backend=native optimization=3 artifact=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\xiao-b2-a5-native-72056-1794962163643474200\a5_matrix-o3.exe result=success
+B2-A5-LANGUAGE case=a5_bindings backend=native optimization=0 artifact=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\xiao-b2-a5-native-72056-1794962163643474200\a5_bindings-o0.exe result=success
+B2-A5-LANGUAGE case=a5_bindings backend=native optimization=3 artifact=D:\project\Xiao\.b6\b6-1-rerun-20261118-01\windows\temp\native-core\xiao-b2-a5-native-72056-1794962163643474200\a5_bindings-o3.exe result=success
+B4-3-NATIVE language=actual-exit,catch A5=7-fixtures O0,O3 result=passed
+test native_cmath_static_dynamic_o0_o3_and_shared_pow ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 30.55s
+

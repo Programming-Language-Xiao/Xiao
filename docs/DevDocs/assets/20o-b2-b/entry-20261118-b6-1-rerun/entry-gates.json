@@ -1,0 +1,564 @@
+{
+  "passed": true,
+  "historical_read_only": true,
+  "history_before_sha256": "73d2d08378df01b14d3229a9b0fac9e0c8976559a510129f076e52c90043aa5f",
+  "history_after_sha256": "73d2d08378df01b14d3229a9b0fac9e0c8976559a510129f076e52c90043aa5f",
+  "runs": [
+    {
+      "label": "fix2",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b4-component-fix\\audit.py"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "pid": 56060,
+      "started_utc": "2026-11-18T00:30:53.610371+00:00",
+      "finished_utc": "2026-11-18T00:30:55.953701+00:00",
+      "elapsed_seconds": 2.3439999999827705,
+      "exit_code": 0,
+      "stdout": {
+        "path": "objects/sha256/ee/ee716867d7f903937dd2f3bc196e4b2a6717c8edabd3e3c0efe478933fa6a66f.bin",
+        "bytes": 246,
+        "sha256": "ee716867d7f903937dd2f3bc196e4b2a6717c8edabd3e3c0efe478933fa6a66f",
+        "encoding": "identity",
+        "raw_bytes": 246,
+        "raw_sha256": "ee716867d7f903937dd2f3bc196e4b2a6717c8edabd3e3c0efe478933fa6a66f"
+      },
+      "stderr": {
+        "path": "objects/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.bin",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "identity",
+        "raw_bytes": 0,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "script": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b4-component-fix\\audit.py",
+        "bytes": 5623,
+        "sha256": "41c8589183689562ac002ca58646d38893ab7e2ef3dca5f8172c5e3e26f68754"
+      },
+      "outcome": {
+        "passed": true,
+        "read_only": true,
+        "sealed": true,
+        "stage": "B4-3-FIX.2",
+        "fix2_closed": true,
+        "code_commit": "43f18274175ba09ac84e759999c40cde72eae1c5",
+        "b6_1_rerun_required": true,
+        "b6_2_started": false,
+        "file_count_excluding_manifest": 143
+      }
+    },
+    {
+      "label": "fix2-negative",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b4-component-review\\self_negative.py"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "pid": 47800,
+      "started_utc": "2026-11-18T00:30:53.611381+00:00",
+      "finished_utc": "2026-11-18T00:31:07.543360+00:00",
+      "elapsed_seconds": 13.936999999976251,
+      "exit_code": 0,
+      "stdout": {
+        "path": "objects/sha256/9c/9c08829bcf64bd728a5a9e05126f4acdd5a1da9f21d48ad75a476171f87a1b33.bin",
+        "bytes": 7921,
+        "sha256": "9c08829bcf64bd728a5a9e05126f4acdd5a1da9f21d48ad75a476171f87a1b33",
+        "encoding": "identity",
+        "raw_bytes": 7921,
+        "raw_sha256": "9c08829bcf64bd728a5a9e05126f4acdd5a1da9f21d48ad75a476171f87a1b33"
+      },
+      "stderr": {
+        "path": "objects/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.bin",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "identity",
+        "raw_bytes": 0,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "script": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b4-component-review\\self_negative.py",
+        "bytes": 8006,
+        "sha256": "1c5b17d70bc92d89026797196a0e47afd0f4692ca0386ec90e12da6da5ee8a4c"
+      },
+      "outcome": {
+        "passed": true,
+        "archive_read_only": true,
+        "source_manifest_commit": "b74d5ed3e1308a5c3177b30edfd1a457684ba1e6",
+        "source_manifest_sha256": "ed965f9ac2b8d0d945e3e47cc030476e06e128cdc68a9dee4b4a5d006e25cbf8",
+        "docs_receipt": "docs-final-r7.json",
+        "code_commit": "43f18274175ba09ac84e759999c40cde72eae1c5",
+        "audit_sha256": "41c8589183689562ac002ca58646d38893ab7e2ef3dca5f8172c5e3e26f68754",
+        "script_sha256": "1c5b17d70bc92d89026797196a0e47afd0f4692ca0386ec90e12da6da5ee8a4c",
+        "case_count": 8,
+        "cases": [
+          {
+            "case": "baseline",
+            "expected_reason": null,
+            "manifest_rebuilt": false,
+            "argv": [
+              "D:\\Programs\\Python\\Python312\\python.exe",
+              "-B",
+              "-X",
+              "utf8",
+              "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b4-component-fix\\audit.py",
+              "--root",
+              "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-fix2-audit-negative-wytklop8\\baseline",
+              "--repository-root",
+              "D:\\project\\Xiao\\Xiao"
+            ],
+            "cwd": "D:\\project\\Xiao\\Xiao",
+            "pid": 78672,
+            "started_utc": "2026-11-18T00:30:54.591799+00:00",
+            "finished_utc": "2026-11-18T00:30:56.870182+00:00",
+            "elapsed_seconds": 2.2820000000065193,
+            "exit_code": 0,
+            "stdout": "{\"passed\": true, \"read_only\": true, \"sealed\": true, \"stage\": \"B4-3-FIX.2\", \"fix2_closed\": true, \"code_commit\": \"43f18274175ba09ac84e759999c40cde72eae1c5\", \"b6_1_rerun_required\": true, \"b6_2_started\": false, \"file_count_excluding_manifest\": 143}\n",
+            "stderr": "",
+            "read_only": true,
+            "outcome": {
+              "passed": true,
+              "read_only": true,
+              "sealed": true,
+              "stage": "B4-3-FIX.2",
+              "fix2_closed": true,
+              "code_commit": "43f18274175ba09ac84e759999c40cde72eae1c5",
+              "b6_1_rerun_required": true,
+              "b6_2_started": false,
+              "file_count_excluding_manifest": 143
+            }
+          },
+          {
+            "case": "missing_attributes",
+            "expected_reason": "FIX.2证据缺少.gitattributes",
+            "manifest_rebuilt": false,
+            "argv": [
+              "D:\\Programs\\Python\\Python312\\python.exe",
+              "-B",
+              "-X",
+              "utf8",
+              "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b4-component-fix\\audit.py",
+              "--root",
+              "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-fix2-audit-negative-wytklop8\\missing_attributes",
+              "--repository-root",
+              "D:\\project\\Xiao\\Xiao"
+            ],
+            "cwd": "D:\\project\\Xiao\\Xiao",
+            "pid": 77884,
+            "started_utc": "2026-11-18T00:30:57.527295+00:00",
+            "finished_utc": "2026-11-18T00:30:58.062602+00:00",
+            "elapsed_seconds": 0.5309999999590218,
+            "exit_code": 1,
+            "stdout": "{\"passed\": false, \"reason\": \"FIX.2证据缺少.gitattributes\", \"read_only\": true}\n",
+            "stderr": "",
+            "read_only": true,
+            "outcome": {
+              "passed": false,
+              "reason": "FIX.2证据缺少.gitattributes",
+              "read_only": true
+            }
+          },
+          {
+            "case": "missing_registered_file",
+            "expected_reason": "FIX.2清单文件缺失：README.md",
+            "manifest_rebuilt": false,
+            "argv": [
+              "D:\\Programs\\Python\\Python312\\python.exe",
+              "-B",
+              "-X",
+              "utf8",
+              "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b4-component-fix\\audit.py",
+              "--root",
+              "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-fix2-audit-negative-wytklop8\\missing_registered_file",
+              "--repository-root",
+              "D:\\project\\Xiao\\Xiao"
+            ],
+            "cwd": "D:\\project\\Xiao\\Xiao",
+            "pid": 45404,
+            "started_utc": "2026-11-18T00:30:58.728234+00:00",
+            "finished_utc": "2026-11-18T00:30:59.211975+00:00",
+            "elapsed_seconds": 0.48499999998603016,
+            "exit_code": 1,
+            "stdout": "{\"passed\": false, \"reason\": \"FIX.2清单文件缺失：README.md\", \"read_only\": true}\n",
+            "stderr": "",
+            "read_only": true,
+            "outcome": {
+              "passed": false,
+              "reason": "FIX.2清单文件缺失：README.md",
+              "read_only": true
+            }
+          },
+          {
+            "case": "file_count",
+            "expected_reason": "FIX.2清单文件数不符",
+            "manifest_rebuilt": false,
+            "argv": [
+              "D:\\Programs\\Python\\Python312\\python.exe",
+              "-B",
+              "-X",
+              "utf8",
+              "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b4-component-fix\\audit.py",
+              "--root",
+              "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-fix2-audit-negative-wytklop8\\file_count",
+              "--repository-root",
+              "D:\\project\\Xiao\\Xiao"
+            ],
+            "cwd": "D:\\project\\Xiao\\Xiao",
+            "pid": 79804,
+            "started_utc": "2026-11-18T00:30:59.912318+00:00",
+            "finished_utc": "2026-11-18T00:31:00.430162+00:00",
+            "elapsed_seconds": 0.5149999999557622,
+            "exit_code": 1,
+            "stdout": "{\"passed\": false, \"reason\": \"FIX.2清单文件数不符\", \"read_only\": true}\n",
+            "stderr": "",
+            "read_only": true,
+            "outcome": {
+              "passed": false,
+              "reason": "FIX.2清单文件数不符",
+              "read_only": true
+            }
+          },
+          {
+            "case": "manifest_digest",
+            "expected_reason": "FIX.2清单与实际字节不符",
+            "manifest_rebuilt": false,
+            "argv": [
+              "D:\\Programs\\Python\\Python312\\python.exe",
+              "-B",
+              "-X",
+              "utf8",
+              "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b4-component-fix\\audit.py",
+              "--root",
+              "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-fix2-audit-negative-wytklop8\\manifest_digest",
+              "--repository-root",
+              "D:\\project\\Xiao\\Xiao"
+            ],
+            "cwd": "D:\\project\\Xiao\\Xiao",
+            "pid": 15080,
+            "started_utc": "2026-11-18T00:31:01.115814+00:00",
+            "finished_utc": "2026-11-18T00:31:01.609843+00:00",
+            "elapsed_seconds": 0.5,
+            "exit_code": 1,
+            "stdout": "{\"passed\": false, \"reason\": \"FIX.2清单与实际字节不符\", \"read_only\": true}\n",
+            "stderr": "",
+            "read_only": true,
+            "outcome": {
+              "passed": false,
+              "reason": "FIX.2清单与实际字节不符",
+              "read_only": true
+            }
+          },
+          {
+            "case": "forged_b6_state",
+            "expected_reason": "FIX.2交接越过B6-1自有重跑",
+            "manifest_rebuilt": true,
+            "argv": [
+              "D:\\Programs\\Python\\Python312\\python.exe",
+              "-B",
+              "-X",
+              "utf8",
+              "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b4-component-fix\\audit.py",
+              "--root",
+              "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-fix2-audit-negative-wytklop8\\forged_b6_state",
+              "--repository-root",
+              "D:\\project\\Xiao\\Xiao"
+            ],
+            "cwd": "D:\\project\\Xiao\\Xiao",
+            "pid": 79344,
+            "started_utc": "2026-11-18T00:31:02.340236+00:00",
+            "finished_utc": "2026-11-18T00:31:02.830872+00:00",
+            "elapsed_seconds": 0.48499999998603016,
+            "exit_code": 1,
+            "stdout": "{\"passed\": false, \"reason\": \"FIX.2交接越过B6-1自有重跑\", \"read_only\": true}\n",
+            "stderr": "",
+            "read_only": true,
+            "outcome": {
+              "passed": false,
+              "reason": "FIX.2交接越过B6-1自有重跑",
+              "read_only": true
+            }
+          },
+          {
+            "case": "forged_windows_complete",
+            "expected_reason": "FIX.2 Windows组件完整性被冒进标记",
+            "manifest_rebuilt": true,
+            "argv": [
+              "D:\\Programs\\Python\\Python312\\python.exe",
+              "-B",
+              "-X",
+              "utf8",
+              "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b4-component-fix\\audit.py",
+              "--root",
+              "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-fix2-audit-negative-wytklop8\\forged_windows_complete",
+              "--repository-root",
+              "D:\\project\\Xiao\\Xiao"
+            ],
+            "cwd": "D:\\project\\Xiao\\Xiao",
+            "pid": 37240,
+            "started_utc": "2026-11-18T00:31:03.633337+00:00",
+            "finished_utc": "2026-11-18T00:31:04.087401+00:00",
+            "elapsed_seconds": 0.4529999999795109,
+            "exit_code": 1,
+            "stdout": "{\"passed\": false, \"reason\": \"FIX.2 Windows组件完整性被冒进标记\", \"read_only\": true}\n",
+            "stderr": "",
+            "read_only": true,
+            "outcome": {
+              "passed": false,
+              "reason": "FIX.2 Windows组件完整性被冒进标记",
+              "read_only": true
+            }
+          },
+          {
+            "case": "rewritten_file_and_manifest",
+            "expected_reason": "FIX.2固定Git清单字节不符",
+            "manifest_rebuilt": true,
+            "argv": [
+              "D:\\Programs\\Python\\Python312\\python.exe",
+              "-B",
+              "-X",
+              "utf8",
+              "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b4-component-fix\\audit.py",
+              "--root",
+              "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-fix2-audit-negative-wytklop8\\rewritten_file_and_manifest",
+              "--repository-root",
+              "D:\\project\\Xiao\\Xiao"
+            ],
+            "cwd": "D:\\project\\Xiao\\Xiao",
+            "pid": 75936,
+            "started_utc": "2026-11-18T00:31:04.803617+00:00",
+            "finished_utc": "2026-11-18T00:31:06.459683+00:00",
+            "elapsed_seconds": 1.6570000000065193,
+            "exit_code": 1,
+            "stdout": "{\"passed\": false, \"reason\": \"FIX.2固定Git清单字节不符\", \"read_only\": true}\n",
+            "stderr": "",
+            "read_only": true,
+            "outcome": {
+              "passed": false,
+              "reason": "FIX.2固定Git清单字节不符",
+              "read_only": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "label": "b5",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261117-b5-closeout\\audit.py"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "pid": 14444,
+      "started_utc": "2026-11-18T00:30:53.611892+00:00",
+      "finished_utc": "2026-11-18T00:30:57.149943+00:00",
+      "elapsed_seconds": 3.5310000000172295,
+      "exit_code": 0,
+      "stdout": {
+        "path": "objects/sha256/ea/ea0826c2a5fc0cb6b6e1f983f0eb45f9541e1ccf5c4946c69f3e5dc70a4d0943.bin",
+        "bytes": 341,
+        "sha256": "ea0826c2a5fc0cb6b6e1f983f0eb45f9541e1ccf5c4946c69f3e5dc70a4d0943",
+        "encoding": "identity",
+        "raw_bytes": 341,
+        "raw_sha256": "ea0826c2a5fc0cb6b6e1f983f0eb45f9541e1ccf5c4946c69f3e5dc70a4d0943"
+      },
+      "stderr": {
+        "path": "objects/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.bin",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "identity",
+        "raw_bytes": 0,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "script": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261117-b5-closeout\\audit.py",
+        "bytes": 18838,
+        "sha256": "5b35f3f9c9f244c70d0ce180b062195247109b168cd35e4bae2df39a3da07d45"
+      },
+      "outcome": {
+        "passed": true,
+        "sealed": true,
+        "b5_closed": true,
+        "b6_entry_open": true,
+        "b6_started": false,
+        "code_commit": "67319d61c18b2f02a57f974883c57600f70c724d",
+        "runtime_abi": "1.19",
+        "codegen_version": 22,
+        "workspace": [
+          1754,
+          0,
+          55
+        ],
+        "resource_tests": 18,
+        "files_including_manifest": 18,
+        "multi_platform_or_ci_passed": false,
+        "read_only": true
+      }
+    },
+    {
+      "label": "fix1",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261115-b4-3-fix1\\audit.py"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "pid": 59404,
+      "started_utc": "2026-11-18T00:30:55.961928+00:00",
+      "finished_utc": "2026-11-18T00:31:24.766049+00:00",
+      "elapsed_seconds": 28.81200000003446,
+      "exit_code": 0,
+      "stdout": {
+        "path": "objects/sha256/d1/d128db99f1f337ced2d5642ff4fdc1f0156f2b97dd549b372f5a000d48a5513f.bin",
+        "bytes": 173,
+        "sha256": "d128db99f1f337ced2d5642ff4fdc1f0156f2b97dd549b372f5a000d48a5513f",
+        "encoding": "identity",
+        "raw_bytes": 173,
+        "raw_sha256": "d128db99f1f337ced2d5642ff4fdc1f0156f2b97dd549b372f5a000d48a5513f"
+      },
+      "stderr": {
+        "path": "objects/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.bin",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "identity",
+        "raw_bytes": 0,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "script": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261115-b4-3-fix1\\audit.py",
+        "bytes": 12564,
+        "sha256": "088033de8c11b3bb467b2c553549765cc56a4bb396c8f7909fd54c316e55f43e"
+      },
+      "outcome": {
+        "passed": true,
+        "fix1_closed": true,
+        "b4_5_reopened": true,
+        "b4_closed": false,
+        "language_available": false,
+        "product_commit": "cfa79381bbae027cec11136ca380e82f66720c34"
+      }
+    },
+    {
+      "label": "static-equality",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-static-float-equality\\entry-20261117-fix\\audit.py"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "pid": 77860,
+      "started_utc": "2026-11-18T00:30:57.155200+00:00",
+      "finished_utc": "2026-11-18T00:30:59.635053+00:00",
+      "elapsed_seconds": 2.4689999999827705,
+      "exit_code": 0,
+      "stdout": {
+        "path": "objects/sha256/df/df761d2c5808940560d3fccebdc28ed4426504b0817d4fc1b8c3a4a33d44dde1.bin",
+        "bytes": 579,
+        "sha256": "df761d2c5808940560d3fccebdc28ed4426504b0817d4fc1b8c3a4a33d44dde1",
+        "encoding": "identity",
+        "raw_bytes": 579,
+        "raw_sha256": "df761d2c5808940560d3fccebdc28ed4426504b0817d4fc1b8c3a4a33d44dde1"
+      },
+      "stderr": {
+        "path": "objects/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.bin",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "identity",
+        "raw_bytes": 0,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "script": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-static-float-equality\\entry-20261117-fix\\audit.py",
+        "bytes": 15249,
+        "sha256": "f50e48ea2e12d5dcbd469cb28a831f8ed6ffe63cbbb366a293c869be8cd5d258"
+      },
+      "outcome": {
+        "scope": "只读Windows本机静态浮点相等修复证据核验",
+        "read_only": true,
+        "repair_acceptance_passed": true,
+        "receipt_only": false,
+        "manifest_checked": true,
+        "counts": {
+          "commands": 10,
+          "commands_passed": 8,
+          "commands_failed_preserved": 2
+        },
+        "native": 248,
+        "cases": 62,
+        "generator": 22,
+        "runtime_abi": 65555,
+        "baseline_commit": "5864cbde627f727483ab676c6f4bc1bf0a7819bb",
+        "entry_commit": "aead9c5501177f17976bf8a54f324ac6091bbff7",
+        "product_commit": "cfab977105273dcfdfc1831332b3a804ccc217d9",
+        "multi_platform_or_ci_passed": false,
+        "external_blockers_closed": false
+      }
+    },
+    {
+      "label": "url",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261117-url-optimization\\audit.py"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "pid": 24560,
+      "started_utc": "2026-11-18T00:30:59.639660+00:00",
+      "finished_utc": "2026-11-18T00:31:01.091790+00:00",
+      "elapsed_seconds": 1.452999999979511,
+      "exit_code": 0,
+      "stdout": {
+        "path": "objects/sha256/d1/d191539bdfc5a640c71532352f10a269ddcdec7d91b74a5c034137a41440c4e8.bin",
+        "bytes": 411,
+        "sha256": "d191539bdfc5a640c71532352f10a269ddcdec7d91b74a5c034137a41440c4e8",
+        "encoding": "identity",
+        "raw_bytes": 411,
+        "raw_sha256": "d191539bdfc5a640c71532352f10a269ddcdec7d91b74a5c034137a41440c4e8"
+      },
+      "stderr": {
+        "path": "objects/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.bin",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "identity",
+        "raw_bytes": 0,
+        "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "script": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261117-url-optimization\\audit.py",
+        "bytes": 12801,
+        "sha256": "a6de5bef8a7355ef07cea6f8e82c6b2aa538f90c3b8def6e5901e9f1d0b135cd"
+      },
+      "outcome": {
+        "passed": true,
+        "sealed": true,
+        "files_excluding_manifest": 21,
+        "baseline_commit": "cba346fc6f3039cbc76889f4907ea8539c38ff48",
+        "code_commit": "67319d61c18b2f02a57f974883c57600f70c724d",
+        "workspace_passed": 1754,
+        "workspace_failed": 0,
+        "workspace_ignored": 55,
+        "resource_tests": 18,
+        "b5_closed": false,
+        "b6_started": false,
+        "platform": "Windows本机",
+        "multi_platform_or_ci_passed": false,
+        "read_only": true
+      }
+    }
+  ]
+}

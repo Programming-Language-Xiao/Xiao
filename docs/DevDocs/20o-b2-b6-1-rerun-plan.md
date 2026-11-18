@@ -1,6 +1,6 @@
 # 20O-B2-B6-1-RERUN. B6-1 重跑与收口规划
 
-> **RERUN 尚未开始；FIX.2 已完成，B6-1 原阻断证据保持历史，B6-2 性能未开始。**
+> **RERUN 已完成Windows/Linux限定范围（2026-11-18）；B6-1形成受限结论，B6-2性能未开始。** Linux官方包装原阻断已解除；Windows功能通过、COFF导出完整性未验证；macOS未验证，`stage_passed=false`，不记三平台通过。见[本批证据](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)。
 > 入口：FIX.2 产品 `43f18274`（组件推导修复；ABI1.19/生成器22/接口1），以及 FIX.2 证据与反例记录。
 > B6-1 原证据 `entry-20261117-b6` 保持 `stage_passed=false`/`blocked` 历史身份，不得改写；本批必须在 B6-1 自己的任务根重跑，不能用 FIX.2 证据代替 B6-1 签收。
 > 平台口径已冻结：Windows 功能通过但 COFF `UnverifiedCoffExports`，导出完整性未验证；Linux ELF `Complete`；macOS 未验证。三者不得合并成“三平台通过”。
@@ -14,7 +14,7 @@
 | FIX.2证据 | [实施证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)；[反例记录](assets/20o-b2-b/entry-20261118-b4-component-review/README.md)（8项） |
 | B6-1原证据 | [原阻断记录](assets/20o-b2-b/entry-20261117-b6/README.md)：`stage_passed=false`、`blocked=true`；Windows 功能通过/COFF 未验证，Linux 官方包装被拒，macOS 未验证 |
 | 版本 | ABI1.19/生成器22/接口1；B5 固定1.19/21矩阵与21→22增量分层引用 |
-| 本批目标 | 在 B6-1 自身任务根重跑 Linux 官方包装原阻断场景与相关回归，按平台分别记录，恢复/更新 B6-1 阶段状态，为 B6-2 提供入口 |
+| 本批结果 | 自有任务根Windows/Linux包装与相关回归通过；Linux ELF Complete且声明=观察，Windows COFF未验证；B6-1为restricted，B6-2仅具备两平台受限入口，未启动 |
 | 未做 | B6-2 性能、macOS 实机、三平台最终发布、registry/教程、旧721 |
 
 B6-1 是 **资源/错误/原子性验收批**，不是性能批。本批只重跑与 FIX.2 修复相关的 B6-1 场景和回归；B6-2 的五批性能、OS 峰值与全转义 URL 最大负载仍后置。
@@ -136,3 +136,11 @@ docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-1-rerun/         RERUN 证据
 ```
 
 本页只做 B6-1 重跑；B6-2 性能与后续批次仍后置。
+
+## 九、实际退出记录（2026-11-18）
+
+重跑固定产品`43f18274`，两平台新源码根各导出1,076个受保护文件；新target、新Runtime、任务stdlib和工具身份均逐命令绑定。Runtime各305/0/1，正式C ABI参考各17,243项；资源/VM/归档回归Windows42/0/3、Linux43/0/3（含Linux独立诊断），A6资源8/8，codegen109/0/15、额外driver17/0/3。官方包装两别名O0/O3、核心Cmath/共享pow、A5错误/011原子性和显式除法O0/O3通过。
+
+Windows首轮Clippy因导出缺少协议编译夹具退出101；从固定Git对象补齐`tests/spec`原字节后，同一命令通过，失败回执不覆盖。Linux缺Clippy按实际组件清单登记；两平台fmt通过。详见[回执与边界](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)。
+
+`rerun_closed=true`只表示本批重跑与取证完成；B6-1仍以`restricted/stage_passed=false`交接，Windows导出完整性及macOS保留未验证。B6-2可按B6规划准备Windows/Linux受限测量，不能据此宣称三平台入口满足；本批未执行性能、远端CI或721，B7/B2-C仍后置。原B6-1阻断及FIX.2/B5/URL/静态比较历史字节不变。

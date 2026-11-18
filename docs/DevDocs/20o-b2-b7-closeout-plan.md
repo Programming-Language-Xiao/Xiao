@@ -1,7 +1,7 @@
 # 20O-B2-B7. B2-B 内部收口与 B2-C 交接规划
 
 > **2026-11-16历史状态：B5版本/缓存/C ABI矩阵及完整串行workspace通过，但默认并发workspace的URL Unicode用例触发60秒看门狗，B5未封存。** 失败记录、B1历史原件缺失/重建来源标记和独立LLVM比较问题见[B5证据](assets/20o-b2-b/entry-20261116-b5-rebuild/README.md)；B6闸门未开，B7/B2-C未开始。
-> **2026-11-18实施同步：** B5矩阵固定绑定ABI1.19/生成器21；当前产品ABI1.19/生成器22，B5已联合收口。FIX.2已完成且生成器保持22；B6-1自身任务根重跑待执行（见[B6-1重跑规划](20o-b2-b6-1-rerun-plan.md)），仍未收口，macOS未验证，B6-2性能未开始。FIX.2的Windows结果只记“功能通过、导出完整性未验证”（COFF `UnverifiedCoffExports`）；Linux ELF为`Complete`，声明与观察组件一致。B7等待B6收口，并引用B5固定矩阵、[21→22增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)及[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)。
+> **2026-11-18实施同步：** B5矩阵固定绑定ABI1.19/生成器21；当前产品ABI1.19/生成器22，B5已联合收口。FIX.2已完成且生成器保持22；B6-1自身任务根的Windows/Linux限定重跑已完成（见[重跑证据](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)），Linux原阻断解除；阶段仍为restricted/stage_passed=false，macOS未验证，B6-2性能未开始。FIX.2的Windows结果只记“功能通过、导出完整性未验证”（COFF `UnverifiedCoffExports`）；Linux ELF为`Complete`，声明与观察组件一致。B7等待B6收口，并引用B5固定矩阵、[21→22增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)及[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)。
 > B7 只做 B2-B 内部收口、B1 回归、B2-A 与 B2-B 前序阶段证据对账和 B2-C 交接。
 > 不运行旧 721、不升级 registry/教程、不关闭历史债务；B2-C 才做最终三平台、721 和公共发布。
 
@@ -11,7 +11,7 @@
 | --- | --- |
 | B4 | B4-5以cfa79381产品和新Runtime重跑，内部language_available=true；最终签收以重开证据的文档回执与封存审计通过为准 |
 | B5历史矩阵 | ABI1.19/21产品71e611f8、最终测试5864cbde；版本/缓存/C ABI与串行workspace通过，原默认workspace失败保留；URL优化后的当前22完整workspace已通过，B5已通过四类证据联合收口 |
-| B6 | FIX.2已完成、生成器22未变；B6-1自有重跑待执行，macOS未验证；原阶段未收口；Windows功能与组件完整性结论分别保留 |
+| B6 | B6-1自有任务根Windows/Linux重跑完成、Linux原阻断解除；Windows导出完整性/macOS未验证，阶段restricted/stage_passed=false；B6-2性能未开始 |
 | 当前版本 | ABI1.19/生成器22、接口1、intrinsic1～48；B7仍须等B6完成，且引用B5固定1.19/21矩阵与21→22增量 |
 | 本批目标 | B1 20入口回归、A0～A7与B0～B6证据对账、语言/教程/registry边界、B2-C交接 |
 | 未做 | B2-C 721、最终三平台公共产物、registry/教程 verified、历史债务关闭 |
