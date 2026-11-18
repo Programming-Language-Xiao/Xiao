@@ -63,7 +63,9 @@ def source_digest(files):
 
 
 def snapshot(revision, destination=None):
-    raw = git("archive", "--format=tar", revision, "--", *SOURCE_ROOTS)
+    # Windows Git 的 autocrlf 会影响 archive，固定 LF 以复核同一 Git 对象。
+    raw = git("-c", "core.autocrlf=false", "-c", "core.eol=lf", "archive", "--format=tar",
+              revision, "--", *SOURCE_ROOTS)
     with tarfile.open(fileobj=io.BytesIO(raw)) as archive:
         files = {m.name: sha(archive.extractfile(m).read()) for m in archive if m.isfile()}
         require(all(name in files for name in REQUIRED), "固定源码缺少锁、标准库或编译夹具")
@@ -201,9 +203,12 @@ def run(suite, llvm_bin, out):
     source, target = task / "source", task / "target"
     source.mkdir()
     files = snapshot(checkout, source)
-    require(source_digest(files) == fixed["sha256"] and len(files) == fixed["files"]
-            and live_source(source) == files, "macOS导出与登记的固定Git源码不符")
     write_json(out / "source.json", files)
+    actual = live_source(source)
+    require(source_digest(files) == fixed["sha256"] and len(files) == fixed["files"],
+            f"macOS归档清单不符，实际{len(files)}项/{source_digest(files)}，预期{fixed}")
+    changed = sorted(name for name in files.keys() | actual.keys() if files.get(name) != actual.get(name))
+    require(not changed, "macOS解包内容变化：" + ", ".join(changed[:10]))
     env = {name: value for name, value in os.environ.items()
            if not name.startswith(("XIAO_", "RUST_BIGDECIMAL_")) and name != "RUST_TEST_THREADS"}
     rustc = Path(command_output(["rustup", "which", "--toolchain", "1.96.0", "rustc"], env))
