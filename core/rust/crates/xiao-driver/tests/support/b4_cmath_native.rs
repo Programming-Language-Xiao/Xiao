@@ -103,7 +103,7 @@ fn cases() -> String {
 }
 
 /// 在单一宿主进程中调用真实静态/动态生成函数；仅替换测试模块报告/exit便于观察静态失败。
-fn harness(dynamic: bool, ir: &xiao_ir::IrProgram) -> String {
+fn harness(dynamic: bool, ir: &xiao_ir::IrProgram, target: &TargetDescription) -> String {
     let mut declarations = String::new();
     let mut calls = String::new();
     for index in 0..16 {
@@ -122,6 +122,12 @@ fn harness(dynamic: bool, ir: &xiao_ir::IrProgram) -> String {
             )
         } else {
             format!("xiao_fn_{index}_probe{index}")
+        };
+        // 显式汇编名绕过 C 编译器的符号修饰，Mach-O 仍需链接 LLVM 生成的前导下划线。
+        let symbol = if target.object_format == xiao_codegen_llvm::ObjectFormat::MachO {
+            format!("_{symbol}")
+        } else {
+            symbol
         };
         if dynamic {
             declarations.push_str(&format!(
@@ -305,7 +311,8 @@ pub fn run() {
             .replace("@exit(", "@test_exit(")
             .replace("@xiao_runtime_error_report(", "@test_report(");
         let c = root.join(format!("harness-{dynamic}.c"));
-        fs::write(&c, harness(dynamic, &ir)).unwrap();
+        let harness = harness(dynamic, &ir, &target);
+        fs::write(&c, &harness).unwrap();
         let object = c.with_extension("obj");
         let compiled = Command::new(&clang)
             .args(["-target", &target.triple, "-c"])
@@ -354,7 +361,7 @@ pub fn run() {
             );
         }
         let status_c = root.join(format!("status-{dynamic}.c"));
-        fs::write(&status_c, status_harness(&harness(dynamic, &ir), dynamic)).unwrap();
+        fs::write(&status_c, status_harness(&harness, dynamic)).unwrap();
         let status_obj = status_c.with_extension("obj");
         let compiled = Command::new(&clang)
             .args(["-target", &target.triple, "-c"])
