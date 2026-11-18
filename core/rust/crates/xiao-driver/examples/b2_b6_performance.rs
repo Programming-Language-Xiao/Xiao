@@ -1,22 +1,31 @@
 //! B6 的固定负载测量入口。每一项在五个独立进程中按 F-3 采样。
 
+/// B1 固定输入生成规则和独立黄金。
 #[path = "perf/cases.rs"]
 #[allow(dead_code)] // B6 复用 B1 的输入和独立黄金，采样统一由 F-3 控制器驱动。
 mod b1_cases;
+/// B6 数值、cmath 和兼容负载目录。
 #[path = "numeric_perf/b6_cases.rs"]
 mod b6_cases;
+/// F-3 校准条件和重复上限。
 #[path = "numeric_perf/calibration.rs"]
 mod calibration;
+/// 已冻结的 A6 数值输入和缩放规则。
 #[path = "numeric_perf/cases.rs"]
 mod cases;
+/// 固定源码、二进制和工具来源。
 #[path = "numeric_perf/identity.rs"]
 mod identity;
+/// 三平台原始驻留内存读数。
 #[path = "numeric_perf/memory.rs"]
 mod memory;
+/// 原生降低与测量时钟链接。
 #[path = "numeric_perf/native.rs"]
 mod native;
+/// 独立批次子进程和逐行测量协议。
 #[path = "numeric_perf/process.rs"]
 mod process;
+/// 同 PID 内完成预热、计时和验证的 VM 工作进程。
 #[path = "numeric_perf/worker.rs"]
 mod worker;
 
@@ -27,10 +36,14 @@ use std::time::Instant;
 use xiao_artifacts::Digest256;
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 
+/// 每个负载和后端的独立进程数。
 const BATCHES: usize = 5;
+/// F-3 按五批保守峰值中的最大值应用 64 MiB 上限。
 const MEMORY_LIMIT: u64 = 64 * 1024 * 1024;
+/// 采样前与实际生成负载逐项比较的固定清单。
 const CATALOG: &str = "tests/fixtures/20o-b2-b6/catalog.json";
 
+/// 每个后端独立编译、采样和判定。
 #[derive(Debug, Clone, Copy)]
 enum Backend {
     Vm,
@@ -38,6 +51,7 @@ enum Backend {
 }
 
 impl Backend {
+    /// 固定清单与运行回执使用的后端标识。
     fn label(self) -> &'static str {
         match self {
             Self::Vm => "vm",
@@ -47,6 +61,7 @@ impl Backend {
         }
     }
 
+    /// 以五批归一化中位数应用的绝对秒数上限。
     fn seconds(self) -> f64 {
         match self {
             Self::Vm => 10.0,
@@ -55,6 +70,7 @@ impl Backend {
     }
 }
 
+/// 取实际构建本工具的源码根。
 fn root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .ancestors()
@@ -62,10 +78,12 @@ fn root() -> &'static Path {
         .unwrap()
 }
 
+/// 保存实际源程序或产物的原始摘要。
 fn digest(data: &[u8]) -> String {
     Digest256::of_bytes(data).to_string()
 }
 
+/// 将同一负载降低到字节码或链接本轮 Runtime 的原生程序。
 fn compile(
     load: &b6_cases::Load,
     directory: &Path,
@@ -98,6 +116,7 @@ fn compile(
     }
 }
 
+/// 采集完整五批并计算绝对时间、内存和校准结论。
 fn measure(load: &b6_cases::Load, directory: &Path, backend: Backend) -> serde_json::Value {
     let (exe, args, fingerprint) = compile(load, directory, backend);
     let executable = identity::file(&exe);
@@ -164,6 +183,7 @@ fn measure(load: &b6_cases::Load, directory: &Path, backend: Backend) -> serde_j
     })
 }
 
+/// 采样结束后复核开始时绑定的原始文件。
 fn assert_run_identity(fixed: &identity::Identity) {
     assert_eq!(
         identity::sources_b6(root()),
@@ -186,6 +206,7 @@ fn assert_run_identity(fixed: &identity::Identity) {
     }
 }
 
+/// 独占写入单项回执，保留旧失败输出。
 fn write_json(path: &Path, value: &serde_json::Value) {
     let mut bytes = serde_json::to_vec_pretty(value).unwrap();
     bytes.push(b'\n');
@@ -194,6 +215,7 @@ fn write_json(path: &Path, value: &serde_json::Value) {
     (&file).write_all(&bytes).unwrap();
 }
 
+/// 生成清单、运行单个 VM 子进程或对指定后端采样。
 fn main() {
     let mut args = std::env::args().skip(1);
     let first = args

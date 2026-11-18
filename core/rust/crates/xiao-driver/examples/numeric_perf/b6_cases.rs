@@ -7,34 +7,50 @@ use xiao_artifacts::Digest256;
 
 /// 固定的测量单元及其实际源程序。
 pub struct Load {
+    /// 源程序对应的冻结目录记录。
     pub spec: Spec,
+    /// 每个后端实际编译的 Xiao 源程序。
     pub source: String,
 }
 
 /// 在采样前固定并逐项对账的负载。
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Spec {
+    /// 数值、cmath 或兼容回归测试组。
     pub suite: &'static str,
+    /// 同一输入族的稳定标识。
     pub case: String,
+    /// 输入族内的规模或参考向量标识。
     pub profile: String,
+    /// 以 dimension 为单位的输入规模。
     pub size: usize,
+    /// 输入规模的计量单位。
     pub dimension: String,
+    /// 在同输入族中与本项比较的半规模。
     pub double_of: Option<String>,
+    /// 适用的翻倍时间比上限。
     pub ratio_limit: Option<u8>,
+    /// 是否独立核对最大合法负载。
     pub maximum: bool,
+    /// 已登记输入的 UTF-8 字节数。
     pub input_bytes: Option<usize>,
+    /// 已登记黄金输出的 UTF-8 字节数。
     pub output_bytes: Option<usize>,
+    /// 独立黄金的来源标识或实际字节摘要。
     pub reference: Option<String>,
+    /// 实际生成程序的原始 UTF-8 摘要。
     pub source_sha256: String,
 }
 
 impl Load {
+    /// 绑定即将交给编译器的原始源码。
     fn new(mut spec: Spec, source: String) -> Self {
         spec.source_sha256 = Digest256::of_bytes(source.as_bytes()).to_string();
         Self { spec, source }
     }
 }
 
+/// 按输入族定义规模，按具体操作追加比较与黄金约束。
 fn spec(suite: &'static str, case: &str, profile: &str, size: usize, dimension: &str) -> Spec {
     Spec {
         suite,
@@ -52,14 +68,17 @@ fn spec(suite: &'static str, case: &str, profile: &str, size: usize, dimension: 
     }
 }
 
+/// 转义示例输出里的换行和引号，使其可作 Xiao 字符串字面量。
 fn literal(value: &str) -> String {
     serde_json::to_string(value).unwrap()
 }
 
+/// 将源语句移入函数或批次循环，同时保留原有缩进。
 fn indent(body: &str) -> String {
     body.lines().map(|line| format!("    {line}\n")).collect()
 }
 
+/// 单次调用和计时区间外的输入准备、结果校验。
 struct Call<'a> {
     prelude: &'a str,
     parameters: &'a str,
@@ -143,6 +162,7 @@ print(4)
     )
 }
 
+/// 复用 A6 运算负载，追加 B2 的显式精度除法。
 fn numeric(root: &Path, loads: &mut Vec<Load>) {
     for case in cases::catalog(root) {
         let source = cases::source(std::slice::from_ref(&case));
@@ -228,6 +248,7 @@ fn numeric(root: &Path, loads: &mut Vec<Load>) {
     }
 }
 
+/// 正式 F-9 向量中可由语言源码精确构造的输入。
 const CMATH: &[(&str, &[&str])] = &[
     ("sqrt", &["v00290", "v00001", "v00602", "v00607"]),
     ("floor", &["v01509", "v01816"]),
@@ -246,16 +267,19 @@ const CMATH: &[(&str, &[&str])] = &[
     ("log10", &["v13644", "v13956", "v13354"]),
 ];
 
+/// 读取参考文件的 binary64 十六进制位模式。
 fn bits(raw: &str) -> u64 {
     u64::from_str_radix(raw, 16).unwrap()
 }
 
+/// 使用能往返到原位模式的十进制字面量构造有限 Float。
 fn float_expression(value: u64) -> String {
     let number = f64::from_bits(value);
     assert!(number.is_finite());
     format!("float({number:e})")
 }
 
+/// 逐位核对精确项和零，其余非零结果核对 F-9 的有符号 4 ULP 区间。
 fn cmath_check(name: &str, expected: u64) -> String {
     let value = f64::from_bits(expected);
     if value == 0.0
@@ -274,6 +298,7 @@ fn cmath_check(name: &str, expected: u64) -> String {
     format!("print(actual >= {low} and actual <= {high})")
 }
 
+/// 为两个官方别名和共享浮点幂生成可执行的参考向量程序。
 fn cmath(root: &Path, loads: &mut Vec<Load>) {
     let reference =
         fs::read_to_string(root.join("tests/fixtures/docs/cmath/reference-vectors.tsv")).unwrap();
@@ -358,6 +383,7 @@ fn cmath(root: &Path, loads: &mut Vec<Load>) {
     }
 }
 
+/// 在新快照上重测的 20 个 B1 产品入口。
 const B1: &[&str] = &[
     "math.abs",
     "math.min",
@@ -381,6 +407,7 @@ const B1: &[&str] = &[
     "csv.format_ascii",
 ];
 
+/// 复用原 B1 产品负载，并对全转义 URL 额外绑定输入和黄金摘要。
 fn b1(loads: &mut Vec<Load>) {
     assert!(B1.iter().all(|id| b1_cases::IDS.contains(id)));
     for &id in B1 {
@@ -440,6 +467,7 @@ fn b1(loads: &mut Vec<Load>) {
     }
 }
 
+/// 校验三条完整示例仍来自正式教程，并保留已提交的预期输出。
 fn a1(root: &Path, loads: &mut Vec<Load>) {
     let directory = root.join("tests/fixtures/docs/numeric");
     let tutorial =
