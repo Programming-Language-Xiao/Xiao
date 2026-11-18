@@ -1,77 +1,92 @@
 # 20O-B2-B6-4. 三平台与 CI 工程门禁实施规划
 
 > **B6-4 尚未开始；B6-3 边界功能通过，B6-5 后置。**
-> 入口：B6-3 固定 `58176ff5` 的三平台边界证据（765 次语言执行、C ABI 11 项、B1 9/18、B4 回归、28/28 计数守卫）；B6-2 性能绑定 `79ea0375` 及其 source-boundary 证明；B6-1 仍为 `restricted/stage_passed=false`。
+> 入口：B6-3 固定 `58176ff5` 的三平台边界证据（765 次语言执行、C ABI 11 项、B1 契约 9/9 与资源 18/18、B4 回归、4 条真实输出加 24 条派生负例）；B6-2 性能绑定 `79ea0375` 及其 source-boundary 证明；B6-1 仍为 `restricted/stage_passed=false`。
 > B6-4 只做三平台执行、CI 与工程门禁证据；不重跑 B6-2 性能、不重跑 B6-3 全边界、不跑 721、不改产品/工作流阈值/ABI/registry。
-> Windows COFF 导出完整性未验证、Linux Clippy 未执行；B6-4 不得写成三平台完整性或 Clippy 全通过。
+> B6-1 的 Windows COFF 导出完整性未验证、Linux Clippy 未执行；这些是该阶段历史状态。B6-4 必须独立报告本批 Linux Clippy 结果，也不得将 Linux 专属工程门禁写成三平台通过。
 
 ## 一、入口与范围
 
 | 项 | 当前状态 |
 | --- | --- |
-| B6-3 | 固定 `58176ff5`，`boundary_passed=true`；三平台 VM/O0/O3 各 85 条、C ABI 11 项、B1 9/18、B4 两别名、28/28 守卫 |
+| B6-3 | 固定 `58176ff5`，`boundary_passed=true`；三平台 VM/O0/O3 各 85 条、C ABI 11 项、B1 契约 9/9 与资源 18/18、B4 两别名；守卫回放为 4 条真实输出 + 24 条派生负例 |
 | B6-2 | 固定 `79ea0375`，`perf_pass=true`；source-boundary 证明后续仅有 Rustdoc/加载器移位，新增性能样本 0 |
 | B6-1 | `restricted/stage_passed=false`；Windows COFF `UnverifiedCoffExports`、Linux Clippy 未执行 |
-| 当前产品 | `58176ff5`，ABI1.19/生成器22/接口1；到当前 HEAD 的 `core/`、`stdlib/` 无产品差异 |
-| 本批目标 | 三平台实际执行或 `unverifiable`、CI run/job/attempt、workspace/Clippy/fmt/lock/repo-check、B1 28/28 与平台身份 |
+| 产品基线 | `58176ff5`，ABI1.19/生成器22/接口1；到当前 HEAD 的产品、测试、工具和锁文件树无差异 |
+| B6-4 执行身份 | 使用实际 CI `head_sha`；它与产品基线分开登记，不能把 `58176ff5` 写成 CI 运行提交 |
+| 本批目标 | Linux 完整仓库门禁、三平台维护回归及其 CI run/job/attempt、B1 28/28 与平台身份 |
 | 未做 | B6-2 性能重跑、B6-3 全边界重跑、B6-5 收口/B7 交接、registry/教程、旧721 |
 
 B6-4 是 **工程门禁与 CI 证据批**，不是性能或边界验收批。B6-2 的 `perf_pass` 与 B6-3 的 `boundary_passed` 只按各自快照引用；B6-4 不重测性能、不把工程门禁绿色写成性能或三平台完整性通过。
 
 ### 1.1 要做
 
-1. 固定 B6-4 源码与身份：产品 `58176ff5`、各平台 Runtime/toolchain/target/锁；B6-2 `79ea0375` 与其 source-boundary 证明、B6-3 `58176ff5` 边界回执分别引用；
-2. 在固定源码上运行工程门禁：完整 workspace 测试、Clippy、fmt、`check:lock`、`repo-check all`（仅既有 A0 警告）；Linux 本地 Clippy 缺失时如实记 `not_run`/`unverifiable`，不伪造；
-3. 三平台执行与 CI：Windows/Linux/macOS 实际执行或明确 `unverifiable`；保存 CI run/job/attempt、维护工作流/脚本摘要、源码/Runtime/tool/target、日志与平台身份；
-4. B1 28/28 计数守卫：4 项真实输出回放 + 24 项派生负例，是工作流自检，不代替产品测试；保存脚本/工作流摘要；
-5. push 路径过滤：未触发时按事实写明，不把“有 CI 记录”当成覆盖证明；
+1. 固定产品基线 `58176ff5`，并记录每次 CI 的实际 `head_sha`、锁、工具链与目标；B6-2 `79ea0375` 和 B6-3 `58176ff5` 只作为各自阶段的独立证据引用；
+2. Linux 执行 `workspace-gates.yml` 的完整仓库门禁，并通过 `maintenance-regression.yml` 记录 Rust workspace 默认测试；不要把 `workspace-gates` 单独称为完整 Rust workspace 测试；
+3. 通过维护工作流的 Windows/Linux/macOS 原生回归取得三平台执行与 CI 身份；保存 run/job/attempt、工作流/脚本摘要、源码/Runtime/tool/target、日志与平台身份；
+4. B1 计数守卫：从维护工作流采集 VM 与 Windows/Linux/macOS 三条原生入口的 4 份真实 Cargo 输出，再做 24 项派生负例回放；这是工作流自检，不代替产品测试；保存脚本/工作流摘要；
+5. push 路径过滤：按各工作流实际过滤条件和事件记录；未触发时不把其他 CI 记录当成覆盖证明；
 6. 逐平台/后端/优化级别记录结果；失败与不可验证项保留，不得汇总为通过；
 7. 证据：新建 `assets/20o-b2-b/entry-20261118-b6-4/`，日志按 SHA-256 内容寻址；B6-1/B6-2/B6-3 历史目录不改写；定稿后单次 docs 门禁；
 8. B6-5 交接：汇总 CI/工程门禁/平台证据，列出失败/不可验证项，不启动 B6-5 或 721。
 
 ### 1.2 明确不做
 
-- 不改产品/测试/工作流阈值/默认超时/预算/输入；不把 A6 的 40 分钟时限自动继承到 B6；
+- 不改产品/测试/工作流阈值/默认超时/预算/输入；只允许为证据补充不改变行为的身份、摘要和日志记录；不把 A6 的 40 分钟时限自动继承到 B6；
 - 不改 ABI1.19、生成器22、接口1、intrinsic 1～48/ID100、registry/教程；
 - 不重跑 B6-2 性能、不重跑 B6-3 全边界、不跑旧721、不启动 B6-5；
 - 不覆盖 B6-1/B6-2/B6-3 历史证据，不把 B6-1 `restricted` 写成全通过；
 - 不把工程门禁绿色写成三平台完整性、Clippy 全通过或性能通过；
 - 不在 B6-4 内修产品；发现缺陷记录失败并退回所属阶段或另立修复批。
 
+### 1.3 CI 入口与覆盖边界
+
+| 工作流 | 实际覆盖 | 本批用途与限制 |
+| --- | --- | --- |
+| `workspace-gates.yml` | 仅 Linux `linux-workspace-gates`，执行 `bash tools/gates/run.sh`；包含 Rust 格式、research 测试/Clippy、`bun run check`、类型检查、benchmark 与 `xiao-driver` 测试 | 用于 Linux 仓库门禁；`bun run check` 才包含 `repo-check all`、workspace Clippy 与 `check:lock`。该工作流本身不执行完整 Rust workspace 测试，也不是三平台矩阵 |
+| `maintenance-regression.yml` | Linux 默认 workspace 测试、Windows/Linux/macOS `native-regression`，另有 Windows 确定性体积与 Linux 安全作业 | 手动派发时 `b1_f10=false`、`b2_a_perf=false`；Linux 默认测试将 B1 精确用例单独运行，三平台原生回归分别提供真实输出。该工作流里的 `b1-probe-guards.ps1` 另运行 28 个模拟输入用例，不等于 4 真实 + 24 派生回放。用于本批三平台维护回归，不代表三平台 Clippy/fmt/repo-check |
+| `platform-reproduction.yml` | 定时或手动的通用平台复现；矩阵含 Windows/Linux/macOS，Clippy 只在 Linux amd64 作业执行 | 可作补充环境记录，不替代上述 B6-4 门禁或维护回归；若引用，单列该工作流及其覆盖范围 |
+
+`workspace-gates.yml` 的 push 路径包含 `docs/**`，本规划提交可触发该 Linux 门禁；`maintenance-regression.yml` 的 push 路径不包含 `docs/DevDocs/**`，应手动派发并保存 `event`、`ref`、`head_sha`。`platform-reproduction.yml` 没有 push 触发器。每个结论都绑定实际运行的 workflow、run、job、attempt 和 head SHA。
+
+产品身份与执行身份分开记录：`58176ff5` 是 B6-3 固定产品基线，CI 的 `head_sha` 是 B6-4 实际源码/工作流提交。对比两者的产品、测试、工具和锁文件树；工作流文件及回执工具按 CI `head_sha` 摘要。保存 Rust/Bun/LLVM 版本、runner OS/架构、target triple、Cargo 锁摘要、`CARGO_TARGET_DIR`、实际 Runtime 文件 SHA-256。维护工作流使用 `rust-cache`，必须记录缓存动作和命中状态，不得把缓存构建称为冷构建；如需本机复跑，另用新任务根与独立 target。CI 的受控 Cargo 输出还需能证明 `--locked` 生效。
+
+维护工作流的三平台原生矩阵是常规回归，不调用 B6-3 的专用 `prepare.py`/`run.py --mode all`，也不据此重建 B6-3 的 85 条矩阵结果。CI 用 run/job/attempt 标识执行；只有本机直接启动的命令要求记录进程 PID。
+
 ## 二、开工闸门
 
 1. B6-3 审计与 B6-2 source-boundary 证明通过；B6-1 restricted 口径可读；
 2. 当前产品 `58176ff5` 到 HEAD 的 `core/`、`stdlib/` 无产品差异；ABI1.19/生成器22/接口1；
-3. 三平台目标/工具链/CI Runner/权限与 run/job/attempt 可取得；macOS 缺失按 `unverifiable`；
-4. workspace/Clippy/fmt/`check:lock`/`repo-check` 入口可复现；Linux Clippy 缺失已登记；
-5. 唯一任务根、独立 target/Runtime/缓存已建立；历史证据只读；
+3. Windows/Linux/macOS 维护 Runner、CI 权限与 run/job/attempt 可取得；macOS 无法调度时按 `unverifiable`；
+4. `workspace-gates.yml` 的 Linux fmt/Clippy/`check:lock`/`repo-check` 入口可复现；B6-1 的 Linux Clippy `not_run` 作为历史事实保留，不替代 B6-4 本批门禁；
+5. CI 每个 job 使用独立 Runner；维护工作流若恢复 Cargo 缓存，记录其状态与 target 路径，不标为冷构建；本机复跑另建唯一任务根；历史证据只读；
 6. 不改工作流阈值/默认超时；若需要调整，先请星崽另行裁定。
 
 ## 三、分批执行
 
 ### B6-4A：固定源码与工程门禁
 
-1. 固定 `58176ff5`、锁、工具链、目标与 Runtime 身份；复核无产品漂移；
-2. 运行完整 workspace 测试、Clippy、fmt、`check:lock`、`repo-check all`；
-3. 记录每项命令、PID、前后源码/锁摘要、工具与 Runtime 身份、原始日志；
-4. 保存失败/重试；Linux Clippy 缺失如实标注。
+1. 固定产品基线 `58176ff5` 和实际 CI `head_sha`，复核产品、测试、工具及锁文件树无漂移；
+2. 在 Linux 运行 `workspace-gates.yml`，由 `maintenance-regression.yml` 的 `workspace-default-tests` 提供 Rust workspace 默认测试回执；分别登记工作流实际执行的命令、跳过项与精确补跑项；
+3. 记录 run/job/attempt、每项命令、运行前后源码/锁摘要、工具/target/Runtime 身份、缓存状态与原始日志；CI 日志按 SHA-256 内容寻址；
+4. 保存失败与重试；若 Linux CI 的 Clippy 未执行或门禁缺失，标记本批缺项，不得用 B6-1 历史 `not_run` 代替本批结果。
 
 退出：工程门禁逐项有回执，失败/缺项明确。
 
 ### B6-4B：三平台执行与 CI
 
-1. Windows/Linux/macOS 实际执行或明确 `unverifiable`；macOS 用固定 Runner 时保存 run/job/attempt；
-2. 保存工作流/脚本/源码/Runtime/tool/target 摘要与平台身份；
-3. 逐平台结果分别记录，不合并成三平台通过；
-4. push 路径过滤按事实记录。
+1. 手动派发 `maintenance-regression.yml`，确认两个性能输入均为 false；保存 Linux VM B1 精确测试和 Windows/Linux/macOS 原生 B1 精确测试的四份实际输出，以及三平台 `native-regression` 的 run/job/attempt；缺少任一平台时标记 `unverifiable`；
+2. 保存工作流/脚本/实际 CI head/Runtime/tool/target 摘要、缓存状态与平台身份；如现有日志没有 Runtime SHA，只追加不改变执行行为的摘要记录；
+3. 分平台记录原生回归结果与既有 skip 项；该矩阵不声称在 Windows/macOS 执行了完整仓库 Clippy、fmt 或 repo-check；
+4. 对照两个工作流各自的 push 过滤规则，按实际事件记录是否触发。
 
 退出：三平台身份与结果可复核，缺平台/失败保留。
 
 ### B6-4C：B1 守卫与平台完整性
 
-1. 运行 28 项计数守卫：4 真实输出 + 24 派生负例；保存脚本/工作流摘要；
-2. 核对 Windows COFF、Linux ELF、macOS Mach-O 的实际验证等级，不升级未验证项；
-3. 保存平台/工具/Runtime/执行文件摘要与日志。
+1. 复核维护工作流的 28 个模拟输入守卫，并另以 B6-4 自身脚本绑定当前 CI `head_sha` 的 workflow blob，对四份真实 B1 输出执行 24 项派生负例回放；保存两类回执，不将模拟输入描述为真实输出；
+2. 只引用 B6-3 固定快照的组件验证等级：Windows COFF `UnverifiedCoffExports`、Linux ELF 与 macOS Mach-O `Complete`；B6-4 维护回归不重跑组件完整性检查，也不升级验证等级；
+3. 保存本批平台/工具/Runtime 摘要与日志，并将 B6-3 的组件等级明确标为历史快照事实。
 
 退出：守卫与平台完整性口径准确，未验证项不写成通过。
 
@@ -88,21 +103,21 @@ B6-4 是 **工程门禁与 CI 证据批**，不是性能或边界验收批。B6-
 
 | 层 | 必测 |
 | --- | --- |
-| 工程门禁 | workspace、Clippy、fmt、`check:lock`、`repo-check`；Linux Clippy 缺项如实登记 |
-| CI | Windows/Linux/macOS run/job/attempt、工作流/脚本摘要、push 路径过滤事实 |
-| 平台 | 实际执行或 `unverifiable`；COFF/ELF/Mach-O 验证等级单列 |
-| 守卫 | 28/28 = 4 真实 + 24 派生；工作流自检不代替产品测试 |
-| 身份 | 源码/锁/Runtime/tool/target/执行文件/PID/日志摘要 |
+| 工程门禁 | Linux `workspace-gates` 的 workspace、Clippy、fmt、`check:lock`、`repo-check`；另列维护工作流的 workspace 默认测试 |
+| CI | Linux 仓库门禁与 Windows/Linux/macOS 维护回归各自的 run/job/attempt、工作流摘要及 push 过滤事实 |
+| 平台 | Windows/Linux/macOS 原生维护回归实际执行或 `unverifiable`；COFF/ELF/Mach-O 等级只按 B6-3 快照引用 |
+| 守卫 | `b1-probe-guards.ps1` 的 28 个模拟输入用例；另有 4 份实际 CI 输出 + 24 项派生负例回放；工作流自检不代替产品测试 |
+| 身份 | 产品基线、CI head、锁/Runtime/tool/target/缓存/执行文件/日志摘要；本机直接执行另记 PID |
 | 边界 | 无产品/工作流阈值/ABI/registry/721 变更 |
 
 ## 五、退出条件
 
 1. B6-4A 工程门禁逐项有回执，失败/缺项明确；
-2. 三平台实际执行或 `unverifiable` 明确，CI 身份可核对；
+2. 三平台维护回归实际执行或 `unverifiable` 明确，Linux 仓库门禁与各 CI 身份可核对；
 3. 28/28 守卫与平台验证等级记录准确；
 4. 无产品/测试/工作流阈值/ABI/registry/721 变更；
 5. 历史 B6-1/B6-2/B6-3 证据未改写；
-6. 未把工程门禁、Windows COFF 或 Linux Clippy 缺项写成全通过；
+6. 未把 Linux 专属仓库门禁写成三平台门禁；B6-1 的 Windows COFF 未验证与 Linux Clippy 未执行继续按历史事实表述，不混入 B6-4 本批结果；
 7. B6-5 入口明确；B6-5/B7/B2-C 未开始。
 
 ## 六、风险与禁止
