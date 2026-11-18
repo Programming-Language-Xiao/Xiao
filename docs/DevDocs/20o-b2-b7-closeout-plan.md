@@ -1,7 +1,7 @@
 # 20O-B2-B7. B2-B 内部收口与 B2-C 交接规划
 
 > **2026-11-16历史状态：B5版本/缓存/C ABI矩阵及完整串行workspace通过，但默认并发workspace的URL Unicode用例触发60秒看门狗，B5未封存。** 失败记录、B1历史原件缺失/重建来源标记和独立LLVM比较问题见[B5证据](assets/20o-b2-b/entry-20261116-b5-rebuild/README.md)；B6闸门未开，B7/B2-C未开始。
-> **2026-11-18实施同步：** B5矩阵固定绑定ABI1.19/生成器21；当前产品ABI1.19/生成器22，B5已联合收口。FIX.2已完成且生成器保持22。B6-1[Windows/Linux限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)和[macOS专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)功能通过，Linux ELF和macOS Mach-O为`Complete`，Windows COFF为`UnverifiedCoffExports`。B6-2已开工，B7等待B6收口，并引用B5固定矩阵、[21→22增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)及[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)。
+> **2026-11-18实施同步：** B5矩阵固定绑定ABI1.19/生成器21；当前产品ABI1.19/生成器22，B5已联合收口。FIX.2已完成且生成器保持22。B6-1三平台功能通过，Linux ELF和macOS Mach-O为`Complete`，Windows COFF为`UnverifiedCoffExports`。B6-2九组性能测量通过，B7等待B6整批收口。[B6-1限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)、[macOS专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)、[B6-2实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)、[21→22增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)、[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)
 > B7 只做 B2-B 内部收口、B1 回归、B2-A 与 B2-B 前序阶段证据对账和 B2-C 交接。
 > 不运行旧 721、不升级 registry/教程、不关闭历史债务；B2-C 才做最终三平台、721 和公共发布。
 
@@ -11,7 +11,7 @@
 | --- | --- |
 | B4 | B4-5以cfa79381产品和新Runtime重跑，内部language_available=true；最终签收以重开证据的文档回执与封存审计通过为准 |
 | B5历史矩阵 | ABI1.19/21产品71e611f8、最终测试5864cbde；版本/缓存/C ABI与串行workspace通过，原默认workspace失败保留；URL优化后的当前22完整workspace已通过，B5已通过四类证据联合收口 |
-| B6 | B6-1三平台功能通过，Windows COFF完整性及Linux Clippy缺项保留，B6-2性能测量已开工 |
+| B6 | B6-1三平台功能通过，Windows COFF完整性及Linux Clippy缺项保留。B6-2固定清单1,647项均通过，B6-3～B6-5待执行 |
 | 当前版本 | ABI1.19/生成器22、接口1、intrinsic1～48；B7仍须等B6完成，且引用B5固定1.19/21矩阵与21→22增量 |
 | 本批目标 | B1 20入口回归、A0～A7与B0～B6证据对账、语言/教程/registry边界、B2-C交接 |
 | 未做 | B2-C 721、最终三平台公共产物、registry/教程 verified、历史债务关闭 |
@@ -21,8 +21,6 @@ B7是**B2-B当前1.19/22内部收口**，不是B2最终发布。B5固定1.19/21�
 收口须分别记录证据审计、功能/版本验收、资源/性能及平台覆盖结论。B6 的 `unverifiable` 可作为受限交接中的未验证项保留，但不等于 `perf_pass` 或三平台通过；实测失败不得改记为不可验证或仅凭“已登记”签收通过。
 
 B6-1自身重跑的Linux Clippy未执行（Rust1.96工具链缺少该组件），Windows Clippy通过不能替代。B7工程门禁须逐平台保留测试、Clippy、fmt实际状态；若后续补验，应引用新工具/源码身份和实际回执，不能改写B6-1历史缺项。新任务根导出还须包含`tests/spec`并在构建前核对固定Git字节，避免遗漏`--all-targets`所需的协议编译夹具，详见[B6规划§2.5](20o-b2-b6-resource-performance-plan.md#25-后续采集的源码完整性与工程门禁)。
-
-2026-11-18星崽授权先跑macOS专项，通过后开工B6-2。macOS两项作业均通过，B6-2开始三平台测量。B7继续等待B6收口。
 
 原生产物的组件验证等级同样独立保留：COFF `UnverifiedCoffExports`只能记“功能通过、导出完整性未验证”，导出表集合相等或B7审计通过都不能把它改为`Complete`。逐平台记录实际等级；`Complete`且声明/观察集合一致才证明完整组件校验通过。
 

@@ -6,6 +6,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parent
+sys.dont_write_bytecode = True
 sys.path.insert(0, str(ROOT.parents[4] / "tools/gates"))
 
 from b2_b6_macos import file_identity, require, snapshot, source_digest

@@ -1,9 +1,10 @@
 # 20O-B2-B6-1-RERUN. B6-1 重跑与收口规划
 
-> **RERUN 已完成Windows/Linux限定范围（2026-11-18）；B6-1形成受限结论，B6-2性能未开始。** Linux官方包装原阻断已解除；Windows功能通过、COFF导出完整性未验证；macOS未验证，`stage_passed=false`，不记三平台通过。见[本批证据](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)。
+> **RERUN退出时点（2026-11-18）：** Windows/Linux限定重跑完成。Linux官方包装原阻断解除，Windows功能通过、COFF导出完整性未验证。该回执中macOS未验证，`stage_passed=false`，B6-2尚未开始。[RERUN证据](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)
+> 后续macOS专项通过，B6-2固定负载的三平台性能测量通过。[macOS专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)及[B6-2实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)
 > 入口：FIX.2 产品 `43f18274`（组件推导修复；ABI1.19/生成器22/接口1），以及 FIX.2 证据与反例记录。
 > B6-1 原证据 `entry-20261117-b6` 保持 `stage_passed=false`/`blocked` 历史身份，不得改写；本批必须在 B6-1 自己的任务根重跑，不能用 FIX.2 证据代替 B6-1 签收。
-> 平台口径已冻结：Windows 功能通过但 COFF `UnverifiedCoffExports`，导出完整性未验证；Linux ELF `Complete`；macOS 未验证。三者不得合并成“三平台通过”。
+> RERUN平台回执记录Windows功能通过、COFF `UnverifiedCoffExports`，Linux ELF `Complete`，macOS当时未验证。
 > 不修改产品/测试/看门狗/预算/ABI/registry；不跑旧721。
 
 ## 一、入口与范围

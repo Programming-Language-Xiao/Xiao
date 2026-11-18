@@ -1,6 +1,6 @@
 # 20O-B2-B6. cmath/lfloat 资源、错误与三平台性能规划
 
-> **B6当前状态（2026-11-18）：** B6-1的Windows/Linux[限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)及[macOS专项补验](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)均已完成。官方包装两别名O0/O3在三平台功能通过，Linux ELF与macOS Mach-O均为`Complete`。Windows COFF导出完整性为`UnverifiedCoffExports`，Linux Clippy未执行。按星崽裁定，macOS通过后已开工B6-2，见§2.7。
+> **B6当前状态（2026-11-18）：** B6-1的Windows/Linux[限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)及[macOS专项补验](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)均已完成。官方包装两别名O0/O3在三平台功能通过，Linux ELF与macOS Mach-O均为`Complete`。Windows COFF导出完整性为`UnverifiedCoffExports`，Linux Clippy未执行。[B6-2固定清单](assets/20o-b2-b/entry-20261118-b6-2/README.md)三平台九组性能测量通过，见§2.7。
 
 > B5固定1.19/21矩阵和[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)保持只读历史身份；当前产品1.19/22。B6每轮均绑定自己的源码、Runtime和工具身份。B1原件缺口、22C/22D与19/11/22债务独立保留。
 > B5固定测试快照5864cbde为ABI1.19/生成器21/接口1。原17项资源目标及8次直接计时为旧负载历史证据；优化后18项资源目标和完整默认workspace均通过，详见URL优化记录。B6当前测量使用ABI1.19/生成器22 Runtime，并同时对账B5矩阵与21→22增量证据。
@@ -17,7 +17,8 @@
 | B4-4～B4-5 | B4-5以FIX.1产品cfa79381重跑并记录内部language_available=true；最终文档/封存审计见重开证据，B5仍是B6前置 |
 | B5 | 四类证据联合收口、b5_closed=true；固定1.19/21矩阵与当前1.19/22增量分层，B6开工前置满足 |
 | B6-1 | Windows/Linux限定重跑与macOS专项通过；Windows COFF导出完整性与Linux Clippy仍单列 |
-| 后续批次 | B6-2已开始三平台测量；B6-3边界守卫、B6-4三平台/CI、B6-5收口未开始 |
+| B6-2 | 固定`79ea0375`，三平台各测VM、O0、O3，每组183项通过，`perf_pass=true` |
+| 后续批次 | B6-3边界守卫、B6-4三平台/CI、B6-5收口 |
 | 测量入口版本/工具链 | 当前快照ABI1.19/生成器22/接口1；同时引用B5固定1.19/21拒绝/缓存矩阵与静态比较21→22增量证据。intrinsic1～48、Rust1.96.0与Cargo `--locked`；每轮测量固定源码/Runtime工具身份，优化后另建快照并重测受影响项 |
 | 本批目标 | cmath/lfloat 资源/错误/原子性、VM/原生三平台性能与 CI 证据 |
 | 未做 | B7 收口、B2-C 721/教程/registry/最终公共发布 |
@@ -76,7 +77,7 @@ B6 是 **内部资源/性能验收批**，不是 B2-C 最终发布。B6 的测�
 7. 平台与状态：Windows/Linux/macOS实际执行或明确标 `unverifiable`；缺平台、校准不足、无可靠OS峰值或预算失败均不得写 `perf_pass` 或B6三平台通过；B7/B2-C仍后置，旧721未跑。
 8. 守卫口径：28/28为工作流计数自检（4项真实B1输出回放+24项派生负例），不代替B6产品测试；B5模拟/派生口径不得改写为真实CI成绩。
 
-### 2.3 B6-1首轮执行及阻断
+### 2.3 B6-1首轮执行及历史阻断
 
 | 平台/路径 | 实际结果 |
 | --- | --- |
@@ -92,7 +93,7 @@ Linux包装拒绝为真实退出101，ArtifactVerification报告ELF观察到未�
 
 [本批重跑证据](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)固定产品43f18274，在Windows/Linux各自的新源码/target/Runtime/任务stdlib下执行。两平台官方包装两别名O0/O3与黄金/009均通过；Linux为ELF Complete且声明=观察，Windows仍为COFF UnverifiedCoffExports。Runtime各305/0/1，资源/VM/归档回归Windows42/0/3、Linux43/0/3，A6资源8/8；codegen109/0/15、额外driver17/0/3及原生核心、错误/011和显式除法O0/O3通过。
 
-Windows首次Clippy因导出漏协议编译夹具退出101，补齐固定Git原字节后同命令通过；失败保留。Linux缺Clippy，macOS未验证。RERUN本批完成，B6-1仍以restricted/stage_passed=false受限交接，B6整批未收口；后续B6-2仅可按冻结协议开展Windows/Linux受限测量，三平台条件未满足。本批未启动B6-2，五批性能、OS峰值和§2.1全转义最大URL仍待执行。
+Windows首次Clippy因导出漏协议编译夹具退出101，补齐固定Git原字节后同命令通过，失败保留。Linux缺Clippy。RERUN退出时macOS仍未验证，B6-1以`restricted/stage_passed=false`交接。后续macOS及B6-2测量见§2.7。
 
 ### 2.5 后续采集的源码完整性与工程门禁
 
@@ -108,11 +109,13 @@ Windows首次Clippy因导出漏协议编译夹具退出101，补齐固定Git原�
 
 现有RERUN采集器只支持Windows/WSL，任务根、目标三元组和LLVM路径写死为这两平台；不能原样拿到macOS执行。补验需适配macOS入口并复用已有托管runner，绑定固定源码、新target/Runtime/stdlib、Rust1.96及实际LLVM身份，导出包括`tests/spec`的完整编译输入，运行B6-1资源/错误/原子性与两别名O0/O3矩阵，记录Mach-O实际组件验证等级以及run/job/attempt。现有普通维护和A6性能模式不能替代该专项。完成补验后再复核B6-2开工，本次未调度远端作业或启动性能测量。
 
-### 2.7 macOS通过及B6-2开工（2026-11-18）
+### 2.7 macOS补验及B6-2结果（2026-11-18）
 
 macOS专项[运行44243357695](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44243357695)的native与resources作业均通过。两次先前失败及修复、四格Mach-O组件清单和17,243条正式参考的回执见[macOS专项归档](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)。
 
-B6-2使用`tools/gates/b2_b6_performance.py`从同一固定源码重建三平台release VM及Runtime，再以Xiao原生O0/O3分开采样。固定清单`tests/fixtures/20o-b2-b6/catalog.json`包含183项，每个平台每个后端独立五批。初次执行绑定源码`79ea0375`和清单SHA-256 `9ab22a2004c69d6bfcb3e269806a48e00de4eb72671aec3172744776bdd1b71e`。macOS三项作业见[运行44249501458](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44249501458)。
+B6-2使用`tools/gates/b2_b6_performance.py`从同一固定源码重建三平台release VM及Runtime，原生O0/O3分开采样。固定源码为`79ea0375`，清单`tests/fixtures/20o-b2-b6/catalog.json`的SHA-256为`9ab22a2004c69d6bfcb3e269806a48e00de4eb72671aec3172744776bdd1b71e`。macOS三项作业均通过。[运行44249501458](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44249501458)
+
+三平台九组各183项，共1,647项和8,235个独立测量进程。九组的黄金输出、时间、驻留增量及适用翻倍比均通过。全转义URL最大输入在Windows VM的归一化中位数为8.367秒，三个原生O0及三个原生O3中位数均低于1秒。B1 20入口与A1三条完整示例登记的是本次快照的开销，历史成绩未参与计算。B6-2的`perf_pass=true`绑定该固定快照，B6-3～B6-5另行验收。[B6-2测量与只读审计](assets/20o-b2-b/entry-20261118-b6-2/README.md)
 
 ## 三、分批执行
 

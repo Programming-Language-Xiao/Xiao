@@ -6,7 +6,8 @@
 > A0 的 `result.json` 失败身份、22C/22D、19/11/22 与 B1 历史债务继续独立保留。
 > **2026-11-17版本同步：本规划B5子阶段的固定产物与版本矩阵是ABI1.19/生成器21；独立静态浮点比较修复使当前产品为ABI1.19/生成器22，见[增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)。B6及后续阶段须以22构建并同时引用B5固定矩阵与21→22证据，不把当前22回写成B5历史产物。**
 > **2026-11-17 URL门禁同步：** 星崽批准仅优化URL Unicode结果预算测试输入表示，不改冻结预算或60秒Driver timeout。资源目标18/18通过；当前1.19/22完整默认workspace为191个测试目标、1,809个测试用例（1,754 passed、0 failed、55 ignored）。B5已由四类证据联合收口，B6的B5前置已满足；B6-1于本日开始实施，后续状态见下一条记录；B6入口同时绑定固定B5 1.19/21矩阵与21→22证据。
-> **2026-11-17 B6实施状态：** B6-1已在Windows/Linux启动；Linux官方Cmath包装原生被Runtime组件完整性校验阻断，macOS未验证。B6-1未收口、B6-2性能未启动，完整边界与日志见[B6-1证据](assets/20o-b2-b/entry-20261117-b6/README.md)。本批保持生成器22冻结。
+> **2026-11-17 B6-1首轮记录：** Windows/Linux执行中，Linux官方Cmath包装原生被Runtime组件完整性校验阻断，macOS当时未验证。[首轮证据](assets/20o-b2-b/entry-20261117-b6/README.md)
+> **2026-11-18 B6状态：** B6-1三平台功能通过，Windows COFF完整性及Linux Clippy仍缺。B6-2在固定`79ea0375`通过三平台的VM/O0/O3九组性能测量，B6-3为下一阶段。[B6-2实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)
 > **2026-11-18交叉回归：** 两平台Runtime/VM、Linux Cmath核心原生均通过；Linux真实包装原生仍被components清单阻断，未绕开校验；B6-1保持blocked。
 
 ## 一、入口与不变量
@@ -239,4 +240,4 @@ tests/fixtures/docs/cmath/                             cmath 夹具
 docs/DevDocs/assets/20o-b2-b/entry-<date>/            B2-B 证据（待建）
 ```
 
-本页保留B2-B执行边界；B5固定1.19/21矩阵保留历史，URL用例优化后当前1.19/22默认workspace通过；B5已联合收口；B6-1尚未收口且Linux原生包装受阻，B6-2/B7未开始。完整B2-B未收口；B2-C仍负责最终公共发布。
+本页保留B2-B执行边界；B5固定1.19/21矩阵保留历史，URL用例优化后当前1.19/22默认workspace通过；B5已联合收口；B6-1三平台功能通过，Windows COFF与Linux Clippy缺项保留。B6-2实测见[B6性能规划](20o-b2-b6-resource-performance-plan.md)，B7等待B6收口。完整B2-B未收口；B2-C仍负责最终公共发布。
