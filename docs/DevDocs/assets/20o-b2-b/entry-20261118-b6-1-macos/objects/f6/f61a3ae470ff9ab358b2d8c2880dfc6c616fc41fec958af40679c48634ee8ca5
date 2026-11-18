@@ -1,0 +1,50 @@
+B6-1 macOS resources	Run the B6-1 suite	﻿2026-11-18T05:07:11.3030110Z ##[group]Run python3 -B tools/gates/b2_b6_macos.py run \
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:11.3030810Z ^[[36;1mpython3 -B tools/gates/b2_b6_macos.py run \^[[0m
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:11.3035000Z ^[[36;1m  --suite "$XIAO_B6_SUITE" --llvm-bin "$(brew --prefix llvm@21)/bin" \^[[0m
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:11.3036520Z ^[[36;1m  --output "$RUNNER_TEMP/b6-evidence"^[[0m
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:11.3131820Z shell: /bin/bash -e {0}
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:11.3132170Z env:
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:11.3132450Z   HOMEBREW_NO_AUTO_UPDATE: 1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:11.3132700Z   XIAO_B6_SUITE: resources
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:11.3133020Z ##[endgroup]
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.1912010Z Traceback (most recent call last):
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.1997220Z   File "/Users/runner/work/Xiao/Xiao/tools/gates/b2_b6_macos.py", line 256, in <module>
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.1999180Z     main()
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.2001460Z     ~~~~^^
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.2003450Z   File "/Users/runner/work/Xiao/Xiao/tools/gates/b2_b6_macos.py", line 252, in main
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.2004900Z     run(options.suite, options.llvm_bin, options.output)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.2007820Z     ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.2009000Z   File "/Users/runner/work/Xiao/Xiao/tools/gates/b2_b6_macos.py", line 204, in run
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.2010080Z     require(source_digest(files) == fixed["sha256"] and len(files) == fixed["files"]
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.2010960Z     ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.2019270Z             and live_source(source) == files, "macOS导出与登记的固定Git源码不符")
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.2021300Z             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.2021800Z   File "/Users/runner/work/Xiao/Xiao/tools/gates/b2_b6_macos.py", line 38, in require
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.2023270Z     raise ValueError(message)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.2023710Z ValueError: macOS导出与登记的固定Git源码不符
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:07:12.2118510Z ##[error]Process completed with exit code 1.
+B6-1 macOS native	Run the B6-1 suite	﻿2026-11-18T05:06:49.0996070Z ##[group]Run python3 -B tools/gates/b2_b6_macos.py run \
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.0996400Z ^[[36;1mpython3 -B tools/gates/b2_b6_macos.py run \^[[0m
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.0996830Z ^[[36;1m  --suite "$XIAO_B6_SUITE" --llvm-bin "$(brew --prefix llvm@21)/bin" \^[[0m
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.0997210Z ^[[36;1m  --output "$RUNNER_TEMP/b6-evidence"^[[0m
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.1026350Z shell: /bin/bash -e {0}
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.1026540Z env:
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.1026710Z   HOMEBREW_NO_AUTO_UPDATE: 1
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.1026970Z   XIAO_B6_SUITE: native
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.1027180Z ##[endgroup]
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.6879830Z Traceback (most recent call last):
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.6937950Z   File "/Users/runner/work/Xiao/Xiao/tools/gates/b2_b6_macos.py", line 256, in <module>
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.6938500Z     main()
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.6938780Z     ~~~~^^
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.6939150Z   File "/Users/runner/work/Xiao/Xiao/tools/gates/b2_b6_macos.py", line 252, in main
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.6939770Z     run(options.suite, options.llvm_bin, options.output)
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.6940130Z     ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.6940490Z   File "/Users/runner/work/Xiao/Xiao/tools/gates/b2_b6_macos.py", line 204, in run
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.6940930Z     require(source_digest(files) == fixed["sha256"] and len(files) == fixed["files"]
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.6941310Z     ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.6942640Z             and live_source(source) == files, "macOS导出与登记的固定Git源码不符")
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.6943060Z             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.6943480Z   File "/Users/runner/work/Xiao/Xiao/tools/gates/b2_b6_macos.py", line 38, in require
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.6943850Z     raise ValueError(message)
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.6944120Z ValueError: macOS导出与登记的固定Git源码不符
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:06:49.7003010Z ##[error]Process completed with exit code 1.

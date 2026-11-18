@@ -14,7 +14,7 @@
 > **2026-11-18 B6-1首轮历史审定：** Windows与Linux Runtime测试均305 passed、0 failed、1 ignored；A6资源/原子性8/8。Windows规定范围通过；Linux VM/归档、Cmath核心原生及数值原生回归通过，但官方Cmath包装原生被Runtime组件完整性校验阻断，诊断确认IR调用数组Runtime入口而组件清单漏记；B6-1保持blocked，B6-2、macOS、远端CI和完整721未执行。详见[B6-1证据](assets/20o-b2-b/entry-20261117-b6/README.md)。
 > **2026-11-18 B4-3-FIX.2交接时点：** LLVM Runtime组件推导修复已在Windows/Linux真实包装两别名O0/O3验证；B6-1历史状态不改写，需由B6-1在自有任务根重跑后再决定是否收口。详见[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)。
 > **2026-11-18 B6-1自身重跑：** [限定重跑证据](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)绑定固定产品43f18274及新任务根/Runtime，Windows/Linux包装与相关回归通过；Linux ELF Complete且原阻断解除，Windows COFF导出完整性未验证、macOS未验证。RERUN本批完成，B6-1以restricted/stage_passed=false交接；B6-2性能未开始，后续只具备Windows/Linux受限入口，不能记三平台通过。
-> **2026-11-18后续选择：** 星崽选择等macOS可用后再开B6-2，暂不启动两平台受限性能跑。仓库已有macOS托管runner，缺的是当前固定产品的B6专项入口与实测回执，见[B6规划§2.6](20o-b2-b6-resource-performance-plan.md#26-macos缺项的具体含义)。Windows COFF完整性与Linux Clippy未执行继续单列；后续源码导出须包含`tests/spec`并在构建前核对原字节。
+> **2026-11-18 macOS补验及B6-2：** 星崽授权先跑macOS，再依结果推进。B6-1 macOS专项native和resources均通过，四格Mach-O组件验收为`Complete`。B6-2已按固定183项清单开工。Windows COFF完整性与Linux Clippy缺项继续单列，见[macOS专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)与[B6规划](20o-b2-b6-resource-performance-plan.md)。
 > **已确认（2026-11-01）：D-1 取甲（成熟 Rust 数值库）、B1 首批范围、
 > D-7 取专用 `json_value` 类型、B7→B8→B9 后置**。B0 已逐条询问并记录其余方向裁定，
 > 见 §五及 20P §六；具体 API 不因此自动冻结。基线、探测、教程与待审草案见

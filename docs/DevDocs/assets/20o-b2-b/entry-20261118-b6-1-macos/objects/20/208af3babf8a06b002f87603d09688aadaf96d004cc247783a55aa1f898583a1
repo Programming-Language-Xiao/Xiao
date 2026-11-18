@@ -1,0 +1,123 @@
+ Downloading crates ...
+  Downloaded bytes v1.12.1
+  Downloaded untrusted v0.9.0
+  Downloaded percent-encoding v2.3.2
+  Downloaded subtle v2.6.1
+  Downloaded adler2 v2.0.1
+  Downloaded utf8-zero v0.8.1
+  Downloaded find-msvc-tools v0.1.14
+  Downloaded shlex v2.0.1
+  Downloaded simd-adler32 v0.3.10
+  Downloaded filetime v0.2.29
+  Downloaded rustls-pki-types v1.15.1
+  Downloaded zeroize v1.9.0
+  Downloaded tar v0.4.46
+  Downloaded miniz_oxide v0.9.1
+  Downloaded http v1.5.0
+  Downloaded cc v1.5.1
+  Downloaded base64 v0.23.1
+  Downloaded ureq v3.4.2
+  Downloaded rustls-webpki v0.103.15
+  Downloaded webpki-roots v1.0.9
+  Downloaded log v0.4.34
+  Downloaded flate2 v1.1.10
+  Downloaded ureq-proto v0.6.4
+  Downloaded once_cell v1.21.4
+  Downloaded crc32fast v1.5.2
+  Downloaded httparse v1.10.1
+  Downloaded getrandom v0.2.17
+  Downloaded rustls v0.23.45
+  Downloaded ring v0.17.14
+   Compiling serde_json v1.0.151
+   Compiling find-msvc-tools v0.1.14
+   Compiling shlex v2.0.1
+   Compiling zeroize v1.9.0
+   Compiling cc v1.5.1
+   Compiling rustls-pki-types v1.15.1
+   Compiling getrandom v0.2.17
+   Compiling httparse v1.10.1
+   Compiling untrusted v0.9.0
+   Compiling xiao-standard-library v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-standard-library)
+   Compiling log v0.4.34
+   Compiling rustls v0.23.45
+   Compiling crc32fast v1.5.2
+   Compiling bytes v1.12.1
+   Compiling ring v0.17.14
+   Compiling xiao-i18n v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-i18n)
+   Compiling http v1.5.0
+   Compiling xiao-diagnostics v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-diagnostics)
+   Compiling xiao-lock v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-lock)
+   Compiling xiao-syntax v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-syntax)
+   Compiling xiao-types v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-types)
+   Compiling xiao-modules v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-modules)
+   Compiling xiao-lifetime v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-lifetime)
+   Compiling xiao-ir v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-ir)
+   Compiling rustls-webpki v0.103.15
+   Compiling xiao-optimizer v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-bytecode)
+   Compiling subtle v2.6.1
+   Compiling simd-adler32 v0.3.10
+   Compiling adler2 v2.0.1
+   Compiling base64 v0.23.1
+   Compiling once_cell v1.21.4
+   Compiling xiao-runtime v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-runtime)
+   Compiling ureq-proto v0.6.4
+   Compiling miniz_oxide v0.9.1
+   Compiling xiao-config v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-config)
+   Compiling webpki-roots v1.0.9
+   Compiling filetime v0.2.29
+   Compiling percent-encoding v2.3.2
+   Compiling utf8-zero v0.8.1
+   Compiling ureq v3.4.2
+   Compiling tar v0.4.46
+   Compiling xiao-vm v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-vm)
+   Compiling flate2 v1.1.10
+   Compiling xiao-artifacts v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-artifacts)
+   Compiling xiao-codegen-llvm v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-codegen-llvm)
+   Compiling xiao-xar v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-xar)
+   Compiling xiao-package v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-package)
+   Compiling xiao-driver v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-driver)
+    Finished `release` profile [optimized] target(s) in 1m 51s
+     Running tests/20o_b2_a_contract.rs (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/target/release/deps/20o_b2_a_contract-47eb49435aa0bc07)
+
+running 13 tests
+
+thread 'a5_conversion_language_preserves_values_and_promotion' (18025) panicked at crates/xiao-driver/tests/20o_b2_a_support/mod.rs:54:14:
+called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test a5_conversion_language_preserves_values_and_promotion ... FAILED
+
+thread 'a5_decimal_language_preserves_frozen_scales' (18026) panicked at crates/xiao-driver/tests/20o_b2_a_support/mod.rs:54:14:
+called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+test a5_decimal_language_preserves_frozen_scales ... FAILED
+B2-A5-LANGUAGE case=a5_bindings backend=vm result=success
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=vm result=success
+
+thread 'a5_complete_vm_entry_covers_resources_and_portable_replay' (18024) panicked at crates/xiao-driver/tests/20o_b2_a_support/mod.rs:54:14:
+called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+test a5_assignments_and_constants_keep_the_declared_numeric_value ... ok
+test a5_complete_vm_entry_covers_resources_and_portable_replay ... FAILED
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=vm result=success
+test a5_integer_language_uses_exact_runtime_arithmetic ... ok
+B2-A5-LANGUAGE case=a5_errors backend=vm result=success
+test a5_language_errors_remain_recoverable_and_observable ... ok
+test a5_language_values_match_native_golden_outputs ... ignored, 需要本任务新Runtime与显式LLVM/平台链接器
+test a5_portable_numeric_payloads_cannot_bypass_admission ... ok
+test a5_preserves_existing_function_type_boundaries ... ok
+test a5_static_invalid_numeric_combinations_remain_rejected ... ok
+test a5_encoded_numeric_matrix_matches_all_existing_carriers ... ok
+B2-A5-LANGUAGE case=a5_matrix backend=vm result=success
+test a5_complete_numeric_language_matrix_matches_independent_golden ... ok
+B2-A5-LANGUAGE case=a5_carriers backend=vm result=success
+test a5_language_carriers_preserve_numeric_types_and_values ... ok
+
+failures:
+
+failures:
+    a5_complete_vm_entry_covers_resources_and_portable_replay
+    a5_conversion_language_preserves_values_and_promotion
+    a5_decimal_language_preserves_frozen_scales
+
+test result: FAILED. 9 passed; 3 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b2_a_contract`

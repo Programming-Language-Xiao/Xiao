@@ -1,12 +1,11 @@
 # 20O-B2-B6. cmath/lfloat 资源、错误与三平台性能规划
 
-> **B6-1当前状态（2026-11-18）：** FIX.2已完成，生成器保持22，见[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)。Windows官方包装两别名O0/O3功能通过，COFF为`UnverifiedCoffExports`，导出完整性未验证；Linux同矩阵功能通过，ELF为`Complete`，声明与观察组件一致。B6-1已在自身任务根完成Windows/Linux限定重跑，见[重跑规划](20o-b2-b6-1-rerun-plan.md)与[自身证据](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)。Linux原阻断解除；macOS未验证，阶段记restricted/stage_passed=false，不记三平台通过。B6-2仅具备两平台受限入口，性能尚未开始。
+> **B6当前状态（2026-11-18）：** B6-1的Windows/Linux[限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)及[macOS专项补验](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)均已完成。官方包装两别名O0/O3在三平台功能通过，Linux ELF与macOS Mach-O均为`Complete`。Windows COFF导出完整性为`UnverifiedCoffExports`，Linux Clippy未执行。按星崽裁定，macOS通过后已开工B6-2，见§2.7。
 
 > B5固定1.19/21矩阵和[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)保持只读历史身份；当前产品1.19/22。B6每轮均绑定自己的源码、Runtime和工具身份。B1原件缺口、22C/22D与19/11/22债务独立保留。
 > B5固定测试快照5864cbde为ABI1.19/生成器21/接口1。原17项资源目标及8次直接计时为旧负载历史证据；优化后18项资源目标和完整默认workspace均通过，详见URL优化记录。B6当前测量使用ABI1.19/生成器22 Runtime，并同时对账B5矩阵与21→22增量证据。
 > B6 只做资源、错误、原子性、三平台性能与 CI 证据；不新增数学语义、不改 ABI/registry/教程。
 > 不跑旧 721；完整 721、最终教程/registry 和公共发布留 B2-C。
-> **2026-11-18后续选择：星崽选择“等macOS可用后再开工”。** B6-2继续未开始，不启动Windows/Linux受限性能跑；先补齐固定快照的macOS专项执行入口与B6-1实测证据，再复核开工条件。仓库已有GitHub托管macOS作业，当前缺的是本批专项回执，不等于macOS产品已失败。
 
 ## 一、入口与范围
 
@@ -17,8 +16,8 @@
 | B4-3 | 已完成Windows内部验收；LLVM动态/静态与Float `**`共享pow |
 | B4-4～B4-5 | B4-5以FIX.1产品cfa79381重跑并记录内部language_available=true；最终文档/封存审计见重开证据，B5仍是B6前置 |
 | B5 | 四类证据联合收口、b5_closed=true；固定1.19/21矩阵与当前1.19/22增量分层，B6开工前置满足 |
-| B6-1 | 自有任务根Windows/Linux限定重跑完成；Linux原阻断解除；Windows导出完整性/macOS未验证，restricted/stage_passed=false |
-| 后续批次 | B6-2性能、B6-3边界守卫、B6-4三平台/CI、B6-5收口均未开始 |
+| B6-1 | Windows/Linux限定重跑与macOS专项通过；Windows COFF导出完整性与Linux Clippy仍单列 |
+| 后续批次 | B6-2已开始三平台测量；B6-3边界守卫、B6-4三平台/CI、B6-5收口未开始 |
 | 测量入口版本/工具链 | 当前快照ABI1.19/生成器22/接口1；同时引用B5固定1.19/21拒绝/缓存矩阵与静态比较21→22增量证据。intrinsic1～48、Rust1.96.0与Cargo `--locked`；每轮测量固定源码/Runtime工具身份，优化后另建快照并重测受影响项 |
 | 本批目标 | cmath/lfloat 资源/错误/原子性、VM/原生三平台性能与 CI 证据 |
 | 未做 | B7 收口、B2-C 721/教程/registry/最终公共发布 |
@@ -99,15 +98,21 @@ Windows首次Clippy因导出漏协议编译夹具退出101，补齐固定Git原�
 
 1. 后续批次的`prepare.py`必须将`tests/spec`与`tests/fixtures`、`tests/benchmarks`一并纳入固定Git源码导出、工作树漂移检查及执行前后摘要；`tests/spec/11x0-protocol`是`xiao-driver --all-targets`的编译输入，不得等Clippy失败后再补。源码解包后、冷构建前按固定Git清单核对必需文件及实际字节，缺少协议夹具立即拒绝；历史RERUN导出器和失败/补验记录保持原样。
 2. B6-1重跑的Linux Rust1.96工具链未安装Clippy，因此Linux Clippy为`not_run`，Windows Clippy通过不替代该项。B6/B7的工程门禁逐平台单列测试、Clippy和fmt状态；缺项保留为未执行，不能因功能矩阵、docs或审计通过升级为工程门禁通过。后续若补装并执行，另存实际工具/源码身份与新回执，不改写本轮缺项。
-3. 星崽已选择“等macOS可用后再开工”，B6-2保持未开始；暂不启动Windows/Linux受限测量。先补齐本批固定快照的macOS专项入口与B6-1实测回执，再复核B6-2条件。仓库维护工作流已有`macos-15`、平台复现工作流已有`macos-26`托管runner；已有普通维护或A6作业不自动等于B6专项验收。Windows COFF完整性和Linux既有Clippy缺项继续单列，不能据现有两平台成绩签收三平台性能或工程门禁通过。
+3. B6-2按星崽裁定在macOS专项通过后启动。Windows COFF完整性和Linux既有Clippy缺项继续单列。性能与各平台工程门禁分别登记。
 
-### 2.6 macOS缺项的具体含义
+### 2.6 macOS补验前的缺项
 
 缺项是当前固定产品的B6专项执行和回执。已有[维护工作流](../../.github/workflows/maintenance-regression.yml)配置`macos-15`，[平台复现工作流](../../.github/workflows/platform-reproduction.yml)配置`macos-26`，均支持手动触发；本轮只读查询确认两工作流处于active状态，不据此推断runner当前排队、额度或本批测试已通过。
 
 最近一次维护运行[42968522784](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42968522784)绑定2026-11-11旧快照`ade486ffb3d820db7ecdcbb53c22a09796b35f1f`。其macOS作业实际退出101，失败为`22c_vm_concurrency`中的两条旧planned-cmath拒绝断言；当前源码已改为执行cmath包装和归档。该历史失败不能直接归因于macOS，也不能作为当前43f18274的失败或通过证据。
 
 现有RERUN采集器只支持Windows/WSL，任务根、目标三元组和LLVM路径写死为这两平台；不能原样拿到macOS执行。补验需适配macOS入口并复用已有托管runner，绑定固定源码、新target/Runtime/stdlib、Rust1.96及实际LLVM身份，导出包括`tests/spec`的完整编译输入，运行B6-1资源/错误/原子性与两别名O0/O3矩阵，记录Mach-O实际组件验证等级以及run/job/attempt。现有普通维护和A6性能模式不能替代该专项。完成补验后再复核B6-2开工，本次未调度远端作业或启动性能测量。
+
+### 2.7 macOS通过及B6-2开工（2026-11-18）
+
+macOS专项[运行44243357695](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44243357695)的native与resources作业均通过。两次先前失败及修复、四格Mach-O组件清单和17,243条正式参考的回执见[macOS专项归档](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)。
+
+B6-2使用`tools/gates/b2_b6_performance.py`从同一固定源码重建三平台release VM及Runtime，再以Xiao原生O0/O3分开采样。固定清单`tests/fixtures/20o-b2-b6/catalog.json`包含183项，每个平台每个后端独立五批。初次执行绑定源码`79ea0375`和清单SHA-256 `9ab22a2004c69d6bfcb3e269806a48e00de4eb72671aec3172744776bdd1b71e`。macOS三项作业见[运行44249501458](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44249501458)。
 
 ## 三、分批执行
 

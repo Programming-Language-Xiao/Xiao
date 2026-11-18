@@ -1,0 +1,146 @@
+{
+  "argv": [
+    "/Users/runner/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--release",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b2_b4_cmath_library",
+    "--",
+    "--ignored",
+    "--exact",
+    "cmath_library_matches_native_o0_o3",
+    "--nocapture"
+  ],
+  "cwd": "/Users/runner/work/_temp/xiao-b6-1-0npan8rg/source",
+  "exit_code": 0,
+  "finished_utc": "2026-11-18T05:14:42.778434+00:00",
+  "log": {
+    "bytes": 5520,
+    "name": "wrappers.log",
+    "sha256": "11be89fc65b00a69d79d7506911c24c6fa8e0a509e6bdfa7459a71d7f64e17b1"
+  },
+  "native_rows": [
+    {
+      "declared": [
+        "containers",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "executable": {
+        "bytes": 1600376,
+        "sha256": "945b9366dc9fdb114d419855c54eacb4781fdfd5956955f10a39a4d47beba87b"
+      },
+      "llvm_ir": {
+        "bytes": 373475,
+        "sha256": "a0498e254ba865768dbc9d2acf18c740b2dc60521cd8d1a75fa4e13fc892aac4"
+      },
+      "module": "std.cmath",
+      "observed": [
+        "containers",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "optimization": 0,
+      "path": "/Users/runner/work/_temp/xiao-b6-1-0npan8rg/wrappers/b4-4-library-7893-0/std-o0",
+      "verification": "Complete"
+    },
+    {
+      "declared": [
+        "containers",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "executable": {
+        "bytes": 1583864,
+        "sha256": "5ff28dcf10ea2b6f71761dff72c1e1c1177a79893acabc64f0f1e585496e0543"
+      },
+      "llvm_ir": {
+        "bytes": 373475,
+        "sha256": "a0498e254ba865768dbc9d2acf18c740b2dc60521cd8d1a75fa4e13fc892aac4"
+      },
+      "module": "std.cmath",
+      "observed": [
+        "containers",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "optimization": 3,
+      "path": "/Users/runner/work/_temp/xiao-b6-1-0npan8rg/wrappers/b4-4-library-7893-0/std-o3",
+      "verification": "Complete"
+    },
+    {
+      "declared": [
+        "containers",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "executable": {
+        "bytes": 1600376,
+        "sha256": "79e18f2d7631e6a06f86ae3b9812dec35b3defdfaf3cb0912fbde5541992d38c"
+      },
+      "llvm_ir": {
+        "bytes": 373476,
+        "sha256": "d3274e54d1b72dcaffb068ac95c3969a92be00de6e50703072fff9242ff4861d"
+      },
+      "module": "stdlib.cmath",
+      "observed": [
+        "containers",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "optimization": 0,
+      "path": "/Users/runner/work/_temp/xiao-b6-1-0npan8rg/wrappers/b4-4-library-7893-0/stdlib-o0",
+      "verification": "Complete"
+    },
+    {
+      "declared": [
+        "containers",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "executable": {
+        "bytes": 1583864,
+        "sha256": "910225666c335aa430ea69643313a2fd1abd86b8db1778751f99b0d385d1a1a6"
+      },
+      "llvm_ir": {
+        "bytes": 373476,
+        "sha256": "d3274e54d1b72dcaffb068ac95c3969a92be00de6e50703072fff9242ff4861d"
+      },
+      "module": "stdlib.cmath",
+      "observed": [
+        "containers",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "optimization": 3,
+      "path": "/Users/runner/work/_temp/xiao-b6-1-0npan8rg/wrappers/b4-4-library-7893-0/stdlib-o3",
+      "verification": "Complete"
+    }
+  ],
+  "passed": true,
+  "pid": 4140,
+  "runtime_after": {
+    "bytes": 25667552,
+    "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+  },
+  "runtime_before": {
+    "bytes": 25667552,
+    "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+  },
+  "source_after_sha256": "a0a6bac702dfbe4f2cefe8fcda83145d5a6c11a8db5700ebf5aa7f2c0e9b7bbc",
+  "started_utc": "2026-11-18T05:12:14.437287+00:00",
+  "temp": "/Users/runner/work/_temp/xiao-b6-1-0npan8rg/wrappers"
+}

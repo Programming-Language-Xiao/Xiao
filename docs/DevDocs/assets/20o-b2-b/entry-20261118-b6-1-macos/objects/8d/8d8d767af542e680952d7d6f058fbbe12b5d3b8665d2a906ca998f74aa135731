@@ -1,0 +1,40 @@
+{
+  "argv": [
+    "/Users/runner/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--release",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b2_b2_divide",
+    "--",
+    "--ignored",
+    "--exact",
+    "lfloat_divide_matches_native_golden_outputs",
+    "--nocapture"
+  ],
+  "cwd": "/Users/runner/work/_temp/xiao-b6-1-gb726qcz/source",
+  "exit_code": 0,
+  "finished_utc": "2026-11-18T05:22:08.076342+00:00",
+  "log": {
+    "bytes": 974,
+    "name": "divide.log",
+    "sha256": "97b9bf91a97d6700c469570849ef8ab3e43da9604fc421cd332d9ca03de5a545"
+  },
+  "passed": true,
+  "pid": 6249,
+  "runtime_after": {
+    "bytes": 25667552,
+    "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+  },
+  "runtime_before": {
+    "bytes": 25667552,
+    "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+  },
+  "source_after_sha256": "4040e675c82aa18ca99f6e675b7658f49497ba8fc9f0ec285659af31dfd3f4db",
+  "started_utc": "2026-11-18T05:22:04.098135+00:00",
+  "temp": "/Users/runner/work/_temp/xiao-b6-1-gb726qcz/divide"
+}

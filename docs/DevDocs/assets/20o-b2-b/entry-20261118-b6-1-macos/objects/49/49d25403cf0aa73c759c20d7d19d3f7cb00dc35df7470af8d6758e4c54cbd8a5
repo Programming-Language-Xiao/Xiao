@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "/Users/runner/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "build",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--release",
+    "-p",
+    "xiao-runtime"
+  ],
+  "cwd": "/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source",
+  "exit_code": 0,
+  "finished_utc": "2026-11-18T05:11:34.004512+00:00",
+  "log": {
+    "bytes": 2804,
+    "name": "runtime-build.log",
+    "sha256": "a096c23fa37ed9852cdace7df2c487c5edb5ccf36be8d7ea313efa1d530dc69f"
+  },
+  "passed": true,
+  "pid": 1635,
+  "runtime_after": {
+    "bytes": 25667552,
+    "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+  },
+  "runtime_before": null,
+  "source_after_sha256": "a0a6bac702dfbe4f2cefe8fcda83145d5a6c11a8db5700ebf5aa7f2c0e9b7bbc",
+  "started_utc": "2026-11-18T05:11:05.685288+00:00",
+  "temp": "/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/runtime-build"
+}

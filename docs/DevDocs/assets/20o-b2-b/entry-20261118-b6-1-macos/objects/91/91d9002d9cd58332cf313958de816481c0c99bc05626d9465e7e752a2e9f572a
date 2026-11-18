@@ -1,0 +1,39 @@
+{
+  "argv": [
+    "/Users/runner/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "clippy",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--release",
+    "-p",
+    "xiao-codegen-llvm",
+    "-p",
+    "xiao-driver",
+    "--all-targets",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source",
+  "exit_code": 0,
+  "finished_utc": "2026-11-18T05:25:16.515823+00:00",
+  "log": {
+    "bytes": 4000,
+    "name": "clippy.log",
+    "sha256": "602a64513be18ef63459072e8c4dfac8ce55e98041bf7149f9b51d2c2c82306a"
+  },
+  "passed": true,
+  "pid": 7340,
+  "runtime_after": {
+    "bytes": 25667552,
+    "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+  },
+  "runtime_before": {
+    "bytes": 25667552,
+    "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+  },
+  "source_after_sha256": "4040e675c82aa18ca99f6e675b7658f49497ba8fc9f0ec285659af31dfd3f4db",
+  "started_utc": "2026-11-18T05:24:47.118738+00:00",
+  "temp": "/Users/runner/work/_temp/xiao-b6-1-_gffly1m/clippy"
+}
