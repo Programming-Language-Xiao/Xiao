@@ -1,0 +1,240 @@
+{
+  "archive": {
+    "bytes": 7199480,
+    "files": 16514,
+    "sha256": "78b3d2ef58fd0cca6f1845e510ba05d981506e1e0bbd52da05bb76f7627bc1e7",
+    "unique_objects": 7041
+  },
+  "b6_1_stage_passed": false,
+  "b6_1_status": "restricted",
+  "boundary_passed": true,
+  "guard_replay": {
+    "actual": 4,
+    "derived": 24,
+    "passed": 28
+  },
+  "language_cases": 85,
+  "language_runs": 765,
+  "linux_clippy": "not_run",
+  "macos_ci": {
+    "attempt": 1,
+    "jobs": {
+      "o0": 134732268646,
+      "o3": 134732268489,
+      "regression": 134732268807,
+      "runtime": 134732268723,
+      "vm": 134732268701
+    },
+    "run": 44284131624,
+    "runner": "ddccdbee82daeb2c406dc7128889a7e921bedfd3"
+  },
+  "matrix": {
+    "bytes": 53031,
+    "sha256": "f6d7ac2a4e2098f55deb176448bcdcfddd7320a7e9570f448bb758181aa46d6e"
+  },
+  "new_performance_samples": 0,
+  "platforms": {
+    "linux": {
+      "b1_contract": {
+        "failed": 0,
+        "ignored": 0,
+        "passed": 9
+      },
+      "b1_resources": {
+        "failed": 0,
+        "ignored": 0,
+        "passed": 18
+      },
+      "c_abi": {
+        "fatal": {
+          "abi_status": 8,
+          "code": "X07-FATAL-006",
+          "process_exit": 4
+        },
+        "passed": 11,
+        "statuses": [
+          0,
+          1,
+          2,
+          3,
+          6,
+          8
+        ]
+      },
+      "exact_regressions": 6,
+      "existing_runtime_assertions": 20,
+      "language": {
+        "o0": {
+          "counts": {
+            "passed": 85
+          },
+          "missing_peak_samples": 0,
+          "native_verification": "complete"
+        },
+        "o3": {
+          "counts": {
+            "passed": 85
+          },
+          "missing_peak_samples": 0,
+          "native_verification": "complete"
+        },
+        "vm": {
+          "counts": {
+            "passed": 85
+          },
+          "missing_peak_samples": 0,
+          "native_verification": null
+        }
+      },
+      "raw_collector_false_negatives": [
+        "b1-vm",
+        "b1-native"
+      ],
+      "runtime": {
+        "failed": 0,
+        "ignored": 1,
+        "passed": 305
+      },
+      "vm_regressions": {
+        "failed": 0,
+        "ignored": 4,
+        "passed": 47
+      }
+    },
+    "macos": {
+      "b1_contract": {
+        "failed": 0,
+        "ignored": 0,
+        "passed": 9
+      },
+      "b1_resources": {
+        "failed": 0,
+        "ignored": 0,
+        "passed": 18
+      },
+      "c_abi": {
+        "fatal": {
+          "abi_status": 8,
+          "code": "X07-FATAL-006",
+          "process_exit": 4
+        },
+        "passed": 11,
+        "statuses": [
+          0,
+          1,
+          2,
+          3,
+          6,
+          8
+        ]
+      },
+      "exact_regressions": 6,
+      "existing_runtime_assertions": 20,
+      "language": {
+        "o0": {
+          "counts": {
+            "passed": 85
+          },
+          "missing_peak_samples": 0,
+          "native_verification": "complete"
+        },
+        "o3": {
+          "counts": {
+            "passed": 85
+          },
+          "missing_peak_samples": 0,
+          "native_verification": "complete"
+        },
+        "vm": {
+          "counts": {
+            "passed": 85
+          },
+          "missing_peak_samples": 0,
+          "native_verification": null
+        }
+      },
+      "raw_collector_false_negatives": [],
+      "runtime": {
+        "failed": 0,
+        "ignored": 1,
+        "passed": 305
+      },
+      "vm_regressions": {
+        "failed": 0,
+        "ignored": 4,
+        "passed": 46
+      }
+    },
+    "windows": {
+      "b1_contract": {
+        "failed": 0,
+        "ignored": 0,
+        "passed": 9
+      },
+      "b1_resources": {
+        "failed": 0,
+        "ignored": 0,
+        "passed": 18
+      },
+      "c_abi": {
+        "fatal": {
+          "abi_status": 8,
+          "code": "X07-FATAL-006",
+          "process_exit": 4
+        },
+        "passed": 11,
+        "statuses": [
+          0,
+          1,
+          2,
+          3,
+          6,
+          8
+        ]
+      },
+      "exact_regressions": 6,
+      "existing_runtime_assertions": 20,
+      "language": {
+        "o0": {
+          "counts": {
+            "passed": 85
+          },
+          "missing_peak_samples": 0,
+          "native_verification": "unverified-coff-exports"
+        },
+        "o3": {
+          "counts": {
+            "passed": 85
+          },
+          "missing_peak_samples": 0,
+          "native_verification": "unverified-coff-exports"
+        },
+        "vm": {
+          "counts": {
+            "passed": 85
+          },
+          "missing_peak_samples": 0,
+          "native_verification": null
+        }
+      },
+      "raw_collector_false_negatives": [
+        "b1-vm",
+        "b1-native"
+      ],
+      "runtime": {
+        "failed": 0,
+        "ignored": 1,
+        "passed": 305
+      },
+      "vm_regressions": {
+        "failed": 0,
+        "ignored": 4,
+        "passed": 46
+      }
+    }
+  },
+  "source_commit": "58176ff5299441f921f3b54fbdc300e2e46b9bb0",
+  "source_sha256": "7ea95309a41156f506ba3aa4419950a9962b6b8915588a7689d0ac8c00e6db75",
+  "verified": true,
+  "windows_export_integrity": "unverifiable"
+}
