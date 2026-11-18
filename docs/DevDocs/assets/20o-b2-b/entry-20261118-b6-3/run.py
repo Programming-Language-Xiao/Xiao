@@ -22,6 +22,7 @@ REPORT = re.compile(
     re.M,
 )
 TEST_SUMMARY = re.compile(r"^test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;", re.M)
+B1_CASES = ("math", "statistics", "fmt", "hex", "base64", "url", "csv", "aliases", "string-index")
 LIBRARY_MARKERS = {
     "cmath-native": ("B4-3-NATIVE language=actual-exit,catch A5=7-fixtures O0,O3 result=passed",),
     "numeric-native": tuple(f"B2-A5-ALLOCATION optimization={level} code=X06-RUNTIME-011 out=unchanged"
@@ -278,19 +279,12 @@ def artifact_identities(directory, source, text):
     return {str(path): file_identity(path) for path in sorted(paths)}
 
 
-def run_suite(label, root, environment):
-    directory = root / label
-    directory.mkdir()
-    env = process_env(environment) | {key: str(directory) for key in ("TEMP", "TMP", "TMPDIR")}
-    source = Path(environment["source_root"])
-    cargo = environment["tools"]["cargo"]["path"]
-    argv = suite_command(label, cargo)
-    receipt, raw, _ = job(argv, directory, env, "cargo", cwd=source, timeout=900, merge=True)
+def observe_suite(label, exit_code, raw):
     text = raw.decode("utf-8", errors="replace").replace("\r\n", "\n")
     totals = [list(map(int, row)) for row in TEST_SUMMARY.findall(text)]
     expected_tests = {name: bool(re.search(rf"^test (?:[\w:]+::)?{name} \.\.\. ok$", text, re.M))
                       for name in REUSE.get(label, {})}
-    good = receipt["exit"] == 0 and bool(totals) and all(expected_tests.values())
+    good = exit_code == 0 and bool(totals) and all(expected_tests.values())
     if label in REGRESSION:
         good &= totals == [[1, 0, 0]]
     if label == "b1-resources":
@@ -300,17 +294,30 @@ def run_suite(label, root, environment):
     if label == "runtime":
         good &= "reference_inputs=17243 facades=15 kernel_identity=exact" in text
     if label == "b1-vm":
-        good &= len(set(re.findall(r"^20O-B1-IMP-PROBE case=(\S+) backend=vm result=success$", text, re.M))) == 7
+        marks = re.findall(r"^20O-B1-IMP-PROBE case=(\S+) backend=vm result=success$", text, re.M)
+        good &= Counter(marks) == Counter(B1_CASES)
     if label == "b1-native":
-        marks = set(re.findall(r"^20O-B1-IMP-PROBE case=(\S+) backend=vm/native optimization=([03]) result=success$",
-                               text, re.M))
-        good &= len(marks) == 14 and len({name for name, _ in marks}) == 7
+        marks = re.findall(r"^20O-B1-IMP-PROBE case=(\S+) backend=vm/native optimization=([03]) result=success$",
+                           text, re.M)
+        good &= Counter(marks) == Counter((name, level) for name in B1_CASES for level in ("0", "3"))
     good &= all(marker in text for marker in LIBRARY_MARKERS.get(label, ()))
     if label == "cmath-wrappers":
         good &= len(set(re.findall(r"^B4-4-NATIVE path=(\S+) optimization=([03])", text, re.M))) == 4
     return {"status": "passed" if good else "failed", "test_counts": totals,
-            "named_assertions": expected_tests, "exit": receipt["exit"],
-            "artifacts": artifact_identities(directory, source, text)}
+            "named_assertions": expected_tests, "exit": exit_code}
+
+
+def run_suite(label, root, environment):
+    directory = root / label
+    directory.mkdir()
+    env = process_env(environment) | {key: str(directory) for key in ("TEMP", "TMP", "TMPDIR")}
+    source = Path(environment["source_root"])
+    cargo = environment["tools"]["cargo"]["path"]
+    argv = suite_command(label, cargo)
+    receipt, raw, _ = job(argv, directory, env, "cargo", cwd=source, timeout=900, merge=True)
+    return observe_suite(label, receipt["exit"], raw) | {
+        "artifacts": artifact_identities(directory, source, raw.decode("utf-8", errors="replace")),
+    }
 
 
 def run(task, mode):
