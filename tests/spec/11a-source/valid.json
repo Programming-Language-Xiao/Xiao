@@ -1,0 +1,8 @@
+{
+  "config": "[sources]\nfirst = { kind = \"static\", location = \"https://EXAMPLE.org:443/one/\", display = \"第一源\" }\nlist = { list = \"https://example.org/list.json\", digest = \"7d9e0a46e8667a391f9ac2b1a1f5e2cf719808493fc6a207c3988f1f558d779f\" }\nsecond = { kind = \"git-index\", location = \"https://GitHub.com/acme/repo.git/\" }\n",
+  "ids": ["static:https://example.org/one", "git-index:https://github.com/acme/repo"],
+  "aliases": ["first", "second"],
+  "import": "https://example.org/list.json",
+  "import_digest": "7d9e0a46e8667a391f9ac2b1a1f5e2cf719808493fc6a207c3988f1f558d779f",
+  "final_ids": ["static:https://example.org/one", "git-index:https://github.com/acme/repo", "static:https://import.example"]
+}

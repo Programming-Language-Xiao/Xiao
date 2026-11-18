@@ -1,0 +1,84 @@
+lfloat one = 1.00
+lfloat two = 2
+print(lfloat_divide(one, two, 10, "half_even"))
+print(lfloat_divide(lfloat(1), lfloat(3), 3, "half_even"))
+print(lfloat_divide(numerator = lfloat("9.99"), denominator = one, precision = 2, rounding = "half_even"))
+print(lfloat_divide(rounding = "half_even", precision = 2, denominator = lfloat(8), numerator = lfloat(3)))
+print(lfloat_divide(one, two, 32768, "half_even"))
+for mode in ["half_even", "half_up", "half_down", "toward_zero", "away_from_zero", "floor", "ceiling"]
+    print(lfloat_divide(lfloat("2.5"), one, 1, mode))
+    print(lfloat_divide(lfloat("-2.5"), one, 1, mode))
+    print(lfloat_divide(lfloat("2.1"), one, 1, mode))
+    print(lfloat_divide(lfloat("-2.1"), one, 1, mode))
+try
+    lfloat_divide(one, lfloat(0), 0, "invalid")
+catch failure as TypeError
+    print(error_code(failure))
+try
+    lfloat_divide(one, lfloat(0), 1, "invalid")
+catch failure as TypeError
+    print(error_code(failure))
+try
+    lfloat_divide(one, lfloat(0), 1, "half_even")
+catch failure as ArithmeticError
+    print(error_code(failure))
+try
+    lfloat_divide(one, two, 32769, "half_even")
+catch failure as TypeError
+    print(error_code(failure))
+try
+    lfloat_divide(lfloat("1e100000"), lfloat("1e-100000"), 1, "half_even")
+catch failure as ResourceError
+    print(error_code(failure))
+print(lfloat_divide(lfloat("1e-100000"), one, 32768, "half_even"))
+print(one)
+print(two)
+def n() -> lfloat
+    print("numerator")
+    return lfloat(1)
+def d() -> lfloat
+    print("denominator")
+    return lfloat(3)
+def p() -> int
+    print("precision")
+    return 3
+def r() -> str
+    print("rounding")
+    return "half_even"
+print(lfloat_divide(rounding = r(), precision = p(), denominator = d(), numerator = n()))
+try
+    try
+        raise Error(code = "ORIGINAL")
+    finally
+        print(lfloat_divide(one, two, 3, "half_even"))
+catch original as Error
+    print(error_code(original))
+try
+    lfloat_divide(lfloat("bad"), d(), p(), r())
+catch failure as TypeError
+    print(error_code(failure))
+print("continued")
+def dynamic_n(value) -> lfloat
+    return lfloat_divide(value, lfloat(2), 1, "half_even")
+def dynamic_d(value) -> lfloat
+    return lfloat_divide(lfloat(1), value, 1, "half_even")
+def dynamic_p(value) -> lfloat
+    return lfloat_divide(lfloat(1), lfloat(2), value, "half_even")
+def dynamic_r(value) -> lfloat
+    return lfloat_divide(lfloat(1), lfloat(2), 1, value)
+try
+    print(dynamic_n(1))
+catch failure as TypeError
+    print(error_code(failure))
+try
+    print(dynamic_d("2"))
+catch failure as TypeError
+    print(error_code(failure))
+try
+    print(dynamic_p("1"))
+catch failure as TypeError
+    print(error_code(failure))
+try
+    print(dynamic_r(1))
+catch failure as TypeError
+    print(error_code(failure))

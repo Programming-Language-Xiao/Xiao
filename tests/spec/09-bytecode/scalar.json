@@ -1,0 +1,74 @@
+{
+  "stage": "09R2",
+  "status": "verified-runtime",
+  "cases": [
+    {
+      "name": "add-ints",
+      "source": "value = 1 + 2\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "subtract-ints",
+      "source": "value = 10 - 3\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "compare-ints",
+      "source": "value = 1 < 2\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "string-literal",
+      "source": "value = \"x\"\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {
+            "scope": 0,
+            "exit": "normal",
+            "value": 1,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "string-concat",
+      "source": "value = \"a\" + \"b\"\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {
+            "scope": 0,
+            "exit": "normal",
+            "value": 3,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "bool-parity",
+      "source": "value = true\nvalue = value + 1\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [],
+        "max_call_depth": 1
+      }
+    }
+  ]
+}

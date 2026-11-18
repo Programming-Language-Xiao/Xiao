@@ -1,0 +1,14 @@
+def bad_index(int divisor) -> int
+    return 1 // divisor
+values = ["ab", "cd"]
+index = 1
+print(values[index][0])
+try
+    print(values[index][9])
+catch bounds as Error
+    print(error_code(bounds))
+try
+    print(values[bad_index(0)])
+catch argument as ArithmeticError
+    print(error_code(argument))
+print(values[0])

@@ -1,0 +1,42 @@
+{
+  "stage": "03C",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "homogeneous-integer-set",
+      "source": "ids = {1, 2, 3}\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "independent-boolean-set",
+      "source": "flags = {true, false}\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "none-set",
+      "source": "values = {none}\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "empty-set-constructor",
+      "source": "values = set()\nempty_table = {}\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "explicit-element-type",
+      "source": "int ids = {1, 2}\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "membership-returns-bool",
+      "source": "ids = {1, 2}\nhas = 2 in ids\nmissing = 3 not in ids\n",
+      "expect": "success",
+      "diagnostics": []
+    }
+  ]
+}

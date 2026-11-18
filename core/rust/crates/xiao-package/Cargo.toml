@@ -1,0 +1,33 @@
+[package]
+name = "xiao-package"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Xiao package sources, resolution and locking"
+
+[lints]
+workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+xiao-config = { path = "../xiao-config" }
+xiao-codegen-llvm = { path = "../xiao-codegen-llvm" }
+xiao-diagnostics = { path = "../xiao-diagnostics" }
+xiao-i18n = { path = "../xiao-i18n" }
+xiao-lock = { path = "../xiao-lock" }
+xiao-modules = { path = "../xiao-modules" }
+xiao-source = { path = "../xiao-source" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0", features = ["float_roundtrip"] }
+sha2 = "0.10"
+ureq = { version = "3.4.2", default-features = false, features = ["rustls"] }
+tar = { version = "0.4.46", default-features = false }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[dev-dependencies]

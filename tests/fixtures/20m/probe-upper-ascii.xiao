@@ -1,0 +1,13 @@
+def probe_upper_ascii(str text) -> str
+    result = ""
+    for c in text
+        if c >= "a" and c <= "z"
+            result = result + chr(int(c) - 32)
+        else
+            result = result + c
+    return result
+
+print("[" + probe_upper_ascii("") + "]")
+print(probe_upper_ascii("abcdefghijklmnopqrstuvwxyz"))
+print(probe_upper_ascii("Az-9小雪😀éßı"))
+print(probe_upper_ascii("`a{z~"))

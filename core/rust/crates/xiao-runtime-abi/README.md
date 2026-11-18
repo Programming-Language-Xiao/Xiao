@@ -1,0 +1,55 @@
+# `xiao-runtime-abi`
+
+## 目录职责
+
+本 crate 保存 Xiao 原生程序与 Rust Runtime 之间的稳定 C ABI 契约。公开层只使用固定宽度
+标量、长度参数和不透明句柄，不暴露 `xiao-runtime` 的 Rust 枚举、引用计数对象或容器布局。
+
+## 工程期
+
+10B 已接入 tagged value、强/弱句柄、字符串、数组、元组、字典、集合和表描述符入口；
+20D 追加 `XiaoValueTag::ExternalResource = 17`，由 Runtime 盒子承载 `file`/`directory`/`process` 资源种类。
+22D 内部原生路径追加 `XiaoValueTag::Concurrency = 18`、`XiaoConcurrencyKind`、不透明并发句柄和线程 trampoline C ABI；并发盒子仍由 Runtime 管理，不暴露 Rust 类型布局。此入口供 LLVM 内部差分使用，22E 再冻结原生产物 required-feature/元数据语义。
+20AB 新增 `xiao_runtime_print_values` 与 `xiao_runtime_input` 输出/输入入口；10T 追加表方法与确定性随机种子入口；20D-能力上下文追加带能力掩码的
+`xiao_runtime_print_values_with_capabilities` 与 `xiao_runtime_input_with_capabilities`，
+当前 ABI 主版本 1、次版本 18。1.14 接入文件/目录 API，1.15 新增带能力的
+`xiao_runtime_process_spawn_with_capabilities`、`xiao_runtime_process_wait_with_capabilities`、
+`xiao_runtime_process_close_with_capabilities`；仍只借用 `XiaoValue`，返回拥有值或 i32 状态。
+process 不新增值标签，也不暴露宿主 Child/进程句柄。改变布局或所有权契约必须升主版本。
+
+1.16 扩展既有 `xiao_runtime_dynamic_check` 的检查语义：
+`resource_type:<kind>` 校验单个资源，`resource_array:<kind>` 和
+`resource_dictionary:<kind>` 分别校验资源可变参数的所有元素或值。
+`kind` 为 `file`、`directory`、`process` 或 `resource`；其中 `resource` 只接受文件/目录。
+关闭不改变资源种类；检查只读内存，不执行宿主操作或要求能力。没有新增 ABI 符号或值标签。
+旧 Runtime 会忽略未知检查，因此 required 1.16 / actual 1.15 必须在执行前拒绝；
+旧产物仍可使用 1.16 Runtime。
+
+1.18（20O-B1-FIX-B）新增 `xiao_runtime_error_code(const XiaoValue*, XiaoAbiBytes*)`。
+getter 只借读指定错误对象的 UTF-8 code，不分配、不 retain/release、不触碰挂起槽；
+状态 0/1/2/3 分别为成功、空入口指针、非 Error 标签、无效错误句柄，失败保持 out 不变。
+调用方必须保持输入强引用到复制结束。低层 C ABI 仍接受兼容旧次版本；当前产物的精确
+1.18 要求另由 `.xiaoc`/`.xar`/原生校验器检查，不把这两种兼容关系混同。
+
+**旧的两个无掩码入口只供兼容**：`xiao_runtime_print_values` 与 `xiao_runtime_input`
+等价于按 `KNOWN_CAPABILITY_MASK`（当前七个能力位全开）调用——**它们会绕过能力检查**。
+**新调用点必须使用带能力掩码的入口**；代码生成器只发射带掩码的符号，
+`xiao-codegen-llvm/tests/n0_b_dynamic.rs` 有断言守着这一点。
+这两个兼容入口的移除或收紧需要升主版本。
+
+异常对象与异常展开仍属于 N0-C。
+
+B3内部快照追加15个`xiao_runtime_cmath_*`入口，参数和返回遵守F-5的借读输入、拥有out及状态表。
+纯float成功路径不分配数值载荷；结构错误1/2/3保留out与挂起槽，类型002或数学009使用状态6。
+当前为内部ABI1.18/生成器21：B4-3的LLVM lowering文本已变化，ABI布局未变；B5只将ABI切至1.19并执行拒绝/重生成矩阵，不再次升级生成器。不能只凭ABI版本号混用Runtime，必须核对生成器和Runtime内容身份。
+类型/IR/VM/LLVM和`std.cmath`的语言调用留B4，教程与registry继续planned。
+
+## 允许与禁止依赖
+
+当前不依赖任何工作区 crate，也不反向依赖 LLVM 后端。后续 Runtime 实现可以实现这些 ABI
+入口，但不得把内部布局写入本 crate 的公开类型。
+
+10T 新增独立 `XiaoTableDescriptorV2`、注册式方法回调与值指针字段入口，旧描述符仍为 40 字节。
+新描述符 88 字节、方法项 56 字节；回调返回 i32 状态，receiver/参数借用、结果指针转移所有权。
+
+B2历史快照追加`xiao_runtime_lfloat_divide`的四个借用输入与拥有输出槽声明，成功替换、失败保持out；仅激活intrinsic33，固定于ABI1.18/生成器20。B4-3按已授权版本裁定将LLVM生成器升至21、ABI仍为1.18，仅供内部验证，不将旧快照或当前过渡快照作为公共发布产物。

@@ -1,0 +1,42 @@
+# `xiao-driver/src`
+
+放置编译/运行/构建请求编排、版本协商和结构化服务接口。对应工程期 08–18；不放终端 UI 或本地化文案。
+
+08A 只实现统一前端静态编排；09-B0-C 的 `run.rs` 接入生产字节码 VM 内部驱动器，11 以后
+再接入 CLI、配置和平台。驱动器只消费前端产物，不重新解析源码或推断语义。
+
+X0-A 的 `protocol.rs` 是稳定门面，只负责公开重导出和协议常量；实现按职责放在
+`protocol/` 下的 `frame`、`message`、`request`、`mapping`、`validate`、`run`、`build`、
+`config`、`service` 十个模块。依赖方向固定为叶子类型/帧 → 映射与校验 → 运行/构建/配置
+→ 服务分发，只有 `service` 持有线程和共享输出锁。协议仍提供长度前缀 JSON、统一
+`core_version` 协商、结构化错误/退出码/事件映射和可取消的 stdin/stdout 服务；
+`protocol_main.rs` 是 `xiao-core` 进程入口。协议只调用 `FrontendVmDriver`/`FrontendNativeDriver`，
+不在边界层复制语言语义。
+
+X0-E 在同一协议中接入真实源码原生构建、运行时配置固化和诊断组件携带；对应的协议边界
+测试拆在 `protocol_tests.rs`，避免传输与构建编排文件超过仓库单文件尺寸门禁。
+协议拆分的依赖方向由 `protocol_architecture_tests.rs` 锁定；共享协议 fixture 和既有
+`protocol_tests.rs` 保持为单一来源证据，拆分不改变公开路径或响应语义。
+
+20D 的 `frontend.rs` 从已解析的标准库源码提取完整注解的函数头，向类型检查器注入
+模块函数接口。函数别名、模块别名及限定调用保留资源种类和位置专用参数信息；接口提取
+不执行模块，也不扩大 `plan_standard_link` 与 LLVM 的既有静态链接范围。
+
+`bin/` 的两个进程测试子程序只用于 20D 差分与生命周期夹具；不接入 `xiao-core` 协议或 CLI 路由。
+
+B1-IMP 的既有 `std.` 别名前置修复使 VM 与 `archive_closure.rs` 共用
+`xiao-standard-library::canonical_module_identity`；归档要求仍只记录 `stdlib.` 固定身份，
+不把别名当项目模块或复制官方函数体。原生回归复用 20C 入口，不增加 intrinsic 或 ABI。
+
+B4-4 的 `archive_run.rs` 在归档执行边界注册 `DriverModuleLoader`，协议与公开驱动器入口共用。
+`module_loader.rs` 显式登记可执行官方模块；新增官方模块必须随接线和验收同步登记，
+索引中出现源码不代表自动开放执行。归档写前扫描沿用该边界，函数选择导入不作为子模块处理。
+
+后续契约回归补齐 `std.` 的完整函数签名注入，避免公共别名退化成动态调用而绕过静态
+参数检查；`std.` 与 `stdlib.` 的类型、参数名及必填规则来自同一份标准库源码。
+
+18B 的 `archive_closure.rs` 从入口 0 沿模块初始化、函数调用及函数值传播计算闭包；
+`archive.rs` 只将本地模块写入全局缓存并组装归档，官方模块只转为版本/能力要求。
+`config.xiao` 采用唯一 `[main]` 入口；缓存命中仍执行完整摘要和格式校验，归档验证后原子写出。
+自审补充 `archive_output.rs` 保护已读取的源码、配置、锁、资源和缓存；调用图中的未知值
+在分支合流后仍保留，不能被部分已知函数掩盖后漏报能力。

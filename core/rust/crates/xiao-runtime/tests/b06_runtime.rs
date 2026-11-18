@@ -1,0 +1,291 @@
+//! 06-B Runtime 对象、表生命周期和释放计划的公开接口测试。
+
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+use xiao_diagnostics::{
+    INVALID_VALUE_CODE, NUMERIC_OVERFLOW_CODE, TABLE_DROP_CODE, WEAK_UPGRADE_CODE,
+};
+use xiao_lifetime::{ExitKind, ReleaseAction, ReleaseActionKind, ReleasePlan, ScopeId, ValueId};
+use xiao_runtime::testing::{RuntimeBinding, RuntimeDriver};
+use xiao_runtime::{
+    ArrayHandle, DictHandle, DictKind, RuntimeError, RuntimeResult, RuntimeValue, SetHandle,
+    StringHandle, TableDefinition, TableDropHook, TableHooks, TableInitHook, TableInstance,
+    TableObject, TableState, TupleHandle, XiaoError, is_hashable,
+};
+use xiao_source::SourceSpan;
+use xiao_syntax::{ScalarType, TableKind};
+use xiao_types::{TableMemberSignature, TableSignature, Type};
+
+/// 返回集成测试使用的有效源码区间。
+fn span() -> SourceSpan {
+    SourceSpan::new(0, 1).expect("测试区间有效")
+}
+
+/// 构造指定种类并带有整数字段的表签名。
+fn signature(kind: TableKind) -> TableSignature {
+    let mut signature = TableSignature::new("Resource", kind, span());
+    signature.members.insert(
+        "id".to_owned(),
+        TableMemberSignature::field("id", Type::scalar(ScalarType::Int), span()),
+    );
+    signature
+}
+
+/// 在初始化钩子中写入固定字段值。
+fn init_id(instance: &mut TableInstance) -> RuntimeResult<()> {
+    instance.set("id", RuntimeValue::Int(42))
+}
+
+/// 集成测试记录释放钩子触发次数。
+static DROP_CALLS: AtomicUsize = AtomicUsize::new(0);
+
+/// 观察表处于 Dropping 状态并递增计数。
+fn observe_drop(object: &TableObject) -> RuntimeResult<()> {
+    assert_eq!(object.state(), TableState::Dropping);
+    assert_eq!(
+        object.field("id")?,
+        Some(RuntimeValue::Int(42)),
+        "drop 钩子应能观察已初始化字段"
+    );
+    DROP_CALLS.fetch_add(1, Ordering::SeqCst);
+    Ok(())
+}
+
+/// 返回固定错误以覆盖表释放钩子失败。
+fn failing_drop(_: &TableObject) -> RuntimeResult<()> {
+    Err(RuntimeError::invalid_value("测试 drop 失败"))
+}
+
+#[test]
+/// 验证静态表签名、初始化钩子和释放钩子协作。
+fn runs_init_and_drop_with_static_signature() {
+    DROP_CALLS.store(0, Ordering::SeqCst);
+    let definition = TableDefinition::with_hooks(
+        signature(TableKind::Instance),
+        TableHooks::new(
+            Some(init_id as TableInitHook),
+            Some(observe_drop as TableDropHook),
+        ),
+    );
+    let instance = TableInstance::new(definition).expect("实例应构造");
+    assert_eq!(instance.state(), TableState::Usable);
+    assert_eq!(
+        instance.get("id").expect("读取成功"),
+        Some(RuntimeValue::Int(42))
+    );
+    instance.try_release().expect("drop 应成功");
+    assert_eq!(DROP_CALLS.load(Ordering::SeqCst), 1);
+}
+
+#[test]
+/// 验证释放钩子错误保留结构化原因身份。
+fn drop_failure_keeps_structured_identity() {
+    let definition = TableDefinition::with_hooks(
+        signature(TableKind::Instance),
+        TableHooks::new(None, Some(failing_drop as TableDropHook)),
+    );
+    let error = TableInstance::new(definition)
+        .expect("构造应成功")
+        .try_release()
+        .expect_err("drop 应返回错误");
+    assert_eq!(error.code(), TABLE_DROP_CODE);
+    assert_eq!(
+        error.cause().map(RuntimeError::code),
+        Some(INVALID_VALUE_CODE)
+    );
+}
+
+#[test]
+/// 验证强引用释放后弱句柄仍可观察对象已失活。
+fn weak_handle_survives_strong_release_but_cannot_upgrade() {
+    let string = StringHandle::new("x").expect("字符串应创建");
+    let weak = string.downgrade();
+    assert_eq!(weak.strong_count(), 1);
+    string.try_release().expect("释放应成功");
+    assert!(!weak.is_alive());
+    assert_eq!(
+        weak.upgrade().expect_err("升级应失败").code(),
+        WEAK_UPGRADE_CODE
+    );
+}
+
+#[test]
+/// 验证生命周期释放计划能被 Runtime 驱动器消费。
+fn driver_consumes_lifetime_release_plan() {
+    let value_id = ValueId::new(11);
+    let string = StringHandle::new("plan").expect("字符串应创建");
+    let plan = ReleasePlan {
+        scope: ScopeId::new(0),
+        exit: ExitKind::Return,
+        actions: vec![ReleaseAction {
+            value: value_id,
+            order: 0,
+            kind: ReleaseActionKind::Strong,
+        }],
+        transferred: vec![ValueId::new(12)],
+    };
+    let mut bindings = [(
+        value_id,
+        RuntimeBinding::Strong(string.into_strong_handle()),
+    )]
+    .into_iter()
+    .collect();
+    let result = RuntimeDriver::new()
+        .execute_plan(&plan, &mut bindings)
+        .expect("释放计划应执行");
+    assert_eq!(result.exit, ExitKind::Return);
+    assert_eq!(result.events[0].value, value_id);
+    assert_eq!(result.transferred, vec![ValueId::new(12)]);
+    assert!(bindings.is_empty());
+}
+
+#[test]
+/// 验证布尔整数运算严格按奇偶翻转并报告溢出。
+fn bool_arithmetic_is_strict_and_overflow_is_reported() {
+    assert_eq!(
+        RuntimeValue::Bool(false)
+            .add(&RuntimeValue::Int(3))
+            .expect("奇数应翻转")
+            .as_bool(),
+        Some(true)
+    );
+    let overflow = RuntimeValue::Int(i64::MAX)
+        .add(&RuntimeValue::Int(1))
+        .expect_err("应溢出");
+    assert_eq!(overflow.code(), NUMERIC_OVERFLOW_CODE);
+    assert!(
+        RuntimeValue::Bool(true)
+            .add(&RuntimeValue::Float(1.0))
+            .is_err()
+    );
+}
+
+#[test]
+/// 验证单例表与可实例化表不能混用。
+fn singleton_and_instance_kinds_are_not_interchangeable() {
+    let singleton = TableDefinition::new(signature(TableKind::Singleton));
+    assert!(TableInstance::new(singleton.clone()).is_err());
+    let instance = TableInstance::singleton(singleton).expect("单例应创建");
+    assert_eq!(instance.state(), TableState::Usable);
+}
+
+#[test]
+/// 编译后访问保持私有字段的静态契约，同时校验类型、状态和规范成员键。
+fn compiled_initializer_preserves_field_contracts() {
+    let mut signature = signature(TableKind::Instance);
+    signature.members.insert(
+        "ascii:_secret".to_owned(),
+        TableMemberSignature::field("ascii:_secret", Type::scalar(ScalarType::Int), span()),
+    );
+    let instance = TableInstance::with_initializer(TableDefinition::new(signature), |instance| {
+        assert_eq!(instance.state(), TableState::FieldsInitializing);
+        assert!(instance.get("id").is_err());
+        assert_eq!(instance.get_compiled_field("id")?, None);
+        instance.set_compiled_field("id", RuntimeValue::Int(3))?;
+        assert_eq!(
+            instance.get_compiled_field("id")?,
+            Some(RuntimeValue::Int(3))
+        );
+        instance.set_compiled_field("ascii:_secret", RuntimeValue::Int(7))?;
+        assert!(
+            instance
+                .set_compiled_field("id", RuntimeValue::Bool(true))
+                .is_err()
+        );
+        assert!(
+            instance
+                .set_compiled_field("missing", RuntimeValue::Int(1))
+                .is_err()
+        );
+        Ok(())
+    })
+    .expect("构造成功");
+    assert!(instance.get("ascii:_secret").is_err());
+    assert!(instance.set("ascii:_secret", RuntimeValue::Int(8)).is_err());
+    assert_eq!(
+        instance.get_compiled_field("ascii:_secret").unwrap(),
+        Some(RuntimeValue::Int(7))
+    );
+    assert_eq!(instance.get("id").unwrap(), Some(RuntimeValue::Int(3)));
+}
+
+#[test]
+/// 析构弱视图不可哈希、不可复活对象，保存到回调外后不能继续读取。
+fn drop_view_is_borrowed_and_expires_after_callback() {
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    let saved = Rc::new(RefCell::new(None));
+    let observed = Rc::clone(&saved);
+    let definition =
+        TableDefinition::new(signature(TableKind::Instance)).with_drop_executor(move |object| {
+            let view = object.drop_view();
+            assert_eq!(view.get_compiled_field("id")?, Some(RuntimeValue::Int(42)));
+            assert!(!xiao_runtime::is_hashable(&RuntimeValue::TableDropView(
+                view.clone()
+            )));
+            assert!(
+                xiao_runtime::SetHandle::new(vec![RuntimeValue::TableDropView(view.clone())])
+                    .is_err()
+            );
+            *observed.borrow_mut() = Some(view);
+            Ok(())
+        });
+    let instance = TableInstance::with_initializer(definition, |instance| {
+        instance.set_compiled_field("id", RuntimeValue::Int(42))
+    })
+    .expect("构造成功");
+    let weak = instance.downgrade();
+    let alias = TableInstance::from_weak(&weak).expect("存活时能升级");
+    instance.try_release().expect("别名仍持有");
+    assert!(saved.borrow().is_none());
+    alias.try_release().expect("最后强引用执行析构");
+    assert_eq!(weak.strong_count(), 0);
+    assert!(TableInstance::from_weak(&weak).is_err());
+    assert!(
+        saved
+            .borrow()
+            .as_ref()
+            .expect("钩子已执行")
+            .get_compiled_field("id")
+            .is_err()
+    );
+    let wrong = StringHandle::new("不是表").unwrap();
+    assert!(TableInstance::from_weak(&wrong.downgrade()).is_err());
+}
+
+#[test]
+/// 正向哈希白名单保留既有 19 个变体的结果：模块/标量/字符串/none 可哈希，其余拒绝。
+fn hashability_allowlist_preserves_all_existing_runtime_variants() {
+    let allowed = [
+        RuntimeValue::Module("ascii:module".to_owned()),
+        RuntimeValue::ModuleFunction("ascii:module".to_owned(), 1),
+        RuntimeValue::Int(1),
+        RuntimeValue::Sint(1),
+        RuntimeValue::Lint("1".to_owned()),
+        RuntimeValue::Float(1.0),
+        RuntimeValue::Sfloat(1.0),
+        RuntimeValue::Lfloat("1.0".to_owned()),
+        RuntimeValue::Bool(true),
+        RuntimeValue::new_string("text").expect("字符串应分配"),
+        RuntimeValue::None,
+    ];
+    assert!(allowed.iter().all(is_hashable));
+
+    let table =
+        TableInstance::new(TableDefinition::new(signature(TableKind::Instance))).expect("表应构造");
+    let rejected = [
+        RuntimeValue::Table(table.clone()),
+        RuntimeValue::Array(ArrayHandle::new(Vec::new()).expect("数组应分配")),
+        RuntimeValue::Tuple(TupleHandle::new(Vec::new()).expect("元组应分配")),
+        RuntimeValue::DictTable(
+            DictHandle::new(DictKind::Table, Vec::new()).expect("字典表应分配"),
+        ),
+        RuntimeValue::DictColumn(
+            DictHandle::new(DictKind::Column, Vec::new()).expect("字典列应分配"),
+        ),
+        RuntimeValue::Set(SetHandle::new(Vec::new()).expect("集合应分配")),
+        RuntimeValue::Error(Box::new(XiaoError::invalid_value("error"))),
+    ];
+    assert!(rejected.iter().all(|value| !is_hashable(value)));
+}

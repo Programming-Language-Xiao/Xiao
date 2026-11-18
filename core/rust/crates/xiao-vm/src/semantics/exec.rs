@@ -1,0 +1,2507 @@
+//! 机型无关的三地址语义核。
+//!
+//! 本模块只认三地址指令与 [`Carrier`]，决定算什么、错怎么抛、清理怎么走、
+//! 调用怎么进；它不认识栈、寄存器或帧槽，也不认识任何机型的细节。
+//!
+//! 释放顺序的唯一来源是冻结计划：退出点上执行 `(作用域, 退出边)` 计划，按
+//! `order` 逐条释放。动态错误发生时按同一份计划展开当前作用域栈。
+
+use super::constants::constant_value;
+use std::cell::Cell;
+use std::collections::{BTreeMap, BTreeSet};
+use std::rc::Rc;
+use xiao_bytecode::{
+    BlockId, FuncId, PcMap, TacArgument, TacFunction, TacHandler, TacInstr, TacOp, TacProgram,
+    VReg, build_pc_map,
+};
+use xiao_diagnostics::{
+    BackendLocation, CONTAINER_HASHABILITY_CODE, DiagnosticParam, FatalError, ITERABLE_CODE,
+    NUMERIC_OVERFLOW_CODE, RANDOM_COUNT_CODE, RANDOM_SEED_CODE, SELECTOR_BOUNDS_CODE,
+    SELECTOR_STEP_CODE, SET_COMPARISON_CODE, SET_MEMBERSHIP_CODE, SET_OPERATION_CODE, StackFrame,
+    TYPE_MISMATCH_CODE, XiaoError,
+};
+use xiao_intrinsics::KNOWN_CAPABILITY_MASK;
+use xiao_intrinsics::{AbiBinding, IntrinsicId, VmBinding, active_by_id};
+use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue, is_hashable};
+use xiao_source::SourceSpan;
+use xiao_syntax::ScalarType;
+/// 数组追加 intrinsic 的执行绑定。
+#[path = "array_intrinsics.rs"]
+mod array_intrinsics;
+/// 并发计划、隔离子 VM 和边界错误。
+#[path = "concurrent.rs"]
+mod concurrent;
+/// 模块初始化与上下文切换。
+#[path = "module_exec.rs"]
+mod module_exec;
+/// 显式精度除法与 cmath 的 Runtime 单入口绑定。
+#[path = "numeric_intrinsics.rs"]
+mod numeric_intrinsics;
+/// 集合变更 intrinsic 的执行绑定。
+#[path = "set_intrinsics.rs"]
+mod set_intrinsics;
+/// 表生命周期回调和执行上下文适配。
+#[path = "tables.rs"]
+mod tables;
+
+use crate::carrier::{Carrier, CarrierContext, MapPoint};
+use crate::frame::Frame;
+use crate::modules::ModuleLoader;
+use crate::ops;
+use crate::run::{CancellationSource, RunResult, VmMetrics, VmOptions};
+use crate::sink::{VmEvent, VmEventSink};
+
+/// 解释过程中的终止原因。
+///
+/// 终止原因分为三条通道：[`Fault::Error`] 是可恢复的运行时错误，会参与
+/// handler 路由；[`Fault::Cancelled`] 由 VM 外部取消或截止时间触发，不查
+/// handler 表、不进入用户 `catch`，但会执行活动作用域的 `finally` 并复用既有
+/// 释放计划；[`Fault::Fatal`] 是不可恢复故障，不执行释放计划，也不能被普通
+/// 处理器捕获。因此取消和致命故障都不能与 [`XiaoError`] 共用一个变体。
+#[derive(Debug)]
+pub enum Fault {
+    /// 可恢复的运行时错误。
+    Error(XiaoError),
+    /// 并发 027 错误；不进入用户 catch，但携带清理 suppressed。
+    ConcurrencyCancelled(XiaoError),
+    /// 不可恢复的故障。
+    Fatal(FatalError),
+    /// VM 外部取消或截止时间触发。
+    Cancelled,
+}
+
+/// 一条已经求值的实参。
+#[derive(Clone, Debug)]
+pub struct BoundArgument {
+    /// 关键字实参的名称；位置实参为空。
+    pub keyword: Option<String>,
+    /// 实参值。
+    pub value: RuntimeValue,
+}
+
+/// 一条指令执行后的控制流去向。
+enum Flow {
+    /// 顺序执行下一条指令。
+    Next,
+    /// 跳转到指定块。
+    Jump(BlockId),
+    /// 运行时检查失败跳转；失败类别和原始块要保留到失败块构造错误。
+    JumpWithFault {
+        /// 失败处理块。
+        target: BlockId,
+        /// 触发检查的类别。
+        kind: String,
+    },
+    /// 返回，携带可选返回值寄存器。
+    Return(Option<VReg>),
+    /// 从 `finally` 子程序返回。
+    RetFromSub,
+}
+
+/// 当前帧异常路由的结果。
+///
+/// `finally` 可以覆盖挂起的错误或控制退出，因此异常路由除了跳进
+/// `catch`，还必须能把 `return`/`break`/`continue` 交回普通块循环。
+enum RouteDecision {
+    /// 跳进一个匹配的 `catch` 或嵌套处理器。
+    Jump(BlockId),
+    /// `finally` 产生了新的非局部控制流。
+    Flow(Flow),
+}
+
+/// 一次待路由故障的来源信息。
+#[derive(Clone, Debug)]
+struct PendingFault {
+    /// 对应冻结的退出边名称。
+    exit: String,
+    /// 发生故障的原始基本块。
+    origin: BlockId,
+}
+
+/// 一次运行的模块和源码身份；不进入冻结 TAC/字节码布局。
+#[derive(Clone, Debug)]
+pub(crate) struct VmMetadata {
+    /// 事件和调用栈使用的逻辑模块名。
+    pub(crate) module_name: String,
+    /// 调用栈使用的源码路径或稳定内存来源名。
+    pub(crate) source_name: String,
+    /// 入口模式对应的源码跨度，供缺失 pc 映射时回退。
+    pub(crate) entry_span: Option<xiao_ir::IrSpan>,
+}
+
+impl VmMetadata {
+    /// 创建一次运行的身份上下文。
+    pub(crate) fn new(
+        module_name: String,
+        source_name: String,
+        entry_span: Option<xiao_ir::IrSpan>,
+    ) -> Self {
+        Self {
+            module_name,
+            source_name,
+            entry_span,
+        }
+    }
+
+    /// 为研究兼容入口建立不会改变既有事件含义的默认上下文。
+    pub(crate) fn legacy(program: &TacProgram) -> Self {
+        Self::new(program.abi.target.clone(), "<unknown>".to_owned(), None)
+    }
+}
+
+/// 同一核心会话内跨 `run` 保留的模块运行时状态。
+///
+/// 主程序的调用帧不属于会话；每次请求仍然创建新的 `Vm` 和新的入口帧。
+/// 这里只保存成功初始化的文件模块及其表运行时状态，因此模块可以在后续
+/// 请求中复用，而普通顶层绑定不会泄漏到下一次请求。
+pub struct VmSession {
+    initialized_modules: BTreeMap<String, ModuleInstance>,
+    tables: std::rc::Rc<tables::TableContext>,
+}
+
+impl Default for VmSession {
+    /// 创建空的会话状态。
+    fn default() -> Self {
+        Self {
+            initialized_modules: BTreeMap::new(),
+            tables: std::rc::Rc::new(tables::TableContext::default()),
+        }
+    }
+}
+
+impl VmSession {
+    /// 创建空的会话状态。
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// 判断状态是否仍满足下一次运行的复用条件。
+    #[must_use]
+    pub fn is_healthy(&self) -> bool {
+        self.tables.depth.get() == 0 && !self.tables.fatal.get() && self.tables.is_clean()
+    }
+}
+
+/// 三地址解释器。
+pub struct Vm<'p, C: Carrier, S: VmEventSink> {
+    program: &'p TacProgram,
+    active_program: Option<Rc<TacProgram>>,
+    module_loader: Option<&'p dyn ModuleLoader>,
+    session: VmSession,
+    initializing_modules: BTreeSet<String>,
+    current_module: String,
+    current_exports: Option<BTreeMap<String, RuntimeValue>>,
+    frames: Vec<Frame<C>>,
+    sink: S,
+    metrics: VmMetrics,
+    options: VmOptions,
+    /// 运行开始前建立的一次性只读 pc 映射；热路径只做查表。
+    pc_map: Option<PcMap>,
+    /// 当前回调不能消费进入前已经挂起的清理错误。
+    pending_base: usize,
+    /// 模块和源码身份。
+    metadata: VmMetadata,
+    /// 可注入的取消与截止时间来源。
+    cancellation: Option<CancellationSource>,
+    /// 跨普通调用帧和析构帧共享的检查点计数器。
+    checkpoint_counter: Rc<Cell<u64>>,
+    /// 当前请求的不可变能力位。
+    capabilities: u64,
+    /// 当前执行单元的 Runtime、取消与子执行单元事件。
+    concurrency: Rc<concurrent::ConcurrentContext>,
+}
+
+struct ModuleInstance {
+    program: Rc<TacProgram>,
+    source_name: String,
+    exports: BTreeMap<String, RuntimeValue>,
+    instance_tables: BTreeSet<String>,
+}
+
+impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
+    /// 创建一个解释器。
+    pub fn new(program: &'p TacProgram, options: VmOptions, sink: S) -> Self {
+        Self::new_with_metadata(
+            program,
+            options,
+            sink,
+            VmMetadata::legacy(program),
+            VmSession::new(),
+            KNOWN_CAPABILITY_MASK,
+        )
+    }
+
+    /// 创建一个带模块/源码身份的解释器。
+    pub(crate) fn new_with_metadata(
+        program: &'p TacProgram,
+        options: VmOptions,
+        sink: S,
+        metadata: VmMetadata,
+        session: VmSession,
+        capabilities: u64,
+    ) -> Self {
+        Self {
+            program,
+            active_program: None,
+            module_loader: None,
+            session,
+            initializing_modules: BTreeSet::new(),
+            current_module: String::new(),
+            current_exports: None,
+            frames: Vec::new(),
+            sink,
+            metrics: VmMetrics::default(),
+            options,
+            pc_map: build_pc_map(program, xiao_bytecode::OperandWidth::Leb128).ok(),
+            pending_base: 0,
+            metadata,
+            cancellation: None,
+            checkpoint_counter: Rc::new(Cell::new(0)),
+            capabilities,
+            concurrency: Rc::new(concurrent::ConcurrentContext::default()),
+        }
+    }
+
+    /// 创建一个使用指定种子的解释器。
+    pub fn new_with_seed(program: &'p TacProgram, options: VmOptions, sink: S, seed: u128) -> Self {
+        let vm = Self::new(program, options, sink);
+        vm.session.tables.random.borrow_mut().reseed(seed);
+        vm
+    }
+
+    /// 为自定义事件接收器的宿主装入只读模块加载器。
+    #[must_use]
+    pub fn with_module_loader(mut self, loader: &'p dyn ModuleLoader) -> Self {
+        self.set_module_loader(Some(loader));
+        self
+    }
+
+    /// 返回当前运行指标。
+    #[must_use]
+    pub const fn metrics(&self) -> VmMetrics {
+        self.metrics
+    }
+
+    /// 设置当前执行共享的取消与截止时间来源。
+    pub(crate) fn set_cancellation_source(&mut self, cancellation: Option<CancellationSource>) {
+        self.cancellation = cancellation;
+    }
+
+    pub(crate) fn set_module_loader(&mut self, loader: Option<&'p dyn ModuleLoader>) {
+        self.module_loader = loader;
+    }
+
+    /// 判断当前 VM 是否已经清空所有请求级执行状态，且会话状态可复用。
+    #[must_use]
+    pub(crate) fn session_is_healthy(&self) -> bool {
+        self.frames.is_empty() && self.initializing_modules.is_empty() && self.session.is_healthy()
+    }
+
+    /// 在一次指令完成后轮询取消检查点。
+    fn cancellation_checkpoint(&self) -> Result<(), Fault> {
+        if !self.options.checkpoints_enabled {
+            return Ok(());
+        }
+        let interval = self.options.checkpoint_interval as u64;
+        if self.checkpoint_counter.get() % interval == 0
+            && self
+                .cancellation
+                .as_ref()
+                .is_some_and(CancellationSource::is_cancelled)
+        {
+            return Err(Fault::Cancelled);
+        }
+        Ok(())
+    }
+
+    /// 递增跨帧共享的指令检查计数器。
+    fn count_instruction(&self) {
+        self.checkpoint_counter
+            .set(self.checkpoint_counter.get().saturating_add(1));
+    }
+
+    /// 取出事件接收器。
+    #[must_use]
+    pub fn into_sink(self) -> S {
+        self.sink
+    }
+
+    /// 取出事件接收器和会话状态，供生产入口在请求结束后保存模块缓存。
+    pub(crate) fn into_parts(self) -> (S, VmSession) {
+        (self.sink, self.session)
+    }
+
+    /// 从脚本入口开始执行。
+    pub fn run(&mut self) -> RunResult {
+        self.run_with_value().0
+    }
+
+    /// 从统一入口执行并保留显式返回值，供运行入口构造结构化结果。
+    pub(crate) fn run_with_value(&mut self) -> (RunResult, Option<RuntimeValue>) {
+        self.session.tables.reset_program();
+        self.run_with_arguments(&[])
+    }
+
+    /// 从统一入口执行并把位置实参绑定到入口形参。
+    ///
+    /// 该入口只由研究兼容入口使用；生产请求固定不注入外部形参，脚本和
+    /// `[main]` 工程入口都从函数 0 开始执行。
+    pub(crate) fn run_with_arguments(
+        &mut self,
+        arguments: &[BoundArgument],
+    ) -> (RunResult, Option<RuntimeValue>) {
+        if let Err(error) = self.options.validate() {
+            let fatal = FatalError::runtime_invariant(format!("运行参数无效：{error}"));
+            self.session.tables.fatal.set(true);
+            self.sink.record(VmEvent::FatalRaised {
+                code: fatal.code().to_owned(),
+            });
+            return (RunResult::Fatal(fatal), None);
+        }
+        self.sink.record(VmEvent::ModuleLoaded {
+            module: self.metadata.module_name.clone(),
+        });
+        let outcome = if self.program.concurrency_plans.is_empty() {
+            self.execute(FuncId::new(0), arguments, None)
+        } else {
+            let runtime = self.concurrency.runtime();
+            runtime
+                .in_context(|| self.execute(FuncId::new(0), arguments, None))
+                .map_err(concurrent::runtime_fault)
+                .and_then(|value| value)
+        };
+        self.finish_concurrency(&outcome);
+        match outcome {
+            Ok(value) => (RunResult::Success, value),
+            Err(Fault::Error(error)) => {
+                self.sink.record(VmEvent::ErrorRaised {
+                    code: error.code().to_owned(),
+                    message_id: error.message_id().to_owned(),
+                });
+                (RunResult::Error(error), None)
+            }
+            Err(Fault::ConcurrencyCancelled(error)) => {
+                self.sink.record(VmEvent::ErrorRaised {
+                    code: error.code().to_owned(),
+                    message_id: error.message_id().to_owned(),
+                });
+                (RunResult::Error(error), None)
+            }
+            Err(Fault::Fatal(fatal)) => {
+                self.sink.record(VmEvent::FatalRaised {
+                    code: fatal.code().to_owned(),
+                });
+                (RunResult::Fatal(fatal), None)
+            }
+            Err(Fault::Cancelled) => (RunResult::Cancelled, None),
+        }
+    }
+
+    /// 执行一个函数直到返回。
+    fn execute(
+        &mut self,
+        target: FuncId,
+        arguments: &[BoundArgument],
+        return_to: Option<VReg>,
+    ) -> Result<Option<RuntimeValue>, Fault> {
+        let active_program = self.active_program.clone();
+        let program = active_program.as_deref().unwrap_or(self.program);
+        let Some(function) = program.functions.get(target.get() as usize) else {
+            return Err(Fault::Error(XiaoError::invalid_value(format!(
+                "函数索引 {} 不存在",
+                target.get()
+            ))));
+        };
+        if self.session.tables.depth.get() >= self.options.max_call_depth {
+            let fatal = FatalError::stack_overflow(format!(
+                "调用深度超过上限 {}",
+                self.options.max_call_depth
+            ));
+            self.session.tables.fatal.set(true);
+            return Err(Fault::Fatal(fatal));
+        }
+        let depth = self.session.tables.depth.get() + 1;
+        self.session.tables.depth.set(depth);
+        self.metrics.max_call_depth = self.metrics.max_call_depth.max(depth);
+        let carrier = C::empty(CarrierContext {
+            program,
+            function_id: target,
+            function,
+            categories: &function.categories,
+            call_depth: depth,
+        });
+        let mut frame = Frame::new(target, function.name.clone(), carrier, return_to);
+        if let Err(fault) = bind_arguments(function, program, &mut frame, arguments) {
+            self.session.tables.depth.set(depth - 1);
+            return Err(fault);
+        }
+        self.frames.push(frame);
+        self.sink.record(VmEvent::FunctionEntered {
+            function: function.name.clone(),
+            depth,
+        });
+        self.sink.record(VmEvent::StackFrame {
+            function: function.name.clone(),
+            depth,
+            return_to,
+        });
+
+        let outcome = match self.run_blocks(function) {
+            Ok(value) => Ok(value),
+            Err(fault) => {
+                if matches!(fault, Fault::Fatal(_)) {
+                    self.session.tables.fatal.set(true);
+                }
+                self.unwind(&fault);
+                Err(fault)
+            }
+        };
+
+        if let Some(frame) = self.frames.pop() {
+            let carrier_metrics = frame.carrier.metrics();
+            self.metrics.max_stack_depth = self
+                .metrics
+                .max_stack_depth
+                .max(carrier_metrics.peak_occupancy);
+            self.metrics.spill_count = self
+                .metrics
+                .spill_count
+                .saturating_add(carrier_metrics.spill_count);
+            self.metrics.stack_map_entries = self
+                .metrics
+                .stack_map_entries
+                .saturating_add(carrier_metrics.stack_map_entries);
+            self.metrics.call_save_count = self
+                .metrics
+                .call_save_count
+                .saturating_add(carrier_metrics.call_save_count);
+        }
+        let outcome = self.finish_table_effects(outcome);
+        self.session.tables.depth.set(depth - 1);
+        self.sink.record(VmEvent::FunctionReturned {
+            function: function.name.clone(),
+            depth,
+        });
+        outcome
+    }
+
+    /// 通知当前帧的载体：控制流经过了一个可能需要栈映射的程序点。
+    ///
+    /// 语义核只报事实，**由载体决定自己是否计数**——R1-F 冻结的机型分界
+    /// （栈式数跳转目标、混合式数调用点与帧尾、寄存器式一个都不数）因此写在
+    /// 各自的载体实现里，而不是在这里分支判断机型。
+    fn note_map_point(&mut self, point: MapPoint) {
+        if let Some(frame) = self.frames.last_mut() {
+            frame.carrier.map_point(point);
+        }
+    }
+
+    /// 为在当前指令处产生的故障追加统一后端调用帧。
+    ///
+    /// 通过启动时建立的只读 pc 表追加统一后端调用帧。
+    ///
+    /// 映射缺失时保留空的后端位置，并记录结构化事件；绝不把源码偏移伪装
+    /// 成物理 pc。每次故障离开一层调用帧时才会再次调用本方法，因此同一帧
+    /// 的连续清理不会悄悄丢掉调用方信息。
+    fn annotate_fault(&mut self, fault: Fault, block: BlockId, instruction: usize) -> Fault {
+        let Some(frame) = self.frames.last() else {
+            return fault;
+        };
+        let function = frame.function;
+        let function_name = frame.name.clone();
+        let pc = self
+            .pc_map
+            .as_ref()
+            .and_then(|map| map.pc_at(function, block, instruction));
+        if pc.is_none() {
+            self.sink.record(VmEvent::BackendLocationMissing {
+                function: function_name.clone(),
+                block: block.get(),
+                instruction,
+            });
+        }
+        let backend = pc.map_or_else(BackendLocation::empty, |pc| {
+            BackendLocation::empty().with_bytecode_offset(pc as u64)
+        });
+        let span = pc
+            .and_then(|pc| {
+                self.pc_map
+                    .as_ref()
+                    .and_then(|map| map.span_at_pc(function, pc))
+            })
+            .or_else(|| {
+                if function == FuncId::new(0) {
+                    self.metadata.entry_span
+                } else {
+                    self.active_program
+                        .as_deref()
+                        .unwrap_or(self.program)
+                        .functions
+                        .get(function.get() as usize)
+                        .map(|item| item.span)
+                }
+            })
+            .and_then(|span| SourceSpan::new(span.start, span.end));
+        let stack_frame = StackFrame::user(self.metadata.module_name.clone(), function_name)
+            .with_source(self.metadata.source_name.clone(), span)
+            .with_backend(backend);
+        match fault {
+            Fault::Error(mut error) => {
+                // Runtime数值内核不认识源码；首次离开指令时补齐位置，重抛保留原位置。
+                if let Some(span) = span.filter(|_| error.location().is_none()) {
+                    error = error.with_location(span);
+                }
+                Fault::Error(error.with_stack_frame(stack_frame))
+            }
+            Fault::ConcurrencyCancelled(error) => {
+                Fault::ConcurrencyCancelled(error.with_stack_frame(stack_frame))
+            }
+            Fault::Fatal(fatal) => Fault::Fatal(fatal.with_stack_frame(stack_frame)),
+            Fault::Cancelled => Fault::Cancelled,
+        }
+    }
+
+    /// 执行一个函数的基本块序列。
+    fn run_blocks(&mut self, function: &TacFunction) -> Result<Option<RuntimeValue>, Fault> {
+        let mut block = function.entry;
+        let mut pending_fault: Option<PendingFault> = None;
+        loop {
+            let Some(current) = function.blocks.get(block.get() as usize) else {
+                return Ok(None);
+            };
+            let mut flow = Flow::Next;
+            for (instruction_index, instruction) in current.instructions.iter().enumerate() {
+                self.metrics.instructions = self.metrics.instructions.saturating_add(1);
+                self.count_instruction();
+                let step = self
+                    .concurrent_checkpoint()
+                    .and_then(|()| self.step(function, instruction));
+                flow = match self.finish_table_effects(step) {
+                    Ok(flow) => flow,
+                    Err(fault) => {
+                        let fault = self.annotate_fault(fault, block, instruction_index);
+                        let pending = pending_fault.take();
+                        let exit = pending
+                            .as_ref()
+                            .map(|item| item.exit.as_str())
+                            .unwrap_or_else(|| exit_for_instruction(&instruction.op));
+                        let origin = pending.as_ref().map_or(block, |item| item.origin);
+                        let route = if matches!(&fault, Fault::ConcurrencyCancelled(_)) {
+                            self.route_concurrency_cancellation(function, origin, fault)
+                        } else {
+                            self.route_fault(function, origin, exit, fault)
+                        };
+                        match route {
+                            Ok(RouteDecision::Jump(handler)) => Flow::Jump(handler),
+                            Ok(RouteDecision::Flow(flow)) => flow,
+                            Err(fault) => return Err(fault),
+                        }
+                    }
+                };
+                self.cancellation_checkpoint()?;
+                if !matches!(flow, Flow::Next) {
+                    break;
+                }
+            }
+            match flow {
+                Flow::Jump(next) => {
+                    self.note_map_point(MapPoint::JumpTarget);
+                    self.prune_handler_contexts(function, next);
+                    self.prune_scopes_for_target(function, next);
+                    block = next;
+                }
+                Flow::JumpWithFault { target, kind } => {
+                    pending_fault = Some(PendingFault {
+                        exit: "dynamic_check_failure".to_owned(),
+                        origin: block,
+                    });
+                    if let Some(frame) = self.frames.last_mut() {
+                        frame.pending_check_kind = Some(kind);
+                    }
+                    self.note_map_point(MapPoint::JumpTarget);
+                    self.prune_handler_contexts(function, target);
+                    block = target;
+                }
+                Flow::Return(register) => {
+                    self.note_map_point(MapPoint::FrameEnd);
+                    return match register {
+                        Some(register) => self.read(register).map(Some),
+                        None => Ok(None),
+                    };
+                }
+                Flow::RetFromSub => {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "finally 子程序在调用帧外返回",
+                    )));
+                }
+                Flow::Next => return Ok(None),
+            }
+        }
+    }
+
+    /// 执行一条指令。
+    fn step(&mut self, function: &TacFunction, instruction: &TacInstr) -> Result<Flow, Fault> {
+        match &instruction.op {
+            TacOp::LoadConst(id) => {
+                let Some(constant) = self
+                    .active_program
+                    .as_deref()
+                    .unwrap_or(self.program)
+                    .constants
+                    .get(*id)
+                else {
+                    return Err(Fault::Error(XiaoError::invalid_value("常量索引不存在")));
+                };
+                let value = constant_value(constant)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::LoadNone => self.write_operand(instruction.dst, RuntimeValue::None),
+            TacOp::PackageRoot(root) => {
+                self.write_operand(
+                    instruction.dst,
+                    RuntimeValue::Module(format!("package:{root}")),
+                );
+            }
+            TacOp::ImportModule {
+                module,
+                binding_module,
+            } => {
+                let identity = self.import_identity(module);
+                if identity != "std.concurrent" && identity != "stdlib.concurrent" {
+                    self.initialize_module(&identity)?;
+                }
+                self.write_operand(
+                    instruction.dst,
+                    RuntimeValue::Module(self.import_identity(binding_module)),
+                );
+            }
+            TacOp::ExportValue { name, value } => {
+                let exported = self.read(*value)?;
+                let Some(exports) = self.current_exports.as_mut() else {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "导出指令只允许在文件模块内",
+                    )));
+                };
+                exports.insert(name.clone(), exported);
+            }
+            TacOp::LoadFunc(id) => self.write_operand(
+                instruction.dst,
+                RuntimeValue::ModuleFunction(self.current_module.clone(), id.get()),
+            ),
+            TacOp::Box(_) | TacOp::Unbox(_) => {
+                return Err(Fault::Error(XiaoError::invalid_value(
+                    "该指令形态尚未在解释器中实现",
+                )));
+            }
+            TacOp::Move(source) => {
+                let value = self.take(*source)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::Copy(source) => {
+                // 只读读取会克隆堆句柄（多持一次引用），源寄存器保持有效。
+                let value = self.read(*source)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::Cast { value, target } => {
+                let value = self
+                    .read(*value)?
+                    .convert_to(*target)
+                    .map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::Arith { op, left, right } => {
+                let left = self.read(*left)?;
+                let right = self.read(*right)?;
+                let value = ops::apply_arith(*op, &left, &right).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::Negate(value) => {
+                let value = self.read(*value)?;
+                let value = ops::apply_negate(&value).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::Compare { op, left, right } => {
+                let left = self.read(*left)?;
+                let right = self.read(*right)?;
+                let value = ops::apply_compare(*op, &left, &right).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::SetOp { op, left, right } => {
+                let left = self.read(*left)?;
+                let right = self.read(*right)?;
+                let value = ops::apply_set_op(*op, &left, &right).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::SetCompare { op, left, right } => {
+                let left = self.read(*left)?;
+                let right = self.read(*right)?;
+                let value = ops::apply_set_compare(*op, &left, &right).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::NewArray { elements } => {
+                let values = self.collect(elements)?;
+                let value = ops::new_array(values).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::NewTuple { elements } => {
+                let values = self.collect(elements)?;
+                let value = ops::new_tuple(values).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::NewDictTable { entries } => {
+                let values = self.collect_entries(entries)?;
+                let value = ops::new_dict_table(values).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::NewDictColumn { entries } => {
+                let values = self.collect_entries(entries)?;
+                let value = ops::new_dict_column(values).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::NewSet { elements } => {
+                let values = self.collect(elements)?;
+                let value = ops::new_set(values).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::IndexGet { source, path } => {
+                let source = self.read(*source)?;
+                let value = ops::index_get(&source, path).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::Len { source } => {
+                let source = self.read(*source)?;
+                let value = ops::len(&source).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::IterSnapshot { source } => {
+                let source = self.read(*source)?;
+                let value = ops::iter_snapshot(&source).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::IndexGetDynamic { source, index } => {
+                let source = self.read(*source)?;
+                let index = self.read(*index)?;
+                let value = ops::index_get_dynamic(&source, &index).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::IndexSetDynamic {
+                source,
+                index,
+                value,
+            } => {
+                let source = self.read(*source)?;
+                let index = self.read(*index)?;
+                let value = self.read(*value)?;
+                ops::index_set_dynamic(&source, &index, &value).map_err(Fault::Error)?;
+            }
+            TacOp::DictRemoveDynamic { source, index } => {
+                let source = self.read(*source)?;
+                let index = self.read(*index)?;
+                ops::dict_remove_dynamic(&source, &index).map_err(Fault::Error)?;
+            }
+            TacOp::DictKeys { source } | TacOp::DictValues { source } => {
+                let source = self.read(*source)?;
+                let value = if matches!(instruction.op, TacOp::DictKeys { .. }) {
+                    ops::dict_keys(&source)
+                } else {
+                    ops::dict_values(&source)
+                }
+                .map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::SelectorApply {
+                source,
+                plan,
+                step,
+                random_counts,
+            } => {
+                let source = self.read(*source)?;
+                let plan = self
+                    .program
+                    .selection_plans
+                    .get(*plan as usize)
+                    .cloned()
+                    .ok_or_else(|| Fault::Error(XiaoError::invalid_value("选择计划索引不存在")))?;
+                let step = step.map(|register| self.read(register)).transpose()?;
+                let counts = random_counts
+                    .iter()
+                    .map(|register| register.map(|value| self.read(value)).transpose())
+                    .collect::<Result<Vec<_>, Fault>>()?;
+                let value = ops::selector_apply(
+                    &source,
+                    &plan,
+                    step.as_ref(),
+                    &counts,
+                    &mut *self.session.tables.random.borrow_mut(),
+                )
+                .map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::BroadcastAssign { root, value, plan } => {
+                let root = self.read(*root)?;
+                let value = self.read(*value)?;
+                let plan = self
+                    .program
+                    .broadcast_assignment_plans
+                    .get(*plan as usize)
+                    .cloned()
+                    .ok_or_else(|| Fault::Error(XiaoError::invalid_value("广播计划索引不存在")))?;
+                ops::broadcast_assign(&root, &value, &plan).map_err(Fault::Error)?;
+            }
+            TacOp::RandomSeed { value, plan } => {
+                let value = self.read(*value)?;
+                let seed = match value {
+                    RuntimeValue::Int(value) if value >= 0 => value as u128,
+                    RuntimeValue::Sint(value) if value >= 0 => value as u128,
+                    RuntimeValue::Lint(value) => value.parse::<u128>().map_err(|_| {
+                        Fault::Error(xiao_runtime::RuntimeError::random_seed("种子无效"))
+                    })?,
+                    _ => {
+                        return Err(Fault::Error(xiao_runtime::RuntimeError::random_seed(
+                            "种子必须是非负整数",
+                        )));
+                    }
+                };
+                if *plan as usize
+                    >= self
+                        .active_program
+                        .as_deref()
+                        .unwrap_or(self.program)
+                        .random_seed_plans
+                        .len()
+                {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "随机种子计划索引不存在",
+                    )));
+                }
+                self.session.tables.random.borrow_mut().reseed(seed);
+            }
+            TacOp::Jump(target) => return Ok(Flow::Jump(*target)),
+            TacOp::BranchIf {
+                condition,
+                if_true,
+                if_false,
+            } => {
+                let value = self.read(*condition)?;
+                let Some(flag) = value.as_bool() else {
+                    return Err(Fault::Error(XiaoError::type_mismatch(
+                        "bool",
+                        value.type_name(),
+                    )));
+                };
+                return Ok(Flow::Jump(if flag { *if_true } else { *if_false }));
+            }
+            TacOp::Call {
+                callee,
+                signature,
+                arguments,
+            } => {
+                let bound = self.bind(arguments)?;
+                let intrinsic_id = self
+                    .active_program
+                    .as_deref()
+                    .unwrap_or(self.program)
+                    .signatures
+                    .get(*signature)
+                    .and_then(xiao_bytecode::CallSig::intrinsic_id)
+                    .and_then(IntrinsicId::new);
+                let value = if let Some(intrinsic_id) = intrinsic_id {
+                    if *callee != FuncId::new(0) {
+                        return Err(Fault::Error(XiaoError::invalid_value(
+                            "intrinsic Call 必须使用保留入口函数编号 0",
+                        )));
+                    }
+                    self.execute_intrinsic(intrinsic_id, &bound, instruction.span)?
+                } else {
+                    self.note_map_point(MapPoint::CallSite);
+                    if let Some(frame) = self.frames.last_mut() {
+                        frame.carrier.begin_call();
+                    }
+                    let value = self.execute(*callee, &bound, instruction.dst);
+                    if let Some(frame) = self.frames.last_mut() {
+                        frame.carrier.end_call();
+                    }
+                    value?
+                };
+                if let Some(register) = instruction.dst {
+                    self.write(register, value.unwrap_or(RuntimeValue::None));
+                }
+            }
+            TacOp::CallConcurrency { plan, arguments } => {
+                let plan = self
+                    .active_program
+                    .as_deref()
+                    .unwrap_or(self.program)
+                    .concurrency_plans
+                    .get(plan.saturating_sub(1) as usize)
+                    .cloned()
+                    .ok_or_else(|| Fault::Fatal(FatalError::corrupt_artifact("并发计划不存在")))?;
+                let bound = self.bind(arguments)?;
+                self.note_map_point(MapPoint::CallSite);
+                let runtime = self.concurrency.runtime();
+                let value = runtime
+                    .in_context(|| self.execute_concurrency(&plan, &bound))
+                    .map_err(concurrent::runtime_fault)??;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::CallDynamic { callee, arguments } => {
+                let RuntimeValue::ModuleFunction(module, index) = self.read(*callee)? else {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "调用目标不是可执行的模块函数",
+                    )));
+                };
+                let bound = self.bind(arguments)?;
+                self.note_map_point(MapPoint::CallSite);
+                if let Some(frame) = self.frames.last_mut() {
+                    frame.carrier.begin_call();
+                }
+                let result = if module.is_empty() || module == self.current_module {
+                    self.execute(FuncId::new(index), &bound, instruction.dst)
+                } else {
+                    let (program, source_name) = self
+                        .session
+                        .initialized_modules
+                        .get(&module)
+                        .map(|instance| {
+                            (Rc::clone(&instance.program), instance.source_name.clone())
+                        })
+                        .ok_or_else(|| self.module_fault(&module, "函数所属模块尚未初始化"))?;
+                    self.with_module_program(&module, &source_name, program, |vm| {
+                        vm.execute(FuncId::new(index), &bound, instruction.dst)
+                    })
+                };
+                if let Some(frame) = self.frames.last_mut() {
+                    frame.carrier.end_call();
+                }
+                let value = result?;
+                if let Some(register) = instruction.dst {
+                    self.write(register, value.unwrap_or(RuntimeValue::None));
+                }
+            }
+            TacOp::LoadTable {
+                table,
+                construct,
+                arguments,
+            } => {
+                let arguments = self.bind(arguments)?;
+                let value = self.load_table(*table, *construct, &arguments)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::MemberGet { object, member } => {
+                let value = match self.read(*object)? {
+                    RuntimeValue::Module(identity) => self.module_member(&identity, member)?,
+                    other => tables::member_get(&other, member)?,
+                };
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::MemberSet {
+                object,
+                member,
+                value,
+            } => {
+                tables::member_set(&self.read(*object)?, member, self.read(*value)?)?;
+            }
+            TacOp::Return { value } => return Ok(Flow::Return(*value)),
+            TacOp::Raise { value } => {
+                let value = self.read(*value)?;
+                let RuntimeValue::Error(error) = value else {
+                    return Err(Fault::Error(XiaoError::type_mismatch(
+                        "error",
+                        value.type_name(),
+                    )));
+                };
+                return Err(Fault::Error(*error));
+            }
+            TacOp::MakeError {
+                type_name,
+                code,
+                message,
+            } => {
+                let pending_check = self
+                    .frames
+                    .last_mut()
+                    .and_then(|frame| frame.pending_check_kind.take());
+                let code = code
+                    .map(|register| self.read(register))
+                    .transpose()?
+                    .as_ref()
+                    .map(runtime_text)
+                    .transpose()?;
+                let message = message
+                    .map(|register| self.read(register))
+                    .transpose()?
+                    .as_ref()
+                    .map(runtime_text)
+                    .transpose()?;
+                let default_code = pending_check
+                    .as_deref()
+                    .and_then(runtime_check_code)
+                    .or(code.as_deref());
+                let mut error =
+                    XiaoError::from_type_name(type_name, default_code, message.as_deref())
+                        .ok_or_else(|| {
+                            Fault::Error(XiaoError::invalid_value(format!(
+                                "未知或不可恢复的错误类型 {type_name}"
+                            )))
+                        })?;
+                if let Some(location) =
+                    SourceSpan::new(instruction.span.start, instruction.span.end)
+                {
+                    error = error.with_location(location);
+                }
+                self.write_operand(instruction.dst, RuntimeValue::error(error));
+            }
+            TacOp::CallSub { sub } => {
+                let finally_handler = function
+                    .handlers
+                    .iter()
+                    .find(|handler| handler.handler == *sub && handler.exit == "finally");
+                let already_completed = finally_handler.is_some_and(|handler| {
+                    self.frames.last().is_some_and(|frame| {
+                        frame.completed_finally.contains(&(handler.scope, *sub))
+                    })
+                });
+                if already_completed {
+                    // 异常路径进入 catch 前已经执行过本层 finally；catch 体的
+                    // return/break/continue 仍会经过这里，但不得重复清理。
+                    return Ok(Flow::Next);
+                }
+                if let Some(handler) = finally_handler {
+                    // 正常路径调用 finally 也属于一次处理器进入；异常路径
+                    // 由 `route_fault` 记录同一事件，保持观测口径一致。
+                    self.sink.record(VmEvent::HandlerEntered {
+                        scope: handler.scope,
+                        handler: handler.handler.get(),
+                    });
+                }
+                let pending_exit = self
+                    .frames
+                    .last()
+                    .and_then(|frame| frame.pending_exits.last())
+                    .cloned()
+                    .unwrap_or_else(|| "normal".to_owned());
+                let sub_flow = self.run_subroutine(function, *sub, &pending_exit)?;
+                if let Some(frame) = self.frames.last_mut() {
+                    if let Some(handler) = finally_handler {
+                        let marker = (handler.scope, *sub);
+                        if !frame.completed_finally.contains(&marker) {
+                            frame.completed_finally.push(marker);
+                        }
+                    }
+                }
+                if !matches!(sub_flow, Flow::Next) {
+                    return Ok(sub_flow);
+                }
+            }
+            TacOp::RetFromSub => {
+                return Ok(Flow::RetFromSub);
+            }
+            TacOp::Check {
+                kind,
+                value,
+                on_failure,
+                expected,
+            } => {
+                let value = self.read(*value)?;
+                if !check_value(kind, &value, expected.as_ref()) {
+                    return Ok(Flow::JumpWithFault {
+                        target: *on_failure,
+                        kind: kind.clone(),
+                    });
+                }
+            }
+            TacOp::Release { value, .. } => {
+                // 临时值可能已被 `Move` 搬进绑定，此时寄存器是空的；空释放是
+                // 空操作，既不算一次释放也不报错。
+                if self.take_if_present(*value).is_some() {
+                    self.metrics.releases = self.metrics.releases.saturating_add(1);
+                }
+            }
+            TacOp::Transfer { .. } => {}
+            TacOp::RunReleasePlan { scope, exit } => {
+                self.run_plan(function, *scope, exit);
+            }
+            TacOp::EnterScope(scope) => {
+                if let Some(frame) = self.frames.last_mut() {
+                    // 同一作用域重新进入（例如循环中的 try）开启新的 finally
+                    // 动态轮次，旧轮次的记账不能影响本次执行。
+                    frame.completed_finally.retain(|(owner, _)| owner != scope);
+                    if !frame.scopes.contains(scope) {
+                        frame.scopes.push(*scope);
+                    }
+                }
+                self.sink.record(VmEvent::ScopeEntered { scope: *scope });
+            }
+            TacOp::ExitScope { scope, exit } => {
+                if let Some(frame) = self.frames.last_mut()
+                    && let Some(index) = frame.scopes.iter().rposition(|item| item == scope)
+                {
+                    frame.scopes.truncate(index);
+                    // `catch` 与其所属 `try` 是兄弟作用域。入口块的首条
+                    // `EnterScope` 指令携带 catch 作用域编号，正常离开时据此
+                    // 清掉动态上下文；catch 体抛错时不会走到这里。
+                    frame.active_catches.retain(|(_, catch_block)| {
+                        function.block(*catch_block).and_then(|block| {
+                            block.instructions.iter().find_map(|instruction| {
+                                if let TacOp::EnterScope(scope) = instruction.op {
+                                    Some(scope)
+                                } else {
+                                    None
+                                }
+                            })
+                        }) != Some(*scope)
+                    });
+                }
+                self.sink.record(VmEvent::ScopeExited {
+                    scope: *scope,
+                    exit: exit.clone(),
+                });
+            }
+        }
+        Ok(Flow::Next)
+    }
+    /// 在当前帧执行一个 `finally` 子程序，直到 `RetFromSub`。
+    ///
+    /// 子程序中的非局部退出会覆盖挂起类别并交回调用点；普通 `RetFromSub`
+    /// 返回 `Flow::Next`，由调用点继续原来的路径。由降低器生成的跨作用域
+    /// 跳转目标总是位于子程序入口之前，入口之后的目标属于子程序本身（包括
+    /// finally 内部声明的循环和嵌套处理器）。
+    fn run_subroutine(
+        &mut self,
+        function: &TacFunction,
+        sub: BlockId,
+        pending_exit: &str,
+    ) -> Result<Flow, Fault> {
+        if let Some(frame) = self.frames.last_mut() {
+            frame.pending_exits.push(pending_exit.to_owned());
+            frame.active_subroutines.push(sub);
+        }
+        let result = (|| {
+            let mut block = sub;
+            let mut pending_fault: Option<PendingFault> = None;
+            loop {
+                let Some(current) = function.blocks.get(block.get() as usize) else {
+                    return Ok(Flow::Next);
+                };
+                let mut flow = Flow::Next;
+                for (instruction_index, instruction) in current.instructions.iter().enumerate() {
+                    self.metrics.instructions = self.metrics.instructions.saturating_add(1);
+                    self.count_instruction();
+                    let step = self.step(function, instruction);
+                    flow = match self.finish_table_effects(step) {
+                        Ok(flow) => flow,
+                        Err(fault) => {
+                            let fault = self.annotate_fault(fault, block, instruction_index);
+                            let pending = pending_fault.take();
+                            let exit = pending
+                                .as_ref()
+                                .map(|item| item.exit.as_str())
+                                .unwrap_or_else(|| exit_for_instruction(&instruction.op));
+                            let origin = pending.as_ref().map_or(block, |item| item.origin);
+                            // 子程序只负责处理自己内部（在入口块之后建立）的
+                            // 嵌套 try；外层处理器必须等回到 CallSub 的调用点
+                            // 再路由，否则会跳出子程序却仍继续执行子块。
+                            match self.route_fault_scoped(function, origin, exit, fault, Some(sub))
+                            {
+                                Ok(RouteDecision::Jump(handler)) => Flow::Jump(handler),
+                                Ok(RouteDecision::Flow(flow)) => flow,
+                                Err(fault) => return Err(fault),
+                            }
+                        }
+                    };
+                    self.cancellation_checkpoint()?;
+                    if !matches!(flow, Flow::Next) {
+                        break;
+                    }
+                }
+                match flow {
+                    Flow::Jump(next) => {
+                        if next < sub {
+                            return Ok(Flow::Jump(next));
+                        }
+                        // 只登记留在子程序内部的转移；`next < sub` 的那一支会
+                        // 返回给外层 `run_blocks`，由它的 `Flow::Jump` 分支统一
+                        // 计数，这里再记一次就是重复计数。
+                        self.note_map_point(MapPoint::JumpTarget);
+                        self.prune_handler_contexts(function, next);
+                        self.prune_scopes_for_target(function, next);
+                        block = next;
+                    }
+                    Flow::JumpWithFault { target, kind } => {
+                        if target < sub {
+                            return Ok(Flow::JumpWithFault { target, kind });
+                        }
+                        pending_fault = Some(PendingFault {
+                            exit: "dynamic_check_failure".to_owned(),
+                            origin: block,
+                        });
+                        if let Some(frame) = self.frames.last_mut() {
+                            frame.pending_check_kind = Some(kind);
+                        }
+                        self.note_map_point(MapPoint::JumpTarget);
+                        self.prune_handler_contexts(function, target);
+                        block = target;
+                    }
+                    Flow::RetFromSub => return Ok(Flow::Next),
+                    Flow::Return(register) => return Ok(Flow::Return(register)),
+                    Flow::Next => return Ok(Flow::Next),
+                }
+            }
+        })();
+        if let Some(frame) = self.frames.last_mut() {
+            if result.is_err() {
+                frame.subroutine_faults.push(sub);
+            }
+            if let Ok(flow) = &result {
+                if let Some(pending) = frame.pending_exits.last_mut() {
+                    *pending = exit_name_for_flow(flow, pending);
+                }
+            }
+            let _ = frame.pending_exits.pop();
+            let _ = frame.active_subroutines.pop();
+        }
+        result
+    }
+    /// 在当前帧查找处理器、执行清理并决定继续跳转或向外传播。
+    ///
+    /// 块号区间只负责确认一个入口属于该处理器；真正的嵌套判定依赖当前帧
+    /// 的作用域栈和 catch 上下文。这样即使多个嵌套处理器共享一个起点，
+    /// 也不会把前置代码或已经离开的作用域误当成受保护体。
+    fn route_fault(
+        &mut self,
+        function: &TacFunction,
+        current_block: BlockId,
+        fault_exit: &str,
+        fault: Fault,
+    ) -> Result<RouteDecision, Fault> {
+        self.route_fault_scoped(function, current_block, fault_exit, fault, None)
+    }
+
+    /// 并发取消不进入用户 catch，但仍执行 finally/释放并保留清理错误。
+    fn route_concurrency_cancellation(
+        &mut self,
+        function: &TacFunction,
+        current_block: BlockId,
+        fault: Fault,
+    ) -> Result<RouteDecision, Fault> {
+        let Fault::ConcurrencyCancelled(mut primary) = fault else {
+            return Err(fault);
+        };
+        let scopes = self
+            .frames
+            .last()
+            .map(|frame| frame.scopes.clone())
+            .unwrap_or_default();
+        let active_catches = self
+            .frames
+            .last()
+            .map(|frame| frame.active_catches.clone())
+            .unwrap_or_default();
+        let mut finalies = function
+            .handlers
+            .iter()
+            .filter(|handler| {
+                handler.exit == "finally"
+                    && scopes.contains(&handler.scope)
+                    && !active_catches
+                        .iter()
+                        .any(|(scope, _)| *scope == handler.scope)
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        finalies.sort_by_key(|handler| {
+            (
+                std::cmp::Reverse(
+                    scopes
+                        .iter()
+                        .position(|scope| *scope == handler.scope)
+                        .unwrap_or(0),
+                ),
+                handler.handler,
+            )
+        });
+        finalies.dedup_by_key(|handler| handler.handler);
+        for handler in finalies {
+            if let Some(frame) = self.frames.last_mut() {
+                let marker = (handler.scope, handler.handler);
+                if frame.completed_finally.contains(&marker) {
+                    continue;
+                }
+                frame.completed_finally.push(marker);
+            }
+            self.sink.record(VmEvent::HandlerEntered {
+                scope: handler.scope,
+                handler: handler.handler.get(),
+            });
+            match self.run_subroutine(function, handler.handler, "cancelled") {
+                Ok(_) => {}
+                Err(Fault::Error(error)) | Err(Fault::ConcurrencyCancelled(error)) => {
+                    primary.push_suppressed(error)
+                }
+                Err(Fault::Fatal(fatal)) => return Err(Fault::Fatal(fatal)),
+                Err(Fault::Cancelled) => {}
+            }
+        }
+        for scope in scopes.iter().rev().copied() {
+            self.run_plan(function, scope, "unmatched_error");
+        }
+        if let Some(frame) = self.frames.last_mut() {
+            frame.scopes.clear();
+            frame.active_catches.clear();
+            frame.completed_finally.clear();
+            frame.pending_check_kind = None;
+        }
+        let _ = current_block;
+        Err(Fault::ConcurrencyCancelled(primary))
+    }
+    /// 在指定的子程序边界内路由故障。
+    ///
+    /// `floor` 用来限制子程序内部只能跳入同一子程序之后建立的嵌套处理器；
+    /// 外层处理器要等 `CallSub` 返回错误后在调用点处理。否则清理代码会跳到
+    /// 外层 `catch`，随后又从错误的子程序上下文继续执行。
+    fn route_fault_scoped(
+        &mut self,
+        function: &TacFunction,
+        current_block: BlockId,
+        fault_exit: &str,
+        fault: Fault,
+        floor: Option<BlockId>,
+    ) -> Result<RouteDecision, Fault> {
+        let Fault::Error(mut error) = fault else {
+            // Fatal 是刻意的不对称通道：不查表、不清理、不进入普通 catch。
+            return Err(fault);
+        };
+        let (
+            origin_block,
+            active_scopes,
+            active_catches,
+            active_subroutines,
+            mut completed,
+            failed_subroutines,
+        ) = {
+            let Some(frame) = self.frames.last_mut() else {
+                return Err(Fault::Error(error));
+            };
+            (
+                current_block,
+                frame.scopes.clone(),
+                frame.active_catches.clone(),
+                frame.active_subroutines.clone(),
+                frame.completed_finally.clone(),
+                std::mem::take(&mut frame.subroutine_faults),
+            )
+        };
+        let failed_scopes = failed_subroutines
+            .iter()
+            .filter_map(|sub| {
+                function
+                    .handlers
+                    .iter()
+                    .find(|handler| handler.handler == *sub && handler.exit == "finally")
+                    .map(|handler| handler.scope)
+            })
+            .collect::<Vec<_>>();
+        for sub in failed_subroutines {
+            // 失败的 finally 已经离开 active_subroutines，仍要把它标成完成，
+            // 防止同一个故障在调用点再次触发它。
+            for handler in function
+                .handlers
+                .iter()
+                .filter(|handler| handler.handler == sub && handler.exit == "finally")
+            {
+                completed.push((handler.scope, sub));
+            }
+        }
+        let contains = |handler: &TacHandler| {
+            origin_block >= handler.protected.0
+                && origin_block < handler.protected.1
+                && floor.is_none_or(|minimum| handler.protected.0 > minimum)
+        };
+        let scope_active = |scope: u32| active_scopes.contains(&scope);
+        let catch_context_active =
+            |scope: u32| active_catches.iter().any(|(owner, _)| *owner == scope);
+        let scope_rank = |scope: u32| {
+            active_scopes
+                .iter()
+                .position(|item| *item == scope)
+                .unwrap_or(0)
+        };
+        let driver = RuntimeDriver::new();
+        let mut catches = function
+            .handlers
+            .iter()
+            .enumerate()
+            .filter(|(_, handler)| {
+                contains(handler)
+                    && handler.catch_type.is_some()
+                    && (scope_active(handler.scope) || catch_context_active(handler.scope))
+                    && !active_subroutines.contains(&handler.handler)
+                    && !failed_scopes.contains(&handler.scope)
+            })
+            .filter_map(|(index, handler)| {
+                let name = handler.catch_type.as_deref()?;
+                let route = driver.dispatch_catch(error.clone(), &[name]);
+                matches!(route, CatchRoute::Matched { .. }).then_some((index, handler.clone()))
+            })
+            .collect::<Vec<_>>();
+        catches.sort_by_key(|(index, handler)| {
+            (
+                std::cmp::Reverse(scope_rank(handler.scope)),
+                handler
+                    .protected
+                    .1
+                    .get()
+                    .saturating_sub(handler.protected.0.get()),
+                *index,
+            )
+        });
+        let selected = catches.into_iter().next();
+        let selected_depth = selected
+            .as_ref()
+            .map(|(_, handler)| scope_rank(handler.scope));
+        let mut finalies = function
+            .handlers
+            .iter()
+            .filter(|handler| {
+                if handler.exit != "finally"
+                    || !contains(handler)
+                    || active_subroutines.contains(&handler.handler)
+                    || completed.contains(&(handler.scope, handler.handler))
+                {
+                    return false;
+                }
+                let active = scope_active(handler.scope) || catch_context_active(handler.scope);
+                if !active {
+                    return false;
+                }
+                selected_depth.is_none_or(|depth| scope_rank(handler.scope) >= depth)
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        finalies.sort_by_key(|handler| {
+            (
+                std::cmp::Reverse(scope_rank(handler.scope)),
+                handler.handler,
+            )
+        });
+        finalies.dedup_by_key(|handler| handler.handler);
+        // finally -> drop；清理错误只进入 suppressed，Fatal 则立即胜出。
+        let mut override_flow: Option<Flow> = None;
+        let mut pending_exit_name = fault_exit.to_owned();
+        for handler in &finalies {
+            if let Some(frame) = self.frames.last_mut() {
+                let marker = (handler.scope, handler.handler);
+                if !frame.completed_finally.contains(&marker) {
+                    frame.completed_finally.push(marker);
+                }
+            }
+            self.sink.record(VmEvent::HandlerEntered {
+                scope: handler.scope,
+                handler: handler.handler.get(),
+            });
+            match self.run_subroutine(function, handler.handler, &pending_exit_name) {
+                Ok(flow) => {
+                    if !matches!(flow, Flow::Next) {
+                        pending_exit_name = exit_name_for_flow(&flow, &pending_exit_name);
+                        override_flow = Some(flow);
+                    }
+                }
+                Err(Fault::Error(cleanup)) => error.push_suppressed(cleanup),
+                Err(Fault::ConcurrencyCancelled(cleanup)) => error.push_suppressed(cleanup),
+                Err(Fault::Fatal(fatal)) => return Err(Fault::Fatal(fatal)),
+                Err(Fault::Cancelled) => return Err(Fault::Cancelled),
+            }
+        }
+        if let Some(flow) = override_flow {
+            return Ok(RouteDecision::Flow(flow));
+        }
+        if let Some((_, handler)) = selected {
+            // 处理器命中时，清理从当前最内层作用域一直到该 try 作用域，
+            // 每层都使用冻结的 Catch 退出计划。
+            let scopes = self.scopes_until(handler.scope, true);
+            for scope in scopes {
+                self.run_plan(function, scope, "catch");
+                if let Err(fault) = self.finish_table_effects::<()>(Err(Fault::Error(error))) {
+                    match fault {
+                        Fault::Error(updated) => error = updated,
+                        fatal => return Err(fatal),
+                    }
+                } else {
+                    unreachable!("主错误不会被清理吞掉");
+                }
+            }
+            self.truncate_scope(handler.scope);
+            if let Some(binding) = handler.binding {
+                self.write(binding, RuntimeValue::error(error.clone()));
+            }
+            if let Some(frame) = self.frames.last_mut() {
+                frame.active_catches.push((handler.scope, handler.handler));
+            }
+            self.sink.record(VmEvent::HandlerMatched {
+                scope: handler.scope,
+                handler: handler.handler.get(),
+                catch_type: handler.catch_type.clone(),
+            });
+            return Ok(RouteDecision::Jump(handler.handler));
+        }
+        if floor.is_some() {
+            // 子程序内没有可匹配的嵌套处理器时，只把故障交回
+            // `CallSub` 调用点。此时不能清理整帧，否则会提前抹掉外层
+            // `catch` 的作用域；调用点的路由器会统一执行完整展开。
+            return Err(Fault::Error(error));
+        }
+        // 没有匹配处理器时，当前帧所有仍在栈上的作用域都按
+        // `UnmatchedError` 展开。检查失败保留其专用退出边，便于审计。
+        let cleanup_exit = if fault_exit == "dynamic_check_failure" {
+            fault_exit
+        } else {
+            "unmatched_error"
+        };
+        let scopes = self
+            .frames
+            .last()
+            .map(|frame| {
+                let mut seen = std::collections::HashSet::new();
+                frame
+                    .scopes
+                    .iter()
+                    .rev()
+                    .copied()
+                    .filter(|scope| seen.insert(*scope))
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default();
+        for scope in scopes {
+            self.run_plan(function, scope, cleanup_exit);
+            if let Err(fault) = self.finish_table_effects::<()>(Err(Fault::Error(error))) {
+                match fault {
+                    Fault::Error(updated) => error = updated,
+                    fatal => return Err(fatal),
+                }
+            } else {
+                unreachable!("主错误不会被清理吞掉");
+            }
+            self.sink.record(VmEvent::HandlerUnmatched { scope });
+        }
+        if let Some(frame) = self.frames.last_mut() {
+            frame.scopes.clear();
+            frame.active_catches.clear();
+            frame.completed_finally.clear();
+        }
+        Err(Fault::Error(error))
+    }
+    /// 从当前作用域栈移除指定作用域及其内层作用域。
+    fn truncate_scope(&mut self, scope: u32) {
+        if let Some(frame) = self.frames.last_mut()
+            && let Some(index) = frame.scopes.iter().rposition(|item| *item == scope)
+        {
+            frame.scopes.truncate(index);
+        }
+    }
+    /// 返回当前帧从最内层到指定作用域的展开序列。
+    fn scopes_until(&self, target: u32, include_target: bool) -> Vec<u32> {
+        let mut scopes = Vec::new();
+        if let Some(frame) = self.frames.last() {
+            for scope in frame.scopes.iter().rev().copied() {
+                scopes.push(scope);
+                if scope == target {
+                    break;
+                }
+            }
+        }
+        if include_target && !scopes.contains(&target) {
+            scopes.push(target);
+        }
+        scopes
+    }
+    /// 离开 catch 体后清除动态处理器上下文。
+    fn prune_handler_contexts(&mut self, function: &TacFunction, target: BlockId) {
+        let Some(frame) = self.frames.last() else {
+            return;
+        };
+        let active = frame.active_catches.clone();
+        let kept = active
+            .iter()
+            .filter(|(_, catch_block)| {
+                // 跳入 catch 的第一块尚未执行 EnterScope，需保留上下文；
+                // 后续块在 catch 作用域仍活动时也会保留。正常退出先执行
+                // ExitScope，再跳到父作用域桥块，因而会在此处清掉。
+                *catch_block == target
+                    || function
+                        .block(*catch_block)
+                        .and_then(|block| {
+                            block.instructions.iter().find_map(|instruction| {
+                                if let TacOp::EnterScope(scope) = instruction.op {
+                                    Some(scope)
+                                } else {
+                                    None
+                                }
+                            })
+                        })
+                        .is_some_and(|scope| frame.scopes.contains(&scope))
+            })
+            .copied()
+            .collect::<Vec<_>>();
+        if let Some(frame) = self.frames.last_mut() {
+            frame.active_catches = kept;
+            frame.completed_finally.retain(|(owner, sub)| {
+                function.handlers.iter().any(|handler| {
+                    handler.scope == *owner
+                        && handler.handler == *sub
+                        && handler.exit == "finally"
+                        && target < handler.protected.1
+                })
+            });
+        }
+    }
+    /// 根据跳转目标的静态作用域收缩运行时作用域栈。
+    ///
+    /// `break`/`continue` 和 `finally` 内覆盖性的控制退出没有机会经过普通
+    /// `ExitScope` 指令；若保留旧作用域，后续错误会再次看到已经离开的处理器。
+    /// 普通结构化跳转也可以安全调用此方法：目标块若尚未进入（例如 catch
+    /// 入口），目标作用域不在栈中，函数不会做任何收缩。
+    fn prune_scopes_for_target(&mut self, function: &TacFunction, target: BlockId) {
+        let Some(target_scope) = function.block(target).map(|block| block.scope) else {
+            return;
+        };
+        let Some(frame) = self.frames.last_mut() else {
+            return;
+        };
+        if let Some(index) = frame
+            .scopes
+            .iter()
+            .rposition(|scope| *scope == target_scope)
+        {
+            frame.scopes.truncate(index + 1);
+        }
+    }
+    /// 执行一个冻结释放计划，按 `order` 逐条释放。
+    fn run_plan(&mut self, function: &TacFunction, scope: u32, exit: &str) {
+        let active_program = self.active_program.clone();
+        let program = active_program.as_deref().unwrap_or(self.program);
+        let Some(plan) = program
+            .plans
+            .iter()
+            .find(|plan| plan.scope == scope && plan.exit == exit)
+        else {
+            return;
+        };
+        let actions = plan.actions.clone();
+        for action in &actions {
+            let Some(register) = function.value_registers.get(&action.value).copied() else {
+                continue;
+            };
+            // 只在实际持有值时才算一次释放：计划里的某些值（例如函数名绑定）
+            // 在本帧从未被物化，把空槽位记成释放会虚报释放次数。
+            let Some(released) = self.take_if_present(register) else {
+                continue;
+            };
+            self.metrics.releases = self.metrics.releases.saturating_add(1);
+            self.sink.record(VmEvent::ValueReleased {
+                scope,
+                exit: exit.to_owned(),
+                value: action.value,
+                kind: action.kind.as_name().to_owned(),
+            });
+            drop(released);
+            self.sync_table_events();
+            if self.session.tables.fatal.get() {
+                break;
+            }
+        }
+    }
+    /// 展开一个已经离开本帧路由器的故障。
+    ///
+    /// `run_blocks` 会先尝试当前帧的处理器；只有未匹配的错误或致命故障才会
+    /// 到这里。这里**只处理最内层帧**，不能把调用方的作用域一起清掉，否则
+    /// 外层 `catch` 永远没有机会接住从被调函数传播出来的错误。普通错误仍按
+    /// `UnmatchedError` 计划逐层释放；取消先执行 `finally`，再复用同一释放计划；
+    /// `Fatal` 则完全跳过释放计划。
+    fn unwind(&mut self, fault: &Fault) {
+        let Some(frame) = self.frames.last() else {
+            return;
+        };
+        let scopes = frame.scopes.clone();
+        let function = self
+            .program
+            .functions
+            .get(frame.function.get() as usize)
+            .cloned();
+        if let Some(function) = function.as_ref() {
+            if matches!(fault, Fault::Cancelled | Fault::ConcurrencyCancelled(_)) {
+                self.run_cancelled_finalies(function);
+            }
+            if matches!(
+                fault,
+                Fault::Error(_) | Fault::Cancelled | Fault::ConcurrencyCancelled(_)
+            ) {
+                for scope in scopes.iter().rev().copied() {
+                    self.run_plan(function, scope, "unmatched_error");
+                }
+            }
+        }
+        if let Some(frame) = self.frames.last_mut() {
+            frame.scopes.clear();
+            frame.active_catches.clear();
+            frame.completed_finally.clear();
+            frame.pending_check_kind = None;
+        }
+    }
+    /// 取消时执行当前帧仍活动的 `finally`，但不查找用户 `catch`。
+    fn run_cancelled_finalies(&mut self, function: &TacFunction) {
+        let Some(frame) = self.frames.last() else {
+            return;
+        };
+        let active_scopes = frame.scopes.clone();
+        let active_catches = frame.active_catches.clone();
+        let active_subroutines = frame.active_subroutines.clone();
+        let failed_subroutines = frame.subroutine_faults.clone();
+        let mut completed = frame.completed_finally.clone();
+        let scope_active = |scope: u32| active_scopes.contains(&scope);
+        let catch_context_active =
+            |scope: u32| active_catches.iter().any(|(owner, _)| *owner == scope);
+        let scope_rank = |scope: u32| {
+            active_scopes
+                .iter()
+                .position(|item| *item == scope)
+                .unwrap_or(0)
+        };
+        let mut finalies = function
+            .handlers
+            .iter()
+            .filter(|handler| {
+                handler.exit == "finally"
+                    && (scope_active(handler.scope) || catch_context_active(handler.scope))
+                    && !active_subroutines.contains(&handler.handler)
+                    && !failed_subroutines.contains(&handler.handler)
+                    && !completed.contains(&(handler.scope, handler.handler))
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        finalies.sort_by_key(|handler| {
+            (
+                std::cmp::Reverse(scope_rank(handler.scope)),
+                handler.handler,
+            )
+        });
+        finalies.dedup_by_key(|handler| handler.handler);
+        for handler in finalies {
+            let marker = (handler.scope, handler.handler);
+            completed.push(marker);
+            if let Some(frame) = self.frames.last_mut()
+                && !frame.completed_finally.contains(&marker)
+            {
+                frame.completed_finally.push(marker);
+            }
+            self.sink.record(VmEvent::HandlerEntered {
+                scope: handler.scope,
+                handler: handler.handler.get(),
+            });
+            match self.run_subroutine(function, handler.handler, "cancelled") {
+                Ok(_)
+                | Err(Fault::Error(_))
+                | Err(Fault::ConcurrencyCancelled(_))
+                | Err(Fault::Fatal(_))
+                | Err(Fault::Cancelled) => {}
+            }
+        }
+    }
+    /// 读取一组容器元素寄存器。
+    fn collect(&mut self, registers: &[VReg]) -> Result<Vec<RuntimeValue>, Fault> {
+        let mut values = Vec::with_capacity(registers.len());
+        for register in registers {
+            values.push(self.read(*register)?);
+        }
+        Ok(values)
+    }
+    /// 读取一组字典条目寄存器。
+    fn collect_entries(
+        &mut self,
+        entries: &[(String, VReg)],
+    ) -> Result<Vec<(String, RuntimeValue)>, Fault> {
+        let mut values = Vec::with_capacity(entries.len());
+        for (key, register) in entries {
+            values.push((key.clone(), self.read(*register)?));
+        }
+        Ok(values)
+    }
+
+    /// 求值一组实参。
+    fn bind(&mut self, arguments: &[TacArgument]) -> Result<Vec<BoundArgument>, Fault> {
+        let mut bound = Vec::with_capacity(arguments.len());
+        for argument in arguments {
+            bound.push(BoundArgument {
+                keyword: argument.name.clone(),
+                value: self.read(argument.value)?,
+            });
+        }
+        Ok(bound)
+    }
+
+    /// 按稳定 ID 校验声明并执行绑定的宿主能力。
+    fn execute_intrinsic(
+        &mut self,
+        id: IntrinsicId,
+        arguments: &[BoundArgument],
+        span: xiao_ir::IrSpan,
+    ) -> Result<Option<RuntimeValue>, Fault> {
+        let declaration = active_by_id(id).ok_or_else(|| {
+            Fault::Error(XiaoError::invalid_value(format!("未知 intrinsic ID {id}")))
+        })?;
+        if let Some(bit) = declaration.capability.bit()
+            && self.capabilities & bit == 0
+        {
+            return Err(Fault::Error(XiaoError::capability_unavailable(
+                declaration.capability.as_str(),
+            )));
+        }
+        if declaration.kind == xiao_intrinsics::IntrinsicKind::Cmath {
+            return numeric_intrinsics::cmath(declaration, arguments, span);
+        }
+        match declaration.vm_binding {
+            VmBinding::ScalarCast => {
+                if declaration.signature.arity != xiao_intrinsics::Arity::One
+                    || arguments.len() != 1
+                    || arguments[0].keyword.is_some()
+                {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "标量转换 intrinsic 必须接收一个位置参数",
+                    )));
+                }
+                let target = scalar_type_for_value_type(declaration.signature.return_type)
+                    .ok_or_else(|| {
+                        Fault::Error(XiaoError::invalid_value(
+                            "标量转换 intrinsic 的返回类型不是标量",
+                        ))
+                    })?;
+                let value = arguments[0]
+                    .value
+                    .convert_to(target)
+                    .map_err(Fault::Error)?;
+                Ok(Some(value))
+            }
+            VmBinding::CharConstructor => {
+                if declaration.signature.arity != xiao_intrinsics::Arity::One
+                    || declaration.signature.parameter != xiao_intrinsics::ValueType::Dynamic
+                    || declaration.signature.return_type != xiao_intrinsics::ValueType::Str
+                    || arguments.len() != 1
+                    || arguments[0].keyword.is_some()
+                {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "chr intrinsic 必须接收一个位置参数",
+                    )));
+                }
+                Ok(Some(arguments[0].value.to_char().map_err(Fault::Error)?))
+            }
+            VmBinding::LfloatDivide => numeric_intrinsics::divide(
+                arguments,
+                SourceSpan::new(span.start, span.end).expect("已验证源码区间"),
+            ),
+            VmBinding::ErrorCode => {
+                if declaration.signature.arity != xiao_intrinsics::Arity::One
+                    || declaration.signature.parameter != xiao_intrinsics::ValueType::Error
+                    || declaration.signature.return_type != xiao_intrinsics::ValueType::Str
+                    || arguments.len() != 1
+                    || arguments[0].keyword.is_some()
+                {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "error_code intrinsic 必须接收一个位置错误参数",
+                    )));
+                }
+                let value = match &arguments[0].value {
+                    RuntimeValue::Error(error) => RuntimeValue::new_string(error.code()),
+                    other => Err(XiaoError::type_mismatch("error", other.type_name())),
+                }
+                .map_err(|error| attach_fault_span(Fault::Error(error), span.start, span.end))?;
+                Ok(Some(value))
+            }
+            VmBinding::SetNew => {
+                if declaration.signature.arity != xiao_intrinsics::Arity::Zero
+                    || !arguments.is_empty()
+                {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "set intrinsic 不接受参数",
+                    )));
+                }
+                Ok(Some(ops::new_set(Vec::new()).map_err(Fault::Error)?))
+            }
+            VmBinding::SetAdd | VmBinding::SetRemove => {
+                set_intrinsics::execute(declaration, arguments)
+            }
+            VmBinding::ArrayPush => array_intrinsics::execute(declaration, arguments),
+            VmBinding::MakeError => {
+                if arguments.iter().any(|argument| {
+                    argument
+                        .keyword
+                        .as_deref()
+                        .is_some_and(|name| name != "code" && name != "message")
+                }) {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "错误构造只接受 code/message 参数",
+                    )));
+                }
+                if declaration.public_name == "FatalError" {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "FatalError 不能构造为可恢复错误",
+                    )));
+                }
+                let pending_check = self
+                    .frames
+                    .last_mut()
+                    .and_then(|frame| frame.pending_check_kind.take());
+                let mut code = None;
+                let mut message = None;
+                for (index, argument) in arguments.iter().enumerate() {
+                    let text = runtime_text(&argument.value)
+                        .map_err(|fault| attach_fault_span(fault, span.start, span.end))?;
+                    match argument.keyword.as_deref() {
+                        Some("code") if code.is_none() => code = Some(text),
+                        Some("message") if message.is_none() => message = Some(text),
+                        None if index == 0 && code.is_none() => code = Some(text),
+                        None if index == 1 && message.is_none() => message = Some(text),
+                        _ => {
+                            return Err(Fault::Error(XiaoError::invalid_value(
+                                "错误构造参数重复或位置无效",
+                            )));
+                        }
+                    }
+                }
+                let default_code = pending_check
+                    .as_deref()
+                    .and_then(runtime_check_code)
+                    .or(code.as_deref());
+                let mut error = XiaoError::from_type_name(
+                    declaration.public_name,
+                    default_code,
+                    message.as_deref(),
+                )
+                .ok_or_else(|| {
+                    Fault::Error(XiaoError::invalid_value(format!(
+                        "未知或不可恢复的错误类型 {}",
+                        declaration.public_name
+                    )))
+                })?;
+                if let Some(location) = SourceSpan::new(span.start, span.end) {
+                    error = error.with_location(location);
+                }
+                Ok(Some(RuntimeValue::error(error)))
+            }
+            VmBinding::Print => {
+                if declaration.abi_binding != AbiBinding::Print
+                    || declaration.capability != xiao_intrinsics::Capability::Stdout
+                    || declaration.effects != xiao_intrinsics::Effects::WritesStdout
+                    || declaration.signature.return_type != xiao_intrinsics::ValueType::None
+                {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "print 契约与 VM/ABI 绑定不一致",
+                    )));
+                }
+                if arguments.iter().any(|argument| argument.keyword.is_some()) {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "print 不接受关键字或展开实参",
+                    )));
+                }
+                let mut text = arguments
+                    .iter()
+                    .map(|argument| intrinsic_value_text(&argument.value))
+                    .collect::<Result<Vec<_>, _>>()?
+                    .join(" ");
+                text.push('\n');
+                self.sink.record(VmEvent::IntrinsicOutput { text });
+                Ok(Some(RuntimeValue::None))
+            }
+            VmBinding::Input => {
+                if declaration.abi_binding != AbiBinding::Input
+                    || declaration.capability != xiao_intrinsics::Capability::Stdin
+                    || declaration.effects != xiao_intrinsics::Effects::ReadsStdin
+                    || declaration.signature.arity != xiao_intrinsics::Arity::OptionalOne
+                    || declaration.signature.return_type != xiao_intrinsics::ValueType::Str
+                {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "input 契约与 VM/ABI 绑定不一致",
+                    )));
+                }
+                if arguments.len() > 1
+                    || arguments.iter().any(|argument| argument.keyword.is_some())
+                {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "input 最多接受一个位置提示参数",
+                    )));
+                }
+                if let Some(prompt) = arguments.first() {
+                    if !matches!(prompt.value, RuntimeValue::Str(_)) {
+                        return Err(Fault::Error(XiaoError::type_mismatch(
+                            "str",
+                            prompt.value.type_name(),
+                        )));
+                    }
+                    let prompt = intrinsic_value_text(&prompt.value)?;
+                    self.sink.record(VmEvent::IntrinsicOutput { text: prompt });
+                }
+                let mut line = String::new();
+                let bytes = std::io::stdin()
+                    .read_line(&mut line)
+                    .map_err(|_| Fault::Error(XiaoError::invalid_value("读取标准输入失败")))?;
+                if bytes == 0 {
+                    return Err(Fault::Error(XiaoError::invalid_value("标准输入已结束")));
+                }
+                while line.ends_with(['\n', '\r']) {
+                    line.pop();
+                }
+                Ok(Some(RuntimeValue::new_string(line).map_err(Fault::Error)?))
+            }
+            VmBinding::ResourceOpenFile => {
+                validate_resource_contract(
+                    declaration,
+                    xiao_intrinsics::ValueType::Str,
+                    xiao_intrinsics::ValueType::File,
+                    xiao_intrinsics::Effects::ReadsFilesystem,
+                )?;
+                let value = resource_argument(arguments)?;
+                Ok(Some(
+                    xiao_runtime::resources::open_file(value, self.capabilities)
+                        .map_err(Fault::Error)?,
+                ))
+            }
+            VmBinding::ResourceOpenDirectory => {
+                validate_resource_contract(
+                    declaration,
+                    xiao_intrinsics::ValueType::Str,
+                    xiao_intrinsics::ValueType::Directory,
+                    xiao_intrinsics::Effects::ReadsFilesystem,
+                )?;
+                let value = resource_argument(arguments)?;
+                Ok(Some(
+                    xiao_runtime::resources::open_directory(value, self.capabilities)
+                        .map_err(Fault::Error)?,
+                ))
+            }
+            VmBinding::ResourceClose => {
+                validate_resource_contract(
+                    declaration,
+                    xiao_intrinsics::ValueType::Resource,
+                    xiao_intrinsics::ValueType::None,
+                    xiao_intrinsics::Effects::WritesFilesystem,
+                )?;
+                let value = resource_argument(arguments)?;
+                xiao_runtime::resources::close(value, self.capabilities).map_err(Fault::Error)?;
+                Ok(Some(RuntimeValue::None))
+            }
+            VmBinding::ResourceReadText => {
+                validate_resource_contract(
+                    declaration,
+                    xiao_intrinsics::ValueType::File,
+                    xiao_intrinsics::ValueType::Str,
+                    xiao_intrinsics::Effects::ReadsFilesystem,
+                )?;
+                let value = resource_argument(arguments)?;
+                Ok(Some(
+                    xiao_runtime::resources::read_text(value, self.capabilities)
+                        .map_err(Fault::Error)?,
+                ))
+            }
+            VmBinding::ProcessSpawn | VmBinding::ProcessWait | VmBinding::ProcessClose => {
+                let (parameter, result, effect) = match declaration.vm_binding {
+                    VmBinding::ProcessSpawn => (
+                        xiao_intrinsics::ValueType::Str,
+                        xiao_intrinsics::ValueType::Process,
+                        xiao_intrinsics::Effects::SpawnsProcess,
+                    ),
+                    VmBinding::ProcessWait => (
+                        xiao_intrinsics::ValueType::Process,
+                        xiao_intrinsics::ValueType::Int,
+                        xiao_intrinsics::Effects::WaitsProcess,
+                    ),
+                    VmBinding::ProcessClose => (
+                        xiao_intrinsics::ValueType::Process,
+                        xiao_intrinsics::ValueType::None,
+                        xiao_intrinsics::Effects::ReleasesProcess,
+                    ),
+                    _ => unreachable!(),
+                };
+                validate_resource_contract(declaration, parameter, result, effect)?;
+                let value = resource_argument(arguments)?;
+                let value = match declaration.vm_binding {
+                    VmBinding::ProcessSpawn => {
+                        xiao_runtime::resources::spawn(value, self.capabilities)
+                    }
+                    VmBinding::ProcessWait => {
+                        xiao_runtime::resources::wait(value, self.capabilities)
+                    }
+                    VmBinding::ProcessClose => {
+                        xiao_runtime::resources::close_process(value, self.capabilities)
+                            .map(|()| RuntimeValue::None)
+                    }
+                    _ => unreachable!(),
+                }
+                .map_err(Fault::Error)?;
+                Ok(Some(value))
+            }
+            _ => Err(Fault::Error(XiaoError::invalid_value(format!(
+                "intrinsic ID {id} 尚未绑定 VM 实现"
+            )))),
+        }
+    }
+
+    /// 读取当前帧的一个寄存器。
+    fn read(&self, register: VReg) -> Result<RuntimeValue, Fault> {
+        let Some(frame) = self.frames.last() else {
+            return Err(Fault::Error(XiaoError::invalid_value("没有活动调用帧")));
+        };
+        frame.carrier.read(register).map_err(Fault::Error)
+    }
+
+    /// 取出当前帧的一个寄存器。
+    fn take(&mut self, register: VReg) -> Result<RuntimeValue, Fault> {
+        let Some(frame) = self.frames.last_mut() else {
+            return Err(Fault::Error(XiaoError::invalid_value("没有活动调用帧")));
+        };
+        frame
+            .carrier
+            .take(register)
+            .ok_or_else(|| Fault::Error(XiaoError::invalid_handle("寄存器为空")))
+    }
+
+    /// 取出当前帧的一个寄存器；为空时返回 `None` 而不报错。
+    fn take_if_present(&mut self, register: VReg) -> Option<RuntimeValue> {
+        self.frames.last_mut()?.carrier.take(register)
+    }
+
+    /// 写入当前帧的一个寄存器。
+    fn write(&mut self, register: VReg, value: RuntimeValue) {
+        if let Some(frame) = self.frames.last_mut() {
+            frame.carrier.write(register, value);
+        }
+    }
+
+    /// 写入指令结果寄存器；无结果寄存器的指令被忽略。
+    fn write_operand(&mut self, dst: Option<VReg>, value: RuntimeValue) {
+        if let Some(register) = dst {
+            self.write(register, value);
+        }
+    }
+}
+
+/// 将 intrinsic 输出值格式化为稳定文本，并把 Runtime 错误转成 VM 故障。
+fn intrinsic_value_text(value: &RuntimeValue) -> Result<String, Fault> {
+    value.display_text().map_err(Fault::Error)
+}
+
+/// 校验资源 intrinsic 的静态契约，避免 VM 绑定与生成表漂移。
+fn validate_resource_contract(
+    declaration: &xiao_intrinsics::IntrinsicDecl,
+    parameter: xiao_intrinsics::ValueType,
+    return_type: xiao_intrinsics::ValueType,
+    effects: xiao_intrinsics::Effects,
+) -> Result<(), Fault> {
+    if declaration.abi_binding == xiao_intrinsics::AbiBinding::None
+        || declaration.capability
+            != match declaration.vm_binding {
+                xiao_intrinsics::VmBinding::ProcessSpawn
+                | xiao_intrinsics::VmBinding::ProcessWait
+                | xiao_intrinsics::VmBinding::ProcessClose => xiao_intrinsics::Capability::Process,
+                _ => xiao_intrinsics::Capability::Filesystem,
+            }
+        || declaration.signature.arity != xiao_intrinsics::Arity::One
+        || declaration.signature.parameter != parameter
+        || declaration.signature.return_type != return_type
+        || declaration.effects != effects
+    {
+        return Err(Fault::Error(XiaoError::invalid_value(
+            "资源 intrinsic 契约与 VM/ABI 绑定不一致",
+        )));
+    }
+    Ok(())
+}
+
+/// 保留资源入口的一元位置参数形状；类型与宿主访问交给共用 Runtime。
+fn resource_argument(arguments: &[BoundArgument]) -> Result<&RuntimeValue, Fault> {
+    match arguments {
+        [argument] if argument.keyword.is_none() => Ok(&argument.value),
+        _ => Err(Fault::Error(XiaoError::invalid_value(
+            "资源入口必须接收一个位置参数",
+        ))),
+    }
+}
+
+/// 将契约签名的标量结果类别映射为 Runtime 转换目标。
+fn scalar_type_for_value_type(value_type: xiao_intrinsics::ValueType) -> Option<ScalarType> {
+    Some(match value_type {
+        xiao_intrinsics::ValueType::Int => ScalarType::Int,
+        xiao_intrinsics::ValueType::Sint => ScalarType::Sint,
+        xiao_intrinsics::ValueType::Float => ScalarType::Float,
+        xiao_intrinsics::ValueType::Sfloat => ScalarType::Sfloat,
+        xiao_intrinsics::ValueType::Bool => ScalarType::Bool,
+        xiao_intrinsics::ValueType::Str => ScalarType::Str,
+        xiao_intrinsics::ValueType::Lint => ScalarType::Lint,
+        xiao_intrinsics::ValueType::Lfloat => ScalarType::Lfloat,
+        _ => return None,
+    })
+}
+
+/// 从指令形态映射到冻结的退出边名称。
+fn exit_for_instruction(op: &TacOp) -> &'static str {
+    match op {
+        TacOp::Raise { .. } => "raise",
+        TacOp::MakeError { .. }
+        | TacOp::LoadTable {
+            construct: true, ..
+        } => "construct_failure",
+        _ => "error",
+    }
+}
+
+/// 把子程序返回的控制流更新为新的挂起退出类别。
+///
+/// 普通 `Jump` 既可能是子程序内部的结构化跳转，也可能是 `break`/
+/// `continue` 的跨作用域跳转；调用方已经用目标块判定边界，因此这里保留
+/// 原类别。`return` 与动态检查失败则有稳定的一对一类别。
+fn exit_name_for_flow(flow: &Flow, fallback: &str) -> String {
+    match flow {
+        Flow::Return(_) => "return".to_owned(),
+        Flow::JumpWithFault { .. } => "dynamic_check_failure".to_owned(),
+        _ => fallback.to_owned(),
+    }
+}
+
+/// 返回运行时检查失败对应的稳定错误码。
+fn runtime_check_code(kind: &str) -> Option<&'static str> {
+    match kind {
+        "boolean_condition"
+        | "dynamic_conversion"
+        | "string_boolean"
+        | "resource_type"
+        | "resource_array"
+        | "resource_dictionary" => Some(TYPE_MISMATCH_CODE),
+        "arithmetic" | "numeric_range" => Some(NUMERIC_OVERFLOW_CODE),
+        "selector_bounds" => Some(SELECTOR_BOUNDS_CODE),
+        "selector_step" => Some(SELECTOR_STEP_CODE),
+        "random_count" => Some(RANDOM_COUNT_CODE),
+        "random_seed" => Some(RANDOM_SEED_CODE),
+        "set_operation" => Some(SET_OPERATION_CODE),
+        "set_comparison" => Some(SET_COMPARISON_CODE),
+        "set_hashability" => Some(CONTAINER_HASHABILITY_CODE),
+        "set_membership" => Some(SET_MEMBERSHIP_CODE),
+        "iterable" => Some(ITERABLE_CODE),
+        _ => None,
+    }
+}
+
+/// 从检查/错误构造参数读取稳定文本。
+fn runtime_text(value: &RuntimeValue) -> Result<String, Fault> {
+    match value {
+        RuntimeValue::Str(handle) => handle.to_string().map_err(Fault::Error),
+        RuntimeValue::Lint(text) | RuntimeValue::Lfloat(text) => Ok(text.clone()),
+        _ => Err(Fault::Error(XiaoError::type_mismatch(
+            "str",
+            value.type_name(),
+        ))),
+    }
+}
+
+/// 为错误构造参数的运行期类型错误补上构造表达式位置。
+fn attach_fault_span(fault: Fault, start: usize, end: usize) -> Fault {
+    let Some(location) = SourceSpan::new(start, end) else {
+        return fault;
+    };
+    match fault {
+        Fault::Error(error) => Fault::Error(error.with_location(location)),
+        other => other,
+    }
+}
+
+/// 消费前端检查计划，资源种类校验与原生 ABI 复用 Runtime 判断。
+fn check_value(kind: &str, value: &RuntimeValue, expected: Option<&xiao_ir::IrType>) -> bool {
+    match kind {
+        "resource_type" | "resource_array" | "resource_dictionary" => {
+            let Some(xiao_ir::IrType::Resource { kind: expected }) = expected else {
+                return false;
+            };
+            xiao_runtime::resources::resource_type_matches(value, kind, expected)
+        }
+        "boolean_condition" => value.as_bool().is_some(),
+        "dynamic_conversion" => matches!(value, RuntimeValue::Error(_)),
+        // RuntimeValue::convert_to 是字符串布尔规则的唯一来源；这里仅把
+        // 成功/失败映射成检查分支，避免在 VM 复制四个冻结拼写。
+        "string_boolean" => {
+            matches!(value, RuntimeValue::Str(_)) && value.convert_to(ScalarType::Bool).is_ok()
+        }
+        "numeric_range" => match value {
+            RuntimeValue::Int(_) | RuntimeValue::Sint(_) => true,
+            RuntimeValue::Float(value) => value.is_finite(),
+            RuntimeValue::Sfloat(value) => value.is_finite(),
+            RuntimeValue::Lint(value) => xiao_types::numeric_text::validate_numeric_text(
+                value,
+                xiao_types::numeric_text::NumericTextKind::Integer,
+            )
+            .is_ok(),
+            RuntimeValue::Lfloat(value) => xiao_types::numeric_text::validate_numeric_text(
+                value,
+                xiao_types::numeric_text::NumericTextKind::Decimal,
+            )
+            .is_ok(),
+            _ => false,
+        },
+        // 与既有C ABI检查一致：单个值无法决定二元运算是否合法（如str+str）。
+        // 实际操作统一由Runtime核对类型/域并返回原始002/009/013/033/034。
+        "arithmetic" => true,
+        "selector_bounds" => {
+            matches!(
+                value,
+                RuntimeValue::Array(_)
+                    | RuntimeValue::Tuple(_)
+                    | RuntimeValue::DictColumn(_)
+                    | RuntimeValue::Str(_)
+            ) || integer_value(value).is_some_and(|value| value >= 0)
+        }
+        "selector_step" | "random_count" | "random_seed" => {
+            integer_value(value).is_some_and(|value| value >= 0 || kind == "selector_step")
+        }
+        "set_operation" | "set_comparison" => matches!(value, RuntimeValue::Set(_)),
+        "set_hashability" => is_hashable(value),
+        "set_membership" => check_set_membership(value, expected),
+        "iterable" => matches!(
+            value,
+            RuntimeValue::Array(_)
+                | RuntimeValue::Tuple(_)
+                | RuntimeValue::Str(_)
+                | RuntimeValue::Set(_)
+                | RuntimeValue::DictTable(_)
+                | RuntimeValue::DictColumn(_)
+        ),
+        _ => true,
+    }
+}
+
+/// 检查集合成员的可哈希性与声明类型边界。
+fn check_set_membership(value: &RuntimeValue, expected: Option<&xiao_ir::IrType>) -> bool {
+    let Some(expected) = expected else {
+        return match value {
+            RuntimeValue::Set(handle) => handle
+                .with_elements(|elements| elements.iter().all(is_hashable))
+                .unwrap_or(false),
+            other => is_hashable(other),
+        };
+    };
+    let xiao_ir::IrType::Set {
+        members,
+        allows_dynamic,
+        empty,
+        unknown,
+    } = expected
+    else {
+        return is_hashable(value);
+    };
+    let accepts = |member: &RuntimeValue| {
+        is_hashable(member)
+            && (*unknown
+                || *allows_dynamic
+                || (!*empty && members.iter().any(|ty| runtime_matches_type(member, ty))))
+    };
+    match value {
+        RuntimeValue::Set(handle) => handle
+            .with_elements(|elements| elements.iter().all(accepts))
+            .unwrap_or(false),
+        other => accepts(other),
+    }
+}
+
+/// 判断一个 Runtime 值是否满足可哈希的 IR 类型描述。
+fn runtime_matches_type(value: &RuntimeValue, ty: &xiao_ir::IrType) -> bool {
+    match ty {
+        xiao_ir::IrType::Scalar { name } => value.type_name() == *name,
+        xiao_ir::IrType::None => matches!(value, RuntimeValue::None),
+        xiao_ir::IrType::Dynamic | xiao_ir::IrType::Variable { .. } => true,
+        _ => false,
+    }
+}
+
+/// 读取检查操作数中的整数。
+fn integer_value(value: &RuntimeValue) -> Option<i128> {
+    match value {
+        RuntimeValue::Int(value) => Some(i128::from(*value)),
+        RuntimeValue::Sint(value) => Some(i128::from(*value)),
+        RuntimeValue::Lint(value) => value.parse().ok(),
+        _ => None,
+    }
+}
+
+/// 按调用签名把实参绑定到形参寄存器。
+///
+/// 位置实参按声明顺序填充；关键字实参按形参名重排——这正是 R1 冻结的
+/// 「关键字参数由被调用方按名重排」，调用方只写实际提供的槽位。
+fn bind_arguments<C: Carrier>(
+    function: &TacFunction,
+    program: &TacProgram,
+    frame: &mut Frame<C>,
+    arguments: &[BoundArgument],
+) -> Result<(), Fault> {
+    use xiao_bytecode::sig::ParamKind;
+    use xiao_runtime::{ArrayHandle, DictHandle, DictKind};
+
+    let signature = function.signature.and_then(|id| program.signatures.get(id));
+    let mut next_positional = 0_usize;
+    let mut var_args = Vec::new();
+    let mut keyword_args = Vec::new();
+    for argument in arguments {
+        let slot = match &argument.keyword {
+            None => {
+                if signature
+                    .is_some_and(|signature| signature.var_args_slot == Some(next_positional))
+                {
+                    var_args.push(argument.value.clone());
+                    continue;
+                }
+                let slot = next_positional;
+                next_positional = next_positional.saturating_add(1);
+                slot
+            }
+            Some(name) => {
+                let slot = signature.and_then(|signature| {
+                    signature
+                        .parameter_names
+                        .iter()
+                        .enumerate()
+                        .position(|(index, item)| {
+                            item == name
+                                && !matches!(
+                                    signature.parameter_kinds[index],
+                                    ParamKind::VarArgs | ParamKind::VarKeywords
+                                )
+                        })
+                });
+                if slot.is_none()
+                    && signature.is_some_and(|signature| signature.kw_args_slot.is_some())
+                {
+                    keyword_args.push((name.clone(), argument.value.clone()));
+                    continue;
+                }
+                slot.unwrap_or(usize::MAX)
+            }
+        };
+        if let Some(register) = function.parameters.get(slot) {
+            frame.carrier.write(*register, argument.value.clone());
+        }
+    }
+    if let Some(signature) = signature {
+        if let Some(register) = signature
+            .var_args_slot
+            .and_then(|slot| function.parameters.get(slot))
+        {
+            let array = ArrayHandle::new(var_args).map_err(Fault::Error)?;
+            frame.carrier.write(*register, RuntimeValue::Array(array));
+        }
+        if let Some(register) = signature
+            .kw_args_slot
+            .and_then(|slot| function.parameters.get(slot))
+        {
+            let dictionary =
+                DictHandle::new(DictKind::Table, keyword_args).map_err(Fault::Error)?;
+            frame
+                .carrier
+                .write(*register, RuntimeValue::DictTable(dictionary));
+        }
+    }
+    Ok(())
+}

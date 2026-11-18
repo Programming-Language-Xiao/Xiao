@@ -1,0 +1,5 @@
+if not "same" == "same"
+    raise ArithmeticError(code = "FIFTH_STRING_COMPARE")
+if not "banana" > "apple"
+    raise ArithmeticError(code = "FIFTH_STRING_COMPARE")
+print("ok")

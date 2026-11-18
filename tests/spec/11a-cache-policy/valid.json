@@ -1,0 +1,8 @@
+{
+  "config_template": "[project]\nname = \"demo\"\nversion = \"1.0\"\n[sources]\nfirst = { kind = \"path\", location = \"{FIRST}\" }\nsecond = { kind = \"path\", location = \"{SECOND}\" }\n",
+  "package": "demo",
+  "versions": ["1.0", "9.0"],
+  "expected_selected_order": 0,
+  "expected_online_status": "fresh",
+  "expected_offline_status": "cached"
+}

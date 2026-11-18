@@ -1,0 +1,28 @@
+float binary = 0.1
+sfloat small_binary = 0.1
+lfloat exact = lfloat(binary)
+lfloat parsed = lfloat("0.1")
+lfloat precision = lfloat("+1_234.50_0e-2")
+lint wide = lint(lfloat("340282366920938463463374607431768211456"))
+int fixed = 9007199254740993
+lint large = 9007199254740993
+float boundary = 9007199254740992.0
+print(exact)
+print(lfloat(small_binary))
+print(parsed == exact)
+print(parsed < exact)
+print(precision)
+print(str(precision))
+print(lfloat(10))
+print(lfloat(float(10)))
+print(lint(lfloat("-1.9")))
+print(int(lfloat("9223372036854775807.999")))
+print(sint(lfloat("-2147483648.999")))
+print(wide)
+print(str(-0.0))
+print(str(sfloat(-0.0)))
+print(lint("1"))
+print(int("雪"))
+print(fixed == boundary)
+print(large == boundary)
+print(lfloat(large) == large)

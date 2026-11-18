@@ -1,0 +1,501 @@
+//! 19B 兼容矩阵：把现有版本边界集中成可测试、可报告的数据。
+
+use serde::{Deserialize, Serialize};
+use xiao_codegen_llvm::TargetDescription;
+
+/// 矩阵中一个版本轴的稳定名称。
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum CompatibilityAxis {
+    /// `.xiaoc` 文件格式。
+    XiaocFormat,
+    /// 内容寻址索引 Schema。
+    IndexSchema,
+    /// `.xar` 容器格式。
+    XarFormat,
+    /// Runtime ABI 区间。
+    RuntimeAbi,
+    /// 类型化 IR 版本。
+    IrVersion,
+    /// Xiao 语言语义版本。
+    LanguageVersion,
+    /// 优化配置指纹。
+    OptimizationFingerprint,
+    /// 目标平台约束。
+    TargetPlatform,
+    /// `.xiaoc` 并发产物对 Runtime ABI/feature 的预检。
+    ConcurrentXiaoc,
+    /// `.xar` 并发产物对 Runtime ABI/feature 的预检。
+    ConcurrentArchive,
+    /// 原生只读元数据的 Runtime ABI/feature 验收。
+    ConcurrentNative,
+}
+
+impl CompatibilityAxis {
+    /// 返回文档和报告中使用的稳定名称。
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::XiaocFormat => "xiaoc_format",
+            Self::IndexSchema => "index_schema",
+            Self::XarFormat => "xar_format",
+            Self::RuntimeAbi => "runtime_abi",
+            Self::IrVersion => "ir_version",
+            Self::LanguageVersion => "language_version",
+            Self::OptimizationFingerprint => "optimization_fingerprint",
+            Self::TargetPlatform => "target_platform",
+            Self::ConcurrentXiaoc => "concurrent_xiaoc",
+            Self::ConcurrentArchive => "concurrent_xar",
+            Self::ConcurrentNative => "concurrent_native",
+        }
+    }
+}
+
+/// 旧产物面对当前核心时的冻结行为。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum CompatibilityAction {
+    /// 当前核心直接消费产物。
+    Direct,
+    /// 当前核心丢弃旧对象并重新生成。
+    Regenerate,
+    /// 当前核心先执行迁移再消费。
+    Migrate,
+    /// 当前核心拒绝产物，并返回稳定错误码。
+    Reject {
+        /// 稳定拒绝码。
+        code: String,
+    },
+}
+
+/// 该矩阵格子的证据状态。
+///
+/// `Unverified` 只用于当前没有对应产物字段或没有可复用真实解码入口的格子；
+/// 它不把“按现状推断”伪装成编码器/解码器已经证明的行为。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum CompatibilityEvidence {
+    /// 已由真实编码器/解码器或运行前校验路径验证。
+    Verified,
+    /// 当前只有现状记录，尚未有对应的真实产物测试。
+    Unverified,
+}
+
+/// 版本轴在当前发布周期中的生命周期状态。
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum CompatibilityStatus {
+    /// 当前发布仍支持的版本。
+    Current,
+    /// 已标记退役但尚未移除的版本。
+    Deprecated,
+    /// 已从当前核心移除的版本。
+    Removed,
+}
+
+/// 目标平台清单中的验证状态。
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum TargetSupportStatus {
+    /// 当前宿主已完成目标描述和构建入口验证。
+    Supported,
+    /// 目标描述合法，但当前没有该宿主的实跑证据。
+    Unverified,
+    /// 目标描述在工具链前被稳定拒绝。
+    Unsupported,
+}
+
+/// 代码生成的目标平台清单项。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct TargetSupportCell {
+    /// 目标三元组。
+    pub target: String,
+    /// 当前证据状态。
+    pub status: TargetSupportStatus,
+    /// 状态原因或下一步说明。
+    pub reason: String,
+}
+
+/// 生成当前支持表和已知拒绝样本；状态不把跨平台缺失证据伪装成支持。
+#[must_use]
+pub fn target_support_matrix() -> Vec<TargetSupportCell> {
+    let host = TargetDescription::host();
+    let supported_targets = [
+        TargetDescription::windows_x86_64(),
+        TargetDescription::windows_aarch64(),
+        TargetDescription::linux_x86_64(),
+        TargetDescription::linux_aarch64(),
+        TargetDescription::macos_x86_64(),
+        TargetDescription::macos_aarch64(),
+    ];
+    let mut cells = supported_targets
+        .into_iter()
+        .map(|target| TargetSupportCell {
+            status: if target.triple == host.triple {
+                TargetSupportStatus::Supported
+            } else {
+                TargetSupportStatus::Unverified
+            },
+            target: target.triple,
+            reason: "目标描述可构造；跨宿主实跑证据按平台工作流登记".to_owned(),
+        })
+        .collect::<Vec<_>>();
+    for (triple, reason) in [
+        (
+            "riscv64-unknown-linux-gnu",
+            "架构 riscv64 不受支持，构建前拒绝",
+        ),
+        (
+            "x86_64-unknown-freebsd",
+            "目标平台 unknown-freebsd 不受支持，构建前拒绝",
+        ),
+    ] {
+        cells.push(TargetSupportCell {
+            target: triple.to_owned(),
+            status: TargetSupportStatus::Unsupported,
+            reason: reason.to_owned(),
+        });
+    }
+    cells
+}
+
+/// 兼容矩阵中的一格。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct CompatibilityCell {
+    /// 版本轴。
+    pub axis: CompatibilityAxis,
+    /// 产物侧标签。
+    pub artifact: String,
+    /// 当前核心侧标签。
+    pub runtime: String,
+    /// 当前实现的行为。
+    pub action: CompatibilityAction,
+    /// 该格子的证据状态。
+    pub evidence: CompatibilityEvidence,
+    /// 版本轴生命周期状态；当前没有已废弃或已移除格子。
+    pub status: CompatibilityStatus,
+}
+
+/// 当前核心版本清单，供矩阵、发布报告和文档生成复用。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct CompatibilityVersions {
+    /// 语言语义版本。
+    pub language: String,
+    /// IR 版本。
+    pub ir: u32,
+    /// `.xiaoc` 格式主/次版本。
+    pub xiaoc: (u16, u16),
+    /// 内容寻址索引主/次版本。
+    pub index_schema: (u32, u32),
+    /// `.xar` 格式主/次版本。
+    pub xar: (u16, u16),
+    /// Runtime ABI 编码版本。
+    pub runtime_abi: u64,
+    /// 目标平台标签。
+    pub target: String,
+}
+
+/// 重导出标准库元数据层的权威身份，保留驱动器原有公开路径。
+pub use xiao_standard_library::{
+    STDLIB_INTERFACE_VERSION, StandardLibraryIdentity, current_standard_library_identity,
+};
+
+/// 返回由当前 crate 常量生成的版本清单。
+#[must_use]
+pub fn current_compatibility_versions() -> CompatibilityVersions {
+    CompatibilityVersions {
+        language: "0.1.0".to_owned(),
+        ir: xiao_ir::IR_VERSION,
+        xiaoc: (
+            xiao_bytecode::XIAOC_FORMAT_MAJOR,
+            xiao_bytecode::XIAOC_FORMAT_MINOR,
+        ),
+        index_schema: (
+            xiao_artifacts::INDEX_SCHEMA_MAJOR,
+            xiao_artifacts::INDEX_SCHEMA_MINOR,
+        ),
+        xar: (xiao_xar::XAR_FORMAT_MAJOR, xiao_xar::XAR_FORMAT_MINOR),
+        runtime_abi: xiao_runtime_abi::ABI_ENCODED_VERSION,
+        target: "portable".to_owned(),
+    }
+}
+
+/// 生成当前实现的完整兼容矩阵。
+///
+/// 这里只登记已有行为：`.xiaoc`/索引的版本漂移和 ABI/IR/平台不匹配会拒绝，
+/// 支持范围内的次版本直接运行，缓存指纹变化重新生成。当前 `.xar` 没有独立写入
+/// 的容器版本字段，只有索引 Schema/Runtime ABI 会执行版本拒绝；语言版本也沿用
+/// 现有“由请求上下文决定”的无门控行为。迁移窗口尚未冻结，因此不虚构 `Migrate` 格子。
+#[must_use]
+pub fn compatibility_matrix() -> Vec<CompatibilityCell> {
+    let current = current_compatibility_versions();
+    let mut cells = vec![
+        cell(
+            CompatibilityAxis::XiaocFormat,
+            format!("{}.{}", current.xiaoc.0, current.xiaoc.1),
+            format!("{}.{}", current.xiaoc.0, current.xiaoc.1),
+            CompatibilityAction::Direct,
+            CompatibilityEvidence::Verified,
+        ),
+        cell(
+            CompatibilityAxis::XiaocFormat,
+            format!("{}.{}", current.xiaoc.0, current.xiaoc.1 + 1),
+            format!("{}.{}", current.xiaoc.0, current.xiaoc.1),
+            CompatibilityAction::Reject {
+                code: "XIAOC-003".to_owned(),
+            },
+            CompatibilityEvidence::Verified,
+        ),
+        cell(
+            CompatibilityAxis::XiaocFormat,
+            format!("{}.{}", current.xiaoc.0 + 1, current.xiaoc.1),
+            format!("{}.{}", current.xiaoc.0, current.xiaoc.1),
+            CompatibilityAction::Reject {
+                code: "XIAOC-002".to_owned(),
+            },
+            CompatibilityEvidence::Verified,
+        ),
+        cell(
+            CompatibilityAxis::IndexSchema,
+            format!("{}.{}", current.index_schema.0, current.index_schema.1),
+            format!("{}.{}", current.index_schema.0, current.index_schema.1),
+            CompatibilityAction::Direct,
+            CompatibilityEvidence::Verified,
+        ),
+        cell(
+            CompatibilityAxis::IndexSchema,
+            format!("{}.{}", current.index_schema.0, current.index_schema.1 + 1),
+            format!("{}.{}", current.index_schema.0, current.index_schema.1),
+            CompatibilityAction::Reject {
+                code: "X17-XAR-007".to_owned(),
+            },
+            CompatibilityEvidence::Unverified,
+        ),
+        cell(
+            CompatibilityAxis::IndexSchema,
+            format!("{}.{}", current.index_schema.0 + 1, current.index_schema.1),
+            format!("{}.{}", current.index_schema.0, current.index_schema.1),
+            CompatibilityAction::Reject {
+                code: "X17-XAR-007".to_owned(),
+            },
+            CompatibilityEvidence::Verified,
+        ),
+        cell(
+            CompatibilityAxis::XarFormat,
+            "implicit-v1".to_owned(),
+            format!("{}.{}", current.xar.0, current.xar.1),
+            CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
+        ),
+        cell(
+            CompatibilityAxis::XarFormat,
+            "zip64-v1".to_owned(),
+            format!("{}.{}", current.xar.0, current.xar.1),
+            CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
+        ),
+        cell(
+            CompatibilityAxis::RuntimeAbi,
+            current.runtime_abi.to_string(),
+            current.runtime_abi.to_string(),
+            CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
+        ),
+        cell(
+            CompatibilityAxis::RuntimeAbi,
+            "outside-supported-range".to_owned(),
+            current.runtime_abi.to_string(),
+            CompatibilityAction::Reject {
+                code: "X17-XAR-007".to_owned(),
+            },
+            CompatibilityEvidence::Unverified,
+        ),
+        cell(
+            CompatibilityAxis::IrVersion,
+            current.ir.to_string(),
+            current.ir.to_string(),
+            CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
+        ),
+        cell(
+            CompatibilityAxis::IrVersion,
+            (current.ir + 1).to_string(),
+            current.ir.to_string(),
+            CompatibilityAction::Reject {
+                code: "X08-IR-002".to_owned(),
+            },
+            CompatibilityEvidence::Unverified,
+        ),
+        cell(
+            CompatibilityAxis::LanguageVersion,
+            current.language.clone(),
+            current.language.clone(),
+            CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
+        ),
+        cell(
+            CompatibilityAxis::LanguageVersion,
+            "0.2.0".to_owned(),
+            current.language.clone(),
+            CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
+        ),
+        cell(
+            CompatibilityAxis::OptimizationFingerprint,
+            "same".to_owned(),
+            "same".to_owned(),
+            CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
+        ),
+        cell(
+            CompatibilityAxis::OptimizationFingerprint,
+            "different".to_owned(),
+            "current".to_owned(),
+            CompatibilityAction::Regenerate,
+            CompatibilityEvidence::Unverified,
+        ),
+        cell(
+            CompatibilityAxis::TargetPlatform,
+            current.target.clone(),
+            current.target,
+            CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
+        ),
+        cell(
+            CompatibilityAxis::TargetPlatform,
+            "x86_64-unknown-linux-gnu".to_owned(),
+            "x86_64-pc-windows-msvc".to_owned(),
+            CompatibilityAction::Reject {
+                code: "X17-XAR-008".to_owned(),
+            },
+            CompatibilityEvidence::Unverified,
+        ),
+    ];
+    cells.extend(concurrency_compatibility_matrix());
+    cells
+}
+
+/// 三种当前产物 × ABI 1.16/1.17/1.18/当前版本；旧Runtime在用户入口前拒绝。
+#[must_use]
+pub fn concurrency_compatibility_matrix() -> Vec<CompatibilityCell> {
+    let mut cells = Vec::new();
+    for (axis, artifact, code) in [
+        (CompatibilityAxis::ConcurrentXiaoc, ".xiaoc", "XIAOC-005"),
+        (CompatibilityAxis::ConcurrentArchive, ".xar", "X17-XAR-007"),
+        (CompatibilityAxis::ConcurrentNative, "native", "X17-XAR-007"),
+    ] {
+        for (abi, action) in [
+            (
+                "1.16",
+                CompatibilityAction::Reject {
+                    code: code.to_owned(),
+                },
+            ),
+            (
+                "1.17",
+                CompatibilityAction::Reject {
+                    code: code.to_owned(),
+                },
+            ),
+            (
+                "1.18",
+                CompatibilityAction::Reject {
+                    code: code.to_owned(),
+                },
+            ),
+            ("1.19", CompatibilityAction::Direct),
+        ] {
+            cells.push(cell(
+                axis,
+                format!("{artifact}/concurrency/abi=1.19"),
+                abi.to_owned(),
+                action,
+                CompatibilityEvidence::Verified,
+            ));
+        }
+    }
+    cells
+}
+
+/// 创建一格兼容矩阵数据。
+fn cell(
+    axis: CompatibilityAxis,
+    artifact: String,
+    runtime: String,
+    action: CompatibilityAction,
+    evidence: CompatibilityEvidence,
+) -> CompatibilityCell {
+    CompatibilityCell {
+        axis,
+        artifact,
+        runtime,
+        action,
+        evidence,
+        status: CompatibilityStatus::Current,
+    }
+}
+
+#[cfg(test)]
+/// 兼容矩阵自身的逐轴不变量测试。
+mod tests {
+    use super::{
+        CompatibilityAction, CompatibilityAxis, compatibility_matrix,
+        current_compatibility_versions, current_standard_library_identity,
+    };
+
+    #[test]
+    /// 当前版本必须至少有一个直接消费格。
+    fn matrix_is_generated_from_current_versions_and_has_every_axis() {
+        let current = current_compatibility_versions();
+        let cells = compatibility_matrix();
+        assert!(!cells.is_empty());
+        for axis in [
+            CompatibilityAxis::XiaocFormat,
+            CompatibilityAxis::IndexSchema,
+            CompatibilityAxis::XarFormat,
+            CompatibilityAxis::RuntimeAbi,
+            CompatibilityAxis::IrVersion,
+            CompatibilityAxis::LanguageVersion,
+            CompatibilityAxis::OptimizationFingerprint,
+            CompatibilityAxis::TargetPlatform,
+        ] {
+            assert!(cells.iter().any(|cell| cell.axis == axis), "缺少 {axis:?}");
+        }
+        let current_xiaoc = format!("{}.{}", current.xiaoc.0, current.xiaoc.1);
+        assert!(cells.iter().any(|cell| {
+            cell.axis == CompatibilityAxis::XiaocFormat
+                && cell.artifact == current_xiaoc
+                && cell.runtime == current_xiaoc
+                && cell.action == CompatibilityAction::Direct
+        }));
+    }
+
+    #[test]
+    /// 标准库身份使用冻结字段，并从 Runtime ABI 单一来源取主次版本。
+    fn standard_library_identity_is_parallel_to_existing_compatibility_versions() {
+        let identity = current_standard_library_identity();
+        assert_eq!(identity.language_version, "0.1.0");
+        assert_eq!(
+            identity.stdlib_interface_version,
+            super::STDLIB_INTERFACE_VERSION
+        );
+        assert_eq!(
+            identity.runtime_abi_major,
+            xiao_runtime_abi::ABI_MAJOR_VERSION
+        );
+        assert_eq!(
+            identity.runtime_abi_minor,
+            xiao_runtime_abi::ABI_MINOR_VERSION
+        );
+        assert_eq!(identity.target, "portable");
+        assert_eq!(
+            current_compatibility_versions().runtime_abi,
+            xiao_runtime_abi::ABI_ENCODED_VERSION
+        );
+    }
+
+    #[test]
+    /// 未冻结迁移窗口不能被矩阵误报为已支持。
+    fn matrix_contains_no_unfrozen_migration_claim() {
+        assert!(
+            compatibility_matrix()
+                .iter()
+                .all(|cell| !matches!(cell.action, CompatibilityAction::Migrate))
+        );
+    }
+}

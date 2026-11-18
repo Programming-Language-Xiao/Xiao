@@ -1,0 +1,26 @@
+[package]
+name = "xiao-artifacts"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Xiao content-addressed artifacts and indexes"
+
+[lints]
+workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+xiao-bytecode = { path = "../xiao-bytecode" }
+xiao-lock = { path = "../xiao-lock" }
+xiao-intrinsics = { path = "../xiao-intrinsics" }
+xiao-runtime-abi = { path = "../xiao-runtime-abi" }
+sha2 = "0.10"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0", features = ["float_roundtrip"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_Storage_FileSystem"] }

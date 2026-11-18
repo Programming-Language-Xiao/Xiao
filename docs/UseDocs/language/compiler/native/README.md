@@ -1,0 +1,76 @@
+---
+id: language.compiler.native
+title: 前端到 LLVM 原生内部驱动器
+status: verified
+audience: contributor
+module: rust.xiao-codegen-llvm
+stage: "10B/10C/10I"
+version: "0.1.0"
+related:
+  - ../README.md
+  - ../frontend/README.md
+  - ../driver/README.md
+  - ../../../../DevDocs/10-native-backend.md
+  - ../../../../DevDocs/10a-n0-native-closure.md
+  - ../../../../DevDocs/10b-n0-runtime-abi.md
+---
+
+# 前端到 LLVM 原生内部驱动器
+
+状态：`verified`，对应 N0-A/N0-B/N0-C/N0-D。调用方把真实 Xiao 源码交给统一
+`FrontendCompiler`，再把同一份已验证的 `IrProgram` 交给 `xiao-codegen-llvm`；本页面描述
+Rust 内部接口。用户可见的 `xiao build` 已由 X0-E 接入，用法见
+[原生构建命令](../../../tooling/cli/build.md)。
+
+## 已接入能力
+
+静态路径降低 `int`/`sint`、`float`/`sfloat`、`bool`、函数调用、分支和循环。整数算术使用
+LLVM checked intrinsic，浮点结果检查非有限值；失败边调用 `llvm.trap`，统一 Xiao 错误
+Runtime 留给 N0-C。含字符串、动态值、数组、元组、字典、集合或表的程序切换到 N0-B
+的固定 tagged value ABI；静态标量程序继续保持不链接 Runtime。动态路径支持字符串、数组、
+元组、字典、集合、表字段默认值和字段读写，以及已类型检查的
+布尔 `if`/`elif`/`else` 和无异常转移的 `while`，当前仍明确拒绝函数体、`for`、表方法、
+构造参数、异常、动态派发和 `*args`/`**kwargs`，避免静默丢弃语义，待后续批次接入。若分支或
+循环作用域声明了需要释放的动态局部值，也会在降低前结构化拒绝；当前释放器只消费程序根
+作用域计划，块级释放计划留给后续批次。表方法、构造参数和其他未接入函数表的表体语句
+仍会结构化拒绝。
+
+N0-B 的正常作用域退出、`return` 释放按前端 `IrOwnership.release_plans` 发射。N0-C 进一步
+把 `raise`、`try`/`catch`/`finally`、源码位置和统一错误 ABI 接入动态原生路径；可恢复错误
+保留 `code`、`message_id`、参数、位置与退出码，清理阶段的次生错误进入 `suppressed`。
+Fatal 不进入普通 `catch`，清理阶段的 Fatal 会直接进入终止块，当前不宣称可恢复路径的
+清理记录与字节码完全等价。
+
+## 工具链与指纹
+
+`Toolchain` 的路径由调用方显式注入；N0 不搜索 PATH。`llvm-as`（或 clang 的 IR 编译模式）
+先验证文本，再由 clang 生成并链接目标文件。动态模块还必须由调用方通过
+`Toolchain::with_runtime_library` 注入与目标 triple 匹配的 `xiao-runtime` 静态库，并通过
+`Toolchain::probe_native_static_libraries` 让 Rust 工具链报告该 staticlib 的原生依赖；已经
+由调用方取得的规范化清单也可用 `Toolchain::with_native_static_libraries` 注入。缺少原生库
+清单时后端拒绝动态链接，不会硬编码平台库名。后端不自动发现或下载 Runtime。目标 triple、
+固定宽度描述、后端版本、ABI 编码版本、Rust/LLVM 版本首行和原生库清单进入构建指纹，绝对
+安装路径只保留在调用方日志中。版本登记位置为 `core/rust/llvm-toolchain.toml`。
+
+## ABI 边界
+
+静态标量程序的产物不链接完整 `xiao-vm` 或 `xiao-runtime`。动态能力使用独立
+`xiao-runtime-abi` 的不透明强/弱句柄、固定布局 tagged value、容器入口和表描述符；
+不能把 Rust 内部枚举布局当作语言契约。Runtime ABI 主版本为 1，当前次版本为 8；布局、
+标签或所有权契约改变时必须升主版本。
+
+1.8 的独立表描述符支持零构造实参的字段初始化、init、普通/私有方法和只读 drop 回调。
+方法参数和 receiver 借用，返回值唯一拥有；失败构造保留原因和清理错误，析构视图不能写入或复活。
+构造参数（A2）与方法值/动态函数值（A3）仍结构化拒绝。代码生成版本 4 进入产物和工具链指纹。
+
+动态模块的 `LlvmModule::runtime_components` 根据入口可达块、直接调用和注册回调地址生成，包含必要的传递依赖。N0-D 在链接完成后
+读取最终产物的对象格式、符号和依赖，生成 `NativeArtifact::artifact_runtime`；构建协议会把
+声明组件、观察到的组件、代表符号、未分类 Runtime 符号、外部依赖和调试符号原样提供给诊断
+出口。声明与观察组件不一致时构建失败，因此纯静态标量产物不能携带 Runtime 组件或 Runtime
+动态依赖，动态容器/表程序必须在产物层留下对应事实。未知 Runtime 符号不会被静默丢弃，
+而是进入未分类事实列表。Windows PE/COFF 通过仅导出已声明组件的代表符号提供可观察证据；
+这不是对平台运行期依赖的推理。
+
+N0-D 的三种对象格式（COFF、ELF、Mach-O）使用等价的受控解析路径。未优化基线固定记录为
+`optimization_level = 0`（即 `-O0`）；O1–O3 已开放 clang 安全优化，Xiao LLVM Pass 尚未注册，
+不得把可构建或差分通过宣称为受控性能达标。

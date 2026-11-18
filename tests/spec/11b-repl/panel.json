@@ -1,0 +1,17 @@
+{
+  "stage": "11B-I3",
+  "cases": [
+    {
+      "width": 8,
+      "expected": "─ Comman\r\n> \r\n────────"
+    },
+    {
+      "width": 20,
+      "expected": "─ Command Panel ────\r\n> \r\n────────────────────"
+    },
+    {
+      "width": 40,
+      "expected": "─ Command Panel ────────────────────────\r\n> \r\n────────────────────────────────────────"
+    }
+  ]
+}

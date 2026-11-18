@@ -1,0 +1,4 @@
+def f(*args) -> int
+    return 1
+items = [1]
+value = f(*items)

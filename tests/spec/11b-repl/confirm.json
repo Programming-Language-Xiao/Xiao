@@ -1,0 +1,17 @@
+{
+  "stage": "11B-I1b",
+  "cases": [
+    {
+      "width": 8,
+      "expected": "─ Press \r\n>\r\n────────"
+    },
+    {
+      "width": 20,
+      "expected": "─ Press Enter to con\r\n>\r\n────────────────────"
+    },
+    {
+      "width": 40,
+      "expected": "─ Press Enter to confirm and run ↩︎ ────\r\n>\r\n────────────────────────────────────────"
+    }
+  ]
+}

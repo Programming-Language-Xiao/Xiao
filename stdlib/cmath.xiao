@@ -1,0 +1,46 @@
+# B3-4包装源码（planned）；cmath_原语语言接线留B4。
+
+def sqrt(float value) -> float
+    return cmath_sqrt(value)
+
+def floor(float value) -> float
+    return cmath_floor(value)
+
+def ceil(float value) -> float
+    return cmath_ceil(value)
+
+def round(float value) -> float
+    return cmath_round(value)
+
+def trunc(float value) -> float
+    return cmath_trunc(value)
+
+def abs(float value) -> float
+    return cmath_abs(value)
+
+def min(float left, float right) -> float
+    return cmath_min(left, right)
+
+def max(float left, float right) -> float
+    return cmath_max(left, right)
+
+def pow(float base, float exponent) -> float
+    return cmath_pow(base, exponent)
+
+def sin(float value) -> float
+    return cmath_sin(value)
+
+def cos(float value) -> float
+    return cmath_cos(value)
+
+def tan(float value) -> float
+    return cmath_tan(value)
+
+def exp(float value) -> float
+    return cmath_exp(value)
+
+def ln(float value) -> float
+    return cmath_ln(value)
+
+def log10(float value) -> float
+    return cmath_log10(value)

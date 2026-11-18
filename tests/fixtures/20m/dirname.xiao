@@ -1,0 +1,4 @@
+from stdlib.path import dirname
+
+for path in ["", "name", "/", "/name", "a/", "a/b", "a//b", "//", "a//", ".env", "dir.x/.env", "a.tar.gz", "file.", ".", "..", "a/../b", "C:\\tmp\\file.txt", "目录/小😀.x"]
+    print("[" + dirname(path) + "]")

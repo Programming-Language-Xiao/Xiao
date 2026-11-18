@@ -1,0 +1,42 @@
+from std.math import min as scalar_min, max as scalar_max
+from std.statistics import min as list_min, max as list_max
+
+print(scalar_min(-4, 9))
+print(list_min([7, -2, 5]))
+print(scalar_max(-4, 9))
+print(list_max([7, -2, 5]))
+print(scalar_min(right = 2, left = 7))
+print(list_min(values = [3, 1]))
+print(scalar_max(right = 2, left = 7))
+print(list_max(values = [3, 1]))
+
+def from_scalars() -> int
+    from std.math import min
+    return min(right = 4, left = 8)
+
+def from_list() -> int
+    from std.statistics import min
+    return min(values = [6, 2])
+
+print(from_list())
+print(from_scalars())
+
+from std.hex import encode as hex_encode, decode as hex_decode
+from std.base64 import encode as base64_encode, decode as base64_decode
+print(hex_encode(bytes = [0, 255]))
+print(base64_encode(url_safe = false, bytes = [0, 255]))
+for hex_byte in hex_decode("00ff")
+    print(hex_byte)
+for base64_byte in base64_decode(text = "AP8=", url_safe = false)
+    print(base64_byte)
+
+def local_hex() -> str
+    from std.hex import encode
+    return encode([251, 255])
+
+def local_base64() -> str
+    from std.base64 import encode
+    return encode(url_safe = true, bytes = [251, 255])
+
+print(local_base64())
+print(local_hex())

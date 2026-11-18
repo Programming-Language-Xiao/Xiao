@@ -1,0 +1,12 @@
+# 本机 32 逻辑核、31GB 内存的工作区构建限制。
+#
+# 默认全并行会让 32 个 rustc/link.exe 同时运行，链接带完整调试信息的测试二进制时
+# 内存直接被吃满。并发压到 4 之后单次构建变慢，但机器仍然可用。
+[build]
+jobs = 4
+# 增量缓存曾在 target/debug/incremental 累积到约 99GB；关闭后换取可预测的磁盘占用。
+incremental = false
+
+# libtest 默认按逻辑核数并行；并发测试和进程夹具会把 CPU/内存一起打满。
+[env]
+RUST_TEST_THREADS = "4"

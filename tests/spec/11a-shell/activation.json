@@ -1,0 +1,15 @@
+{
+  "stage": "11A-E4",
+  "status": "verified-static",
+  "cases": [
+    { "name": "absolute", "content": "XIAO_ACTIVE_ENV='{{ABS}}'\nexport XIAO_ACTIVE_ENV\n", "accepted": true },
+    { "name": "no-final-newline", "content": "XIAO_ACTIVE_ENV='{{ABS}}'\nexport XIAO_ACTIVE_ENV", "accepted": true },
+    { "name": "third-line", "content": "XIAO_ACTIVE_ENV='{{ABS}}'\nexport XIAO_ACTIVE_ENV\nmalicious command\n", "accepted": false },
+    { "name": "relative", "content": "XIAO_ACTIVE_ENV='relative/.venv'\nexport XIAO_ACTIVE_ENV\n", "accepted": false },
+    { "name": "wrong-variable", "content": "OTHER_ENV='{{ABS}}'\nexport XIAO_ACTIVE_ENV\n", "accepted": false },
+    { "name": "embedded-newline", "content": "XIAO_ACTIVE_ENV='{{ABS}}\nevil'\nexport XIAO_ACTIVE_ENV\n", "accepted": false },
+    { "name": "quote", "content": "XIAO_ACTIVE_ENV='{{ABS}}'evil'\nexport XIAO_ACTIVE_ENV\n", "accepted": false },
+    { "name": "control-character", "content": "XIAO_ACTIVE_ENV='{{ABS}}\tbad'\nexport XIAO_ACTIVE_ENV\n", "accepted": false },
+    { "name": "extra-empty-line", "content": "XIAO_ACTIVE_ENV='{{ABS}}'\nexport XIAO_ACTIVE_ENV\n\n", "accepted": false }
+  ]
+}

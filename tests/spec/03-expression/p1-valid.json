@@ -1,0 +1,47 @@
+{
+  "stage": "P1",
+  "cases": [
+    {
+      "name": "precedence",
+      "source": "result = -a ** b + c * d and not ready\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "calls-and-cast",
+      "source": "value = factory(a + b,).item as bool\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "mixed-selector",
+      "source": "picked{step}[0, 1~2, <3, >=4, =, ?count, !?again]\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "nested-path",
+      "source": "value[-1/`键`]\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "keyword-comparisons",
+      "source": "ok = left is not none or item not in values\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "new-and-compound-assignment",
+      "source": "client = new Client(host, port,)\nitems[0] **= factor\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "soft-newline",
+      "source": "value = factory(\n    left + right,\n).item\n",
+      "expect": "success",
+      "diagnostics": []
+    }
+  ]
+}

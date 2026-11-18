@@ -1,0 +1,7 @@
+# 只由测试链接 shim 令第一条 getter 返回 InvalidHandle；生产 getter 不提供注入开关。
+original = Error()
+try
+    copied = error_code(original)
+catch invalid as MemoryError
+    print(error_code(invalid))
+print(error_code(original))

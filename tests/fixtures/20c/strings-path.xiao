@@ -1,0 +1,4 @@
+def join_path(str base, str leaf) -> str
+    return base + "/" + leaf
+
+print(join_path("lib", "core"))

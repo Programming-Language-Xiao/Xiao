@@ -1,0 +1,24 @@
+[package]
+name = "xiao-codegen-llvm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Xiao LLVM native code generation"
+
+[lints]
+workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+xiao-diagnostics = { path = "../xiao-diagnostics" }
+xiao-intrinsics = { path = "../xiao-intrinsics" }
+xiao-ir = { path = "../xiao-ir" }
+xiao-optimizer = { path = "../xiao-optimizer" }
+xiao-runtime-abi = { path = "../xiao-runtime-abi" }
+xiao-types = { path = "../xiao-types" }
+xiao-standard-library = { path = "../xiao-standard-library" }
+serde = { version = "1.0", features = ["derive"] }

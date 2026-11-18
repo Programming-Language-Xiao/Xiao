@@ -1,0 +1,55 @@
+{
+  "format_version": 3,
+  "opcode_min": 0,
+  "opcode_max": 40,
+  "warmup_iterations": 3,
+  "measurement_iterations": 11,
+  "max_call_depth": 1024,
+  "benchmarks": [
+    {
+      "id": "deep-expression-arithmetic",
+      "family": "deep-expression-arithmetic",
+      "source": "programs/deep-expression-arithmetic.xiao",
+      "entry": "benchmark",
+      "arguments": [600],
+      "expected_outcome": "success",
+      "expected_value": 94908364299480
+    },
+    {
+      "id": "scalar-overflow-and-bool-parity",
+      "family": "deep-expression-arithmetic",
+      "source": "programs/deep-expression-arithmetic.xiao",
+      "entry": "overflow_parity",
+      "arguments": [4000000000],
+      "expected_outcome": "error",
+      "expected_error_code": "X06-RUNTIME-009"
+    },
+    {
+      "id": "named-local-loop",
+      "family": "named-local-loop",
+      "source": "programs/named-local-loop.xiao",
+      "entry": "benchmark",
+      "arguments": [1200],
+      "expected_outcome": "success",
+      "expected_value": 785400
+    },
+    {
+      "id": "deep-call-recursion",
+      "family": "deep-call-recursion",
+      "source": "programs/deep-call-recursion.xiao",
+      "entry": "benchmark",
+      "arguments": [16],
+      "expected_outcome": "success",
+      "expected_value": 170
+    },
+    {
+      "id": "container-dense",
+      "family": "container-dense",
+      "source": "programs/container-dense.xiao",
+      "entry": "benchmark",
+      "arguments": [80],
+      "expected_outcome": "success",
+      "expected_value": 28760
+    }
+  ]
+}

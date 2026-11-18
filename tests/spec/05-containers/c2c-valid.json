@@ -1,0 +1,26 @@
+{
+  "stage": "03E",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "set-algebra",
+      "source": "left = {1, \"x\"}\nright = {1, true}\nunion = left + right\nintersection = left & right\ndifference = left - right\nsymmetric = left ^ right\n",
+      "expect": "success"
+    },
+    {
+      "name": "empty-intersection",
+      "source": "numbers = {1}\nwords = {\"x\"}\nempty = numbers & words\n",
+      "expect": "success"
+    },
+    {
+      "name": "set-comparisons",
+      "source": "left = {1}\nright = {1, 2}\na = left == right\nb = left != right\nc = left < right\nd = left <= right\ne = right > left\nf = right >= left\n",
+      "expect": "success"
+    },
+    {
+      "name": "compound-operations",
+      "source": "left = {1, \"x\"}\nright = {1}\nleft += right\nleft -= right\nleft &= right\nleft ^= right\n",
+      "expect": "success"
+    }
+  ]
+}

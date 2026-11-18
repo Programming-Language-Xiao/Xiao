@@ -1,0 +1,38 @@
+{
+  "type": "test",
+  "request_id": "fixture-test-1",
+  "protocol_version": 1,
+  "core_version": 1,
+  "language_version": "0.1.0",
+  "runtime_version": "0.1.0",
+  "target": {
+    "triple": "x86_64-pc-windows-msvc",
+    "pointer_width": 64,
+    "endian": "little",
+    "object_format": "coff"
+  },
+  "optimization": {
+    "level": 0,
+    "debug": false,
+    "diagnostics": null
+  },
+  "cases": [
+    {
+      "module": "tests/nested/a-first",
+      "path": "tests/nested/a-first.xiao",
+      "text": "value = 1\n"
+    },
+    {
+      "module": "tests/z-last",
+      "path": "tests/z-last.xiao",
+      "text": "value = 1\n"
+    }
+  ],
+  "options": {
+    "max_call_depth": 1024,
+    "event_capacity": 256,
+    "timeout_ms": 5000,
+    "checkpoints_enabled": true,
+    "checkpoint_interval": 1024
+  }
+}
