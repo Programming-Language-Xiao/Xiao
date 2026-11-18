@@ -1,0 +1,6 @@
+[[Item]]
+    def read(self, *values) -> int
+        return 1
+item = new Item()
+items = [1]
+value = item.read(*items)

@@ -1,0 +1,24 @@
+def deep(int value) -> int
+    a = value + 1
+    b = a * 2
+    c = b - value
+    d = (a + b) * (c + 3)
+    e = d - a
+    f = e * c
+    g = f + d
+    h = g * (a + c)
+    return h - e
+
+def overflow_parity(int value) -> int
+    flag = false
+    flag = flag + 1
+    flag = flag - 2
+    return value * value
+
+def benchmark(int rounds) -> int
+    total = 0
+    index = 0
+    while index != rounds
+        total = total + deep(index)
+        index = index + 1
+    return total

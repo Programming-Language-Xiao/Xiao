@@ -1,0 +1,830 @@
+//! 运行入口、结构化结果与运行指标。
+
+use std::fmt::{Display, Formatter};
+use std::sync::{
+    Arc,
+    atomic::{AtomicBool, Ordering},
+};
+use std::time::Instant;
+
+use xiao_bytecode::{TacProgram, TacVerificationError, verify_for_execution};
+use xiao_diagnostics::{DiagnosticParam, FatalError, ReportRecord, XiaoError};
+use xiao_intrinsics::{CapabilityMaskError, KNOWN_CAPABILITY_MASK, validate_capability_mask};
+use xiao_ir::{IrEntryMode, IrProgram};
+use xiao_runtime::RuntimeValue;
+
+use crate::carrier::Carrier;
+use crate::machine::hybrid::HybridCarrier;
+use crate::machine::register::RegisterCarrier;
+use crate::machine::stack::StackCarrier;
+use crate::semantics::VmMetadata;
+use crate::semantics::{BoundArgument, Vm, VmSession};
+use crate::sink::{
+    BoundedSink, DEFAULT_EVENT_CAPACITY, MAX_EVENT_CAPACITY, RecordingSink, VmEvent, VmEventSink,
+};
+
+/// 默认的最大调用深度。
+pub const DEFAULT_MAX_CALL_DEPTH: usize = 1024;
+/// 生产入口允许的最大调用深度。
+pub const MAX_MAX_CALL_DEPTH: usize = 1_000_000;
+/// 运行参数非法时使用的稳定诊断编号。
+pub const VM_OPTIONS_CODE: &str = "X09-VM-001";
+/// 运行请求字段非法时使用的稳定诊断编号。
+pub const VM_REQUEST_CODE: &str = "X09-VM-002";
+/// 默认的指令检查点间隔。
+pub const DEFAULT_CHECKPOINT_INTERVAL: usize = 1024;
+
+/// `.xiaoc` 加载失败时使用的错误类型别名。
+pub type XiaocLoadError = xiao_bytecode::XiaocError;
+
+/// 可跨线程共享的取消信号。
+#[derive(Clone, Debug, Default)]
+pub struct CancellationToken {
+    cancelled: Arc<AtomicBool>,
+}
+
+impl CancellationToken {
+    /// 创建一个未取消的信号。
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// 设置取消标记；重复设置不会改变语义。
+    pub fn cancel(&self) {
+        self.cancelled.store(true, Ordering::Release);
+    }
+
+    /// 查询当前是否已经取消。
+    #[must_use]
+    pub fn is_cancelled(&self) -> bool {
+        self.cancelled.load(Ordering::Acquire)
+    }
+}
+
+/// VM 可注入的取消与截止时间来源。
+#[derive(Clone, Debug, Default)]
+pub struct CancellationSource {
+    token: Option<CancellationToken>,
+    deadline: Option<Instant>,
+}
+
+impl CancellationSource {
+    /// 创建一个尚未配置取消条件的来源。
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            token: None,
+            deadline: None,
+        }
+    }
+
+    /// 接入共享取消信号。
+    #[must_use]
+    pub fn with_token(mut self, token: CancellationToken) -> Self {
+        self.token = Some(token);
+        self
+    }
+
+    /// 接入绝对截止时间。
+    #[must_use]
+    pub const fn with_deadline(mut self, deadline: Instant) -> Self {
+        self.deadline = Some(deadline);
+        self
+    }
+
+    /// 查询共享取消信号或截止时间是否已经触发。
+    #[must_use]
+    pub fn is_cancelled(&self) -> bool {
+        self.token
+            .as_ref()
+            .is_some_and(CancellationToken::is_cancelled)
+            || self
+                .deadline
+                .is_some_and(|deadline| Instant::now() >= deadline)
+    }
+}
+
+/// 规范化运行参数的验证错误。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct VmOptionsError {
+    /// 出错字段。
+    pub field: &'static str,
+    /// 收到的数值。
+    pub value: usize,
+    /// 稳定的开发者原因。
+    pub reason: &'static str,
+}
+
+impl VmOptionsError {
+    /// 返回稳定诊断编号。
+    #[must_use]
+    pub const fn code(&self) -> &'static str {
+        VM_OPTIONS_CODE
+    }
+}
+
+impl Display for VmOptionsError {
+    /// 输出稳定编号和字段原因。
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            formatter,
+            "{}: {}={} ({})",
+            self.code(),
+            self.field,
+            self.value,
+            self.reason
+        )
+    }
+}
+
+impl std::error::Error for VmOptionsError {}
+
+/// 生产请求的字段验证错误。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RunRequestError {
+    /// 稳定诊断编号。
+    pub code: &'static str,
+    /// 出错字段。
+    pub field: &'static str,
+    /// 面向开发者的原因。
+    pub message: String,
+}
+
+impl Display for RunRequestError {
+    /// 输出稳定编号、字段和原因。
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            formatter,
+            "{}: {} ({})",
+            self.code, self.field, self.message
+        )
+    }
+}
+
+impl std::error::Error for RunRequestError {}
+
+/// 一次运行的结构化结果。
+///
+/// 可恢复错误与致命故障分开表达：`Fatal` 不是「更严重的错误」，它不可被普通
+/// `catch` 恢复，也不执行释放计划，因此不能与 `Error` 共用一个分支。生产入口
+/// 将未捕获的两类故障复制到 [`RunOutcome::report`]，供报告器消费；本类型不冻结
+/// CLI 整数退出码。
+#[derive(Debug)]
+pub enum RunResult {
+    /// 正常结束。
+    Success,
+    /// 以可恢复错误结束。
+    Error(XiaoError),
+    /// 以不可恢复故障结束。
+    Fatal(FatalError),
+    /// 由 VM 取消源或截止时间请求终止。
+    Cancelled,
+}
+
+impl RunResult {
+    /// 判断运行是否成功。
+    #[must_use]
+    pub const fn is_success(&self) -> bool {
+        matches!(self, Self::Success)
+    }
+
+    /// 返回可恢复错误码。
+    #[must_use]
+    pub fn error_code(&self) -> Option<&str> {
+        match self {
+            Self::Error(error) => Some(error.code()),
+            Self::Fatal(error) => Some(error.code()),
+            Self::Success | Self::Cancelled => None,
+        }
+    }
+}
+
+/// 运行参数。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VmOptions {
+    /// 最大调用深度；超限产生不可恢复的栈溢出故障。
+    pub max_call_depth: usize,
+    /// 是否在 VM 热循环中启用取消检查点。
+    pub checkpoints_enabled: bool,
+    /// 两次取消检查点之间执行的指令数。
+    pub checkpoint_interval: usize,
+}
+
+impl VmOptions {
+    /// 创建默认参数。
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            max_call_depth: DEFAULT_MAX_CALL_DEPTH,
+            checkpoints_enabled: true,
+            checkpoint_interval: DEFAULT_CHECKPOINT_INTERVAL,
+        }
+    }
+
+    /// 验证规范化参数，拒绝零值和超过实现上限的调用深度。
+    pub fn validate(&self) -> Result<(), VmOptionsError> {
+        if self.max_call_depth == 0 {
+            return Err(VmOptionsError {
+                field: "max_call_depth",
+                value: self.max_call_depth,
+                reason: "必须大于零",
+            });
+        }
+        if self.max_call_depth > MAX_MAX_CALL_DEPTH {
+            return Err(VmOptionsError {
+                field: "max_call_depth",
+                value: self.max_call_depth,
+                reason: "超过实现上限",
+            });
+        }
+        if self.checkpoint_interval == 0 {
+            return Err(VmOptionsError {
+                field: "checkpoint_interval",
+                value: self.checkpoint_interval,
+                reason: "必须大于零",
+            });
+        }
+        Ok(())
+    }
+}
+
+impl Default for VmOptions {
+    /// 使用默认调用深度上限。
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// 一次生产 VM 执行请求。
+///
+/// 请求同时携带前端 IR 和对应 TAC，生产入口据此在创建 VM 前执行唯一的
+/// `verify_for_execution` 结构关卡。模块名、源码名和事件容量属于运行上下文，
+/// 不写入冻结的 TAC 或字节码布局。
+#[derive(Debug)]
+pub struct RunRequest<'a> {
+    /// 已通过前端验证的输入 IR。
+    pub ir: &'a IrProgram,
+    /// 与 [`Self::ir`] 一一对应的三地址程序。
+    pub program: &'a TacProgram,
+    /// 规范化 VM 参数。
+    pub options: VmOptions,
+    /// 供事件和调用栈使用的逻辑模块身份。
+    pub module_name: String,
+    /// 供调用栈使用的源码路径或稳定内存来源名。
+    pub source_name: String,
+    /// 生产事件接收器容量；超限事件按丢弃新事件策略记账。
+    pub event_capacity: usize,
+    /// 可选的 VM 取消与截止时间来源。
+    pub cancellation: Option<CancellationSource>,
+    /// 单次执行内由 VM 按需调用的模块编译器。
+    pub module_loader: Option<&'a dyn crate::modules::ModuleLoader>,
+    /// 本次执行允许的能力位；默认开启当前已知能力。
+    pub capabilities: u64,
+}
+
+impl<'a> RunRequest<'a> {
+    /// 创建使用默认模块名、源码名和事件容量的请求。
+    #[must_use]
+    pub fn new(ir: &'a IrProgram, program: &'a TacProgram) -> Self {
+        Self {
+            ir,
+            program,
+            options: VmOptions::new(),
+            module_name: "main".to_owned(),
+            source_name: "<memory>".to_owned(),
+            event_capacity: DEFAULT_EVENT_CAPACITY,
+            cancellation: None,
+            module_loader: None,
+            capabilities: KNOWN_CAPABILITY_MASK,
+        }
+    }
+
+    /// 替换运行参数。
+    #[must_use]
+    pub const fn with_options(mut self, options: VmOptions) -> Self {
+        self.options = options;
+        self
+    }
+
+    /// 替换逻辑模块名。
+    #[must_use]
+    pub fn with_module_name(mut self, module_name: impl Into<String>) -> Self {
+        self.module_name = module_name.into();
+        self
+    }
+
+    /// 替换源码路径或内存来源名。
+    #[must_use]
+    pub fn with_source_name(mut self, source_name: impl Into<String>) -> Self {
+        self.source_name = source_name.into();
+        self
+    }
+
+    /// 替换事件接收器容量。
+    #[must_use]
+    pub const fn with_event_capacity(mut self, event_capacity: usize) -> Self {
+        self.event_capacity = event_capacity;
+        self
+    }
+
+    /// 替换 VM 取消与截止时间来源。
+    #[must_use]
+    pub fn with_cancellation(mut self, cancellation: CancellationSource) -> Self {
+        self.cancellation = Some(cancellation);
+        self
+    }
+
+    /// 安装按需模块编译入口；请求自身不执行任何模块代码。
+    #[must_use]
+    pub fn with_module_loader(mut self, loader: &'a dyn crate::modules::ModuleLoader) -> Self {
+        self.module_loader = Some(loader);
+        self
+    }
+
+    /// 设置本次执行的能力位；未知位在请求构造时拒绝。
+    pub fn with_capabilities(mut self, capabilities: u64) -> Result<Self, CapabilityMaskError> {
+        validate_capability_mask(capabilities)?;
+        self.capabilities = capabilities;
+        Ok(self)
+    }
+
+    /// 验证请求自身的规范化字段。
+    pub fn validate(&self) -> Result<(), RunRequestError> {
+        self.options.validate().map_err(|error| RunRequestError {
+            code: error.code(),
+            field: error.field,
+            message: error.to_string(),
+        })?;
+        if self.event_capacity == 0 || self.event_capacity > MAX_EVENT_CAPACITY {
+            return Err(RunRequestError {
+                code: VM_REQUEST_CODE,
+                field: "event_capacity",
+                message: format!(
+                    "必须位于 1..={}（收到 {}）",
+                    MAX_EVENT_CAPACITY, self.event_capacity
+                ),
+            });
+        }
+        if self.module_name.trim().is_empty() {
+            return Err(RunRequestError {
+                code: VM_REQUEST_CODE,
+                field: "module_name",
+                message: "不能为空".to_owned(),
+            });
+        }
+        if self.source_name.trim().is_empty() {
+            return Err(RunRequestError {
+                code: VM_REQUEST_CODE,
+                field: "source_name",
+                message: "不能为空".to_owned(),
+            });
+        }
+        validate_capability_mask(self.capabilities).map_err(|error| RunRequestError {
+            code: VM_REQUEST_CODE,
+            field: "capabilities",
+            message: error.to_string(),
+        })?;
+        Ok(())
+    }
+
+    /// 返回入口模式对应的诊断跨度。
+    #[must_use]
+    pub(crate) fn entry_span(&self) -> xiao_ir::IrSpan {
+        match self.ir.entry_mode {
+            IrEntryMode::Script => self.ir.span,
+            IrEntryMode::Project { span } => span,
+        }
+    }
+}
+
+/// 运行指标。
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct VmMetrics {
+    /// 执行的指令条数。
+    pub instructions: u64,
+    /// 达到过的最大调用深度。
+    pub max_call_depth: usize,
+    /// 载体占用的历史峰值。
+    pub max_stack_depth: usize,
+    /// 按冻结计划释放的值的数量。
+    pub releases: usize,
+    /// 写入独立帧槽的次数。
+    ///
+    /// 它与 [`Self::stack_map_entries`] 量纲不同：这里数的是**落帧槽的次数**，
+    /// 那里数的是**需要栈映射的程序点**。两者不可合并，否则三种机型在 09R3
+    /// 的对比中不再可比。
+    pub spill_count: u64,
+    /// 需要建立栈映射的程序点数量（R1-F 的机型分界）。
+    ///
+    /// 栈式数跳转目标、混合式数调用点与帧尾、分类型寄存器式恒为 0；
+    /// 详见 [`crate::carrier::CarrierMetrics::stack_map_entries`]。
+    pub stack_map_entries: usize,
+    /// 跨调用保存值的次数。
+    pub call_save_count: u64,
+}
+
+/// 一次运行的完整结果。
+#[derive(Debug)]
+pub struct RunOutcome {
+    /// 结构化结果。
+    pub result: RunResult,
+    /// 入口显式返回的值；脚本和 `[main]` 工程入口遵循同一规则，没有显式返回值时为 `None`。
+    ///
+    /// 生产入口与研究兼容入口都保留这一结构化观察面。可恢复错误或致命故障结束时
+    /// 该字段始终为 `None`。
+    pub value: Option<RuntimeValue>,
+    /// 运行指标。
+    pub metrics: VmMetrics,
+    /// 记录到的调试事件。
+    pub events: Vec<VmEvent>,
+    /// 未能放入有界生产接收器的事件数量；研究入口恒为零。
+    pub dropped_events: usize,
+    /// 未捕获错误或致命故障的统一报告；成功时为空。
+    pub report: Option<ReportRecord>,
+}
+
+/// 从执行结果建立统一报告。
+fn report_for_result(result: &RunResult) -> Option<ReportRecord> {
+    match result {
+        RunResult::Success => None,
+        RunResult::Error(error) => Some(error.report()),
+        RunResult::Fatal(error) => Some(error.report()),
+        RunResult::Cancelled => None,
+    }
+}
+
+/// 组装研究兼容入口的结果。
+fn research_outcome(
+    result: RunResult,
+    value: Option<RuntimeValue>,
+    metrics: VmMetrics,
+    events: Vec<VmEvent>,
+) -> RunOutcome {
+    RunOutcome {
+        report: report_for_result(&result),
+        result,
+        value,
+        metrics,
+        events,
+        dropped_events: 0,
+    }
+}
+
+/// 将进程内验证错误转换为编译器内部故障。
+///
+/// 当前生产入口只消费本进程刚生成的 TAC；外部 `.xiaoc` 校验没有接入这条路径。
+/// 因此任何结构/ABI 不符都说明编译器没有兑现自身契约，不能把用户源码归因成
+/// `fatal.corrupt_artifact`。外部产物校验若日后接入，应在独立入口保留损坏产物身份。
+fn verification_fatal(error: &TacVerificationError, entry_span: xiao_ir::IrSpan) -> FatalError {
+    let location = xiao_source::SourceSpan::new(entry_span.start, entry_span.end);
+    let message = format!("生产执行前字节码契约验证失败：{error}");
+    let mut fatal = if error.code == xiao_diagnostics::FATAL_CORRUPT_ARTIFACT_CODE {
+        FatalError::corrupt_artifact(message)
+    } else {
+        FatalError::internal(message)
+    }
+    .with_param(
+        "verification_code",
+        DiagnosticParam::Text(error.code.to_owned()),
+    )
+    .with_param(
+        "verification_path",
+        DiagnosticParam::Text(error.path.clone()),
+    )
+    .with_context(
+        "verification_message",
+        DiagnosticParam::Text(error.message.clone()),
+    );
+    if let Some(location) = location {
+        fatal = fatal.with_location(location);
+    }
+    fatal
+}
+
+/// 将请求字段错误转换为不可恢复的参数故障。
+fn request_fatal(error: &RunRequestError, entry_span: xiao_ir::IrSpan) -> FatalError {
+    let location = xiao_source::SourceSpan::new(entry_span.start, entry_span.end);
+    let mut fatal = FatalError::runtime_invariant(format!("生产运行请求无效：{}", error.message))
+        .with_param("request_code", DiagnosticParam::Text(error.code.to_owned()))
+        .with_param(
+            "request_field",
+            DiagnosticParam::Text(error.field.to_owned()),
+        )
+        .with_context(
+            "request_message",
+            DiagnosticParam::Text(error.message.clone()),
+        );
+    if let Some(location) = location {
+        fatal = fatal.with_location(location);
+    }
+    fatal
+}
+
+/// 用栈式载体运行一份三地址产物并记录全部事件。
+#[must_use]
+pub fn run(program: &xiao_bytecode::TacProgram, options: VmOptions) -> RunOutcome {
+    run_with::<StackCarrier>(program, options)
+}
+
+/// 加载一份 `.xiaoc` 并在验证成功后执行。
+///
+/// 解码、边界、完整性、09R 指令流和 Runtime ABI 检查全部通过前不会建立 VM，
+/// 因而损坏产物不会执行任何指令。
+pub fn run_xiaoc(bytes: &[u8], options: VmOptions) -> Result<RunOutcome, XiaocLoadError> {
+    run_xiaoc_with_runtime_features(bytes, options, xiao_bytecode::SUPPORTED_REQUIRED_FEATURES)
+}
+
+/// 使用宿主实际支持的功能位加载产物；缺失功能时不建立 VM。
+pub fn run_xiaoc_with_runtime_features(
+    bytes: &[u8],
+    options: VmOptions,
+    runtime_features: u64,
+) -> Result<RunOutcome, XiaocLoadError> {
+    let file = xiao_bytecode::decode_xiaoc(bytes)?;
+    xiao_bytecode::validate_runtime_requirements(
+        &file.header,
+        u64::from(xiao_bytecode::TAC_RUNTIME_ABI_VERSION),
+        runtime_features,
+    )?;
+    Ok(run(&file.program, options))
+}
+
+/// 以生产事件接收器加载并运行一份 `.xiaoc`。
+///
+/// 归档和其他已经物化的字节码入口使用这个函数，以便继续复用同一套 VM
+/// 语义，同时保留生产入口的事件容量和取消/截止时间控制。字节码校验失败
+/// 发生在建立 VM 之前；事件容量的范围由上层协议或归档运行器在调用前校验。
+pub fn run_xiaoc_production(
+    bytes: &[u8],
+    options: VmOptions,
+    event_capacity: usize,
+    cancellation: Option<CancellationSource>,
+) -> Result<RunOutcome, XiaocLoadError> {
+    run_xiaoc_production_with_capabilities(
+        bytes,
+        options,
+        event_capacity,
+        cancellation,
+        KNOWN_CAPABILITY_MASK,
+    )
+}
+
+/// 使用本次请求的能力上下文执行已物化字节码；旧入口保留默认全开行为。
+pub fn run_xiaoc_production_with_capabilities(
+    bytes: &[u8],
+    options: VmOptions,
+    event_capacity: usize,
+    cancellation: Option<CancellationSource>,
+    capabilities: u64,
+) -> Result<RunOutcome, XiaocLoadError> {
+    run_xiaoc_production_with_loader(
+        bytes,
+        options,
+        event_capacity,
+        cancellation,
+        capabilities,
+        None,
+    )
+}
+
+/// 与源码入口共用 VM 的模块加载边界；加载器只在完整字节码校验后交给 VM。
+pub fn run_xiaoc_production_with_loader(
+    bytes: &[u8],
+    options: VmOptions,
+    event_capacity: usize,
+    cancellation: Option<CancellationSource>,
+    capabilities: u64,
+    loader: Option<&dyn crate::modules::ModuleLoader>,
+) -> Result<RunOutcome, XiaocLoadError> {
+    run_xiaoc_production_with_features(
+        bytes,
+        options,
+        event_capacity,
+        cancellation,
+        capabilities,
+        loader,
+        xiao_bytecode::SUPPORTED_REQUIRED_FEATURES,
+    )
+}
+
+/// 归档宿主把实际 Runtime 功能位传到统一字节码门禁。
+pub fn run_xiaoc_production_with_features(
+    bytes: &[u8],
+    options: VmOptions,
+    event_capacity: usize,
+    cancellation: Option<CancellationSource>,
+    capabilities: u64,
+    loader: Option<&dyn crate::modules::ModuleLoader>,
+    runtime_features: u64,
+) -> Result<RunOutcome, XiaocLoadError> {
+    validate_capability_mask(capabilities).map_err(|error| XiaocLoadError::InvalidField {
+        field: "capabilities".to_owned(),
+        message: error.to_string(),
+    })?;
+    let file = xiao_bytecode::decode_xiaoc(bytes)?;
+    xiao_bytecode::validate_runtime_requirements(
+        &file.header,
+        u64::from(xiao_bytecode::TAC_RUNTIME_ABI_VERSION),
+        runtime_features,
+    )?;
+    let sink = BoundedSink::new(event_capacity);
+    let mut vm = Vm::<StackCarrier, BoundedSink>::new_with_metadata(
+        &file.program,
+        options,
+        sink,
+        VmMetadata::legacy(&file.program),
+        VmSession::new(),
+        capabilities,
+    );
+    vm.set_cancellation_source(cancellation);
+    vm.set_module_loader(loader);
+    let (result, value) = vm.run_with_value();
+    let metrics = vm.metrics();
+    Ok(production_outcome(result, value, metrics, vm.into_sink()))
+}
+
+/// 只加载并返回已经通过验证的 `.xiaoc`。
+pub fn load_xiaoc(bytes: &[u8]) -> Result<xiao_bytecode::XiaocFile, XiaocLoadError> {
+    xiao_bytecode::decode_xiaoc(bytes)
+}
+
+/// 使用指定静态载体运行一份三地址产物并记录全部事件。
+#[must_use]
+pub fn run_with<C: Carrier>(program: &xiao_bytecode::TacProgram, options: VmOptions) -> RunOutcome {
+    let mut vm = Vm::<C, RecordingSink>::new(program, options, RecordingSink::new());
+    let (result, value) = vm.run_with_value();
+    let metrics = vm.metrics();
+    research_outcome(result, value, metrics, vm.into_sink().into_events())
+}
+
+/// 使用位置实参和指定载体运行一份三地址产物。
+///
+/// 该入口只供研究 VM 的动态边界向量注入入口形参；实参按入口函数的形参
+/// 声明顺序绑定，不承诺生产 VM 的脚本调用 ABI。
+#[must_use]
+pub fn run_with_values<C: Carrier>(
+    program: &xiao_bytecode::TacProgram,
+    options: VmOptions,
+    arguments: &[RuntimeValue],
+) -> RunOutcome {
+    let bound_arguments = arguments
+        .iter()
+        .cloned()
+        .map(|value| BoundArgument {
+            keyword: None,
+            value,
+        })
+        .collect::<Vec<_>>();
+    let mut vm = Vm::<C, RecordingSink>::new(program, options, RecordingSink::new());
+    let (result, value) = vm.run_with_arguments(&bound_arguments);
+    let metrics = vm.metrics();
+    research_outcome(result, value, metrics, vm.into_sink().into_events())
+}
+
+/// 使用指定种子的栈式载体运行一份三地址产物。
+#[must_use]
+pub fn run_with_seed(
+    program: &xiao_bytecode::TacProgram,
+    options: VmOptions,
+    seed: u128,
+) -> RunOutcome {
+    let mut vm = Vm::<StackCarrier, RecordingSink>::new_with_seed(
+        program,
+        options,
+        RecordingSink::new(),
+        seed,
+    );
+    let (result, value) = vm.run_with_value();
+    let metrics = vm.metrics();
+    research_outcome(result, value, metrics, vm.into_sink().into_events())
+}
+
+/// 使用指定种子的任意静态载体运行一份三地址产物。
+#[must_use]
+pub fn run_with_machine_seed<C: Carrier>(
+    program: &xiao_bytecode::TacProgram,
+    options: VmOptions,
+    seed: u128,
+) -> RunOutcome {
+    let mut vm =
+        Vm::<C, RecordingSink>::new_with_seed(program, options, RecordingSink::new(), seed);
+    let (result, value) = vm.run_with_value();
+    let metrics = vm.metrics();
+    research_outcome(result, value, metrics, vm.into_sink().into_events())
+}
+
+/// 用分类型寄存器载体运行一份三地址产物。
+#[must_use]
+pub fn run_register(program: &xiao_bytecode::TacProgram, options: VmOptions) -> RunOutcome {
+    run_with::<RegisterCarrier>(program, options)
+}
+
+/// 用混合式窗口/求值栈载体运行一份三地址产物。
+#[must_use]
+pub fn run_hybrid(program: &xiao_bytecode::TacProgram, options: VmOptions) -> RunOutcome {
+    run_with::<HybridCarrier>(program, options)
+}
+
+/// 使用生产契约执行一份前端 IR 对应的 TAC。
+///
+/// 该入口固定使用栈式载体，并在创建解释器前无条件验证 IR/TAC 对应关系。
+/// 失败会返回带验证路径和源码入口位置的 `Fatal`，不会进入 VM 内部循环；
+/// 未捕获的普通错误和 Fatal 都通过 [`RunOutcome::report`] 提供统一报告。
+#[must_use]
+pub fn run_request(request: &RunRequest<'_>) -> RunOutcome {
+    run_request_with_session(request, VmSession::new()).0
+}
+
+/// 使用已有会话状态执行一份前端 IR 对应的 TAC。
+///
+/// 每次请求仍然新建主程序 VM；只有成功初始化的模块和表运行时状态会被
+/// 返回给调用方。任何运行时错误、致命故障、取消或不完整的清理状态都会
+/// 丢弃整份会话，避免下一次请求继承不确定状态。
+#[must_use]
+pub fn run_request_with_session(
+    request: &RunRequest<'_>,
+    session: VmSession,
+) -> (RunOutcome, VmSession) {
+    let mut sink = BoundedSink::new(request.event_capacity);
+    let entry_span = request.entry_span();
+    if let Err(error) = verify_for_execution(request.ir, request.program) {
+        let fatal = verification_fatal(&error, entry_span);
+        sink.record(VmEvent::FatalRaised {
+            code: fatal.code().to_owned(),
+        });
+        return (
+            production_outcome(RunResult::Fatal(fatal), None, VmMetrics::default(), sink),
+            VmSession::new(),
+        );
+    }
+    if let Err(error) = request.validate() {
+        let fatal = request_fatal(&error, entry_span);
+        sink.record(VmEvent::FatalRaised {
+            code: fatal.code().to_owned(),
+        });
+        return (
+            production_outcome(RunResult::Fatal(fatal), None, VmMetrics::default(), sink),
+            VmSession::new(),
+        );
+    }
+
+    let metadata = VmMetadata::new(
+        request.module_name.clone(),
+        request.source_name.clone(),
+        Some(entry_span),
+    );
+    let mut vm = Vm::<StackCarrier, BoundedSink>::new_with_metadata(
+        request.program,
+        request.options,
+        sink,
+        metadata,
+        session,
+        request.capabilities,
+    );
+    vm.set_cancellation_source(request.cancellation.clone());
+    vm.set_module_loader(request.module_loader);
+    let (result, value) = vm.run_with_value();
+    let metrics = vm.metrics();
+    let healthy = vm.session_is_healthy();
+    let (vm_sink, session) = vm.into_parts();
+    sink = vm_sink;
+    let session = if healthy && result.is_success() {
+        session
+    } else {
+        VmSession::new()
+    };
+    (production_outcome(result, value, metrics, sink), session)
+}
+
+/// `run_request` 的生产入口别名，供驱动器按动作命名调用。
+#[must_use]
+pub fn run_production(request: &RunRequest<'_>) -> RunOutcome {
+    run_request(request)
+}
+
+/// 从 IR/TAC 借用对创建默认生产请求并执行。
+#[must_use]
+pub fn run_checked(ir: &IrProgram, program: &TacProgram, options: VmOptions) -> RunOutcome {
+    run_request(&RunRequest::new(ir, program).with_options(options))
+}
+
+/// 组装有界生产接收器的结果，并把保留事件转为值对象。
+fn production_outcome(
+    result: RunResult,
+    value: Option<RuntimeValue>,
+    metrics: VmMetrics,
+    sink: BoundedSink,
+) -> RunOutcome {
+    let mut sink = sink;
+    sink.record_metrics(metrics);
+    let dropped_events = sink.dropped_events();
+    RunOutcome {
+        report: report_for_result(&result),
+        result,
+        value,
+        metrics,
+        events: sink.into_events(),
+        dropped_events,
+    }
+}

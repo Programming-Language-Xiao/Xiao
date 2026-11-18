@@ -1,0 +1,10 @@
+from stdlib.text import trim
+
+print("[" + trim("") + "]")
+print("[" + trim(" \t\r\n" + chr(11) + chr(12)) + "]")
+for whitespace in " \t\r\n" + chr(11) + chr(12)
+    print("[" + trim(whitespace + "小😀" + whitespace) + "]")
+print("[" + trim("  左") + "]")
+print("[" + trim("右\t") + "]")
+print("[" + trim(" 内 部\t空白 ") + "]")
+print("[" + trim(" 　雪　 ") + "]")

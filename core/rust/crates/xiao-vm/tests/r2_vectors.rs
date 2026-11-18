@@ -1,0 +1,338 @@
+//! 09R2 共享语义向量。
+//!
+//! 向量与机型无关：栈式、分类型寄存器式和混合式载体直接复用同一组期望值，
+//! 向量里不得出现任何机型专属字段，也禁止为某一型改期望。
+//!
+//! 期望值锁定四件事：结构化结果、稳定错误码、`(作用域, 退出边, 值, 类别)` 的
+//! **完整释放序列**、以及最大调用深度。释放序列来自冻结计划，是后端「没有重排、
+//! 去重或漏放」的可观察证据。
+
+use serde::Deserialize;
+use serde_json::{Value as JsonValue, json};
+use xiao_bytecode::research::lower_program;
+use xiao_driver::{FrontendCompiler, FrontendRequest};
+use xiao_runtime::{ArrayHandle, RuntimeValue, SetHandle, TupleHandle};
+use xiao_vm::research::{
+    Carrier, DEFAULT_MAX_CALL_DEPTH, HybridCarrier, RegisterCarrier, RunResult, StackCarrier,
+    VmEvent, VmOptions, run_with, run_with_values,
+};
+
+/// 一份语义向量文件。
+#[derive(Debug, Deserialize)]
+struct VectorFile {
+    /// 对应工程期。
+    stage: String,
+    /// 快照状态。
+    status: String,
+    /// 用例列表。
+    cases: Vec<VectorCase>,
+}
+
+/// 一条语义向量。
+#[derive(Debug, Deserialize)]
+struct VectorCase {
+    /// 用例名。
+    name: String,
+    /// Xiao 源码。
+    source: String,
+    /// 调用深度上限；省略时用默认值。
+    #[serde(default)]
+    max_call_depth: Option<usize>,
+    /// 可选的无参数函数入口；指定后把该函数复制到脚本入口执行。
+    #[serde(default)]
+    entry: Option<String>,
+    /// 入口函数的位置实参；用稳定 JSON 形状构造 RuntimeValue。
+    #[serde(default)]
+    arguments: Vec<JsonValue>,
+    /// 期望结果。
+    expect: Expectation,
+}
+
+/// 一条用例的期望结果。
+#[derive(Debug, Deserialize, PartialEq)]
+struct Expectation {
+    /// `success`、`error` 或 `fatal`。
+    outcome: String,
+    /// 期望的稳定错误码或故障码。
+    #[serde(default)]
+    error_code: Option<String>,
+    /// 入口返回值的 JSON 观察形式。
+    #[serde(default)]
+    value: Option<JsonValue>,
+    /// 期望的完整释放序列。
+    #[serde(default)]
+    releases: Vec<ReleaseRecord>,
+    /// 期望达到的最大调用深度。
+    max_call_depth: usize,
+}
+
+/// 一条释放记录。
+#[derive(Debug, Deserialize, PartialEq)]
+struct ReleaseRecord {
+    /// 触发释放的作用域。
+    scope: u32,
+    /// 退出边稳定名称。
+    exit: String,
+    /// `IrValue.id`。
+    value: u32,
+    /// 强释放或弱释放。
+    kind: String,
+}
+
+/// 从一次运行结果提取可观察事实。
+fn observe<C: Carrier>(case: &VectorCase) -> Expectation {
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(case.source.clone()))
+        .unwrap_or_else(|error| panic!("用例 {} 前端应成功: {:?}", case.name, error.diagnostics()));
+    let mut tac = lower_program(&artifact.ir);
+    assert!(
+        tac.unsupported.is_empty(),
+        "用例 {} 存在未降低语义: {:?}",
+        case.name,
+        tac.unsupported
+    );
+    if let Some(entry) = case.entry.as_deref() {
+        let function = tac
+            .functions
+            .iter()
+            .find(|function| function.name == entry)
+            .cloned()
+            .unwrap_or_else(|| panic!("用例 {} 的入口 {entry:?} 应存在", case.name));
+        tac.functions[0] = function;
+    }
+    let options = VmOptions {
+        max_call_depth: case.max_call_depth.unwrap_or(DEFAULT_MAX_CALL_DEPTH),
+        ..VmOptions::default()
+    };
+    let arguments = case
+        .arguments
+        .iter()
+        .map(runtime_value_from_json)
+        .collect::<Vec<_>>();
+    let outcome = if arguments.is_empty() {
+        run_with::<C>(&tac, options)
+    } else {
+        run_with_values::<C>(&tac, options, &arguments)
+    };
+    let releases = outcome
+        .events
+        .iter()
+        .filter_map(|event| match event {
+            VmEvent::ValueReleased {
+                scope,
+                exit,
+                value,
+                kind,
+            } => Some(ReleaseRecord {
+                scope: *scope,
+                exit: exit.clone(),
+                value: *value,
+                kind: kind.clone(),
+            }),
+            _ => None,
+        })
+        .collect();
+    Expectation {
+        outcome: match outcome.result {
+            RunResult::Success => "success".to_owned(),
+            RunResult::Error(_) => "error".to_owned(),
+            RunResult::Fatal(_) => "fatal".to_owned(),
+            RunResult::Cancelled => "cancelled".to_owned(),
+        },
+        error_code: outcome.result.error_code().map(str::to_owned),
+        value: outcome.value.as_ref().map(runtime_value_json),
+        releases,
+        max_call_depth: outcome.metrics.max_call_depth,
+    }
+}
+
+/// 将向量中的稳定 JSON 实参还原为研究 VM 可消费的 RuntimeValue。
+fn runtime_value_from_json(value: &JsonValue) -> RuntimeValue {
+    match value {
+        JsonValue::Bool(value) => RuntimeValue::Bool(*value),
+        JsonValue::Number(value) if value.as_i64().is_some() => {
+            RuntimeValue::Int(value.as_i64().expect("整数 JSON 应可读取"))
+        }
+        JsonValue::Number(value) => {
+            RuntimeValue::Float(value.as_f64().expect("浮点 JSON 应可读取"))
+        }
+        JsonValue::String(value) => {
+            RuntimeValue::new_string(value.clone()).expect("字符串应可分配")
+        }
+        JsonValue::Object(object) => {
+            let kind = object
+                .get("kind")
+                .and_then(JsonValue::as_str)
+                .expect("容器实参应带 kind");
+            let elements = object
+                .get("elements")
+                .and_then(JsonValue::as_array)
+                .expect("容器实参应带 elements")
+                .iter()
+                .map(runtime_value_from_json)
+                .collect::<Vec<_>>();
+            match kind {
+                "array" => RuntimeValue::Array(ArrayHandle::new(elements).expect("数组应可分配")),
+                "set" => RuntimeValue::Set(SetHandle::new(elements).expect("集合应可分配")),
+                "tuple" => RuntimeValue::Tuple(TupleHandle::new(elements).expect("元组应可分配")),
+                other => panic!("不支持的向量实参容器 {other:?}"),
+            }
+        }
+        other => panic!("不支持的向量实参 JSON {other:?}"),
+    }
+}
+
+/// 将研究 VM 的返回值转换成向量使用的稳定 JSON 形状。
+fn runtime_value_json(value: &RuntimeValue) -> JsonValue {
+    match value {
+        RuntimeValue::Int(value) => json!(value),
+        RuntimeValue::Sint(value) => json!(value),
+        RuntimeValue::Lint(value) => json!(value),
+        RuntimeValue::Float(value) => json!(value),
+        RuntimeValue::Sfloat(value) => json!(value),
+        RuntimeValue::Lfloat(value) => json!(value),
+        RuntimeValue::Bool(value) => json!(value),
+        RuntimeValue::Str(handle) => json!(handle.to_string().expect("字符串句柄应可读取")),
+        RuntimeValue::Set(handle) => json!({
+            "kind": "set",
+            "elements": handle
+                .with_elements(|elements| elements.iter().map(runtime_value_json).collect::<Vec<_>>())
+                .expect("集合句柄应可读取"),
+        }),
+        RuntimeValue::Array(handle) => json!({
+            "kind": "array",
+            "elements": handle
+                .with_elements(|elements| elements.iter().map(runtime_value_json).collect::<Vec<_>>())
+                .expect("数组句柄应可读取"),
+        }),
+        RuntimeValue::Tuple(handle) => json!({
+            "kind": "tuple",
+            "elements": handle
+                .with_elements(|elements| elements.iter().map(runtime_value_json).collect::<Vec<_>>())
+                .expect("元组句柄应可读取"),
+        }),
+        other => panic!("向量暂不支持观察返回值 {other:?}"),
+    }
+}
+
+/// 断言一份向量文件的全部用例。
+fn assert_vectors<C: Carrier>(raw: &str, expected_stage: &str, machine: &str) {
+    let file: VectorFile = serde_json::from_str(raw).expect("向量文件应可解析");
+    assert_eq!(file.stage, expected_stage);
+    assert_eq!(file.status, "verified-runtime");
+    assert!(!file.cases.is_empty(), "向量文件不应为空");
+    let mut mismatches = Vec::new();
+    for case in &file.cases {
+        let actual = observe::<C>(case);
+        if actual != case.expect {
+            mismatches.push(format!(
+                "{machine}/{}: 期望 {:?}，实际 {:?}",
+                case.name, case.expect, actual
+            ));
+        }
+    }
+    assert!(mismatches.is_empty(), "期望不一致的用例：{mismatches:?}");
+}
+
+/// 用同一解析与观察路径依次验证三种载体。
+fn assert_all_machines(raw: &str, expected_stage: &str) {
+    assert_vectors::<StackCarrier>(raw, expected_stage, "stack");
+    assert_vectors::<RegisterCarrier>(raw, expected_stage, "register");
+    assert_vectors::<HybridCarrier>(raw, expected_stage, "hybrid");
+}
+
+#[test]
+/// 标量、字符串与显式转换的语义向量。
+fn scalar_vectors_are_stable() {
+    assert_all_machines(
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../../tests/spec/09-bytecode/scalar.json"
+        )),
+        "09R2",
+    );
+}
+
+#[test]
+/// 分支、循环、函数调用与递归的语义向量。
+fn control_vectors_are_stable() {
+    assert_all_machines(
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../../tests/spec/09-bytecode/control.json"
+        )),
+        "09R2",
+    );
+}
+
+#[test]
+/// 可恢复错误与致命故障的语义向量。
+fn error_vectors_are_stable() {
+    assert_all_machines(
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../../tests/spec/09-bytecode/errors.json"
+        )),
+        "09R2",
+    );
+}
+
+#[test]
+/// 容器构造、精确索引与临时值释放的语义向量。
+fn container_vectors_are_stable() {
+    assert_all_machines(
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../../tests/spec/09-bytecode/containers.json"
+        )),
+        "09R2",
+    );
+}
+
+#[test]
+/// 高级选择、嵌套范围、固定种子和广播在三种载体上复用同一向量。
+fn selector_vectors_are_stable() {
+    assert_all_machines(
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../../tests/spec/09-bytecode/selectors.json"
+        )),
+        "09R2",
+    );
+}
+
+#[test]
+/// 集合运算与比较的返回值向量在三种载体上保持一致。
+fn sets_vectors_are_stable() {
+    assert_all_machines(
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../../tests/spec/09-bytecode/sets.json"
+        )),
+        "09R2F1",
+    );
+}
+
+#[test]
+/// `for` 的容器读取、游标控制和动态可迭代检查在三种载体上复用同一向量。
+fn iteration_vectors_are_stable() {
+    assert_all_machines(
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../../tests/spec/09-bytecode/iteration.json"
+        )),
+        "09R2G",
+    );
+}
+
+#[test]
+/// 表声明、构造回滚和最后强引用析构复用同一份完整释放序列。
+fn table_vectors_are_stable() {
+    assert_all_machines(
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../../tests/spec/09-bytecode/tables.json"
+        )),
+        "09R2H",
+    );
+}

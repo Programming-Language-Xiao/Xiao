@@ -1,0 +1,17 @@
+{
+  "stage": "11A-E2B",
+  "status": "verified-static",
+  "cases": [
+    { "name": "install-requires-lock", "mode": "install", "seed": false, "mutation": "none" },
+    { "name": "install-rejects-missing-active-environment", "mode": "missing-active", "seed": true, "mutation": "none" },
+    { "name": "frozen-requires-lock", "mode": "frozen", "seed": false, "mutation": "none" },
+    { "name": "locked-requires-lock", "mode": "locked", "seed": false, "mutation": "none" },
+    { "name": "locked-rejects-content-change", "mode": "locked", "seed": true, "mutation": "content" },
+    { "name": "frozen-rejects-content-change", "mode": "frozen", "seed": true, "mutation": "content" },
+    { "name": "install-rejects-content-change", "mode": "install", "seed": true, "mutation": "content" },
+    { "name": "locked-rejects-nested-lock-named-file-change", "mode": "locked", "seed": true, "mutation": "nested-lock" },
+    { "name": "sync-rejects-future-lock-version", "mode": "sync", "seed": true, "mutation": "future" },
+    { "name": "sync-rejects-dependency-cycle", "mode": "sync", "seed": false, "mutation": "cycle" },
+    { "name": "sync-rejects-conflicting-switches", "mode": "conflict", "seed": false, "mutation": "none" }
+  ]
+}

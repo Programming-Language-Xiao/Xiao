@@ -1,0 +1,17 @@
+{
+  "stage": "11B-I2",
+  "cases": [
+    {
+      "width": 8,
+      "expected": "─ Enter \r\n> \r\n────────"
+    },
+    {
+      "width": 20,
+      "expected": "─ Enter the save loc\r\n> \r\n────────────────────"
+    },
+    {
+      "width": 40,
+      "expected": "─ Enter the save location ──────────────\r\n> \r\n────────────────────────────────────────"
+    }
+  ]
+}

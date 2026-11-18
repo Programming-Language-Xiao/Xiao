@@ -1,0 +1,47 @@
+# B0 探测整数数组归约；D-5 已确认范围，公开签名和错误码尚未冻结。
+def probe_sum([int] values) -> int
+    total = 0
+    for value in values
+        total = total + value
+    return total
+
+def probe_min([int] values) -> int
+    seen = false
+    result = 0
+    for candidate in values
+        if not seen or candidate < result
+            result = candidate
+        seen = true
+    if not seen
+        raise Error(code = "B0_EMPTY_STATISTICS")
+    return result
+
+def probe_max([int] values) -> int
+    seen = false
+    result = 0
+    for candidate in values
+        if not seen or candidate > result
+            result = candidate
+        seen = true
+    if not seen
+        raise Error(code = "B0_EMPTY_STATISTICS")
+    return result
+
+values = [5, -2, 9, -2]
+print(probe_sum(values))
+print(probe_min(values))
+print(probe_max(values))
+print(values[0])
+print(probe_sum([]))
+try
+    print(probe_min([]))
+catch empty_min as Error
+    print("caught-empty-min")
+try
+    print(probe_max([]))
+catch empty_max as Error
+    print("caught-empty-max")
+try
+    print(probe_sum([9223372036854775807, 1]))
+catch overflow as Error
+    print("caught-overflow")

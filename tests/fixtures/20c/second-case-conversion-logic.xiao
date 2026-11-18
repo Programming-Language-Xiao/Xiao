@@ -1,0 +1,4 @@
+def is_ascii_upper(str value) -> bool
+    return value >= "A" and value <= "Z"
+
+print(is_ascii_upper("A"))

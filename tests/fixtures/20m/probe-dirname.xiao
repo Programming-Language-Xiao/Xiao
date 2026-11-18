@@ -1,0 +1,13 @@
+from stdlib.text import slice
+
+def probe_dirname(str path) -> str
+    end = 0
+    index = 0
+    for c in path
+        if c == "/"
+            end = index
+        index = index + 1
+    return slice(path, 0, end)
+
+for path in ["", "name", "/", "/name", "a/", "a/b", "a//b", "//", "a//", ".env", "dir.x/.env", "a.tar.gz", "file.", ".", "..", "a/../b", "C:\\tmp\\file.txt", "目录/小😀.x"]
+    print("[" + probe_dirname(path) + "]")

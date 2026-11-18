@@ -1,0 +1,24 @@
+{
+  "stage": "07",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "raise-requires-recoverable-error",
+      "source": "raise 1\n",
+      "expect": "error",
+      "diagnostics": ["X07-TYPE-001"]
+    },
+    {
+      "name": "fatal-cannot-be-caught",
+      "source": "try\n    raise error\ncatch fatal as FatalError\n    print(fatal)\n",
+      "expect": "error",
+      "diagnostics": ["X02-TYPE-001", "X07-TYPE-003"]
+    },
+    {
+      "name": "general-handler-follows-specific-handler",
+      "source": "try\n    raise error\ncatch any as Error\n    print(any)\ncatch specific as ArithmeticError\n    print(specific)\n",
+      "expect": "error",
+      "diagnostics": ["X02-TYPE-001", "X07-TYPE-004"]
+    }
+  ]
+}

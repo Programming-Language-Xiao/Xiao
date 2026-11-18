@@ -1,0 +1,17 @@
+lint big = 340282366920938463463374607431768211456
+lint seven = 7
+print(big + 1)
+print(big - 1)
+print(big * 3)
+print(-big)
+print(seven // 2)
+print(-seven // 2)
+print(seven % -2)
+print(-seven % 2)
+print(lint(1) / 8)
+print(lint(2) ** 128)
+print(lint(0) ** 0)
+print(lint(-1) ** big)
+print(true + big)
+print(false + (big + 1))
+print(big)

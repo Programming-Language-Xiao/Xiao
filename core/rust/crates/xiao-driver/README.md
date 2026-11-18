@@ -1,0 +1,69 @@
+# `xiao-driver`
+
+## 目录职责
+
+编排源码读取、前端、生产字节码 VM、优化、LLVM 后端、Runtime、缓存和归档请求，提供给 TypeScript CLI 的稳定结构化服务接口。
+
+## 工程期
+
+08 建立前端驱动；09-B0-C 已接入内部前端到 VM 运行驱动器，09-B0-D 冻结退出码；10 接入构建；11–18 接入配置、包、优化、缓存和 `.xar`；17C 增加 `run_archive` 协议操作。
+
+## 模块放置
+
+请求模型、流水线编排、版本协商和服务边界放在 `src/`；终端命令路由放在 `cli/ts/src/commands`。
+
+## 边界
+
+不保存终端编辑状态、不生成本地化文案、不暴露 Rust 内部布局；请求/结果使用稳定的
+`DRIVER_VERSION`，并携带前端目标、VM 参数、诊断和结构化运行报告。优化配置仍由后续阶段接入。
+
+## 08A/U0 交付
+
+`src/frontend.rs` 提供 `FrontendRequest`、`FrontendContext`、`FrontendCompiler` 和
+`FrontendArtifact`。流水线固定调用解析、模块、类型、生命周期和 IR 验证；错误诊断会
+累积，错误时不返回 IR。定向规格位于 `tests/u0_frontend.rs`，对应 UseDocs 为
+`docs/UseDocs/language/compiler/frontend/README.md`。
+
+## 09-B0-C 运行驱动器
+
+`src/run.rs` 提供 `DriverRequest`、`FrontendVmDriver` 和单一的 `DriverOutcome`：前端失败
+保留完整诊断，执行前验证/请求错误保留稳定编号和报告，进入 VM 后保留 B0-B 的完整结果、
+事件、指标和报告。驱动器固定消费真实 `FrontendArtifact`，经生产 `lower_program` 和
+`xiao_vm::run_request` 执行；它不提供入口函数或机型选择参数，也不复制基准工具的函数零搬迁。
+
+取消与超时由 `CancellationToken`/`CancellationSource` 注入生产 VM。驱动器仍在开始、前端
+完成、降低完成和 VM 调用前后采样，同时 VM 的 `run_blocks` 与 `run_subroutine` 在
+`finish_table_effects` 后按 `VmOptions.checkpoint_interval` 轮询。取消不进入用户 `catch`，
+但会尝试 `finally` 并执行释放计划；`checkpoints_enabled = false` 保留旧的无轮询行为。
+测试位于 `tests/b0_c_driver.rs`、`tests/b0_d_exit_codes.rs` 和 `xiao-vm/tests/b0_b_production.rs`。
+
+## 09-B0-D 退出码
+
+`ExitCode` 冻结驱动器的五种终局及其 `0..=4` 进程码，`DriverOutcome::exit_code()` 只根据
+结果阶段和 `RunResult` 分支派生，不读取诊断编号或本地化文本。`Success` 包括被 `catch`
+消费的错误；取消、超时和其它执行前拒绝统一为 `ArtifactRejected`。CLI 接线仍由 11/X0
+调用 `as_process_code()` 完成。契约测试位于 `tests/b0_d_exit_codes.rs`。
+
+18B 将 13A/14B 字节码优化管线接入非零 `OptimizationLevel` 的生产运行路径；O0 保留
+既有验证基线，O1--O3 执行标准保守 Pass 后再进入同一 VM。LLVM 原生构建 O1--O3 由 clang
+的 `-O{n}` 优化，协议产物以 `optimization_backend="clang"` 和
+`xiao_passes_registered=false` 标明 Xiao 自己的 LLVM Pass 尚未注册。协议另提供只验证
+产物的 `verify` 和 16B 两阶段缓存维护的 `cache` 操作，CLI 不复制哈希、ZIP 或 `.xiaoc`
+校验逻辑。
+
+19A 的差分与回归测试位于 `tests/d19a_differential.rs`（源码、REPL、`.xiaoc`、`.xar` 多路比较，
+不一致时点名是哪两路；原生一路需 15E 环境变量，缺失时写出“未覆盖”及原因）和
+`tests/d19a_regression.rs`（溢出、动态值、容器路径、drop、模块初始化、跨线程诊断，各样本在
+`-O0`..`-O3` 下逐级比较）。
+
+## 10A 前端到 LLVM 内部驱动器
+
+`src/native.rs` 提供 `NativeBuildRequest`、`FrontendNativeDriver` 和
+`NativeBuildResult`。驱动器先调用同一个 `FrontendCompiler`，再把同一份已验证 IR 交给
+`xiao-codegen-llvm`；工具链路径由请求注入，缺失或失败以结构化错误返回。这里不接用户可见
+的 `xiao build`，也不重新解析源码或发现宿主工具链。
+
+B4-4 的 `run_archive` / `run_archive_with_control` 使用与源码运行相同的固定官方加载器，
+协议 `RunArchive` 复用该入口。应用模块仅从已验证归档读取；官方模块从工具链标准库加载，
+`std.cmath` 与 `stdlib.cmath` 使用同一 `stdlib.cmath` 身份。低层 `xiao-xar` 仍接收宿主注入，
+不反向依赖驱动器；未注入加载器时请求官方模块继续明确拒绝。

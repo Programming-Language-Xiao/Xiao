@@ -1,0 +1,26 @@
+lfloat first = 1.50
+lfloat second = 1.5
+lfloat two = 2.0
+lfloat one = 1.00
+lfloat negative = -5.5
+lfloat huge = 1e100000
+lfloat tiny = 1e-100000
+lfloat three_tiny = 3e-100000
+print(first + second)
+print(first - second)
+print(first * two)
+print(one / 2)
+print(one / two)
+print(negative // 2)
+print(negative % 2)
+print(negative // -2)
+print(negative % -2)
+print(two ** two)
+print(one ** 1)
+print(one ** 2)
+print(first == second)
+print(huge > tiny)
+print(huge % tiny)
+print(huge % three_tiny)
+print(lfloat(0) + huge)
+print(first)

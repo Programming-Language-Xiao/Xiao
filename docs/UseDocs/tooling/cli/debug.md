@@ -1,0 +1,65 @@
+---
+id: tooling.cli.debug
+title: -debug 诊断窗口
+status: verified
+audience: developer
+module: ts.xiao-cli
+stage: 11X0-D
+related:
+  - README.md
+  - shell.md
+  - packaging.md
+  - ../../../DevDocs/11x0d-debug-diagnostics-window.md
+---
+
+# `-debug` 诊断窗口
+
+`xiao run <file.xiao> -debug` 和源码快捷运行会把调试位放入 Rust 核心协议。核心在
+前端/VM 执行前创建独立诊断进程，诊断进程再打开新的终端 TUI；用户程序的标准输出仍由
+原运行进程拥有，诊断文本不会混入它。
+
+原生 `xiao build -debug` 产物也会在自身入口建立一次性本机回环会话，再启动旁置的
+`xiao-diagnostics` 并等待令牌握手；直接运行可执行文件即可触发这条链路，不需要再次经过
+`xiao` 启动器。普通原生产物不会生成这些诊断生命周期调用，也不会尝试开窗。
+
+普通原生错误报告只写本地错误摘要，不会因为没有调试会话而输出诊断通道失败；只有完成令牌
+握手的 `-debug` 会话才接收诊断事件。握手后的通信中断仍按明确失败路径处理。
+
+诊断进程使用本机回环套接字和一次性令牌握手。事件以八字节大端长度前缀的结构化 JSON
+发送，窗口显示模块、函数、作用域、释放、处理器、错误、堆栈和指标事件。窗口最后一行
+固定显示运行时间、当前/峰值内存、运行时错误数、断点命中数和钩子数。默认等级为 `info`；
+逐指令追踪需要显式的 `trace` 配置。
+
+文件目标使用 JSONL。`[debug]` 的终端等级、文件等级、日志路径、堆栈详细程度和聚焦规则
+通过协议的 `optimization.diagnostics` 传递；聚焦规则默认从总日志分流，只有 `mirror = true`
+才同时写入总日志。错误计数不受等级过滤影响。
+
+启动阶段没有可用终端或独立诊断组件时，命令返回 `X11-DIAGNOSTIC-START-001` 并且不执行
+用户代码。窗口在运行中关闭、套接字中断或日志目标失败时，Runtime 继续执行，退出码和
+用户程序语义保持不变。
+
+原生错误路径仍保留机器字段 `code`、`message_id`、参数、源码位置和退出码；`-debug` 只
+改变诊断事件与窗口接线，不复制语言包渲染逻辑。遇到原生失败时可先查看标准错误中的
+`xiao-error` 机器摘要，再用相同源码的字节码运行结果逐项对照。
+
+## 平台边界
+
+终端候选顺序固定为：Windows 的 `wt.exe`、`cmd.exe start`、PowerShell；Linux 的
+`x-terminal-emulator`、`gnome-terminal`、`konsole`、`xterm`；macOS 的 `osascript`、
+`open -a Terminal`。原生启动 shim 在 POSIX 上复用 Linux/macOS 的终端候选，在 Windows
+上使用 `CREATE_NEW_CONSOLE`；候选失败、握手失败和就绪超时都返回稳定的
+`X11-DIAGNOSTIC-START-001`，不静默跳过。候选来源会进入结构化启动失败详情。Windows
+原生是当前可宣称的端到端平台；Linux Docker 只提供功能/构建证据，Linux 原生、WSL 和
+macOS 仍待复现。
+
+独立分发目录随 `xiao-core` 一并携带 `xiao-diagnostics`。调试原生构建的旁置
+`<可执行文件>.xiao-debug.json` 是持久激活位；普通构建不会生成该文件，也不会因 `[debug]`
+配置自行开窗。激活位格式和读取 API 位于 `xiao-diagnostics::window`。X0-E 已接入
+`xiao build`：调试构建会把 `xiao-diagnostics` 复制到可执行文件目录，并把启动 shim 链接
+进原生入口。Windows shim 使用新控制台并等待诊断进程写入一次性就绪标记；创建失败、诊断
+进程提前退出或就绪超时都会在执行用户代码前返回 `X11-DIAGNOSTIC-START-001`。构建用法和
+工具链环境变量见 [`xiao build`](build.md)。
+
+平台复现或调试测试可通过 `XIAO_DIAGNOSTICS_PATH` 显式指定当前诊断组件；修改
+`xiao-diagnostics` 的参数或握手协议后，应先重建该组件，避免开发树中残留的旧
+`target/debug/xiao-diagnostics` 掩盖新版本行为。

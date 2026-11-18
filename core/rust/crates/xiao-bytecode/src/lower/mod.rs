@@ -1,0 +1,1340 @@
+//! `IrProgram` 到统一三地址模型的单向降低。
+//!
+//! 降低器只做 1:1 语义展开：不推断类型（只把 `IrExpression.ty` 映射成类别）、
+//! 不重算生命周期（只消费既有结论）、不重排释放顺序（逐条重放冻结计划）。
+//!
+//! **块结构由本模块按语句结构自行重建**，不把 `IrBasicBlock` 当作块划分依据：
+//! `IrBasicBlock.statements` 只是源码区间、不带指令，块由生命周期阶段按区间
+//! 即兴产生并含合成错误块。控制流图只降级为两件事的来源——语句到所属作用域的
+//! 映射，以及某个退出边是否可能发生。
+
+/// 表达式到三地址指令的展开规则。
+mod expr;
+/// 函数内读取稳定的模块顶层导入，不复制被导入模块的函数体。
+mod imports;
+/// 退出点上的释放计划接线。
+mod plan;
+/// 语句降低与块结构重建。
+mod stmt;
+/// 表定义、字段初始化函数和方法接线。
+mod tables;
+
+use std::collections::{BTreeMap, HashMap};
+
+use xiao_ir::{
+    IrExpression, IrExpressionKind, IrProgram, IrReleasePlan, IrSpan, IrStatement, IrStatementKind,
+    IrType,
+};
+use xiao_lifetime::ReleaseActionKind;
+use xiao_syntax::ScalarType;
+
+use crate::sig::{CallSig, CallSigTable};
+use crate::tac::{
+    BlockId, CategoryMap, ConstPool, FuncId, RegisterClass, TAC_VERSION, TacAbi, TacArgument,
+    TacBlock, TacBoundaryTransfer, TacConcurrencyPlan, TacConstant, TacFunction, TacHandler,
+    TacInstr, TacOp, TacProgram, VReg,
+};
+
+/// 当前三地址格式使用的 ABI 版本。
+pub const TAC_BYTECODE_ABI_VERSION: u32 = 1;
+/// 当前消费的 Runtime ABI 版本。
+pub const TAC_RUNTIME_ABI_VERSION: u32 = xiao_runtime_abi::ABI_ENCODED_VERSION as u32;
+
+/// 按源码区间分组的待降低 Runtime 检查。
+type PendingRuntimeChecks = BTreeMap<(usize, usize), Vec<(String, Option<IrType>)>>;
+
+/// 一条释放计划的携带形式。
+///
+/// 三地址程序保留冻结计划的原始动作序列，由解释器在退出点上执行；这样三种
+/// 机型共用同一份释放语义，也不会各自复制一份释放顺序。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct TacReleasePlan {
+    /// 所属作用域。
+    pub scope: u32,
+    /// 退出边稳定名称。
+    pub exit: String,
+    /// 按 `order` 排列的释放动作。
+    pub actions: Vec<TacReleaseAction>,
+    /// 转移出去、不在此处释放的值。
+    pub transferred: Vec<u32>,
+}
+
+/// 一条释放动作。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct TacReleaseAction {
+    /// `IrValue.id`。
+    pub value: u32,
+    /// 计划内的从零开始顺序。
+    pub order: usize,
+    /// 强释放或弱释放。
+    pub kind: ReleaseActionKind,
+}
+
+/// 把源码名称拼成绑定键。
+///
+/// 规则与 `xiao-lifetime/src/escape.rs` 的 `name_key` 一致：反引号名称与普通
+/// 名称是**不同的绑定**，不能共用键。这里是降低器侧的唯一定义。
+fn name_key(name: &str, backticked: bool) -> String {
+    if backticked {
+        format!("backtick:{name}")
+    } else {
+        format!("ascii:{name}")
+    }
+}
+
+/// 语句到所属静态作用域的索引。
+///
+/// 来源是控制流基本块的 `statements`（语句源码区间）与 `scope` 的对应关系，
+/// 这是数据而不是推断；比按源码区间包含关系反推可靠。
+#[derive(Debug, Default)]
+struct ScopeIndex {
+    by_span: HashMap<(usize, usize), u32>,
+}
+
+impl ScopeIndex {
+    /// 从控制流图建立语句到作用域的映射；同一区间重复出现时保留首个。
+    fn build(program: &IrProgram) -> Self {
+        let mut by_span = HashMap::new();
+        for block in &program.control_flow.blocks {
+            for span in &block.statements {
+                by_span.entry((span.start, span.end)).or_insert(block.scope);
+            }
+        }
+        Self { by_span }
+    }
+
+    /// 返回语句所属作用域。
+    fn of(&self, span: IrSpan) -> Option<u32> {
+        self.by_span.get(&(span.start, span.end)).copied()
+    }
+}
+
+/// 降低一个已验证的 `IrProgram`。
+#[must_use]
+pub fn lower_program(program: &IrProgram) -> TacProgram {
+    let normalized = match xiao_optimizer::run_baseline(program, program.target.clone()) {
+        Ok(result) => result.program,
+        Err(error) => {
+            let mut lowerer = Lowerer::new(program);
+            lowerer
+                .unsupported
+                .push(format!("共享优化管线失败：{error}"));
+            lowerer.run();
+            return lowerer.finish();
+        }
+    };
+    let mut lowerer = Lowerer::new(&normalized);
+    lowerer.run();
+    lowerer.finish()
+}
+
+/// 降低过程中的全部可变状态。
+struct Lowerer<'ir> {
+    program: &'ir IrProgram,
+    scopes: ScopeIndex,
+    constants: ConstPool,
+    signatures: CallSigTable,
+    functions: Vec<TacFunction>,
+    /// 源码顺序的表定义与方法索引。
+    table_definitions: Vec<crate::tac::TacTableDefinition>,
+    /// 所有预登记函数的签名，包含追加的表函数。
+    indexed_signatures: BTreeMap<FuncId, crate::tac::SigId>,
+    plans: Vec<TacReleasePlan>,
+    /// `IrValue.id` 到源码区间的映射，用于把释放动作还原成寄存器。
+    value_spans: HashMap<u32, IrSpan>,
+    /// `IrValue.id` 到所属作用域的映射，用于按作用域消歧同名绑定。
+    value_scopes: HashMap<u32, u32>,
+    /// 顶层函数名到函数索引的映射。
+    ///
+    /// 脚本入口固定占用索引 0，命名函数从 1 开始，因此这里存的是「入口之后的
+    /// 序号」；调用点必须拿到与 `TacProgram.functions` 对齐的索引。
+    named_functions: BTreeMap<String, FuncId>,
+    /// 当前的函数构建状态。
+    frame: Frame,
+    /// 顶层函数名到调用签名的映射。
+    function_signatures: BTreeMap<String, crate::tac::SigId>,
+    /// 在入口执行前已绑定、且未被赋值覆盖的顶层导入。
+    global_imports: BTreeMap<String, xiao_ir::IrImportItem>,
+    /// 本批次尚未降低的构造；由验证器转成诊断，不静默跳过。
+    unsupported: Vec<String>,
+    /// 按表达式源码区间收集的 Runtime 检查。
+    runtime_checks: PendingRuntimeChecks,
+}
+
+/// 单个函数的构建状态。
+#[derive(Debug, Default)]
+struct Frame {
+    blocks: Vec<TacBlock>,
+    current: Option<BlockId>,
+    next_vreg: u32,
+    value_regs: BTreeMap<u32, VReg>,
+    locals: Vec<VReg>,
+    parameters: Vec<VReg>,
+    /// 形参的精确名称绑定，也覆盖合成字段初始化函数的接收者。
+    parameter_names: BTreeMap<String, VReg>,
+    import_names: BTreeMap<(u32, String), VReg>,
+    used_scopes: Vec<u32>,
+    scope_stack: Vec<u32>,
+    /// 活动循环的跳转目标栈。
+    loops: Vec<LoopFrame>,
+    /// 当前语句产生的、需要在消费后释放的临时堆值寄存器。
+    pending_temporaries: Vec<VReg>,
+    /// 当前函数的异常处理器表。
+    handlers: Vec<TacHandler>,
+    /// 当前函数局部编号空间内的寄存器类别。
+    categories: CategoryMap,
+}
+
+/// 一个活动循环的控制流目标与循环期临时值。
+#[derive(Debug)]
+struct LoopFrame {
+    /// `continue` 的目标；`for` 指向游标递增桥，`while` 指向条件头。
+    continue_target: BlockId,
+    /// `break` 的循环出口。
+    exit: BlockId,
+}
+
+impl<'ir> Lowerer<'ir> {
+    /// 按稳定索引读取 IR 选择计划。
+    pub(super) fn selection_plan(&self, id: u32) -> Option<&xiao_ir::IrSelectionPlan> {
+        self.program.selection_plans.get(id as usize)
+    }
+
+    /// 按赋值源码区间查找事务性广播计划。
+    pub(super) fn broadcast_assignment_plan_id(&self, span: IrSpan) -> Option<u32> {
+        self.program
+            .broadcast_assignment_plans
+            .iter()
+            .position(|plan| plan.span == span)
+            .and_then(|index| u32::try_from(index).ok())
+    }
+
+    /// 按调用源码区间查找随机种子计划。
+    pub(super) fn random_seed_plan_id(&self, span: IrSpan) -> Option<u32> {
+        self.program
+            .random_seed_plans
+            .iter()
+            .position(|plan| plan.span == span)
+            .and_then(|index| u32::try_from(index).ok())
+    }
+
+    /// 建立降低器并预处理所有权与签名信息。
+    fn new(program: &'ir IrProgram) -> Self {
+        let value_spans = program
+            .ownership
+            .values
+            .iter()
+            .map(|value| (value.id, value.span))
+            .collect();
+        let plans = program
+            .ownership
+            .release_plans
+            .iter()
+            .map(convert_plan)
+            .collect();
+        Self {
+            program,
+            scopes: ScopeIndex::build(program),
+            constants: ConstPool::new(),
+            signatures: CallSigTable::new(),
+            functions: Vec::new(),
+            table_definitions: Vec::new(),
+            indexed_signatures: BTreeMap::new(),
+            plans,
+            value_spans,
+            value_scopes: program
+                .ownership
+                .values
+                .iter()
+                .map(|value| (value.id, value.scope))
+                .collect(),
+            named_functions: BTreeMap::new(),
+            frame: Frame::default(),
+            function_signatures: BTreeMap::new(),
+            global_imports: imports::stable_imports(program),
+            unsupported: Vec::new(),
+            runtime_checks: program.runtime_checks.iter().fold(
+                PendingRuntimeChecks::new(),
+                |mut checks, check| {
+                    checks
+                        .entry((check.span.start, check.span.end))
+                        .or_default()
+                        .push((check.kind.clone(), check.expected.clone()));
+                    checks
+                },
+            ),
+        }
+    }
+
+    /// 依次降低入口脚本与全部顶层函数。
+    fn run(&mut self) {
+        let functions = self
+            .program
+            .body
+            .iter()
+            .filter_map(|statement| match &statement.kind {
+                IrStatementKind::Function { name, .. } => Some((name.text.clone(), statement)),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        for (index, (name, _)) in functions.iter().enumerate() {
+            self.named_functions
+                .insert(name.clone(), FuncId::new(index as u32 + 1));
+            if let IrStatementKind::Function {
+                parameters,
+                return_type,
+                ..
+            } = &functions[index].1.kind
+            {
+                let parameters = parameters.clone();
+                let return_type = return_type.clone();
+                let signature = self.signature_for(&parameters, &return_type);
+                self.function_signatures.insert(name.clone(), signature);
+                self.indexed_signatures
+                    .insert(FuncId::new(index as u32 + 1), signature);
+            }
+        }
+        let table_functions = self.register_tables(functions.len() as u32 + 1);
+        let script = self
+            .program
+            .body
+            .iter()
+            .filter(|statement| !matches!(statement.kind, IrStatementKind::Function { .. }))
+            .cloned()
+            .collect::<Vec<_>>();
+        self.lower_function("", &script, &[], self.program.span, None);
+        for (name, statement) in functions {
+            let IrStatementKind::Function {
+                parameters,
+                return_type,
+                body,
+                ..
+            } = &statement.kind
+            else {
+                continue;
+            };
+            let signature = self
+                .function_signatures
+                .get(&name)
+                .copied()
+                .unwrap_or_else(|| self.signature_for(parameters, return_type));
+            let parameters = parameters.clone();
+            self.lower_function(&name, body, &parameters, statement.span, Some(signature));
+        }
+        for (name, statement, signature) in table_functions {
+            if let IrStatementKind::Function {
+                parameters, body, ..
+            } = &statement.kind
+            {
+                self.lower_function(&name, body, parameters, statement.span, Some(signature));
+            }
+        }
+    }
+
+    /// 汇总降低结果。
+    fn finish(mut self) -> TacProgram {
+        // 每一条前端登记的 RuntimeCheck 都必须在降低阶段被消费，或明确
+        // 进入 `unsupported`。静默丢弃会让产物看似完整，却把动态边界变成
+        // 未检查的普通指令。
+        for ((start, end), checks) in std::mem::take(&mut self.runtime_checks) {
+            for (kind, _) in checks {
+                self.record_unsupported(format!("运行时检查未消费：{kind}（{start}..{end}）"));
+            }
+        }
+        let categories = self
+            .functions
+            .first()
+            .map(|function| function.categories.clone())
+            .unwrap_or_default();
+        let concurrency_plans = self
+            .program
+            .concurrency_calls
+            .iter()
+            .map(|call| {
+                let transfer = self
+                    .program
+                    .ownership
+                    .boundary_transfers
+                    .iter()
+                    .find(|transfer| transfer.span == call.span)
+                    .map(|transfer| TacBoundaryTransfer {
+                        copy_kind: transfer.copy_kind.clone(),
+                        parameters: transfer.parameters.clone(),
+                        cleanup_order: transfer.cleanup_order.clone(),
+                    });
+                let runtime_id = self
+                    .program
+                    .ownership
+                    .cross_thread_facts
+                    .iter()
+                    .find(|fact| fact.span == call.span)
+                    .map(|fact| fact.runtime_id);
+                let cancellation_checks = self
+                    .program
+                    .ownership
+                    .cancellation_checks
+                    .iter()
+                    .filter(|check| check.span == call.span)
+                    .map(|check| check.kind.clone())
+                    .collect();
+                TacConcurrencyPlan {
+                    operation: call.operation.clone(),
+                    span: call.span,
+                    argument_spans: call.argument_spans.clone(),
+                    argument_types: call.argument_types.clone(),
+                    result_type: call.result_type.clone(),
+                    facts: self
+                        .program
+                        .ownership
+                        .cross_thread_facts
+                        .iter()
+                        .filter(|fact| fact.span == call.span)
+                        .cloned()
+                        .collect(),
+                    runtime_id,
+                    transfer,
+                    cancellation_checks,
+                }
+            })
+            .collect();
+        TacProgram {
+            version: TAC_VERSION,
+            abi: TacAbi {
+                bytecode_abi_version: TAC_BYTECODE_ABI_VERSION,
+                runtime_abi_version: TAC_RUNTIME_ABI_VERSION,
+                ir_version: self.program.version,
+                language_version: self.program.language_version.clone(),
+                target: self.program.target.clone(),
+            },
+            constants: self.constants,
+            signatures: self.signatures,
+            functions: self.functions,
+            categories,
+            plans: self.plans,
+            selection_plans: self.program.selection_plans.clone(),
+            broadcast_assignment_plans: self.program.broadcast_assignment_plans.clone(),
+            random_seed_plans: self.program.random_seed_plans.clone(),
+            table_definitions: self.table_definitions,
+            unsupported: self.unsupported,
+            required_features: required_features_for_ir(self.program),
+            concurrency_plans,
+        }
+    }
+
+    /// 合成一条调用签名。
+    fn signature_for(
+        &mut self,
+        parameters: &[xiao_ir::IrParameter],
+        return_type: &IrType,
+    ) -> crate::tac::SigId {
+        use crate::sig::ParamKind;
+
+        let signature = if parameters.is_empty() && return_type == &IrType::Dynamic {
+            CallSig::dynamic()
+        } else {
+            let mut signature = CallSig::plain(
+                parameters.iter().map(|item| item.ty.clone()).collect(),
+                return_type.clone(),
+            );
+            signature.parameter_names = parameters
+                .iter()
+                .map(|item| item.name.text.clone())
+                .collect();
+            signature.parameter_kinds = parameters
+                .iter()
+                .map(|item| {
+                    ParamKind::from_name(&item.kind).unwrap_or(ParamKind::PositionalOrKeyword)
+                })
+                .collect();
+            signature.has_defaults = parameters
+                .iter()
+                .map(|item| item.default.is_some())
+                .collect();
+            for (index, parameter) in parameters.iter().enumerate() {
+                match ParamKind::from_name(&parameter.kind) {
+                    Some(ParamKind::VarArgs) => signature.var_args_slot = Some(index),
+                    Some(ParamKind::VarKeywords) => signature.kw_args_slot = Some(index),
+                    _ => {}
+                }
+            }
+            signature
+        };
+        self.signatures.intern(signature)
+    }
+
+    /// 降低一个函数体。
+    fn lower_function(
+        &mut self,
+        name: &str,
+        body: &[IrStatement],
+        parameters: &[xiao_ir::IrParameter],
+        span: IrSpan,
+        signature: Option<crate::tac::SigId>,
+    ) {
+        self.frame = Frame::default();
+        let entry = self.new_block(span);
+        self.switch_to(entry);
+        let program_scope = self
+            .program
+            .ownership
+            .scopes
+            .iter()
+            .find(|scope| scope.kind == "program")
+            .map_or(0, |scope| scope.id);
+        self.enter_scope(program_scope, span);
+        let parameter_registers = self.declare_parameters(parameters);
+        let function_scope = self
+            .program
+            .ownership
+            .scopes
+            .iter()
+            .find(|scope| scope.kind == "function" && contains(scope.span, span))
+            .map(|scope| scope.id);
+        if let Some(scope) = function_scope {
+            self.enter_scope(scope, span);
+        }
+        for (parameter, register) in parameters.iter().zip(&parameter_registers) {
+            self.emit_runtime_checks(parameter.name.span, *register);
+        }
+        self.lower_statements(body, "normal");
+        if !self.current_block_terminated() {
+            if name.is_empty() {
+                for export in &self.program.module_exports {
+                    if self.table_definitions.iter().any(|table| {
+                        table.signature.name == *export && table.signature.kind == "instance"
+                    }) {
+                        continue;
+                    }
+                    let export_register = [false, true].into_iter().find_map(|backticked| {
+                        self.import_register(export, backticked)
+                            .or_else(|| {
+                                self.value_of_name(export, backticked)
+                                    .and_then(|value| self.frame.value_regs.get(&value).copied())
+                            })
+                            .or_else(|| {
+                                if backticked {
+                                    return None;
+                                }
+                                let function = self.function_index(export)?;
+                                let register =
+                                    self.new_binding_register(RegisterClass::ObjHandle, span);
+                                self.emit(TacInstr::with_dst(
+                                    TacOp::LoadFunc(function),
+                                    register,
+                                    span,
+                                ));
+                                Some(register)
+                            })
+                            .map(|register| (register, backticked))
+                    });
+                    if let Some((register, backticked)) = export_register {
+                        self.emit(TacInstr::new(
+                            TacOp::ExportValue {
+                                name: name_key(export, backticked),
+                                value: register,
+                            },
+                            span,
+                        ));
+                    } else {
+                        self.record_unsupported(format!("模块导出 {export} 未能降低为顶层值"));
+                    }
+                }
+            }
+            if let Some(scope) = function_scope {
+                self.exit_scope(scope, "normal");
+            }
+            self.exit_scope(program_scope, "normal");
+            self.emit(TacInstr::new(TacOp::Return { value: None }, span));
+        } else {
+            // 显式终止语句已经发出了对应的释放计划；不能在其后追加
+            // 不可达 `ExitScope`/隐式返回，否则块终止点和异常接线会失真。
+            if let Some(scope) = function_scope {
+                self.forget_scope(scope);
+            }
+            self.forget_scope(program_scope);
+        }
+        let blocks = std::mem::take(&mut self.frame.blocks);
+        let locals = std::mem::take(&mut self.frame.locals);
+        let value_registers = std::mem::take(&mut self.frame.value_regs);
+        let categories = std::mem::take(&mut self.frame.categories);
+        let used_scopes = std::mem::take(&mut self.frame.used_scopes);
+        let handlers = std::mem::take(&mut self.frame.handlers);
+        self.functions.push(TacFunction {
+            name: name.to_owned(),
+            signature,
+            entry,
+            blocks,
+            parameters: parameter_registers,
+            locals,
+            categories,
+            scopes: used_scopes,
+            handlers,
+            value_registers,
+            span,
+        });
+    }
+
+    /// 为形参分配寄存器，并把它们与对应的 `IrValue` 绑定。
+    ///
+    /// 绑定是必需的：函数体里按名引用形参会走 `register_of`，如果不先登记，
+    /// 它会为同一个值再分配一个新寄存器，读到的就是从未写入的槽位。
+    fn declare_parameters(&mut self, parameters: &[xiao_ir::IrParameter]) -> Vec<VReg> {
+        let mut registers = Vec::with_capacity(parameters.len());
+        for parameter in parameters {
+            let class = Lowerer::class_of_type(&parameter.ty);
+            let register = self.new_binding_register(class, parameter.span);
+            self.frame.parameters.push(register);
+            // 所有源码形参一律登记到 parameter_names，保证名称解析命中
+            // 精确参数寄存器。
+            self.frame.parameter_names.insert(
+                name_key(&parameter.name.text, parameter.name.backticked),
+                register,
+            );
+            self.frame.locals.push(register);
+            if let Some(value) = self.value_of_name_at(
+                &parameter.name.text,
+                parameter.name.backticked,
+                parameter.span,
+            ) {
+                self.frame.value_regs.insert(value, register);
+            }
+            registers.push(register);
+        }
+        registers
+    }
+
+    /// 分配一个新的虚拟寄存器并登记类别。
+    fn new_register(&mut self, class: RegisterClass, _span: IrSpan) -> VReg {
+        let register = VReg::new(self.frame.next_vreg);
+        self.frame.next_vreg = self.frame.next_vreg.saturating_add(1);
+        self.frame.categories.insert(register, class);
+        // 新建的值寄存器承载一条指令刚产生的值，语句结束时要释放。
+        // 具名绑定的寄存器走 `new_binding_register`，它们由释放计划负责。
+        if matches!(class, RegisterClass::ObjHandle) {
+            self.note_temporary(register);
+        }
+        register
+    }
+
+    /// 新建一个承载具名绑定的寄存器。
+    ///
+    /// 绑定寄存器**不登记为临时值**：它的生命周期由冻结释放计划决定，
+    /// 再发一次 `Release` 会重复释放。
+    fn new_binding_register(&mut self, class: RegisterClass, span: IrSpan) -> VReg {
+        let register = VReg::new(self.frame.next_vreg);
+        self.frame.next_vreg = self.frame.next_vreg.saturating_add(1);
+        self.frame.categories.insert(register, class);
+        let _ = span;
+        register
+    }
+
+    /// 判断一个寄存器当前是否承载待释放的临时值。
+    fn is_pending_temporary(&self, register: VReg) -> bool {
+        self.frame.pending_temporaries.contains(&register)
+    }
+
+    /// 从当前语句的待刷新列表取出一个临时值，交给结构化控制流持有。
+    fn take_temporary(&mut self, register: VReg) -> bool {
+        let Some(index) = self
+            .frame
+            .pending_temporaries
+            .iter()
+            .position(|candidate| *candidate == register)
+        else {
+            return false;
+        };
+        self.frame.pending_temporaries.remove(index);
+        true
+    }
+
+    /// 新建一个基本块，**不切换当前块**。
+    ///
+    /// 分配与切换刻意分开：调用方通常要先把终止跳转发进前驱块，再切到新块，
+    /// 否则跳转会落进自己块里形成自环。
+    fn new_block(&mut self, span: IrSpan) -> BlockId {
+        let scope = self.innermost_scope().unwrap_or(0);
+        let id = BlockId::new(self.frame.blocks.len() as u32);
+        self.frame.blocks.push(TacBlock {
+            id,
+            scope,
+            instructions: Vec::new(),
+        });
+        if !self.frame.used_scopes.contains(&scope) {
+            self.frame.used_scopes.push(scope);
+        }
+        let _ = span;
+        id
+    }
+
+    /// 返回当前最内层作用域。
+    fn innermost_scope(&self) -> Option<u32> {
+        self.frame.scope_stack.last().copied()
+    }
+
+    /// 返回语句所属的静态作用域。
+    fn scope_of_statement(&self, span: IrSpan) -> Option<u32> {
+        self.scopes.of(span)
+    }
+
+    /// 按源码区间和作用域类别查找一个结构化区域的作用域。
+    ///
+    /// 空的 `try`/`catch`/`finally` 没有可供 [`ScopeIndex`] 记录的语句区间，
+    /// 因此不能只依赖首条语句反查；这里消费生命周期阶段已经产出的作用域
+    /// 区间，按最窄匹配优先，避免嵌套区域被外层吞掉。
+    pub(super) fn scope_for_region(&self, span: IrSpan, kind: &str) -> Option<u32> {
+        self.program
+            .ownership
+            .scopes
+            .iter()
+            .filter(|scope| scope.kind == kind && contains(scope.span, span))
+            .min_by_key(|scope| {
+                (
+                    scope.span.end.saturating_sub(scope.span.start),
+                    scope.depth,
+                    scope.id,
+                )
+            })
+            .map(|scope| scope.id)
+    }
+
+    /// 进入一个结构化区域作用域；与普通词法作用域入口共用同一条指令。
+    pub(super) fn enter_region_scope(&mut self, scope: u32, span: IrSpan) {
+        self.enter_scope(scope, span);
+    }
+
+    /// 按名称与源码区间查找绑定的值编号。
+    ///
+    /// 绑定区间可能是名称、形参或整条声明；优先最窄的包含区间，
+    /// 普通再次赋值再按当前词法作用域查找，避免写入其它函数的同名形参。
+    fn value_of_name_at(&self, name: &str, backticked: bool, span: IrSpan) -> Option<u32> {
+        let key = name_key(name, backticked);
+        self.program
+            .ownership
+            .values
+            .iter()
+            .filter(|value| {
+                value.name.as_deref() == Some(key.as_str()) && contains(value.span, span)
+            })
+            .min_by_key(|value| value.span.end.saturating_sub(value.span.start))
+            .map(|value| value.id)
+            .or_else(|| self.value_of_name(name, backticked))
+    }
+
+    /// 压入一个活动循环。
+    fn push_loop(&mut self, continue_target: BlockId, exit: BlockId) {
+        self.frame.loops.push(LoopFrame {
+            continue_target,
+            exit,
+        });
+    }
+
+    /// 弹出一个活动循环。
+    fn pop_loop(&mut self) {
+        self.frame.loops.pop();
+    }
+
+    /// 返回当前循环的跳转目标：`break` 去出口，`continue` 去循环更新点。
+    fn loop_target(&self, exit: &str) -> Option<BlockId> {
+        let frame = self.frame.loops.last()?;
+        Some(if exit == "break" {
+            frame.exit
+        } else {
+            frame.continue_target
+        })
+    }
+
+    /// 切换到指定块。
+    fn switch_to(&mut self, block: BlockId) {
+        self.frame.current = Some(block);
+    }
+
+    /// 向当前块追加一条指令；没有当前块时静默丢弃。
+    fn emit(&mut self, instruction: TacInstr) {
+        let Some(current) = self.frame.current else {
+            return;
+        };
+        if let Some(block) = self.frame.blocks.get_mut(current.get() as usize) {
+            block.instructions.push(instruction);
+        }
+    }
+
+    /// 返回当前正在构建的块编号。
+    pub(super) fn current_block(&self) -> Option<BlockId> {
+        self.frame.current
+    }
+
+    /// 判断当前块是否已经写入终止控制流指令。
+    pub(super) fn current_block_terminated(&self) -> bool {
+        let Some(current) = self.frame.current else {
+            return true;
+        };
+        self.frame
+            .blocks
+            .get(current.get() as usize)
+            .and_then(|block| block.instructions.last())
+            .is_some_and(|instruction| {
+                matches!(
+                    instruction.op,
+                    TacOp::Jump(_)
+                        | TacOp::BranchIf { .. }
+                        | TacOp::Return { .. }
+                        | TacOp::Raise { .. }
+                        | TacOp::RetFromSub
+                )
+            })
+    }
+
+    /// 为当前函数登记一个异常处理器。
+    pub(super) fn add_handler(&mut self, handler: TacHandler) {
+        self.frame.handlers.push(handler);
+    }
+
+    /// 把当前 try 的 `finally` 子程序补到保护区内的非局部退出路径。
+    ///
+    /// 内层 try 可能已经在同一条路径上插入了自己的 `CallSub`。这里只越过
+    /// 释放计划定位插入点，保证最终顺序仍是「内层 finally -> 外层 finally ->
+    /// drop」，而不是把外层子程序推到最前面。
+    pub(super) fn patch_nonlocal_with_finally(
+        &mut self,
+        start: BlockId,
+        end: BlockId,
+        sub: BlockId,
+        span: IrSpan,
+    ) {
+        let start_id = start;
+        let end_id = end;
+        let start = start.get() as usize;
+        let end = end.get() as usize;
+        for block in self
+            .frame
+            .blocks
+            .iter_mut()
+            .skip(start)
+            .take(end.saturating_sub(start))
+        {
+            let mut index = 0;
+            while index < block.instructions.len() {
+                let is_return = matches!(block.instructions[index].op, TacOp::Return { .. });
+                let is_jump_exit = if let TacOp::Jump(target) = block.instructions[index].op {
+                    // 只有真正离开当前保护区的 break/continue 才需要外层
+                    // finally。目标仍在区间内时，它是 finally 或嵌套结构
+                    // 内部的循环/合流跳转，不能误插入外层清理。
+                    let leaves_protected = target < start_id || target >= end_id;
+                    if !leaves_protected {
+                        index += 1;
+                        continue;
+                    }
+                    let mut cursor = index;
+                    while cursor > 0
+                        && matches!(
+                            block.instructions[cursor - 1].op,
+                            TacOp::RunReleasePlan { .. }
+                        )
+                    {
+                        cursor -= 1;
+                    }
+                    block.instructions[cursor..index].iter().any(|instruction| {
+                        matches!(
+                            &instruction.op,
+                            TacOp::RunReleasePlan { exit, .. }
+                                if exit == "break" || exit == "continue" || exit == "return"
+                        )
+                    })
+                } else {
+                    false
+                };
+                if !is_return && !is_jump_exit {
+                    index += 1;
+                    continue;
+                }
+
+                // 先越过连续的释放计划；已有内层 CallSub 会留在插入点之前，
+                // 因而自然保持内层到外层的调用顺序。
+                let mut insert_at = index;
+                while insert_at > 0
+                    && matches!(
+                        block.instructions[insert_at - 1].op,
+                        TacOp::RunReleasePlan { .. }
+                    )
+                {
+                    insert_at -= 1;
+                }
+                let already_present = block.instructions[insert_at..index].iter().any(|instruction| {
+                    matches!(instruction.op, TacOp::CallSub { sub: existing } if existing == sub)
+                });
+                if !already_present {
+                    block
+                        .instructions
+                        .insert(insert_at, TacInstr::new(TacOp::CallSub { sub }, span));
+                    index += 1;
+                }
+                index += 1;
+            }
+        }
+    }
+
+    /// 把源码位置对应的 Runtime 检查降低为显式失败边。
+    pub(super) fn emit_runtime_checks(&mut self, span: IrSpan, value: VReg) {
+        let Some(kinds) = self.runtime_checks.remove(&(span.start, span.end)) else {
+            return;
+        };
+        self.emit_runtime_check_kinds(span, value, kinds);
+    }
+
+    /// 消费一个集合二元表达式的检查，并把集合形状检查发给两个操作数。
+    ///
+    /// 检查按源码跨度一次性移除；若只消费左侧，剩余检查会被外层选择器的
+    /// 范围清扫绑定到错误的源容器，合法程序反而会在运行时失败。非集合检查
+    /// 仍只绑定第一个值，保持单操作数检查的既有语义。
+    pub(super) fn emit_runtime_checks_for(&mut self, span: IrSpan, values: &[VReg]) {
+        let Some(kinds) = self.runtime_checks.remove(&(span.start, span.end)) else {
+            return;
+        };
+        for (kind, expected) in kinds {
+            if matches!(kind.as_str(), "set_operation" | "set_comparison") {
+                for value in values {
+                    self.emit_runtime_check_kinds(
+                        span,
+                        *value,
+                        vec![(kind.clone(), expected.clone())],
+                    );
+                }
+            } else if let Some(value) = values.first() {
+                self.emit_runtime_check_kinds(span, *value, vec![(kind, expected)]);
+            }
+        }
+    }
+
+    /// 消费一个表达式范围内尚未由子表达式消费的检查。
+    pub(super) fn emit_runtime_checks_in(&mut self, span: IrSpan, value: VReg) {
+        let keys = self
+            .runtime_checks
+            .keys()
+            .copied()
+            .filter(|(start, end)| *start >= span.start && *end <= span.end)
+            .collect::<Vec<_>>();
+        for key in keys {
+            if let Some(kinds) = self.runtime_checks.remove(&key) {
+                self.emit_runtime_check_kinds(IrSpan::new(key.0, key.1), value, kinds);
+            }
+        }
+    }
+
+    /// 将一组检查降低为失败边。
+    fn emit_runtime_check_kinds(
+        &mut self,
+        span: IrSpan,
+        value: VReg,
+        kinds: Vec<(String, Option<IrType>)>,
+    ) {
+        for (kind, expected) in kinds {
+            if xiao_types::RuntimeCheckKind::from_name(&kind).is_none() {
+                self.record_unsupported(format!("运行时检查尚未降低：{kind}"));
+                continue;
+            }
+            let Some(continuation) = self.current_block() else {
+                continue;
+            };
+            let failure = self.new_block(span);
+            self.emit(TacInstr::new(
+                TacOp::Check {
+                    kind: kind.clone(),
+                    value,
+                    on_failure: failure,
+                    expected,
+                },
+                span,
+            ));
+            self.switch_to(failure);
+            let error = self.new_register(RegisterClass::Dynamic, span);
+            let error_type = if matches!(kind.as_str(), "arithmetic" | "numeric_range") {
+                "ArithmeticError"
+            } else {
+                "TypeError"
+            };
+            self.emit(TacInstr::with_dst(
+                TacOp::MakeError {
+                    type_name: error_type.to_owned(),
+                    code: None,
+                    message: None,
+                },
+                error,
+                span,
+            ));
+            self.emit(TacInstr::new(TacOp::Raise { value: error }, span));
+            self.switch_to(continuation);
+        }
+    }
+
+    /// 进入一个静态作用域。
+    fn enter_scope(&mut self, scope: u32, span: IrSpan) {
+        if self.frame.scope_stack.last() == Some(&scope) {
+            return;
+        }
+        if self.frame.scope_stack.contains(&scope) {
+            return;
+        }
+        self.frame.scope_stack.push(scope);
+        if !self.frame.used_scopes.contains(&scope) {
+            self.frame.used_scopes.push(scope);
+        }
+        self.emit(TacInstr::new(TacOp::EnterScope(scope), span));
+    }
+
+    /// 仅恢复降低器的词法作用域栈，不发出运行时退出指令。
+    pub(super) fn forget_scope(&mut self, scope: u32) {
+        if let Some(index) = self
+            .frame
+            .scope_stack
+            .iter()
+            .rposition(|item| *item == scope)
+        {
+            self.frame.scope_stack.truncate(index);
+        }
+    }
+
+    /// 在已经发出入口指令的子程序路径上恢复一个仍然活动的作用域。
+    ///
+    /// `finally` 子程序在运行时从原 try 体的调用点进入，因而 try 作用域
+    /// 仍在动态栈上；降低器暂时移除它只是为了独立处理 catch 兄弟作用域。
+    /// 恢复时不能再次发出 `EnterScope`，否则运行时会收到重复的作用域事件。
+    pub(super) fn remember_scope(&mut self, scope: u32) {
+        if !self.frame.scope_stack.contains(&scope) {
+            self.frame.scope_stack.push(scope);
+        }
+    }
+
+    /// 取得或创建某个 `IrValue` 对应的寄存器。
+    fn register_of(&mut self, value: u32) -> VReg {
+        if let Some(register) = self.frame.value_regs.get(&value) {
+            return *register;
+        }
+        let span = self
+            .value_spans
+            .get(&value)
+            .copied()
+            .unwrap_or_else(|| IrSpan::new(0, 0));
+        let class = self.class_for_value(value);
+        let register = self.new_binding_register(class, span);
+        self.frame.value_regs.insert(value, register);
+        self.frame.locals.push(register);
+        register
+    }
+
+    /// 返回某个 `IrValue` 的寄存器类别。
+    fn class_for_value(&self, value: u32) -> RegisterClass {
+        if let Some(value) = self
+            .program
+            .ownership
+            .values
+            .iter()
+            .find(|candidate| candidate.id == value)
+        {
+            if let Some(ty) = &value.ty {
+                return Self::class_of_type(ty);
+            }
+            return match value.storage.as_str() {
+                "stack" => RegisterClass::Int,
+                "heap_weak" | "heap_strong" => RegisterClass::ObjHandle,
+                _ => RegisterClass::Poly,
+            };
+        }
+        RegisterClass::Poly
+    }
+
+    /// 按标量类型返回寄存器类别。
+    fn class_of_type(ty: &IrType) -> RegisterClass {
+        match ty {
+            IrType::Scalar { name } => match ScalarType::from_name(name) {
+                Some(ScalarType::Int | ScalarType::Sint) => RegisterClass::Int,
+                Some(ScalarType::Float | ScalarType::Sfloat) => RegisterClass::Float,
+                Some(ScalarType::Bool) => RegisterClass::Bool,
+                Some(ScalarType::Str | ScalarType::Lint | ScalarType::Lfloat) => {
+                    RegisterClass::ObjHandle
+                }
+                None => RegisterClass::Poly,
+            },
+            IrType::None => RegisterClass::None,
+            IrType::Dynamic | IrType::Variable { .. } => RegisterClass::Dynamic,
+            _ => RegisterClass::ObjHandle,
+        }
+    }
+
+    /// 把常量登记进常量池并发出加载指令。
+    fn emit_constant(&mut self, constant: TacConstant, span: IrSpan) -> VReg {
+        let class = constant.register_class();
+        let id = self.constants.intern(constant);
+        let register = self.new_register(class, span);
+        self.emit(TacInstr::with_dst(TacOp::LoadConst(id), register, span));
+        register
+    }
+
+    /// 降低一个表达式并返回其寄存器。
+    fn lower_expression(&mut self, expression: &IrExpression) -> VReg {
+        expr::lower(self, expression)
+    }
+
+    /// 按语句结构重建块并降低语句列表；结束时按 `exit` 离开当前作用域。
+    fn lower_statements(&mut self, statements: &[IrStatement], exit: &str) {
+        stmt::lower_statements(self, statements, exit);
+    }
+
+    /// 按源码名称查找绑定的值编号；名称前缀由生命周期阶段添加，这里剥掉。
+    ///
+    /// 必须按作用域消歧：不同函数可以各有一个同名形参，全局取首个会串到别的
+    /// 函数的绑定上，读到本帧从未写入的寄存器。优先取当前作用域栈里最内层的
+    /// 那个候选，找不到活动候选时才退回首个。
+    fn value_of_name(&self, name: &str, backticked: bool) -> Option<u32> {
+        let candidates = self.candidates_of_name(name, backticked);
+        let active = candidates
+            .iter()
+            .filter(|(_, scope)| self.frame.scope_stack.contains(scope))
+            .max_by_key(|(_, scope)| {
+                self.frame
+                    .scope_stack
+                    .iter()
+                    .position(|item| item == scope)
+                    .unwrap_or(0)
+            })
+            .map(|(value, _)| *value);
+        active.or_else(|| candidates.first().map(|(value, _)| *value))
+    }
+
+    /// 按当前词法作用域选取导入绑定；内层普通绑定优先于外层导入。
+    fn import_register(&self, name: &str, backticked: bool) -> Option<VReg> {
+        let key = name_key(name, backticked);
+        let (import_depth, register) =
+            self.frame
+                .scope_stack
+                .iter()
+                .enumerate()
+                .rev()
+                .find_map(|(depth, scope)| {
+                    self.frame
+                        .import_names
+                        .get(&(*scope, key.clone()))
+                        .map(|register| (depth, *register))
+                })?;
+        let shadowed = self
+            .candidates_of_name(name, backticked)
+            .iter()
+            .any(|(_, scope)| {
+                self.frame
+                    .scope_stack
+                    .iter()
+                    .position(|active| active == scope)
+                    .is_some_and(|depth| depth > import_depth)
+            });
+        (!shadowed).then_some(register)
+    }
+
+    /// 列出同名绑定的 `(值编号, 所属作用域)` 候选。
+    fn candidates_of_name(&self, name: &str, backticked: bool) -> Vec<(u32, u32)> {
+        // 反引号名称与普通名称是**不同**的绑定（`ascii:foo` 对 `backtick:foo`）。
+        // 同时接受两个前缀会把它们混为一谈，引用到另一个绑定上。
+        let key = name_key(name, backticked);
+        self.program
+            .ownership
+            .values
+            .iter()
+            .filter(|value| value.name.as_deref() == Some(key.as_str()))
+            .map(|value| {
+                (
+                    value.id,
+                    self.value_scopes.get(&value.id).copied().unwrap_or(0),
+                )
+            })
+            .collect()
+    }
+
+    /// 按名称查找顶层函数索引。
+    fn function_index(&self, name: &str) -> Option<FuncId> {
+        self.named_functions.get(name).copied()
+    }
+
+    /// 按名称解析调用目标；不是已知顶层函数时返回 `None`。
+    fn function_index_of_expression(&self, callee: &IrExpression) -> Option<FuncId> {
+        let IrExpressionKind::Name { name } = &callee.kind else {
+            return None;
+        };
+        self.named_functions.get(&name.text).copied()
+    }
+
+    /// 为普通顶层函数调用补齐缺省参数；显式参数先求值，默认值按声明顺序求值。
+    pub(super) fn append_function_defaults(
+        &mut self,
+        callee: &IrExpression,
+        explicit: &[TacArgument],
+        lowered: &mut Vec<TacArgument>,
+    ) {
+        let IrExpressionKind::Name { name } = &callee.kind else {
+            return;
+        };
+        let Some(parameters) = self.program.body.iter().find_map(|statement| {
+            let IrStatementKind::Function {
+                name: candidate,
+                parameters,
+                ..
+            } = &statement.kind
+            else {
+                return None;
+            };
+            (candidate.text == name.text && candidate.backticked == name.backticked)
+                .then_some(parameters.clone())
+        }) else {
+            return;
+        };
+        let positional = explicit
+            .iter()
+            .filter(|argument| argument.name.is_none())
+            .count();
+        for (index, parameter) in parameters.iter().enumerate() {
+            if index < positional
+                || explicit
+                    .iter()
+                    .any(|argument| argument.name.as_deref() == Some(parameter.name.text.as_str()))
+            {
+                continue;
+            }
+            if let Some(default) = &parameter.default {
+                let value = self.lower_expression(default);
+                lowered.push(TacArgument::keyword(parameter.name.text.clone(), value));
+            }
+        }
+    }
+
+    /// 返回某个函数的调用签名。
+    fn signature_of_function(&self, target: FuncId) -> Option<crate::tac::SigId> {
+        self.indexed_signatures.get(&target).copied()
+    }
+
+    /// 登记一个新建的临时堆值寄存器，供语句结束时释放。
+    ///
+    /// 临时值不进释放计划（生命周期阶段按 `temporary` 过滤），所以必须由降低器
+    /// 在消费点之后显式释放，否则字面量产生的堆值会一直漏。
+    fn note_temporary(&mut self, register: VReg) {
+        if !self.frame.pending_temporaries.contains(&register) {
+            self.frame.pending_temporaries.push(register);
+        }
+    }
+
+    /// 取出并清空当前待释放的临时寄存器。
+    fn take_pending_temporaries(&mut self) -> Vec<VReg> {
+        std::mem::take(&mut self.frame.pending_temporaries)
+    }
+
+    /// 丢弃终止控制流之后不再需要单独释放的临时值。
+    ///
+    /// `return` 会把结果交给调用方，`raise`/`break`/`continue` 则马上离开
+    /// 当前路径；在终止指令后追加不可达 `Release` 既没有运行时效果，也会
+    /// 让后续块重建误判终止点。
+    pub(super) fn discard_temporaries(&mut self) {
+        self.frame.pending_temporaries.clear();
+    }
+
+    /// 在当前位置发出释放临时值的指令。
+    ///
+    /// 被 `Move` 搬进绑定的临时值此时寄存器已空，释放是空操作，不会重复释放。
+    fn flush_temporaries(&mut self, span: IrSpan) {
+        for register in self.take_pending_temporaries() {
+            self.emit(TacInstr::new(
+                TacOp::Release {
+                    value: register,
+                    kind: ReleaseActionKind::Strong,
+                },
+                span,
+            ));
+        }
+    }
+
+    /// 记录一个本批次尚未降低的构造。
+    fn record_unsupported(&mut self, note: String) {
+        if !self.unsupported.contains(&note) {
+            self.unsupported.push(note);
+        }
+    }
+
+    /// 记录可达且已登记的未实现能力；验证器会给它独立的 `X09-BYTECODE-003` 身份。
+    pub(super) fn record_known_unsupported(&mut self, note: String) {
+        let note = format!("{}{}", crate::verify::TAC_KNOWN_UNSUPPORTED_PREFIX, note);
+        self.record_unsupported(note);
+    }
+
+    /// 列出从最内层到 `stop_kind` 的作用域链。
+    fn scope_chain_to(&self, stop_kind: &str) -> Vec<u32> {
+        let mut chain = Vec::new();
+        for scope in self.frame.scope_stack.iter().rev() {
+            chain.push(*scope);
+            let kind = self
+                .program
+                .ownership
+                .scopes
+                .iter()
+                .find(|item| item.id == *scope)
+                .map_or("", |item| item.kind.as_str());
+            if kind == stop_kind {
+                break;
+            }
+        }
+        chain
+    }
+
+    /// 为一个作用域发出退出计划并离开它。
+    fn exit_scope(&mut self, scope: u32, exit: &str) {
+        let span = self
+            .program
+            .ownership
+            .scopes
+            .iter()
+            .find(|item| item.id == scope)
+            .map_or_else(|| IrSpan::new(0, 0), |item| item.span);
+        self.run_plan(scope, exit, span);
+        self.emit(TacInstr::new(
+            TacOp::ExitScope {
+                scope,
+                exit: exit.to_owned(),
+            },
+            span,
+        ));
+        if let Some(index) = self
+            .frame
+            .scope_stack
+            .iter()
+            .rposition(|item| *item == scope)
+        {
+            self.frame.scope_stack.truncate(index);
+        }
+    }
+}
+
+/// 把 IR 释放计划转换为三地址携带形式。
+fn convert_plan(plan: &IrReleasePlan) -> TacReleasePlan {
+    TacReleasePlan {
+        scope: plan.scope,
+        exit: plan.exit.clone(),
+        actions: plan
+            .actions
+            .iter()
+            .map(|action| TacReleaseAction {
+                value: action.value,
+                order: action.order,
+                // 反向解析必须走 `from_name`：自己写 match 会让未知拼写静默
+                // 退化成强释放，而拼写表本来就有单一来源。
+                kind: ReleaseActionKind::from_name(&action.kind)
+                    .unwrap_or(ReleaseActionKind::Strong),
+            })
+            .collect(),
+        transferred: plan.transferred.clone(),
+    }
+}
+
+/// 从已验证 IR 的并发事实和所有权类型传播 `.xiaoc` 独立 feature 位。
+fn required_features_for_ir(program: &IrProgram) -> u64 {
+    // 未知操作用未知位进入既有产物拒绝路径，不能把推导失败当作没有需求。
+    xiao_ir::required_concurrency_features(program).map_or(u64::MAX, |features| features >> 1)
+}
+
+/// 判断外层区间是否包含内层区间。
+fn contains(outer: IrSpan, inner: IrSpan) -> bool {
+    outer.start <= inner.start && inner.end <= outer.end
+}

@@ -1,0 +1,18 @@
+from stdlib.text import length
+
+def probe_repeat(str text, int count) -> str
+    if count <= 0
+        return ""
+    result = ""
+    index = 0
+    while index < count
+        result = result + text
+        index = index + 1
+    return result
+
+print("[" + probe_repeat("小😀", -3) + "]")
+print("[" + probe_repeat("小😀", 0) + "]")
+print("[" + probe_repeat("小😀", 1) + "]")
+print("[" + probe_repeat("小😀", 3) + "]")
+print("[" + probe_repeat("", 3) + "]")
+print(length(probe_repeat("小😀", 128)))

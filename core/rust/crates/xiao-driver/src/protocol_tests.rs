@@ -1,0 +1,1311 @@
+//! 构建协议的帧边界、兼容性、原生输出与旁置文件回归测试。
+
+use super::*;
+use crate::DRIVER_TIMEOUT_CODE;
+use std::env;
+use std::fs;
+use std::io::Cursor;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex, OnceLock};
+use std::time::{SystemTime, UNIX_EPOCH};
+use xiao_artifacts::{
+    ArchiveEntry, ArchiveIndex, ArtifactStore, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR, ObjectKind,
+};
+use xiao_xar::{XarObject, encode_xar};
+
+static CACHE_ENV_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+
+/// 为会修改 XIAO_HOME 的协议测试建立相互排斥的临时缓存目录。
+fn with_protocol_cache_home<T>(test: impl FnOnce(&PathBuf) -> T) -> T {
+    let _guard = CACHE_ENV_LOCK
+        .get_or_init(|| Mutex::new(()))
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let suffix = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock")
+        .as_nanos();
+    let home = env::temp_dir().join(format!("xiao-driver-cache-{}-{suffix}", std::process::id()));
+    let previous = env::var_os("XIAO_HOME");
+    unsafe {
+        env::set_var("XIAO_HOME", &home);
+    }
+    let result = test(&home);
+    unsafe {
+        if let Some(previous) = previous {
+            env::set_var("XIAO_HOME", previous);
+        } else {
+            env::remove_var("XIAO_HOME");
+        }
+    }
+    let _ = fs::remove_dir_all(&home);
+    result
+}
+
+/// 测试用的线程安全输出缓冲区。
+#[derive(Clone, Default)]
+struct SharedBuffer(Arc<Mutex<Vec<u8>>>);
+
+impl Write for SharedBuffer {
+    /// 追加响应帧字节。
+    fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
+        self.0.lock().expect("buffer lock").extend_from_slice(bytes);
+        Ok(bytes.len())
+    }
+
+    /// 测试缓冲区无需额外刷新动作。
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
+    }
+}
+
+/// 构造一条正确版本的 hello 请求。
+fn hello() -> ProtocolRequest {
+    ProtocolRequest::Hello {
+        request_id: "hello-1".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+    }
+}
+
+#[test]
+/// 长度字段固定为 8 字节大端且只计算 JSON 负载。
+fn frame_uses_eight_byte_big_endian_payload_length() {
+    let frame = encode_frame(&hello()).expect("frame");
+    assert_eq!(
+        &frame[..FRAME_LENGTH_BYTES],
+        &[0, 0, 0, 0, 0, 0, 0, frame.len() as u8 - 8]
+    );
+    let decoded: ProtocolRequest = decode_frame(&frame[FRAME_LENGTH_BYTES..]).expect("decode");
+    assert_eq!(decoded, hello());
+}
+
+#[test]
+/// 干净 EOF 可结束服务，部分长度必须拒绝。
+fn read_frame_accepts_clean_eof_and_rejects_truncation() {
+    assert!(
+        read_frame(&mut Cursor::new(Vec::<u8>::new()))
+            .expect("eof")
+            .is_none()
+    );
+    let error = read_frame(&mut Cursor::new(vec![1, 2])).expect_err("truncated");
+    assert!(matches!(error, FrameError::TruncatedLength { read: 2 }));
+}
+
+#[test]
+/// 超长帧在分配前被拒绝。
+fn read_frame_rejects_oversized_payload_before_allocating() {
+    let mut bytes = Vec::new();
+    bytes.extend_from_slice(&((MAX_FRAME_BYTES as u64) + 1).to_be_bytes());
+    let error = read_frame(&mut Cursor::new(bytes)).expect_err("oversized");
+    assert!(matches!(error, FrameError::LengthTooLarge { .. }));
+}
+
+#[test]
+/// 版本失配返回稳定机器错误码。
+fn version_mismatch_is_machine_readable() {
+    let response = dispatch(ProtocolRequest::Hello {
+        request_id: "bad".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION + 1,
+    });
+    let ProtocolResponse::Hello {
+        accepted, error, ..
+    } = response
+    else {
+        panic!("expected hello response");
+    };
+    assert!(!accepted);
+    assert_eq!(error.expect("error").code, VERSION_MISMATCH_CODE);
+}
+
+#[test]
+/// hello 能明确声明项目测试操作，避免客户端猜测能力。
+fn hello_advertises_test_capability() {
+    let ProtocolResponse::Hello { capabilities, .. } = dispatch(hello()) else {
+        panic!("hello must produce hello response");
+    };
+    assert!(capabilities.iter().any(|capability| capability == "test"));
+    assert!(
+        capabilities
+            .iter()
+            .any(|capability| capability == "environment")
+    );
+    assert!(
+        capabilities
+            .iter()
+            .any(|capability| capability == "package")
+    );
+    assert!(
+        capabilities
+            .iter()
+            .any(|capability| capability == "repl_packages")
+    );
+    assert!(capabilities.iter().any(|capability| capability == "verify"));
+    assert!(capabilities.iter().any(|capability| capability == "cache"));
+    assert!(
+        capabilities
+            .iter()
+            .any(|capability| capability == "run_xiaoc")
+    );
+}
+
+#[test]
+/// 归档运行请求在文件缺失时返回 17C 稳定错误码，不进入 VM。
+fn run_archive_missing_file_has_stable_error() {
+    let response = dispatch(ProtocolRequest::RunArchive {
+        request_id: "archive-missing".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        locale: Some("zh-CN".to_owned()),
+        path: "definitely-missing-test-archive.xar".to_owned(),
+        options: RunOptions::default(),
+        diagnostics: None,
+        debug: false,
+    });
+    let ProtocolResponse::Error {
+        error, exit_code, ..
+    } = response
+    else {
+        panic!("缺失归档必须返回 error 响应");
+    };
+    assert_eq!(error.code, xiao_xar::ARCHIVE_MISSING_OBJECT_CODE);
+    assert_eq!(exit_code, ExitCode::ArtifactRejected.as_process_code());
+}
+
+#[test]
+/// 归档协议不能静默忽略统一运行选项中的零时限。
+fn run_archive_honors_zero_timeout_before_reading_archive() {
+    let response = dispatch(ProtocolRequest::RunArchive {
+        request_id: "archive-timeout".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        locale: Some("zh-CN".to_owned()),
+        path: "definitely-missing-test-archive.xar".to_owned(),
+        options: RunOptions {
+            timeout_ms: Some(0),
+            ..RunOptions::default()
+        },
+        diagnostics: None,
+        debug: false,
+    });
+    let ProtocolResponse::Error { error, .. } = response else {
+        panic!("零时限必须在读取归档前拒绝");
+    };
+    assert_eq!(error.code, DRIVER_TIMEOUT_CODE);
+}
+
+#[test]
+/// verify 对缺失产物只返回结构化验证错误，不进入任何运行路径。
+fn verify_missing_artifact_has_stable_error() {
+    let ProtocolResponse::Error {
+        error, exit_code, ..
+    } = dispatch(ProtocolRequest::Verify {
+        request_id: "verify-missing".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        path: "missing-artifact.xiaoc".to_owned(),
+        detail: true,
+    })
+    else {
+        panic!("缺失产物必须返回验证错误");
+    };
+    assert_eq!(error.code, "X11-VERIFY-001");
+    assert_eq!(exit_code, ExitCode::ArtifactRejected.as_process_code());
+}
+
+#[test]
+/// cache list 走只读协议路径并返回机器可读摘要。
+fn cache_list_returns_structured_result() {
+    let ProtocolResponse::Result {
+        operation,
+        value: Some(value),
+        exit_code,
+        ..
+    } = dispatch(ProtocolRequest::Cache {
+        request_id: "cache-list".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        action: "list".to_owned(),
+        apply: false,
+        project_path: None,
+        archive_paths: Vec::new(),
+        references: Vec::new(),
+    })
+    else {
+        panic!("cache list 必须返回结构化结果");
+    };
+    assert_eq!(operation, "cache");
+    assert_eq!(value.kind, "cache");
+    assert_eq!(exit_code, ExitCode::Success.as_process_code());
+}
+
+#[test]
+/// cache clean 通过协议读取显式摘要，真实删除未引用对象并保留被引用对象。
+fn cache_clean_protocol_deletes_unreferenced_objects() {
+    with_protocol_cache_home(|home| {
+        let store = ArtifactStore::open(home.join("cache")).expect("cache store");
+        let protected = store
+            .put(ObjectKind::Native, b"protocol-protected")
+            .expect("protected object");
+        let removable = store
+            .put(ObjectKind::Native, b"protocol-removable")
+            .expect("removable object");
+        let ProtocolResponse::Result {
+            value: Some(value), ..
+        } = dispatch(ProtocolRequest::Cache {
+            request_id: "cache-clean-explicit".to_owned(),
+            protocol_version: PROTOCOL_VERSION,
+            core_version: CORE_VERSION,
+            action: "clean".to_owned(),
+            apply: true,
+            project_path: None,
+            archive_paths: Vec::new(),
+            references: vec![protected.digest.as_hex()],
+        })
+        else {
+            panic!("cache clean 应返回结构化结果");
+        };
+        let summary: Value = serde_json::from_str(&value.value).expect("cache summary");
+        assert_eq!(summary["status"], "applied");
+        assert_eq!(summary["removed_count"], 1);
+        assert!(store.read(protected.kind, protected.digest).is_ok());
+        assert!(store.read(removable.kind, removable.digest).is_err());
+    });
+}
+
+#[test]
+/// 项目目录来源会解析其中的 `xiao.lock.json`，而不是把目录当作摘要列表。
+fn cache_clean_protocol_reads_project_lock_from_directory() {
+    with_protocol_cache_home(|home| {
+        let store = ArtifactStore::open(home.join("cache")).expect("cache store");
+        let protected = store
+            .put(ObjectKind::Source, b"project-source")
+            .expect("project source");
+        let removable = store
+            .put(ObjectKind::Native, b"project-removable")
+            .expect("removable object");
+        let project = home.join("project");
+        fs::create_dir_all(&project).expect("project directory");
+        fs::write(
+            project.join("xiao.lock.json"),
+            format!(
+                r#"{{"lock_version":2,"config_fingerprint":"config","root":{{"name":"main","version":"0.1.0","source":{{"source_id":"path:/main","alias":null,"display_name":"main"}}}},"packages":{{"main@0.1.0[path:/main]":{{"name":"main","version":"0.1.0","source":{{"source_id":"path:/main","alias":null,"display_name":"main"}},"content_digest":"{}","dependencies":{{}},"precompiled_variants":[],"target_conditions":[]}}}}}}"#,
+                protected.digest
+            ),
+        )
+        .expect("project lock");
+        let ProtocolResponse::Result {
+            value: Some(value), ..
+        } = dispatch(ProtocolRequest::Cache {
+            request_id: "cache-clean-project".to_owned(),
+            protocol_version: PROTOCOL_VERSION,
+            core_version: CORE_VERSION,
+            action: "clean".to_owned(),
+            apply: true,
+            project_path: Some(project.to_string_lossy().into_owned()),
+            archive_paths: Vec::new(),
+            references: Vec::new(),
+        })
+        else {
+            panic!("项目来源必须返回结构化结果");
+        };
+        let summary: Value = serde_json::from_str(&value.value).expect("cache summary");
+        assert_eq!(summary["removed_count"], 1);
+        assert!(store.read(protected.kind, protected.digest).is_ok());
+        assert!(store.read(removable.kind, removable.digest).is_err());
+    });
+}
+
+#[test]
+/// cache clean 先完整验证 `.xar`，再用归档索引保护其中的对象。
+fn cache_clean_protocol_reads_archive_references() {
+    with_protocol_cache_home(|home| {
+        let store = ArtifactStore::open(home.join("cache")).expect("cache store");
+        let protected = store
+            .put(ObjectKind::Native, b"archive-protected")
+            .expect("protected object");
+        let removable = store
+            .put(ObjectKind::Native, b"archive-removable")
+            .expect("removable object");
+        let archive_path = home.join("references.xar");
+        let logical_path = "objects/native/protected.bin".to_owned();
+        let index = ArchiveIndex {
+            schema_major: INDEX_SCHEMA_MAJOR,
+            schema_minor: INDEX_SCHEMA_MINOR,
+            entry: logical_path.clone(),
+            entries: vec![ArchiveEntry {
+                logical_path,
+                object_kind: protected.kind,
+                digest: protected.digest,
+                module: "main".to_owned(),
+                target: "portable".to_owned(),
+                length: protected.length,
+            }],
+            dependency_lock_digest: "0".repeat(64),
+            runtime_abi_min: xiao_runtime_abi::ABI_ENCODED_VERSION,
+            runtime_abi_max: xiao_runtime_abi::ABI_ENCODED_VERSION,
+            platform: String::new(),
+            debug_activation: false,
+            language_locale: "zh-CN".to_owned(),
+            stdlib_interface_version: 1,
+            language_version: "0.1.0".to_owned(),
+            stdlib_modules: Vec::new(),
+            required_capabilities: 0,
+            required_features: 0,
+        };
+        let archive_bytes = encode_xar(
+            &index,
+            &[XarObject {
+                kind: protected.kind,
+                digest: protected.digest,
+                bytes: b"archive-protected".to_vec(),
+            }],
+        )
+        .expect("archive");
+        fs::write(&archive_path, archive_bytes).expect("archive file");
+        let ProtocolResponse::Result {
+            value: Some(value), ..
+        } = dispatch(ProtocolRequest::Cache {
+            request_id: "cache-clean-archive".to_owned(),
+            protocol_version: PROTOCOL_VERSION,
+            core_version: CORE_VERSION,
+            action: "clean".to_owned(),
+            apply: true,
+            project_path: None,
+            archive_paths: vec![archive_path.to_string_lossy().into_owned()],
+            references: Vec::new(),
+        })
+        else {
+            panic!("归档引用必须返回结构化结果");
+        };
+        let summary: Value = serde_json::from_str(&value.value).expect("cache summary");
+        assert_eq!(summary["removed_count"], 1);
+        assert!(store.read(protected.kind, protected.digest).is_ok());
+        assert!(store.read(removable.kind, removable.digest).is_err());
+    });
+}
+
+#[test]
+/// 来源归档损坏时协议整体失败，不得因为读取失败而删除任何对象。
+fn cache_clean_protocol_rejects_broken_archive_before_deleting() {
+    with_protocol_cache_home(|home| {
+        let store = ArtifactStore::open(home.join("cache")).expect("cache store");
+        let object = store
+            .put(ObjectKind::Native, b"keep-on-broken-archive")
+            .expect("cache object");
+        let broken_archive = home.join("broken.xar");
+        fs::write(&broken_archive, b"not-a-xar").expect("broken archive");
+        let ProtocolResponse::Error { error, .. } = dispatch(ProtocolRequest::Cache {
+            request_id: "cache-clean-broken".to_owned(),
+            protocol_version: PROTOCOL_VERSION,
+            core_version: CORE_VERSION,
+            action: "clean".to_owned(),
+            apply: true,
+            project_path: None,
+            archive_paths: vec![broken_archive.to_string_lossy().into_owned()],
+            references: Vec::new(),
+        }) else {
+            panic!("损坏归档必须返回错误");
+        };
+        assert_eq!(error.code, "X11-CACHE-004");
+        assert!(store.read(object.kind, object.digest).is_ok());
+    });
+}
+
+#[test]
+/// 包视图缺少可选环境和模块字段仍能解码，激活环境不能使用相对路径。
+fn repl_packages_request_validates_environment_without_renaming_package_operation() {
+    let request = ProtocolRequest::ReplPackages {
+        request_id: "invalid-view".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        locale: None,
+        active_environment: Some("relative/env".to_owned()),
+        module_path: None,
+    };
+    let ProtocolResponse::Error { error, .. } = dispatch(request) else {
+        panic!("relative active environment must be rejected");
+    };
+    assert_eq!(error.code, REPL_VIEW_ERROR_CODE);
+    assert_eq!(error.details["environment"], "relative/env");
+}
+
+#[test]
+/// 环境请求只消费静态配置和显式工具链，返回稳定且不含项目绝对路径的元数据。
+fn environment_request_generates_stable_metadata() {
+    let request = || ProtocolRequest::Environment {
+        request_id: "environment-1".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        locale: None,
+        project_root: "C:/workspace/project".to_owned(),
+        logical_name: Some("dev".to_owned()),
+        config_text: Some("[project]\nname = \"demo\"\nversion = \"0.1.0\"\n".to_owned()),
+        target: ProtocolTarget::host(),
+        toolchain: ToolchainSpec {
+            clang: "clang".to_owned(),
+            versions: ToolchainVersionsSpec {
+                clang: "clang 18".to_owned(),
+                ..ToolchainVersionsSpec::default()
+            },
+            ..ToolchainSpec::default()
+        },
+    };
+    let first = dispatch(request());
+    let second = dispatch(request());
+    let ProtocolResponse::EnvironmentResult { metadata, .. } = first else {
+        panic!("环境请求应返回元数据");
+    };
+    let ProtocolResponse::EnvironmentResult {
+        metadata: second_metadata,
+        ..
+    } = second
+    else {
+        panic!("环境请求应返回元数据");
+    };
+    assert_eq!(metadata, second_metadata);
+    assert_eq!(metadata.logical_name, "dev");
+    assert_eq!(metadata.directory_name, "dev");
+    assert!(!metadata.config_fingerprint.is_empty());
+    assert!(!metadata.toolchain_fingerprint.is_empty());
+    assert!(!metadata.target_fingerprint.is_empty());
+    assert!(!metadata.environment_fingerprint.is_empty());
+    assert!(
+        !serde_json::to_string(&metadata)
+            .expect("元数据应可编码")
+            .contains("C:/workspace/project")
+    );
+
+    let mut default_request = request();
+    if let ProtocolRequest::Environment { logical_name, .. } = &mut default_request {
+        *logical_name = None;
+    }
+    let ProtocolResponse::EnvironmentResult {
+        metadata: default_metadata,
+        ..
+    } = dispatch(default_request)
+    else {
+        panic!("默认环境请求应返回元数据");
+    };
+    assert_eq!(default_metadata.logical_name, "venv");
+    assert_eq!(default_metadata.directory_name, ".venv");
+}
+
+#[test]
+/// 包协议保留 E2B 稳定错误编号，缺失锁文件时不创建目标环境。
+fn package_request_missing_lock_does_not_create_environment() {
+    with_protocol_cache_home(|_home| {
+        let project_root = std::env::temp_dir().join(format!(
+            "xiao-package-protocol-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock")
+                .as_nanos()
+        ));
+        fs::create_dir(&project_root).expect("create project");
+        let config_text = "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n";
+        fs::write(project_root.join("config.xiao"), config_text).expect("config");
+        let request = ProtocolRequest::Package {
+            request_id: "package-1".to_owned(),
+            protocol_version: PROTOCOL_VERSION,
+            core_version: CORE_VERSION,
+            locale: None,
+            operation: "sync".to_owned(),
+            project_root: project_root.to_string_lossy().into_owned(),
+            active_environment: None,
+            config_text: config_text.to_owned(),
+            keep_extra: false,
+            locked: true,
+            frozen: false,
+            package_name: None,
+            package_path: None,
+            package_version: None,
+            development: false,
+            target: ProtocolTarget::host(),
+            toolchain: ToolchainSpec {
+                clang: "clang".to_owned(),
+                versions: ToolchainVersionsSpec {
+                    clang: "clang 18".to_owned(),
+                    ..ToolchainVersionsSpec::default()
+                },
+                ..ToolchainSpec::default()
+            },
+        };
+        let encoded = serde_json::to_string(&request).expect("encode");
+        let decoded = serde_json::from_str(&encoded).expect("decode");
+        let response = dispatch(decoded);
+        let ProtocolResponse::Error {
+            error, exit_code, ..
+        } = response
+        else {
+            panic!("missing lock must reject");
+        };
+        assert_eq!(error.code, "X05-SYNC-002");
+        assert_eq!(exit_code, 2);
+        assert!(!project_root.join(".venv").exists());
+        fs::remove_dir_all(project_root).expect("cleanup");
+    });
+}
+
+#[test]
+/// 空测试集合在协议边界被拒绝，而不是产生虚假的成功结果。
+fn test_request_rejects_empty_case_list() {
+    let response = dispatch(ProtocolRequest::Test {
+        request_id: "test-empty".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        locale: None,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        target: ProtocolTarget::host(),
+        optimization: OptimizationConfig::default(),
+        cases: Vec::new(),
+        options: RunOptions::default(),
+    });
+    let ProtocolResponse::Error { error, .. } = response else {
+        panic!("empty test cases must produce an error");
+    };
+    assert_eq!(error.code, REQUEST_ERROR_CODE);
+    assert_eq!(
+        error.details["field"],
+        serde_json::Value::String("cases".to_owned())
+    );
+}
+
+#[test]
+/// 测试响应保留请求顺序，并以首个非零用例码作为整体退出码。
+fn test_request_preserves_case_order_and_aggregates_results() {
+    let response = dispatch(ProtocolRequest::Test {
+        request_id: "test-order".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        locale: None,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        target: ProtocolTarget::host(),
+        optimization: OptimizationConfig::default(),
+        cases: vec![
+            SourceIdentity {
+                module: "tests/z-last".to_owned(),
+                path: Some("tests/z-last.xiao".to_owned()),
+                text: "value = 1\n".to_owned(),
+            },
+            SourceIdentity {
+                module: "tests/a-first".to_owned(),
+                path: Some("tests/a-first.xiao".to_owned()),
+                text: "value = 1\n".to_owned(),
+            },
+        ],
+        options: RunOptions::default(),
+    });
+    let ProtocolResponse::TestResult {
+        exit_code,
+        total,
+        passed,
+        failed,
+        tests,
+        ..
+    } = response
+    else {
+        panic!("test request must produce test_result");
+    };
+    assert_eq!(exit_code, 0);
+    assert_eq!((total, passed, failed), (2, 2, 0));
+    assert_eq!(
+        tests
+            .iter()
+            .map(|test| test.path.as_str())
+            .collect::<Vec<_>>(),
+        ["tests/z-last.xiao", "tests/a-first.xiao"]
+    );
+}
+
+#[test]
+/// 首帧不是 hello 时会拒绝会话，不让请求绕过版本协商。
+fn service_requires_hello_as_first_frame() {
+    let request = ProtocolRequest::Run {
+        request_id: "run-before-hello".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        locale: None,
+        target: ProtocolTarget::host(),
+        optimization: OptimizationConfig::default(),
+        source: SourceIdentity {
+            module: "main".to_owned(),
+            path: None,
+            text: "value = 1\n".to_owned(),
+        },
+        options: RunOptions::default(),
+    };
+    let mut input = encode_frame(&request).expect("run frame");
+    input.extend_from_slice(&encode_frame(&hello()).expect("hello frame"));
+    let output = SharedBuffer::default();
+    let output_view = Arc::clone(&output.0);
+    serve(Cursor::new(input), output).expect("service");
+
+    let mut cursor = Cursor::new(output_view.lock().expect("buffer lock").clone());
+    let payload = read_frame(&mut cursor)
+        .expect("error frame")
+        .expect("one response");
+    let ProtocolResponse::Error { error, .. } = decode_frame(&payload).expect("response") else {
+        panic!("首帧违规应返回 error");
+    };
+    assert_eq!(error.code, VERSION_MISMATCH_CODE);
+    assert!(read_frame(&mut cursor).expect("end of session").is_none());
+}
+
+#[test]
+/// 帧损坏和语义请求错误使用不同的稳定机器码。
+fn frame_and_request_errors_keep_distinct_codes() {
+    let frame_error = decode_frame::<ProtocolRequest>(b"not-json").expect_err("bad json");
+    assert_eq!(frame_error.code(), FRAME_ERROR_CODE);
+
+    let response = dispatch(ProtocolRequest::Run {
+        request_id: "bad-source".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        locale: None,
+        target: ProtocolTarget::host(),
+        optimization: OptimizationConfig::default(),
+        source: SourceIdentity {
+            module: "  ".to_owned(),
+            path: None,
+            text: "value = 1\n".to_owned(),
+        },
+        options: RunOptions::default(),
+    });
+    let ProtocolResponse::Error { error, .. } = response else {
+        panic!("无效源码身份应返回 error");
+    };
+    assert_eq!(error.code, REQUEST_ERROR_CODE);
+}
+
+#[test]
+fn run_locale_is_optional_and_does_not_change_machine_error_fields() {
+    let run = |locale: Option<&str>| ProtocolRequest::Run {
+        request_id: "locale-run".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        locale: locale.map(str::to_owned),
+        target: ProtocolTarget::host(),
+        optimization: OptimizationConfig::default(),
+        source: SourceIdentity {
+            module: "  ".to_owned(),
+            path: None,
+            text: "value = 1\n".to_owned(),
+        },
+        options: RunOptions::default(),
+    };
+    let legacy_request = serde_json::to_value(run(None)).expect("encode legacy run");
+    assert!(legacy_request.get("locale").is_none());
+    let legacy: ProtocolRequest =
+        serde_json::from_value(legacy_request).expect("decode legacy run");
+    let legacy = serde_json::to_value(dispatch(legacy)).expect("encode legacy response");
+    assert!(legacy["error"].get("text").is_none());
+
+    let mut chinese =
+        serde_json::to_value(dispatch(run(Some("ZH-cn")))).expect("encode zh response");
+    let mut english =
+        serde_json::to_value(dispatch(run(Some("EN-us")))).expect("encode en response");
+    assert!(
+        chinese["error"]["text"]
+            .as_str()
+            .is_some_and(|text| !text.is_empty())
+    );
+    assert!(
+        english["error"]["text"]
+            .as_str()
+            .is_some_and(|text| !text.is_empty())
+    );
+    chinese["error"]
+        .as_object_mut()
+        .expect("error body")
+        .remove("text");
+    english["error"]
+        .as_object_mut()
+        .expect("error body")
+        .remove("text");
+    assert_eq!(chinese, legacy);
+    assert_eq!(english, legacy);
+
+    let ProtocolResponse::Error { error, .. } = dispatch(run(Some("de-DE"))) else {
+        panic!("unsupported locale must be rejected");
+    };
+    assert_eq!(error.code, REQUEST_ERROR_CODE);
+}
+
+#[test]
+fn run_locale_renders_known_message_and_preserves_missing_id_with_params() {
+    let response = || ProtocolResponse::Result {
+        request_id: "locale-diagnostic".to_owned(),
+        operation: "run".to_owned(),
+        exit_code: 1,
+        exit_name: "source_rejected".to_owned(),
+        diagnostics: vec![ProtocolDiagnostic {
+            code: "X11-TEST-001".to_owned(),
+            message_id: "xiao.status.cancelled".to_owned(),
+            severity: "error".to_owned(),
+            span: None,
+            params: Default::default(),
+            message: "请求已取消".to_owned(),
+            text: None,
+        }],
+        report: None,
+        events: vec![],
+        metrics: None,
+        value: None,
+        artifact: None,
+        audit: None,
+        cache: None,
+    };
+    let ProtocolResponse::Result {
+        diagnostics: english,
+        ..
+    } = super::localize::with_locale(
+        "locale-diagnostic".to_owned(),
+        Some("en".to_owned()),
+        response,
+    )
+    else {
+        panic!("expected run response");
+    };
+    assert_eq!(english[0].text.as_deref(), Some("request cancelled"));
+    assert_eq!(english[0].message, "请求已取消");
+
+    let ProtocolResponse::Result {
+        diagnostics: chinese,
+        ..
+    } = super::localize::with_locale(
+        "locale-diagnostic".to_owned(),
+        Some("zh".to_owned()),
+        response,
+    )
+    else {
+        panic!("expected run response");
+    };
+    assert_eq!(chinese[0].text.as_deref(), Some("请求已取消"));
+    assert_eq!(english[0].code, chinese[0].code);
+    assert_eq!(english[0].message_id, chinese[0].message_id);
+
+    let original = || ProtocolResponse::Result {
+        request_id: "locale-default-text".to_owned(),
+        operation: "run".to_owned(),
+        exit_code: 1,
+        exit_name: "source_rejected".to_owned(),
+        diagnostics: vec![ProtocolDiagnostic {
+            code: "X11-TEST-001".to_owned(),
+            message_id: "xiao.status.cancelled".to_owned(),
+            severity: "error".to_owned(),
+            span: None,
+            params: Default::default(),
+            message: "原始中文文本".to_owned(),
+            text: None,
+        }],
+        report: None,
+        events: vec![],
+        metrics: None,
+        value: None,
+        artifact: None,
+        audit: None,
+        cache: None,
+    };
+    let ProtocolResponse::Result { diagnostics, .. } = super::localize::with_locale(
+        "locale-default-text".to_owned(),
+        Some("zh-CN".to_owned()),
+        original,
+    ) else {
+        panic!("expected run response");
+    };
+    assert_eq!(diagnostics[0].text.as_deref(), Some("原始中文文本"));
+
+    let mut unknown = response();
+    if let ProtocolResponse::Result { diagnostics, .. } = &mut unknown {
+        diagnostics[0].message_id = "xiao.missing.example".to_owned();
+        diagnostics[0]
+            .params
+            .insert("path".to_owned(), ProtocolParam::Text("a\nb".to_owned()));
+    }
+    let ProtocolResponse::Result { diagnostics, .. } = super::localize::with_locale(
+        "locale-diagnostic".to_owned(),
+        Some("en-US".to_owned()),
+        || unknown,
+    ) else {
+        panic!("expected run response");
+    };
+    assert_eq!(
+        diagnostics[0].text.as_deref(),
+        Some("xiao.missing.example (path=\"a\\nb\")")
+    );
+}
+
+#[test]
+fn test_locale_renders_diagnostics_inside_each_case() {
+    let response = ProtocolResponse::TestResult {
+        request_id: "locale-test".to_owned(),
+        operation: "test".to_owned(),
+        exit_code: 1,
+        exit_name: "source_rejected".to_owned(),
+        total: 1,
+        passed: 0,
+        failed: 1,
+        tests: vec![ProtocolTestCaseResult {
+            path: "tests/main.xiao".to_owned(),
+            module: "tests/main".to_owned(),
+            exit_code: 1,
+            exit_name: "source_rejected".to_owned(),
+            diagnostics: vec![ProtocolDiagnostic {
+                code: "X11-TEST-001".to_owned(),
+                message_id: "xiao.status.cancelled".to_owned(),
+                severity: "error".to_owned(),
+                span: None,
+                params: Default::default(),
+                message: "请求已取消".to_owned(),
+                text: None,
+            }],
+            report: None,
+            events: vec![],
+            metrics: None,
+            value: None,
+            error: None,
+        }],
+    };
+    let ProtocolResponse::TestResult { tests, .. } =
+        super::localize::with_locale("locale-test".to_owned(), Some("en-US".to_owned()), || {
+            response
+        })
+    else {
+        panic!("expected test response");
+    };
+    assert_eq!(
+        tests[0].diagnostics[0].text.as_deref(),
+        Some("request cancelled")
+    );
+}
+
+#[test]
+/// 取消令牌映射到冻结的产物拒绝进程码。
+fn real_source_run_maps_cancel_to_artifact_rejected() {
+    let token = CancellationToken::new();
+    token.cancel();
+    let request = ProtocolRequest::Run {
+        request_id: "run-1".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        locale: None,
+        target: ProtocolTarget::host(),
+        optimization: OptimizationConfig::default(),
+        source: SourceIdentity {
+            module: "main".to_owned(),
+            path: None,
+            text: "value = 1\n".to_owned(),
+        },
+        options: RunOptions::default(),
+    };
+    let response = worker_response(request, token);
+    let (ProtocolResponse::Result { exit_code, .. } | ProtocolResponse::Error { exit_code, .. }) =
+        response
+    else {
+        panic!("expected run response");
+    };
+    assert_eq!(exit_code, ExitCode::ArtifactRejected.as_process_code());
+}
+
+#[test]
+/// 真实 Xiao 源码经前端和 VM 后返回结构化结果。
+fn real_source_run_returns_structured_result_without_text_parsing() {
+    let response = dispatch(ProtocolRequest::Run {
+        request_id: "run-success".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        locale: None,
+        target: ProtocolTarget::host(),
+        optimization: OptimizationConfig::default(),
+        source: SourceIdentity {
+            module: "main".to_owned(),
+            path: Some("main.xiao".to_owned()),
+            text: "value = 1 + 2\n".to_owned(),
+        },
+        options: RunOptions::default(),
+    });
+    let ProtocolResponse::Result {
+        exit_code,
+        exit_name,
+        metrics,
+        ..
+    } = response
+    else {
+        panic!("真实源码应产生结构化结果");
+    };
+    assert_eq!(exit_code, ExitCode::Success.as_process_code());
+    assert_eq!(exit_name, "success");
+    assert!(metrics.is_some());
+}
+
+#[test]
+/// 协议层允许 O1 并经由生产字节码优化管线执行，不再命中旧的零级别拒绝。
+fn protocol_run_accepts_nonzero_optimization_level() {
+    let response = dispatch(ProtocolRequest::Run {
+        request_id: "run-o1".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        locale: None,
+        target: ProtocolTarget::host(),
+        optimization: OptimizationConfig {
+            level: 1,
+            ..OptimizationConfig::default()
+        },
+        source: SourceIdentity {
+            module: "main".to_owned(),
+            path: Some("main.xiao".to_owned()),
+            text: "print(\"optimized\")\n".to_owned(),
+        },
+        options: RunOptions::default(),
+    });
+    let ProtocolResponse::Result {
+        exit_code, events, ..
+    } = response
+    else {
+        panic!("O1 应返回结构化运行结果");
+    };
+    assert_eq!(exit_code, ExitCode::Success.as_process_code());
+    assert!(events.iter().any(|event| event.kind == "intrinsic_output"));
+}
+
+#[test]
+/// 服务入口先协商版本，再处理真实源码并确认关闭。
+fn service_round_trips_hello_run_and_shutdown_frames() {
+    let run = ProtocolRequest::Run {
+        request_id: "service-run".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        locale: None,
+        target: ProtocolTarget::host(),
+        optimization: OptimizationConfig::default(),
+        source: SourceIdentity {
+            module: "main".to_owned(),
+            path: None,
+            text: "value = 1\n".to_owned(),
+        },
+        options: RunOptions::default(),
+    };
+    let shutdown = ProtocolRequest::Shutdown {
+        request_id: "service-shutdown".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+    };
+    let mut input = encode_frame(&hello()).expect("hello frame");
+    input.extend_from_slice(&encode_frame(&run).expect("run frame"));
+    input.extend_from_slice(&encode_frame(&shutdown).expect("shutdown frame"));
+    let output = SharedBuffer::default();
+    let output_view = Arc::clone(&output.0);
+    serve(Cursor::new(input), output).expect("service");
+
+    let mut cursor = Cursor::new(output_view.lock().expect("buffer lock").clone());
+    let mut responses = Vec::new();
+    while let Some(payload) = read_frame(&mut cursor).expect("response frame") {
+        responses.push(decode_frame::<ProtocolResponse>(&payload).expect("response"));
+    }
+    assert!(
+        responses
+            .iter()
+            .any(|response| matches!(response, ProtocolResponse::Hello { accepted: true, .. }))
+    );
+    assert!(responses.iter().any(|response| matches!(response, ProtocolResponse::Result { request_id, exit_code: 0, .. } if request_id == "service-run")));
+    assert!(responses.iter().any(|response| matches!(response, ProtocolResponse::Shutdown { request_id } if request_id == "service-shutdown")));
+}
+
+#[test]
+/// Build 请求的新字段必须在协议 JSON 中保持可逆，旧字段顺序不参与契约。
+fn build_request_round_trips_toolchain_and_config_fields() {
+    let request = ProtocolRequest::Build {
+        request_id: "build-1".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        locale: None,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        target: ProtocolTarget::host(),
+        optimization: OptimizationConfig {
+            level: 0,
+            debug: true,
+            diagnostics: None,
+        },
+        source: SourceIdentity {
+            module: "main".to_owned(),
+            path: Some("main.xiao".to_owned()),
+            text: "value = 1\n".to_owned(),
+        },
+        output: "build/main.exe".to_owned(),
+        llvm_ir_output: Some("build/main.ll".to_owned()),
+        toolchain: ToolchainSpec {
+            clang: "clang".to_owned(),
+            llvm_as: None,
+            llc: None,
+            runtime_library: None,
+            native_static_libraries: Vec::new(),
+            rustc: Some("rustc".to_owned()),
+            diagnostics_path: Some("xiao-diagnostics.exe".to_owned()),
+            versions: ToolchainVersionsSpec {
+                clang: "clang version 22".to_owned(),
+                llvm_as: None,
+                llc: None,
+                rustc: Some("rustc 1.90".to_owned()),
+            },
+        },
+        config_text: Some("[Runtime]\ncall_stack_depth = 64\n".to_owned()),
+    };
+    let encoded = serde_json::to_vec(&request).expect("编码 build 请求");
+    let decoded: ProtocolRequest = serde_json::from_slice(&encoded).expect("解码 build 请求");
+    assert_eq!(decoded, request);
+
+    let mut legacy = serde_json::to_value(&request).expect("编码旧 build 形状");
+    let object = legacy.as_object_mut().expect("build 请求对象");
+    object.remove("config_text");
+    let toolchain = object
+        .get_mut("toolchain")
+        .and_then(Value::as_object_mut)
+        .expect("toolchain 对象");
+    toolchain.remove("rustc");
+    toolchain.remove("diagnostics_path");
+    toolchain
+        .get_mut("versions")
+        .and_then(Value::as_object_mut)
+        .expect("versions 对象")
+        .remove("rustc");
+    let legacy: ProtocolRequest = serde_json::from_value(legacy).expect("旧 build 形状应兼容");
+    let ProtocolRequest::Build {
+        toolchain,
+        config_text,
+        ..
+    } = legacy
+    else {
+        panic!("应解码为 build 请求");
+    };
+    assert_eq!(toolchain.rustc, None);
+    assert_eq!(toolchain.diagnostics_path, None);
+    assert_eq!(toolchain.versions.rustc, None);
+    assert_eq!(config_text, None);
+}
+
+#[test]
+/// 未知目标必须在 `xiao build` 的协议入口拒绝，不能进入工具链或产物写入。
+fn build_rejects_unknown_target_before_toolchain() {
+    let response = dispatch(ProtocolRequest::Build {
+        request_id: "build-unsupported-target".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        locale: None,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        target: ProtocolTarget {
+            triple: "riscv64-unknown-linux-gnu".to_owned(),
+            pointer_width: 64,
+            endian: "little".to_owned(),
+            object_format: "elf".to_owned(),
+        },
+        optimization: OptimizationConfig::default(),
+        source: SourceIdentity {
+            module: "main".to_owned(),
+            path: Some("main.xiao".to_owned()),
+            text: "value = 1\n".to_owned(),
+        },
+        output: std::env::temp_dir()
+            .join(format!(
+                "xiao-unsupported-target-{}.exe",
+                std::process::id()
+            ))
+            .display()
+            .to_string(),
+        llvm_ir_output: None,
+        toolchain: ToolchainSpec::default(),
+        config_text: None,
+    });
+    let ProtocolResponse::Error { error, .. } = response else {
+        panic!("未知目标必须在工具链前返回协议错误");
+    };
+    assert_eq!(error.code, REQUEST_ERROR_CODE);
+    assert!(error.message.contains("riscv64"));
+}
+
+#[test]
+/// 构建产物的 Runtime 组成事实必须在协议 JSON 中保持可逆。
+fn artifact_runtime_facts_round_trip() {
+    let artifact = ProtocolArtifact {
+        executable: "build/main.exe".to_owned(),
+        llvm_ir_output: None,
+        toolchain_fingerprint: "xiao-fnv1a64-test".to_owned(),
+        uses_runtime: true,
+        runtime_components: vec!["value".to_owned(), "rc".to_owned()],
+        optimization_level: 0,
+        optimization_fingerprint: None,
+        optimization_backend: None,
+        xiao_passes_registered: false,
+        object_digest: None,
+        artifact_runtime: Some(ProtocolArtifactRuntime {
+            object_format: "coff".to_owned(),
+            declared_components: vec!["value".to_owned(), "rc".to_owned()],
+            observed_components: vec!["value".to_owned(), "rc".to_owned()],
+            runtime_symbols: vec![
+                "xiao_runtime_value_none".to_owned(),
+                "xiao_runtime_value_release_strong".to_owned(),
+            ],
+            unclassified_runtime_symbols: Vec::new(),
+            dependencies: Vec::new(),
+            diagnostic_symbols: Vec::new(),
+            verification: "complete".to_owned(),
+        }),
+        diagnostic_activation: None,
+        diagnostics_component: None,
+        runtime_config: None,
+    };
+    let encoded = serde_json::to_vec(&artifact).expect("编码产物事实");
+    let decoded: ProtocolArtifact = serde_json::from_slice(&encoded).expect("解码产物事实");
+    assert_eq!(decoded, artifact);
+
+    let mut legacy = serde_json::to_value(&artifact).expect("编码旧产物事实");
+    legacy
+        .get_mut("artifact_runtime")
+        .and_then(Value::as_object_mut)
+        .expect("产物事实对象")
+        .remove("unclassified_runtime_symbols");
+    legacy
+        .get_mut("artifact_runtime")
+        .and_then(Value::as_object_mut)
+        .expect("产物事实对象")
+        .remove("verification");
+    let decoded_legacy: ProtocolArtifact =
+        serde_json::from_value(legacy).expect("旧产物事实应兼容");
+    let runtime = decoded_legacy
+        .artifact_runtime
+        .expect("旧产物事实应保留 Runtime 摘要");
+    assert!(runtime.unclassified_runtime_symbols.is_empty());
+    assert!(runtime.verification.is_empty());
+}
+
+#[test]
+/// config.xiao 只固化静态树，并明确允许普通配置覆盖。
+fn runtime_config_freeze_is_deterministic_and_validated() {
+    let frozen = freeze_runtime_config(
+        "build/main.exe",
+        Some("[Runtime]\ncall_stack_depth = 64\n[debug]\nterminal_level = \"info\"\n"),
+    )
+    .expect("合法配置应通过")
+    .expect("应产生固化配置");
+    assert_eq!(frozen.value["format_version"], json!(1));
+    assert_eq!(frozen.value["cli_overrides"], json!(true));
+    assert_eq!(
+        frozen.value["tables"]["runtime"]["call_stack_depth"],
+        json!(64)
+    );
+    assert!(freeze_runtime_config("build/main.exe", Some("if true { value = 1 }")).is_err());
+}
+
+#[test]
+/// 同一路径重复构建可以替换固化配置，不保留上一次的字段。
+fn runtime_config_can_be_replaced() {
+    let root = std::env::temp_dir().join(format!("xiao-runtime-config-{}", std::process::id()));
+    let executable = root.join("app.exe");
+    let _ = fs::remove_dir_all(&root);
+    let first = FrozenRuntimeConfig {
+        value: json!({"format_version": 1, "cli_overrides": true, "tables": {"runtime": {"call_stack_depth": 64}}}),
+    };
+    let second = FrozenRuntimeConfig {
+        value: json!({"format_version": 1, "cli_overrides": true, "tables": {"runtime": {"call_stack_depth": 128}}}),
+    };
+    write_runtime_config(&executable, &first).expect("首次写入");
+    let summary = write_runtime_config(&executable, &second).expect("重复写入");
+    let value: Value =
+        serde_json::from_slice(&fs::read(&summary.path).expect("读取配置")).expect("解析配置");
+    assert_eq!(value["tables"]["runtime"]["call_stack_depth"], json!(128));
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+/// 调试组件目标始终落在原生可执行文件的同一目录。
+fn diagnostics_component_is_staged_next_to_executable() {
+    let path = diagnostics_component_path("out/bin/app.exe", "C:/xiao/xiao-diagnostics.exe");
+    let normalized = path.replace('\\', "/");
+    assert!(
+        normalized.ends_with("out/bin/xiao-diagnostics.exe"),
+        "unexpected staged path: {path}"
+    );
+}
+
+#[test]
+/// 诊断组件已在产物目录时不会复制自身，跨目录时使用完整提交。
+fn diagnostics_component_staging_distinguishes_existing_source() {
+    let root = std::env::temp_dir().join(format!("xiao-diagnostics-stage-{}", std::process::id()));
+    let source = root.join("source").join("xiao-diagnostics.exe");
+    let destination = root.join("output").join("xiao-diagnostics.exe");
+    let _ = fs::remove_dir_all(&root);
+    fs::create_dir_all(source.parent().expect("source parent")).expect("创建源目录");
+    fs::write(&source, b"diagnostics").expect("写入源组件");
+    assert!(
+        !stage_diagnostics_component(
+            source.to_str().expect("source utf8"),
+            source.to_str().expect("source utf8")
+        )
+        .expect("同文件判断")
+    );
+    assert!(
+        stage_diagnostics_component(
+            source.to_str().expect("source utf8"),
+            destination.to_str().expect("destination utf8")
+        )
+        .expect("复制组件")
+    );
+    assert_eq!(fs::read(destination).expect("读取目标组件"), b"diagnostics");
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+/// 调试构建没有诊断组件路径时必须在协议层明确拒绝。
+fn debug_build_requires_diagnostics_path() {
+    let response = dispatch(ProtocolRequest::Build {
+        request_id: "debug-build".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        locale: None,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        target: ProtocolTarget::host(),
+        optimization: OptimizationConfig {
+            level: 0,
+            debug: true,
+            diagnostics: None,
+        },
+        source: SourceIdentity {
+            module: "main".to_owned(),
+            path: None,
+            text: "value = 1\n".to_owned(),
+        },
+        output: "build/debug-main.exe".to_owned(),
+        llvm_ir_output: None,
+        toolchain: ToolchainSpec {
+            clang: "clang".to_owned(),
+            ..ToolchainSpec::default()
+        },
+        config_text: None,
+    });
+    let ProtocolResponse::Error { error, .. } = response else {
+        panic!("缺少诊断路径应返回协议错误");
+    };
+    assert_eq!(error.code, BUILD_ERROR_CODE);
+    assert!(error.message.contains("xiao-diagnostics"));
+}

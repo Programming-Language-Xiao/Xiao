@@ -1,0 +1,197 @@
+{
+  "stage": "08",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "scalar-assignment",
+      "source": "value = 1\n",
+      "expect": "success",
+      "ir": {
+        "version": 1,
+        "target": "host",
+        "entry_mode": "script",
+        "body_kinds": ["assignment"],
+        "table_signatures": 0,
+        "selection_plans": 0,
+        "round_trip": true
+      }
+    },
+    {
+      "name": "function-and-try",
+      "source": "def f(int value) -> int\n    return value\ntry\n    result = f(1)\ncatch err as Error\n    result = 0\nfinally\n    done = true\n",
+      "expect": "success",
+      "ir": {
+        "version": 1,
+        "target": "host",
+        "entry_mode": "script",
+        "body_kinds": ["function", "try"],
+        "table_signatures": 0,
+        "selection_plans": 0,
+        "round_trip": true
+      }
+    },
+    {
+      "name": "multiple-exact-selection",
+      "source": "items = [0, 1, 2, 3, 4, 5, 6]\nselected = items[0, 1]\n",
+      "expect": "success",
+      "ir": {
+        "version": 1,
+        "target": "host",
+        "entry_mode": "script",
+        "body_kinds": ["assignment", "assignment"],
+        "table_signatures": 0,
+        "selection_plans": 1,
+        "round_trip": true,
+        "selector_items": ["exact", "exact"],
+        "selected_path_count": 2
+      }
+    },
+    {
+      "name": "multiple-range-selection",
+      "source": "items = [0, 1, 2, 3, 4, 5, 6]\nselected = items[0~2, 5~6]\n",
+      "expect": "success",
+      "ir": {
+        "version": 1,
+        "target": "host",
+        "entry_mode": "script",
+        "body_kinds": ["assignment", "assignment"],
+        "table_signatures": 0,
+        "selection_plans": 1,
+        "round_trip": true,
+        "selector_items": ["range", "range"],
+        "selected_path_count": 5
+      }
+    },
+    {
+      "name": "open-range-exclusive-start",
+      "source": "items = [0, 1, 2, 3, 4, 5, 6]\nselected = items[<2]\n",
+      "expect": "success",
+      "ir": {
+        "version": 1,
+        "target": "host",
+        "entry_mode": "script",
+        "body_kinds": ["assignment", "assignment"],
+        "table_signatures": 0,
+        "selection_plans": 1,
+        "round_trip": true,
+        "selector_items": ["open-range"],
+        "selected_path_count": 2
+      }
+    },
+    {
+      "name": "open-range-inclusive-end",
+      "source": "items = [0, 1, 2, 3, 4, 5, 6]\nselected = items[<=2]\n",
+      "expect": "success",
+      "ir": {
+        "version": 1,
+        "target": "host",
+        "entry_mode": "script",
+        "body_kinds": ["assignment", "assignment"],
+        "table_signatures": 0,
+        "selection_plans": 1,
+        "round_trip": true,
+        "selector_items": ["open-range"],
+        "selected_path_count": 3
+      }
+    },
+    {
+      "name": "open-range-exclusive-end",
+      "source": "items = [0, 1, 2, 3, 4, 5, 6]\nselected = items[>2]\n",
+      "expect": "success",
+      "ir": {
+        "version": 1,
+        "target": "host",
+        "entry_mode": "script",
+        "body_kinds": ["assignment", "assignment"],
+        "table_signatures": 0,
+        "selection_plans": 1,
+        "round_trip": true,
+        "selector_items": ["open-range"],
+        "selected_path_count": 4
+      }
+    },
+    {
+      "name": "open-range-inclusive-start",
+      "source": "items = [0, 1, 2, 3, 4, 5, 6]\nselected = items[>=2]\n",
+      "expect": "success",
+      "ir": {
+        "version": 1,
+        "target": "host",
+        "entry_mode": "script",
+        "body_kinds": ["assignment", "assignment"],
+        "table_signatures": 0,
+        "selection_plans": 1,
+        "round_trip": true,
+        "selector_items": ["open-range"],
+        "selected_path_count": 5
+      }
+    },
+    {
+      "name": "all-selection",
+      "source": "items = [0, 1, 2, 3, 4, 5, 6]\nselected = items[=]\n",
+      "expect": "success",
+      "ir": {
+        "version": 1,
+        "target": "host",
+        "entry_mode": "script",
+        "body_kinds": ["assignment", "assignment"],
+        "table_signatures": 0,
+        "selection_plans": 1,
+        "round_trip": true,
+        "selector_items": ["all"],
+        "selected_path_count": 7
+      }
+    },
+    {
+      "name": "stepped-all-selection",
+      "source": "items = [0, 1, 2, 3, 4, 5, 6]\nselected = items{-2}[=]\n",
+      "expect": "success",
+      "ir": {
+        "version": 1,
+        "target": "host",
+        "entry_mode": "script",
+        "body_kinds": ["assignment", "assignment"],
+        "table_signatures": 0,
+        "selection_plans": 1,
+        "round_trip": true,
+        "selector_items": ["all"],
+        "selected_path_count": 4,
+        "step_value": -2
+      }
+    },
+    {
+      "name": "random-without-replacement",
+      "source": "items = [0, 1, 2, 3, 4, 5, 6]\nselected = items[?2]\n",
+      "expect": "success",
+      "ir": {
+        "version": 1,
+        "target": "host",
+        "entry_mode": "script",
+        "body_kinds": ["assignment", "assignment"],
+        "table_signatures": 0,
+        "selection_plans": 1,
+        "round_trip": true,
+        "selector_items": ["random"],
+        "selected_path_count": 0,
+        "with_replacement": false
+      }
+    },
+    {
+      "name": "random-with-replacement",
+      "source": "items = [0, 1, 2, 3, 4, 5, 6]\nselected = items[!?2]\n",
+      "expect": "success",
+      "ir": {
+        "version": 1,
+        "target": "host",
+        "entry_mode": "script",
+        "body_kinds": ["assignment", "assignment"],
+        "table_signatures": 0,
+        "selection_plans": 1,
+        "round_trip": true,
+        "selector_items": ["random"],
+        "selected_path_count": 0,
+        "with_replacement": true
+      }
+    }
+  ]
+}

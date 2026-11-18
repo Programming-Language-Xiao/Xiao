@@ -1,0 +1,871 @@
+//! 面向 P2/S0 的静态类型检查器。
+//!
+//! 检查器只消费 `xiao-syntax` 的公开 AST 和源码区间，输出类型化结果、结构化
+//! 诊断及需要后端插入的运行时检查标记；它绝不执行 Xiao 程序或修改原始 AST。
+
+use std::collections::{BTreeMap, BTreeSet};
+
+use xiao_diagnostics::Diagnostic;
+use xiao_source::SourceFile;
+use xiao_syntax::Program;
+
+use crate::containers::ContainerMaterializationPlan;
+use crate::environment::Binding;
+use crate::environment::TypeEnvironment;
+use crate::functions::FunctionSignature;
+use crate::numeric::ConstantValue;
+use crate::types::Type;
+use crate::unify::TypeContext;
+
+#[cfg(test)]
+#[path = "checker_architecture_tests.rs"]
+/// 锁定检查器子模块的源码级依赖方向。
+mod architecture_tests;
+/// 常量求值和跨职责共享的无状态辅助。
+#[path = "checker/constant.rs"]
+mod constant;
+/// C0 容器语义的子模块；保持主检查器只负责语句分派和标量规则。
+#[path = "container_checker.rs"]
+pub(crate) mod container_checker;
+/// 04 条件、循环、返回和入口静态检查。
+#[path = "control_checker.rs"]
+mod control_checker;
+/// 显式转换、常量目标校验和编译期常量求值。
+#[path = "checker/conversion.rs"]
+mod conversion;
+/// 类型诊断与运行时检查标记上报。
+#[path = "checker/diagnostic.rs"]
+mod diagnostic;
+/// 表达式类型检查、运算推导和调用检查。
+#[path = "checker/expression.rs"]
+mod expression;
+/// 04 函数定义、签名占位和调用参数检查。
+#[path = "function_checker.rs"]
+mod function_checker;
+/// 已声明模块接口的绑定和调用检查。
+#[path = "checker/imports.rs"]
+mod imports;
+/// 类型检查结果和运行时检查标记的公开模型。
+#[path = "checker/result.rs"]
+mod result;
+/// C1 有序容器选择、随机种子和选择器左值检查。
+#[path = "selector_checker.rs"]
+mod selector_checker;
+/// C2-A 集合字面量、可哈希检查和成员判断。
+#[path = "set_checker.rs"]
+mod set_checker;
+/// C2-C 集合代数、比较和动态检查计划。
+#[path = "set_operations.rs"]
+mod set_operations;
+/// 语句分派、赋值和声明检查。
+#[path = "checker/statement.rs"]
+mod statement;
+/// 05-C 表声明、成员访问和生命周期静态契约。
+#[path = "table_checker.rs"]
+mod table_checker;
+
+/// 检查器输出、类型化节点和后端运行时检查标记的稳定公开模型。
+pub use self::result::{
+    ConcurrencyCall, RuntimeCheck, RuntimeCheckKind, TypeCheckResult, TypedNode,
+};
+use self::table_checker::TableFrame;
+
+/// 包路径到可读取成员的静态、无副作用接口；键是完整点号路径。
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct ExternalNamespaces {
+    /// 根名称、目录命名空间及文件模块各自的公开成员。
+    pub members: BTreeMap<String, BTreeSet<String>>,
+}
+
+/// P2 静态检查器；生命周期只借用不可变源码。
+pub struct TypeChecker<'source> {
+    source: &'source SourceFile,
+    context: TypeContext,
+    environment: TypeEnvironment,
+    external_namespaces: ExternalNamespaces,
+    module_functions: BTreeMap<String, BTreeMap<String, FunctionSignature>>,
+    resource_parameters: Vec<(
+        xiao_source::SourceSpan,
+        xiao_syntax::FunctionParameterKind,
+        Type,
+    )>,
+    diagnostics: Vec<Diagnostic>,
+    nodes: Vec<TypedNode>,
+    /// 已确定为lint/lfloat的表达式区间；值求值只能交给共享Runtime。
+    runtime_numeric_spans: BTreeSet<(usize, usize)>,
+    runtime_checks: Vec<RuntimeCheck>,
+    intrinsic_calls: BTreeMap<(usize, usize), xiao_intrinsics::IntrinsicId>,
+    materialization_plans: Vec<ContainerMaterializationPlan>,
+    selection_plans: Vec<crate::selection_model::SelectionPlan>,
+    broadcast_assignment_plans: Vec<crate::selection_model::BroadcastAssignmentPlan>,
+    random_seed_plans: Vec<crate::selection_model::RandomSeedPlan>,
+    constant_values: BTreeMap<String, ConstantValue>,
+    /// 已知数组别名组；原地追加时一起擦除固定长度。
+    array_aliases: BTreeMap<String, BTreeSet<String>>,
+    function_signatures: BTreeMap<String, FunctionSignature>,
+    table_signatures: BTreeMap<String, crate::tables::TableSignature>,
+    current_table: Option<TableFrame>,
+    current_function: Option<FunctionFrame>,
+    /// 当前正在检查的函数名称，用于让直接递归调用复用刚性签名。
+    current_function_key: Option<String>,
+    /// 命名并发句柄的静态消费状态；仅用于调用检查。
+    concurrency_handle_states: BTreeMap<String, crate::concurrency::HandleConsumption>,
+    /// 名称绑定可能指向的线程/任务句柄身份；别名共享同一消费状态。
+    concurrency_binding_handles: BTreeMap<String, BTreeSet<String>>,
+    /// 下一个编译期句柄身份编号。
+    next_concurrency_handle_id: u64,
+    /// 每个活跃循环入口已经存在的句柄身份。
+    loop_concurrency_handles: Vec<BTreeSet<String>>,
+    /// 已消费的命名并发值；名称键只在当前词法作用域快照内有效。
+    consumed_concurrency_bindings: BTreeSet<String>,
+    /// 已消费的值身份；变量别名共享此状态。
+    consumed_concurrency_values: BTreeSet<String>,
+    /// 最近一条语句的并发控制流出口。
+    last_concurrency_flow: Option<ConcurrencyFlow>,
+    /// 当前语句仅用于不可达路径的类型诊断；并发消费状态不得写回。
+    checking_unreachable: bool,
+    /// 进入作用域前保存的并发状态。
+    concurrency_scope_snapshots: Vec<ConcurrencyScopeState>,
+    /// 已由 `std.concurrent` 导入绑定解析出的调用点。
+    concurrency_calls: Vec<ConcurrencyCall>,
+    /// 函数体中直接执行数组变更的函数摘要。
+    mutating_functions: BTreeSet<String>,
+    loop_depth: usize,
+}
+
+/// 正在检查的函数上下文；只存静态返回约束，不持有运行时栈。
+#[derive(Clone, Debug)]
+struct FunctionFrame {
+    /// 返回类型约束。
+    return_type: Type,
+    /// 是否已经遇到返回语句。
+    saw_return: bool,
+}
+
+#[derive(Clone, Debug, Default)]
+pub(super) struct ConcurrencyScopeState {
+    handles: BTreeMap<String, crate::concurrency::HandleConsumption>,
+    binding_handles: BTreeMap<String, BTreeSet<String>>,
+    consumed: BTreeSet<String>,
+    consumed_values: BTreeSet<String>,
+}
+
+/// 一段语句可能到达的并发控制流出口。
+#[derive(Clone, Debug, Default)]
+pub(super) struct ConcurrencyFlow {
+    /// 仍可继续执行后续语句的状态。
+    pub(super) normal: Option<ConcurrencyScopeState>,
+    /// `return` 退出的状态。
+    pub(super) returns: Vec<ConcurrencyScopeState>,
+    /// `break` 退出的状态。
+    pub(super) breaks: Vec<ConcurrencyScopeState>,
+    /// `continue` 退出的状态。
+    pub(super) continues: Vec<ConcurrencyScopeState>,
+    /// `raise` 产生的错误出口状态；可由外层 `catch` 消费。
+    pub(super) errors: Vec<ConcurrencyScopeState>,
+}
+
+impl<'source> TypeChecker<'source> {
+    /// 创建使用全局空作用域的检查器。
+    #[must_use]
+    pub fn new(source: &'source SourceFile) -> Self {
+        Self {
+            source,
+            context: TypeContext::new(),
+            environment: TypeEnvironment::new(),
+            external_namespaces: ExternalNamespaces::default(),
+            module_functions: BTreeMap::new(),
+            resource_parameters: Vec::new(),
+            diagnostics: Vec::new(),
+            nodes: Vec::new(),
+            runtime_numeric_spans: BTreeSet::new(),
+            runtime_checks: Vec::new(),
+            intrinsic_calls: BTreeMap::new(),
+            materialization_plans: Vec::new(),
+            selection_plans: Vec::new(),
+            broadcast_assignment_plans: Vec::new(),
+            random_seed_plans: Vec::new(),
+            constant_values: BTreeMap::new(),
+            array_aliases: BTreeMap::new(),
+            function_signatures: BTreeMap::new(),
+            table_signatures: BTreeMap::new(),
+            current_table: None,
+            current_function: None,
+            current_function_key: None,
+            concurrency_handle_states: BTreeMap::new(),
+            concurrency_binding_handles: BTreeMap::new(),
+            next_concurrency_handle_id: 0,
+            loop_concurrency_handles: Vec::new(),
+            consumed_concurrency_bindings: BTreeSet::new(),
+            consumed_concurrency_values: BTreeSet::new(),
+            last_concurrency_flow: None,
+            checking_unreachable: false,
+            concurrency_scope_snapshots: Vec::new(),
+            concurrency_calls: Vec::new(),
+            mutating_functions: BTreeSet::new(),
+            loop_depth: 0,
+        }
+    }
+
+    /// 进入一个与类型环境同步的词法作用域，并保存并发消费状态。
+    pub(super) fn push_scope(&mut self) {
+        self.concurrency_scope_snapshots
+            .push(ConcurrencyScopeState {
+                handles: self.concurrency_handle_states.clone(),
+                binding_handles: self.concurrency_binding_handles.clone(),
+                consumed: self.consumed_concurrency_bindings.clone(),
+                consumed_values: self.consumed_concurrency_values.clone(),
+            });
+        self.environment.push_scope();
+    }
+
+    /// 退出词法作用域并恢复外层并发绑定状态。
+    pub(super) fn pop_scope(&mut self) {
+        let _ = self.environment.pop_scope();
+        if let Some(snapshot) = self.concurrency_scope_snapshots.pop() {
+            self.concurrency_handle_states = snapshot.handles;
+            self.concurrency_binding_handles = snapshot.binding_handles;
+            self.consumed_concurrency_bindings = snapshot.consumed;
+            self.consumed_concurrency_values = snapshot.consumed_values;
+        }
+    }
+
+    /// 退出分支作用域，并把每个控制流出口投影到外层绑定。
+    ///
+    /// 分支内部声明会在退出时丢弃；对外层绑定的消费和重新赋值则作为该
+    /// 分支的控制流结果返回，交给调用方与其他可达路径合并。
+    pub(super) fn pop_scope_with_concurrency_flow(
+        &mut self,
+        flow: ConcurrencyFlow,
+    ) -> ConcurrencyFlow {
+        let local_bindings = self.environment.pop_scope().unwrap_or_default();
+        let snapshot = self.concurrency_scope_snapshots.pop().unwrap_or_default();
+        let project = |state: &ConcurrencyScopeState| {
+            let mut outgoing = state.clone();
+            for key in local_bindings.keys() {
+                let local_ids = outgoing.binding_handles.remove(key).unwrap_or_default();
+                if let Some(outer_ids) = snapshot.binding_handles.get(key) {
+                    outgoing
+                        .binding_handles
+                        .insert(key.clone(), outer_ids.clone());
+                    let outer_ids = outer_ids.iter().collect::<BTreeSet<_>>();
+                    for id in local_ids.iter().filter(|id| !outer_ids.contains(id)) {
+                        outgoing.consumed_values.remove(id);
+                    }
+                } else {
+                    for id in local_ids {
+                        outgoing.consumed_values.remove(&id);
+                    }
+                }
+                outgoing.consumed.remove(key);
+                if snapshot.consumed.contains(key) {
+                    outgoing.consumed.insert(key.clone());
+                }
+            }
+            outgoing
+        };
+        let projected = ConcurrencyFlow {
+            normal: flow.normal.as_ref().map(project),
+            returns: flow.returns.iter().map(project).collect(),
+            breaks: flow.breaks.iter().map(project).collect(),
+            continues: flow.continues.iter().map(project).collect(),
+            errors: flow.errors.iter().map(project).collect(),
+        };
+        self.restore_concurrency_scope_state(&snapshot);
+        projected
+    }
+
+    /// 捕获当前并发绑定状态，用于分支输入与输出的隔离。
+    pub(super) fn concurrency_scope_state(&self) -> ConcurrencyScopeState {
+        ConcurrencyScopeState {
+            handles: self.concurrency_handle_states.clone(),
+            binding_handles: self.concurrency_binding_handles.clone(),
+            consumed: self.consumed_concurrency_bindings.clone(),
+            consumed_values: self.consumed_concurrency_values.clone(),
+        }
+    }
+
+    /// 恢复一条控制流路径的并发绑定状态。
+    pub(super) fn restore_concurrency_scope_state(&mut self, state: &ConcurrencyScopeState) {
+        self.concurrency_handle_states = state.handles.clone();
+        self.concurrency_binding_handles = state.binding_handles.clone();
+        self.consumed_concurrency_bindings = state.consumed.clone();
+        self.consumed_concurrency_values = state.consumed_values.clone();
+    }
+
+    /// 合并一组可能到达同一程序点的并发状态。
+    pub(super) fn merge_concurrency_scope_state_values(
+        states: &[ConcurrencyScopeState],
+    ) -> Option<ConcurrencyScopeState> {
+        let mut merged = ConcurrencyScopeState::default();
+        for state in states {
+            merged.consumed.extend(state.consumed.iter().cloned());
+            merged
+                .consumed_values
+                .extend(state.consumed_values.iter().cloned());
+            for (key, incoming) in &state.binding_handles {
+                merged
+                    .binding_handles
+                    .entry(key.clone())
+                    .or_default()
+                    .extend(incoming.iter().cloned());
+            }
+            for (key, incoming) in &state.handles {
+                merged
+                    .handles
+                    .entry(key.clone())
+                    .and_modify(|existing| existing.consumed |= incoming.consumed)
+                    .or_insert(*incoming);
+            }
+        }
+        (!states.is_empty()).then_some(merged)
+    }
+
+    /// 合并多段语句的控制流出口。
+    pub(super) fn merge_concurrency_flows(flows: &[ConcurrencyFlow]) -> ConcurrencyFlow {
+        let mut merged = ConcurrencyFlow::default();
+        let normal = flows
+            .iter()
+            .filter_map(|flow| flow.normal.clone())
+            .collect::<Vec<_>>();
+        merged.normal = Self::merge_concurrency_scope_state_values(&normal);
+        merged.returns = flows
+            .iter()
+            .flat_map(|flow| flow.returns.iter().cloned())
+            .collect();
+        merged.breaks = flows
+            .iter()
+            .flat_map(|flow| flow.breaks.iter().cloned())
+            .collect();
+        merged.continues = flows
+            .iter()
+            .flat_map(|flow| flow.continues.iter().cloned())
+            .collect();
+        merged.errors = flows
+            .iter()
+            .flat_map(|flow| flow.errors.iter().cloned())
+            .collect();
+        merged
+    }
+
+    /// 保存最近一条语句的控制流出口。
+    pub(super) fn set_last_concurrency_flow(&mut self, flow: ConcurrencyFlow) {
+        self.last_concurrency_flow = Some(flow);
+    }
+
+    /// 取出最近一条语句的控制流出口。
+    pub(super) fn take_last_concurrency_flow(&mut self) -> Option<ConcurrencyFlow> {
+        self.last_concurrency_flow.take()
+    }
+
+    /// 设置不可达语句检查模式。
+    pub(super) fn set_checking_unreachable(&mut self, value: bool) {
+        self.checking_unreachable = value;
+    }
+
+    /// 返回当前是否只检查不可达语句的类型。
+    pub(super) const fn is_checking_unreachable(&self) -> bool {
+        self.checking_unreachable
+    }
+
+    /// 重置一个被重新赋值或重新声明的并发绑定。
+    pub(super) fn reset_concurrency_binding(&mut self, key: &str) {
+        self.concurrency_binding_handles.remove(key);
+        self.consumed_concurrency_bindings.remove(key);
+    }
+
+    /// 读取绑定表达式已经关联的句柄身份。
+    pub(super) fn concurrency_handle_identity(
+        &self,
+        expression: &xiao_syntax::Expression,
+    ) -> Option<BTreeSet<String>> {
+        match expression {
+            xiao_syntax::Expression::Name(name) => {
+                let key = self.name_key(*name);
+                self.concurrency_binding_handles
+                    .get(&key)
+                    .cloned()
+                    .or_else(|| Some(BTreeSet::from([key])))
+            }
+            xiao_syntax::Expression::Group { expression, .. } => {
+                self.concurrency_handle_identity(expression)
+            }
+            _ => None,
+        }
+    }
+
+    /// 返回名称或分组表达式对应的绑定键。
+    pub(super) fn concurrency_binding_key(
+        &self,
+        expression: &xiao_syntax::Expression,
+    ) -> Option<String> {
+        match expression {
+            xiao_syntax::Expression::Name(name) => Some(self.name_key(*name)),
+            xiao_syntax::Expression::Group { expression, .. } => {
+                self.concurrency_binding_key(expression)
+            }
+            _ => None,
+        }
+    }
+
+    /// 将新值或别名绑定到名称，并为 thread/task 建立消费状态。
+    pub(super) fn bind_concurrency_handle(
+        &mut self,
+        key: String,
+        ty: &crate::types::Type,
+        source: Option<BTreeSet<String>>,
+    ) {
+        let kind = match ty {
+            crate::types::Type::Thread(_) => Some(crate::concurrency::ConcurrentHandleKind::Thread),
+            crate::types::Type::Task(_) => Some(crate::concurrency::ConcurrentHandleKind::Task),
+            _ => None,
+        };
+        let identity = source.unwrap_or_else(|| {
+            let identity = format!("value:{}", self.next_concurrency_handle_id);
+            self.next_concurrency_handle_id = self.next_concurrency_handle_id.saturating_add(1);
+            BTreeSet::from([identity])
+        });
+        if let Some(kind) = kind {
+            for id in &identity {
+                self.concurrency_handle_states
+                    .entry(id.clone())
+                    .or_insert_with(|| crate::concurrency::HandleConsumption::new(kind));
+            }
+        }
+        self.concurrency_binding_handles.insert(key, identity);
+    }
+
+    /// 登记一个可重复执行的循环入口句柄集合。
+    pub(super) fn push_concurrency_loop(&mut self) {
+        self.loop_concurrency_handles.push(
+            self.concurrency_binding_handles
+                .values()
+                .flat_map(|handles| handles.iter().cloned())
+                .collect(),
+        );
+    }
+
+    /// 离开一个可重复执行的循环入口。
+    pub(super) fn pop_concurrency_loop(&mut self) {
+        let _ = self.loop_concurrency_handles.pop();
+    }
+
+    /// 判断句柄是否在任一活跃循环入口前就已存在。
+    pub(super) fn is_loop_carried_concurrency_handle(&self, identities: &BTreeSet<String>) -> bool {
+        !self.loop_concurrency_handles.is_empty()
+            && (self
+                .loop_concurrency_handles
+                .iter()
+                .any(|loop_handles| identities.iter().any(|id| loop_handles.contains(id))))
+    }
+
+    /// 标记并发调用消费的命名实参。
+    pub(super) fn mark_concurrency_binding_consumed(&mut self, key: String) {
+        if let Some(identities) = self.concurrency_binding_handles.get(&key) {
+            self.consumed_concurrency_values
+                .extend(identities.iter().cloned());
+        } else {
+            self.consumed_concurrency_values.insert(key.clone());
+        }
+        self.consumed_concurrency_bindings.insert(key);
+    }
+
+    /// 报告消费后的命名值再次读取。
+    pub(super) fn check_consumed_concurrency_binding(
+        &mut self,
+        key: &str,
+        span: xiao_source::SourceSpan,
+    ) {
+        let handle_consumed = self
+            .concurrency_binding_handles
+            .get(key)
+            .is_some_and(|identities| {
+                identities.iter().any(|identity| {
+                    self.concurrency_handle_states
+                        .get(identity)
+                        .is_some_and(|state| state.consumed)
+                })
+            });
+        let value_consumed = self
+            .concurrency_binding_handles
+            .get(key)
+            .is_some_and(|identities| {
+                identities
+                    .iter()
+                    .any(|identity| self.consumed_concurrency_values.contains(identity))
+            });
+        if self.consumed_concurrency_bindings.contains(key) || handle_consumed || value_consumed {
+            self.type_error(
+                crate::diagnostics::FUNCTION_CALL_CODE,
+                "x04.type.call_argument",
+                span,
+                "并发值已经被消费，不能再次使用".to_owned(),
+            );
+        }
+    }
+
+    /// 直接检查一个程序；这是不需要保留检查器状态时的便捷入口。
+    #[must_use]
+    pub fn check(source: &'source SourceFile, program: &Program) -> TypeCheckResult {
+        Self::new(source).check_program(program)
+    }
+
+    /// 使用当前环境检查整个程序并返回结果。
+    #[must_use]
+    pub fn check_program(mut self, program: &Program) -> TypeCheckResult {
+        self.collect_mutating_functions(&program.statements);
+        self.register_top_level_functions(&program.statements);
+        self.register_top_level_tables(&program.statements);
+        let _ = self.check_statement_sequence(&program.statements);
+        self.finalize_function_inference();
+        self.finalize_resource_parameter_boundaries();
+        // 表达式节点是在约束收集期间记录的；函数调用或函数体返回值可能在
+        // 后续语句才把类型变量绑定到具体标量。对外发布结果前统一应用最终
+        // 替换，确保 IR 消费者看到的节点类型与函数签名使用同一份结论。
+        for node in &mut self.nodes {
+            node.ty = self.context.apply(&node.ty);
+        }
+        TypeCheckResult {
+            nodes: self.nodes,
+            diagnostics: self.diagnostics,
+            runtime_checks: self.runtime_checks,
+            intrinsic_calls: self.intrinsic_calls,
+            environment: self.environment,
+            materialization_plans: self.materialization_plans,
+            selection_plans: self.selection_plans,
+            broadcast_assignment_plans: self.broadcast_assignment_plans,
+            random_seed_plans: self.random_seed_plans,
+            entry_mode: program.entry_mode,
+            function_signatures: self.function_signatures,
+            table_signatures: self.table_signatures,
+            concurrency_calls: self.concurrency_calls,
+        }
+    }
+
+    /// 预扫描直接调用 `array_push` 的函数，供调用点精确擦除数组长度。
+    fn collect_mutating_functions(&mut self, statements: &[xiao_syntax::Statement]) {
+        /// 判断表达式树是否直接或递归包含数组变更调用。
+        fn expression_mutates(
+            expression: &xiao_syntax::Expression,
+            source: &xiao_source::SourceFile,
+        ) -> bool {
+            use xiao_syntax::Expression;
+            match expression {
+                Expression::Call {
+                    callee, arguments, ..
+                } => {
+                    matches!(callee.as_ref(), Expression::Name(name) if name.unquoted_text(source) == "array_push")
+                        || arguments
+                            .iter()
+                            .any(|argument| expression_mutates(&argument.value, source))
+                }
+                Expression::ArrayLiteral { elements, .. }
+                | Expression::TupleLiteral { elements, .. }
+                | Expression::SetLiteral { elements, .. } => elements
+                    .iter()
+                    .any(|element| expression_mutates(element, source)),
+                Expression::DictTableLiteral { entries, .. }
+                | Expression::DictColumnLiteral { entries, .. } => entries
+                    .iter()
+                    .any(|entry| expression_mutates(&entry.value, source)),
+                Expression::Group { expression, .. }
+                | Expression::Unary {
+                    operand: expression,
+                    ..
+                }
+                | Expression::Cast { expression, .. } => expression_mutates(expression, source),
+                Expression::Binary { left, right, .. } => {
+                    expression_mutates(left, source) || expression_mutates(right, source)
+                }
+                Expression::Member { object, .. } => expression_mutates(object, source),
+                Expression::Selector {
+                    source: source_expression,
+                    step,
+                    ..
+                } => {
+                    expression_mutates(source_expression, source)
+                        || step
+                            .as_deref()
+                            .is_some_and(|step| expression_mutates(step, source))
+                }
+                Expression::Literal { .. } | Expression::Name(_) => false,
+                Expression::NewCall { arguments, .. } => arguments
+                    .iter()
+                    .any(|argument| expression_mutates(&argument.value, source)),
+            }
+        }
+        /// 判断语句列表是否包含会改变数组共享句柄的操作。
+        fn statements_mutate(
+            statements: &[xiao_syntax::Statement],
+            source: &xiao_source::SourceFile,
+        ) -> bool {
+            use xiao_syntax::Statement;
+            statements.iter().any(|statement| match statement {
+                Statement::Expression { expression, .. } => expression_mutates(expression, source),
+                Statement::Assignment { value, .. } | Statement::ConstDeclaration { value, .. } => {
+                    expression_mutates(value, source)
+                }
+                Statement::Declaration { value, .. } => value
+                    .as_ref()
+                    .is_some_and(|value| expression_mutates(value, source)),
+                Statement::ExtendedAssignment { target, value, .. } => {
+                    expression_mutates(target, source) || expression_mutates(value, source)
+                }
+                Statement::If {
+                    condition,
+                    body,
+                    elif_branches,
+                    else_body,
+                    ..
+                } => {
+                    expression_mutates(condition, source)
+                        || statements_mutate(body, source)
+                        || elif_branches.iter().any(|branch| {
+                            expression_mutates(&branch.condition, source)
+                                || statements_mutate(&branch.body, source)
+                        })
+                        || else_body
+                            .as_deref()
+                            .is_some_and(|body| statements_mutate(body, source))
+                }
+                Statement::For { iterable, body, .. }
+                | Statement::While {
+                    condition: iterable,
+                    body,
+                    ..
+                } => expression_mutates(iterable, source) || statements_mutate(body, source),
+                Statement::Return {
+                    value: Some(value), ..
+                }
+                | Statement::Raise { value, .. } => expression_mutates(value, source),
+                Statement::Try {
+                    body,
+                    catches,
+                    finally_body,
+                    ..
+                } => {
+                    statements_mutate(body, source)
+                        || catches
+                            .iter()
+                            .any(|catch| statements_mutate(&catch.body, source))
+                        || finally_body
+                            .as_deref()
+                            .is_some_and(|body| statements_mutate(body, source))
+                }
+                Statement::Function { .. }
+                | Statement::Import { .. }
+                | Statement::Return { value: None, .. }
+                | Statement::Break { .. }
+                | Statement::Continue { .. }
+                | Statement::Table { .. } => false,
+            })
+        }
+        fn expression_calls(
+            expression: &xiao_syntax::Expression,
+            source: &xiao_source::SourceFile,
+            calls: &mut BTreeSet<String>,
+        ) {
+            use xiao_syntax::Expression;
+            match expression {
+                Expression::Call {
+                    callee, arguments, ..
+                } => {
+                    if let Expression::Name(name) = callee.as_ref() {
+                        calls.insert(if name.backticked {
+                            format!("backtick:{}", name.unquoted_text(source))
+                        } else {
+                            format!("ascii:{}", name.unquoted_text(source))
+                        });
+                    }
+                    expression_calls(callee, source, calls);
+                    for argument in arguments {
+                        expression_calls(&argument.value, source, calls);
+                    }
+                }
+                Expression::ArrayLiteral { elements, .. }
+                | Expression::TupleLiteral { elements, .. }
+                | Expression::SetLiteral { elements, .. } => {
+                    for element in elements {
+                        expression_calls(element, source, calls);
+                    }
+                }
+                Expression::DictTableLiteral { entries, .. }
+                | Expression::DictColumnLiteral { entries, .. } => {
+                    for entry in entries {
+                        expression_calls(&entry.value, source, calls);
+                    }
+                }
+                Expression::Group { expression, .. }
+                | Expression::Unary {
+                    operand: expression,
+                    ..
+                }
+                | Expression::Cast { expression, .. } => {
+                    expression_calls(expression, source, calls)
+                }
+                Expression::Binary { left, right, .. } => {
+                    expression_calls(left, source, calls);
+                    expression_calls(right, source, calls);
+                }
+                Expression::Member { object, .. } => expression_calls(object, source, calls),
+                Expression::Selector {
+                    source: source_expression,
+                    step,
+                    ..
+                } => {
+                    expression_calls(source_expression, source, calls);
+                    if let Some(step) = step {
+                        expression_calls(step, source, calls);
+                    }
+                }
+                Expression::Literal { .. } | Expression::Name(_) => {}
+                Expression::NewCall {
+                    callee, arguments, ..
+                } => {
+                    expression_calls(callee, source, calls);
+                    for argument in arguments {
+                        expression_calls(&argument.value, source, calls);
+                    }
+                }
+            }
+        }
+        fn statements_calls(
+            statements: &[xiao_syntax::Statement],
+            source: &xiao_source::SourceFile,
+            calls: &mut BTreeSet<String>,
+        ) {
+            use xiao_syntax::Statement;
+            for statement in statements {
+                match statement {
+                    Statement::Expression { expression, .. }
+                    | Statement::Assignment {
+                        value: expression, ..
+                    }
+                    | Statement::ConstDeclaration {
+                        value: expression, ..
+                    } => expression_calls(expression, source, calls),
+                    Statement::Declaration { value, .. } => {
+                        if let Some(value) = value {
+                            expression_calls(value, source, calls);
+                        }
+                    }
+                    Statement::ExtendedAssignment { target, value, .. } => {
+                        expression_calls(target, source, calls);
+                        expression_calls(value, source, calls);
+                    }
+                    Statement::If {
+                        condition,
+                        body,
+                        elif_branches,
+                        else_body,
+                        ..
+                    } => {
+                        expression_calls(condition, source, calls);
+                        statements_calls(body, source, calls);
+                        for branch in elif_branches {
+                            expression_calls(&branch.condition, source, calls);
+                            statements_calls(&branch.body, source, calls);
+                        }
+                        if let Some(body) = else_body {
+                            statements_calls(body, source, calls);
+                        }
+                    }
+                    Statement::For { iterable, body, .. }
+                    | Statement::While {
+                        condition: iterable,
+                        body,
+                        ..
+                    } => {
+                        expression_calls(iterable, source, calls);
+                        statements_calls(body, source, calls);
+                    }
+                    Statement::Return { value, .. } => {
+                        if let Some(value) = value {
+                            expression_calls(value, source, calls);
+                        }
+                    }
+                    Statement::Raise { value, .. } => expression_calls(value, source, calls),
+                    Statement::Try {
+                        body,
+                        catches,
+                        finally_body,
+                        ..
+                    } => {
+                        statements_calls(body, source, calls);
+                        for catch in catches {
+                            statements_calls(&catch.body, source, calls);
+                        }
+                        if let Some(body) = finally_body {
+                            statements_calls(body, source, calls);
+                        }
+                    }
+                    Statement::Function { .. }
+                    | Statement::Import { .. }
+                    | Statement::Break { .. }
+                    | Statement::Continue { .. }
+                    | Statement::Table { .. } => {}
+                }
+            }
+        }
+        let mut calls = BTreeMap::<String, BTreeSet<String>>::new();
+        for statement in statements {
+            if let xiao_syntax::Statement::Function { name, body, .. } = statement {
+                let key = self.name_key(*name);
+                if statements_mutate(body, self.source) {
+                    self.mutating_functions.insert(key.clone());
+                }
+                let mut called = BTreeSet::new();
+                statements_calls(body, self.source, &mut called);
+                calls.insert(key, called);
+            }
+        }
+        loop {
+            let before = self.mutating_functions.len();
+            for (function, called) in &calls {
+                if called
+                    .iter()
+                    .any(|callee| self.mutating_functions.contains(callee))
+                {
+                    self.mutating_functions.insert(function.clone());
+                }
+            }
+            if self.mutating_functions.len() == before {
+                break;
+            }
+        }
+    }
+
+    /// 返回检查器当前使用的源码。
+    #[must_use]
+    pub const fn source(&self) -> &'source SourceFile {
+        self.source
+    }
+
+    /// 只登记外部包接口；此步骤不读取或执行包模块源码。
+    #[must_use]
+    pub fn with_external_namespaces(mut self, namespaces: ExternalNamespaces) -> Self {
+        for root in namespaces.members.keys().filter(|path| !path.contains('.')) {
+            let _ = self
+                .environment
+                .declare(format!("ascii:{root}"), Binding::package_root());
+        }
+        self.external_namespaces = namespaces;
+        self
+    }
+
+    /// 注入已声明的模块函数接口；不执行导入、不改变后端的模块调用支持范围。
+    #[must_use]
+    pub fn with_module_function_signatures(
+        mut self,
+        functions: BTreeMap<String, BTreeMap<String, FunctionSignature>>,
+    ) -> Self {
+        self.module_functions = functions;
+        self
+    }
+}
+
+/// 检查一个已解析程序的便捷函数。
+#[must_use]
+pub fn check(source: &SourceFile, program: &Program) -> TypeCheckResult {
+    TypeChecker::check(source, program)
+}

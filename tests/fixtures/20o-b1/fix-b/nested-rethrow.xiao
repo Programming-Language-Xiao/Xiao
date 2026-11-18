@@ -1,0 +1,15 @@
+try
+    raise Error(code = "outer")
+catch outer as Error
+    try
+        raise Error(code = "inner")
+    catch inner as Error
+        print(error_code(outer))
+        print(error_code(inner))
+        print(error_code(inner))
+    try
+        print(error_code(outer))
+        raise outer
+    catch repeated as Error
+        print(error_code(repeated))
+    print(error_code(outer))

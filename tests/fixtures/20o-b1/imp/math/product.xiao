@@ -1,0 +1,52 @@
+from std.math import abs, min, max, clamp, gcd, pow
+
+minimum = -9223372036854775807 - 1
+maximum = 9223372036854775807
+print(abs(-7))
+print(abs(0))
+print(min(minimum, maximum))
+print(max(minimum, maximum))
+print(clamp(5, 0, 3))
+print(clamp(minimum, minimum, maximum))
+print(clamp(0, 2, 2))
+print(gcd(54, -24))
+print(gcd(0, 0))
+print(gcd(minimum, 2))
+print(gcd(minimum, -1))
+print(gcd(minimum, maximum))
+print(pow(minimum, 1))
+print(pow(0, 0))
+print(pow(0, maximum))
+print(pow(1, maximum))
+print(pow(-1, maximum))
+print(pow(2, 62))
+print(abs(value = -maximum))
+print(min(left = maximum, right = maximum))
+print(max(left = minimum, right = minimum))
+print(clamp(value = 5, lower = 3, upper = 4))
+print(gcd(left = minimum, right = 6))
+print(pow(base = -2, exponent = 63))
+try
+    print(clamp(0, 1, -1))
+catch bounds as Error
+    print(error_code(bounds))
+try
+    print(pow(2, -1))
+catch exponent as Error
+    print(error_code(exponent))
+try
+    print(abs(minimum))
+catch absolute as ArithmeticError
+    print(error_code(absolute))
+try
+    print(gcd(minimum, 0))
+catch gcd_zero as ArithmeticError
+    print(error_code(gcd_zero))
+try
+    print(gcd(minimum, minimum))
+catch gcd_both as ArithmeticError
+    print(error_code(gcd_both))
+try
+    print(pow(2, 63))
+catch power as ArithmeticError
+    print(error_code(power))

@@ -1,0 +1,136 @@
+//! Xiao 包源、依赖求解和锁定逻辑的 crate 入口。
+
+/// 本地目录、静态 HTTP 与 Git 索引的统一传输适配器接口。
+mod adapters;
+/// 不可变源码对象缓存和摘要校验。
+mod cache;
+/// 基于配置解析区间的保留格式依赖编辑。
+mod config_edit;
+/// 严格权限的包源凭据与不可记录的令牌。
+mod credentials;
+/// 11A-D1 包粒度的稳定诊断编号。
+mod diagnostics;
+/// 项目环境布局、指纹和元数据物化。
+mod environment;
+/// 离线快速路径、三态回退与有界包源并行。
+mod fastpath;
+/// 包源快照及联邦索引。
+mod federation;
+/// 联邦索引覆盖缓存与跨源去重的包元数据。
+mod federation_cache;
+/// 锁定字节摘要校验、安全 TAR 展开与 E1 目录导入。
+mod fetch;
+/// RFC 8785 JSON 规范化。
+mod jcs;
+/// 11A-E2A 锁文件、过期判据和跨平台原子文件提交。
+mod lockfile;
+/// 环境到缓存对象的逻辑映射。
+mod mapping;
+/// 包身份、来源预留和确定性内存图模型。
+mod model;
+/// 远程候选求解、锁定复用与本地图合并。
+mod remote;
+/// 本地路径包配置读取和递归依赖解析。
+mod resolver;
+/// 跨源选择的确定性纯逻辑。
+mod selection;
+/// 按源身份存放不可变快照与当前指向。
+mod snapshot_store;
+/// 11A-E3D 的确定性多包版本约束求解。
+mod solver;
+/// 包源身份、声明与有序清单展开。
+mod source;
+/// 钉住摘要的导入源列表读取与本地复用。
+mod source_lists;
+/// E2B 本地依赖同步、安装与只读包视图。
+mod sync;
+/// 冻结的 SemVer 2.0.0 版本与部分区间约束。
+mod version;
+
+/// 将统一锁错误转换为 11A 既有的源缓存错误码和文案。
+pub(crate) fn source_lock_error(error: xiao_lock::LockError) -> source::SourceError {
+    source::SourceError::new(
+        diagnostics::SOURCE_CACHE_IO_CODE,
+        format!("缓存锁 {}：{error}", error.path().display()),
+    )
+}
+
+/// 重导出统一索引与正文读取边界。
+pub use adapters::{
+    GitHubAdapter, GitReference, HttpStaticAdapter, IndexSnapshot, LocalDirectoryAdapter,
+    MultiSourceAdapter, PackageSourceAdapter, ResolvedGitRef, parse_advertised_refs,
+};
+/// 重导出本地源码缓存接口。
+pub use cache::{
+    CacheError, CacheLayout, CacheObject, CacheObjectKind, CacheObjectReference, CacheStore,
+    LANGUAGE_PACK_OBJECT_ALGORITHM, LANGUAGE_PACK_OBJECT_KIND, LanguagePackCacheError,
+    LanguagePackObject, SOURCE_OBJECT_ALGORITHM, SOURCE_OBJECT_KIND, XIAO_HOME_ENV,
+    source_directory_digest,
+};
+/// 重导出依赖写回接口。
+pub use config_edit::{DependencyEdit, edit_dependency, write_config_edit};
+/// 重导出包解析诊断编号。
+pub use diagnostics::*;
+/// 重导出项目环境接口。
+pub use environment::{
+    ENVIRONMENT_METADATA_FILE, ENVIRONMENT_METADATA_VERSION, EnvironmentCreationError,
+    EnvironmentError, EnvironmentFingerprint, EnvironmentLayout, EnvironmentMetadata,
+    EnvironmentPackageError, build_environment_metadata, build_environment_metadata_with_mappings,
+    fingerprint_config, fingerprint_environment, fingerprint_target, materialize_environment,
+    materialize_environment_from_graph, materialize_environment_with_mappings,
+    materialize_global_environment_from_graph, read_environment_metadata,
+    update_environment_mappings, update_environment_metadata,
+};
+/// 重导出多源缓存解析编排入口与状态报告。
+pub use fastpath::{MAX_PARALLEL_SOURCES, SourceResolution, SourceResolver, SourceStatusReport};
+/// 重导出离线快照与合并契约。
+pub use federation::{
+    ArtifactReference, FederatedRecord, FederationKey, IndexDependency, IndexPackage, PackageShard,
+    SnapshotManifest, SnapshotStatus, SourceListFingerprint, SourceSequenceEntry, SourceSnapshot,
+    federate, source_list_fingerprint,
+};
+/// 重导出可审计的联邦索引与包元数据缓存接口。
+pub use federation_cache::{FederationCache, FederationIndex, MetadataCache};
+/// 重导出统一 JSON 规范化入口。
+pub use jcs::{canonicalize_json, jcs_digest};
+/// 重导出锁文件和原子更新接口。
+pub use lockfile::{
+    LOCKFILE_NAME, LOCKFILE_VERSION, LockFile, LockFileWriteStatus, LockedDependency,
+    LockedPackage, LockedSourceSnapshot, LockfileError, LockfileMismatch, build_lockfile,
+    compare_lockfile, generate_or_reuse_lockfile, lockfile_path, read_lockfile, validate_lockfile,
+    write_lockfile,
+};
+/// 重导出环境映射接口。
+pub use mapping::{
+    MappingError, PackageObjectMapping, materialize_package_mappings, resolve_package_object,
+    validate_package_mappings,
+};
+/// 重导出包身份和图模型。
+pub use model::{
+    PackageDependency, PackageDiagnostic, PackageEdge, PackageGraph, PackageIdentity, PackageNode,
+    PackageResolution, PackageSource, SourceIdentity, local_source_id,
+};
+/// 重导出本地路径解析入口。
+pub use resolver::{
+    PackageResolver, resolve_path_dependencies, resolve_project, resolve_project_with_document,
+};
+/// 重导出跨源选择入口。
+pub use selection::select_source;
+/// 重导出已验证的可复用源快照存储。
+pub use snapshot_store::{SnapshotStore, StoredSnapshot};
+/// 重导出联邦索引约束求解接口。
+pub use solver::{
+    OFFICIAL_STANDARD_LIBRARY_PACKAGE, ResolvedPackage, SolveRequirement, solve_dependencies,
+};
+/// 重导出离线源契约。
+pub use source::{
+    ConfiguredSource, SOURCE_PROTOCOL_VERSION, SourceDeclaration, SourceDescriptor, SourceError,
+    SourceList, SourceListImport, expand_source_lists, source_declarations, source_id,
+};
+/// 重导出同步与安装编排入口。
+pub use sync::{
+    PackageOperation, PackageOperationResult, PackageSyncError, apply_dependency_edit,
+    apply_packages, environment_package_view,
+};
+/// 重导出唯一版本与约束解析入口。
+pub use version::{Version, VersionRequirement};

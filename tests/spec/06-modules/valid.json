@@ -1,0 +1,26 @@
+{
+  "stage": "05",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "directory-modules",
+      "files": {
+        "main.xiao": "import app.user\nfrom util import value\n",
+        "app/user.xiao": "value = 1\n",
+        "util.xiao": "value = 2\n"
+      },
+      "expect": "success",
+      "modules": ["app.user", "main", "util"]
+    },
+    {
+      "name": "block-import-and-reexport",
+      "files": {
+        "base.xiao": "value = 1\n",
+        "bridge.xiao": "from base import value\n",
+        "main.xiao": "from bridge import value\ndef load()\n    import base\n"
+      },
+      "expect": "success",
+      "initialization_order": ["base", "bridge", "main"]
+    }
+  ]
+}

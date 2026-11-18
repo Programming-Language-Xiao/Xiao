@@ -1,0 +1,29 @@
+{
+  "stage": "11A-D1",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "transitive-local-path-graph",
+      "files": {
+        "config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[dependencies]\ncore = { path = \"packages/core\", version = \"^1.0\", source = \"local\" }\n",
+        "packages/core/config.xiao": "[project]\nname = \"core\"\nversion = \"1.2.0\"\n[dependencies]\nutil = { path = \"../util\" }\n",
+        "packages/util/config.xiao": "[project]\nname = \"util\"\nversion = \"0.4.0\"\n"
+      },
+      "expect": "success",
+      "nodes": ["app@0.1.0", "core@1.2.0", "util@0.4.0"],
+      "resolution_order": ["util@0.4.0", "core@1.2.0", "app@0.1.0"],
+      "diagnostics": []
+    },
+    {
+      "name": "development-dependency-is-retained",
+      "files": {
+        "config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[devdependencies]\ntestkit = { path = \"tools/testkit\" }\n",
+        "tools/testkit/config.xiao": "[project]\nname = \"testkit\"\nversion = \"0.3.0\"\n"
+      },
+      "expect": "success",
+      "nodes": ["app@0.1.0", "testkit@0.3.0"],
+      "resolution_order": ["testkit@0.3.0", "app@0.1.0"],
+      "diagnostics": []
+    }
+  ]
+}

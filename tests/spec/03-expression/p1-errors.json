@@ -1,0 +1,47 @@
+{
+  "stage": "P1",
+  "cases": [
+    {
+      "name": "empty-selector",
+      "source": "value[]\n",
+      "expect": "error",
+      "diagnostics": ["X01-PARSE-006"]
+    },
+    {
+      "name": "missing-range-end",
+      "source": "value[1~]\n",
+      "expect": "error",
+      "diagnostics": ["X01-PARSE-006"]
+    },
+    {
+      "name": "invalid-cast-target",
+      "source": "value as tuple\n",
+      "expect": "error",
+      "diagnostics": ["X01-PARSE-008"]
+    },
+    {
+      "name": "outside-selector-continuation",
+      "source": "value[0],[1]\n",
+      "expect": "error",
+      "diagnostics": ["X01-PARSE-005"]
+    },
+    {
+      "name": "missing-closing-delimiter",
+      "source": "factory(value\n",
+      "expect": "error",
+      "diagnostics": ["X01-LEX-010", "X01-PARSE-007"]
+    },
+    {
+      "name": "invalid-path-segment",
+      "source": "value[~0]\n",
+      "expect": "error",
+      "diagnostics": ["X01-PARSE-006"]
+    },
+    {
+      "name": "missing-binary-operand",
+      "source": "value = left +\n",
+      "expect": "error",
+      "diagnostics": ["X01-PARSE-009"]
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+import std.cmath as math
+from std.cmath import sqrt as f0
+print(f0(4.0))
+print(math.sqrt(value = 4.0))
+print(cmath_sqrt(value = 4.0))
+from std.cmath import floor as f1
+print(f1(1.5))
+print(math.floor(value = 1.5))
+print(cmath_floor(value = 1.5))
+from std.cmath import ceil as f2
+print(f2(1.5))
+print(math.ceil(value = 1.5))
+print(cmath_ceil(value = 1.5))
+from std.cmath import round as f3
+print(f3(2.5))
+print(math.round(value = 2.5))
+print(cmath_round(value = 2.5))
+from std.cmath import trunc as f4
+print(f4(-1.5))
+print(math.trunc(value = -1.5))
+print(cmath_trunc(value = -1.5))
+from std.cmath import abs as f5
+print(f5(-3.0))
+print(math.abs(value = -3.0))
+print(cmath_abs(value = -3.0))
+from std.cmath import min as f6
+print(f6(7.0, 2.0))
+print(math.min(right = 2.0, left = 7.0))
+print(cmath_min(right = 2.0, left = 7.0))
+from std.cmath import max as f7
+print(f7(7.0, 2.0))
+print(math.max(right = 2.0, left = 7.0))
+print(cmath_max(right = 2.0, left = 7.0))
+from std.cmath import pow as f8
+print(f8(2.0, 3.0))
+print(math.pow(exponent = 3.0, base = 2.0))
+print(cmath_pow(exponent = 3.0, base = 2.0))
+from std.cmath import sin as f9
+print(f9(0.0))
+print(math.sin(value = 0.0))
+print(cmath_sin(value = 0.0))
+from std.cmath import cos as f10
+print(f10(0.0))
+print(math.cos(value = 0.0))
+print(cmath_cos(value = 0.0))
+from std.cmath import tan as f11
+print(f11(0.0))
+print(math.tan(value = 0.0))
+print(cmath_tan(value = 0.0))
+from std.cmath import exp as f12
+print(f12(0.0))
+print(math.exp(value = 0.0))
+print(cmath_exp(value = 0.0))
+from std.cmath import ln as f13
+print(f13(1.0))
+print(math.ln(value = 1.0))
+print(cmath_ln(value = 1.0))
+from std.cmath import log10 as f14
+print(f14(1.0))
+print(math.log10(value = 1.0))
+print(cmath_log10(value = 1.0))
+def exponent() -> float
+    print("exponent")
+    return 3.0
+def base() -> float
+    print("base")
+    return 2.0
+print(math.pow(exponent = exponent(), base = base()))
+from std.math import min as integer_min
+from std.statistics import min as stats_min
+print(integer_min(7, 2))
+print(stats_min([7, 2]))
+from std.cmath import min as float_min
+print(float_min(7.0, 2.0))
+try
+    math.sqrt(-1.0)
+catch failure as ArithmeticError
+    print(error_code(failure))
+finally
+    print("clean")

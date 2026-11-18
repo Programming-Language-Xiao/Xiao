@@ -1,0 +1,78 @@
+---
+id: tooling.cli.package-lockfile
+title: 本地包锁文件与原子环境映射
+status: verified
+audience: developer
+module: rust.xiao-package
+stage: 11A-E2A/E3B
+related:
+  - README.md
+  - environments.md
+  - package-cache.md
+  - ../../../DevDocs/11ae2a-lockfile-and-mapping.md
+---
+
+# 本地包锁文件与原子环境映射
+
+11A-E2A 提供 Rust `xiao-package` 核心 API；11A-E2B 已通过 `xiao sync` 接入锁文件生成，
+`install`/`i` 只消费已有锁文件。命令行为见 [`sync`/`install`](sync.md)。
+
+## 文件契约
+
+项目根（`config.xiao` 同级）的 `xiao.lock.json` 是应纳入版本控制、可供代码审查的
+`lock_version: 2` JSON（仍可读取 v1 本地包锁文件）。它包含 E0 规范化配置指纹、根包身份、完整传递依赖图和每个包的
+逻辑名称、版本、来源身份、E1 源码 SHA-256 摘要；直接依赖保存运行时/开发期分类，
+版本约束与来源引用；远程依赖通过联邦索引按 SemVer 求解，本地路径约束仍由包图校验。
+预编译变体和目标条件字段当前固定为空。
+
+E3B 可选增加 `source_snapshots`：按 `source_id` 记录 `snapshot_id` 与清单摘要。
+核心先解析源，再通过 `SourceResolution::pin_lockfile` 钉住快照、写入锁文件；
+仅钉住信息与当前快照、联邦索引及正文对象均相符时才走离线快速路径。
+旧版 E2A 锁文件仍可读取，但涉及包源时不能直接命中快速路径。
+
+远程包条目额外记录 `source_artifact`（TAR 相对位置、长度及原始字节 SHA-256）；
+`content_digest` 仍是导入 E1 后的**源码目录**摘要。锁定源身份、对应的
+`source_snapshots[source_id].snapshot_id`（Git 索引时是不可变提交）与
+`source_artifact.digest` 构成可审计来源链。下载后先核对锁定的字节摘要，
+安全展开后再核对目录摘要；索引声明与已有锁不一致则拒绝，不能自动改锁。
+v1 没有同时表达这两种摘要的能力，不用于新远程锁定。
+
+本地源的 `source_id` 是 `path:<绝对规范化路径>`。路径变动使锁文件过期；因此包含本地路径
+依赖的锁文件不能跨机器直接复用。内容摘要只标识缓存对象，不取代包名、版本或源身份。
+锁文件及原子写入残留的暂存文件不参与项目根源码快照，避免生成后立即自失效。
+
+## 生成与校验
+
+核心入口使用已通过配置校验的 `ConfigDocument`、D1 完整 `PackageGraph` 和隔离的
+`CacheStore`；`build_lockfile` 生成确定性 JSON，`write_lockfile` 和
+`generate_or_reuse_lockfile` 在已有文件字节一致时返回 `Reused`，不改写文件。
+`read_lockfile` 拒绝不合法 JSON 或未来版本；`validate_lockfile` 逐一比对来源身份、
+配置指纹、完整依赖边以及每个包的源码摘要。应用可以先调用校验入口复用旧锁文件，
+确需重解时才生成新的锁定结果。
+已有锁文件若结构无效或格式版本高于当前读取器，生成入口也会拒绝覆盖并保留原文件；
+根项目之外的嵌套同名文件仍参与源码摘要。
+即便依赖边不变，非依赖配置项的规范化内容变化也会通过配置指纹报告不一致；
+若只是本地源码内容变化，则使用单独的源码摘要诊断。
+
+| 诊断编号 | 情况 |
+| --- | --- |
+| `X05-LOCK-001` | 高于当前读取器的格式版本 |
+| `X05-LOCK-002` | 锁文件结构或输入包图无效 |
+| `X05-LOCK-003` | 配置或完整依赖图变化 |
+| `X05-LOCK-004` | 本地包源码摘要变化 |
+| `X05-LOCK-005` | 包来源身份（本地路径）变化 |
+| `X05-LOCK-006` | 文件读取或原子提交失败 |
+
+缓存自身损坏仍使用 `X05-CACHE-*`，不伪装为锁文件过期。
+远程正文摘要不符使用 `X05-TRUST-001`，来源快照不符使用 `X05-TRUST-002`，
+不安全 TAR 使用 `X05-TRUST-003`；这些编号与包不存在或缓存 I/O 错误不同。
+
+## 环境映射
+
+已有项目或全局环境的 `.xiao-environment.json` 可通过 `update_environment_mappings`
+替换整份包映射；读取旧元数据、校验映射排序后再写入同目录暂存文件。Unix/Windows
+均使用 `fs::rename` 替换已存在的文件，不先删除旧文件。写入中断最多留下可清理
+的暂存文件，旧元数据依然可读取；此保证面向进程中断，不承诺断电持久性。
+
+E2A 不实施激活、同步或安装；E2B 已由 Shell 钩子导出激活环境绝对路径，
+并在 Rust 编排入口按「激活环境 → 项目 `.venv` → 创建 `.venv`」选定同步目标。

@@ -1,0 +1,1734 @@
+//! AST、类型结果和生命周期结果到类型化 IR 的降低。
+//!
+//! 降低器是单向适配层：它只读取前序阶段的公开结果，不重新执行类型推断、
+//! 模块解析或生命周期算法。无法在类型结果中找到的表达式保留为 `dynamic`，
+//! 以便诊断输入仍可被快照，但正式前端会在有错误时拒绝输出该 IR。
+
+use std::collections::{BTreeMap, BTreeSet};
+use xiao_lifetime::{
+    ControlFlowEdgeKind, EscapeReason, ExitKind, LifetimeResult, OwnershipEdgeReason,
+    OwnershipKind, ReleaseActionKind, ScopeKind, StorageClass,
+};
+use xiao_modules::{ExportOrigin, ModuleKind, ModuleSymbolKind, ProjectModuleResult};
+use xiao_source::{SourceFile, SourceSpan};
+use xiao_syntax::{
+    AssignmentOperator, BinaryOperator, CallArgument, CallArgumentKind, CatchClause, DeclaredType,
+    DictEntry, DictKey, ElifBranch, EntryMode, Expression, FunctionParameter,
+    FunctionParameterKind, FunctionTypeAnnotation, ImportStatement, IndexPath, LiteralKind, Name,
+    PathSegment, Program, RandomMode, ScalarType, Selector, SelectorItem, Statement, TableKind,
+    TypeTerm, UnaryOperator,
+};
+use xiao_types::{ArrayType, DictType, SetType, TableValueKind, Type, TypeCheckResult};
+
+use crate::model::*;
+
+/// 将完整的前序分析结果降低为类型化 IR。
+#[must_use]
+pub fn lower_program(
+    source: &SourceFile,
+    program: &Program,
+    type_result: &TypeCheckResult,
+    lifetime: &LifetimeResult,
+    modules: Option<&ProjectModuleResult>,
+) -> IrProgram {
+    let mut lowerer = Lowerer {
+        source,
+        type_result,
+        selection_plan_cursor: BTreeMap::new(),
+    };
+    let body = lowerer.statements(&program.statements);
+    let entry_mode = match program.entry_mode {
+        EntryMode::Script => IrEntryMode::Script,
+        EntryMode::Project { span } => IrEntryMode::Project {
+            span: ir_span(span),
+        },
+    };
+    let mut result = IrProgram::new(entry_mode, body, ir_span(program.span));
+    result.table_signatures = type_result
+        .table_signatures
+        .values()
+        .map(crate::IrTableSignature::from_signature)
+        .collect();
+    result.modules = modules
+        .map(|project| lower_modules(project, source))
+        .unwrap_or_default();
+    result.control_flow = lower_control_flow(lifetime);
+    result.ownership = lower_ownership(lifetime);
+    result.concurrency_calls = type_result
+        .concurrency_calls()
+        .iter()
+        .map(|call| IrConcurrencyCall {
+            operation: call.operation.clone(),
+            span: ir_span(call.span),
+            argument_spans: call.argument_spans.iter().copied().map(ir_span).collect(),
+            argument_types: call
+                .argument_spans
+                .iter()
+                .map(|span| {
+                    type_result
+                        .type_at(*span)
+                        .map(lower_type)
+                        .unwrap_or(IrType::Dynamic)
+                })
+                .collect(),
+            result_type: type_result
+                .type_at(call.span)
+                .map(lower_type)
+                .unwrap_or(IrType::Dynamic),
+        })
+        .collect();
+    result.runtime_checks = type_result
+        .runtime_checks()
+        .iter()
+        .map(|check| IrRuntimeCheck {
+            kind: runtime_check_kind_name(check.kind).to_owned(),
+            span: ir_span(check.span),
+            expected: check.expected.as_ref().map(lower_type),
+        })
+        .collect();
+    result.selection_plans = type_result
+        .selection_plans()
+        .iter()
+        .map(lower_selection_plan)
+        .collect();
+    result.broadcast_assignment_plans = type_result
+        .broadcast_assignment_plans()
+        .iter()
+        .map(lower_broadcast_assignment_plan)
+        .collect();
+    result.random_seed_plans = type_result
+        .random_seed_plans()
+        .iter()
+        .map(lower_random_seed_plan)
+        .collect();
+    result
+}
+
+/// AST/类型结果降低器。
+struct Lowerer<'a> {
+    source: &'a SourceFile,
+    type_result: &'a TypeCheckResult,
+    /// 同一源码区间可能出现多个计划；按 lowering 访问顺序逐个分配稳定 ID。
+    selection_plan_cursor: BTreeMap<(usize, usize), usize>,
+}
+
+impl<'a> Lowerer<'a> {
+    /// 返回源码区间对应的类型，找不到时使用动态类型。
+    fn ty(&self, span: SourceSpan) -> IrType {
+        self.type_result
+            .type_at(span)
+            .map(lower_type)
+            .unwrap_or(IrType::Dynamic)
+    }
+
+    /// 为一个选择表达式取得类型层计划 ID。
+    fn selection_plan_id(&mut self, span: SourceSpan) -> Option<u32> {
+        let candidates = self
+            .type_result
+            .selection_plans()
+            .iter()
+            .enumerate()
+            .filter(|(_, plan)| plan.span == span)
+            .map(|(index, _)| index)
+            .collect::<Vec<_>>();
+        let key = (span.start(), span.end());
+        let cursor = self.selection_plan_cursor.entry(key).or_default();
+        let index = candidates.get(*cursor).copied()?;
+        *cursor += 1;
+        u32::try_from(index).ok()
+    }
+
+    /// 降低名称并保留反引号信息。
+    fn name(&self, name: Name) -> IrName {
+        IrName {
+            text: name.unquoted_text(self.source).to_owned(),
+            backticked: name.backticked,
+            span: ir_span(name.span),
+        }
+    }
+
+    /// 降低一组语句。
+    fn statements(&mut self, statements: &[Statement]) -> Vec<IrStatement> {
+        statements
+            .iter()
+            .map(|statement| self.statement(statement))
+            .collect()
+    }
+
+    /// 降低一个语句。
+    fn statement(&mut self, statement: &Statement) -> IrStatement {
+        let span = ir_span(statement.span());
+        let leading_docs = statement
+            .leading_docs()
+            .iter()
+            .copied()
+            .map(ir_span)
+            .collect();
+        let kind = match statement {
+            Statement::Expression { expression, .. } => IrStatementKind::Expression {
+                value: self.expression(expression),
+            },
+            Statement::Assignment { target, value, .. } => {
+                let value = self.expression(value);
+                let scalar = match self.ty(target.span) {
+                    IrType::Scalar { name } => ScalarType::from_name(&name),
+                    _ => None,
+                };
+                let value = if let Some(target) = scalar {
+                    cast_numeric_expression(value, target)
+                } else {
+                    value
+                };
+                IrStatementKind::Assignment {
+                    target: self.name(*target),
+                    value,
+                }
+            }
+            Statement::ExtendedAssignment {
+                target,
+                operator,
+                value,
+                ..
+            } => IrStatementKind::ExtendedAssignment {
+                target: self.expression(target),
+                operator: assignment_name(*operator).to_owned(),
+                value: self.expression(value),
+            },
+            Statement::Declaration {
+                target,
+                declared_type,
+                constraint_path,
+                value,
+                ..
+            } => IrStatementKind::Declaration {
+                target: self.name(*target),
+                declared_type: lower_declared_type(declared_type),
+                constraint_path: constraint_path.as_ref().map(|path| self.path(path)),
+                value: value
+                    .as_ref()
+                    .map(|expression| self.declaration_expression(expression, declared_type)),
+            },
+            Statement::ConstDeclaration {
+                target,
+                declared_type,
+                value,
+                ..
+            } => IrStatementKind::ConstDeclaration {
+                target: self.name(*target),
+                declared_type: declared_type.as_ref().map(|ty| match ty {
+                    DeclaredType::Scalar(scalar) => scalar.as_str().to_owned(),
+                    DeclaredType::Resource(resource) => resource.as_str().to_owned(),
+                    DeclaredType::Set(_) => "set".to_owned(),
+                    DeclaredType::Thread(_) => "thread".to_owned(),
+                    DeclaredType::Task(_) => "task".to_owned(),
+                    DeclaredType::Runtime => "runtime".to_owned(),
+                    DeclaredType::Pool => "pool".to_owned(),
+                    DeclaredType::Shared(_) => "shared".to_owned(),
+                    DeclaredType::SharedMut(_) => "shared_mut".to_owned(),
+                    DeclaredType::LockGuard(_) => "lock_guard".to_owned(),
+                }),
+                value: match declared_type {
+                    Some(declared) => self.declaration_expression(value, declared),
+                    None => self.expression(value),
+                },
+            },
+            Statement::Import { import, .. } => IrStatementKind::Import {
+                description: self.source.slice(statement.span()).to_owned(),
+                items: match import {
+                    ImportStatement::Modules { imports, .. } => imports
+                        .iter()
+                        .map(|item| {
+                            let segments = item
+                                .path
+                                .segments
+                                .iter()
+                                .map(|segment| segment.unquoted_text(self.source))
+                                .collect::<Vec<_>>();
+                            IrImportItem {
+                                module: segments.join("."),
+                                selected: None,
+                                binding: self.name(item.alias.unwrap_or(item.path.segments[0])),
+                                binding_module: if item.alias.is_some() {
+                                    segments.join(".")
+                                } else {
+                                    segments[0].to_owned()
+                                },
+                            }
+                        })
+                        .collect(),
+                    ImportStatement::From {
+                        module, imports, ..
+                    } => imports
+                        .iter()
+                        .map(|item| IrImportItem {
+                            module: module
+                                .segments
+                                .iter()
+                                .map(|segment| segment.unquoted_text(self.source))
+                                .collect::<Vec<_>>()
+                                .join("."),
+                            selected: Some(self.name(item.name)),
+                            binding: self.name(item.alias.unwrap_or(item.name)),
+                            binding_module: String::new(),
+                        })
+                        .collect(),
+                },
+            },
+            Statement::Table {
+                name, kind, body, ..
+            } => {
+                let mut body = self.statements(body);
+                if let Some(signature) = self
+                    .type_result
+                    .table_signatures
+                    .get(name.unquoted_text(self.source))
+                {
+                    for statement in &mut body {
+                        if let IrStatementKind::Function {
+                            name,
+                            parameters,
+                            return_type,
+                            ..
+                        } = &mut statement.kind
+                        {
+                            let key = format!(
+                                "{}:{}",
+                                if name.backticked { "backtick" } else { "ascii" },
+                                name.text
+                            );
+                            if let Some(method) = signature
+                                .members
+                                .get(&key)
+                                .and_then(|member| member.function.as_ref())
+                            {
+                                for (parameter, checked) in
+                                    parameters.iter_mut().zip(&method.parameters)
+                                {
+                                    parameter.ty = lower_type(&checked.ty);
+                                }
+                                *return_type = lower_type(&method.return_type);
+                            }
+                        }
+                    }
+                }
+                IrStatementKind::Table {
+                    name: self.name(*name),
+                    table_kind: table_kind_name(*kind).to_owned(),
+                    body,
+                }
+            }
+            Statement::Function {
+                name,
+                parameters,
+                return_type,
+                body,
+                span,
+                ..
+            } => {
+                // 函数签名已经由类型阶段完成推断；这里消费其最终结果，不能只看
+                // AST 上可选的注解，否则未注解函数会被错误降低成 `none`/`dynamic`。
+                let signature = self.function_signature(*name, *span).cloned();
+                let lowered_parameters = parameters
+                    .iter()
+                    .enumerate()
+                    .map(|(index, parameter)| {
+                        signature
+                            .as_ref()
+                            .and_then(|signature| signature.parameters.get(index))
+                            .map(|checked| self.parameter_with_type(parameter, &checked.ty))
+                            .unwrap_or_else(|| self.parameter(parameter))
+                    })
+                    .collect();
+                let lowered_return = signature
+                    .as_ref()
+                    .map(|signature| lower_type(&signature.return_type))
+                    .or_else(|| return_type.as_ref().map(lower_function_annotation))
+                    .unwrap_or(IrType::None);
+                IrStatementKind::Function {
+                    name: self.name(*name),
+                    parameters: lowered_parameters,
+                    return_type: lowered_return,
+                    body: self.statements(body),
+                }
+            }
+            Statement::If {
+                condition,
+                body,
+                elif_branches,
+                else_body,
+                ..
+            } => IrStatementKind::If {
+                condition: self.expression(condition),
+                body: self.statements(body),
+                elif_branches: elif_branches
+                    .iter()
+                    .map(|branch| self.elif_branch(branch))
+                    .collect(),
+                else_body: else_body.as_ref().map(|body| self.statements(body)),
+            },
+            Statement::For {
+                target,
+                iterable,
+                body,
+                ..
+            } => IrStatementKind::For {
+                target: self.name(*target),
+                iterable: self.expression(iterable),
+                body: self.statements(body),
+            },
+            Statement::While {
+                condition, body, ..
+            } => IrStatementKind::While {
+                condition: self.expression(condition),
+                body: self.statements(body),
+            },
+            Statement::Return { value, .. } => IrStatementKind::Return {
+                value: value.as_ref().map(|expression| self.expression(expression)),
+            },
+            Statement::Break { .. } => IrStatementKind::Break,
+            Statement::Continue { .. } => IrStatementKind::Continue,
+            Statement::Try {
+                body,
+                catches,
+                finally_body,
+                ..
+            } => IrStatementKind::Try {
+                body: self.statements(body),
+                catches: catches
+                    .iter()
+                    .map(|catch| self.catch_clause(catch))
+                    .collect(),
+                finally_body: finally_body.as_ref().map(|body| self.statements(body)),
+            },
+            Statement::Raise { value, .. } => IrStatementKind::Raise {
+                value: self.expression(value),
+            },
+        };
+        IrStatement {
+            kind,
+            span,
+            leading_docs,
+        }
+    }
+
+    /// 降低函数参数。
+    fn parameter(&mut self, parameter: &FunctionParameter) -> IrParameter {
+        IrParameter {
+            name: self.name(parameter.name),
+            kind: parameter_kind_name(parameter.kind).to_owned(),
+            ty: parameter
+                .annotation
+                .as_ref()
+                .map(lower_function_annotation)
+                .unwrap_or_else(|| self.ty(parameter.span)),
+            default: parameter
+                .default
+                .as_ref()
+                .map(|value| self.expression(value)),
+            span: ir_span(parameter.span),
+        }
+    }
+
+    /// 使用类型阶段签名中的最终参数类型降低函数参数。
+    fn parameter_with_type(&mut self, parameter: &FunctionParameter, ty: &Type) -> IrParameter {
+        IrParameter {
+            name: self.name(parameter.name),
+            kind: parameter_kind_name(parameter.kind).to_owned(),
+            ty: lower_type(ty),
+            default: parameter
+                .default
+                .as_ref()
+                .map(|value| self.expression(value)),
+            span: ir_span(parameter.span),
+        }
+    }
+
+    /// 按名称和源码跨度取得类型阶段已经解析的函数签名。
+    fn function_signature(
+        &self,
+        name: Name,
+        span: SourceSpan,
+    ) -> Option<&xiao_types::FunctionSignature> {
+        let key = format!(
+            "{}:{}",
+            if name.backticked { "backtick" } else { "ascii" },
+            name.unquoted_text(self.source)
+        );
+        self.type_result
+            .function_signatures()
+            .get(&key)
+            .filter(|signature| signature.span == span)
+    }
+
+    /// 降低 `elif` 分支。
+    fn elif_branch(&mut self, branch: &ElifBranch) -> IrElifBranch {
+        IrElifBranch {
+            condition: self.expression(&branch.condition),
+            body: self.statements(&branch.body),
+            span: ir_span(branch.span),
+        }
+    }
+
+    /// 降低 `catch` 处理器。
+    fn catch_clause(&mut self, clause: &CatchClause) -> IrCatchClause {
+        IrCatchClause {
+            binding: self.name(clause.binding),
+            error_type: self.name(clause.error_type),
+            body: self.statements(&clause.body),
+            span: ir_span(clause.span),
+        }
+    }
+
+    /// 降低表达式并附加类型。
+    fn expression(&mut self, expression: &Expression) -> IrExpression {
+        let span = ir_span(expression.span());
+        let ty = self.ty(expression.span());
+        let kind = match expression {
+            Expression::Literal { kind, .. } => IrExpressionKind::Literal {
+                literal: literal_name(*kind).to_owned(),
+                text: expression.text(self.source).to_owned(),
+            },
+            Expression::ArrayLiteral { elements, .. } => IrExpressionKind::Array {
+                elements: elements.iter().map(|item| self.expression(item)).collect(),
+            },
+            Expression::TupleLiteral { elements, .. } => IrExpressionKind::Tuple {
+                elements: elements.iter().map(|item| self.expression(item)).collect(),
+            },
+            Expression::DictTableLiteral { entries, .. } => IrExpressionKind::DictTable {
+                entries: entries.iter().map(|entry| self.dict_entry(entry)).collect(),
+            },
+            Expression::SetLiteral { elements, .. } => IrExpressionKind::Set {
+                elements: elements.iter().map(|item| self.expression(item)).collect(),
+            },
+            Expression::DictColumnLiteral { entries, .. } => IrExpressionKind::DictColumn {
+                entries: entries.iter().map(|entry| self.dict_entry(entry)).collect(),
+            },
+            Expression::Name(name) => IrExpressionKind::Name {
+                name: self.name(*name),
+            },
+            Expression::Group { expression, .. } => IrExpressionKind::Group {
+                expression: Box::new(self.expression(expression)),
+            },
+            Expression::Unary {
+                operator, operand, ..
+            } => IrExpressionKind::Unary {
+                operator: unary_name(*operator).to_owned(),
+                operand: Box::new(self.expression(operand)),
+            },
+            Expression::Binary {
+                operator,
+                left,
+                right,
+                ..
+            } => {
+                let left = self.expression(left);
+                let right = self.expression(right);
+                let (left, right) = promote_binary_expressions(*operator, left, right);
+                IrExpressionKind::Binary {
+                    operator: binary_name(*operator).to_owned(),
+                    left: Box::new(left),
+                    right: Box::new(right),
+                }
+            }
+            Expression::Call {
+                callee, arguments, ..
+            } => {
+                let lowered_arguments = arguments
+                    .iter()
+                    .map(|argument| self.call_argument(argument))
+                    .collect();
+                if let Expression::Name(name) = callee.as_ref()
+                    && let Some(operation) =
+                        private_dict_builtin_name(name.unquoted_text(self.source))
+                {
+                    return IrExpression {
+                        kind: IrExpressionKind::DictBuiltin {
+                            operation: operation.to_owned(),
+                            arguments: lowered_arguments,
+                        },
+                        ty,
+                        span,
+                    };
+                }
+                match self.type_result.intrinsic_id_at(expression.span()) {
+                    Some(id) => IrExpressionKind::IntrinsicCall {
+                        id: id.get(),
+                        arguments: lowered_arguments,
+                    },
+                    None => IrExpressionKind::Call {
+                        callee: Box::new(self.expression(callee)),
+                        arguments: lowered_arguments,
+                    },
+                }
+            }
+            Expression::NewCall {
+                callee, arguments, ..
+            } => IrExpressionKind::NewCall {
+                callee: Box::new(self.expression(callee)),
+                arguments: arguments
+                    .iter()
+                    .map(|argument| self.call_argument(argument))
+                    .collect(),
+            },
+            Expression::Member { object, member, .. } => IrExpressionKind::Member {
+                object: Box::new(self.expression(object)),
+                member: self.name(*member),
+            },
+            Expression::Cast {
+                expression, target, ..
+            } => IrExpressionKind::Cast {
+                expression: Box::new(self.expression(expression)),
+                target: target.as_str().to_owned(),
+            },
+            Expression::Selector {
+                source,
+                step,
+                selector,
+                ..
+            } => {
+                let source = self.expression(source);
+                let source_type = source.ty.clone();
+                let selector = self.selector(selector, &source_type);
+                IrExpressionKind::Selector {
+                    source: Box::new(source),
+                    selector,
+                    step: step.as_ref().map(|value| Box::new(self.expression(value))),
+                    selection_plan: self.selection_plan_id(expression.span()),
+                }
+            }
+        };
+        IrExpression { kind, ty, span }
+    }
+
+    /// 为显式 `lfloat` 声明保留浮点字面量的十进制文本精度。
+    fn declaration_expression(
+        &mut self,
+        expression: &Expression,
+        declared_type: &DeclaredType,
+    ) -> IrExpression {
+        let mut lowered = self.expression(expression);
+        if matches!(declared_type, DeclaredType::Scalar(ScalarType::Lfloat)) {
+            retarget_lfloat_expression(&mut lowered);
+        }
+        if let DeclaredType::Scalar(target) = declared_type {
+            cast_numeric_expression(lowered, *target)
+        } else {
+            lowered
+        }
+    }
+
+    /// 降低字典条目。
+    ///
+    /// 键必须与类型层用同一套规范化：字符串键经 `decode_string_literal` 去掉
+    /// 外围引号并处理转义。直接存源码切片会让静态能通过的键在运行时查不到。
+    fn dict_entry(&mut self, entry: &DictEntry) -> IrDictEntry {
+        let key = match entry.key {
+            DictKey::Name(name) => self.name(name).text,
+            DictKey::String(span) => xiao_types::decode_string_literal(self.source.slice(span)),
+        };
+        IrDictEntry {
+            key,
+            value: self.expression(&entry.value),
+            span: ir_span(entry.span),
+        }
+    }
+
+    /// 降低调用参数。
+    fn call_argument(&mut self, argument: &CallArgument) -> IrCallArgument {
+        IrCallArgument {
+            kind: call_argument_kind_name(argument.kind).to_owned(),
+            name: argument.name.map(|name| self.name(name)),
+            value: self.expression(&argument.value),
+            span: ir_span(argument.span),
+        }
+    }
+
+    /// 降低路径。
+    fn path(&self, path: &IndexPath) -> IrPath {
+        IrPath {
+            segments: path
+                .segments
+                .iter()
+                .map(|segment| match segment {
+                    PathSegment::Integer { span, negative } => IrPathSegment {
+                        kind: IrPathSegmentKind::Index {
+                            text: self.source.slice(*span).to_owned(),
+                            negative: *negative,
+                        },
+                        span: ir_span(*span),
+                    },
+                    PathSegment::Name(name) => IrPathSegment {
+                        kind: IrPathSegmentKind::Name {
+                            name: self.name(*name),
+                        },
+                        span: ir_span(name.span),
+                    },
+                })
+                .collect(),
+            span: ir_span(path.span),
+        }
+    }
+
+    /// 降低选择器。
+    fn selector(&mut self, selector: &Selector, source_type: &IrType) -> IrSelector {
+        IrSelector {
+            items: selector
+                .items
+                .iter()
+                .map(|item| match item {
+                    SelectorItem::Exact { path, span } => {
+                        if path.segments.len() == 1
+                            && let PathSegment::Name(name) = &path.segments[0]
+                        {
+                            let ordered = matches!(
+                                source_type,
+                                IrType::Array { .. } | IrType::Tuple { .. }
+                            ) || matches!(source_type, IrType::Scalar { name } if name == "str")
+                                || matches!(source_type, IrType::Dynamic | IrType::Variable { .. })
+                                || matches!(source_type, IrType::DictTable { entries } if !entries.iter().any(|entry| entry.key == name.unquoted_text(self.source)))
+                                || matches!(source_type, IrType::DictColumn { entries } if !entries.iter().any(|entry| entry.key == name.unquoted_text(self.source)));
+                            if ordered {
+                                IrSelectorItem::ExactExpression {
+                                    expression: Box::new(IrExpression {
+                                        kind: IrExpressionKind::Name {
+                                            name: self.name(*name),
+                                        },
+                                        ty: self.ty(name.span),
+                                        span: ir_span(name.span),
+                                    }),
+                                    span: ir_span(*span),
+                                }
+                            } else {
+                                IrSelectorItem::Exact {
+                                    path: self.path(path),
+                                    span: ir_span(*span),
+                                }
+                            }
+                        } else {
+                            IrSelectorItem::Exact {
+                                path: self.path(path),
+                                span: ir_span(*span),
+                            }
+                        }
+                    }
+                    SelectorItem::ExactExpression { expression, span } => {
+                        IrSelectorItem::ExactExpression {
+                            expression: Box::new(self.expression(expression)),
+                            span: ir_span(*span),
+                        }
+                    }
+                    SelectorItem::Range { start, end, span } => IrSelectorItem::Range {
+                        start: self.path(start),
+                        end: self.path(end),
+                        span: ir_span(*span),
+                    },
+                    SelectorItem::OpenRange {
+                        start,
+                        end,
+                        include_start,
+                        include_end,
+                        span,
+                    } => IrSelectorItem::OpenRange {
+                        start: start.as_ref().map(|path| self.path(path)),
+                        end: end.as_ref().map(|path| self.path(path)),
+                        include_start: *include_start,
+                        include_end: *include_end,
+                        span: ir_span(*span),
+                    },
+                    SelectorItem::All { span } => IrSelectorItem::All {
+                        span: ir_span(*span),
+                    },
+                    SelectorItem::Random { mode, count, span } => IrSelectorItem::Random {
+                        mode: random_mode_name(*mode).to_owned(),
+                        count: Box::new(self.expression(count)),
+                        span: ir_span(*span),
+                    },
+                })
+                .collect(),
+            span: ir_span(selector.span),
+        }
+    }
+}
+
+/// 识别标准库源码使用的字典查询私有入口。
+/// 将标准库字典私有入口名称映射为稳定的 IR 操作名称。
+fn private_dict_builtin_name(name: &str) -> Option<&'static str> {
+    match name {
+        "__dict_remove" => Some("remove"),
+        "__dict_keys" => Some("keys"),
+        "__dict_values" => Some("values"),
+        _ => None,
+    }
+}
+
+/// 将源码区间转换为 IR 区间。
+#[must_use]
+pub const fn ir_span(span: SourceSpan) -> IrSpan {
+    IrSpan::new(span.start(), span.end())
+}
+
+/// 将 Xiao 类型转换为 IR 类型。
+#[must_use]
+pub fn lower_type(ty: &Type) -> IrType {
+    match ty {
+        Type::Scalar(scalar) => IrType::Scalar {
+            name: scalar.as_str().to_owned(),
+        },
+        Type::None => IrType::None,
+        Type::Variable(id) => IrType::Variable { id: id.get() },
+        Type::Dynamic => IrType::Dynamic,
+        Type::Function {
+            parameters,
+            return_type,
+        } => IrType::Function {
+            parameters: parameters.iter().map(lower_type).collect(),
+            return_type: Box::new(lower_type(return_type)),
+        },
+        Type::Array(array) => IrType::Array {
+            shape: lower_array_type(array),
+        },
+        Type::Tuple(elements) => IrType::Tuple {
+            elements: elements.iter().map(lower_type).collect(),
+        },
+        Type::DictTable(dictionary) => IrType::DictTable {
+            entries: lower_dict_type(dictionary),
+        },
+        Type::DictColumn(dictionary) => IrType::DictColumn {
+            entries: lower_dict_type(dictionary),
+        },
+        Type::Set(set) => lower_set_type(set),
+        Type::Table(table) => IrType::Table {
+            name: table.name.clone(),
+            kind: table_value_kind_name(table.kind).to_owned(),
+        },
+        Type::Resource(resource) => IrType::Resource {
+            kind: resource.as_str().to_owned(),
+        },
+        Type::Thread(value) => IrType::Thread {
+            value: Box::new(lower_type(value)),
+        },
+        Type::Task(value) => IrType::Task {
+            value: Box::new(lower_type(value)),
+        },
+        Type::Runtime => IrType::Runtime,
+        Type::Pool => IrType::Pool,
+        Type::Shared(value) => IrType::Shared {
+            value: Box::new(lower_type(value)),
+        },
+        Type::SharedMut(value) => IrType::SharedMut {
+            value: Box::new(lower_type(value)),
+        },
+        Type::LockGuard(value) => IrType::LockGuard {
+            value: Box::new(lower_type(value)),
+        },
+        Type::OrdinaryHandle => IrType::OrdinaryHandle,
+    }
+}
+
+/// 转换类型层选择路径为可序列化镜像。
+fn lower_selection_path(path: &xiao_types::SelectionPath) -> IrSelectionPath {
+    path.iter()
+        .map(|segment| match segment {
+            xiao_types::SelectionPathSegment::Index { raw, resolved } => {
+                IrSelectionPathSegment::Index {
+                    raw: *raw,
+                    resolved: *resolved,
+                }
+            }
+            xiao_types::SelectionPathSegment::Key(key) => IrSelectionPathSegment::Key(key.clone()),
+        })
+        .collect()
+}
+
+/// 转换一个类型层选择项。
+fn lower_selection_item(item: &xiao_types::SelectionItemPlan) -> IrSelectionItemPlan {
+    match item {
+        xiao_types::SelectionItemPlan::Exact { path } => IrSelectionItemPlan::Exact {
+            path: lower_selection_path(path),
+        },
+        xiao_types::SelectionItemPlan::Range {
+            start,
+            end,
+            include_start,
+            include_end,
+        } => IrSelectionItemPlan::Range {
+            start: lower_selection_path(start),
+            end: lower_selection_path(end),
+            include_start: *include_start,
+            include_end: *include_end,
+        },
+        xiao_types::SelectionItemPlan::All => IrSelectionItemPlan::All,
+        xiao_types::SelectionItemPlan::Random {
+            mode,
+            count,
+            dynamic_count,
+        } => IrSelectionItemPlan::Random {
+            mode: random_mode_name(*mode).to_owned(),
+            count: *count,
+            dynamic_count: *dynamic_count,
+        },
+    }
+}
+
+/// 转换类型层选择计划。
+fn lower_selection_plan(plan: &xiao_types::SelectionPlan) -> IrSelectionPlan {
+    IrSelectionPlan {
+        span: ir_span(plan.span),
+        source_type: lower_type(&plan.source_type),
+        result_type: lower_type(&plan.result_type),
+        items: plan.items.iter().map(lower_selection_item).collect(),
+        selected_paths: plan
+            .selected_paths
+            .iter()
+            .map(lower_selection_path)
+            .collect(),
+        target_types: plan.target_types.iter().map(lower_type).collect(),
+        step: plan.step.as_ref().map(|step| IrStepPlan {
+            value: step.value,
+            dynamic: step.dynamic,
+        }),
+        requires_runtime_check: plan.requires_runtime_check,
+        with_replacement: plan.with_replacement,
+        has_duplicates: plan.has_duplicates,
+    }
+}
+
+/// 转换广播计划。
+fn lower_broadcast_assignment_plan(
+    plan: &xiao_types::BroadcastAssignmentPlan,
+) -> IrBroadcastAssignmentPlan {
+    IrBroadcastAssignmentPlan {
+        span: ir_span(plan.span),
+        root_name: plan.root_name.clone(),
+        target_paths: plan.target_paths.iter().map(lower_selection_path).collect(),
+        value_type: lower_type(&plan.value_type),
+        dynamic: plan.dynamic,
+        transactional: plan.transactional,
+    }
+}
+
+/// 转换随机种子计划。
+fn lower_random_seed_plan(plan: &xiao_types::RandomSeedPlan) -> IrRandomSeedPlan {
+    IrRandomSeedPlan {
+        span: ir_span(plan.span),
+        value: plan.value,
+        dynamic: plan.dynamic,
+    }
+}
+
+/// 转换数组形状。
+fn lower_array_type(array: &ArrayType) -> IrArrayShape {
+    match array {
+        ArrayType::Homogeneous { element, length } => IrArrayShape::Homogeneous {
+            element: Box::new(lower_type(element)),
+            length: *length,
+        },
+        ArrayType::Heterogeneous { elements } => IrArrayShape::Heterogeneous {
+            elements: elements.iter().map(lower_type).collect(),
+        },
+        ArrayType::Unknown => IrArrayShape::Unknown,
+    }
+}
+
+/// 转换字典类型。
+fn lower_dict_type(dictionary: &DictType) -> Vec<IrDictTypeEntry> {
+    dictionary
+        .entries
+        .iter()
+        .map(|entry| IrDictTypeEntry {
+            key: entry.key.clone(),
+            value: Box::new(lower_type(&entry.value)),
+        })
+        .collect()
+}
+
+/// 转换集合类型。
+fn lower_set_type(set: &SetType) -> IrType {
+    IrType::Set {
+        members: set.member_types().map(lower_type).collect(),
+        allows_dynamic: set.allows_dynamic(),
+        empty: set.is_empty(),
+        unknown: set.is_unknown(),
+    }
+}
+
+/// 转换声明类型。
+fn lower_declared_type(declared: &DeclaredType) -> IrType {
+    match declared {
+        DeclaredType::Scalar(scalar) => IrType::Scalar {
+            name: scalar.as_str().to_owned(),
+        },
+        DeclaredType::Resource(resource) => IrType::Resource {
+            kind: resource.as_str().to_owned(),
+        },
+        DeclaredType::Set(annotation) => IrType::Set {
+            members: annotation
+                .members
+                .iter()
+                .map(|term| match term {
+                    TypeTerm::Scalar(scalar) => IrType::Scalar {
+                        name: scalar.as_str().to_owned(),
+                    },
+                    TypeTerm::None => IrType::None,
+                    TypeTerm::Resource(resource) => IrType::Resource {
+                        kind: resource.as_str().to_owned(),
+                    },
+                    TypeTerm::TypeParameter(_) => IrType::Dynamic,
+                })
+                .collect(),
+            allows_dynamic: false,
+            empty: false,
+            unknown: annotation.members.is_empty(),
+        },
+        DeclaredType::Thread(value) => IrType::Thread {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        DeclaredType::Task(value) => IrType::Task {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        DeclaredType::Runtime => IrType::Runtime,
+        DeclaredType::Pool => IrType::Pool,
+        DeclaredType::Shared(value) => IrType::Shared {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        DeclaredType::SharedMut(value) => IrType::SharedMut {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        DeclaredType::LockGuard(value) => IrType::LockGuard {
+            value: Box::new(lower_function_annotation(value)),
+        },
+    }
+}
+
+/// 声明、const及普通写回都以已有Cast表达实际转换，不能只改变槽类别。
+fn cast_numeric_expression(expression: IrExpression, target: ScalarType) -> IrExpression {
+    let IrType::Scalar { name } = &expression.ty else {
+        return expression;
+    };
+    let Some(source) = ScalarType::from_name(name) else {
+        return expression;
+    };
+    if source == target || !xiao_types::is_numeric(source) || !xiao_types::is_numeric(target) {
+        return expression;
+    }
+    IrExpression {
+        span: expression.span,
+        ty: IrType::Scalar {
+            name: target.as_str().to_owned(),
+        },
+        kind: IrExpressionKind::Cast {
+            expression: Box::new(expression),
+            target: target.as_str().to_owned(),
+        },
+    }
+}
+
+/// 在IR中显式表达共享数值提升，两后端消费相同Cast节点，不各自猜宽度。
+fn promote_binary_expressions(
+    operator: BinaryOperator,
+    left: IrExpression,
+    right: IrExpression,
+) -> (IrExpression, IrExpression) {
+    let scalar = |ty: &IrType| match ty {
+        IrType::Scalar { name } => ScalarType::from_name(name),
+        _ => None,
+    };
+    let (Some(a), Some(b)) = (scalar(&left.ty), scalar(&right.ty)) else {
+        return (left, right);
+    };
+    let Ok(Some(target)) = xiao_types::binary_operand_scalar(operator, a, b) else {
+        return (left, right);
+    };
+    let cast = |expression: IrExpression, source: ScalarType| {
+        if source == target {
+            return expression;
+        }
+        IrExpression {
+            span: expression.span,
+            ty: IrType::Scalar {
+                name: target.as_str().to_owned(),
+            },
+            kind: IrExpressionKind::Cast {
+                expression: Box::new(expression),
+                target: target.as_str().to_owned(),
+            },
+        }
+    };
+    (cast(left, a), cast(right, b))
+}
+
+/// 将声明初值中直接参与取负的浮点节点标为 `lfloat`，使 lowering 保留原始文本。
+fn retarget_lfloat_expression(expression: &mut IrExpression) {
+    match &mut expression.kind {
+        IrExpressionKind::Literal { literal, .. } if literal == "float" => {
+            expression.ty = IrType::Scalar {
+                name: ScalarType::Lfloat.as_str().to_owned(),
+            };
+        }
+        IrExpressionKind::Group { expression: inner } => {
+            retarget_lfloat_expression(inner);
+            if matches!(inner.ty, IrType::Scalar { ref name } if name == "lfloat") {
+                expression.ty = IrType::Scalar {
+                    name: ScalarType::Lfloat.as_str().to_owned(),
+                };
+            }
+        }
+        IrExpressionKind::Unary { operand: inner, .. } => {
+            retarget_lfloat_expression(inner);
+            if matches!(inner.ty, IrType::Scalar { ref name } if name == "lfloat") {
+                expression.ty = IrType::Scalar {
+                    name: ScalarType::Lfloat.as_str().to_owned(),
+                };
+            }
+        }
+        _ => {}
+    }
+}
+
+/// 转换函数类型注解。
+fn lower_function_annotation(annotation: &FunctionTypeAnnotation) -> IrType {
+    match annotation {
+        FunctionTypeAnnotation::Scalar(scalar) => IrType::Scalar {
+            name: scalar.as_str().to_owned(),
+        },
+        FunctionTypeAnnotation::None => IrType::None,
+        FunctionTypeAnnotation::Resource(resource) => IrType::Resource {
+            kind: resource.as_str().to_owned(),
+        },
+        FunctionTypeAnnotation::Set(annotation) => IrType::Set {
+            members: annotation
+                .members
+                .iter()
+                .map(|term| match term {
+                    TypeTerm::Scalar(scalar) => IrType::Scalar {
+                        name: scalar.as_str().to_owned(),
+                    },
+                    TypeTerm::None => IrType::None,
+                    TypeTerm::Resource(resource) => IrType::Resource {
+                        kind: resource.as_str().to_owned(),
+                    },
+                    TypeTerm::TypeParameter(_) => IrType::Dynamic,
+                })
+                .collect(),
+            allows_dynamic: true,
+            empty: false,
+            unknown: annotation.members.is_empty(),
+        },
+        FunctionTypeAnnotation::Array(element) => IrType::Array {
+            shape: IrArrayShape::Homogeneous {
+                element: Box::new(lower_function_annotation(element)),
+                length: None,
+            },
+        },
+        FunctionTypeAnnotation::Dict(annotation) => IrType::DictTable {
+            entries: vec![IrDictTypeEntry {
+                key: "\u{0}xiao-open-dict".to_owned(),
+                value: Box::new(lower_function_annotation(&annotation.value)),
+            }],
+        },
+        FunctionTypeAnnotation::TypeParameter(_) => IrType::Dynamic,
+        FunctionTypeAnnotation::Thread(value) => IrType::Thread {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        FunctionTypeAnnotation::Task(value) => IrType::Task {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        FunctionTypeAnnotation::Runtime => IrType::Runtime,
+        FunctionTypeAnnotation::Pool => IrType::Pool,
+        FunctionTypeAnnotation::Shared(value) => IrType::Shared {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        FunctionTypeAnnotation::SharedMut(value) => IrType::SharedMut {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        FunctionTypeAnnotation::LockGuard(value) => IrType::LockGuard {
+            value: Box::new(lower_function_annotation(value)),
+        },
+    }
+}
+
+/// 转换模块摘要。
+fn lower_modules(project: &ProjectModuleResult, source: &SourceFile) -> Vec<IrModule> {
+    let mut concurrency_modules = project
+        .modules
+        .iter()
+        .filter_map(|(name, record)| {
+            let syntax_uses_concurrency = record
+                .program
+                .as_ref()
+                .zip(record.source.as_ref())
+                .is_some_and(|(program, module_source)| {
+                    syntax_uses_concurrency_import(module_source, &program.statements)
+                });
+            let typecheck_uses_concurrency = record
+                .program
+                .as_ref()
+                .zip(record.source.as_ref())
+                .is_some_and(|(program, module_source)| {
+                    !xiao_types::check(module_source, program)
+                        .concurrency_calls()
+                        .is_empty()
+                });
+            (syntax_uses_concurrency || typecheck_uses_concurrency).then(|| name.clone())
+        })
+        .collect::<BTreeSet<_>>();
+
+    // 普通模块没有完整的跨模块函数签名环境。把并发风险沿导入图向导入方传播，
+    // 让函数重导出和中间模块传递也进入同一条结构化拒绝路径。
+    loop {
+        let newly_concurrent = project
+            .graph
+            .edges
+            .iter()
+            .filter(|(source, edges)| {
+                !concurrency_modules.contains(*source)
+                    && edges
+                        .iter()
+                        .any(|edge| concurrency_modules.contains(&edge.target))
+            })
+            .map(|(source, _)| source.clone())
+            .collect::<Vec<_>>();
+        if newly_concurrent.is_empty() {
+            break;
+        }
+        concurrency_modules.extend(newly_concurrent);
+    }
+
+    let mut modules = Vec::new();
+    for (name, record) in &project.modules {
+        let has_concurrency = concurrency_modules.contains(name);
+        let body = record
+            .program
+            .as_ref()
+            .zip(record.source.as_ref())
+            .map(|(program, module_source)| {
+                let empty_types = TypeCheckResult {
+                    nodes: Vec::new(),
+                    diagnostics: Vec::new(),
+                    runtime_checks: Vec::new(),
+                    intrinsic_calls: BTreeMap::new(),
+                    environment: xiao_types::TypeEnvironment::new(),
+                    materialization_plans: Vec::new(),
+                    selection_plans: Vec::new(),
+                    broadcast_assignment_plans: Vec::new(),
+                    random_seed_plans: Vec::new(),
+                    entry_mode: program.entry_mode,
+                    function_signatures: BTreeMap::new(),
+                    table_signatures: BTreeMap::new(),
+                    concurrency_calls: Vec::new(),
+                };
+                // Standard-library module bodies are lowered into the native
+                // static-link path as well as the VM loader. Recheck their
+                // own source so scalar/`chr` intrinsic IDs survive lowering;
+                // ordinary project modules retain the historical summary-only
+                // lowering boundary.
+                let checked_types = name
+                    .to_string()
+                    .starts_with("stdlib.")
+                    .then(|| xiao_types::check(module_source, program));
+                let mut lowerer = Lowerer {
+                    source: module_source,
+                    type_result: checked_types.as_ref().unwrap_or(&empty_types),
+                    selection_plan_cursor: BTreeMap::new(),
+                };
+                lowerer.statements(&program.statements)
+            })
+            .unwrap_or_default();
+        let symbols = record
+            .symbols
+            .values()
+            .map(|symbol| IrSymbol {
+                name: symbol.name.clone(),
+                kind: module_symbol_kind_name(symbol.kind).to_owned(),
+                origin: export_origin_name(&symbol.origin),
+                span: ir_span(symbol.span),
+            })
+            .collect();
+        modules.push(IrModule {
+            name: name.to_string(),
+            kind: module_kind_name(record.kind).to_owned(),
+            path: record.path.display().to_string(),
+            body,
+            has_concurrency,
+            symbols,
+        });
+    }
+    // `source` is intentionally accepted to make the entry point's source context
+    // explicit; module records already carry their own source and path.
+    let _ = source;
+    modules
+}
+
+/// 项目模块的完整类型环境由前端入口管理；这里保留一个语法级并发导入预检，
+/// 避免普通模块使用空 `TypeCheckResult` 时丢掉 22D 的 fail-closed 边界。
+fn syntax_uses_concurrency_import(source: &SourceFile, statements: &[Statement]) -> bool {
+    fn path_is_concurrency(path: &xiao_syntax::ImportPath, source: &SourceFile) -> bool {
+        path.segments.len() == 2
+            && path.segments[0].unquoted_text(source) == "std"
+            && path.segments[1].unquoted_text(source) == "concurrent"
+    }
+    for statement in statements {
+        let nested = match statement {
+            Statement::Import { import, .. } => match import {
+                xiao_syntax::ImportStatement::Modules { imports, .. } => imports
+                    .iter()
+                    .any(|item| path_is_concurrency(&item.path, source)),
+                xiao_syntax::ImportStatement::From { module, .. } => {
+                    path_is_concurrency(module, source)
+                }
+            },
+            Statement::If {
+                body,
+                elif_branches,
+                else_body,
+                ..
+            } => {
+                body.iter().any(|statement| {
+                    syntax_uses_concurrency_import(source, std::slice::from_ref(statement))
+                }) || elif_branches
+                    .iter()
+                    .any(|branch| syntax_uses_concurrency_import(source, &branch.body))
+                    || else_body
+                        .as_ref()
+                        .is_some_and(|body| syntax_uses_concurrency_import(source, body))
+            }
+            Statement::While { body, .. }
+            | Statement::For { body, .. }
+            | Statement::Function { body, .. }
+            | Statement::Table { body, .. } => syntax_uses_concurrency_import(source, body),
+            Statement::Try {
+                body,
+                catches,
+                finally_body,
+                ..
+            } => {
+                syntax_uses_concurrency_import(source, body)
+                    || catches
+                        .iter()
+                        .any(|catch| syntax_uses_concurrency_import(source, &catch.body))
+                    || finally_body
+                        .as_ref()
+                        .is_some_and(|body| syntax_uses_concurrency_import(source, body))
+            }
+            _ => false,
+        };
+        if nested {
+            return true;
+        }
+    }
+    false
+}
+
+/// 转换生命周期控制流。
+fn lower_control_flow(lifetime: &LifetimeResult) -> IrControlFlow {
+    let mut blocks = lifetime
+        .control_flow()
+        .blocks
+        .values()
+        .map(|block| IrBasicBlock {
+            id: block.id.get(),
+            scope: block.scope.get(),
+            span: block.span.map(ir_span),
+            statements: block.statements.iter().copied().map(ir_span).collect(),
+            successors: block
+                .successors
+                .iter()
+                .map(|(target, kind)| IrControlFlowSuccessor {
+                    target: target.get(),
+                    kind: control_flow_kind_name(*kind).to_owned(),
+                })
+                .collect(),
+            exits: block
+                .exits
+                .iter()
+                .map(|exit| exit_kind_name(*exit).to_owned())
+                .collect(),
+        })
+        .collect::<Vec<_>>();
+    blocks.sort_by_key(|block| block.id);
+    IrControlFlow {
+        entry: lifetime.control_flow().entry.map(|id| id.get()),
+        blocks,
+    }
+}
+
+/// 转换生命周期和所有权摘要。
+fn lower_ownership(lifetime: &LifetimeResult) -> IrOwnership {
+    let mut scopes = lifetime
+        .scopes()
+        .values()
+        .map(|scope| IrScope {
+            id: scope.id.get(),
+            parent: scope.parent.map(|id| id.get()),
+            kind: scope_kind_name(scope.kind).to_owned(),
+            span: ir_span(scope.span),
+            depth: scope.depth,
+            values: scope.values.iter().map(|id| id.get()).collect(),
+        })
+        .collect::<Vec<_>>();
+    scopes.sort_by_key(|scope| scope.id);
+    let mut values = lifetime
+        .values()
+        .values()
+        .map(|value| IrValue {
+            id: value.id.get(),
+            name: value.name.clone(),
+            scope: value.scope.get(),
+            span: ir_span(value.span),
+            ty: value.ty.as_ref().map(lower_type),
+            storage: storage_class_name(value.storage).to_owned(),
+            declaration_order: value.declaration_order,
+            parameter: value.parameter,
+            constant: value.constant,
+            temporary: value.temporary,
+            escapes: value
+                .escapes
+                .iter()
+                .map(|reason| escape_reason_name(*reason).to_owned())
+                .collect(),
+        })
+        .collect::<Vec<_>>();
+    values.sort_by_key(|value| value.id);
+    let mut strong_edges = lifetime
+        .strong_edges()
+        .iter()
+        .map(lower_ownership_edge)
+        .collect::<Vec<_>>();
+    strong_edges.sort_by_key(|edge| (edge.from, edge.to));
+    let mut weak_edges = lifetime
+        .weak_edges()
+        .iter()
+        .map(lower_ownership_edge)
+        .collect::<Vec<_>>();
+    weak_edges.sort_by_key(|edge| (edge.from, edge.to));
+    let mut release_plans = lifetime
+        .release_plans()
+        .values()
+        .map(|plan| IrReleasePlan {
+            scope: plan.scope.get(),
+            exit: exit_kind_name(plan.exit).to_owned(),
+            actions: plan
+                .actions
+                .iter()
+                .map(|action| IrReleaseAction {
+                    value: action.value.get(),
+                    order: action.order,
+                    kind: release_action_kind_name(action.kind).to_owned(),
+                })
+                .collect(),
+            transferred: plan.transferred.iter().map(|id| id.get()).collect(),
+        })
+        .collect::<Vec<_>>();
+    release_plans.sort_by_key(|plan| (plan.scope, plan.exit.clone()));
+    let dynamic_checks = lifetime
+        .dynamic_checks()
+        .iter()
+        .map(|check| IrDynamicLifetimeCheck {
+            span: ir_span(check.span),
+            value: check.value.map(|id| id.get()),
+            reason: escape_reason_name(check.reason).to_owned(),
+        })
+        .collect();
+    // 生命周期阶段只会从显式 `spawn`/`submit`/任务挂起入口登记事实；IR
+    // lowering 负责把同一事实复制到稳定的 JSON 结构。当前公共生命周期
+    // 模型按值保存事实；同一显式 lowering 的事实按 Runtime、边界标志和
+    // 源码区间重新聚合成一个参数列表，保持调用位置顺序和逆序清理语义。
+    let cross_thread_facts = lifetime
+        .cross_thread_facts()
+        .iter()
+        .map(|fact| IrCrossThreadFact {
+            value: fact.value.get(),
+            runtime_id: fact.runtime_id,
+            source_runtime_id: lifetime.runtime_id_facts().runtime_id(fact.value),
+            task_boundary: fact.task_boundary,
+            thread_boundary: fact.thread_boundary,
+            span: ir_span(fact.span),
+        })
+        .collect::<Vec<_>>();
+    let mut transfer_groups = BTreeMap::<(u64, bool, bool, usize, usize), Vec<u32>>::new();
+    for fact in &cross_thread_facts {
+        transfer_groups
+            .entry((
+                fact.runtime_id,
+                fact.task_boundary,
+                fact.thread_boundary,
+                fact.span.start,
+                fact.span.end,
+            ))
+            .or_default()
+            .push(fact.value);
+    }
+    let boundary_transfers = transfer_groups
+        .into_iter()
+        .map(|((runtime_id, _, _, start, end), parameters)| {
+            IrBoundaryTransfer::deep_copy(parameters, runtime_id, IrSpan::new(start, end))
+        })
+        .collect();
+    let mut cancellation_checks = lifetime
+        .cancellation_checks()
+        .iter()
+        .map(|check| IrCancellationCheck::new(ir_span(check.span), check.kind.clone()))
+        .collect::<Vec<_>>();
+    cancellation_checks.sort_by_key(|check| (check.span.start, check.span.end));
+    IrOwnership {
+        scopes,
+        values,
+        strong_edges,
+        weak_edges,
+        release_plans,
+        dynamic_checks,
+        cross_thread_facts,
+        boundary_transfers,
+        cancellation_checks,
+    }
+}
+
+/// 转换所有权边。
+fn lower_ownership_edge(edge: &xiao_lifetime::OwnershipEdge) -> IrOwnershipEdge {
+    IrOwnershipEdge {
+        from: edge.from.get(),
+        to: edge.to.get(),
+        kind: ownership_kind_name(edge.kind).to_owned(),
+        reason: ownership_reason_name(edge.reason).to_owned(),
+        span: edge.span.map(ir_span),
+    }
+}
+
+/// 返回字面量类别的稳定 IR 名称。
+fn literal_name(kind: LiteralKind) -> &'static str {
+    match kind {
+        LiteralKind::Integer => "integer",
+        LiteralKind::Float => "float",
+        LiteralKind::String => "str",
+        LiteralKind::Boolean => "bool",
+        LiteralKind::None => "none",
+    }
+}
+
+/// 返回赋值运算符的稳定源码拼写。
+fn assignment_name(operator: AssignmentOperator) -> &'static str {
+    match operator {
+        AssignmentOperator::Assign => "=",
+        AssignmentOperator::AddAssign => "+=",
+        AssignmentOperator::SubtractAssign => "-=",
+        AssignmentOperator::IntersectAssign => "&=",
+        AssignmentOperator::SymmetricDifferenceAssign => "^=",
+        AssignmentOperator::MultiplyAssign => "*=",
+        AssignmentOperator::DivideAssign => "/=",
+        AssignmentOperator::FloorDivideAssign => "//=",
+        AssignmentOperator::RemainderAssign => "%=",
+        AssignmentOperator::PowerAssign => "**=",
+    }
+}
+
+/// 返回一元运算符的稳定源码拼写。
+fn unary_name(operator: UnaryOperator) -> &'static str {
+    operator.as_str()
+}
+
+/// 返回二元运算符的稳定源码拼写。
+fn binary_name(operator: BinaryOperator) -> &'static str {
+    operator.as_str()
+}
+
+/// 返回调用参数类别的稳定名称。
+fn call_argument_kind_name(kind: CallArgumentKind) -> &'static str {
+    match kind {
+        CallArgumentKind::Positional => "positional",
+        CallArgumentKind::Keyword => "keyword",
+        CallArgumentKind::Star => "star",
+        CallArgumentKind::DoubleStar => "double_star",
+    }
+}
+
+/// 返回函数参数类别的稳定名称。
+fn parameter_kind_name(kind: FunctionParameterKind) -> &'static str {
+    match kind {
+        FunctionParameterKind::PositionalOnly => "positional_only",
+        FunctionParameterKind::PositionalOrKeyword => "positional_or_keyword",
+        FunctionParameterKind::KeywordOnly => "keyword_only",
+        FunctionParameterKind::VarArgs => "var_args",
+        FunctionParameterKind::VarKeywords => "var_keywords",
+    }
+}
+
+/// 返回表声明形态的稳定名称。
+fn table_kind_name(kind: TableKind) -> &'static str {
+    match kind {
+        TableKind::Singleton => "singleton",
+        TableKind::Instance => "instance",
+    }
+}
+
+/// 返回随机选择模式的稳定名称。
+fn random_mode_name(mode: RandomMode) -> &'static str {
+    match mode {
+        RandomMode::WithoutReplacement => "without_replacement",
+        RandomMode::WithReplacement => "with_replacement",
+    }
+}
+
+/// 返回运行时检查类别的稳定名称。
+fn runtime_check_kind_name(kind: xiao_types::RuntimeCheckKind) -> &'static str {
+    kind.as_name()
+}
+
+/// 返回模块形态的稳定名称。
+fn module_kind_name(kind: ModuleKind) -> &'static str {
+    match kind {
+        ModuleKind::File => "file",
+        ModuleKind::Namespace => "namespace",
+    }
+}
+
+/// 返回模块符号类别的稳定名称。
+fn module_symbol_kind_name(kind: ModuleSymbolKind) -> &'static str {
+    match kind {
+        ModuleSymbolKind::Value => "value",
+        ModuleSymbolKind::Function => "function",
+        ModuleSymbolKind::Table => "table",
+        ModuleSymbolKind::Module => "module",
+        ModuleSymbolKind::Namespace => "namespace",
+    }
+}
+
+/// 返回导出来源的稳定摘要。
+fn export_origin_name(origin: &ExportOrigin) -> String {
+    match origin {
+        ExportOrigin::Local => "local".to_owned(),
+        ExportOrigin::Reexport { module, name } => format!("reexport:{module}:{name}"),
+    }
+}
+
+/// 返回表值形态的稳定名称。
+fn table_value_kind_name(kind: TableValueKind) -> &'static str {
+    match kind {
+        TableValueKind::Singleton => "singleton",
+        TableValueKind::Constructor => "constructor",
+        TableValueKind::Instance => "instance",
+    }
+}
+
+/// 返回生命周期作用域类别的稳定名称。
+fn scope_kind_name(kind: ScopeKind) -> &'static str {
+    match kind {
+        ScopeKind::Program => "program",
+        ScopeKind::Function => "function",
+        ScopeKind::Branch => "branch",
+        ScopeKind::Loop => "loop",
+        ScopeKind::Table => "table",
+        ScopeKind::Block => "block",
+        ScopeKind::Try => "try",
+        ScopeKind::Catch => "catch",
+        ScopeKind::Finally => "finally",
+    }
+}
+
+/// 返回静态存储类别的稳定名称。
+fn storage_class_name(class: StorageClass) -> &'static str {
+    match class {
+        StorageClass::Stack => "stack",
+        StorageClass::HeapStrong => "heap_strong",
+        StorageClass::HeapWeak => "heap_weak",
+    }
+}
+
+/// 返回逃逸原因的稳定名称。
+fn escape_reason_name(reason: EscapeReason) -> &'static str {
+    match reason {
+        EscapeReason::Returned => "returned",
+        EscapeReason::CapturedByClosure => "captured_by_closure",
+        EscapeReason::StoredInLongerLivedContainer => "stored_in_longer_lived_container",
+        EscapeReason::CrossThread => "cross_thread",
+        EscapeReason::DynamicValue => "dynamic_value",
+        EscapeReason::Unknown => "unknown",
+    }
+}
+
+/// 返回退出边类别的稳定名称。
+///
+/// 拼写由 [`ExitKind::as_name`] 单点维护；后端反查同一张表，不得另存一份。
+fn exit_kind_name(kind: ExitKind) -> &'static str {
+    kind.as_name()
+}
+
+/// 返回所有权边类别的稳定名称。
+fn ownership_kind_name(kind: OwnershipKind) -> &'static str {
+    match kind {
+        OwnershipKind::Strong => "strong",
+        OwnershipKind::Weak => "weak",
+    }
+}
+
+/// 返回所有权边来源的稳定名称。
+fn ownership_reason_name(reason: OwnershipEdgeReason) -> &'static str {
+    match reason {
+        OwnershipEdgeReason::Alias => "alias",
+        OwnershipEdgeReason::ContainerElement => "container_element",
+        OwnershipEdgeReason::ClosureCapture => "closure_capture",
+        OwnershipEdgeReason::TableMember => "table_member",
+        OwnershipEdgeReason::Explicit => "explicit",
+    }
+}
+
+/// 返回释放动作类别的稳定名称。
+///
+/// 拼写由 [`ReleaseActionKind::as_name`] 单点维护。
+fn release_action_kind_name(kind: ReleaseActionKind) -> &'static str {
+    kind.as_name()
+}
+
+/// 返回控制流边类别的稳定名称。
+fn control_flow_kind_name(kind: ControlFlowEdgeKind) -> &'static str {
+    match kind {
+        ControlFlowEdgeKind::Next => "next",
+        ControlFlowEdgeKind::BranchTrue => "branch_true",
+        ControlFlowEdgeKind::BranchFalse => "branch_false",
+        ControlFlowEdgeKind::LoopBack => "loop_back",
+        ControlFlowEdgeKind::Break => "break",
+        ControlFlowEdgeKind::Continue => "continue",
+        ControlFlowEdgeKind::Return => "return",
+        ControlFlowEdgeKind::Error => "error",
+    }
+}
+
+/// 运行时检查名称桥接的穷尽性回归测试。
+#[cfg(test)]
+mod tests {
+    use super::runtime_check_kind_name;
+    use xiao_types::RuntimeCheckKind;
+
+    /// RuntimeCheckKind 的字符串桥接必须显式覆盖全部变体，并把每一类归入
+    /// 当前降低器的白名单或有意保留的未支持清单；新增变体不能静默掉进兜底。
+    #[test]
+    fn runtime_check_kind_bridge_is_exhaustive() {
+        let all = RuntimeCheckKind::all();
+
+        let names = all
+            .into_iter()
+            .map(runtime_check_kind_name)
+            .collect::<Vec<_>>();
+        assert_eq!(names.len(), RuntimeCheckKind::all().len());
+        assert_eq!(
+            names
+                .iter()
+                .collect::<std::collections::BTreeSet<_>>()
+                .len(),
+            17
+        );
+        for name in names {
+            assert!(
+                RuntimeCheckKind::from_name(name).is_some(),
+                "RuntimeCheckKind {name} 未列入共享名称表"
+            );
+        }
+        assert_eq!(
+            runtime_check_kind_name(RuntimeCheckKind::StringBoolean),
+            "string_boolean"
+        );
+        assert_eq!(
+            runtime_check_kind_name(RuntimeCheckKind::Iterable),
+            "iterable"
+        );
+    }
+}

@@ -1,0 +1,1186 @@
+//! 09-B0-C 前端到生产 VM 的内部驱动器。
+//!
+//! 本模块只编排阶段边界：前端产出已验证的 `IrProgram`，降低器生成统一 TAC，
+//! `xiao-vm::run_request` 负责执行前验证和栈式生产入口。这里不重新解析源码、
+//! 不重新推断类型或生命周期，也不搬运研究基准的入口重排逻辑。
+
+use std::fmt::{self, Display, Formatter};
+use std::time::{Duration, Instant};
+
+use xiao_artifacts::{ArtifactStore, Digest256, ObjectKind};
+use xiao_bytecode::{
+    BytecodeOptimizationReport, TacProgram, XiaocMetadata, encode_xiaoc, lower_program,
+};
+use xiao_diagnostics::{Diagnostic, DiagnosticParam, DiagnosticParams, ReportRecord};
+use xiao_intrinsics::{CapabilityMaskError, KNOWN_CAPABILITY_MASK, validate_capability_mask};
+use xiao_optimizer::{OptimizationLevel, PassStatus, ValidationStatus};
+use xiao_package::CacheLayout;
+use xiao_vm::{
+    CancellationSource, DEFAULT_EVENT_CAPACITY, RunOutcome as VmRunOutcome,
+    RunRequest as VmRunRequest, RunResult, VmEvent, VmOptions, VmSession,
+    run_request_with_session as run_vm_request_with_session,
+};
+
+/// 可跨线程共享的 VM 取消令牌。
+pub use xiao_vm::CancellationToken;
+
+use crate::frontend::{FrontendArtifact, FrontendCompiler, FrontendError, FrontendRequest};
+
+/// 当前内部驱动器请求/结果字段的版本。
+pub const DRIVER_VERSION: u32 = 1;
+/// 运行在进入前端或 VM 前观察到取消时的稳定编号。
+pub const DRIVER_CANCELLED_CODE: &str = "X09-DRIVER-001";
+/// 运行在驱动器边界观察到超时时的稳定编号。
+pub const DRIVER_TIMEOUT_CODE: &str = "X09-DRIVER-002";
+/// 取消/超时控制字段自身无法建立时的稳定编号。
+pub const DRIVER_CONTROL_CODE: &str = "X09-DRIVER-003";
+
+/// 驱动器对外稳定表达的五种终局。
+///
+/// 这些语义值属于 B0 的库边界；第 11/X0 阶段只负责把
+/// [`ExitCode::as_process_code`] 的结果映射到宿主进程，并处理 CLI 自身错误。
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum ExitCode {
+    /// 执行成功，包括由 Xiao 程序自身 `catch` 消费的可恢复错误。
+    Success,
+    /// 前端源码检查失败，未产生可执行产物。
+    SourceRejected,
+    /// 产物、请求或控制边界拒绝执行，包括取消和超时。
+    ArtifactRejected,
+    /// 已进入 VM，但以未捕获的可恢复运行时错误结束。
+    RuntimeError,
+    /// 已进入 VM，但以不可恢复的致命故障结束。
+    Fatal,
+}
+
+impl ExitCode {
+    /// 返回冻结的宿主进程退出码（`0..=4`）。
+    #[must_use]
+    pub const fn as_process_code(self) -> u8 {
+        match self {
+            Self::Success => 0,
+            Self::SourceRejected => 1,
+            Self::ArtifactRejected => 2,
+            Self::RuntimeError => 3,
+            Self::Fatal => 4,
+        }
+    }
+}
+
+/// 驱动器层的取消与超时控制字段。
+///
+/// `timeout` 从一次驱动调用开始计时。控制仍在阶段边界采样，同时把同一截止时间
+/// 注入 VM 检查点，确保正在执行的热循环也能尽快结束。
+#[derive(Clone, Debug, Default)]
+pub struct RunControl {
+    cancellation: Option<CancellationToken>,
+    timeout: Option<Duration>,
+}
+
+impl RunControl {
+    /// 创建不带取消和超时的控制对象。
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            cancellation: None,
+            timeout: None,
+        }
+    }
+
+    /// 设置共享取消信号。
+    #[must_use]
+    pub fn with_cancellation(mut self, token: CancellationToken) -> Self {
+        self.cancellation = Some(token);
+        self
+    }
+
+    /// 设置从驱动调用开始计时的超时。
+    #[must_use]
+    pub const fn with_timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = Some(timeout);
+        self
+    }
+
+    /// 返回共享取消信号（若配置）。
+    #[must_use]
+    pub const fn cancellation(&self) -> Option<&CancellationToken> {
+        self.cancellation.as_ref()
+    }
+
+    /// 返回超时配置（若配置）。
+    #[must_use]
+    pub const fn timeout(&self) -> Option<Duration> {
+        self.timeout
+    }
+}
+
+/// 一次前端到 VM 的内部运行请求。
+///
+/// 请求没有入口函数字段：脚本和 `[main]` 工程模式都由降低器固定到函数 0，
+/// 生产 VM 的入口 ABI 由 `xiao-vm::RunRequest` 消费。模块名和源码名可显式提供，
+/// 缺省时从源文件路径推导或使用稳定的内存来源名。
+#[derive(Clone, Debug)]
+pub struct DriverRequest {
+    /// 前端源码及其已规范化的上下文。
+    pub frontend: FrontendRequest,
+    /// 传给生产 VM 的规范化参数。
+    pub options: VmOptions,
+    /// 交给 13A/14B 字节码优化管线的规范化级别。
+    pub optimization_level: OptimizationLevel,
+    /// 事件和调用栈使用的逻辑模块名；为空时由驱动器推导。
+    pub module_name: Option<String>,
+    /// 事件和调用栈使用的源码名；为空时由驱动器推导。
+    pub source_name: Option<String>,
+    /// 生产事件接收器容量。
+    pub event_capacity: usize,
+    /// 驱动器层取消/超时控制。
+    pub control: RunControl,
+    /// 本次执行允许的能力位；默认开启当前已知能力。
+    pub capabilities: u64,
+}
+
+impl DriverRequest {
+    /// 从一份前端请求创建默认驱动请求。
+    #[must_use]
+    pub fn new(frontend: FrontendRequest) -> Self {
+        Self {
+            frontend,
+            options: VmOptions::default(),
+            optimization_level: OptimizationLevel::O0,
+            module_name: None,
+            source_name: None,
+            event_capacity: DEFAULT_EVENT_CAPACITY,
+            control: RunControl::default(),
+            capabilities: KNOWN_CAPABILITY_MASK,
+        }
+    }
+
+    /// 替换 VM 运行参数。
+    #[must_use]
+    pub const fn with_options(mut self, options: VmOptions) -> Self {
+        self.options = options;
+        self
+    }
+
+    /// 设置交给字节码优化管线的级别。
+    #[must_use]
+    pub const fn with_optimization_level(mut self, level: OptimizationLevel) -> Self {
+        self.optimization_level = level;
+        self
+    }
+
+    /// 设置逻辑模块名。
+    #[must_use]
+    pub fn with_module_name(mut self, module_name: impl Into<String>) -> Self {
+        self.module_name = Some(module_name.into());
+        self
+    }
+
+    /// 设置源码路径或内存来源名。
+    #[must_use]
+    pub fn with_source_name(mut self, source_name: impl Into<String>) -> Self {
+        self.source_name = Some(source_name.into());
+        self
+    }
+
+    /// 设置生产事件容量。
+    #[must_use]
+    pub const fn with_event_capacity(mut self, event_capacity: usize) -> Self {
+        self.event_capacity = event_capacity;
+        self
+    }
+
+    /// 设置完整的取消/超时控制对象。
+    #[must_use]
+    pub fn with_control(mut self, control: RunControl) -> Self {
+        self.control = control;
+        self
+    }
+
+    /// 设置本次执行的能力位；未知位在请求构造时拒绝。
+    pub fn with_capabilities(mut self, capabilities: u64) -> Result<Self, CapabilityMaskError> {
+        validate_capability_mask(capabilities)?;
+        self.capabilities = capabilities;
+        Ok(self)
+    }
+
+    /// 设置取消信号。
+    #[must_use]
+    pub fn with_cancellation(mut self, token: CancellationToken) -> Self {
+        self.control = self.control.with_cancellation(token);
+        self
+    }
+
+    /// 设置超时。
+    #[must_use]
+    pub fn with_timeout(mut self, timeout: Duration) -> Self {
+        self.control = self.control.with_timeout(timeout);
+        self
+    }
+
+    /// 推导模块名；不参与语言语义或入口选择。
+    fn resolved_module_name(&self) -> String {
+        self.module_name.clone().unwrap_or_else(|| {
+            self.frontend
+                .source_path
+                .as_ref()
+                .and_then(|path| path.file_stem())
+                .map(|stem| stem.to_string_lossy().into_owned())
+                .filter(|name| !name.is_empty())
+                .unwrap_or_else(|| "main".to_owned())
+        })
+    }
+
+    /// 推导源码名；内存请求使用稳定占位名。
+    fn resolved_source_name(&self) -> String {
+        self.source_name.clone().unwrap_or_else(|| {
+            self.frontend
+                .source_path
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "<memory>".to_owned())
+        })
+    }
+}
+
+/// 驱动器拒绝发生的阶段。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum DriverPhase {
+    /// 取消或超时控制边界。
+    Control,
+    /// TAC/IR 执行前验证边界。
+    Verification,
+    /// VM 请求字段验证边界。
+    Request,
+}
+
+/// 前端成功后、VM 执行前被拒绝的结构化错误。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct DriverError {
+    phase: DriverPhase,
+    code: String,
+    path: Option<String>,
+    message: String,
+    report: Option<ReportRecord>,
+}
+
+impl DriverError {
+    /// 返回错误所属阶段。
+    #[must_use]
+    pub const fn phase(&self) -> DriverPhase {
+        self.phase
+    }
+
+    /// 返回稳定机器编号。
+    #[must_use]
+    pub fn code(&self) -> &str {
+        &self.code
+    }
+
+    /// 返回结构化字段路径（若有）。
+    #[must_use]
+    pub fn path(&self) -> Option<&str> {
+        self.path.as_deref()
+    }
+
+    /// 返回开发者原因摘要。
+    #[must_use]
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+
+    /// 返回 VM 产生的统一报告（控制边界错误没有 VM 报告）。
+    #[must_use]
+    pub fn report(&self) -> Option<&ReportRecord> {
+        self.report.as_ref()
+    }
+
+    /// 从 B0-B 的结构化运行报告识别执行前拒绝。
+    fn from_vm_outcome(outcome: &VmRunOutcome) -> Option<Self> {
+        let report = outcome.report.as_ref()?;
+        let (phase, code_key, path_key, message_key) =
+            if report.params.contains_key("verification_code") {
+                (
+                    DriverPhase::Verification,
+                    "verification_code",
+                    "verification_path",
+                    "verification_message",
+                )
+            } else if report.params.contains_key("request_code") {
+                (
+                    DriverPhase::Request,
+                    "request_code",
+                    "request_field",
+                    "request_message",
+                )
+            } else {
+                return None;
+            };
+        let code = text_param(&report.params, code_key).unwrap_or_else(|| report.code.clone());
+        let path = text_param(&report.params, path_key);
+        let message =
+            text_param(&report.context, message_key).unwrap_or_else(|| report.message.clone());
+        Some(Self {
+            phase,
+            code,
+            path,
+            message,
+            report: Some(report.clone()),
+        })
+    }
+
+    /// 创建取消/超时控制错误。
+    fn control(code: &str, message: &str) -> Self {
+        Self {
+            phase: DriverPhase::Control,
+            code: code.to_owned(),
+            path: None,
+            message: message.to_owned(),
+            report: None,
+        }
+    }
+}
+
+impl Display for DriverError {
+    /// 输出阶段、稳定编号和原因，不供程序逻辑解析。
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        if let Some(path) = &self.path {
+            write!(formatter, "{} at {}: {}", self.code, path, self.message)
+        } else {
+            write!(formatter, "{}: {}", self.code, self.message)
+        }
+    }
+}
+
+impl std::error::Error for DriverError {}
+
+/// 一次已经进入 VM 的执行结果及前端非错误诊断。
+#[derive(Debug)]
+pub struct DriverExecution {
+    /// B0-B 生产 VM 的完整结构化结果。
+    pub outcome: VmRunOutcome,
+    /// 前端成功阶段保留的警告/信息诊断。
+    pub diagnostics: Vec<Diagnostic>,
+    /// `.xiaoc` 物化到全局/会话缓存的机器可读观察。
+    pub cache: Option<CacheObservation>,
+}
+
+/// 一次源码物化的缓存观察；缓存失败只形成回退说明，不改变运行语义。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct CacheObservation {
+    /// `hit`、`written`、`session` 或 `fallback`。
+    pub status: String,
+    /// 对象命名空间。
+    pub object_kind: String,
+    /// 成功物化对象的摘要。
+    pub digest: Option<String>,
+    /// 是否经过完整对象校验。
+    pub verified: bool,
+    /// 本次运行是否因为缓存未命中而重新物化。
+    pub recompiled: bool,
+    /// 没有复用旧对象时的稳定原因。
+    pub recompile_reason: Option<String>,
+    /// 回退或失败原因。
+    pub reason: Option<String>,
+    /// 字节码优化管线的机器可读报告。
+    pub optimization: Option<OptimizationObservation>,
+}
+
+/// 字节码优化管线的稳定运行摘要。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct OptimizationObservation {
+    /// 生效优化级别。
+    pub level: u8,
+    /// 优化器实现版本。
+    pub optimizer_version: u32,
+    /// 规范化配置指纹。
+    pub config_fingerprint: String,
+    /// 输入程序指纹。
+    pub input_fingerprint: String,
+    /// 输出程序指纹。
+    pub output_fingerprint: String,
+    /// 最终验证状态。
+    pub validation: String,
+    /// 每个 Pass 的执行摘要。
+    pub passes: Vec<PassObservation>,
+}
+
+/// 一个字节码 Pass 的稳定执行摘要。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct PassObservation {
+    /// Pass 稳定名称。
+    pub name: String,
+    /// Pass 实现版本。
+    pub version: u32,
+    /// `applied` 或 `skipped`。
+    pub status: String,
+    /// 跳过原因；执行时为空。
+    pub skip_reason: Option<String>,
+    /// 是否改变程序。
+    pub changed: bool,
+    /// 输入快照指纹。
+    pub input_fingerprint: String,
+    /// 输出快照指纹。
+    pub output_fingerprint: String,
+    /// Pass 后验证状态。
+    pub validation: String,
+}
+
+impl OptimizationObservation {
+    fn from_report(report: &BytecodeOptimizationReport) -> Self {
+        Self {
+            level: report.level.as_u8(),
+            optimizer_version: report.optimizer_version,
+            config_fingerprint: report.config_fingerprint.clone(),
+            input_fingerprint: report.input_fingerprint.clone(),
+            output_fingerprint: report.output_fingerprint.clone(),
+            validation: validation_name(report.validation),
+            passes: report
+                .passes
+                .iter()
+                .map(|pass| PassObservation {
+                    name: pass.metadata.name.clone(),
+                    version: pass.metadata.version,
+                    status: match pass.status {
+                        PassStatus::Applied => "applied".to_owned(),
+                        PassStatus::Skipped => "skipped".to_owned(),
+                    },
+                    skip_reason: pass.skip_reason.clone(),
+                    changed: pass.changed,
+                    input_fingerprint: pass.input_fingerprint.clone(),
+                    output_fingerprint: pass.output_fingerprint.clone(),
+                    validation: validation_name(pass.validation),
+                })
+                .collect(),
+        }
+    }
+}
+
+fn validation_name(status: ValidationStatus) -> String {
+    match status {
+        ValidationStatus::Passed => "passed".to_owned(),
+        ValidationStatus::Failed => "failed".to_owned(),
+    }
+}
+
+impl DriverExecution {
+    /// 返回 VM 结果的只读视图。
+    #[must_use]
+    pub const fn run_outcome(&self) -> &VmRunOutcome {
+        &self.outcome
+    }
+
+    /// 返回前端保留诊断的只读视图。
+    #[must_use]
+    pub fn diagnostics(&self) -> &[Diagnostic] {
+        &self.diagnostics
+    }
+
+    /// 返回 VM 事件的只读视图。
+    #[must_use]
+    pub fn events(&self) -> &[VmEvent] {
+        &self.outcome.events
+    }
+
+    /// 返回 VM 的统一报告（成功时为空）。
+    #[must_use]
+    pub fn report(&self) -> Option<&ReportRecord> {
+        self.outcome.report.as_ref()
+    }
+}
+
+/// 覆盖前端失败、执行前拒绝和已执行结果的单一全链结果类型。
+///
+/// 选择一个枚举而不是 `Result<RunOutcome, DriverError>`，是因为前端失败本身
+/// 不是一个可以压缩成单个错误的字符串：它必须保留完整诊断列表；同时执行后的
+/// `Error`/`Fatal` 仍需保留 VM 事件、指标和报告。调用方只需在一个位置区分三段。
+#[allow(clippy::large_enum_variant)]
+#[derive(Debug)]
+pub enum DriverOutcome {
+    /// 前端失败，没有产生可消费 IR。
+    Frontend(FrontendError),
+    /// 已有前端产物，但降低/验证/请求控制边界拒绝执行。
+    Rejected(DriverError),
+    /// 已进入 VM；其中的 `RunResult` 继续区分成功、可恢复错误和致命故障。
+    Executed(DriverExecution),
+}
+
+impl DriverOutcome {
+    /// 从结构化驱动结果派生稳定退出语义。
+    ///
+    /// 派生只读取 `DriverOutcome` 的阶段和已执行结果的 `RunResult` 分支，
+    /// 不读取诊断编号、消息文本或本地化展示内容。被 `catch` 消费的错误
+    /// 会使 VM 返回 `RunResult::Success`，因此映射为 [`ExitCode::Success`]。
+    #[must_use]
+    pub fn exit_code(&self) -> ExitCode {
+        match self {
+            Self::Frontend(_error) => ExitCode::SourceRejected,
+            Self::Rejected(_error) => ExitCode::ArtifactRejected,
+            Self::Executed(execution) => match &execution.outcome.result {
+                RunResult::Success => ExitCode::Success,
+                RunResult::Error(_error) => ExitCode::RuntimeError,
+                RunResult::Fatal(_error) => ExitCode::Fatal,
+                RunResult::Cancelled => ExitCode::ArtifactRejected,
+            },
+        }
+    }
+
+    /// 判断是否是成功执行。
+    #[must_use]
+    pub fn is_success(&self) -> bool {
+        matches!(self, Self::Executed(execution) if execution.outcome.result.is_success())
+    }
+
+    /// 返回当前结果的稳定错误编号；成功时为空。
+    #[must_use]
+    pub fn code(&self) -> Option<&str> {
+        match self {
+            Self::Frontend(error) => error
+                .diagnostics()
+                .iter()
+                .find(|diagnostic| diagnostic.is_error())
+                .or_else(|| error.diagnostics().first())
+                .map(|diagnostic| diagnostic.code()),
+            Self::Rejected(error) => Some(error.code()),
+            Self::Executed(execution) => execution.outcome.result.error_code(),
+        }
+    }
+
+    /// 返回统一报告；前端诊断和控制边界错误没有 VM 报告。
+    #[must_use]
+    pub fn report(&self) -> Option<&ReportRecord> {
+        match self {
+            Self::Frontend(_) => None,
+            Self::Rejected(error) => error.report(),
+            Self::Executed(execution) => execution.report(),
+        }
+    }
+
+    /// 返回已执行结果的只读视图。
+    #[must_use]
+    pub fn as_executed(&self) -> Option<&DriverExecution> {
+        match self {
+            Self::Executed(execution) => Some(execution),
+            Self::Frontend(_) | Self::Rejected(_) => None,
+        }
+    }
+}
+
+/// 前端到 VM 的会话级内部驱动器。
+pub struct FrontendVmDriver {
+    session: VmSession,
+}
+
+impl std::fmt::Debug for FrontendVmDriver {
+    /// 仅展示驱动器类型；模块缓存属于运行时内部状态。
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter.write_str("FrontendVmDriver")
+    }
+}
+
+impl Default for FrontendVmDriver {
+    /// 创建一个空会话驱动器。
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl FrontendVmDriver {
+    /// 创建一个空会话驱动器。
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            session: VmSession::new(),
+        }
+    }
+
+    /// 丢弃模块缓存和表运行时状态，开始新的会话。
+    pub fn reset_session(&mut self) {
+        self.session = VmSession::new();
+    }
+
+    /// 编译并执行一次内部运行请求。
+    #[must_use]
+    pub fn run(&mut self, request: &DriverRequest) -> DriverOutcome {
+        let control = match ControlWindow::start(&request.control) {
+            Ok(control) => control,
+            Err(error) => {
+                self.reset_session();
+                return DriverOutcome::Rejected(*error);
+            }
+        };
+        if let Some(error) = control.check() {
+            self.reset_session();
+            return DriverOutcome::Rejected(error);
+        }
+        let artifact = match FrontendCompiler::new().compile(&request.frontend) {
+            Ok(artifact) => artifact,
+            Err(error) => return DriverOutcome::Frontend(error),
+        };
+        if let Some(error) = control.check() {
+            self.reset_session();
+            return DriverOutcome::Rejected(error);
+        }
+        self.run_artifact_with_control(&artifact, request, &control)
+    }
+
+    /// 执行一份已经由前端产出的 IR，不重新解析或重新推断语义。
+    #[must_use]
+    pub fn run_artifact(
+        &mut self,
+        artifact: &FrontendArtifact,
+        request: &DriverRequest,
+    ) -> DriverOutcome {
+        let control = match ControlWindow::start(&request.control) {
+            Ok(control) => control,
+            Err(error) => {
+                self.reset_session();
+                return DriverOutcome::Rejected(*error);
+            }
+        };
+        if let Some(error) = control.check() {
+            self.reset_session();
+            return DriverOutcome::Rejected(error);
+        }
+        self.run_artifact_with_control(artifact, request, &control)
+    }
+
+    /// 在同一控制窗口内降低并执行产物。
+    fn run_artifact_with_control(
+        &mut self,
+        artifact: &FrontendArtifact,
+        request: &DriverRequest,
+        control: &ControlWindow,
+    ) -> DriverOutcome {
+        let ir = artifact.ir();
+        let program = lower_program(ir);
+        if let Some(error) = control.check() {
+            self.reset_session();
+            return DriverOutcome::Rejected(error);
+        }
+        self.execute_program(
+            ir,
+            artifact.diagnostics().to_vec(),
+            program,
+            request,
+            control,
+        )
+    }
+
+    /// 交给 B0-B 生产入口；该函数不改变入口函数或载体。
+    fn execute_program(
+        &mut self,
+        ir: &xiao_ir::IrProgram,
+        diagnostics: Vec<Diagnostic>,
+        program: TacProgram,
+        request: &DriverRequest,
+        control: &ControlWindow,
+    ) -> DriverOutcome {
+        if let Some(error) = control.check() {
+            self.reset_session();
+            return DriverOutcome::Rejected(error);
+        }
+        let optimization =
+            xiao_optimizer::OptimizationConfig::baseline(request.frontend.context.target.clone())
+                .with_level(request.optimization_level);
+        let optimization_fingerprint = optimization
+            .fingerprint()
+            .ok()
+            .map(|fingerprint| fingerprint.as_str().to_owned());
+        // 先保留降低器已经登记的 unsupported，让所有优化级别都经过同一生产验证
+        // 入口；否则 O1–O3 会先把它包装成 X09-DRIVER-OPT-001，丢掉 X09-BYTECODE
+        // 的已知未实现/内部缺口分档。
+        let has_unsupported = !program.unsupported.is_empty();
+        let (program, optimization_report) = if has_unsupported {
+            (program, None)
+        } else {
+            match xiao_bytecode::optimize_bytecode_checked(ir, &program, optimization) {
+                Ok(result) => (result.program, Some(result.report)),
+                Err(_error) if request.optimization_level == OptimizationLevel::O0 => {
+                    // O0 仍必须由生产 VM 保留既有 TAC 错误身份；优化器的额外
+                    // 对账失败不能把既有 X09-TAC-* 错误改写成新的包装码。
+                    (program, None)
+                }
+                Err(error) => {
+                    self.reset_session();
+                    return DriverOutcome::Rejected(DriverError {
+                        phase: DriverPhase::Verification,
+                        code: "X09-DRIVER-OPT-001".to_owned(),
+                        path: None,
+                        message: format!("字节码优化管线失败：{error}"),
+                        report: None,
+                    });
+                }
+            }
+        };
+        if let Some(error) = control.check() {
+            self.reset_session();
+            return DriverOutcome::Rejected(error);
+        }
+        let cache = cache_xiaoc(
+            &program,
+            request,
+            optimization_fingerprint,
+            optimization_report.as_ref(),
+        );
+        let vm_request = match VmRunRequest::new(ir, &program)
+            .with_options(request.options)
+            .with_module_name(request.resolved_module_name())
+            .with_source_name(request.resolved_source_name())
+            .with_event_capacity(request.event_capacity)
+            .with_capabilities(request.capabilities)
+        {
+            Ok(request) => request,
+            Err(error) => {
+                self.reset_session();
+                return DriverOutcome::Rejected(DriverError {
+                    phase: DriverPhase::Request,
+                    code: "X09-VM-002".to_owned(),
+                    path: Some("capabilities".to_owned()),
+                    message: error.to_string(),
+                    report: None,
+                });
+            }
+        };
+        let vm_request = if let Some(source) = control.cancellation_source() {
+            vm_request.with_cancellation(source)
+        } else {
+            vm_request
+        };
+        let module_loader = crate::module_loader::DriverModuleLoader::new(
+            request.frontend.context.project_root.as_deref(),
+            request.frontend.context.package_registry.as_ref(),
+        );
+        let vm_request = vm_request.with_module_loader(&module_loader);
+        let session = std::mem::take(&mut self.session);
+        let (outcome, session) = run_vm_request_with_session(&vm_request, session);
+        self.session = session;
+        // 方案 A 仍需在 VM 返回边界采样；VM 已经结束后发现控制信号时，控制结果
+        // 优先于已完成的 VM 结果，避免把超时/取消伪装成成功。
+        if let Some(error) = control.check() {
+            self.reset_session();
+            return DriverOutcome::Rejected(error);
+        }
+        if let Some(error) = DriverError::from_vm_outcome(&outcome) {
+            self.reset_session();
+            return DriverOutcome::Rejected(error);
+        }
+        DriverOutcome::Executed(DriverExecution {
+            outcome,
+            diagnostics,
+            cache,
+        })
+    }
+}
+
+/// 将完整源码模块物化到全局内容寻址缓存；无项目根时保持会话隔离。
+fn cache_xiaoc(
+    program: &TacProgram,
+    request: &DriverRequest,
+    optimization_fingerprint: Option<String>,
+    optimization_report: Option<&BytecodeOptimizationReport>,
+) -> Option<CacheObservation> {
+    if request.frontend.context.project_root.is_none() {
+        return Some(CacheObservation {
+            status: "session".to_owned(),
+            object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
+            digest: None,
+            verified: false,
+            recompiled: true,
+            recompile_reason: Some("session_state".to_owned()),
+            reason: Some("session_state".to_owned()),
+            optimization: optimization_report.map(OptimizationObservation::from_report),
+        });
+    }
+    let mut metadata = XiaocMetadata::new(request.resolved_module_name()).with_source_digest(
+        Digest256::of_bytes(request.frontend.source.text().as_bytes()).as_hex(),
+    );
+    if let Some(fingerprint) = optimization_fingerprint {
+        metadata = metadata.with_optimization_fingerprint(fingerprint);
+    }
+    let bytes = match encode_xiaoc(program, metadata) {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            return Some(CacheObservation {
+                status: "fallback".to_owned(),
+                object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
+                digest: None,
+                verified: false,
+                recompiled: true,
+                recompile_reason: Some("encode_failed".to_owned()),
+                reason: Some(format!("encode: {error}")),
+                optimization: optimization_report.map(OptimizationObservation::from_report),
+            });
+        }
+    };
+    let digest = Digest256::of_bytes(&bytes);
+    let store = match CacheLayout::from_environment() {
+        Ok(layout) => match ArtifactStore::open(layout.cache_root()) {
+            Ok(store) => store,
+            Err(error) => {
+                return Some(CacheObservation {
+                    status: "fallback".to_owned(),
+                    object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
+                    digest: Some(digest.as_hex()),
+                    verified: false,
+                    recompiled: true,
+                    recompile_reason: Some("cache_unavailable".to_owned()),
+                    reason: Some(format!("cache_open: {error}")),
+                    optimization: optimization_report.map(OptimizationObservation::from_report),
+                });
+            }
+        },
+        Err(error) => {
+            return Some(CacheObservation {
+                status: "fallback".to_owned(),
+                object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
+                digest: Some(digest.as_hex()),
+                verified: false,
+                recompiled: true,
+                recompile_reason: Some("cache_unavailable".to_owned()),
+                reason: Some(format!("cache_layout: {error}")),
+                optimization: optimization_report.map(OptimizationObservation::from_report),
+            });
+        }
+    };
+    let existed = store.object_path(ObjectKind::Xiaoc, digest).is_file();
+    match store.put_xiaoc(&bytes) {
+        Ok(reference) => Some(CacheObservation {
+            status: if existed { "hit" } else { "written" }.to_owned(),
+            object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
+            digest: Some(reference.digest.as_hex()),
+            verified: true,
+            recompiled: !existed,
+            recompile_reason: (!existed).then(|| "cache_miss".to_owned()),
+            reason: Some(if existed {
+                "cache_hit_verified".to_owned()
+            } else {
+                "cache_miss".to_owned()
+            }),
+            optimization: optimization_report.map(OptimizationObservation::from_report),
+        }),
+        Err(error) => Some(CacheObservation {
+            status: "fallback".to_owned(),
+            object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
+            digest: Some(digest.as_hex()),
+            verified: false,
+            recompiled: true,
+            recompile_reason: Some("cache_write_failed".to_owned()),
+            reason: Some(format!("cache_write: {error}")),
+            optimization: optimization_report.map(OptimizationObservation::from_report),
+        }),
+    }
+}
+
+/// 使用新会话驱动器编译并执行一次请求。
+#[must_use]
+pub fn run(request: &DriverRequest) -> DriverOutcome {
+    let mut driver = FrontendVmDriver::new();
+    driver.run(request)
+}
+
+/// `run` 的语义别名，供编排代码按请求动作命名。
+#[must_use]
+pub fn run_request(request: &DriverRequest) -> DriverOutcome {
+    run(request)
+}
+
+/// 驱动器一次调用的控制窗口。
+struct ControlWindow {
+    cancellation: Option<CancellationToken>,
+    deadline: Option<Instant>,
+}
+
+impl ControlWindow {
+    /// 从运行控制字段建立一次调用的截止时间窗口。
+    fn start(control: &RunControl) -> Result<Self, Box<DriverError>> {
+        let deadline = match control.timeout {
+            Some(timeout) => Some(Instant::now().checked_add(timeout).ok_or_else(|| {
+                Box::new(DriverError::control(
+                    DRIVER_CONTROL_CODE,
+                    "超时期限超出宿主时钟可表示范围",
+                ))
+            })?),
+            None => None,
+        };
+        Ok(Self {
+            cancellation: control.cancellation.clone(),
+            deadline,
+        })
+    }
+
+    /// 在当前驱动器阶段边界采样取消和超时状态。
+    fn check(&self) -> Option<DriverError> {
+        if self
+            .cancellation
+            .as_ref()
+            .is_some_and(CancellationToken::is_cancelled)
+        {
+            return Some(DriverError::control(
+                DRIVER_CANCELLED_CODE,
+                "运行在驱动器边界被取消",
+            ));
+        }
+        if self
+            .deadline
+            .is_some_and(|deadline| Instant::now() >= deadline)
+        {
+            return Some(DriverError::control(
+                DRIVER_TIMEOUT_CODE,
+                "运行在驱动器边界超过超时期限",
+            ));
+        }
+        None
+    }
+
+    /// 为 VM 建立与驱动器边界一致的可注入取消来源。
+    fn cancellation_source(&self) -> Option<CancellationSource> {
+        let mut source = CancellationSource::new();
+        let mut configured = false;
+        if let Some(token) = &self.cancellation {
+            source = source.with_token(token.clone());
+            configured = true;
+        }
+        if let Some(deadline) = self.deadline {
+            source = source.with_deadline(deadline);
+            configured = true;
+        }
+        configured.then_some(source)
+    }
+}
+
+/// 从诊断参数表读取不参与本地化的文本字段。
+fn text_param(params: &DiagnosticParams, key: &str) -> Option<String> {
+    match params.get(key) {
+        Some(DiagnosticParam::Text(value)) => Some(value.clone()),
+        Some(DiagnosticParam::Integer(_) | DiagnosticParam::Boolean(_)) | None => None,
+    }
+}
+
+/// 驱动器内部阶段边界和结构化拒绝的回归夹具。
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Duration;
+    use xiao_bytecode::{TAC_INTERNAL_CONSISTENCY_CODE, lower_program};
+
+    /// 构造一份使用稳定内存来源名的驱动请求。
+    fn request(source: &str) -> DriverRequest {
+        DriverRequest::new(FrontendRequest::from_text(source))
+    }
+
+    #[test]
+    /// 真实源码应直接经过前端、降低和生产 VM，且没有入口覆盖参数。
+    fn runs_frontend_to_vm_without_an_entry_override() {
+        let outcome = run(&request("value = 1 + 2\n"));
+        assert!(outcome.is_success());
+        assert!(matches!(outcome, DriverOutcome::Executed(_)));
+    }
+
+    fn concurrency_output(outcome: &DriverOutcome) -> String {
+        outcome
+            .as_executed()
+            .expect("进入 VM")
+            .events()
+            .iter()
+            .filter_map(|event| match event {
+                VmEvent::IntrinsicOutput { text } => Some(text.as_str()),
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[test]
+    /// 并发签名表入口必须经过真实源码、TAC 和生产 VM 执行。
+    fn concurrency_runtime_create_spawn_join_reaches_vm() {
+        let source = r#"from std.concurrent import runtime_create, spawn, join, runtime_close
+def work(int value) -> int
+    return value
+rt = runtime_create()
+thread = spawn(rt, work, 7)
+result = join(thread)
+print(result)
+runtime_close(rt)
+"#;
+        let request = request(source);
+        let outcome = run(&request);
+        assert!(outcome.is_success(), "并发源码执行失败：{outcome:?}");
+        assert_eq!(concurrency_output(&outcome), "7\n");
+    }
+
+    #[test]
+    /// 任务池的 submit/wait/shutdown 也必须走真实 VM 调用绑定。
+    fn concurrency_pool_submit_wait_shutdown_reaches_vm() {
+        let source = r#"from std.concurrent import current_runtime, pool_create, submit, wait, shutdown
+def work(int value) -> int
+    return value
+rt = current_runtime()
+pool = pool_create(rt, 1)
+task = submit(pool, work, 9)
+result = wait(task)
+print(result)
+shutdown(pool)
+"#;
+        let outcome = run(&request(source));
+        assert!(outcome.is_success(), "任务池源码执行失败：{outcome:?}");
+        assert_eq!(concurrency_output(&outcome), "9\n");
+    }
+
+    #[test]
+    /// shared/read/lock/guard 入口必须经过 VM 的 XCON/共享句柄适配。
+    fn concurrency_shared_and_lock_reaches_vm() {
+        let source = r#"from std.concurrent import shared_read, shared_mut, read, lock, lock_read, lock_write
+readonly = shared_read(7)
+value = read(readonly)
+mutable = shared_mut(8)
+guard = lock(mutable)
+value = lock_read(guard)
+lock_write(guard, 9)
+print(value)
+print(lock_read(guard))
+"#;
+        let outcome = run(&request(source));
+        assert!(outcome.is_success(), "共享句柄源码执行失败：{outcome:?}");
+        assert_eq!(concurrency_output(&outcome), "8\n9\n");
+    }
+
+    #[test]
+    /// `print` 必须沿前端、IR、TAC 和 VM 契约入口产生结构化输出且返回成功。
+    fn print_intrinsic_reaches_vm_output_event() {
+        let outcome = run(&request("print(\"hello world!\")\n"));
+        let DriverOutcome::Executed(execution) = outcome else {
+            panic!("print 应成功执行");
+        };
+        assert!(execution.outcome.result.is_success());
+        assert!(
+            execution.diagnostics().is_empty(),
+            "print 的 JSON diagnostics 应为空: {:?}",
+            execution.diagnostics()
+        );
+        assert!(execution.events().iter().any(|event| matches!(
+            event,
+            VmEvent::IntrinsicOutput { text } if text == "hello world!\n"
+        )));
+    }
+
+    #[test]
+    /// 真实生产入口消费契约表和 VM 绑定；删除任一环节都必须使该行为用例失败。
+    fn removal_verification_print_contract_and_vm_binding() {
+        let outcome = run(&request("print(\"removal probe\")\n"));
+        let DriverOutcome::Executed(execution) = outcome else {
+            panic!("print 移除验证应成功执行");
+        };
+        assert!(execution.outcome.result.is_success());
+        assert!(execution.events().iter().any(|event| matches!(
+            event,
+            VmEvent::IntrinsicOutput { text } if text == "removal probe\n"
+        )));
+    }
+
+    #[test]
+    /// 已有规则的标量转换和 set/error 构造也必须经由契约 ID 在 VM 中完成。
+    fn migrated_intrinsics_keep_existing_vm_semantics() {
+        assert!(run(&request("value = int(1)\n")).is_success());
+        assert!(run(&request("value = set()\n")).is_success());
+        let outcome = run(&request("value = TypeError(\"code\")\n"));
+        assert!(outcome.is_success());
+    }
+
+    #[test]
+    /// O1--O3 进入生产字节码管线后仍保留统一 VM 的输出与成功结果。
+    fn nonzero_optimization_levels_run_through_bytecode_pipeline() {
+        for level in [
+            OptimizationLevel::O1,
+            OptimizationLevel::O2,
+            OptimizationLevel::O3,
+        ] {
+            let outcome = run(&request("print(\"optimized\")\n").with_optimization_level(level));
+            let DriverOutcome::Executed(execution) = outcome else {
+                panic!("非零优化级别应进入生产 VM");
+            };
+            assert!(execution.outcome.result.is_success());
+            assert!(execution.outcome.events.iter().any(|event| {
+                matches!(event, VmEvent::IntrinsicOutput { text } if text == "optimized\n")
+            }));
+        }
+    }
+
+    #[test]
+    /// 前端错误应保留结构化诊断，并且不产生 VM 报告。
+    fn frontend_failure_keeps_structured_diagnostics() {
+        let outcome = run(&request("if 1\n    value = 1\n"));
+        assert!(matches!(outcome, DriverOutcome::Frontend(_)));
+        assert!(outcome.code().is_some());
+        assert!(outcome.report().is_none());
+    }
+
+    #[test]
+    /// 未降低 TAC 应在生产入口前被识别为内部一致性拒绝。
+    fn corrupted_tac_is_rejected_before_execution() {
+        let request = request("value = 1\n");
+        let artifact = FrontendCompiler::new()
+            .compile(&request.frontend)
+            .expect("前端应成功");
+        let mut program = lower_program(artifact.ir());
+        program.unsupported.push("测试注入".to_owned());
+        let control = ControlWindow::start(&request.control).expect("控制窗口");
+        let outcome = FrontendVmDriver::new().execute_program(
+            artifact.ir(),
+            artifact.diagnostics().to_vec(),
+            program,
+            &request,
+            &control,
+        );
+        let DriverOutcome::Rejected(error) = outcome else {
+            panic!("损坏 TAC 必须被拒绝");
+        };
+        assert_eq!(error.phase(), DriverPhase::Verification);
+        assert_eq!(error.code(), TAC_INTERNAL_CONSISTENCY_CODE);
+        assert_eq!(
+            error.report().map(|report| report.message_id.as_str()),
+            Some("fatal.internal")
+        );
+    }
+
+    #[test]
+    /// 进程内生成的 TAC 结构/ABI 错误统一使用编译器内部故障身份。
+    fn structurally_invalid_tac_uses_internal_diagnostic() {
+        let request = request("value = 1\n");
+        let artifact = FrontendCompiler::new()
+            .compile(&request.frontend)
+            .expect("前端应成功");
+        let mut program = lower_program(artifact.ir());
+        program.abi.ir_version = program.abi.ir_version.saturating_add(1);
+        let control = ControlWindow::start(&request.control).expect("控制窗口");
+        let outcome = FrontendVmDriver::new().execute_program(
+            artifact.ir(),
+            artifact.diagnostics().to_vec(),
+            program,
+            &request,
+            &control,
+        );
+        let DriverOutcome::Rejected(error) = outcome else {
+            panic!("结构损坏 TAC 必须被拒绝");
+        };
+        assert_eq!(error.phase(), DriverPhase::Verification);
+        assert_eq!(error.code(), "X09-BYTECODE-002");
+        assert_eq!(
+            error.report().map(|report| report.message_id.as_str()),
+            Some("fatal.internal")
+        );
+    }
+
+    #[test]
+    /// 取消和零期限超时应返回稳定的驱动器控制错误。
+    fn cancellation_and_zero_timeout_are_structured_control_errors() {
+        let token = CancellationToken::new();
+        token.cancel();
+        let cancelled = run(&request("value = 1\n").with_cancellation(token));
+        assert_eq!(cancelled.code(), Some(DRIVER_CANCELLED_CODE));
+        assert!(matches!(cancelled, DriverOutcome::Rejected(_)));
+
+        let timed_out = run(&request("value = 1\n").with_timeout(Duration::ZERO));
+        assert_eq!(timed_out.code(), Some(DRIVER_TIMEOUT_CODE));
+        assert!(matches!(timed_out, DriverOutcome::Rejected(_)));
+    }
+}

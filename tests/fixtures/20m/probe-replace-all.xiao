@@ -1,0 +1,27 @@
+from stdlib.text import find, length, slice
+
+def probe_replace_all(str text, str needle, str replacement) -> str
+    needle_length = length(needle)
+    if needle_length == 0
+        return text
+    text_length = length(text)
+    cursor = 0
+    result = ""
+    while cursor <= text_length - needle_length
+        offset = find(slice(text, cursor, text_length), needle)
+        if offset < 0
+            break
+        match = cursor + offset
+        result = result + slice(text, cursor, match) + replacement
+        cursor = match + needle_length
+    return result + slice(text, cursor, text_length)
+
+print("[" + probe_replace_all("", "x", "y") + "]")
+print("[" + probe_replace_all("小😀", "", "x") + "]")
+print("[" + probe_replace_all("aaaaa", "aa", "b") + "]")
+print("[" + probe_replace_all("aaa", "a", "aa") + "]")
+print("[" + probe_replace_all("abab", "ab", "") + "]")
+print("[" + probe_replace_all("小😀小😀", "小😀", "雪") + "]")
+print("[" + probe_replace_all("abc", "long", "x") + "]")
+print("[" + probe_replace_all("abc", "z", "x") + "]")
+print("[" + probe_replace_all("ababa", "aba", "x") + "]")

@@ -1,0 +1,40 @@
+# B1 整数数组统计：预算先于归约，输入只读。
+
+def sum([int] values) -> int
+    count = 0
+    for value in values
+        count = count + 1
+        if count > 65536
+            raise ResourceError(code = "STATISTICS_LIMIT_EXCEEDED")
+    result = 0
+    for value in values
+        result = result + value
+    return result
+
+def min([int] values) -> int
+    count = 0
+    for value in values
+        count = count + 1
+        if count > 65536
+            raise ResourceError(code = "STATISTICS_LIMIT_EXCEEDED")
+    if count == 0
+        raise Error(code = "STATISTICS_EMPTY")
+    result = values[0]
+    for value in values
+        if value < result
+            result = value
+    return result
+
+def max([int] values) -> int
+    count = 0
+    for value in values
+        count = count + 1
+        if count > 65536
+            raise ResourceError(code = "STATISTICS_LIMIT_EXCEEDED")
+    if count == 0
+        raise Error(code = "STATISTICS_EMPTY")
+    result = values[0]
+    for value in values
+        if value > result
+            result = value
+    return result

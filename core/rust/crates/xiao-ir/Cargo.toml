@@ -1,0 +1,26 @@
+[package]
+name = "xiao-ir"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Typed Xiao intermediate representation"
+
+[lints]
+workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+xiao-intrinsics = { path = "../xiao-intrinsics" }
+xiao-diagnostics = { path = "../xiao-diagnostics" }
+xiao-source = { path = "../xiao-source" }
+xiao-syntax = { path = "../xiao-syntax" }
+xiao-types = { path = "../xiao-types" }
+xiao-lifetime = { path = "../xiao-lifetime" }
+xiao-runtime-abi = { path = "../xiao-runtime-abi" }
+xiao-modules = { path = "../xiao-modules" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

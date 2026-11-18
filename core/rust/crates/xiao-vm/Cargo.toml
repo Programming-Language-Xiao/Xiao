@@ -1,0 +1,32 @@
+[package]
+name = "xiao-vm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Xiao Rust bytecode virtual machine"
+
+[lints]
+workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+xiao-bytecode = { path = "../xiao-bytecode" }
+xiao-ir = { path = "../xiao-ir" }
+xiao-diagnostics = { path = "../xiao-diagnostics" }
+xiao-intrinsics = { path = "../xiao-intrinsics" }
+xiao-lifetime = { path = "../xiao-lifetime" }
+xiao-runtime = { path = "../xiao-runtime" }
+xiao-types = { path = "../xiao-types" }
+xiao-syntax = { path = "../xiao-syntax" }
+xiao-source = { path = "../xiao-source" }
+xiao-standard-library = { path = "../xiao-standard-library" }
+
+[dev-dependencies]
+xiao-ir = { path = "../xiao-ir" }
+xiao-driver = { path = "../xiao-driver" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

@@ -1,0 +1,12 @@
+int_value = 42
+sint_value = sint(42)
+lint lint_value = 42
+int_as_text = int_value as str
+int_call_text = str(int_value)
+sint_as_text = sint_value as str
+sint_call_text = str(sint_value)
+lint_as_text = lint_value as str
+lint_call_text = str(lint_value)
+dynamic_values = [int_value, "fallback"]
+dynamic_text = str(dynamic_values[0])
+print(int_as_text + ":" + int_call_text + ":" + sint_as_text + ":" + sint_call_text + ":" + lint_as_text + ":" + lint_call_text + ":" + dynamic_text)

@@ -1,0 +1,99 @@
+# `xiao-driver` 测试
+
+`20o_b1_probe.rs` 在既有两个精确目标中执行 B0 七项、FIX-A 七项与 FIX-B 七个完整源码。
+FIX-B 原生各跑 O0/O3，并在仅测试的链接 shim 下实跑成功/getter 失败/复制失败的临时
+引用恰好释放一次。默认测试另验静态诊断、三目标 LLVM 文本、VM 分配失败与结构化错误身份，
+以及 `.xiaoc`/`.xar` 的 ABI 1.18 接受和旧版本拒绝。B1-IMP 产品样例另经同一对精确目标执行，
+逐模块的公开导出、移除、归档、普通包隔离和教程一致性见 `20o_b1_imp_contract.rs`。
+
+产品名称与导出目录共用 `support/b1_imp.rs`；契约测试核对真实源码/registry 后，
+同一清单直接进入 VM/native 精确入口。fmt 产品夹具额外核对 MIN 的全部 2～36 进制，
+黄金独立于产品算法生成，教程仍逐字嵌入该完整样例。
+
+本目录覆盖 08-U0 统一前端入口，以及 09-B0-C/D 前端到生产 VM 驱动器、退出码和 X0-A 协议的公共契约。
+
+`20c_first_modules.rs` 另覆盖 B1-IMP 开工时发现的既有 `std.` 别名缺口：四种导入形态
+经 VM 与 `.xar` 重放使用同一 `stdlib.text` 身份；原生实跑选择导入和函数内导入，
+模块值/限定调用则配对核对规范路径的既有拒绝边界。未知模块仍在前端拒绝。
+
+`20o_b1_probe.rs` 执行 B0 七份完整示例与 `tests/fixtures/20o-b1/fix-a` 七项新边界，
+VM/native 各自逐字核对黄金输出，检查 planned 教程与执行文件一致；另存 CSV 嵌套签名和
+错误字段读取的真实边界。D-26 后默认与三平台原生各有独立 --exact 执行点，校验恰好
+一项通过，批量命令排除对应名字。探测不注册官方模块、不改 ABI。
+教程状态与对应 registry 一致，不固定 planned；planned→verified、正文伪造及重复字段有独立回归。
+计数判断的 28 个正反例由仓库脚本 `tools/gates/b1-probe-guards.ps1` 提取工作流直接复跑。
+范围、计数与逐平台证据见
+[20O-B1](../../../../../docs/DevDocs/20o-b1-freeze-draft.md)，历史结果见
+[20O-B0](../../../../../docs/DevDocs/20o-b0-baseline-and-b1-draft.md)。
+
+FIX-A 极值/字节/模式尾位/UTF-8/CSV 预算/MIN 全进制/统计溢出使用独立固定黄金，
+同名精确目标各包含 14 场景，仍各一条 Rust 测试。新增组 60 秒看门狗不是产品性能预算；
+CSV 大规模向量只证明 E 算术，初版全量扫描超时与未覆盖性能见
+[FIX-A 收口](../../../../../docs/DevDocs/20o-b1-fix-a-contract-closeout.md)。
+
+`22e_release.rs` 直接读取权威并发 UseDocs 的五个示例，覆盖 17 个入口；验证三类产物
+的最小位集、旧/新 Runtime 兼容和 32 位拒绝。三平台精确执行公开 NativeBuild、实际
+节读回、strip、损坏/旧元数据拒绝与 verify 发布报告。E-0 的首次 finally/helper
+取消差异有独立精确断言，不改 22D 原有 12/16/1 差分判据。
+
+`22c_vm_concurrency.rs` 覆盖真实源码的线程、任务池、共享锁、Runtime 身份、取消与
+清理、detached 错误、XCON 限制和 `.xiaoc`/`.xar` 执行前门禁。
+`22d_llvm_concurrency.rs` 覆盖同一 IR 的 LLVM 并发计划、trampoline、shared/lock 取消入口与 fail-closed。三个 ignored 门禁由三平台原生 job 逐一精确运行：根/局部别名及分组目标的真实 `llvm-as`、32B/16B C 布局对象探针、12 个成功/16 个运行时错误/1 个嵌套 detached 场景的 VM/native 差分。收尾源码位于 `concurrency_closure/`，覆盖 str/tuple/多参数、detach 成功、pool 030/032、多 Runtime、guard 作用域、四位置取消、finally/drop 一次、64 KiB 字节往返及 16 MiB + 1 启动前拒绝。稳定场景逐事件比较完整释放投影；detached 的独立打印对象可交换，取消握手比较稳定共享对象并确认守卫释放。覆盖层次和本批证据见 [22D §9.3](../../../../../docs/DevDocs/22d-llvm-concurrency-differential.md#93-22d-fix1-收尾矩阵与证据)。
+`u0_frontend.rs` 验证阶段顺序、诊断累积和成功/失败产物边界；`b0_c_driver.rs` 验证脚本与
+`[main]` 端到端运行、三段结构化失败、执行前拒绝和取消/超时边界。除 22D 明确标记的
+ignored 原生差分外，测试不接入 CLI 或 LLVM。
+
+`b0_d_exit_codes.rs` 验证五种终局的 `ExitCode` 映射、固定进程码、`catch` 消费错误的成功
+语义、Fatal 与 locale 中立性。测试仍通过真实前端和生产 VM 驱动器执行，不读取诊断文本来
+判断结果。
+
+`n0_a_native_driver.rs` 和 `n0_b_dynamic_native.rs` 是 LLVM/Runtime 外部工具链测试。它们
+使用 `#[ignore]` 门控：默认运行汇总明确列出环境依赖用例，显式执行
+`cargo test -p xiao-driver -- --ignored` 才会运行；显式运行必须提供
+`XIAO_CLANG` 和 `XIAO_TARGET_TRIPLE`；动态 Runtime 测试还需要
+`XIAO_LLVM_AS`、`XIAO_RUNTIME_LIBRARY`，并会用传入的 `rustc` 查询
+`native-static-libs`，再将清单传给 clang。缺少变量或 Runtime staticlib 时测试直接失败。
+Windows 原生准备方式见 `docs/DevDocs/10d-environment-gated-test-spec.md` §4。
+
+`x0_a_protocol.rs` 与 `tests/spec/11x0-protocol` 验证 Rust/TypeScript 共用的帧和消息样本；
+它们只检查机器字段，不解析人类可读诊断文本。
+
+10T 的 `d19a_differential.rs` 复用严格比较器验证表回调 O0–O3 与调试执行；macOS CI 显式跳过 GUI 执行、单独验证调试构建。
+`native_benchmark_probe.rs` 对 container-dense 追加入口并实跑 80 轮、对照 VM 的 28760；这不是性能取数。
+
+`20d_first_api.rs` 覆盖 `os` 首批资源 API 的 VM/原生差分、能力与错误身份、资源常量和
+容器边界。导入签名回归覆盖函数/模块别名、限定路径、括号与函数值复制，并检查局部遮蔽、
+赋值覆盖及 LLVM 既有拒绝边界；原生差分继续在受控工具链下显式执行。
+
+`20d_process_api.rs` 使用同一 `process_child_exit7`/`process_child_abort` 子程序验证等待缓存、
+信号/异常码、能力、资源类型及产物边界。隔离握手证明关闭和最后引用释放不等待或终止子进程，
+并验证 stdio、PATH、环境和 cwd 继承。四项原生 ignored 测试在三平台受控作业中执行；隔离子测试由父用例驱动。
+
+`20e_archive_wiring.rs` 通过真实前端产物和 `XarBuilder` 验证标准库版本、官方模块要求、
+能力并集和请求掩码。负例断言在模块加载、函数进入或输出之前拒绝；协议与中英消息目录
+使用同一错误身份，归档只包含应用对象。畸形索引的物理 ZIP 负例位于 `xiao-xar/src/tests.rs`。
+
+`20m_text_and_path.rs` 为九项候选保存真实源码与独立黄金值；七项保留接口另经公开加载器调用，
+覆盖 ASCII 六种空白、Unicode 保留、非重叠替换、非正重复次数与路径的 18 行冻结边界。
+函数别名及跨模块组合场景另补六行路径边界和 NUL 保留。每个新入口分别验证 VM 的模块级
+加载器缺失拒绝及 LLVM 的逐函数体移除拒绝；原生错误必须精确指向被删函数且带源码区间。
+真实 `.xar` 在删除应用源码后重放，核对精确官方模块要求和接口版本 1。
+两个原生 ignored 测试由三平台维护回归独立 `--exact` 运行，分别断言恰好一条通过，
+实际使用 `llvm-as`、同源 IR、黄金 stdout、退出码 0、空 stderr 和十秒执行限制。
+
+`18b_build_archive.rs` 覆盖 O0–O3 单文件、唯一 `[main]` 项目入口、本地多模块及显式资源、
+函数调用闭包的能力精度、调试对象、第三方拒绝、损坏缓存命中和锁文件只读边界。
+实际 `xiao-core` 进程在隔离 `XIAO_HOME` 中验证协议构建/运行、官方加载及 REPL 缓存隔离。
+
+`20o_b2_a_contract.rs`覆盖A5完整六类型矩阵、静态拒绝、值错误、三个既有VM载体与非法载荷恢复。`20o_b2_a_support/`将六份完整语言语料、资源/位置、真实归档重放和O0/O3清理差分追加到B1既有两个精确目标，保留B1/A1原场景和28/28守卫。新增教程范围继续planned；本批不作为A6性能成绩。
+
+`20o_b2_b4_cmath_vm.rs` 覆盖 B4-2B 的 15 项直接原语、生产 `.xiaoc`、三载体的数值位模式/错误、
+位置及逆序命名参数、畸形内部实参的002、decode后的009/span、O0～O3下未使用结果的catch与释放序列，
+并验证 Runtime ABI 挂起槽和失败时堆值强引用不变。内部 TAC 注入与合法源码执行分开记证，
+不单独证明 `std.cmath` 模块导入或 LLVM 接线；旧30条planned拒绝由B3-4/B4-2固定历史证据保留。
+
+B4-4将wrapper的30条双路径测试迁为实际执行；`20o_b2_b4_cmath_library.rs`使用共享源码与独立黄金，
+覆盖15项包装、类型/形参负例、逐函数体移除、模块/函数别名与同名导出、逆序命名求值、009错误、
+删除应用源码后的协议/驱动器 `.xiaoc` / `.xar` 重放，以及float负零的子VM/XCON承载。
+原生O0/O3精确目标要求显式Runtime/LLVM工具链，不属于默认环境；边界回归同时保留未知官方模块拒绝，
+不修改容器、XCON或Runtime布局。`22c_vm_concurrency.rs`仍为29项。

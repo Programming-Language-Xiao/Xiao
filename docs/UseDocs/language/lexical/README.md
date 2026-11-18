@@ -1,0 +1,32 @@
+# 源码位置与最小 Token
+
+本主题说明 Xiao 01 阶段已经验证的源码读取、位置标注、基础 Token、反引号名称、注释和缩进行为。
+
+## 适合谁
+
+面向第一次阅读 Xiao 前端行为的学习者，以及需要编写规格测试的贡献者。
+
+## 前置知识
+
+先完成[安装与平台准备](../../getting-started/installation/README.md)，并了解 UTF-8 文本和
+基本的行列位置概念。
+
+## 阅读顺序
+
+1. [源码位置](source-positions.md)：UTF-8、行列号和字节区间。
+2. [最小 Token 流](minimal-tokens.md)：标识符、整数、赋值、换行和 EOF。
+3. [基础字面量与运算符 Token](basic-tokens.md)：字符串、浮点、保留字、括号和最长运算符匹配。
+4. [反引号名称](backtick-identifiers.md)：Unicode 名称和转义。
+5. [注释与缩进](comments-and-indentation.md)：普通/文档注释、`INDENT`、`DEDENT` 和括号内换行。
+
+## 当前范围
+
+这些页面对应 Xiao 0.1 的 F0/L0/L1/L2 实现，只描述已经由规格快照验证的行为；本主题只覆盖词法层，
+完整语法见[语言指南](../README.md)，程序执行见[命令行参考](../../tooling/cli/README.md)。
+
+遇到非法字符时请参考[结构化诊断与词法错误](../../troubleshooting/diagnostics-structure.md)。
+
+## 下一步
+
+完成本主题后进入[基础变量与表达式](../basics/README.md)；完整词法和可执行语法会随后续
+版本逐步开放。

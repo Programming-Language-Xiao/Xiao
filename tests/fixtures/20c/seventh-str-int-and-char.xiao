@@ -1,0 +1,8 @@
+from stdlib.text import lower_ascii
+
+print(int("A"))
+print(sint("小"))
+print(lint("雪"))
+print(chr(97))
+print(chr(sint(128512)))
+print(lower_ascii("ABCxyz-Az-9小"))

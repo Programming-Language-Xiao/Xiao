@@ -1,0 +1,4 @@
+def read_at(str text, int index) -> str
+    return text[index]
+
+print(read_at("lib/core", 4))
