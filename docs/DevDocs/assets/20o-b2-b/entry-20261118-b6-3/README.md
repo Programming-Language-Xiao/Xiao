@@ -14,7 +14,9 @@
 
 ## 执行记录
 
-macOS 最终五项作业均通过。首轮回归重建了 Cargo 输出目录内的核心，触发产物身份检查。将 release 核心固定到独立目录后，第二轮的回归采集器漏计了 B1 的两个辅助夹具。Windows 和 Linux 的原始汇总也各保留两项同源误判。两条实际 Cargo 命令均退出 0，原始日志各有一项通过、零失败、零忽略。最终审计按夹具名和优化等级复算完整标记。[首轮 macOS](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44279794451)、[第二轮 macOS](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44281869728)、[最终 macOS](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44284131624)
+macOS 最终五项作业均通过。首轮回归重建了 Cargo 输出目录内的核心，触发产物身份检查。核心固定到独立目录后，第二轮采集规则仍只预期七个产品模块的标记，遇到别名和字符串索引两个辅助夹具的标记便误报失败。Windows、Linux 和第二轮 macOS 各有两项采集误判，相关 Cargo 命令均退出 0，各通过一项，零失败、零忽略。原始汇总保留。收口审计从原始日志复算 Windows 和 Linux 的结果。[首轮 macOS](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44279794451)、[第二轮 macOS](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44281869728)、[最终 macOS](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44284131624)
+
+采集入口已在 `8385893f` 修正，并由最终 macOS Runner 使用。`run.py` 逐一核对 VM 的九个夹具标记，以及原生 O0、O3 各自的九个标记。用当前采集器回放 Windows、Linux 和 macOS 第二轮、最终轮的八份原始日志，均直接判定通过。缺标记、重复标记、未知夹具及 Cargo 非零退出的八个派生反例均被拒绝。[采集入口](run.py)
 
 本地预检的采集器导入错误、产物身份变化和命名实参用例的试跑回执一并归档。该用例的正式黄金按已冻结的 `finally → drop → catch` 展开顺序核对。
 
