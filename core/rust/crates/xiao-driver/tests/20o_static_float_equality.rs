@@ -174,6 +174,17 @@ fn native_static_dynamic_comparisons_match_vm_o0_o3() {
                     )
                     .unwrap();
                 assert_eq!(built.module.text, module.text);
+                if !printed && case.name.starts_with("original-pow") {
+                    let composition = &built.artifact_runtime;
+                    assert_eq!(composition.declared_components, ["rc", "value"]);
+                    assert_eq!(composition.observed_components, ["rc", "value"]);
+                    println!(
+                        "FLOAT-EQUALITY-COMPONENTS {stem} verification={} declared={:?} observed={:?}",
+                        composition.verification.as_str(),
+                        composition.declared_components,
+                        composition.observed_components
+                    );
+                }
                 let output = Command::new(&built.executable).output().unwrap();
                 assert_eq!(
                     output.status.code(),
