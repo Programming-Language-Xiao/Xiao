@@ -1288,7 +1288,7 @@ fn normalized_components(components: &[String]) -> Vec<String> {
         .collect()
 }
 
-/// 按共享 ABI 符号归属映射组件；生成调用图和链接后观测使用同一映射。
+/// 将实际观察到的 ABI 符号映射到所属组件。
 pub(crate) fn components_for_symbols(symbols: &[String]) -> Vec<String> {
     let mut components = BTreeSet::new();
     for symbol in symbols {
@@ -1297,7 +1297,7 @@ pub(crate) fn components_for_symbols(symbols: &[String]) -> Vec<String> {
     components.into_iter().collect()
 }
 
-/// 从 main 可达函数和基本块中的 Runtime 符号推导组件，支持 LLVM br/switch/indirectbr。
+/// 从 main 可达的 LLVM 调用和这些调用的 Runtime 内部链接依赖推导组件。
 pub(crate) fn reachable_runtime_components(text: &str) -> Vec<String> {
     let mut blocks: BTreeMap<(&str, &str), Vec<&str>> = BTreeMap::new();
     let mut function = None;
@@ -1353,30 +1353,70 @@ pub(crate) fn reachable_runtime_components(text: &str) -> Vec<String> {
                         .next()
                         .unwrap_or("");
                     if symbol.starts_with("xiao_runtime_") {
-                        symbols.insert(symbol.to_owned());
+                        symbols.insert(symbol);
                     }
                     pending.push((symbol, "entry"));
                 }
             }
         }
     }
-    let mut components = components_for_symbols(&symbols.iter().cloned().collect::<Vec<_>>());
-    if symbols.iter().any(|symbol| {
-        matches!(
-            symbol.as_str(),
-            "xiao_runtime_value_copy"
-                | "xiao_runtime_value_release_any"
-                | "xiao_runtime_concurrency_call"
-                | "xiao_runtime_table_new_v2"
-                | "xiao_runtime_table_new_v2_with_args"
-                | "xiao_runtime_table_call"
-        )
-    }) {
-        components.push("weak".to_owned());
+    let mut components = BTreeSet::new();
+    let mut pending_symbols = symbols.iter().copied().collect::<Vec<_>>();
+    while let Some(symbol) = pending_symbols.pop() {
+        add_components_for_symbol(symbol, &mut components);
+        for &dependency in runtime_link_dependencies(symbol) {
+            if symbols.insert(dependency) {
+                pending_symbols.push(dependency);
+            }
+        }
     }
-    components.sort();
-    components.dedup();
-    components
+    components.into_iter().collect()
+}
+
+/// ABI 入口链接时带入的其他组件符号。链接后仍从实际符号表独立验证组件。
+fn runtime_link_dependencies(symbol: &str) -> &'static [&'static str] {
+    if symbol.starts_with("xiao_runtime_cmath_") {
+        // cmath 共享 write_value，输出槽原有的强值经 xiao_runtime_release 释放。
+        return &["xiao_runtime_release"];
+    }
+    match symbol {
+        // 拥有输出槽替换和持有句柄的构造路径会链接强引用释放。
+        "xiao_runtime_array_new"
+        | "xiao_runtime_dict_get"
+        | "xiao_runtime_dict_new"
+        | "xiao_runtime_dynamic_member_get"
+        | "xiao_runtime_error_take"
+        | "xiao_runtime_lfloat_divide"
+        | "xiao_runtime_set_new"
+        | "xiao_runtime_string_new"
+        | "xiao_runtime_table_get"
+        | "xiao_runtime_table_get_value"
+        | "xiao_runtime_table_new"
+        | "xiao_runtime_tuple_new"
+        | "xiao_runtime_value_binary"
+        | "xiao_runtime_value_cast"
+        | "xiao_runtime_value_chr"
+        | "xiao_runtime_value_dict_keys"
+        | "xiao_runtime_value_dict_values"
+        | "xiao_runtime_value_index_get_dynamic"
+        | "xiao_runtime_value_iter_get"
+        | "xiao_runtime_value_iter_snapshot"
+        | "xiao_runtime_value_select"
+        | "xiao_runtime_value_unary" => &["xiao_runtime_release"],
+        "xiao_runtime_value_copy"
+        | "xiao_runtime_value_release"
+        | "xiao_runtime_value_release_any" => &["xiao_runtime_weak_release"],
+        "xiao_runtime_concurrency_call" => &["xiao_runtime_concurrency_call_with_entry"],
+        "xiao_runtime_concurrency_call_with_entry" => &["xiao_runtime_value_release"],
+        "xiao_runtime_table_new_v2" => &["xiao_runtime_table_new_v2_with_args"],
+        "xiao_runtime_table_new_v2_with_args" => &[
+            "xiao_runtime_error_checkpoint_finish",
+            "xiao_runtime_release",
+            "xiao_runtime_weak_release",
+        ],
+        "xiao_runtime_table_call" => &["xiao_runtime_release", "xiao_runtime_weak_release"],
+        _ => &[],
+    }
 }
 
 /// 将一个 Runtime 符号登记到它所属的组件集合。
@@ -1385,6 +1425,7 @@ fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
         || symbol.starts_with("xiao_runtime_string_")
         || symbol.starts_with("xiao_runtime_error_")
         || symbol.starts_with("xiao_runtime_cmath_")
+        || symbol == "xiao_runtime_lfloat_divide"
         || symbol.starts_with("xiao_runtime_abi_")
         || symbol.starts_with("xiao_runtime_language_context_")
         || symbol.starts_with("xiao_runtime_fatal_")
@@ -1657,6 +1698,38 @@ entry:
             reachable_runtime_components(text),
             vec!["containers", "rc", "tables", "value", "weak"]
         );
+    }
+
+    /// ABI 依赖随可达调用登记，产物观测只使用实际符号。
+    #[test]
+    fn declares_link_dependencies_of_reachable_runtime_symbols() {
+        for (symbol, expected) in [
+            ("xiao_runtime_cmath_pow", &["rc", "value"][..]),
+            ("xiao_runtime_lfloat_divide", &["rc", "value"][..]),
+            ("xiao_runtime_array_new", &["containers", "rc"][..]),
+            (
+                "xiao_runtime_table_new_v2",
+                &["rc", "tables", "value", "weak"][..],
+            ),
+            (
+                "xiao_runtime_concurrency_call",
+                &["concurrency", "rc", "value", "weak"][..],
+            ),
+            ("xiao_runtime_error_raise_numeric", &["value"][..]),
+            ("no_runtime", &[][..]),
+        ] {
+            let text = format!(
+                "define i32 @main() {{\nentry:\n  call void @{symbol}()\n  ret i32 0\n\
+                 unused:\n  call void @xiao_runtime_table_new_v2()\n  ret i32 1\n}}\n\
+                 define void @unused() {{\nentry:\n  call void @xiao_runtime_cmath_pow()\n  ret void\n}}"
+            );
+            assert_eq!(reachable_runtime_components(&text), expected, "{symbol}");
+        }
+
+        for symbol in ["xiao_runtime_cmath_pow", "xiao_runtime_lfloat_divide"] {
+            assert_eq!(components_for_symbols(&[symbol.to_owned()]), ["value"]);
+            assert!(unclassified_runtime_symbols(&[symbol.to_owned()]).is_empty());
+        }
     }
 
     /// 未知 Runtime 符号不能静默丢失，诊断钩子则由独立字段记录。
