@@ -1,0 +1,180 @@
+{
+  "archive_read_only": true,
+  "cases": {
+    "changed_attempt_rehashed": {
+      "exit": 1,
+      "expected_reason": "CI 运行身份不符：44464422497",
+      "inputs": {
+        "changed_attempt_rehashed.zip": {
+          "bytes": 898541,
+          "sha256": "ee556517adb336f67746839111540f17d061ad1432b8b4b6eb59cfc1d57136dc"
+        },
+        "docs-check.zip": {
+          "bytes": 26493,
+          "sha256": "3175c5f37af7e8260944bdc15e9f734b91621a11ede69b675bf4302e28b4e873"
+        },
+        "summary.json": {
+          "bytes": 138912,
+          "sha256": "ecbeddc2a680bac1b9f24feb36c1d26285410339807e00dfc59e64b89c11203b"
+        }
+      },
+      "read_only": true,
+      "stderr_last_line": "ValueError: CI 运行身份不符：44464422497"
+    },
+    "changed_docs_commit": {
+      "exit": 1,
+      "expected_reason": "定稿门禁执行提交不符",
+      "inputs": {
+        "changed_docs_commit.zip": {
+          "bytes": 26433,
+          "sha256": "07f93e3d893fa9801287741f9b4da6ff538e151eac9649119b1ce9ff3ec2fa03"
+        },
+        "ci.zip": {
+          "bytes": 898618,
+          "sha256": "7fc75dc8c72fc8f12128e197d70872f44442b762dcf5c16b2cf024ddc43f59ef"
+        },
+        "summary.json": {
+          "bytes": 138912,
+          "sha256": "ecbeddc2a680bac1b9f24feb36c1d26285410339807e00dfc59e64b89c11203b"
+        }
+      },
+      "read_only": true,
+      "stderr_last_line": "ValueError: 定稿门禁执行提交不符"
+    },
+    "changed_docs_pid": {
+      "exit": 1,
+      "expected_reason": "归档与封存提交不符：docs-check.zip",
+      "inputs": {
+        "changed_docs_pid.zip": {
+          "bytes": 26449,
+          "sha256": "1613cb695a6695fcf1683f8e498c34a3f73db07fb117369a5a62afcac8b5c6f3"
+        },
+        "ci.zip": {
+          "bytes": 898618,
+          "sha256": "7fc75dc8c72fc8f12128e197d70872f44442b762dcf5c16b2cf024ddc43f59ef"
+        },
+        "summary.json": {
+          "bytes": 138912,
+          "sha256": "ecbeddc2a680bac1b9f24feb36c1d26285410339807e00dfc59e64b89c11203b"
+        }
+      },
+      "read_only": true,
+      "stderr_last_line": "ValueError: 归档与封存提交不符：docs-check.zip"
+    },
+    "changed_docs_raw_digest": {
+      "exit": 1,
+      "expected_reason": "定稿文档原始字节摘要不符：docs/DevDocs/README.md",
+      "inputs": {
+        "changed_docs_raw_digest.zip": {
+          "bytes": 26437,
+          "sha256": "eff7b5a6612338404b5017381720199dcd4eb32e93c25fa62a661c32a92f3797"
+        },
+        "ci.zip": {
+          "bytes": 898618,
+          "sha256": "7fc75dc8c72fc8f12128e197d70872f44442b762dcf5c16b2cf024ddc43f59ef"
+        },
+        "summary.json": {
+          "bytes": 138912,
+          "sha256": "ecbeddc2a680bac1b9f24feb36c1d26285410339807e00dfc59e64b89c11203b"
+        }
+      },
+      "read_only": true,
+      "stderr_last_line": "ValueError: 定稿文档原始字节摘要不符：docs/DevDocs/README.md"
+    },
+    "changed_job_log_rehashed": {
+      "exit": 1,
+      "expected_reason": "归档与封存提交不符：ci.zip",
+      "inputs": {
+        "changed_job_log_rehashed.zip": {
+          "bytes": 898607,
+          "sha256": "71e61ca1936fec32a1f254d0fd6d6fa5b6bca08616bad2a74450cd998b463879"
+        },
+        "docs-check.zip": {
+          "bytes": 26493,
+          "sha256": "3175c5f37af7e8260944bdc15e9f734b91621a11ede69b675bf4302e28b4e873"
+        },
+        "summary.json": {
+          "bytes": 138912,
+          "sha256": "ecbeddc2a680bac1b9f24feb36c1d26285410339807e00dfc59e64b89c11203b"
+        }
+      },
+      "read_only": true,
+      "stderr_last_line": "ValueError: 归档与封存提交不符：ci.zip"
+    },
+    "missing_object": {
+      "exit": 1,
+      "expected_reason": "证据包清单不符",
+      "inputs": {
+        "docs-check.zip": {
+          "bytes": 26493,
+          "sha256": "3175c5f37af7e8260944bdc15e9f734b91621a11ede69b675bf4302e28b4e873"
+        },
+        "missing_object.zip": {
+          "bytes": 896360,
+          "sha256": "ea6b6aff437cc40e5b44f5966f9d9924e9c39f9c1d6e937a1b234feacb58beaa"
+        },
+        "summary.json": {
+          "bytes": 138912,
+          "sha256": "ecbeddc2a680bac1b9f24feb36c1d26285410339807e00dfc59e64b89c11203b"
+        }
+      },
+      "read_only": true,
+      "stderr_last_line": "ValueError: 证据包清单不符"
+    },
+    "original": {
+      "exit": 0,
+      "expected_reason": null,
+      "inputs": {
+        "ci.zip": {
+          "bytes": 898618,
+          "sha256": "7fc75dc8c72fc8f12128e197d70872f44442b762dcf5c16b2cf024ddc43f59ef"
+        },
+        "docs-check.zip": {
+          "bytes": 26493,
+          "sha256": "3175c5f37af7e8260944bdc15e9f734b91621a11ede69b675bf4302e28b4e873"
+        },
+        "summary.json": {
+          "bytes": 138912,
+          "sha256": "ecbeddc2a680bac1b9f24feb36c1d26285410339807e00dfc59e64b89c11203b"
+        }
+      },
+      "read_only": true,
+      "stderr_last_line": null
+    },
+    "runtime_present_before_build": {
+      "exit": 1,
+      "expected_reason": "Runtime 不在本次构建目标目录，或构建前已存在：135358661593",
+      "inputs": {
+        "docs-check.zip": {
+          "bytes": 26493,
+          "sha256": "3175c5f37af7e8260944bdc15e9f734b91621a11ede69b675bf4302e28b4e873"
+        },
+        "runtime_present_before_build.zip": {
+          "bytes": 898566,
+          "sha256": "319a268b45dca9350175fae44eae8357ce4c28293d52d45ec9f8d0b94986aea9"
+        },
+        "summary.json": {
+          "bytes": 138912,
+          "sha256": "ecbeddc2a680bac1b9f24feb36c1d26285410339807e00dfc59e64b89c11203b"
+        }
+      },
+      "read_only": true,
+      "stderr_last_line": "ValueError: Runtime 不在本次构建目标目录，或构建前已存在：135358661593"
+    }
+  },
+  "original": {
+    "ci.zip": {
+      "bytes": 898618,
+      "sha256": "7fc75dc8c72fc8f12128e197d70872f44442b762dcf5c16b2cf024ddc43f59ef"
+    },
+    "docs-check.zip": {
+      "bytes": 26493,
+      "sha256": "3175c5f37af7e8260944bdc15e9f734b91621a11ede69b675bf4302e28b4e873"
+    },
+    "summary.json": {
+      "bytes": 138912,
+      "sha256": "ecbeddc2a680bac1b9f24feb36c1d26285410339807e00dfc59e64b89c11203b"
+    }
+  },
+  "passed": true
+}

@@ -2,9 +2,10 @@
 
 import argparse
 from collections import Counter
+from io import BytesIO
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import re
 import shutil
 import sys
@@ -26,6 +27,8 @@ FIRST = "5758aa51dd54b30d62fb450b8518c3f92e336909"
 RERUN = "97d5f288117d496706d24d5aac304b3c122c6d62"
 FIRST_SUPPLEMENT = "9ea348f4ab0dee4fda2b2ee86086bb05df4f3f47"
 SUPPLEMENT = "907c4cb35cee1abc70fc5a93943a0e46610ac44d"
+CLOSEOUT = "0af1575b9612597a44621477c1610da09814b9c0"
+DOCS_SEAL = "e154b9e75d16c42ff83ef3e06be247a89c1e6cff"
 WORKSPACE = ".github/workflows/workspace-gates.yml"
 MAINTENANCE = ".github/workflows/maintenance-regression.yml"
 EXACT = ".github/workflows/b2-b6-b1-supplement.yml"
@@ -48,6 +51,11 @@ B1 = {
     "macos": (44470256490, 135377693561, "B6-4 B1 native exact (macos)"),
 }
 HISTORICAL_RUST = {135368808231: "1.100.0", 135368808627: "1.99.1"}
+RUNNER_TARGETS = {
+    "ubuntu-24.04": ("Linux", "X64", "x86_64-unknown-linux-gnu"),
+    "macos-15": ("macOS", "ARM64", "aarch64-apple-darwin"),
+    "windows-2025": ("Windows", "X64", "x86_64-pc-windows-msvc"),
+}
 LOCKS = ("core/rust/Cargo.lock", "tests/benchmarks/Cargo.lock")
 PROTECTED = (
     ".gitattributes", ".cargo", "LICENSE", "core", "stdlib", "tests", "tools", "cli", "resources",
@@ -77,6 +85,10 @@ RELEASE_ERROR = "native-lock-wait-027: 稳定共享对象释放顺序"
 
 def blob(commit, path):
     return git("show", f"{commit}:{path}")
+
+
+def verify_sealed_archive(raw, name, commit):
+    require(raw == blob(commit, f"{RECIPE}/{name}"), f"归档与封存提交不符：{name}")
 
 
 def source_identity():
@@ -137,12 +149,16 @@ def observed_identity(log, run, job_row):
     head = run["head_sha"]
     devdocs = git("rev-parse", f"{head}:docs/DevDocs").decode().strip()
     tree = git("cat-file", "-p", head).decode().splitlines()[0].removeprefix("tree ")
+    labels = job_row["labels"]
+    require(len(labels) == 1 and labels[0] in RUNNER_TARGETS, f"Runner 标签不符：{job_row['id']}")
+    runner_os, runner_arch, target = RUNNER_TARGETS[labels[0]]
     for row in values.values():
         context = row["context"]
         require(context["GITHUB_SHA"] == head and context["GITHUB_RUN_ID"] == str(run["id"])
                 and context["GITHUB_RUN_ATTEMPT"] == "1" and context["GITHUB_EVENT_NAME"] == run["event"]
                 and context["GITHUB_REF"] == f"refs/heads/{run['head_branch']}"
-                and context["RUNNER_OS"] and context["RUNNER_ARCH"] and context["ImageVersion"],
+                and (context["RUNNER_OS"], context["RUNNER_ARCH"]) == (runner_os, runner_arch)
+                and context["ImageVersion"],
                 f"Runner 上下文不符：{job_row['id']}")
         if run["path"] != WORKSPACE:
             require(context["XIAO_B1_F10"] == context["XIAO_B2_A_PERF"] == "0",
@@ -160,6 +176,7 @@ def observed_identity(log, run, job_row):
     rust_version = HISTORICAL_RUST.get(job_row["id"], "1.96.0")
     require(before["locks"] == after["locks"] and before["cargo_target_dir"] == after["cargo_target_dir"]
             and before["rustc"].startswith(f"rustc {rust_version} ")
+            and f"host: {target}" in before["rustc"].splitlines()
             and "xiao-controlled-cargo-" in before["controlled_cargo"],
             f"锁、目标目录或 Cargo 工具身份不符：{job_row['id']}")
     checked_file(before["cargo_delegate"])
@@ -168,7 +185,13 @@ def observed_identity(log, run, job_row):
             f"Runtime 身份回执缺少或阶段不符：{job_row['id']}")
     if "native" in values:
         native = values["native"]
-        require(native["runtime"] == after["runtime"] and f"host: {native['target']}\n" in before["rustc"]
+        path_type = PureWindowsPath if runner_os == "Windows" else PurePosixPath
+        library = "xiao_runtime.lib" if runner_os == "Windows" else "libxiao_runtime.a"
+        target_dir = path_type(before["cargo_target_dir"])
+        require(before["runtime"] is None and target_dir.is_absolute()
+                and path_type(native["runtime"]["path"]) == target_dir / "release" / library,
+                f"Runtime 不在本次构建目标目录，或构建前已存在：{job_row['id']}")
+        require(native["runtime"] == after["runtime"] and native["target"] == target
                 and set(native["llvm"]) == {"XIAO_CLANG", "XIAO_LLC", "XIAO_LLVM_AS", "XIAO_STRIP"},
                 f"Runtime 或工具目标不符：{job_row['id']}")
         checked_file(native["runtime"])
@@ -463,19 +486,22 @@ def capture_ci(source, archive, bash, replay_root):
     collect(archive, [(f"ci/{run}", source / str(run)) for run in RUNS] + [("guards", replay_root)])
 
 
-def audit_ci(archive):
-    with ZipFile(archive) as zipped:
+def audit_ci(archive, *, sealed=True):
+    raw = archive.read_bytes()
+    with ZipFile(BytesIO(raw)) as zipped:
         bundle = Evidence(zipped)
         reports, observed = inspect_ci(bundle.raw)
         guards = audit_guards(bundle, b1_sources(observed), guard_bodies())
-        return {"verified": True, "b6_4_passed": False, "b6_5_started": False,
-                "source": source_identity(), "runs": reports,
-                "archive": digest(archive.read_bytes()) | {"files": len(bundle.entries), "unique_objects": bundle.unique},
-                "engineering": engineering(observed), "native_maintenance": native_failures(observed),
-                "guard_replay": guards, "b6_1": {"status": "restricted", "stage_passed": False,
-                "windows_coff": "unverifiable", "linux_clippy": "not_run"},
-                "b6_2_performance_commit": "79ea0375d7f2d823a5bdde73cb2c9a1c33c3e4c3",
-                "b6_3_boundary_commit": PRODUCT}
+        archive_identity = digest(raw) | {"files": len(bundle.entries), "unique_objects": bundle.unique}
+    if sealed:
+        verify_sealed_archive(raw, "ci.zip", CLOSEOUT)
+    return {"verified": True, "b6_4_passed": False, "b6_5_started": False,
+            "source": source_identity(), "runs": reports, "archive": archive_identity,
+            "engineering": engineering(observed), "native_maintenance": native_failures(observed),
+            "guard_replay": guards, "b6_1": {"status": "restricted", "stage_passed": False,
+            "windows_coff": "unverifiable", "linux_clippy": "not_run"},
+            "b6_2_performance_commit": "79ea0375d7f2d823a5bdde73cb2c9a1c33c3e4c3",
+            "b6_3_boundary_commit": PRODUCT}
 
 
 def docs_bytes(raw):
@@ -500,8 +526,9 @@ def capture_docs(task, archive):
     require(receipt["exit"] == 0 and before == after and clean_after, "定稿门禁失败或检出内容发生变化")
 
 
-def audit_docs(archive):
-    with ZipFile(archive) as zipped:
+def audit_docs(archive, *, sealed=True):
+    raw = archive.read_bytes()
+    with ZipFile(BytesIO(raw)) as zipped:
         bundle = Evidence(zipped)
         sources = bundle.read("docs/docs-source.json")
         require(sources["checkout_unchanged"] is True
@@ -509,9 +536,14 @@ def audit_docs(archive):
                 "定稿文档证据范围或前后摘要不符")
         commit = sources["commit"]
         require(re.fullmatch("[0-9a-f]{40}", commit), "定稿 Git 提交无效")
+        if sealed:
+            require(commit == CLOSEOUT, "定稿门禁执行提交不符")
         for path, info in sources["before"].items():
-            require(info["utf8_lf"] == docs_bytes(blob(commit, path))["utf8_lf"],
+            fixed = blob(commit, path).replace(b"\r\n", b"\n")
+            require(info["utf8_lf"] == digest(fixed),
                     f"定稿文档未与固定 Git 对象绑定：{path}")
+            require(info["raw"] in (digest(fixed), digest(fixed.replace(b"\n", b"\r\n"))),
+                    f"定稿文档原始字节摘要不符：{path}")
         receipt, stdin, stdout, stderr = bundle.command("docs", "repo-check", "windows")
         report = json.loads(stdout)
         warnings = Counter(row["code"] for row in report["diagnostics"] if row["severity"] == "warning")
@@ -519,7 +551,9 @@ def audit_docs(archive):
                 and receipt["exit"] == 0 and not stdin and not stderr and report["checker"] == "xiao-repo-check"
                 and report["passed"] is True and set(warnings) <= {"A0-COVERAGE-002"}
                 and all(row["severity"] == "warning" for row in report["diagnostics"]), "定稿门禁结果不符")
-        return {"commit": commit, "exit": receipt["exit"], "diagnostics": dict(warnings), "docs_files": len(DOCS)}
+    if sealed:
+        verify_sealed_archive(raw, "docs-check.zip", DOCS_SEAL)
+    return {"commit": commit, "exit": receipt["exit"], "diagnostics": dict(warnings), "docs_files": len(DOCS)}
 
 
 def main():
@@ -535,16 +569,21 @@ def main():
     args = parser.parse_args()
     if args.capture_ci:
         require(args.bash and args.replay_root and not args.capture_docs, "采集 CI 须明确 Bash 与独立回放目录")
+        require(not args.archive.exists() and not args.summary.exists(), "采集 CI 须使用新归档与汇总路径")
         capture_ci(args.capture_ci, args.archive, args.bash.resolve(strict=True), args.replay_root.resolve())
-        write_json(args.summary, json.loads(json.dumps(audit_ci(args.archive))))
+    result = audit_ci(args.archive, sealed=args.capture_ci is None)
+    expected_summary = json.loads(json.dumps(result))
+    if args.capture_ci:
+        write_json(args.summary, expected_summary)
+    else:
+        require(expected_summary == json.loads(args.summary.read_bytes()), "公开汇总与原始回执不符")
     if args.capture_docs:
+        require(not args.docs.exists(), "采集定稿门禁须使用新归档路径")
         capture_docs(args.capture_docs.resolve(), args.docs)
-    result = audit_ci(args.archive)
-    require(json.loads(json.dumps(result)) == json.loads(args.summary.read_bytes()), "公开汇总与原始回执不符")
     outcome = {key: result[key] for key in ("verified", "b6_4_passed", "archive", "engineering", "native_maintenance")}
     outcome["guard_replay"] = {key: result["guard_replay"][key] for key in ("passed", "actual", "derived")}
-    if not args.ci_only:
-        outcome["final_docs"] = audit_docs(args.docs)
+    if args.capture_docs or not args.ci_only:
+        outcome["final_docs"] = audit_docs(args.docs, sealed=args.capture_docs is None)
     print(json.dumps(outcome, ensure_ascii=False))
 
 

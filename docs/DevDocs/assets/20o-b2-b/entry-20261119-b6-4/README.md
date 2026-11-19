@@ -22,15 +22,17 @@ Linux 默认维护作业通过了 28 项模拟输入守卫。另从同一作业�
 
 ## 只读复核
 
-[原始归档](ci.zip) 保存 6 次运行、18 个作业的 GitHub API 回执与日志，以及 28 次守卫回放的输入和进程回执。包内 `evidence.json` 将 198 个逻辑路径映射到 100 个 SHA-256 对象。实际检出包含 DevDocs 树身份，锁记录含检出字节的摘要。原生执行回执保存 Runtime、工具与适用的诊断组件摘要。临时测试产物只保留日志中实际观测到的路径和结果。
+原始归档保存 6 次运行、18 个作业的 GitHub API 回执与日志，以及 28 次守卫回放的输入和进程回执。包内 `evidence.json` 将 198 个逻辑路径映射到 100 个 SHA-256 对象。作业回执记录 DevDocs 检出树、锁文件字节、Runtime、工具及适用的诊断组件摘要。[原始归档](ci.zip)
 
-在仓库根运行复核。新检出先获取两个 Runner 分支的固定对象。复核读取已归档日志与定稿门禁回执，结果中的 `verified` 表示证据对账通过，阶段结论以 `b6_4_passed=false` 为准。
+三平台临时测试可执行文件的字节身份为 `unverifiable`。原生日志保留用例结果与部分产物路径。维护复跑和固定工具链的 B1 补验均无上传产物。[维护复跑](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44464422497) · [固定工具链补验](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44470256490)
+
+在仓库根运行复核。新检出先获取两个 Runner 分支的固定对象。审计逐字节对照 `0af1575b` 封存的 CI 归档与 `e154b9e7` 封存的文档门禁归档，并核对涉及 Runtime 的作业的 Runner 平台、目标三元组和构建前后记录。结果中的 `verified` 表示证据对账通过。阶段结论为 `b6_4_passed=false`。
 
 ```powershell
 cmd /c git fetch origin codex/b6-4-gates-runner codex/b6-4-b1-runner
 python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/evidence.py
 ```
 
-可按 `gh api repos/Programming-Language-Xiao/Xiao/actions/runs/<run>/attempts/1` 和同路径下的 `jobs` 下载运行及作业回执，再按 `gh api repos/Programming-Language-Xiao/Xiao/actions/jobs/<job>/logs` 下载作业日志。归档里的 `ci/<run>/` 保留这三类响应的文件映射。最终文档门禁的 `docs-check.zip` 保存命令、PID、输出和本批八份 DevDocs 文档的运行前后摘要。
+可按 `gh api repos/Programming-Language-Xiao/Xiao/actions/runs/<run>/attempts/1` 和同路径下的 `jobs` 下载运行及作业回执，再按 `gh api repos/Programming-Language-Xiao/Xiao/actions/jobs/<job>/logs` 下载作业日志。归档里的 `ci/<run>/` 保留这三类响应的文件映射。文档门禁于 `0af1575b` 执行，回执包含命令、PID、原始输出和当时八份 DevDocs 文档的原始字节及 UTF-8/LF 摘要。[定稿门禁回执](docs-check.zip)
 
-自审在临时副本上核对原样归档、对象缺失和重算摘要后的尝试编号替换。逐项核对退出码、实际拒绝文本及归档字节。[反例回执](negative-cases.json)
+自审复跑了原样归档及七项反例，覆盖对象缺失、尝试编号与日志改写、构建前已有 Runtime、文档门禁执行提交、原始字节摘要与进程回执不符。复核逐项核对退出码、实际拒绝文本和输入字节。[首轮反例](negative-cases.json) · [本轮反例](review-negative-cases.json)
