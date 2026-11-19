@@ -152,4 +152,4 @@ cargo +1.96.0 build --locked --manifest-path core/rust/Cargo.toml --release -p x
 cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-codegen-llvm --lib -- --ignored --exact artifact::link_tests::runtime_components_match_release_archive_exports --nocapture
 ```
 
-本机 Linux x86_64 使用 LLVM 21.1.8 对账 164 个导出，结果通过。该实测覆盖 ELF，macOS 和 Windows 的产物验证按各自运行记录引用。
+2026-11-20，固定 `780398e5` 在本机 Linux x86_64 使用 Rust 1.96.0 与 LLVM 21.1.8 重建 release Runtime，164 个 ABI 导出逐符号链接对账通过。补验归档保存原始标记 `RUNTIME-COMPONENTS exports=164 target=x86_64-unknown-linux-gnu result=passed`、命令、源码和构建身份。macOS 与 Windows 的产物验证按各自运行记录引用。[补验归档](assets/20o-b2-b/entry-20261119-b6-4-followup/local-checks.zip) · [复核入口](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md#只读复核)

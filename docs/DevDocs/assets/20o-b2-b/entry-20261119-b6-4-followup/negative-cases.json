@@ -24,6 +24,20 @@
       "expected": "Runner 浮点矩阵不符：macOS",
       "observed": "ValueError: Runner 浮点矩阵不符：macOS",
       "read_only": true
+    },
+    {
+      "case": "forged-stage-pass",
+      "exit": 1,
+      "expected": "B6-4 交接状态不符",
+      "observed": "ValueError: B6-4 交接状态不符",
+      "read_only": true
+    },
+    {
+      "case": "forged-windows-coff",
+      "exit": 1,
+      "expected": "B6-4 交接状态不符",
+      "observed": "ValueError: B6-4 交接状态不符",
+      "read_only": true
     }
   ]
 }

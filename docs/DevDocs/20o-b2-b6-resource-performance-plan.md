@@ -19,7 +19,7 @@
 | B6-1 | `restricted`，`stage_passed=false`。三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 未执行 |
 | B6-2 | 固定`79ea0375`，三平台各测VM、O0、O3，每组183项通过，`perf_pass=true` |
 | B6-3 | `58176ff5` 三平台边界验收通过，765 次语言执行，C ABI 每平台 11 项，计数守卫 28/28。[实测证据](assets/20o-b2-b/entry-20261118-b6-3/README.md) |
-| B6-4 | 受限交接。`b6_4_passed=false`，`original_passed=false`，`followup_passed=true`，`22d_open=true`。修复后的 `e1191445` 通过 Linux 工程门禁和三平台原生维护，Windows COFF 导出完整性未验证。[原执行证据](assets/20o-b2-b/entry-20261119-b6-4/README.md) · [后续证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md) |
+| B6-4 | 受限交接。`b6_4_passed=false`，`original_passed=false`，`followup_passed=true`，`windows_coff_verified=false`，`22d_open=true`。修复后的 `e1191445` 通过 Linux 工程门禁和三平台原生功能复验，Windows COFF 导出完整性未验证。[原执行证据](assets/20o-b2-b/entry-20261119-b6-4/README.md) · [后续证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md) |
 | 后续批次 | B6-5 收口，对账 B6-4 原始失败、后续修复和复跑结果 |
 | 测量入口版本/工具链 | 当前快照ABI1.19/生成器22/接口1；同时引用B5固定1.19/21拒绝/缓存矩阵与静态比较21→22增量证据。intrinsic1～48、Rust1.96.0与Cargo `--locked`；每轮测量固定源码/Runtime工具身份，优化后另建快照并重测受影响项 |
 | 本批目标 | cmath/lfloat 资源/错误/原子性、VM/原生三平台性能与 CI 证据 |
@@ -188,7 +188,7 @@ B6-2使用`tools/gates/b2_b6_performance.py`从同一固定源码重建三平台
 ### B6-5：收口与 B7 交接
 
 1. 汇总资源、错误、原子性、性能与 CI。B6-1 单列 `restricted`、`stage_passed=false`、三平台功能通过、Windows COFF 导出完整性未验证、Linux Clippy 未执行，并登记 B6-2 的开工裁定。
-2. 分平台记录执行、未执行和失败样本。B6-4 按 `b6_4_passed=false`、`original_passed=false`、`followup_passed=true`、`22d_open=true` 受限交接，B7 接收 22D 间歇性释放差分未关闭的记录。[B6-4 交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json)
+2. 分平台记录执行、未执行和失败样本。B6-4 按 `b6_4_passed=false`、`original_passed=false`、`followup_passed=true`、`windows_coff_verified=false`、`22d_open=true` 受限交接，B7 接收 22D 间歇性释放差分未关闭的记录。[B6-4 交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json)
 3. 复核 cmath 语义、ABI、registry 与教程边界。对照生产差异和语言拒绝回执，确认 `Vm::with_module_loader` 与 `xiao_driver::standard_library_module_loader` 仅在 Rust 宿主层公开。[Rust API 边界](assets/20o-b2-b/entry-20261118-b6-2/review/README.md)
 4. 复核旧721未跑、历史债务未核销；
 5. 在 B6 最终源码上运行完整 workspace gates：`cargo +1.96.0 test --manifest-path core/rust/Cargo.toml --workspace --locked`、`cargo +1.96.0 clippy --manifest-path core/rust/Cargo.toml --workspace --all-targets --locked -- -D warnings`、`cargo +1.96.0 fmt --manifest-path core/rust/Cargo.toml --all -- --check`、`bun run check:lock`、`bun tools/repo-check/src/cli.ts all`；最大负载由独立 release 测量入口执行，不塞入默认 debug 测试；

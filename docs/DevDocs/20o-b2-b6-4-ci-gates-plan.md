@@ -1,6 +1,6 @@
 # 20O-B2-B6-4. 三平台与 CI 工程门禁实施规划
 
-> **2026-11-19，B6-4 受限交接，正式结果 `b6_4_passed=false`。** `original_passed=false`，`followup_passed=true`，`22d_open=true`。修复快照的三平台原生维护及 Linux 工程门禁通过。Windows 22D 的三处间歇性释放差分待归因。B6-5 尚未开始。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) · [修复及复跑证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
+> **2026-11-19，B6-4 受限交接，正式结果 `b6_4_passed=false`。** `original_passed=false`，`followup_passed=true`，`windows_coff_verified=false`，`22d_open=true`。修复快照的三平台功能和 Linux 工程门禁通过，Windows COFF 导出完整性未验证。Windows 22D 的三处间歇性释放差分待归因。B6-5 尚未开始。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) · [修复及复跑证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
 > 入口：B6-3 固定 `58176ff5` 的三平台边界证据（765 次语言执行、C ABI 11 项、B1 契约 9/9 与资源 18/18、B4 回归、4 条真实输出加 24 条派生负例）；B6-2 性能绑定 `79ea0375` 及其 source-boundary 证明；B6-1 仍为 `restricted/stage_passed=false`。
 > B6-4 只做三平台执行、CI 与工程门禁证据；不重跑 B6-2 性能、不重跑 B6-3 全边界、不跑 721、不改产品/工作流阈值/ABI/registry。
 > B6-1 的 Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-4 的 Linux workspace Clippy 已通过。
@@ -155,7 +155,7 @@ B4 在 `9d75ab1a` 按手工维护的 ABI 依赖表展开可达入口的组件。
 
 ## 七、交接
 
-B6-5 按 `b6_4_passed=false`、`original_passed=false`、`followup_passed=true`、`22d_open=true` 接收 B6-4，并将 22D 间歇性释放差分未关闭的状态交接 B7。B6-1 按 `restricted` 引用，B6-2 性能绑定 `79ea0375`，B6-3 边界绑定 `58176ff5`。原 B6-4 门禁绑定 `97d5f288`，B1 补验绑定 `907c4cb3`，组件修复后复验绑定 `e1191445`。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json)
+B6-5 按 `b6_4_passed=false`、`original_passed=false`、`followup_passed=true`、`windows_coff_verified=false`、`22d_open=true` 接收 B6-4，并将 22D 间歇性释放差分未关闭的状态交接 B7。B6-1 按 `restricted` 引用，B6-2 性能绑定 `79ea0375`，B6-3 边界绑定 `58176ff5`。原 B6-4 门禁绑定 `97d5f288`，B1 补验绑定 `907c4cb3`，组件修复后 CI 复验绑定 `e1191445`。Linux 164 个导出的对账与 Windows 定向 Clippy 补验绑定 `780398e5`。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) · [本机补验归档](assets/20o-b2-b/entry-20261119-b6-4-followup/local-checks.zip)
 
 新 Agent 先读：
 

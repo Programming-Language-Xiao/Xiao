@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT.with_name("entry-20261119-b6-4")))
 
 from evidence import CLOSEOUT, COMPONENT_ERROR, LOCKS, MAINTENANCE, PRODUCT, PROTECTED, RERUN, WORKSPACE
 from evidence import Evidence, blob, clean_log, digest, git, observed_identity, require
+from local_checks import verify_local_checks
 
 
 FIX = "9d75ab1a73e96a37ba4f9675064817b690eaa117"
@@ -203,29 +204,54 @@ def verify_engineering(bundle):
         observed_identity(log, run, job)
         require(run["conclusion"] == job["conclusion"] == "success" and all(marker in log for marker in markers),
                 f"工程门禁作业不符：{job_id}")
+    return True
+
+
+def derive_status(original_passed, fix_runner, engineering_passed, release_differential_open):
+    windows = fix_runner["Windows"]
+    followup_passed = (
+        engineering_passed
+        and all(fix_runner[host]["conclusion"] == "success" and fix_runner[host]["verification"] == "complete"
+                for host in ("Linux", "macOS"))
+        and windows["conclusion"] == "success"
+        and windows["verification"] in ("complete", "unverified-coff-exports")
+    )
+    return {
+        "b6_4_passed": original_passed and followup_passed and not release_differential_open,
+        "original_passed": original_passed,
+        "followup_passed": followup_passed,
+        "windows_coff_verified": windows["verification"] == "complete",
+        "22d_open": release_differential_open,
+    }
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--archive", type=Path, default=ROOT / "followup.zip")
+    parser.add_argument("--status", type=Path, default=ROOT / "status.json")
     args = parser.parse_args()
     with ZipFile(args.archive) as archive:
         bundle = Evidence(archive)
         verify_source(bundle)
         verify_linux(bundle)
         local_windows = verify_local_windows(bundle)
-        verify_engineering(bundle)
+        engineering_passed = verify_engineering(bundle)
         fix_runner = verify_fix_runner(bundle)
         original_windows = verify_runner_windows(bundle)
         original_passed = json.loads(blob(CLOSEOUT, f"{ORIGINAL_EVIDENCE}/summary.json"))["b6_4_passed"]
-        status = {"b6_4_passed": original_passed, "original_passed": original_passed,
-                  "followup_passed": all(job["conclusion"] == "success" for job in fix_runner.values()),
-                  "22d_open": True}
-        require(json.loads((ROOT / "status.json").read_text(encoding="utf-8")) == status, "B6-4 交接状态不符")
+        release_differential_open = local_windows["failed_before_fixture"] > 0 or any(
+            row["case"] == "failed" for row in original_windows
+        )
+        status = derive_status(original_passed, fix_runner, engineering_passed, release_differential_open)
+        recorded_status = json.loads(args.status.read_text(encoding="utf-8"))
+        require(recorded_status == status and all(isinstance(value, bool) for value in recorded_status.values()),
+                "B6-4 交接状态不符")
+        local_checks = verify_local_checks(ROOT / "local-checks.zip")
         print(json.dumps({"verified": True, "files": len(bundle.entries), "objects": bundle.unique,
                           **status, "fix_runner": fix_runner, "original_windows": original_windows,
                           "local_windows_full": local_windows,
-                          "local_windows_single_passed": 25, "engineering_passed": True}, ensure_ascii=False))
+                          "local_windows_single_passed": 25, "engineering_passed": engineering_passed,
+                          "local_checks": local_checks}, ensure_ascii=False))
 
 
 if __name__ == "__main__":
