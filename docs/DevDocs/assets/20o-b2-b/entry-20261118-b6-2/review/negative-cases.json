@@ -1,0 +1,151 @@
+{
+  "archive_read_only": true,
+  "cases": {
+    "altered_object": {
+      "archive": {
+        "bytes": 13302775,
+        "sha256": "756dcc5b70d4927082c87b8a4e02550cb2d9f871d3332f0d98465c09ebef296f"
+      },
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b6-2\\audit.py",
+        "--archive",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b6-2-audit-z0ywbmtg\\altered_object\\measurements.zip"
+      ],
+      "exit_code": 1,
+      "expected_reason": "证据字节改变：windows/environment.json",
+      "finished_utc": "2026-11-18T08:14:40.998096+00:00",
+      "outcome": {
+        "stderr_last_line": "ValueError: 证据字节改变：windows/environment.json",
+        "verified": false
+      },
+      "pid": 11360,
+      "read_only": true,
+      "started_utc": "2026-11-18T08:14:39.874477+00:00"
+    },
+    "baseline": {
+      "archive": {
+        "bytes": 13305774,
+        "sha256": "699438bf60669cba481c2fb46598265cdccfca4fdccfc717fce2e14a96e46661"
+      },
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b6-2\\audit.py",
+        "--archive",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b6-2-audit-z0ywbmtg\\baseline\\measurements.zip"
+      ],
+      "exit_code": 0,
+      "expected_reason": null,
+      "finished_utc": "2026-11-18T08:14:33.357868+00:00",
+      "outcome": {
+        "matrix_complete": true,
+        "perf_pass": true,
+        "successful_processes": 8235,
+        "verified": true
+      },
+      "pid": 77748,
+      "read_only": true,
+      "started_utc": "2026-11-18T08:14:27.882256+00:00"
+    },
+    "missing_backend_rehashed": {
+      "archive": {
+        "bytes": 13145242,
+        "sha256": "f3f3e601cfa68dbb425a247a303caf7fc8ce1d811a65838a5e8fc255a9a99fc2"
+      },
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b6-2\\audit.py",
+        "--archive",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b6-2-audit-z0ywbmtg\\missing_backend_rehashed\\measurements.zip"
+      ],
+      "exit_code": 1,
+      "expected_reason": "缺少或重复三平台、VM/O0/O3测量",
+      "finished_utc": "2026-11-18T08:14:55.751957+00:00",
+      "outcome": {
+        "stderr_last_line": "ValueError: 缺少或重复三平台、VM/O0/O3测量",
+        "verified": false
+      },
+      "pid": 44996,
+      "read_only": true,
+      "started_utc": "2026-11-18T08:14:51.292888+00:00"
+    },
+    "missing_object": {
+      "archive": {
+        "bytes": 13300585,
+        "sha256": "468bdc9530930790421e5e10eb4adbb34002d025cb1d6088cad8eb21a8db4abd"
+      },
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b6-2\\audit.py",
+        "--archive",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b6-2-audit-z0ywbmtg\\missing_object\\measurements.zip"
+      ],
+      "exit_code": 1,
+      "expected_reason": "证据包清单不符",
+      "finished_utc": "2026-11-18T08:14:36.779996+00:00",
+      "outcome": {
+        "stderr_last_line": "ValueError: 证据包清单不符",
+        "verified": false
+      },
+      "pid": 18760,
+      "read_only": true,
+      "started_utc": "2026-11-18T08:14:36.413113+00:00"
+    },
+    "substitute_source_rehashed": {
+      "archive": {
+        "bytes": 13302768,
+        "sha256": "8f5321081c4e55d59cc82db4a947d4d66fcb14e028591450ca8ebc302d91a0b3"
+      },
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261118-b6-2\\audit.py",
+        "--archive",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b6-2-audit-z0ywbmtg\\substitute_source_rehashed\\measurements.zip"
+      ],
+      "exit_code": 1,
+      "expected_reason": "执行源码清单或标准库加载根不符",
+      "finished_utc": "2026-11-18T08:14:48.167263+00:00",
+      "outcome": {
+        "stderr_last_line": "ValueError: 执行源码清单或标准库加载根不符",
+        "verified": false
+      },
+      "pid": 61216,
+      "read_only": true,
+      "started_utc": "2026-11-18T08:14:44.166564+00:00"
+    }
+  },
+  "original": {
+    "audit.py": {
+      "bytes": 20125,
+      "sha256": "489c5c6fdb3e9a722a2baf437dd2022b0681865ad436886e4caa8d58312a709b"
+    },
+    "measurements.zip": {
+      "bytes": 13305774,
+      "sha256": "699438bf60669cba481c2fb46598265cdccfca4fdccfc717fce2e14a96e46661"
+    },
+    "summary.json": {
+      "bytes": 24745,
+      "sha256": "3925632ef4ccf8004068aee97e85eeb66a3ebdd78000b94213acbc244970c351"
+    }
+  },
+  "passed": true,
+  "script": {
+    "bytes": 5313,
+    "sha256": "c50653fcba7b77066262d628f279f1e9e24ac36280085a3c64c03dc75249511f"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "expected_reason": null,
+      "exit_code": 0,
+      "passed": true,
+      "read_only": true,
+      "sealed": false,
+      "stage": "B6-1",
+      "stage_passed": false,
+      "b6_status": "blocked",
+      "b6_2_started": false,
+      "windows_functional_passed": true,
+      "linux_native_wrapper_passed": false,
+      "macos": "unverifiable",
+      "code_commit": "a067bd90b6ff34b050e2a39efaa40f3b692d75fd"
+    },
+    {
+      "case": "missing",
+      "expected_reason": "B6证据必需文件缺失：.gitattributes",
+      "mode": "prepare",
+      "exit_code": 1,
+      "passed": false,
+      "reason": "B6证据必需文件缺失：.gitattributes",
+      "read_only": true
+    },
+    {
+      "case": "status",
+      "expected_reason": "B6阶段状态或平台阻断被改写：stage_passed",
+      "mode": "prepare",
+      "exit_code": 1,
+      "passed": false,
+      "reason": "B6阶段状态或平台阻断被改写：stage_passed",
+      "read_only": true
+    },
+    {
+      "case": "linux",
+      "expected_reason": "未验证或失败平台被冒进升级",
+      "mode": "prepare",
+      "exit_code": 1,
+      "passed": false,
+      "reason": "未验证或失败平台被冒进升级",
+      "read_only": true
+    }
+  ]
+}

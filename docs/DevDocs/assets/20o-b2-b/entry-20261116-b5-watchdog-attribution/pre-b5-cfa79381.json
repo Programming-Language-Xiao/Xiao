@@ -1,0 +1,53 @@
+{
+  "label": "pre-b5-cfa79381",
+  "variant": "b4",
+  "expected_product_commit": "cfa79381bbae027cec11136ca380e82f66720c34",
+  "source_identity_sha256": "d32530a357a213ac6a55bdec3f4a3baac82b822775f6361ba0923b25f8a5b737",
+  "cargo_lock_sha256": "d8046478bad7c8b2188cb63968c9f6ea31752ad84dcdd7e23c9dcb95f32c5fb2",
+  "source_root": "D:\\project\\Xiao\\.b5\\20261116\\b4\\source",
+  "task_root": "D:\\project\\Xiao\\.b5\\20261116\\b4",
+  "environment_sha256": "d909f254f8b20fd63419f66ceb77860fe71ac9ffdf01002794bed1ab5ca0b613",
+  "runner_sha256": "bdd8f17fb6a89751d4d0e794f49f6d36b55247052760c4c07c01d8f31d0dbfc0",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--workspace",
+    "--no-fail-fast"
+  ],
+  "pid": 22280,
+  "started_utc": "2026-11-16T13:05:42.339635+00:00",
+  "finished_utc": "2026-11-16T13:22:10.041076+00:00",
+  "elapsed_seconds": 986.828,
+  "exit_code": 0,
+  "runtime_before": {
+    "path": "D:\\project\\Xiao\\.b5\\20261116\\b4\\target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27617830,
+    "sha256": "15d4afcfc07aec0ba1f5162549dd9ba31d265f741c30ed395165519d71e83e69"
+  },
+  "runtime_after": {
+    "path": "D:\\project\\Xiao\\.b5\\20261116\\b4\\target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27617830,
+    "sha256": "15d4afcfc07aec0ba1f5162549dd9ba31d265f741c30ed395165519d71e83e69"
+  },
+  "active_build_processes_before": [],
+  "source_unchanged": true,
+  "watchdog_marker_present": false,
+  "unicode_budget_test_present": true,
+  "log": {
+    "path": "objects/sha256/b2/b23b4400ed65e1375efc842cdee426e9936345ab8a913d02aecac25afd7e94a8.bin",
+    "bytes": 170541,
+    "sha256": "b23b4400ed65e1375efc842cdee426e9936345ab8a913d02aecac25afd7e94a8"
+  },
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+    "logical_cpu_count": 32,
+    "python": "3.12.8"
+  }
+}

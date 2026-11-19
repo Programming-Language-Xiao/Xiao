@@ -1,0 +1,66 @@
+{
+  "passed": true,
+  "source_commit": "4b27b7f5bf8fdd0818aad040fbf11efdcc02fb67",
+  "stages": [
+    {
+      "stage": "B4-1",
+      "product_commit": "c7a45e10b76b26915499717563761ed20fda6e6c",
+      "closeout_path": "docs/DevDocs/assets/20o-b2-b/entry-20261110-b4-0-1/closeout.json",
+      "closeout_sha256": "bc9877086d423434b499ce82367c2e2e45e3545ad9a610c5a2ee765a0b9f56a1",
+      "evidence_sha256": "87c7e2f0daac22899f5052c0e0d12c73a91b0c8e6f5c3ed701e44d4797bc2637",
+      "product_tree_sha256": "ec580b82fdda4f71b7f463da81cfcdc43e111e4cc3e9d223723c6a8f655e6a6f",
+      "product_files": 1048,
+      "runtime_abi": "1.18",
+      "codegen_version": 20,
+      "scope": "fixed historical snapshot; current execution recorded separately"
+    },
+    {
+      "stage": "B4-2A/FIX1",
+      "product_commit": "c46102115c63956466361d83243dea8ba3e4e74f",
+      "closeout_path": "docs/DevDocs/assets/20o-b2-b/entry-20261112-b4-2a-fix1/closeout.json",
+      "closeout_sha256": "f42521b6621a8e1353fb53ef0ecb2d382713a2ba64e0965ff23a43d0a374afe6",
+      "evidence_sha256": "5e917547dca09fbec5b23e4717c60c7b951cd435851f026aa01e244de3a8cf48",
+      "product_tree_sha256": "2514e55019b7727c54a3369036d69221a600a6efe08b636671955610d861d9c5",
+      "product_files": 1050,
+      "runtime_abi": "1.18",
+      "codegen_version": 20,
+      "scope": "fixed historical snapshot; current execution recorded separately"
+    },
+    {
+      "stage": "B4-2B",
+      "product_commit": "246bea46105ead280aed91e5e085c8f253a8913d",
+      "closeout_path": "docs/DevDocs/assets/20o-b2-b/entry-20261113-b4-2b/closeout.json",
+      "closeout_sha256": "d8bb5de488f00c482504436cd8f91803a3068f336e1885c373a8cfec6cd89245",
+      "evidence_sha256": "93b820a73c3a21454c754278f0d1783763c68541268d5b4e68e426774219a698",
+      "product_tree_sha256": "3d64f2396b87a82fbf10f2e49d1d0195ca20a32884fd277d4fca76ac5e143e71",
+      "product_files": 1052,
+      "runtime_abi": "1.18",
+      "codegen_version": 20,
+      "scope": "fixed historical snapshot; current execution recorded separately"
+    },
+    {
+      "stage": "B4-3",
+      "product_commit": "e0d5993e7c8214f2277d1bb81f9b05357d9305e0",
+      "closeout_path": "docs/DevDocs/assets/20o-b2-b/entry-20261113-b4-3/closeout.json",
+      "closeout_sha256": "a62e8ee055b31a29c42574322147f66b77dabe652c6156a298f769dd780b534d",
+      "evidence_sha256": "13b5ea403696be873f9ed23df1e0a600c235fe01a3f2a9522234dae833a24a6a",
+      "product_tree_sha256": "bc8118bbe7bea8efa44aa54a627e86d649d74d6670ffbe44cf039539cce16483",
+      "product_files": 1059,
+      "runtime_abi": "1.18",
+      "codegen_version": 21,
+      "scope": "fixed historical snapshot; current execution recorded separately"
+    },
+    {
+      "stage": "B4-4",
+      "product_commit": "bb0b8196479e90d28d676f1bdefd04403e4ba6eb",
+      "closeout_path": "docs/DevDocs/assets/20o-b2-b/entry-20261115-b4-4/closeout.json",
+      "closeout_sha256": "98bbad26171ec5cbaed101fd84c20ad027600d0abaff2fefdbe4ff5340ea78bd",
+      "evidence_sha256": "a4cccd48b161cc776b4916344cab0ee0acc116f95f9cfadbb68e4f85fee3e683",
+      "product_tree_sha256": "cbd67769a44019d834765a4fbdcb30f98484844b00cd8b4ddc6a59171e741a25",
+      "product_files": 1064,
+      "runtime_abi": "1.18",
+      "codegen_version": 21,
+      "scope": "fixed historical snapshot; current execution recorded separately"
+    }
+  ]
+}

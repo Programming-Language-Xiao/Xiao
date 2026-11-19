@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261115-b4-3-fix1\capture.py", line 201, in <module>
+    {"toolchain": toolchain, "guards": guards, "stages": stages, "pow": pow_review}[sys.argv[1]]()
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261115-b4-3-fix1\capture.py", line 55, in guards
+    run = subprocess.run(argv, check=True, capture_output=True, encoding="utf-8")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['pwsh', '-NoProfile', '-File', 'tools/gates/b1-probe-guards.ps1', '-BashPath', 'D:\\msys64\\usr\\bin\\bash.exe', '-ReportPath', 'D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261115-b4-3-fix1\\final\\guards-report.json']' returned non-zero exit status 1.

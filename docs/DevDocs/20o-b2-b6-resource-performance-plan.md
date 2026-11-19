@@ -1,0 +1,256 @@
+# 20O-B2-B6. cmath/lfloat 资源、错误与三平台性能规划
+
+> **B6当前状态（2026-11-18）**　B6-1 为 `restricted`，`stage_passed=false`。官方包装两别名 O0/O3 在三平台功能通过。Linux ELF 与 macOS Mach-O 均为 `Complete`，Windows COFF 导出完整性未验证，Linux Clippy 未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，固定 `79ea0375` 的九组性能测量通过，见 §2.7；B6-3 边界负载见[B6-3规划](20o-b2-b6-3-boundary-plan.md)；B6-4 工程门禁见[B6-4规划](20o-b2-b6-4-ci-gates-plan.md)。[Windows/Linux 限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)、[macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)、[B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)
+
+> B5固定1.19/21矩阵和[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)保持只读历史身份；当前产品1.19/22。B6每轮均绑定自己的源码、Runtime和工具身份。B1原件缺口、22C/22D与19/11/22债务独立保留。
+> B5固定测试快照5864cbde为ABI1.19/生成器21/接口1。原17项资源目标及8次直接计时为旧负载历史证据；优化后18项资源目标和完整默认workspace均通过，详见URL优化记录。B6当前测量使用ABI1.19/生成器22 Runtime，并同时对账B5矩阵与21→22增量证据。
+> B6 只做资源、错误、原子性、三平台性能与 CI 证据；不新增数学语义、不改 ABI/registry/教程。
+> 不跑旧 721；完整 721、最终教程/registry 和公共发布留 B2-C。
+
+## 一、入口与范围
+
+| 项 | 当前状态 |
+| --- | --- |
+| B4-0/B4-1 | 已完成 Windows 本机内部验收；不代表 B4 全链路完成 |
+| B4-2A | 已完成 Windows 本机退出；不含 VM/LLVM/公开模块接线 |
+| B4-3 | 已完成Windows内部验收；LLVM动态/静态与Float `**`共享pow |
+| B4-4～B4-5 | B4-5以FIX.1产品cfa79381重跑并记录内部language_available=true；最终文档/封存审计见重开证据，B5仍是B6前置 |
+| B5 | 四类证据联合收口、b5_closed=true；固定1.19/21矩阵与当前1.19/22增量分层，B6开工前置满足 |
+| B6-1 | `restricted`，`stage_passed=false`。三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 未执行 |
+| B6-2 | 固定`79ea0375`，三平台各测VM、O0、O3，每组183项通过，`perf_pass=true` |
+| B6-3 | `58176ff5` 三平台边界验收通过，765 次语言执行，C ABI 每平台 11 项，计数守卫 28/28。[实测证据](assets/20o-b2-b/entry-20261118-b6-3/README.md) |
+| 后续批次 | B6-4 三平台与 CI 工程门禁、B6-5 收口 |
+| 测量入口版本/工具链 | 当前快照ABI1.19/生成器22/接口1；同时引用B5固定1.19/21拒绝/缓存矩阵与静态比较21→22增量证据。intrinsic1～48、Rust1.96.0与Cargo `--locked`；每轮测量固定源码/Runtime工具身份，优化后另建快照并重测受影响项 |
+| 本批目标 | cmath/lfloat 资源/错误/原子性、VM/原生三平台性能与 CI 证据 |
+| 未做 | B7 收口、B2-C 721/教程/registry/最终公共发布 |
+| 公共状态 | `stdlib.cmath`/UseDocs/registry 仍 planned；旧 721 未跑 |
+
+B6 是 **内部资源/性能验收批**，不是 B2-C 最终发布。B6 的测量只绑定本批源码/产物；B2-C 才在新快照重跑完整 721 并做最终三平台公共收口。B6 的 `unverifiable` 是未完成该平台验收，不得写成性能通过。
+
+组件完整性须按产物的`ArtifactVerification`单独登记：Windows COFF为`UnverifiedCoffExports`时只记“功能通过、导出完整性未验证”，即使导出表观察集合等于声明集合也不能升级。只有`Complete`且声明/观察集合一致才记完整组件校验通过。B6-1重跑、B6汇总及B7交接均沿用此限制，保留功能结果与验证等级两个字段。
+
+### 1.1 要做
+
+1. 复核 cmath/lfloat 的 002/009/011/012/013/033/034 边界和错误顺序；
+2. 复核失败无部分结果、输入不变、finally/release、C ABI out 保留；
+3. 复核 cmath Pure 不删除、float `**`/cmath.pow 共核、lfloat_divide 33 的资源；
+4. 按 F-3 §6.2 测量 VM release、原生 O0/O3、每组五批独立进程、预热/校准、中位数、OS 峰值和翻倍比，并验证单次绝对时限；
+5. 覆盖 15 项 cmath、float `**`、lfloat_divide 的边界输入；
+6. 补齐 Windows/Linux/macOS 实际执行或明确不可验证；
+7. 保存源码、锁、Runtime、工具链、目标、PID、日志、产物摘要；
+8. 形成 B7 收口入口。
+
+### 1.2 明确不做
+
+- 不新增 intrinsic 49+/C 符号，不改 1～48/ID 100；
+- 不改 ABI1.19或当前生成器22；不重开B5固定1.19/21历史矩阵，当前构建须对账21→22增量证据；
+- 不实现新数学/精度/舍入规则；
+- 不升级 registry/教程；
+- 不跑旧 721，不关闭 22C/22D、19/11/22；
+- 不把 B6 内部性能写成任意硬件保证或 B2-C 最终成绩。
+
+## 二、开工闸门
+
+1. B5已正式封存且审计通过；其固定ABI1.19/21拒绝/缓存及C ABI证据可只读对账，同时引用21→22增量和URL优化后默认workspace回执。B6每次测量另固定自身1.19/22源码、Runtime和工具身份；B5尚未封存时B6仍不得开工；
+2. B4-5 内部 `language_available=true`，30 条导入、双路径/归档可复现；
+3. F-3 资源/性能协议、F-2/F-9 数学规则与独立参考、F-12 错误表无未登记变化；
+4. 15 项 cmath/float pow/lfloat_divide 的 VM/LLVM/归档路径可复现；
+5. B1 20/18/双精确/28 守卫和 B4 回归可复现；
+6. 三平台目标/工具链已固定；任一平台不可用只记为未验证，不满足三平台通过条件；
+7. 唯一任务根、独立 target/Runtime/缓存已建立；每个平台/后端/优化级别/负载/规模/批次有独占输出路径；
+8. 实施前列出完整负载清单，含33～48、float `**`、大数/转换、B1/A1额外开销、适用平台/优化级别、最大规模与合法翻倍点；运行时固定该清单及 SHA-256，不按已执行子集反推全量范围。
+
+### 2.1 URL全转义Unicode最大负载（必测）
+
+1. 在B6固定负载清单中单列既有F10工具`core/rust/crates/xiao-driver/examples/perf/cases.rs`的`url.decode_unicode`最大负载：输入为`%F0%9F%9A%80`重复16,384次，共196,608个ASCII/UTF-8字节；独立黄金为16,384个U+1F680，共65,536 UTF-8字节。固定工具和生成输入/黄金摘要，不修改既有最大规模或4,096/8,192/16,384三档负载；
+2. Windows/Linux/macOS分别实跑release VM及原生O0/O3，每组五批独立进程，按既有协议预热、校准并记录黄金、时间、OS驻留增量和执行身份。沿B1预算判VM≤10秒、原生各≤2秒、驻留增量≤64MiB，适用翻倍比≤3；不将B2超线性≤5用于此项；
+3. 默认debug门禁的256个连续转义及混合Unicode预算输入不能替代该项。B6未执行或缺少任一平台/路径时，该项标为未验证，不得标B6全量性能通过；失败保留，不能缩减规模、改预算或加ignore取得通过；
+4. 本项只补回B6必须覆盖的最大负载，不将B6的定向成绩称为B2-C完整721；B2-C仍在最终新快照重跑完整721。
+
+### 2.2 开工单（2026-11-17）
+
+1. 入口：B5四类联合收口（`b5_closed=true`、`b6_entry_open=true`，[记录](assets/20o-b2-b/entry-20261117-b5-closeout/README.md)）；当前产品 `67319d61`，ABI1.19/生成器22/接口1、`cmath` planned。B5固定1.19/21矩阵与[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)分层引用，不把历史矩阵改写成22。开工前复核 `67319d61` 到当前 HEAD 的 `core/`、`stdlib/` 无产品差异。
+2. 开工时现状：B5已封存；B6-1已开始但未收口。Windows本机功能测试通过，COFF导出完整性未验证；Linux官方Cmath包装原生测试在Runtime组件校验处失败，macOS未验证。后续FIX.2已完成，B6-1自身重跑待执行；§2.1全转义Unicode最大负载尚未在B6测量，性能、远端CI和旧721均未执行。
+3. 必须保留：B5固定矩阵与21→22增量证据只读；不新增intrinsic 49+/C符号，不改1～48/ID100、ABI1.19、生成器22、接口1、registry/教程；不重开B5历史矩阵，不改cmath数学/边界；不得为过预算缩减场景、改看门狗/阈值/输入或加ignore。
+4. 顺序：B6-1资源/错误/原子性 → B6-2 VM/原生性能 → B6-3边界负载 → B6-4三平台与CI → B6-5收口/B7交接。
+5. 负载清单：实施前冻结完整清单（含§2.1全转义URL、33～48、float `**`、lfloat/转换、B1/A1开销），记录适用范围与SHA-256；测量前固定，事后按应测/实测集合对账，不得按已执行子集反推全量。
+6. 证据：新建 `assets/20o-b2-b/entry-20261117-b6/`；原始日志按SHA-256内容寻址；每个平台/后端/优化级别/负载/规模/批次独占输出路径，保存PID、源码/Runtime/工具链/实际可执行文件/OS原始单位摘要；文档定稿后单次最终docs门禁；B5/FIX.1/静态比较/URL优化历史目录不改写。
+7. 平台与状态：Windows/Linux/macOS实际执行或明确标 `unverifiable`；缺平台、校准不足、无可靠OS峰值或预算失败均不得写 `perf_pass` 或B6三平台通过；B7/B2-C仍后置，旧721未跑。
+8. 守卫口径：28/28为工作流计数自检（4项真实B1输出回放+24项派生负例），不代替B6产品测试；B5模拟/派生口径不得改写为真实CI成绩。
+
+### 2.3 B6-1首轮执行及历史阻断
+
+| 平台/路径 | 实际结果 |
+| --- | --- |
+| Windows | Runtime release 305 passed/0 failed/1 ignored；B6语言1/1、A6资源8/8、B4 VM/归档/数值路由回归41 passed/0 failed/3 ignored；Cmath原生核心O0/O3、包装O0/O3、A5错误与011受控分配O0/O3、lfloat_divide O0/O3功能通过，Clippy通过；COFF为`UnverifiedCoffExports`，导出完整性未验证 |
+| Linux | Runtime同为305/0/1；B6语言、A6资源和B4 VM/归档/路由回归通过；Cmath原生核心O0/O3、A5错误/011和lfloat_divide O0/O3通过。官方模块包装原生O0/O3由FrontendNativeDriver拒绝 |
+| macOS | 未验证；当前会话没有macOS主机或已配置的远程Mac Runner |
+
+Linux包装拒绝为真实退出101，ArtifactVerification报告ELF观察到未登记的Runtime组件containers。独立诊断显示生成LLVM文本包含 call i32 @xiao_runtime_array_new，IR组件清单只有rc/value/weak，链接产物也观察到该符号；绕过驱动器完整性校验的诊断执行只用于定位，不能算产品路径通过。
+
+该遗漏属于B4 LLVM Runtime组件可达性/原生元数据边界。后续FIX.2完成组件推导修复，原失败不改写；B6-1自身重跑结果见§2.4，不放宽产物审计、删模块语料或跳过包装。
+
+### 2.4 B6-1自身重跑的受限结论（2026-11-18）
+
+[本批重跑证据](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)固定产品43f18274，在Windows/Linux各自的新源码/target/Runtime/任务stdlib下执行。两平台官方包装两别名O0/O3与黄金/009均通过；Linux为ELF Complete且声明=观察，Windows仍为COFF UnverifiedCoffExports。Runtime各305/0/1，资源/VM/归档回归Windows42/0/3、Linux43/0/3，A6资源8/8；codegen109/0/15、额外driver17/0/3及原生核心、错误/011和显式除法O0/O3通过。
+
+Windows首次Clippy因导出漏协议编译夹具退出101，补齐固定Git原字节后同命令通过，失败保留。Linux缺Clippy。RERUN退出时macOS仍未验证，B6-1以`restricted/stage_passed=false`交接。后续macOS及B6-2测量见§2.7。
+
+### 2.5 后续采集的源码完整性与工程门禁
+
+1. 后续批次的`prepare.py`必须将`tests/spec`与`tests/fixtures`、`tests/benchmarks`一并纳入固定Git源码导出、工作树漂移检查及执行前后摘要；`tests/spec/11x0-protocol`是`xiao-driver --all-targets`的编译输入，不得等Clippy失败后再补。源码解包后、冷构建前按固定Git清单核对必需文件及实际字节，缺少协议夹具立即拒绝；历史RERUN导出器和失败/补验记录保持原样。
+2. B6-1重跑的Linux Rust1.96工具链未安装Clippy，因此Linux Clippy为`not_run`，Windows Clippy通过不替代该项。B6/B7的工程门禁逐平台单列测试、Clippy和fmt状态；缺项保留为未执行，不能因功能矩阵、docs或审计通过升级为工程门禁通过。后续若补装并执行，另存实际工具/源码身份与新回执，不改写本轮缺项。
+3. B6-2按星崽裁定在macOS专项通过后启动。Windows COFF完整性和Linux既有Clippy缺项继续单列。性能与各平台工程门禁分别登记。
+
+### 2.6 macOS补验前的缺项
+
+缺项是当前固定产品的B6专项执行和回执。已有[维护工作流](../../.github/workflows/maintenance-regression.yml)配置`macos-15`，[平台复现工作流](../../.github/workflows/platform-reproduction.yml)配置`macos-26`，均支持手动触发；本轮只读查询确认两工作流处于active状态，不据此推断runner当前排队、额度或本批测试已通过。
+
+最近一次维护运行[42968522784](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42968522784)绑定2026-11-11旧快照`ade486ffb3d820db7ecdcbb53c22a09796b35f1f`。其macOS作业实际退出101，失败为`22c_vm_concurrency`中的两条旧planned-cmath拒绝断言；当前源码已改为执行cmath包装和归档。该历史失败不能直接归因于macOS，也不能作为当前43f18274的失败或通过证据。
+
+现有RERUN采集器只支持Windows/WSL，任务根、目标三元组和LLVM路径写死为这两平台；不能原样拿到macOS执行。补验需适配macOS入口并复用已有托管runner，绑定固定源码、新target/Runtime/stdlib、Rust1.96及实际LLVM身份，导出包括`tests/spec`的完整编译输入，运行B6-1资源/错误/原子性与两别名O0/O3矩阵，记录Mach-O实际组件验证等级以及run/job/attempt。现有普通维护和A6性能模式不能替代该专项。完成补验后再复核B6-2开工，本次未调度远端作业或启动性能测量。
+
+### 2.7 macOS补验及B6-2结果（2026-11-18）
+
+macOS专项[运行44243357695](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44243357695)的native与resources作业均通过。两次先前失败及修复、四格Mach-O组件清单和17,243条正式参考的回执见[macOS专项归档](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)。
+
+B6-2使用`tools/gates/b2_b6_performance.py`从同一固定源码重建三平台release VM及Runtime，原生O0/O3分开采样。固定源码为`79ea0375`，清单`tests/fixtures/20o-b2-b6/catalog.json`的SHA-256为`9ab22a2004c69d6bfcb3e269806a48e00de4eb72671aec3172744776bdd1b71e`。macOS三项作业均通过。[运行44249501458](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44249501458)
+
+三平台九组各183项，共1,647项和8,235个独立测量进程。九组的黄金输出、时间、驻留增量及适用翻倍比均通过。全转义URL最大输入在Windows VM的归一化中位数为8.367秒，三个原生O0及三个原生O3中位数均低于1秒。B1 20入口与A1三条完整示例登记的是本次快照的开销，历史成绩未参与计算。B6-2的`perf_pass=true`绑定该固定快照，B6-3～B6-5另行验收。[B6-2测量与只读审计](assets/20o-b2-b/entry-20261118-b6-2/README.md)
+
+星崽裁定在 macOS 专项通过后启动 B6-2。B6-1 阶段仍为 `restricted`，`stage_passed=false`，三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 未执行。
+
+固定 Git 对象复核了 `79ea0375` 到 `58176ff5` 的 Rustdoc 与加载器方法移位，`1c4bb4a7` 的受保护树与移位提交一致。从 `1c4bb4a7` 新建 Windows release 核心与测量器，生成的 183 项目录一致并通过八条语言探测。B6-2 的 `perf_pass` 继续绑定 `79ea0375`。反例复跑覆盖对象缺失、改写、重建清单后伪造源码快照及缺失后端。[自审补证](assets/20o-b2-b/entry-20261118-b6-2/review/README.md)
+
+## 三、分批执行
+
+### B6-1：资源、错误与原子性
+
+1. 15 项 cmath：NaN/Inf、域 009、非有限结果、有符号零/子正规；三平台分别复跑共享 fixture `tests/fixtures/docs/cmath/reference-vectors.tsv` 的17,243条正式参考，核对其 MPFR 4.2.2/GMP 6.3.0 来源与生成器/向量摘要。按 F-9，sqrt 为0 ULP，取整/abs/min/max逐位，普通超越和pow非零结果≤4 ULP；零分类、符号、域和错误身份精确匹配；
+2. float `**`/cmath.pow 共核：特殊值、错误身份、结果位模式。共享内核/C ABI 正式参考回归和 VM/原生语言调用分别记录；语言可达输入在 VM 与原生 O0/O3 核验，NaN/Inf 等内部注入须标明入口，不冒充语言源码执行；
+3. 对照 F-3 §6.1/F-10 §8 的精确资源常量：原文≤65,536 UTF-8 字节；输入/最终系数≤D=32,768 位，中间工作系数≤W=65,536 位；显式指数、显示/规范 scale 的绝对值分别≤H=100,000。仅在显示 scale≥0 且普通文本≤65,536 字节时用普通格式，否则按 F-10 用紧凑指数格式；
+4. `lfloat_divide` 33：precision=1 和 32,768 合法，0 和 32,769 越界；覆盖除零、终止/非终止、七种舍入和精确短结果不补零；
+5. 既有 lint/lfloat 非平凡底数幂覆盖指数 1,000,000 与上限+1，0/±1 快路径仍先查输入合法性；该指数上限不用于 float `**` 或 cmath.pow。`//`/`%` 覆盖合法 scale 差 |k|=200,000；|k|=200,001 必然含超出 H 的输入，须在输入接纳阶段拒绝，不新增独立的 scale 差错误；
+6. 按 F-12 区分类型002、precision再rounding参数域012、逐形参输入预算/合法性、除零013或数学域009、精确 `/` 非终止034、工作/结果033、受控输出分配011；实参表达式仍按源码顺序求值。文本内部先原文预算033，再语法012，再系数/指数/scale预算033；
+7. 失败无部分结果、输入不变；C ABI 结构状态 1/2/3 不碰挂起槽且保留 out，语义状态 6 设置对应可恢复错误且保留 out，成功状态 0 替换 out 但不清既有挂起错误；Fatal/8 沿既有不可恢复边界；VM Rust 错误走 `Fault::Error`/catch，不借 ABI 挂起槽传递；
+8. finally/release/临时值清理；
+9. 保存资源/错误/原子性证据。
+
+按入口适用性列出预期错误：cmath 不套用大数预算033或非终止034；034 仅用于 lint/lfloat 语言精确 `/`，`lfloat_divide(1,3,...)` 按显式 precision 舍入，`//`/`%` 也不使用034。受控分配失败011与预算033分别验证；第三方暂存的真实OOM沿 Fatal 边界，不承诺可恢复。
+
+退出：主要路径错误/资源/原子性证据完整；全部场景逐项记为 pass/fail/unverifiable；fail 与 unverifiable 均不得汇总为通过。
+
+### B6-2：VM/原生性能测量
+
+1. VM/Runtime 使用 Rust 1.96.0 release、`--locked` 构建；沿用受控 Cargo 子进程清理 `RUST_BIGDECIMAL_*`，不改全局环境。原生 Xiao O0/O3 分开测量、分开判定，不混合结果；编译、链接和参考向量生成不计入函数时间；
+2. 输入和产物准备完成后计完整语言调用，包含调用期间解析、分配、上游暂存和输出构造；不能把工作外移到计时区间外。每个平台、优化级别、运算/输入族、规模组合各用五个独立测量进程；每批先预热一次再采正式样本；最大输入不叠入同一次 60 秒看门狗调用；
+3. 单次≥50ms 时 repeat=1；否则校准批次至少50ms，以100ms为停止增长阈值，每次repeat最多增16倍、上限2^24；到上限仍不足50ms记 unverifiable；真实过慢样本和看门狗失败保留为 fail，不丢样、不换负载、不加ignore；
+4. 每批保存 repeat 与总耗时，先除 repeat 归一成单次时间，再取五批中位数；该中位数须满足 VM≤10秒、原生 O0/O3 各≤2秒。窗口内保持结果或错误可观察，避免优化掉被测调用；黄金验证、参考计算及报告写入放在窗口外，调用本身的解析/分配/输出构造仍须计时；
+5. OS 驻留增量基线在同一 PID 完成 Runtime/VM 初始化后、构造输入及预热前读取当前驻留；覆盖输入、输出及上游暂存；每批取进程保守高水位减基线的 max(0,delta)，五批取最大值，必须≤64MiB；记录 Windows WorkingSetSize/PeakWorkingSetSize、Linux VmRSS/VmHWM 或等价 getrusage、macOS resident_size/ru_maxrss 原始值及单位换算；
+6. 按 F-3 运算分类比较 n 与 2n：解析/规范化/显示、比较/哈希、加减等线性组≤3；乘、除、gcd、幂、模幂等超线性组≤5；两点必须同平台、同路径、同优化级别、同输入族且均合法测得；
+7. 对定长标量 cmath 单次调用只判绝对时间/内存预算，不构造虚假 n/2n 翻倍比；翻倍比用于有规模参数的 lfloat/文本/转换负载；
+8. 覆盖 15 项 cmath、float `**`、lfloat + - * / // % **、`lfloat_divide` 33、必要转换及双路径导入后的调用；最大合法输入单独测绝对预算。密集除法按系数/precision、幂按非平凡底数的实际结果增长、模幂按模数规模和固定scale差分组，不以乘1、小指数或零余数替代主负载；
+9. 按 B2-B 总规划测量 B1 20 入口和 A1 完整语言示例在新快照的额外开销；其中`url.decode_unicode`全转义最大负载必须按§2.1实际测量并逐项核对，不由默认资源18/18代替。单列负载与日志，不把它们写成完整721 F10；
+10. Windows/Linux/macOS 各自保存进程身份、OS内存原始单位和环境；逐批绑定源码提交/清单、两个 Cargo.lock、工具/Runtime/实际可执行文件摘要、缓存指纹、stdlib 实际加载根、PID与独占目录，采样前后复核身份；平台缺失或无可靠指标记 unverifiable，不放宽预算。
+
+退出：逐项对账固定清单的应测/实测集合、五批样本和相应功能黄金；只有覆盖完整、身份一致、黄金正确且全部适用阈值通过，才能标该平台 `perf_pass`。子集运行完成只表示所选队列完成，缺项须记未验证；失败或不可验证项阻止全量性能通过。预算失败须在同一冻结预算下优化并复测，或先另行裁定；不以“已记录”替代达标。
+
+### B6-3：错误/资源边界负载
+
+1. F-3 §6.1 所有适用资源预算的最大合法输入、上限+1、强消去、2/5因子、非终止、scale差；逐类覆盖 D/W/H、precision、指数、工作值、结果和输出scale边界；
+2. cmath pow/超越、min/max、-0、子正规、下溢；
+3. lfloat_divide precision 边界、work/result/scale；
+4. 按 F-5/F-12 验证 C ABI 状态0/1/2/3/6及 out/挂起槽；Fatal/8 仅按既有可达路径在独立进程中取证，不当作可恢复状态，也不将普通失败的 out 保留保证扩大到 Fatal 或悬空指针；
+5. B1 20入口/资源18/双精确/28守卫、B4 cmath 回归；28/28 是维护工作流计数逻辑自检，不代替产品功能测试；
+6. 不跑旧721；B5拒绝矩阵只作固定历史输入。B6每次运行绑定自身ABI1.19/生成器22源码、Runtime摘要，并引用本批21→22增量证据。
+7. B6-3 的实际执行绑定本批源码与 Runtime。引用 B6-2 时记录实测提交 `79ea0375`，以 §2.7 的源码差异证据核对本批快照。超出已核对差异的变化由本批重新对账，并补测受影响路径。
+
+退出：边界负载/错误身份稳定；失败/不可验证结果保留；没有用松上界或预算通过掩盖超限。
+
+本批边界验收通过。Windows、Linux、macOS 共 765 次语言执行通过，三平台各重跑 305 项 Runtime 测试与 11 项 C ABI 观察。B1/B4 的精确回归通过，计数守卫回放为 4 条实际 Cargo 输出和 24 条派生负例。Windows 导出完整性和 Linux Clippy 缺项继续登记。[B6-3 审计汇总](assets/20o-b2-b/entry-20261118-b6-3/summary.json)
+
+### B6-4：三平台与 CI 证据
+
+1. Windows/Linux/macOS 均以固定 B6 源码和平台对应新构建 Runtime 实际执行；缺平台可登记不可验证，但 B6 不得声称三平台通过；
+2. 保存 CI run/job/attempt、维护工作流/脚本摘要、B6 源码提交、Runtime、工具链、目标、日志；B1 28/28 守卫只是工作流计数自检，不能替代 B6 产品测试；
+3. push 路径过滤未触发按事实写明；
+4. 性能/资源结果按平台/优化级别分别记录；
+5. 不把本机结果写成三平台通过；
+6. 不修改工作流阈值/默认超时来补绿；A6 已批准的 `b2_a_perf` 40分钟只覆盖既有 A6 模式，B6 不自动继承该时限。实施前列出实际测量入口和 CI 命令；若需调整作业时限，先请星崽另行裁定。
+
+退出：三平台 CI/本机证据逐项绑定源码与 Runtime 身份；有不可验证项时只得出受限结论，不标为 B6 三平台通过。
+
+### B6-5：收口与 B7 交接
+
+1. 汇总资源、错误、原子性、性能与 CI。B6-1 单列 `restricted`、`stage_passed=false`、三平台功能通过、Windows COFF 导出完整性未验证、Linux Clippy 未执行，并登记 B6-2 的开工裁定。
+2. 分平台记录执行/未执行/失败样本；
+3. 复核 cmath 语义、ABI、registry 与教程边界。对照生产差异和语言拒绝回执，确认 `Vm::with_module_loader` 与 `xiao_driver::standard_library_module_loader` 仅在 Rust 宿主层公开。[Rust API 边界](assets/20o-b2-b/entry-20261118-b6-2/review/README.md)
+4. 复核旧721未跑、历史债务未核销；
+5. 在 B6 最终源码上运行完整 workspace gates：`cargo +1.96.0 test --manifest-path core/rust/Cargo.toml --workspace --locked`、`cargo +1.96.0 clippy --manifest-path core/rust/Cargo.toml --workspace --all-targets --locked -- -D warnings`、`cargo +1.96.0 fmt --manifest-path core/rust/Cargo.toml --all -- --check`、`bun run check:lock`、`bun tools/repo-check/src/cli.ts all`；最大负载由独立 release 测量入口执行，不塞入默认 debug 测试；
+6. 形成 B7 入口：整批收口、教程/registry 状态与 B2-C 交接。
+7. 核对 B6-2 的固定实测提交与最终受保护树，复跑只读审计和自反例。性能回执用 `79ea0375` 和实际 Runtime 标识。源码差异证明随交接引用，后续变化导致性能路径不对应时按所属批次补测。
+
+退出：B6 内部证据完整；所有要求的资源/性能阈值通过，或明确以未通过/不可验证状态交接；失败项有后续处理归属。存在未通过/不可验证项时不得标 B6 性能验收通过；B7 与 B2-C 状态分别记录。
+
+## 四、证据矩阵
+
+| 层 | 必测 |
+| --- | --- |
+| 错误 | 002/009/011/012/013/033/034、F-12 顺序 |
+| 数值正确性 | 三平台 F-9 正式参考及语言可达输入回归；来源/向量摘要、ULP与精确特殊值规则 |
+| 原子性 | 失败无部分结果、输入不变、out/挂起槽、finally/release |
+| 资源 | D/W/H、precision、系数/scale/指数、上限+1、强消去 |
+| 时间 | VM release≤10秒、原生 O0/O3 各≤2秒；五批独立进程，预热/校准/归一中位数 |
+| 内存 | OS 驻留增量保守峰值≤64MiB；输入/输出/上游暂存计入，三平台单位、不可验证标记 |
+| 翻倍比 | 线性≤3、超线性≤5；仅适用于可参数化规模负载，同平台/路径/优化/输入族 |
+| 平台/CI | Windows/Linux/macOS、run/job/attempt、路径过滤、源码/Runtime身份 |
+| 完整性 | 固定负载清单与应测/实测集合、每项五批原始样本、独占目录与实际执行文件身份；子集不算全量 |
+| URL覆盖 | §2.1的全转义16,384码点/196,608输入字节/65,536输出字节；三平台VM及原生O0/O3实测，默认256码点不替代 |
+| 边界 | 无ABI/registry/教程/721/历史债务变化 |
+
+## 五、退出条件
+
+1. cmath/lfloat 主要错误/资源/原子性路径有证据，三平台数值正确性按 F-2/F-9 独立参考分别判定；
+2. VM/Runtime release、原生 O0/O3 按 F-3 执行，时间中位数/内存增量及适用的翻倍比逐项判定；不可验证项须明确原因且不能算通过；
+3. 固定负载清单、应测/实测集合、逐批执行身份、OS峰值/翻倍比/五批中位数/校准记录完整；黄金校验与计时窗口分开；§2.1全转义Unicode最大负载实测齐全，缺项不得签收全量性能通过；
+4. 三平台实执行或不可验证项明确，CI 身份可核对；
+5. 没有用预算/阈值修改掩盖超限；
+6. 无 cmath 语义、ABI/registry/教程变化；
+7. 旧721未跑、历史债务未核销；
+8. 汇总报告区分证据汇总完成与资源/性能验收通过；缺平台、校准不足、无可靠OS峰值或预算失败均不能写成 B6 三平台性能通过；B7 未开始；B2-C 未开始。
+
+## 六、风险与禁止
+
+- 把CI绿色或旧报告当性能证据；
+- 不做预热/校准或只取单次；
+- 用五批中位数掩盖OS峰值超限；
+- 复用旧可执行文件/Runtime/缓存；
+- 为通过预算/时限改语义、删场景或放宽阈值；
+- 把B1旧721或B5版本证据写成B6成绩；
+- 升级registry/教程或关闭历史债务。
+
+## 七、交接
+
+B6完成后进入B7：整批收口、教程/registry边界和B2-C交接。B2-C将在最终固定快照上重跑721与三平台公共产物；当前预期版本为1.19/22，须结合B7时最终版本裁定及其增量证据确认。
+
+新 Agent 先读：
+
+1. [B5版本矩阵](20o-b2-b5-version-matrix-plan.md)；
+2. [B4-5收口](20o-b2-b4-5-closeout-plan.md)；
+3. [F-3资源/性能](20o-b2-freeze-c-resource-dependency-plan.md)；
+4. [F-12错误表](20o-b2-freeze-b3-error-table-plan.md)；
+5. [A6资源/性能历史](20o-b2-a6-resource-performance-plan.md)。
+
+## 八、落点
+
+```text
+core/rust/crates/xiao-runtime/                        资源/错误/C ABI
+core/rust/crates/xiao-vm/                             VM性能
+core/rust/crates/xiao-codegen-llvm/                   原生O0/O3
+core/rust/crates/xiao-driver/examples/b2_numeric_performance.rs  既有A6受控测量入口，B6扩展须逐负载登记
+core/rust/crates/xiao-driver/tests/                   资源/协议/功能回归
+tests/benchmarks/                                     补充基准，不替代完整语言调用测量
+docs/DevDocs/assets/20o-b2-b/entry-<date>-b6/         B6证据
+```
+
+本页只做B6；B7与B2-C仍后置。

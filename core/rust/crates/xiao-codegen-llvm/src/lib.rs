@@ -12,6 +12,8 @@ mod artifact;
 mod baseline;
 /// 原生产物构建请求和运行观察适配。
 mod build;
+/// cmath 的冻结形参绑定；静态与动态路径共同消费。
+mod cmath;
 /// 动态值、容器、表和正常释放计划的 Runtime ABI 降低。
 mod dynamic;
 /// 后端结构化错误定义。
@@ -96,8 +98,10 @@ pub use xiao_optimizer::OptimizationReport;
 /// 版本 15 接入 intrinsic 32 的只读错误字节视图与 ABI 1.18。
 /// 版本 16 统一 std 别名与规范模块的初始化身份及原生函数绑定。
 /// 版本 17 接通固定参数命名调用，保持源码求值顺序并隔离新绑定指纹。
+/// 版本 21 接通 B4-3 cmath C ABI 调用及 Float ** 共享pow；Runtime ABI仍为1.18。
+/// 版本 22 使静态 Float/Sfloat 相等与不等在数值提升后按位比较，保留异号零语义。
 /// 当前版本进入工具链/产物指纹。
-pub const CODEGEN_VERSION: u32 = 20;
+pub const CODEGEN_VERSION: u32 = 22;
 
 /// 将同一份类型化 IR 降低为静态标量或 Runtime ABI LLVM 模块。
 pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {

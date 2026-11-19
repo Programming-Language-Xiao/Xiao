@@ -1,0 +1,37 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu-26.04",
+    "--",
+    "/home/xiaoczx/.cargo/bin/rustup",
+    "component",
+    "list",
+    "--toolchain",
+    "1.96.0",
+    "--installed"
+  ],
+  "pid": 20632,
+  "exit_code": 0,
+  "started_utc": "2026-11-18T00:40:01.867355+00:00",
+  "finished_utc": "2026-11-18T00:40:11.871118+00:00",
+  "elapsed_seconds": 10.01600000000326,
+  "stdout": {
+    "path": "objects/sha256/aa/aa780095e3d42d346f6ac44f948dadebf7d240fce2c41fbe90bb9e1aa49570e5.bin",
+    "bytes": 129,
+    "sha256": "aa780095e3d42d346f6ac44f948dadebf7d240fce2c41fbe90bb9e1aa49570e5",
+    "encoding": "identity",
+    "raw_bytes": 129,
+    "raw_sha256": "aa780095e3d42d346f6ac44f948dadebf7d240fce2c41fbe90bb9e1aa49570e5"
+  },
+  "stderr": {
+    "path": "objects/sha256/2d/2dfd6e88b2ac2e48e8124ea5528348ec982f4d84c96005e1640aa1bee0f6ee11.bin",
+    "bytes": 230,
+    "sha256": "2dfd6e88b2ac2e48e8124ea5528348ec982f4d84c96005e1640aa1bee0f6ee11",
+    "encoding": "identity",
+    "raw_bytes": 230,
+    "raw_sha256": "2dfd6e88b2ac2e48e8124ea5528348ec982f4d84c96005e1640aa1bee0f6ee11"
+  },
+  "clippy_available": false,
+  "rustfmt_available": true
+}

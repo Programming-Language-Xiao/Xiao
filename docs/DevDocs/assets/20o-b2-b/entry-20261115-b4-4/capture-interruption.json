@@ -1,0 +1,18 @@
+{
+  "accepted_as_run": false,
+  "command": [
+    "python",
+    "-B",
+    "-X",
+    "utf8",
+    "docs/DevDocs/assets/20o-b2-b/entry-20261115-b4-4/capture.py",
+    "artifacts"
+  ],
+  "reason": "capture.py将产物清单写到与采集器回执相同的fixed-final/artifacts.json；子命令成功，record.py独占写回执时报FileExistsError，PID/时间回执未能落盘，不作为有效执行。原清单字节保留并移名artifact-manifest.json，修正后另跑artifacts验证。",
+  "log_ref": "logs/sha256/99/99b5a91ad301895d28d354998819580b9ccee1d84e22112e8b4024e053cb5a16.log",
+  "log_sha256": "99b5a91ad301895d28d354998819580b9ccee1d84e22112e8b4024e053cb5a16",
+  "log_bytes": 142,
+  "original_manifest_path": "fixed-final/artifacts.json",
+  "preserved_manifest_path": "fixed-final/artifact-manifest.json",
+  "manifest_sha256": "c2e0918bbf1260264a388f37f27eb850884031521cf2378cb97d501cec36f67c"
+}

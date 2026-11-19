@@ -1,0 +1,175 @@
+{
+  "stage": "B4-3-FIX.2",
+  "fix2_closed": true,
+  "baseline_commit": "a067bd90b6ff34b050e2a39efaa40f3b692d75fd",
+  "code_commit": "43f18274175ba09ac84e759999c40cde72eae1c5",
+  "runtime_abi": "1.19",
+  "codegen_version": 22,
+  "stdlib_interface_version": 1,
+  "protected_product_changes": [
+    "core/rust/crates/xiao-codegen-llvm/src/artifact.rs",
+    "core/rust/crates/xiao-codegen-llvm/src/dynamic/runtime_abi.rs",
+    "core/rust/crates/xiao-codegen-llvm/src/ir.rs",
+    "core/rust/crates/xiao-codegen-llvm/tests/n0_a.rs",
+    "core/rust/crates/xiao-driver/tests/support/b4_cmath_library_native.rs"
+  ],
+  "llvm_text_emission_changed": false,
+  "fix0": {
+    "windows_native_matrix": "passed",
+    "windows_verification": "UnverifiedCoffExports",
+    "linux_native_matrix_exit": 101,
+    "linux_error": "ArtifactVerification: containers",
+    "linux_verification": "Complete",
+    "platform_difference": "PE导出观察未验证；ELF符号表完整并拒绝缺少containers的声明"
+  },
+  "runtimes": {
+    "windows": {
+      "path": "D:\\project\\Xiao\\.b4\\b4-3-fix2-20261118-01\\windows\\target\\release\\xiao_runtime.lib",
+      "bytes": 27483016,
+      "sha256": "fa493d79b129cf7fa600993605381830f6abeaab23ec0ea48c0a910554de0fff"
+    },
+    "linux": {
+      "path": "/home/xiaoczx/.b4/b4-3-fix2-20261118-01/target/release/libxiao_runtime.a",
+      "bytes": 34143188,
+      "sha256": "08b88569645eb45d7cc6fea793adbe91a459a174392a91d1b57497d22349ad89"
+    }
+  },
+  "codegen_test_summaries": {
+    "windows": {
+      "targets": 7,
+      "passed": 109,
+      "failed": 0,
+      "ignored": 15
+    },
+    "linux": {
+      "targets": 7,
+      "passed": 109,
+      "failed": 0,
+      "ignored": 15
+    }
+  },
+  "driver_regression_summaries": {
+    "windows": {
+      "targets": 4,
+      "passed": 29,
+      "failed": 0,
+      "ignored": 4
+    },
+    "linux": {
+      "targets": 4,
+      "passed": 29,
+      "failed": 0,
+      "ignored": 4
+    }
+  },
+  "native_wrapper_rows": {
+    "windows": [
+      {
+        "path": "std.cmath",
+        "optimization": "0",
+        "executable": "D:\\project\\Xiao\\.b4\\b4-3-fix2-20261118-01\\windows\\temp\\fix4-win-test-run-r2\\b4-4-library-70092-0\\std-o0.exe",
+        "verification": "UnverifiedCoffExports",
+        "declared": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "observed": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "stdout": "golden",
+        "errors": "009",
+        "result": "passed"
+      },
+      {
+        "path": "std.cmath",
+        "optimization": "3",
+        "executable": "D:\\project\\Xiao\\.b4\\b4-3-fix2-20261118-01\\windows\\temp\\fix4-win-test-run-r2\\b4-4-library-70092-0\\std-o3.exe",
+        "verification": "UnverifiedCoffExports",
+        "declared": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "observed": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "stdout": "golden",
+        "errors": "009",
+        "result": "passed"
+      },
+      {
+        "path": "stdlib.cmath",
+        "optimization": "0",
+        "executable": "D:\\project\\Xiao\\.b4\\b4-3-fix2-20261118-01\\windows\\temp\\fix4-win-test-run-r2\\b4-4-library-70092-0\\stdlib-o0.exe",
+        "verification": "UnverifiedCoffExports",
+        "declared": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "observed": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "stdout": "golden",
+        "errors": "009",
+        "result": "passed"
+      },
+      {
+        "path": "stdlib.cmath",
+        "optimization": "3",
+        "executable": "D:\\project\\Xiao\\.b4\\b4-3-fix2-20261118-01\\windows\\temp\\fix4-win-test-run-r2\\b4-4-library-70092-0\\stdlib-o3.exe",
+        "verification": "UnverifiedCoffExports",
+        "declared": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "observed": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "stdout": "golden",
+        "errors": "009",
+        "result": "passed"
+      }
+    ],
+    "linux": [
+      {
+        "path": "std.cmath",
+        "optimization": "0",
+        "executable": "/home/xiaoczx/.b4/b4-3-fix2-20261118-01/temp/fix4-linux-test-run-r2/b4-4-library-1635-0/std-o0",
+        "verification": "Complete",
+        "declared": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "observed": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "stdout": "golden",
+        "errors": "009",
+        "result": "passed"
+      },
+      {
+        "path": "std.cmath",
+        "optimization": "3",
+        "executable": "/home/xiaoczx/.b4/b4-3-fix2-20261118-01/temp/fix4-linux-test-run-r2/b4-4-library-1635-0/std-o3",
+        "verification": "Complete",
+        "declared": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "observed": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "stdout": "golden",
+        "errors": "009",
+        "result": "passed"
+      },
+      {
+        "path": "stdlib.cmath",
+        "optimization": "0",
+        "executable": "/home/xiaoczx/.b4/b4-3-fix2-20261118-01/temp/fix4-linux-test-run-r2/b4-4-library-1635-0/stdlib-o0",
+        "verification": "Complete",
+        "declared": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "observed": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "stdout": "golden",
+        "errors": "009",
+        "result": "passed"
+      },
+      {
+        "path": "stdlib.cmath",
+        "optimization": "3",
+        "executable": "/home/xiaoczx/.b4/b4-3-fix2-20261118-01/temp/fix4-linux-test-run-r2/b4-4-library-1635-0/stdlib-o3",
+        "verification": "Complete",
+        "declared": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "observed": "[\"containers\", \"rc\", \"value\", \"weak\"]",
+        "stdout": "golden",
+        "errors": "009",
+        "result": "passed"
+      }
+    ]
+  },
+  "clippy": {
+    "windows": "passed",
+    "linux": "unverifiable: cargo-clippy未安装于Rust 1.96.0工具链"
+  },
+  "llvm_text": {
+    "emission_path_changed": false,
+    "explanation": "组件集合在LLVM文本生成完成后推导；helper只读文本，不重写文本或指纹"
+  },
+  "b6_handoff": {
+    "b6_1_must_rerun_in_own_task_root": true,
+    "b6_1_historical_status_rewritten": false,
+    "b6_2_started": false
+  },
+  "macos": "unverifiable",
+  "remote_ci": "not_run",
+  "legacy_721": "not_run"
+}

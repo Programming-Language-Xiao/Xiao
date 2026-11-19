@@ -1,0 +1,53 @@
+{
+  "label": "b5-idle-replay",
+  "variant": "final3",
+  "expected_product_commit": "5864cbde627f727483ab676c6f4bc1bf0a7819bb",
+  "source_identity_sha256": "f423362d5460965c5b30d6d5c09a28e30f716995eb4ee25bfa29b86af10f4b91",
+  "cargo_lock_sha256": "d8046478bad7c8b2188cb63968c9f6ea31752ad84dcdd7e23c9dcb95f32c5fb2",
+  "source_root": "D:\\project\\Xiao\\Xiao",
+  "task_root": "D:\\project\\Xiao\\.b5\\20261116\\current",
+  "environment_sha256": "3a0bf2fb9112f61977446a24de82629aff4fe5da30f46c3fdd63dbb83876f7a3",
+  "runner_sha256": "bdd8f17fb6a89751d4d0e794f49f6d36b55247052760c4c07c01d8f31d0dbfc0",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--workspace",
+    "--no-fail-fast"
+  ],
+  "pid": 71128,
+  "started_utc": "2026-11-16T13:22:14.753838+00:00",
+  "finished_utc": "2026-11-16T13:36:15.229126+00:00",
+  "elapsed_seconds": 839.625,
+  "exit_code": 101,
+  "runtime_before": {
+    "path": "D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27616188,
+    "sha256": "3bcc6081c6a85db867987c9d42ad1abeb0bc3801a6654e4442ef65e1af0697c5"
+  },
+  "runtime_after": {
+    "path": "D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27616188,
+    "sha256": "3bcc6081c6a85db867987c9d42ad1abeb0bc3801a6654e4442ef65e1af0697c5"
+  },
+  "active_build_processes_before": [],
+  "source_unchanged": true,
+  "watchdog_marker_present": true,
+  "unicode_budget_test_present": true,
+  "log": {
+    "path": "objects/sha256/08/081fa411c79a55e430136fd506b4f8f4313ec7b2f3afc608ccef0117f8cbb61a.bin",
+    "bytes": 168037,
+    "sha256": "081fa411c79a55e430136fd506b4f8f4313ec7b2f3afc608ccef0117f8cbb61a"
+  },
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+    "logical_cpu_count": 32,
+    "python": "3.12.8"
+  }
+}

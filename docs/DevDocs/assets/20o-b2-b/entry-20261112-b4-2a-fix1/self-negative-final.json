@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "reason": null,
+      "read_only": true
+    },
+    {
+      "case": "missing_attributes",
+      "exit_code": 1,
+      "reason": "证据字节清单不符",
+      "read_only": true
+    },
+    {
+      "case": "tampered_log",
+      "exit_code": 1,
+      "reason": "原始日志身份不符：concurrency",
+      "read_only": true
+    },
+    {
+      "case": "forged_source",
+      "exit_code": 1,
+      "reason": "固定 Git 产品树不符：b34",
+      "read_only": true
+    },
+    {
+      "case": "false_closeout",
+      "exit_code": 1,
+      "reason": "阶段收口与实际运行不符",
+      "read_only": true
+    }
+  ]
+}

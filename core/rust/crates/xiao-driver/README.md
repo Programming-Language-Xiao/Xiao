@@ -62,3 +62,8 @@
 `NativeBuildResult`。驱动器先调用同一个 `FrontendCompiler`，再把同一份已验证 IR 交给
 `xiao-codegen-llvm`；工具链路径由请求注入，缺失或失败以结构化错误返回。这里不接用户可见
 的 `xiao build`，也不重新解析源码或发现宿主工具链。
+
+B4-4 的 `run_archive` / `run_archive_with_control` 使用与源码运行相同的固定官方加载器，
+协议 `RunArchive` 复用该入口。应用模块仅从已验证归档读取；官方模块从工具链标准库加载，
+`std.cmath` 与 `stdlib.cmath` 使用同一 `stdlib.cmath` 身份。低层 `xiao-xar` 仍接收宿主注入，
+不反向依赖驱动器；未注入加载器时请求官方模块继续明确拒绝。

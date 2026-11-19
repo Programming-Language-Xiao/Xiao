@@ -347,8 +347,8 @@ fn error_code_vm_allocation_failure_preserves_source_and_recovers() {
 }
 
 #[test]
-/// 真实字节码/归档先验证所需 ABI，当前产物接受 1.18、拒绝 1.16/1.17 Runtime。
-fn error_code_portable_artifacts_require_runtime_1_18() {
+/// 真实字节码/归档先验证所需 ABI，当前产物要求当前精确ABI，并拒绝1.16/1.17/1.18 Runtime。
+fn error_code_portable_artifacts_require_current_runtime() {
     let request = FrontendRequest::from_text("print(error_code(Error(code = \"portable\")))\n");
     let artifact = FrontendCompiler::new().compile(&request).unwrap();
     let program = xiao_bytecode::lower_program(&artifact.ir);
@@ -358,12 +358,12 @@ fn error_code_portable_artifacts_require_runtime_1_18() {
     let file = xiao_bytecode::decode_xiaoc(&bytes).unwrap();
     assert_eq!(
         u64::from(file.header.runtime_abi_min),
-        xiao_runtime_abi::encoded_abi_version(1, 18)
+        xiao_runtime_abi::ABI_ENCODED_VERSION
     );
     assert_eq!(file.header.runtime_abi_min, file.header.runtime_abi_max);
     xiao_bytecode::validate_runtime_requirements(
         &file.header,
-        xiao_runtime_abi::encoded_abi_version(1, 18),
+        xiao_runtime_abi::ABI_ENCODED_VERSION,
         xiao_runtime_abi::XIAOC_SUPPORTED_CONCURRENCY_FEATURES,
     )
     .unwrap();
@@ -412,7 +412,7 @@ fn error_code_portable_artifacts_require_runtime_1_18() {
             .code(),
         "X17-XAR-007"
     );
-    for minor in [16, 17] {
+    for minor in [16, 17, 18] {
         assert!(
             xiao_bytecode::validate_runtime_requirements(
                 &file.header,
@@ -951,7 +951,7 @@ fn b1_capabilities_match_native_golden_outputs() {
                     .expect("真实原生产物元数据");
                 assert_eq!(
                     metadata.runtime_abi_min,
-                    xiao_runtime_abi::encoded_abi_version(1, 18)
+                    xiao_runtime_abi::ABI_ENCODED_VERSION
                 );
                 let mut previous = metadata.clone();
                 previous.runtime_abi_min = xiao_runtime_abi::encoded_abi_version(1, 17);
@@ -963,7 +963,7 @@ fn b1_capabilities_match_native_golden_outputs() {
                         .code,
                     "X17-XAR-007"
                 );
-                for minor in [16, 17] {
+                for minor in [16, 17, 18] {
                     let support = xiao_codegen_llvm::NativeRuntimeSupport {
                         runtime_abi: xiao_runtime_abi::encoded_abi_version(1, minor),
                         ..Default::default()

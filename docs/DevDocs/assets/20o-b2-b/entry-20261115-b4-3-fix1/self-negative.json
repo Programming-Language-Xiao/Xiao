@@ -1,0 +1,59 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "reason": null,
+      "stderr": "",
+      "read_only": true,
+      "tree_before_sha256": "538e8cc094e76246aa1bbb4883a6678b92f3bef9de13619d7c6de7e5d022e1c2",
+      "tree_after_sha256": "538e8cc094e76246aa1bbb4883a6678b92f3bef9de13619d7c6de7e5d022e1c2"
+    },
+    {
+      "case": "manifest",
+      "exit_code": 1,
+      "reason": "FIX.1证据清单不符",
+      "stderr": "FIX.1证据清单不符\n",
+      "read_only": true,
+      "tree_before_sha256": "899ba6118101194d1c3a257e3537ed0f922e61a5f4b22774950f88eab95299d7",
+      "tree_after_sha256": "899ba6118101194d1c3a257e3537ed0f922e61a5f4b22774950f88eab95299d7"
+    },
+    {
+      "case": "missing",
+      "exit_code": 1,
+      "reason": "FIX.1已登记文件缺失",
+      "stderr": "FIX.1已登记文件缺失\n",
+      "read_only": true,
+      "tree_before_sha256": "baa5243ea79f2d7c4c3afa956eeede9d3eabc71140148f878bc51854475569e5",
+      "tree_after_sha256": "baa5243ea79f2d7c4c3afa956eeede9d3eabc71140148f878bc51854475569e5"
+    },
+    {
+      "case": "source",
+      "exit_code": 1,
+      "reason": "FIX.1来源快照不符",
+      "stderr": "FIX.1来源快照不符\n",
+      "read_only": true,
+      "tree_before_sha256": "18a5b014ccfaa6b0258b03c682dd2b4d0455714490003f58a5e0931028ae9761",
+      "tree_after_sha256": "18a5b014ccfaa6b0258b03c682dd2b4d0455714490003f58a5e0931028ae9761"
+    },
+    {
+      "case": "workspace",
+      "exit_code": 1,
+      "reason": "FIX.1workspace门禁未全部通过",
+      "stderr": "FIX.1workspace门禁未全部通过\n",
+      "read_only": true,
+      "tree_before_sha256": "d225b7471a4be075a2986333286231c5bd37bd83459202e16b69e68fe0841023",
+      "tree_after_sha256": "d225b7471a4be075a2986333286231c5bd37bd83459202e16b69e68fe0841023"
+    },
+    {
+      "case": "public",
+      "exit_code": 1,
+      "reason": "FIX.1收口/公共状态冒进",
+      "stderr": "FIX.1收口/公共状态冒进\n",
+      "read_only": true,
+      "tree_before_sha256": "77433df45229752c850c6fec527f86198d601afa4cc88b091a23349365c2d23b",
+      "tree_after_sha256": "77433df45229752c850c6fec527f86198d601afa4cc88b091a23349365c2d23b"
+    }
+  ]
+}

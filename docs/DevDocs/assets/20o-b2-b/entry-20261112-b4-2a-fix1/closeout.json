@@ -1,0 +1,276 @@
+{
+  "passed": true,
+  "fix1_closed": true,
+  "b4_2a_gate_restored": true,
+  "b4_2b_started": false,
+  "b4_closed": false,
+  "language_available": false,
+  "product_commit": "c46102115c63956466361d83243dea8ba3e4e74f",
+  "entry_commit": "2f862f51e26d78f29ea0e66d20bc4b1ee174b200",
+  "runtime_abi": "1.18",
+  "codegen_version": 20,
+  "cmath": "planned",
+  "old_721_executed": false,
+  "tests": {
+    "concurrency": 29,
+    "bytecode": 65,
+    "frontend": 3,
+    "wrapper": 8,
+    "boundary_tests": 3,
+    "child_cases": 32,
+    "archive_cases": 48,
+    "driver_lib": 64,
+    "driver_lib_existing_ignored": 1
+  },
+  "platforms_executed": [
+    "Windows x86_64-msvc"
+  ],
+  "not_executed": [
+    "Linux",
+    "macOS",
+    "remote CI",
+    "performance"
+  ],
+  "runs": {
+    "b34/concurrency": {
+      "pid": 63084,
+      "log_sha256": "8381d7024c98b54d7a2891b6704e267b712d17b26f46f9fb9dd3f75e21a3fd17"
+    },
+    "b401/concurrency": {
+      "pid": 57672,
+      "log_sha256": "58130847acb9bb359f7f54ff1bec4c9cba9e22da95410dd27745d0580a284348"
+    },
+    "fixed/regressions": {
+      "pid": 62692,
+      "log_sha256": "b2fbdd6242b59e1cf469f6e433877b9d224774245211b1011fc2f9e17089029d"
+    },
+    "fixed/bytecode": {
+      "pid": 11180,
+      "log_sha256": "e0db411f33f978a25d603c0ae1e0267da16bcbb2e80f94b94f41743980771d02"
+    },
+    "fixed/driver_lib": {
+      "pid": 61976,
+      "log_sha256": "8d963e718c7dd4a47b0f8393014de9dbcfb8c9701da4fc843d51b8497ee48630"
+    },
+    "fixed/clippy": {
+      "pid": 24172,
+      "log_sha256": "a8bd9e827b3c596528f2d2552ec9a7aa55ebb5ebcfbddfd2662efb084fbf6aa0"
+    },
+    "fixed/fmt": {
+      "pid": 55348,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "fixed/toolchain": {
+      "pid": 61204,
+      "log_sha256": "2efe229f7908c2c19f459ca734101a5b35cb482476b8bee1357f94a18c766078"
+    },
+    "fixed/targets": {
+      "pid": 60156,
+      "log_sha256": "23c920e087a9b3cc50152a10be1114264965ba0d6637c528fa8dba57c4d463fb"
+    },
+    "fixed/docs": {
+      "pid": 27116,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/final_docs": {
+      "pid": 59720,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/usedocs": {
+      "pid": 63136,
+      "log_sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    "fixed/layout": {
+      "pid": 65956,
+      "log_sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    "fixed/final_docs_closeout": {
+      "pid": 60860,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/final_docs_audit": {
+      "pid": 58160,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/usedocs_closeout": {
+      "pid": 63592,
+      "log_sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    "fixed/layout_closeout": {
+      "pid": 52412,
+      "log_sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    "fixed/sealed_docs": {
+      "pid": 66960,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/evidence_docs": {
+      "pid": 64400,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/final_evidence_docs": {
+      "pid": 58852,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/release_docs": {
+      "pid": 65012,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/review_docs": {
+      "pid": 46496,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/review_usedocs": {
+      "pid": 60128,
+      "log_sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    "fixed/review_layout": {
+      "pid": 3108,
+      "log_sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    "fixed/audit_final_docs": {
+      "pid": 48368,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/audit_final_usedocs": {
+      "pid": 58936,
+      "log_sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    "fixed/audit_final_layout": {
+      "pid": 64048,
+      "log_sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    "fixed/review_final_docs": {
+      "pid": 66640,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/review_final_usedocs": {
+      "pid": 49024,
+      "log_sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    "fixed/review_final_layout": {
+      "pid": 65172,
+      "log_sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    "fixed/last_docs": {
+      "pid": 66080,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/sealed_review_docs": {
+      "pid": 55756,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/sealed_review_usedocs": {
+      "pid": 9140,
+      "log_sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    "fixed/sealed_review_layout": {
+      "pid": 46496,
+      "log_sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    "fixed/locked_docs": {
+      "pid": 57460,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/cross_status_docs": {
+      "pid": 56200,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/self_review_docs": {
+      "pid": 40112,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/final_self_review_docs": {
+      "pid": 48360,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/content_store_self_test": {
+      "pid": 25088,
+      "log_sha256": "c544a654244cd6a544f7d44c583c7de9fbf5638bcc11b54000a6a383e193ce8e"
+    },
+    "fixed/content_store_self_test_repeat": {
+      "pid": 55508,
+      "log_sha256": "c544a654244cd6a544f7d44c583c7de9fbf5638bcc11b54000a6a383e193ce8e"
+    },
+    "fixed/docs_final": {
+      "pid": 14448,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/docs_final_sealed": {
+      "pid": 62924,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/docs_final_closeout": {
+      "pid": 44876,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/docs_final_verified": {
+      "pid": 68864,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/self_review_findings_docs": {
+      "pid": 16416,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/final_self_review_findings_docs": {
+      "pid": 55684,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/sealed_self_review_docs": {
+      "pid": 57856,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/audit_self_review_docs": {
+      "pid": 57768,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/final_audit_docs": {
+      "pid": 30084,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/review_audit_v3_docs": {
+      "pid": 59812,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/audit_review_docs": {
+      "pid": 58284,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/last_review_docs": {
+      "pid": 62652,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/final_doc_review": {
+      "pid": 11228,
+      "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1"
+    },
+    "fixed/sealed_usedocs": {
+      "pid": 36316,
+      "log_sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    "fixed/sealed_layout": {
+      "pid": 66208,
+      "log_sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    "fixed/b1_history": {
+      "pid": 59316,
+      "log_sha256": "444688deca25c129ebc8c01884229068766105e2d746c6eb16d3318a10ff96a6"
+    },
+    "fixed/b2_history": {
+      "pid": 47372,
+      "log_sha256": "c208d2433857c833e0ab19552fee06fcd4d5f2b9bfbf3cc300eb9ca3bbfa057a"
+    },
+    "fixed/b3_history": {
+      "pid": 66880,
+      "log_sha256": "42419cd9935a8f78f2795dbd0450c62bb3fd8d3b29a1b2f88a43a97e3e173ec3"
+    },
+    "fixed/b34_history": {
+      "pid": 63632,
+      "log_sha256": "547d9e8ab8b0915ac06ac6c0a126b1f79a7ccc5a42cf916d0c754e4a828cc5cd"
+    },
+    "fixed/b401_history": {
+      "pid": 8608,
+      "log_sha256": "3a2b125314bdb0908b9ec2bd3c68e6b300f7658126abfbeda60f1b3f066ff657"
+    }
+  }
+}

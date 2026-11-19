@@ -487,7 +487,7 @@ fn real_source_builds_and_runs_xar_with_preflight_features() {
 }
 
 /// 验证 `.xar` 闭包把 `std.text` 规范化为 `stdlib.text`，不把别名写进归档索引；
-/// 当前归档执行器尚未提供标准库加载器，执行阶段按既有 planned 边界拒绝。
+/// B4-4驱动器归档入口提供固定官方加载器，子VM也使用同一规范身份。
 #[test]
 fn real_source_xar_keeps_standard_alias_identity() {
     let root = std::env::temp_dir().join(format!("xiao-22c-stdlib-xar-{}", std::process::id()));
@@ -512,33 +512,46 @@ print(join(task))
         xiao_driver::build_archive(&request, &xiao_driver::CancellationToken::new()).unwrap();
     assert_eq!(archive.index.stdlib_modules, ["stdlib.text"]);
     let bytes = std::fs::read(&archive.output).unwrap();
-    let result = xiao_xar::run_archive(&bytes, Default::default()).unwrap();
-    assert!(!result.result.is_success(), "{result:?}");
-    let report = result.report.as_ref().expect("归档应保留运行错误报告");
-    assert_eq!(report.code, "X06-RUNTIME-012");
-    assert!(report.message.contains("未注册官方标准库加载器"));
+    let result = xiao_driver::run_archive(&bytes, Default::default()).unwrap();
+    assert!(result.result.is_success(), "{result:?}");
+    assert_eq!(outputs(&result.events), "ok\n");
+    let missing = xiao_xar::run_archive(&bytes, Default::default()).unwrap();
+    assert_eq!(missing.report.as_ref().unwrap().code, "X06-RUNTIME-012");
+    assert!(
+        missing
+            .report
+            .as_ref()
+            .unwrap()
+            .message
+            .contains("未注册官方标准库加载器")
+    );
     println!(
-        "B3-STDLIB-XAR identity=stdlib.text aliases=std.text index=success execution=planned-rejected"
+        "B4-4-STDLIB-XAR identity=stdlib.text aliases=std.text execution=passed missing_loader=rejected"
     );
 }
 
-/// planned cmath 在 B4 接线前不得进入 `.xar`，且失败时不写出部分归档。
+/// B4-4接通cmath归档，应用源码删除后仍执行包装函数。
 #[test]
-fn planned_cmath_xar_is_rejected_before_output() {
+fn cmath_xar_executes_after_source_removal() {
     let root = std::env::temp_dir().join(format!("xiao-22c-cmath-xar-{}", std::process::id()));
     std::fs::create_dir_all(&root).unwrap();
     let input = root.join("main.xiao");
     let output = root.join("main.xar");
-    std::fs::write(&input, "from std.cmath import sqrt\nprint(1)\n").unwrap();
+    std::fs::write(&input, "from std.cmath import sqrt\nprint(sqrt(4.0))\n").unwrap();
     let mut request = xiao_driver::ArchiveBuildRequest::new(&input);
-    request.output = Some(output.clone());
+    request.output = Some(output);
     request.cache_root = Some(root.join("cache"));
-    let error =
-        xiao_driver::build_archive(&request, &xiao_driver::CancellationToken::new()).unwrap_err();
-    assert_eq!(error.code, "X11-PROTOCOL-007");
-    assert!(error.message.contains("cmath_sqrt"), "{error}");
-    assert!(!output.exists(), "planned cmath 失败不得留下部分归档");
-    println!("B3-CMATH-XAR identity=stdlib.cmath aliases=std.cmath result=planned-rejected");
+    let archive =
+        xiao_driver::build_archive(&request, &xiao_driver::CancellationToken::new()).unwrap();
+    assert_eq!(archive.index.stdlib_modules, ["stdlib.cmath"]);
+    let bytes = std::fs::read(&archive.output).unwrap();
+    std::fs::remove_file(&input).unwrap();
+    let result = xiao_driver::run_archive(&bytes, Default::default()).unwrap();
+    assert!(result.result.is_success(), "{result:?}");
+    assert_eq!(outputs(&result.events), "2\n");
+    println!(
+        "B4-4-CMATH-XAR identity=stdlib.cmath aliases=std.cmath source_removed=true result=passed"
+    );
 }
 
 /// 验证排队任务取消后 wait 不等 worker 空闲，并立即释放队列容量。
@@ -925,39 +938,17 @@ fn isolated_child_loads_project_and_standard_modules() {
     assert_eq!(outputs(result.as_executed().unwrap().events()), "ok7\n");
 }
 
-/// 验证隔离 child 对 `std.cmath` 与 `stdlib.cmath` 使用同一只读快照身份。
-///
-/// cmath 仍是 planned，函数体不会被调用；这个回归只验证 spawn 预扫描和子 VM
-/// 加载器不会把 `std.cmath` 错记为项目模块，也不会在 child 中重新编译源码。
+/// 隔离子VM对两条cmath别名使用同一只读模块快照，并真实调用包装。
 #[test]
 fn isolated_child_preserves_cmath_alias_snapshot_identity() {
     for prefix in ["std", "stdlib"] {
         let source = format!(
-            r#"from std.concurrent import current_runtime, spawn, join
-def use_cmath() -> int
-    from {prefix}.cmath import sqrt
-    return 7
-rt = current_runtime()
-task = spawn(rt, use_cmath)
-print(join(task))
-"#
+            "from std.concurrent import current_runtime, spawn, join\ndef use_cmath() -> float\n    from {prefix}.cmath import sqrt\n    return sqrt(4.0)\nrt=current_runtime()\ntask=spawn(rt,use_cmath)\nprint(join(task))\n"
         );
         let result = observe(&source);
-        assert!(
-            !result.success,
-            "planned cmath 不应在子 VM 中执行：{result:?}"
-        );
-        assert_eq!(result.code.as_deref(), Some("X06-RUNTIME-012"));
-        assert!(
-            result
-                .report
-                .as_ref()
-                .is_some_and(|report| report.message.contains("官方标准库模块 cmath 加载失败")),
-            "{prefix}.cmath 未按规范标准库身份失败：{result:?}"
-        );
-        println!(
-            "B3-CMATH-SPAWN path={prefix}.cmath identity=stdlib.cmath result=planned-rejected"
-        );
+        assert!(result.success, "{result:?}");
+        assert_eq!(result.output, "2\n");
+        println!("B4-4-CMATH-SPAWN path={prefix}.cmath identity=stdlib.cmath result=passed");
     }
 }
 

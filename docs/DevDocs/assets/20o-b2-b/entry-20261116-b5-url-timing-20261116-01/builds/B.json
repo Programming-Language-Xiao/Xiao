@@ -1,0 +1,68 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b1_imp_resources",
+    "--no-run",
+    "--message-format=json"
+  ],
+  "binary": {
+    "bytes": 14919168,
+    "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\20o_b1_imp_resources-29cf7055ec1b195c.exe",
+    "sha256": "588f0ee511f50fcb92aa80099819d84ea81419890e8d2d565a9a03179385b3f8"
+  },
+  "commit": "5864cbde627f727483ab676c6f4bc1bf0a7819bb",
+  "cwd": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\source",
+  "environment": {
+    "default_test_threads": true,
+    "overrides": {
+      "CARGO_BUILD_JOBS": "4",
+      "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target",
+      "CARGO_TERM_COLOR": "never",
+      "PYTHONIOENCODING": "utf-8",
+      "PYTHONUTF8": "1",
+      "RUSTUP_TOOLCHAIN": "1.96.0",
+      "TEMP": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\build\\temp",
+      "TMP": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\build\\temp",
+      "XIAO_B1_F10": "0",
+      "XIAO_B2_A_PERF": "0",
+      "XIAO_HOME": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\build\\home",
+      "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\source\\stdlib"
+    },
+    "removed_names": []
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-16T15:40:15.977538+00:00",
+  "label": "B",
+  "log": {
+    "bytes": 7488,
+    "encoding": "gzip",
+    "path": "objects/sha256/f5/f5cb7be76750aad78a56620def5b64fd3e7a1ed75390428b6cf09b238338d963.bin",
+    "raw_bytes": 103880,
+    "raw_sha256": "6706830919a882b01cc2be20a12700c05140e4384b1b8c7020158ea5a545ce33",
+    "sha256": "f5cb7be76750aad78a56620def5b64fd3e7a1ed75390428b6cf09b238338d963"
+  },
+  "pid": 20348,
+  "runtime_objects": [
+    {
+      "bytes": 18664078,
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\libxiao_runtime-d56a2478740ee922.rlib",
+      "sha256": "ea72c8b9e7740c9f8d4b8540f7a785ffe3133642e9a712c6e481895254905dbd"
+    },
+    {
+      "bytes": 63213406,
+      "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\xiao_runtime-d56a2478740ee922.lib",
+      "sha256": "9dfe3667bbaa9651eb4532db54c1174f1af12802bcfdc1a8e9b6dbe7ce93aa08"
+    }
+  ],
+  "source_after": "23839618033377b8210aaaaddf71c8980b0b895d9a3d38479ded5d0112f24582",
+  "source_before": "23839618033377b8210aaaaddf71c8980b0b895d9a3d38479ded5d0112f24582",
+  "started_utc": "2026-11-16T15:39:24.802604+00:00"
+}

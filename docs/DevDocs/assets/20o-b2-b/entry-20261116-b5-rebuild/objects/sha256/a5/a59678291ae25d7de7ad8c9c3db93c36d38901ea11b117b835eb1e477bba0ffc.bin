@@ -1,0 +1,4 @@
+
+thread 'main' (63660) panicked at D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261116-b5-rebuild\host.rs:72:10:
+called `Result::unwrap()` on an `Err` value: Backend(ToolchainFailed { tool: "llvm-as", status: Some(1), stderr: "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\20261116\\b4\\temp\\xiao-verify-64848-1794819649145734300-1.ll:65:15: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t18 = fcmp eq double %t17, 8.00000000000000000e0\r\n              ^" })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

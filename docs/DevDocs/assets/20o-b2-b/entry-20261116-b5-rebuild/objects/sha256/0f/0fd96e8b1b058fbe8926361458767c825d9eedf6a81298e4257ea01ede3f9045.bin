@@ -1,0 +1,10 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.24s
+     Running tests\artifact_size_regression.rs (D:\project\Xiao\.b5\20261116\current\target\debug\deps\artifact_size_regression-ee82d82f837752c7.exe)
+
+running 2 tests
+test performance_report_hash_matches_baseline_file_bytes ... ok
+test deterministic_artifacts_do_not_grow_past_committed_baseline ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

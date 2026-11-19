@@ -2,6 +2,15 @@
 
 use super::*;
 
+impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
+    /// 为使用自定义事件接收器的宿主装入只读模块加载器。
+    #[must_use]
+    pub fn with_module_loader(mut self, loader: &'p dyn ModuleLoader) -> Self {
+        self.set_module_loader(Some(loader));
+        self
+    }
+}
+
 impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
     /// 将模块载入失败转换为带来源上下文的可恢复 VM 错误。
     pub(super) fn module_fault(&self, identity: &str, cause: impl std::fmt::Display) -> Fault {

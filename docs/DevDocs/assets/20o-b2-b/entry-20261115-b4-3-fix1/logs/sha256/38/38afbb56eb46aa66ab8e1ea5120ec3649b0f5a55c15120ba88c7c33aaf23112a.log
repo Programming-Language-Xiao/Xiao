@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261115-b4-3-fix1\capture.py", line 203, in <module>
+    {"toolchain": toolchain, "guards": guards, "stages": stages, "pow": pow_review}[sys.argv[1]]()
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261115-b4-3-fix1\capture.py", line 83, in stages
+    require(fixed_files(REPOSITORY, source["revision"]) == fixed_files(REPOSITORY, FIX_COMMIT)
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261113-b4-3\record.py", line 31, in require
+    raise ValueError(message)
+ValueError: FIX.1产品允许路径或提交身份不符

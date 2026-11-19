@@ -6,7 +6,7 @@ use xiao_bytecode::{FuncId, TacArgument, TacOp, TacProgram, VReg, lower_program}
 use xiao_intrinsics::IntrinsicId;
 
 use crate::frontend::{FrontendArtifact, FrontendCompiler, FrontendContext, FrontendRequest};
-use crate::module_loader::DriverModuleLoader;
+use crate::module_loader::{DriverModuleLoader, require_executable_standard_module};
 
 /// 一个已编译的模块，保留编译请求用于缓存身份及显式调试对象。
 pub(crate) struct ClosureModule {
@@ -59,6 +59,7 @@ pub(crate) fn collect_archive_closure(request: FrontendRequest) -> Result<Archiv
     let artifact = FrontendCompiler::new()
         .compile(&request)
         .map_err(|error| error.to_string())?;
+    check_official_archive_imports(&artifact.ir.body, "entry")?;
     let program = lower_program(&artifact.ir);
     xiao_bytecode::verify_for_execution(&artifact.ir, &program)
         .map_err(|error| error.to_string())?;
@@ -97,6 +98,68 @@ pub(crate) fn collect_archive_closure(request: FrontendRequest) -> Result<Archiv
     Ok(analyzer.result)
 }
 
+/// 未登记执行入口的官方模块不得进入归档，即使导入位于本模块未调用的函数或死分支。
+///
+/// 只检查入口和闭包实际载入模块的语句，不遍历 `IrProgram.modules` 的预载索引；
+/// 无关项目/标准模块内部的 planned 导入不能影响当前归档。
+fn check_official_archive_imports(
+    statements: &[xiao_ir::IrStatement],
+    owner: &str,
+) -> Result<(), String> {
+    use xiao_ir::IrStatementKind;
+    for statement in statements {
+        match &statement.kind {
+            IrStatementKind::Import { items, .. } => {
+                for item in items {
+                    let identity = Analyzer::identity(owner, &item.module);
+                    require_executable_standard_module(&identity)?;
+                    if identity == xiao_vm::STANDARD_LIBRARY_NAMESPACE
+                        && let Some(selected) = &item.selected
+                    {
+                        require_executable_standard_module(&format!(
+                            "{identity}.{}",
+                            selected.text
+                        ))?;
+                    }
+                }
+            }
+            IrStatementKind::Function { body, .. }
+            | IrStatementKind::Table { body, .. }
+            | IrStatementKind::For { body, .. }
+            | IrStatementKind::While { body, .. } => check_official_archive_imports(body, owner)?,
+            IrStatementKind::If {
+                body,
+                elif_branches,
+                else_body,
+                ..
+            } => {
+                check_official_archive_imports(body, owner)?;
+                for branch in elif_branches {
+                    check_official_archive_imports(&branch.body, owner)?;
+                }
+                if let Some(body) = else_body {
+                    check_official_archive_imports(body, owner)?;
+                }
+            }
+            IrStatementKind::Try {
+                body,
+                catches,
+                finally_body,
+            } => {
+                check_official_archive_imports(body, owner)?;
+                for catch in catches {
+                    check_official_archive_imports(&catch.body, owner)?;
+                }
+                if let Some(body) = finally_body {
+                    check_official_archive_imports(body, owner)?;
+                }
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
 impl Analyzer {
     /// 与 VM 的模块身份规则一致，官方库内的相对模块仍属于官方命名空间。
     fn identity(current: &str, module: &str) -> String {
@@ -117,6 +180,7 @@ impl Analyzer {
 
     /// 编译首次可达的文件模块；目录命名空间不生成对象。
     fn load(&mut self, identity: &str) -> Result<bool, String> {
+        require_executable_standard_module(identity)?;
         if matches!(identity, "std.concurrent" | "stdlib.concurrent") {
             return Ok(false);
         }
@@ -138,6 +202,7 @@ impl Analyzer {
         let artifact = FrontendCompiler::new()
             .compile(&request)
             .map_err(|error| error.to_string())?;
+        check_official_archive_imports(&artifact.ir.body, identity)?;
         let program = lower_program(&artifact.ir);
         xiao_bytecode::verify_for_execution(&artifact.ir, &program)
             .map_err(|error| error.to_string())?;

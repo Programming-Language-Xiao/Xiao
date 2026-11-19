@@ -1,0 +1,12 @@
+{
+  "same_default_command": true,
+  "sequential_idle_replay": true,
+  "baseline_commit": "cfa79381bbae027cec11136ca380e82f66720c34",
+  "b5_test_commit": "5864cbde627f727483ab676c6f4bc1bf0a7819bb",
+  "baseline_timed_out": false,
+  "b5_replay_timed_out": true,
+  "runs": [
+    "pre-b5-cfa79381.json",
+    "b5-idle-replay.json"
+  ]
+}

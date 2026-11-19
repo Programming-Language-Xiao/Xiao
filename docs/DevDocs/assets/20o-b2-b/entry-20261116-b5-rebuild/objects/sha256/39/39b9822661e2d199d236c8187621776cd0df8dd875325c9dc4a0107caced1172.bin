@@ -1,0 +1,6 @@
+from std.concurrent import current_runtime
+from std.cmath import sqrt
+runtime = current_runtime()
+print(sqrt(4.0))
+print(lfloat_divide(lfloat(1), lfloat(3), 3, "half_even"))
+print("B5-USER-ENTRY")

@@ -1,0 +1,26 @@
+
+running 17 tests
+B5_URL_MEASURE_BEGIN pid=37836
+test fmt_checks_both_radix_bounds_and_padding_argument_domains ... ok
+test csv_accepts_the_maximum_field_count ... ok
+test csv_accepts_the_maximum_unicode_record ... ok
+test csv_parse_budget_and_syntax_priority_is_positional ... ok
+test url_encoding_reaches_the_unicode_output_budget ... ok
+test csv_accepts_the_maximum_quoted_record ... ok
+test hex_accepts_the_frozen_maximum_input_and_output ... ok
+test csv_rejects_every_format_budget_dimension ... ok
+test csv_accepts_the_maximum_multiline_record ... ok
+test base64_standard_accepts_the_frozen_maximum ... ok
+test url_encoding_reaches_the_ascii_output_budget ... ok
+test base64_url_safe_accepts_the_frozen_maximum ... ok
+test csv_accepts_the_maximum_ascii_record ... ok
+test url_decoding_reaches_the_ascii_result_budget ... ok
+B5_URL_MEASURE_END elapsed_ns=59291215200 start_unix_ns=1794844404229433200 end_unix_ns=1794844463520651600 pid=37836 success=true code=None
+test url_decoding_reaches_the_unicode_result_budget ... ok
+test base64_checks_actual_decoded_size_after_the_last_quartet has been running for over 60 seconds
+test url_limits_and_mixed_error_order_are_streamed has been running for over 60 seconds
+test base64_checks_actual_decoded_size_after_the_last_quartet ... ok
+test url_limits_and_mixed_error_order_are_streamed ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 77.41s
+

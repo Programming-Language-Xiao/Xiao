@@ -1,0 +1,293 @@
+{
+  "before_b6_2": "8167154e105d924165c1e5c3a0401a37f85fc541",
+  "catalog_sha256": "9ab22a2004c69d6bfcb3e269806a48e00de4eb72671aec3172744776bdd1b71e",
+  "changed_sources": {
+    "core/rust/crates/xiao-driver/examples/b2_b6_performance.rs": {
+      "added_rustdoc_lines": 22,
+      "measured_sha256": "73ae68fcf9bd34c58af566d0440f53b7e7e098883f71734e126d4970500dfd18",
+      "reviewed_sha256": "b74196fd3d122a03d2dde43970f76b353e06a270c2964fc1fc2d5b568518f779"
+    },
+    "core/rust/crates/xiao-driver/examples/numeric_perf/b6_cases.rs": {
+      "added_rustdoc_lines": 28,
+      "measured_sha256": "39fb9c00420b928bd005ee80c2f0c902e1019e6776cf6eab2d5b70640f56fd52",
+      "reviewed_sha256": "53b8896273de0b78999c953b9f003c326ce6af83070f9d2a8c991d38c5e1928c"
+    },
+    "core/rust/crates/xiao-vm/src/semantics/exec.rs": {
+      "measured_sha256": "ed4f533406dd134d97b1bd3c0e0c39a822217737d73b577ea23d336bb0177cc9",
+      "reviewed_sha256": "c948d62ab67b29e4fb773a7c442700750129da7e3e5510b6129451e78b97e514"
+    },
+    "core/rust/crates/xiao-vm/src/semantics/module_exec.rs": {
+      "measured_sha256": "1f7ab7fb38da24ec3537f8573e702c82a2f77b7e556c73901ee5470c8e82c673",
+      "reviewed_sha256": "6fb1a6e4c07ffd6f8f33cadcffa84ccf74cc94ea87d92755e9d786ef71cdae89"
+    }
+  },
+  "live": {
+    "build": {
+      "argv": [
+        "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+        "build",
+        "--locked",
+        "--release",
+        "--manifest-path",
+        "core/rust/Cargo.toml",
+        "-p",
+        "xiao-driver",
+        "--bin",
+        "xiao-core",
+        "--example",
+        "b2_b6_performance"
+      ],
+      "exit_code": 0,
+      "finished_utc": "2026-11-18T08:14:32.255134+00:00",
+      "log": {
+        "bytes": 4304,
+        "sha256": "b09e24c9689e2a7d45bf20a04d6447e814863e987136142e77fbb30170bb0ac9",
+        "text": "   Compiling serde_core v1.0.229\n   Compiling proc-macro2 v1.0.107\n   Compiling quote v1.0.47\n   Compiling unicode-ident v1.0.24\n   Compiling zmij v1.0.23\n   Compiling cfg-if v1.0.5\n   Compiling serde v1.0.229\n   Compiling version_check v0.9.5\n   Compiling typenum v1.20.1\n   Compiling itoa v1.0.18\n   Compiling generic-array v0.14.7\n   Compiling syn v3.0.5\n   Compiling serde_json v1.0.151\n   Compiling block-buffer v0.10.4\n   Compiling crypto-common v0.1.7\n   Compiling memchr v2.8.3\n   Compiling digest v0.10.7\n   Compiling cpufeatures v0.2.17\n   Compiling xiao-runtime-abi v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-runtime-abi)\n   Compiling sha2 v0.10.9\n   Compiling serde_derive v1.0.229\n   Compiling xiao-source v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-source)\n   Compiling autocfg v1.5.1\n   Compiling xiao-i18n v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-i18n)\n   Compiling find-msvc-tools v0.1.14\n   Compiling xiao-intrinsics v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-intrinsics)\n   Compiling xiao-diagnostics v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-diagnostics)\n   Compiling xiao-syntax v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-syntax)\n   Compiling shlex v2.0.1\n   Compiling cc v1.5.1\n   Compiling xiao-types v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-types)\n   Compiling xiao-modules v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-modules)\n   Compiling xiao-lifetime v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-lifetime)\n   Compiling num-traits v0.2.19\n   Compiling xiao-ir v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-ir)\n   Compiling ring v0.17.14\n   Compiling xiao-optimizer v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-optimizer)\n   Compiling libm v0.2.16\n   Compiling zeroize v1.9.0\n   Compiling windows_x86_64_msvc v0.52.6\n   Compiling rustls-pki-types v1.15.1\n   Compiling num-integer v0.1.47\n   Compiling bigdecimal v0.4.11\n   Compiling getrandom v0.2.17\n   Compiling untrusted v0.9.0\n   Compiling httparse v1.10.1\n   Compiling libc v0.2.189\n   Compiling num-bigint v0.4.8\n   Compiling xiao-standard-library v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-standard-library)\n   Compiling log v0.4.34\n   Compiling crc32fast v1.5.2\n   Compiling rustls v0.23.45\n   Compiling bytes v1.12.1\n   Compiling windows-targets v0.52.6\n   Compiling rustls-webpki v0.103.15\n   Compiling http v1.5.0\n   Compiling xiao-bytecode v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-bytecode)\n   Compiling xiao-lock v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-lock)\n   Compiling once_cell v1.21.4\n   Compiling subtle v2.6.1\n   Compiling simd-adler32 v0.3.10\n   Compiling base64 v0.23.1\n   Compiling adler2 v2.0.1\n   Compiling miniz_oxide v0.9.1\n   Compiling xiao-runtime v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-runtime)\n   Compiling ureq-proto v0.6.4\n   Compiling windows-sys v0.52.0\n   Compiling webpki-roots v1.0.9\n   Compiling xiao-config v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-config)\n   Compiling filetime v0.2.29\n   Compiling utf8-zero v0.8.1\n   Compiling percent-encoding v2.3.2\n   Compiling ureq v3.4.2\n   Compiling tar v0.4.46\n   Compiling flate2 v1.1.10\n   Compiling xiao-artifacts v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-artifacts)\n   Compiling xiao-vm v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-vm)\n   Compiling xiao-codegen-llvm v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-codegen-llvm)\n   Compiling xiao-xar v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-xar)\n   Compiling xiao-package v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-package)\n   Compiling xiao-driver v0.1.0 (D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\core\\rust\\crates\\xiao-driver)\n    Finished `release` profile [optimized] target(s) in 3m 33s\n"
+      },
+      "pid": 57416,
+      "started_utc": "2026-11-18T08:10:58.815746+00:00"
+    },
+    "cargo": {
+      "bytes": 31347200,
+      "sha256": "122f18d28a63fa358f3db266abee1ff1d8aabf0ab7f2dd9ac38a38da99977ae5"
+    },
+    "controller": {
+      "bytes": 11650560,
+      "sha256": "ae5929884be57d7a030c78015c13263bd80f5b7007eb238b9374f29ba88df9df"
+    },
+    "core": {
+      "bytes": 17208320,
+      "sha256": "d609af6afda303b4a8b3e8e4b2bcdbb6538f3564327348d7f7cdc3e3555f2fe0"
+    },
+    "generated_catalog_sha256": "9ab22a2004c69d6bfcb3e269806a48e00de4eb72671aec3172744776bdd1b71e",
+    "generated_loads": 183,
+    "language": {
+      "cases": [
+        {
+          "case": "std-abs",
+          "errors": [],
+          "exit_code": 0,
+          "exit_name": "success",
+          "expected_diagnostic": null,
+          "output": "2\n",
+          "xiao_source": "from std.cmath import abs\nprint(abs(-2.0))\n"
+        },
+        {
+          "case": "stdlib-abs",
+          "errors": [],
+          "exit_code": 0,
+          "exit_name": "success",
+          "expected_diagnostic": null,
+          "output": "2\n",
+          "xiao_source": "from stdlib.cmath import abs\nprint(abs(-2.0))\n"
+        },
+        {
+          "case": "bare-standard_library_module_loader",
+          "errors": [
+            {
+              "code": "X02-TYPE-001",
+              "message": "未定义名称 standard_library_module_loader",
+              "message_id": "x02.type.undefined_name",
+              "params": {
+                "name": {
+                  "type": "text",
+                  "value": "standard_library_module_loader"
+                }
+              },
+              "severity": "error",
+              "span": {
+                "end": 30,
+                "start": 0
+              },
+              "text": "undefined name standard_library_module_loader"
+            }
+          ],
+          "exit_code": 1,
+          "exit_name": "source_rejected",
+          "expected_diagnostic": "X02-TYPE-001",
+          "output": "",
+          "xiao_source": "standard_library_module_loader()\n"
+        },
+        {
+          "case": "std-standard_library_module_loader",
+          "errors": [
+            {
+              "code": "X05-MODULE-005",
+              "message": "标准库模块 stdlib.cmath 未导出名称 standard_library_module_loader",
+              "message_id": "x05.module.missing_import_symbol",
+              "params": {
+                "symbol": {
+                  "type": "text",
+                  "value": "standard_library_module_loader"
+                },
+                "target": {
+                  "type": "text",
+                  "value": "stdlib.cmath"
+                }
+              },
+              "severity": "error",
+              "span": {
+                "end": 52,
+                "start": 22
+              },
+              "text": "module error: 标准库模块 stdlib.cmath 未导出名称 standard_library_module_loader"
+            }
+          ],
+          "exit_code": 1,
+          "exit_name": "source_rejected",
+          "expected_diagnostic": "X05-MODULE-005",
+          "output": "",
+          "xiao_source": "from std.cmath import standard_library_module_loader\n"
+        },
+        {
+          "case": "stdlib-standard_library_module_loader",
+          "errors": [
+            {
+              "code": "X05-MODULE-005",
+              "message": "标准库模块 stdlib.cmath 未导出名称 standard_library_module_loader",
+              "message_id": "x05.module.missing_import_symbol",
+              "params": {
+                "symbol": {
+                  "type": "text",
+                  "value": "standard_library_module_loader"
+                },
+                "target": {
+                  "type": "text",
+                  "value": "stdlib.cmath"
+                }
+              },
+              "severity": "error",
+              "span": {
+                "end": 55,
+                "start": 25
+              },
+              "text": "module error: 标准库模块 stdlib.cmath 未导出名称 standard_library_module_loader"
+            }
+          ],
+          "exit_code": 1,
+          "exit_name": "source_rejected",
+          "expected_diagnostic": "X05-MODULE-005",
+          "output": "",
+          "xiao_source": "from stdlib.cmath import standard_library_module_loader\n"
+        },
+        {
+          "case": "bare-with_module_loader",
+          "errors": [
+            {
+              "code": "X02-TYPE-001",
+              "message": "未定义名称 with_module_loader",
+              "message_id": "x02.type.undefined_name",
+              "params": {
+                "name": {
+                  "type": "text",
+                  "value": "with_module_loader"
+                }
+              },
+              "severity": "error",
+              "span": {
+                "end": 18,
+                "start": 0
+              },
+              "text": "undefined name with_module_loader"
+            }
+          ],
+          "exit_code": 1,
+          "exit_name": "source_rejected",
+          "expected_diagnostic": "X02-TYPE-001",
+          "output": "",
+          "xiao_source": "with_module_loader()\n"
+        },
+        {
+          "case": "std-with_module_loader",
+          "errors": [
+            {
+              "code": "X05-MODULE-005",
+              "message": "标准库模块 stdlib.cmath 未导出名称 with_module_loader",
+              "message_id": "x05.module.missing_import_symbol",
+              "params": {
+                "symbol": {
+                  "type": "text",
+                  "value": "with_module_loader"
+                },
+                "target": {
+                  "type": "text",
+                  "value": "stdlib.cmath"
+                }
+              },
+              "severity": "error",
+              "span": {
+                "end": 40,
+                "start": 22
+              },
+              "text": "module error: 标准库模块 stdlib.cmath 未导出名称 with_module_loader"
+            }
+          ],
+          "exit_code": 1,
+          "exit_name": "source_rejected",
+          "expected_diagnostic": "X05-MODULE-005",
+          "output": "",
+          "xiao_source": "from std.cmath import with_module_loader\n"
+        },
+        {
+          "case": "stdlib-with_module_loader",
+          "errors": [
+            {
+              "code": "X05-MODULE-005",
+              "message": "标准库模块 stdlib.cmath 未导出名称 with_module_loader",
+              "message_id": "x05.module.missing_import_symbol",
+              "params": {
+                "symbol": {
+                  "type": "text",
+                  "value": "with_module_loader"
+                },
+                "target": {
+                  "type": "text",
+                  "value": "stdlib.cmath"
+                }
+              },
+              "severity": "error",
+              "span": {
+                "end": 43,
+                "start": 25
+              },
+              "text": "module error: 标准库模块 stdlib.cmath 未导出名称 with_module_loader"
+            }
+          ],
+          "exit_code": 1,
+          "exit_name": "source_rejected",
+          "expected_diagnostic": "X05-MODULE-005",
+          "output": "",
+          "xiao_source": "from stdlib.cmath import with_module_loader\n"
+        }
+      ],
+      "request_frames_sha256": "09ae1802574910f547cb0fc084e29c9ad4ad40dfc733b081a477a70123aec0cd",
+      "response_frames_sha256": "022f5ed3cb207045d1ff63453b2b2226ef9849949250df8043abcc06889f2e45"
+    },
+    "rust_version": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-pc-windows-msvc\nrelease: 1.96.0\nLLVM version: 22.1.2",
+    "rustc": {
+      "bytes": 111104,
+      "sha256": "acb138286bbe20c6cf3ec39a7e0a68c3fab0cd949baa2912cf466514d0d531ab"
+    },
+    "source_root": "D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source",
+    "stdlib": "D:\\project\\Xiao\\.b6\\b6-2-review-win-01\\source\\stdlib",
+    "target": "x86_64-pc-windows-msvc",
+    "task_root": "D:\\project\\Xiao\\.b6\\b6-2-review-win-01"
+  },
+  "loader_method_sha256": "c70695da0b439e6ca64ea2de47d0ab3bf8dedaacc01a1080318320ecb73fa0d9",
+  "loader_move": "58176ff5299441f921f3b54fbdc300e2e46b9bb0",
+  "measured_source": "79ea0375d7f2d823a5bdde73cb2c9a1c33c3e4c3",
+  "measured_source_sha256": "059b49744f7cb3a850edd4b8c6c807d52a959913c43f281c773a40e5909c82d3",
+  "new_performance_samples": 0,
+  "passed": true,
+  "performance_semantics_preserved_at_source_level": true,
+  "product_delta_since_before_b6_2": [
+    "core/rust/crates/xiao-driver/src/lib.rs",
+    "core/rust/crates/xiao-vm/src/semantics/module_exec.rs"
+  ],
+  "reviewed_source": "1c4bb4a7b886c68f97c7df2f7a0ee37d94709322",
+  "reviewed_source_sha256": "7ea95309a41156f506ba3aa4419950a9962b6b8915588a7689d0ac8c00e6db75",
+  "rust_apis": [
+    "standard_library_module_loader",
+    "with_module_loader"
+  ]
+}

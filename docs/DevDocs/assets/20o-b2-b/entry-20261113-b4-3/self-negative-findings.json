@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "reason": null,
+      "read_only": true
+    },
+    {
+      "case": "manifest",
+      "exit_code": 1,
+      "reason": "B4-3 evidence inventory mismatch",
+      "read_only": true
+    },
+    {
+      "case": "attributes",
+      "exit_code": 1,
+      "reason": "B4-3 evidence attributes missing or changed",
+      "read_only": true
+    },
+    {
+      "case": "orphan",
+      "exit_code": 1,
+      "reason": "B4-3 unreferenced content log object",
+      "read_only": true
+    },
+    {
+      "case": "product",
+      "exit_code": 1,
+      "reason": "B4-3 fixed product Git identity mismatch",
+      "read_only": true
+    },
+    {
+      "case": "docs",
+      "exit_code": 1,
+      "reason": "B4-3 DevDocs binding mismatch: fixed-final2/native-matrix",
+      "read_only": true
+    },
+    {
+      "case": "environment",
+      "exit_code": 1,
+      "reason": "B4-3 fixed task path escaped",
+      "read_only": true
+    },
+    {
+      "case": "state",
+      "exit_code": 1,
+      "reason": "B4-3 stage state or run result mismatch",
+      "read_only": true
+    }
+  ]
+}

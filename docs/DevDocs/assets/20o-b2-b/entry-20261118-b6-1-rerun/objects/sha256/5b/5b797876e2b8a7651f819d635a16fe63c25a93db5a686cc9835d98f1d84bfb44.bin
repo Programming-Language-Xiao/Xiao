@@ -1,0 +1,11 @@
+    Finished `release` profile [optimized] target(s) in 0.11s
+     Running tests/20o_b2_b2_divide.rs (/home/xiaoczx/.b6/b6-1-rerun-20261118-01/target/release/deps/20o_b2_b2_divide-1682aa961aae9e2f)
+
+running 1 test
+B2-A5-LANGUAGE case=b2_explicit_divide backend=native optimization=0 artifact=/home/xiaoczx/.b6/b6-1-rerun-20261118-01/temp/native-divide/xiao-b2-a5-native-7930-1794962105859703952/b2_explicit_divide-o0 result=success
+B2-A5-LANGUAGE case=b2_explicit_divide backend=native optimization=3 artifact=/home/xiaoczx/.b6/b6-1-rerun-20261118-01/temp/native-divide/xiao-b2-a5-native-7930-1794962105859703952/b2_explicit_divide-o3 result=success
+B2-B2-DIVIDE backend=native optimization=0,3 intrinsic=33 result=success
+test lfloat_divide_matches_native_golden_outputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 1.21s
+

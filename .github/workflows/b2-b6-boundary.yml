@@ -1,0 +1,55 @@
+name: Xiao B6-3 macOS boundaries
+
+on:
+  push:
+    branches: [codex/b6-boundary-runner]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: B6-3 macOS ${{ matrix.mode }}
+    runs-on: macos-15
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [vm, o0, o3, runtime, regression]
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      XIAO_B6_MODE: ${{ matrix.mode }}
+    steps:
+      - name: Checkout the fixed source and evidence tools
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Rust 1.96.0
+        run: rustup toolchain install 1.96.0 --profile minimal
+      - name: Install LLVM 21
+        run: brew install llvm@21
+      - name: Build and run the boundary suite
+        run: |
+          recipe=docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3
+          task="$RUNNER_TEMP/b6-boundary"
+          python3 -B -X utf8 "$recipe/prepare.py" --task "$task" --llvm-bin "$(brew --prefix llvm@21)/bin"
+          python3 -B -X utf8 "$recipe/run.py" --task "$task" --mode "$XIAO_B6_MODE"
+      - name: Upload inputs, logs and command receipts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: b6-3-macos-${{ matrix.mode }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/b6-boundary/evidence/**/*.json
+            ${{ runner.temp }}/b6-boundary/evidence/**/*.log
+            ${{ runner.temp }}/b6-boundary/evidence/**/*.stdin
+            ${{ runner.temp }}/b6-boundary/evidence/**/*.stdout
+            ${{ runner.temp }}/b6-boundary/evidence/**/*.stderr
+            ${{ runner.temp }}/b6-boundary/evidence/**/input.xiao
+            !${{ runner.temp }}/b6-boundary/evidence/**/home/**
+          if-no-files-found: warn

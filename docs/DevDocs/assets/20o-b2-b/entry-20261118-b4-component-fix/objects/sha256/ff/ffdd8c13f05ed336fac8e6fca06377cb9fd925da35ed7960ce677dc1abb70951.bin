@@ -1,0 +1,58 @@
+    Finished `release` profile [optimized] target(s) in 5.46s
+     Running tests/20o_b2_b4_cmath_library.rs (/home/xiaoczx/.b4/b4-3-fix2-20261118-01/target/release/deps/20o_b2_b4_cmath_library-30c8f5469fe72884)
+
+running 6 tests
+test cmath_library_matches_native_o0_o3 ... ignored, B4-4需要独立冷构建Runtime和显式LLVM工具链；固定任务精确执行
+test imported_domain_and_overflow_errors_preserve_numeric_identity ... ok
+test child_float_values_and_text_survive_portable_replay ... ok
+test aliases_replay_from_xiaoc_and_xar_after_application_source_removal ... ok
+test native_module_removal_cannot_reuse_preloaded_function_bindings ... ok
+test imported_signatures_reject_invalid_types_and_argument_shapes ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 26.54s
+
+     Running tests/20o_b2_b4_cmath_llvm.rs (/home/xiaoczx/.b4/b4-3-fix2-20261118-01/target/release/deps/20o_b2_b4_cmath_llvm-1475ce9282b35a88)
+
+running 5 tests
+test native_cmath_static_dynamic_o0_o3_and_shared_pow ... ignored, 需要本任务全新Runtime和显式clang/llvm-as；B4-3独立取证精确执行
+test historical_float_power_diff_is_bound_to_formal_cmath_vectors ... ok
+test static_scalar_calls_keep_runtime_link_and_explicit_observation ... ok
+test float_power_uses_runtime_and_sfloat_keeps_existing_intrinsic ... ok
+test both_lowerings_use_fifteen_shared_abi_symbols_and_current_version ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/20o_b2_b4_cmath_vm.rs (/home/xiaoczx/.b4/b4-3-fix2-20261118-01/target/release/deps/20o_b2_b4_cmath_vm-9dd27b24be23fa04)
+
+running 7 tests
+test all_direct_primitives_execute_in_source_and_production_xiaoc ... ok
+test named_argument_expression_failures_keep_source_evaluation_order ... ok
+test failing_cmath_calls_do_not_leak_heap_arguments_or_partial_results ... ok
+test vm_calls_leave_runtime_abi_pending_error_unchanged ... ok
+test domain_errors_keep_decoded_span_and_observable_cleanup ... ok
+test vm_rejects_invalid_shapes_types_and_unknown_ids ... ok
+test decoded_vm_calls_match_runtime_bits_and_errors_for_all_ids ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/n0_b_dynamic_native.rs (/home/xiaoczx/.b4/b4-3-fix2-20261118-01/target/release/deps/n0_b_dynamic_native-12884968bec21866)
+
+running 15 tests
+test frontend_dynamic_shadowed_slot_is_rejected ... ok
+test frontend_dynamic_branch_with_owned_local_is_rejected ... ok
+test frontend_dynamic_string_lowers_with_release_plan ... ok
+test frontend_dynamic_statements_lower_without_rejection ... ok
+test frontend_static_shadowed_slot_is_rejected ... ok
+test function_local_shadowing_cannot_alias_release_slots ... ok
+test generic_value_copy_registers_weak_dependency_only_when_called ... ok
+test optional_dynamic_string_native_round_trip ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_table_callback_ir_validates_three_targets ... ignored, 需要 XIAO_CLANG；准备方式见 10D §4
+test runtime_components_follow_registered_callbacks ... ok
+test table_callbacks_use_pointer_arguments_on_windows_and_sysv ... ok
+test table_methods_preserve_static_checks_and_followup_boundaries ... ok
+test frontend_dynamic_logical_short_circuit_lowers_without_eager_binary ... ok
+test frontend_dynamic_branch_lowers_without_reparsing ... ok
+test frontend_dynamic_table_initializer_and_member_lower ... ok
+
+test result: ok. 13 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.45s
+

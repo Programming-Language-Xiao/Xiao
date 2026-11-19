@@ -1,0 +1,72 @@
+   Compiling serde_json v1.0.151
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling zeroize v1.9.0
+   Compiling rustls-pki-types v1.15.1
+   Compiling cc v1.5.1
+   Compiling getrandom v0.2.17
+   Compiling httparse v1.10.1
+   Compiling untrusted v0.9.0
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-standard-library)
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-i18n)
+   Compiling bytes v1.12.1
+   Compiling ring v0.17.14
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-syntax)
+   Compiling crc32fast v1.5.2
+   Compiling rustls v0.23.45
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-modules)
+   Compiling log v0.4.34
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-ir)
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+   Compiling rustls-webpki v0.103.15
+   Compiling http v1.5.0
+   Compiling xiao-lock v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lock)
+   Compiling windows-targets v0.52.6
+   Compiling base64 v0.23.1
+   Compiling once_cell v1.21.4
+   Compiling simd-adler32 v0.3.10
+   Compiling subtle v2.6.1
+   Compiling adler2 v2.0.1
+   Compiling miniz_oxide v0.9.1
+   Compiling ureq-proto v0.6.4
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+   Compiling windows-sys v0.52.0
+   Compiling xiao-config v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-config)
+   Compiling webpki-roots v1.0.9
+   Compiling filetime v0.2.29
+   Compiling percent-encoding v2.3.2
+   Compiling utf8-zero v0.8.1
+   Compiling ureq v3.4.2
+   Compiling tar v0.4.46
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+   Compiling flate2 v1.1.10
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `release` profile [optimized] target(s) in 2m 58s
+     Running tests\20o_b2_b6_resources.rs (D:\project\Xiao\.b6\b6-1-20261117-01\target\release\deps\20o_b2_b6_resources-987715b02d397e8d.exe)
+
+running 1 test
+
+thread 'b6_numeric_and_cmath_errors_are_catchable_and_atomic_on_both_aliases' (75244) panicked at crates\xiao-driver\tests\20o_b2_b6_resources.rs:97:9:
+assertion `left == right` failed: std
+  left: "2\n2\n2\n1\n1\n1\n2\n2\n2\n2\n2\n2\n-1\n-1\n-1\n3\n3\n3\n2\n2\n2\n7\n7\n7\n8\n8\n8\n0\n0\n0\n1\n1\n1\n0\n0\n0\n1\n1\n1\n0\n0\n0\n0\n0\n0\nexponent\nbase\n8\n2\n2\n2\nclean\nX06-RUNTIME-009\nexact-divide-clean\nX06-RUNTIME-034\nX06-RUNTIME-013\nX06-RUNTIME-033\n0\n1e-100000\nX06-RUNTIME-033\n0.3\n1.00\n3\nb6-1-continued\n"
+ right: "2\n2\n2\n1\n1\n1\n2\n2\n2\n2\n2\n2\n-1\n-1\n-1\n3\n3\n3\n2\n2\n2\n7\n7\n7\n8\n8\n8\n0\n0\n0\n1\n1\n1\n0\n0\n0\n1\n1\n1\n0\n0\n0\n0\n0\n0\nexponent\nbase\n8\n2\n2\n2\nclean\nX06-RUNTIME-009\nX06-RUNTIME-034\nexact-divide-clean\nX06-RUNTIME-013\nX06-RUNTIME-033\n0\n1e-100000\nX06-RUNTIME-033\n0.3\n1.00\n3\nb6-1-continued\n"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test b6_numeric_and_cmath_errors_are_catchable_and_atomic_on_both_aliases ... FAILED
+
+failures:
+
+failures:
+    b6_numeric_and_cmath_errors_are_catchable_and_atomic_on_both_aliases
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b2_b6_resources`

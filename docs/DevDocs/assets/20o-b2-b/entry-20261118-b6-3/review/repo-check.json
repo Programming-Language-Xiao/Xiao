@@ -1,0 +1,171 @@
+{
+  "argv": [
+    "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+    "tools/repo-check/src/cli.ts",
+    "all",
+    "--format",
+    "json"
+  ],
+  "base_commit": "55c818fdd9b37369699a55b28441e4d95cbdb4d5",
+  "bun": {
+    "bytes": 88825944,
+    "sha256": "627d2e4775c24bdedee2cd7ccc18dcadae061e5345274ab6e3c4c797927bfb8f",
+    "version": "1.4.0"
+  },
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "diagnostics_by_code": {
+    "A0-COVERAGE-002": 1291
+  },
+  "diagnostics_by_severity": {
+    "warning": 1291
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-18T13:01:12.416413+00:00",
+  "outputs": {
+    "stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout.json": {
+      "bytes": 521857,
+      "sha256": "3716da9af9085a4f5791fcd67b253f734f2593166bb5e4b4e6501a92e021a854"
+    }
+  },
+  "passed": true,
+  "pid": 82640,
+  "raw_output_archive": "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/repo-check.zip",
+  "schema_version": 1,
+  "source_after": {
+    "docs/DevDocs/20o-b2-b6-3-boundary-plan.md": {
+      "bytes": 9681,
+      "sha256": "722ba77b7d1df61ebe78e4f2264e91c46c00fcb2654a710105e1fd4275061ee3",
+      "utf8_lf": {
+        "bytes": 9681,
+        "sha256": "722ba77b7d1df61ebe78e4f2264e91c46c00fcb2654a710105e1fd4275061ee3"
+      }
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/README.md": {
+      "bytes": 5051,
+      "sha256": "52e9a28db5cd3840ef246b215e13189f6a97036e555ec29f1ec75096a4019df6",
+      "utf8_lf": {
+        "bytes": 5051,
+        "sha256": "52e9a28db5cd3840ef246b215e13189f6a97036e555ec29f1ec75096a4019df6"
+      }
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/audit.py": {
+      "bytes": 34653,
+      "sha256": "1b3f9f15e19ec1f588a5cd73898fc7202d7c7ab52764ea67089e3f497b2ce38f",
+      "utf8_lf": {
+        "bytes": 34653,
+        "sha256": "1b3f9f15e19ec1f588a5cd73898fc7202d7c7ab52764ea67089e3f497b2ce38f"
+      }
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/boundaries.zip": {
+      "bytes": 7199480,
+      "sha256": "78b3d2ef58fd0cca6f1845e510ba05d981506e1e0bbd52da05bb76f7627bc1e7"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/repo-check.zip": {
+      "bytes": 26128,
+      "sha256": "96e2293e4031a63ec07777d02ffdc54e44e1f7d70c9a8a5431b9a83117f6a228"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/review/macos-artifacts.json": {
+      "bytes": 7065,
+      "sha256": "aa1c7bb90db0cdaa0ee99acba92dc099550ab7ce391cf1e3c694a576e7588a6e",
+      "utf8_lf": {
+        "bytes": 7065,
+        "sha256": "aa1c7bb90db0cdaa0ee99acba92dc099550ab7ce391cf1e3c694a576e7588a6e"
+      }
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/review/negative-cases.json": {
+      "bytes": 7285,
+      "sha256": "85a47f14d695321426aeb592cc34a04dfaa314a1c6ed33726a558125cb81f76e",
+      "utf8_lf": {
+        "bytes": 7285,
+        "sha256": "85a47f14d695321426aeb592cc34a04dfaa314a1c6ed33726a558125cb81f76e"
+      }
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/review/self_negative.py": {
+      "bytes": 8097,
+      "sha256": "1150c919fce1a70e82acbb73d9e013fa3dbbe492f678a090cd084a3b7be8c83b",
+      "utf8_lf": {
+        "bytes": 8097,
+        "sha256": "1150c919fce1a70e82acbb73d9e013fa3dbbe492f678a090cd084a3b7be8c83b"
+      }
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/summary.json": {
+      "bytes": 5175,
+      "sha256": "e4a42c615031416eeb351bb8126c11de34d7d4114a664aa279657dc20d059b92",
+      "utf8_lf": {
+        "bytes": 5175,
+        "sha256": "e4a42c615031416eeb351bb8126c11de34d7d4114a664aa279657dc20d059b92"
+      }
+    }
+  },
+  "source_before": {
+    "docs/DevDocs/20o-b2-b6-3-boundary-plan.md": {
+      "bytes": 9681,
+      "sha256": "722ba77b7d1df61ebe78e4f2264e91c46c00fcb2654a710105e1fd4275061ee3",
+      "utf8_lf": {
+        "bytes": 9681,
+        "sha256": "722ba77b7d1df61ebe78e4f2264e91c46c00fcb2654a710105e1fd4275061ee3"
+      }
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/README.md": {
+      "bytes": 5051,
+      "sha256": "52e9a28db5cd3840ef246b215e13189f6a97036e555ec29f1ec75096a4019df6",
+      "utf8_lf": {
+        "bytes": 5051,
+        "sha256": "52e9a28db5cd3840ef246b215e13189f6a97036e555ec29f1ec75096a4019df6"
+      }
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/audit.py": {
+      "bytes": 34653,
+      "sha256": "1b3f9f15e19ec1f588a5cd73898fc7202d7c7ab52764ea67089e3f497b2ce38f",
+      "utf8_lf": {
+        "bytes": 34653,
+        "sha256": "1b3f9f15e19ec1f588a5cd73898fc7202d7c7ab52764ea67089e3f497b2ce38f"
+      }
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/boundaries.zip": {
+      "bytes": 7199480,
+      "sha256": "78b3d2ef58fd0cca6f1845e510ba05d981506e1e0bbd52da05bb76f7627bc1e7"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/repo-check.zip": {
+      "bytes": 26128,
+      "sha256": "96e2293e4031a63ec07777d02ffdc54e44e1f7d70c9a8a5431b9a83117f6a228"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/review/macos-artifacts.json": {
+      "bytes": 7065,
+      "sha256": "aa1c7bb90db0cdaa0ee99acba92dc099550ab7ce391cf1e3c694a576e7588a6e",
+      "utf8_lf": {
+        "bytes": 7065,
+        "sha256": "aa1c7bb90db0cdaa0ee99acba92dc099550ab7ce391cf1e3c694a576e7588a6e"
+      }
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/review/negative-cases.json": {
+      "bytes": 7285,
+      "sha256": "85a47f14d695321426aeb592cc34a04dfaa314a1c6ed33726a558125cb81f76e",
+      "utf8_lf": {
+        "bytes": 7285,
+        "sha256": "85a47f14d695321426aeb592cc34a04dfaa314a1c6ed33726a558125cb81f76e"
+      }
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/review/self_negative.py": {
+      "bytes": 8097,
+      "sha256": "1150c919fce1a70e82acbb73d9e013fa3dbbe492f678a090cd084a3b7be8c83b",
+      "utf8_lf": {
+        "bytes": 8097,
+        "sha256": "1150c919fce1a70e82acbb73d9e013fa3dbbe492f678a090cd084a3b7be8c83b"
+      }
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/summary.json": {
+      "bytes": 5175,
+      "sha256": "e4a42c615031416eeb351bb8126c11de34d7d4114a664aa279657dc20d059b92",
+      "utf8_lf": {
+        "bytes": 5175,
+        "sha256": "e4a42c615031416eeb351bb8126c11de34d7d4114a664aa279657dc20d059b92"
+      }
+    }
+  },
+  "started_utc": "2026-11-18T13:00:28.181635+00:00"
+}

@@ -62,7 +62,7 @@ pub fn vm_suite() {
     let decoded = xiao_bytecode::decode_xiaoc(&bytes).unwrap();
     assert_eq!(
         u64::from(decoded.header.runtime_abi_min),
-        xiao_runtime_abi::encoded_abi_version(1, 18)
+        xiao_runtime_abi::ABI_ENCODED_VERSION
     );
     let result = xiao_vm::run_xiaoc_production(&bytes, Default::default(), 1024, None).unwrap();
     assert!(result.result.is_success(), "{result:?}");

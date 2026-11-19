@@ -1,0 +1,79 @@
+{
+  "argv": [
+    "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+    "tools/repo-check/src/cli.ts",
+    "all",
+    "--format",
+    "json"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 74808,
+  "started_utc": "2026-11-17T10:09:42.004558+00:00",
+  "finished_utc": "2026-11-17T10:10:22.218772+00:00",
+  "elapsed_seconds": 40.21799999999348,
+  "exit_code": 0,
+  "environment_overrides": {
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.b5\\url-case-opt-20261118-01\\target",
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_TERM_COLOR": "never",
+    "TEMP": "D:\\project\\Xiao\\.b5\\url-case-opt-20261118-01\\temp",
+    "TMP": "D:\\project\\Xiao\\.b5\\url-case-opt-20261118-01\\temp",
+    "XIAO_HOME": "D:\\project\\Xiao\\.b5\\url-case-opt-20261118-01\\home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\Xiao\\stdlib",
+    "XIAO_B1_F10": "0",
+    "XIAO_B2_A_PERF": "0",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8"
+  },
+  "removed_environment_names": [],
+  "bun": {
+    "binary": {
+      "path": "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+      "bytes": 88825944,
+      "sha256": "627d2e4775c24bdedee2cd7ccc18dcadae061e5345274ab6e3c4c797927bfb8f"
+    },
+    "version": "1.4.0"
+  },
+  "docs_before": {
+    "path": "objects/sha256/94/94c5848569d50c8c16cea4d9ddfd7ca499d47c866c4b4adc09a38e6f35b058d1.bin",
+    "bytes": 4219,
+    "sha256": "94c5848569d50c8c16cea4d9ddfd7ca499d47c866c4b4adc09a38e6f35b058d1",
+    "encoding": "identity",
+    "raw_bytes": 4219,
+    "raw_sha256": "94c5848569d50c8c16cea4d9ddfd7ca499d47c866c4b4adc09a38e6f35b058d1"
+  },
+  "docs_after": {
+    "path": "objects/sha256/94/94c5848569d50c8c16cea4d9ddfd7ca499d47c866c4b4adc09a38e6f35b058d1.bin",
+    "bytes": 4219,
+    "sha256": "94c5848569d50c8c16cea4d9ddfd7ca499d47c866c4b4adc09a38e6f35b058d1",
+    "encoding": "identity",
+    "raw_bytes": 4219,
+    "raw_sha256": "94c5848569d50c8c16cea4d9ddfd7ca499d47c866c4b4adc09a38e6f35b058d1"
+  },
+  "product_before": {
+    "path": "objects/sha256/d3/d32b392562a8f879b357350b8307236d237411c5912e1eef3953d6b6e6d2efbc.bin",
+    "bytes": 67307,
+    "sha256": "d32b392562a8f879b357350b8307236d237411c5912e1eef3953d6b6e6d2efbc",
+    "encoding": "gzip",
+    "raw_bytes": 233573,
+    "raw_sha256": "94f96f3c87f9972e3b30477a43a635357533723f13ecb5990a7aa283a05b2d35"
+  },
+  "product_after": {
+    "path": "objects/sha256/d3/d32b392562a8f879b357350b8307236d237411c5912e1eef3953d6b6e6d2efbc.bin",
+    "bytes": 67307,
+    "sha256": "d32b392562a8f879b357350b8307236d237411c5912e1eef3953d6b6e6d2efbc",
+    "encoding": "gzip",
+    "raw_bytes": 233573,
+    "raw_sha256": "94f96f3c87f9972e3b30477a43a635357533723f13ecb5990a7aa283a05b2d35"
+  },
+  "source_unchanged": true,
+  "log": {
+    "path": "objects/sha256/44/44051e06a6d4573833c9af23162ef6cbce8be60c6196292146b9cdec5103c378.bin",
+    "bytes": 23154,
+    "sha256": "44051e06a6d4573833c9af23162ef6cbce8be60c6196292146b9cdec5103c378",
+    "encoding": "gzip",
+    "raw_bytes": 520237,
+    "raw_sha256": "0faae12fdd38400efd67a96e61152919605e3b19e0f56b392252db5dbe9e5b26"
+  }
+}

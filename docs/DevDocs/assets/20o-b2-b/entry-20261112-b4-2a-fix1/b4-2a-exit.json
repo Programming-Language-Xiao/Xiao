@@ -1,0 +1,15 @@
+{
+  "stage": "B4-2A",
+  "passed": true,
+  "b4_2a_closed": true,
+  "b4_2b_started": false,
+  "b4_closed": false,
+  "language_available": false,
+  "replay_commit": "c46102115c63956466361d83243dea8ba3e4e74f",
+  "tac_test_commit": "09fa912b45122d0c038a3cb8ad303fdf5078c0da",
+  "tac_bytecode_tests": 65,
+  "concurrency_tests": 29,
+  "frontend_tests": 3,
+  "wrapper_tests": 8,
+  "reason": "FIX1 恢复既有 planned 门控；TAC 往返与全部退出回归已在修复快照重跑。"
+}

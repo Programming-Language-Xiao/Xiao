@@ -1,0 +1,179 @@
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.62s
+     Running unittests src\lib.rs (D:\project\Xiao\.b4-2b\20261113-runtime-vm\fixed\target\debug\deps\xiao_bytecode-be4d0e60bcd0053b.exe)
+
+running 33 tests
+test encode::tests::bad_references_and_fixed_width_overflow_are_rejected ... ok
+test encode::tests::damaged_inputs_are_rejected_structurally ... ok
+test encode::tests::check_expected_type_round_trips_in_both_widths ... ok
+test encode::tests::all_opcodes_and_abi_fields_round_trip_in_both_widths ... ok
+test encode::tests::fixed_width_reports_the_overflowing_handler_binding ... ok
+test encode::tests::resource_constant_is_rejected_with_fatal_identity_at_encode_boundary ... ok
+test encode::tests::scalar_and_release_tags_have_one_bidirectional_mapping ... ok
+test encode::tests::set_tags_have_explicit_bidirectional_mapping ... ok
+test encode::tests::decoded_intrinsic_ids_are_checked_in_both_operand_widths ... ok
+test encode::tests::unsigned_and_signed_leb128_cover_integer_boundaries ... ok
+test liveness::tests::does_not_invent_fallthrough_and_tracks_explicit_branch ... ok
+test liveness::tests::protected_blocks_keep_handler_inputs_live ... ok
+test lower::expr::tests::unresolved_type_variables_keep_set_only_operators_and_membership_lowerable ... ok
+test liveness::tests::release_plan_is_an_indirect_register_use ... ok
+test optimize::tests::o0_skips_semantic_passes_without_claiming_optimization ... ok
+test optimize::tests::optimization_pipeline_preserves_observable_operation_families ... ok
+test optimize::tests::standard_passes_report_snapshots_and_skip_reasons ... ok
+test optimize::tests::unreachable_block_pass_remaps_targets_and_keeps_execution_blocks ... ok
+test sig::tests::intrinsic_id_round_trips_full_u32_through_two_u16_slots ... ok
+test sig::tests::zero_intrinsic_id_is_preserved_for_validator_rejection ... ok
+test optimize::tests::unreachable_protected_region_is_kept_for_handler_remapping ... ok
+test verify::tests::finally_subroutine_cannot_fall_through_into_continuation ... ok
+test verify::tests::production_entry_distinguishes_known_unsupported ... ok
+test verify::tests::production_entry_rejects_resource_constant_boundary ... ok
+test verify::tests::production_entry_rejects_unsupported_as_internal_error ... ok
+test verify::tests::program_level_categories_are_not_used_for_function_validation ... ok
+test xiaoc::tests::inferred_concurrency_types_require_abi_features_before_vm_load ... ok
+test xiaoc::tests::rejects_truncation_overlap_unknown_required_and_compression ... ok
+test xiaoc::tests::malformed_random_bytes_never_panic ... ok
+test xiaoc::tests::round_trip_is_deterministic_and_variable_length_header_is_supported ... ok
+test xiaoc::tests::runtime_requirements_reject_unknown_features_and_old_abi ... ok
+test encode::tests::module_dependency_direction_is_acyclic ... ok
+test encode::tests::concurrency_plans_round_trip_in_both_widths ... ok
+
+test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
+     Running unittests src\bin\xiaoc-check.rs (D:\project\Xiao\.b4-2b\20261113-runtime-vm\fixed\target\debug\deps\xiaoc_check-8cd01ac3ae3fb0e5.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\b0_a_api.rs (D:\project\Xiao\.b4-2b\20261113-runtime-vm\fixed\target\debug\deps\b0_a_api-2ddf9bdba077cbda.exe)
+
+running 1 test
+test root_and_research_paths_share_the_production_verifier ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\b4_cmath_tac.rs (D:\project\Xiao\.b4-2b\20261113-runtime-vm\fixed\target\debug\deps\b4_cmath_tac-0ba8aa499157925a.exe)
+
+running 2 tests
+B4-2A-NEGATIVE id=49 verifier=reject encoder=reject result=passed
+B4-2A-NEGATIVE id=100 verifier=reject encoder=reject result=passed
+B4-2A-CASE id=34 name=sqrt form=positional span=56..73 width=Leb128 pc=6 args=[None]
+B4-2A-CASE id=34 name=sqrt form=named span=125..150 width=Leb128 pc=6 args=[Some("value")]
+B4-2A-CASE id=35 name=floor form=positional span=208..226 width=Leb128 pc=6 args=[None]
+B4-2A-CASE id=35 name=floor form=named span=279..305 width=Leb128 pc=6 args=[Some("value")]
+B4-2A-NEGATIVE id=4294967295 verifier=reject encoder=reject result=passed
+B4-2A-CASE id=36 name=ceil form=positional span=362..379 width=Leb128 pc=6 args=[None]
+B4-2A-CASE id=36 name=ceil form=named span=431..456 width=Leb128 pc=6 args=[Some("value")]
+B4-2A-CASE id=37 name=round form=positional span=514..532 width=Leb128 pc=6 args=[None]
+B4-2A-CASE id=37 name=round form=named span=585..611 width=Leb128 pc=6 args=[Some("value")]
+B4-2A-CASE id=38 name=trunc form=positional span=669..687 width=Leb128 pc=6 args=[None]
+B4-2A-CASE id=38 name=trunc form=named span=740..766 width=Leb128 pc=6 args=[Some("value")]
+B4-2A-CASE id=39 name=abs form=positional span=822..838 width=Leb128 pc=6 args=[None]
+B4-2A-CASE id=39 name=abs form=named span=889..913 width=Leb128 pc=6 args=[Some("value")]
+B4-2A-CASE id=40 name=min form=positional span=981..1003 width=Leb128 pc=6 args=[None, None]
+B4-2A-CASE id=40 name=min form=named span=1066..1103 width=Leb128 pc=6 args=[Some("left"), Some("right")]
+B4-2A-CASE id=40 name=min form=reverse_named span=1174..1211 width=Leb128 pc=6 args=[Some("right"), Some("left")]
+B4-2A-CASE id=41 name=max form=positional span=1279..1301 width=Leb128 pc=6 args=[None, None]
+B4-2A-CASE id=41 name=max form=named span=1364..1401 width=Leb128 pc=6 args=[Some("left"), Some("right")]
+B4-2A-CASE id=41 name=max form=reverse_named span=1472..1509 width=Leb128 pc=6 args=[Some("right"), Some("left")]
+B4-2A-CASE id=42 name=pow form=positional span=1580..1605 width=Leb128 pc=6 args=[None, None]
+B4-2A-CASE id=42 name=pow form=named span=1671..1714 width=Leb128 pc=6 args=[Some("base"), Some("exponent")]
+B4-2A-CASE id=42 name=pow form=reverse_named span=1788..1831 width=Leb128 pc=6 args=[Some("exponent"), Some("base")]
+B4-2A-CASE id=43 name=sin form=positional span=1887..1903 width=Leb128 pc=6 args=[None]
+B4-2A-CASE id=43 name=sin form=named span=1954..1978 width=Leb128 pc=6 args=[Some("value")]
+B4-2A-CASE id=44 name=cos form=positional span=2034..2050 width=Leb128 pc=6 args=[None]
+B4-2A-CASE id=44 name=cos form=named span=2101..2125 width=Leb128 pc=6 args=[Some("value")]
+B4-2A-CASE id=45 name=tan form=positional span=2181..2197 width=Leb128 pc=6 args=[None]
+B4-2A-CASE id=45 name=tan form=named span=2248..2272 width=Leb128 pc=6 args=[Some("value")]
+B4-2A-CASE id=46 name=exp form=positional span=2328..2344 width=Leb128 pc=6 args=[None]
+B4-2A-CASE id=46 name=exp form=named span=2395..2419 width=Leb128 pc=6 args=[Some("value")]
+B4-2A-CASE id=47 name=ln form=positional span=2474..2489 width=Leb128 pc=6 args=[None]
+B4-2A-CASE id=47 name=ln form=named span=2539..2562 width=Leb128 pc=6 args=[Some("value")]
+B4-2A-CASE id=48 name=log10 form=positional span=2620..2638 width=Leb128 pc=6 args=[None]
+B4-2A-CASE id=48 name=log10 form=named span=2691..2717 width=Leb128 pc=6 args=[Some("value")]
+test cmath_unknown_intrinsic_ids_are_rejected_before_encoding ... ok
+B4-2A-CASE id=34 name=sqrt form=positional span=56..73 width=FixedU16 pc=6 args=[None]
+B4-2A-CASE id=34 name=sqrt form=named span=125..150 width=FixedU16 pc=6 args=[Some("value")]
+B4-2A-CASE id=35 name=floor form=positional span=208..226 width=FixedU16 pc=6 args=[None]
+B4-2A-CASE id=35 name=floor form=named span=279..305 width=FixedU16 pc=6 args=[Some("value")]
+B4-2A-CASE id=36 name=ceil form=positional span=362..379 width=FixedU16 pc=6 args=[None]
+B4-2A-CASE id=36 name=ceil form=named span=431..456 width=FixedU16 pc=6 args=[Some("value")]
+B4-2A-CASE id=37 name=round form=positional span=514..532 width=FixedU16 pc=6 args=[None]
+B4-2A-CASE id=37 name=round form=named span=585..611 width=FixedU16 pc=6 args=[Some("value")]
+B4-2A-CASE id=38 name=trunc form=positional span=669..687 width=FixedU16 pc=6 args=[None]
+B4-2A-CASE id=38 name=trunc form=named span=740..766 width=FixedU16 pc=6 args=[Some("value")]
+B4-2A-CASE id=39 name=abs form=positional span=822..838 width=FixedU16 pc=6 args=[None]
+B4-2A-CASE id=39 name=abs form=named span=889..913 width=FixedU16 pc=6 args=[Some("value")]
+B4-2A-CASE id=40 name=min form=positional span=981..1003 width=FixedU16 pc=6 args=[None, None]
+B4-2A-CASE id=40 name=min form=named span=1066..1103 width=FixedU16 pc=6 args=[Some("left"), Some("right")]
+B4-2A-CASE id=40 name=min form=reverse_named span=1174..1211 width=FixedU16 pc=6 args=[Some("right"), Some("left")]
+B4-2A-CASE id=41 name=max form=positional span=1279..1301 width=FixedU16 pc=6 args=[None, None]
+B4-2A-CASE id=41 name=max form=named span=1364..1401 width=FixedU16 pc=6 args=[Some("left"), Some("right")]
+B4-2A-CASE id=41 name=max form=reverse_named span=1472..1509 width=FixedU16 pc=6 args=[Some("right"), Some("left")]
+B4-2A-CASE id=42 name=pow form=positional span=1580..1605 width=FixedU16 pc=6 args=[None, None]
+B4-2A-CASE id=42 name=pow form=named span=1671..1714 width=FixedU16 pc=6 args=[Some("base"), Some("exponent")]
+B4-2A-CASE id=42 name=pow form=reverse_named span=1788..1831 width=FixedU16 pc=6 args=[Some("exponent"), Some("base")]
+B4-2A-CASE id=43 name=sin form=positional span=1887..1903 width=FixedU16 pc=6 args=[None]
+B4-2A-CASE id=43 name=sin form=named span=1954..1978 width=FixedU16 pc=6 args=[Some("value")]
+B4-2A-CASE id=44 name=cos form=positional span=2034..2050 width=FixedU16 pc=6 args=[None]
+B4-2A-CASE id=44 name=cos form=named span=2101..2125 width=FixedU16 pc=6 args=[Some("value")]
+B4-2A-CASE id=45 name=tan form=positional span=2181..2197 width=FixedU16 pc=6 args=[None]
+B4-2A-CASE id=45 name=tan form=named span=2248..2272 width=FixedU16 pc=6 args=[Some("value")]
+B4-2A-CASE id=46 name=exp form=positional span=2328..2344 width=FixedU16 pc=6 args=[None]
+B4-2A-CASE id=46 name=exp form=named span=2395..2419 width=FixedU16 pc=6 args=[Some("value")]
+B4-2A-CASE id=47 name=ln form=positional span=2474..2489 width=FixedU16 pc=6 args=[None]
+B4-2A-CASE id=47 name=ln form=named span=2539..2562 width=FixedU16 pc=6 args=[Some("value")]
+B4-2A-CASE id=48 name=log10 form=positional span=2620..2638 width=FixedU16 pc=6 args=[None]
+B4-2A-CASE id=48 name=log10 form=named span=2691..2717 width=FixedU16 pc=6 args=[Some("value")]
+B4-2A-SUMMARY ids=34..48 calls=33 widths=leb128,fixed_u16 tac_version=1 bytecode_abi=1 format=4 result=passed
+test cmath_intrinsics_round_trip_tac_and_bytecode_without_version_changes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests\fuzz_xiaoc.rs (D:\project\Xiao\.b4-2b\20261113-runtime-vm\fixed\target\debug\deps\fuzz_xiaoc-4cf2bc85484c3bde.exe)
+
+running 2 tests
+test base_xiaoc_decodes ... ok
+test seeded_xiaoc_mutations_never_panic_and_are_rejected_with_stable_codes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\r2_tac.rs (D:\project\Xiao\.b4-2b\20261113-runtime-vm\fixed\target\debug\deps\r2_tac-31b882ef6d9ab77c.exe)
+
+running 27 tests
+test decodes_string_literals_like_the_type_layer ... ok
+test consumes_runtime_checks_for_set_compound_assignment ... ok
+test assigns_register_classes ... ok
+test encodes_program_using_set_operation ... ok
+test keeps_quote_characters_inside_string_literals ... ok
+test encodes_try_finally_handler ... ok
+test lowers_advanced_selector_plan ... ok
+test keeps_register_classes_local_to_each_function ... ok
+test lowers_container_literals ... ok
+test lowers_exact_index_with_signed_step ... ok
+test lowers_exception_handlers_and_finally_subroutine ... ok
+test lowers_scalar_arithmetic ... ok
+test lowers_functions_separately ... ok
+test lowers_for_iteration_cfg ... ok
+test lowers_string_boolean_runtime_check ... ok
+test promotes_cross_width_operands ... ok
+test lowers_set_checks_for_both_operands ... ok
+test nested_set_operation_does_not_bind_check_to_selector_source ... ok
+test references_existing_release_plans ... ok
+test set_instructions_have_no_jump_targets ... ok
+test rebuilds_control_flow_blocks ... ok
+test releases_temporary_heap_values ... ok
+test shares_the_escape_table_with_the_type_layer ... ok
+test separates_backticked_from_plain_bindings ... ok
+test unary_minus_keeps_float_width ... ok
+test unary_not_compares_against_false ... ok
+test synthesizes_call_signatures ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+   Doc-tests xiao_bytecode
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

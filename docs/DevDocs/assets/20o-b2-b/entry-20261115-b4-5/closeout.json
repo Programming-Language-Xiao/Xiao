@@ -1,0 +1,195 @@
+{
+  "passed": false,
+  "evidence_valid": true,
+  "blocked": true,
+  "stage": "B4-5",
+  "b4_5_closed": false,
+  "b4_closed": false,
+  "language_available": false,
+  "workspace_gates": "blocked_existing_n0_b_dynamic_assertion",
+  "runtime_abi": "1.18",
+  "codegen_version": 21,
+  "stdlib_interface": 1,
+  "cmath": "planned",
+  "product_commit": "4b27b7f5bf8fdd0818aad040fbf11efdcc02fb67",
+  "product_files": 1064,
+  "pow": {
+    "cases": 1075,
+    "summary": {
+      "same": 1011,
+      "value_or_error_boundary": 40,
+      "value_bits": 24
+    },
+    "vm_cases": 6450,
+    "report_sha256": "fbc8d177ebb562f6c713891809a8292dc9b59ddef184f82e8fca48375aace3ec"
+  },
+  "stages": {
+    "stages": 5,
+    "report_sha256": "7c19cd31beb59410cda55c2a6ef211956a12825d82c760f0c576594ab65519d8"
+  },
+  "guards": {
+    "passed": 28,
+    "total": 28,
+    "report_sha256": "dcb09d2626fee554baf505420a49f873b54560110ae44491963a787493c2573d",
+    "scope": "simulated-cargo-output"
+  },
+  "tests": {
+    "audit-b0-retry": {
+      "exit_code": 0,
+      "log_sha256": "d5c48c8cb10b2b0bbc0ac529b188eb3816ea382af97e50b4fc75b22696c0d9aa"
+    },
+    "audit-b1-retry": {
+      "exit_code": 0,
+      "log_sha256": "444688deca25c129ebc8c01884229068766105e2d746c6eb16d3318a10ff96a6"
+    },
+    "audit-b2-retry": {
+      "exit_code": 0,
+      "log_sha256": "c208d2433857c833e0ab19552fee06fcd4d5f2b9bfbf3cc300eb9ca3bbfa057a"
+    },
+    "audit-b3-cabi-retry": {
+      "exit_code": 0,
+      "log_sha256": "42419cd9935a8f78f2795dbd0450c62bb3fd8d3b29a1b2f88a43a97e3e173ec3"
+    },
+    "audit-b3-retry": {
+      "exit_code": 0,
+      "log_sha256": "8c0600bc48ba55ae300cc16296a5e940c9c1b448942d3b0ca506d7b46f10a12a"
+    },
+    "audit-b3-wrapper-retry": {
+      "exit_code": 0,
+      "log_sha256": "547d9e8ab8b0915ac06ac6c0a126b1f79a7ccc5a42cf916d0c754e4a828cc5cd"
+    },
+    "audit-b4-0-1-retry": {
+      "exit_code": 0,
+      "log_sha256": "3a2b125314bdb0908b9ec2bd3c68e6b300f7658126abfbeda60f1b3f066ff657"
+    },
+    "audit-b4-2b-retry": {
+      "exit_code": 0,
+      "log_sha256": "bf36fa5161a917e8c0a8708702f34452775eaf3f98365acccf4ddd117958725c"
+    },
+    "audit-b4-3-retry": {
+      "exit_code": 0,
+      "log_sha256": "77d4628301541cc5bf541e11f1f497fd2085b95af8ca554c94e41a0cc8eea389"
+    },
+    "audit-b4-4-retry": {
+      "exit_code": 0,
+      "log_sha256": "2fcf38be33c4ef3faa52760e3a6b27cccc1834956d662ed5275c2225b1076574"
+    },
+    "audit-fix1-retry": {
+      "exit_code": 0,
+      "log_sha256": "24b35148ac4d96f08a5ab5f08b192c05f43bba17c08b59caa9d2b8900723a451"
+    },
+    "b1-native": {
+      "exit_code": 0,
+      "log_sha256": "ba99589ba71ad8f7262057f2c237764ec22b29743fa4165ecc6276cb6011e670"
+    },
+    "b1-vm": {
+      "exit_code": 0,
+      "log_sha256": "2ffee6b78a450425ff9dd79547fa1d8381f95dc1f033da258dce0e6a059025f8"
+    },
+    "clippy": {
+      "exit_code": 0,
+      "log_sha256": "2dd7353b6d284e6bf1a45edaa4994ab111d40d74ffa5706a43daaa2d81432df5"
+    },
+    "docs-final": {
+      "exit_code": 0,
+      "log_sha256": "e7193d9195389a58de1ed44284b6daa0f6951a2c3ac020755e61dadcd5593727"
+    },
+    "docs-final-audited": {
+      "exit_code": 0,
+      "log_sha256": "e7193d9195389a58de1ed44284b6daa0f6951a2c3ac020755e61dadcd5593727"
+    },
+    "docs-final-confirmed": {
+      "exit_code": 0,
+      "log_sha256": "e7193d9195389a58de1ed44284b6daa0f6951a2c3ac020755e61dadcd5593727"
+    },
+    "docs-final-final": {
+      "exit_code": 0,
+      "log_sha256": "e7193d9195389a58de1ed44284b6daa0f6951a2c3ac020755e61dadcd5593727"
+    },
+    "docs-final-last": {
+      "exit_code": 0,
+      "log_sha256": "e7193d9195389a58de1ed44284b6daa0f6951a2c3ac020755e61dadcd5593727"
+    },
+    "docs-final-rebound": {
+      "exit_code": 0,
+      "log_sha256": "e7193d9195389a58de1ed44284b6daa0f6951a2c3ac020755e61dadcd5593727"
+    },
+    "docs-final-sealed": {
+      "exit_code": 0,
+      "log_sha256": "e7193d9195389a58de1ed44284b6daa0f6951a2c3ac020755e61dadcd5593727"
+    },
+    "fmt": {
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "guards-retry": {
+      "exit_code": 0,
+      "log_sha256": "193b9a82f9e63d628d49edd5274baf7b9c702dc775303e89c87b1f37bda443f6"
+    },
+    "lock": {
+      "exit_code": 0,
+      "log_sha256": "c73a2a15aedc7ea58d82dd123f9802ed338fb4e16b2585a19239db8f367b99fa"
+    },
+    "native-library": {
+      "exit_code": 0,
+      "log_sha256": "d1158644494bd1cf34537ef9d2bd8ca78a7aef4bcbd3ab625ae01aa59aff78b0"
+    },
+    "native-matrix": {
+      "exit_code": 0,
+      "log_sha256": "68e7a44b17dd363f76cc28e1d03acb6a9b9f177aace5a7a701a087d7d375f05d"
+    },
+    "pow-final": {
+      "exit_code": 0,
+      "log_sha256": "45099e14642b97f4dff05235c560bf31fcc4a39bcc432e3b096ad5b1cd6abb73"
+    },
+    "pow-retry": {
+      "exit_code": 1,
+      "log_sha256": "f9ea43fe6d68d9b766b681a20fce4944904302c97920c23aeeadd1d2c229fe39"
+    },
+    "runtime-build": {
+      "exit_code": 0,
+      "log_sha256": "cea62daed5096fb3c094f1cec49469a1518f57fee4256b85527aba4a30b8035f"
+    },
+    "stages-retry": {
+      "exit_code": 0,
+      "log_sha256": "d1e2653581999ca7e79e6823806e231b130375c695dda6a5d54ff8c6c1bebb65"
+    },
+    "toolchain": {
+      "exit_code": 2,
+      "log_sha256": "f862525b18a228b2ada85cf6069d8513d6d4015536a6c6debb855fa7fc261627"
+    },
+    "toolchain-retry": {
+      "exit_code": 0,
+      "log_sha256": "854c95e9b9d95763338e70f15abc1226a054f6d1df33265369311f00347d2951"
+    },
+    "workspace": {
+      "exit_code": 101,
+      "log_sha256": "6c0bcba6098bdc97dc114d272447219d4d08ad29964c4c6ebd57af5e32591e17"
+    },
+    "workspace-failure-exact": {
+      "exit_code": 101,
+      "log_sha256": "235374aff432071f007676eb2e379b8fea5e71f099472d915a403443157c3eca"
+    }
+  },
+  "platforms_executed": [
+    "Windows x86_64-pc-windows-msvc"
+  ],
+  "not_executed": [
+    "Linux",
+    "macOS",
+    "remote CI",
+    "performance",
+    "old 721 F10",
+    "workspace targets after first failure"
+  ],
+  "blockers": [
+    {
+      "target": "n0_b_dynamic_native::generic_value_copy_registers_weak_dependency_only_when_called",
+      "observed": "false",
+      "expected": "true",
+      "source": "workspace.json",
+      "ownership": "pre-existing product/test stage; B4-5 did not modify core or tests"
+    }
+  ],
+  "next_stage": "B4-5 blocked; return issue to owning native lowering stage before closeout"
+}

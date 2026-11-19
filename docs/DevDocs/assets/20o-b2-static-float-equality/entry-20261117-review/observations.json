@@ -1,0 +1,1606 @@
+{
+  "cases": [
+    {
+      "case": "float-zero-eq",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-eq-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-eq-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "false\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-eq-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-eq-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-eq-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "false\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-eq-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(float left, float right) -> bool\n    return left == right\nprint(compare(0.0, -0.0))\n"
+      },
+      "operator": "==",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-eq-static-o0.ll:26:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq double %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-eq-static-o0.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-eq-static-o0.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-eq-static-o3.ll:26:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq double %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-eq-static-o3.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-eq-static-o3.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(float left, float right) -> bool\n    return left == right\ncompare(0.0, -0.0)\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "false\n",
+        "success": true
+      }
+    },
+    {
+      "case": "float-zero-ne",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-ne-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-ne-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-ne-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-ne-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-ne-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-ne-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(float left, float right) -> bool\n    return left != right\nprint(compare(0.0, -0.0))\n"
+      },
+      "operator": "!=",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-ne-static-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": true,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-ne-static-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-ne-static-o0.ll",
+            "native_executed": true,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-ne-static-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": true,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-ne-static-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-zero-ne-static-o3.ll",
+            "native_executed": true,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(float left, float right) -> bool\n    return left != right\ncompare(0.0, -0.0)\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "true\n",
+        "success": true
+      }
+    },
+    {
+      "case": "float-negative-zero-eq",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-negative-zero-eq-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-negative-zero-eq-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-negative-zero-eq-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-negative-zero-eq-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-negative-zero-eq-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-negative-zero-eq-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(float left, float right) -> bool\n    return left == right\nprint(compare(-0.0, -0.0))\n"
+      },
+      "operator": "==",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-negative-zero-eq-static-o0.ll:26:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq double %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-negative-zero-eq-static-o0.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-negative-zero-eq-static-o0.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-negative-zero-eq-static-o3.ll:26:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq double %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-negative-zero-eq-static-o3.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-negative-zero-eq-static-o3.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(float left, float right) -> bool\n    return left == right\ncompare(-0.0, -0.0)\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "true\n",
+        "success": true
+      }
+    },
+    {
+      "case": "float-finite-eq",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-finite-eq-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-finite-eq-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-finite-eq-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-finite-eq-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-finite-eq-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-finite-eq-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(float left, float right) -> bool\n    return left == right\nprint(compare(1.5, 1.5))\n"
+      },
+      "operator": "==",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": false,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-finite-eq-static-o0.ll:16:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq double %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-finite-eq-static-o0.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-finite-eq-static-o0.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": false,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-finite-eq-static-o3.ll:16:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq double %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-finite-eq-static-o3.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-finite-eq-static-o3.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(float left, float right) -> bool\n    return left == right\ncompare(1.5, 1.5)\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "true\n",
+        "success": true
+      }
+    },
+    {
+      "case": "float-different-eq",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-different-eq-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-different-eq-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "false\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-different-eq-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-different-eq-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-different-eq-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "false\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-different-eq-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(float left, float right) -> bool\n    return left == right\nprint(compare(1.5, 2.0))\n"
+      },
+      "operator": "==",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": false,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-different-eq-static-o0.ll:16:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq double %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-different-eq-static-o0.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-different-eq-static-o0.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": false,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-different-eq-static-o3.ll:16:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq double %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-different-eq-static-o3.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\float-different-eq-static-o3.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(float left, float right) -> bool\n    return left == right\ncompare(1.5, 2.0)\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "false\n",
+        "success": true
+      }
+    },
+    {
+      "case": "sfloat-zero-eq",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-eq-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-eq-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "false\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-eq-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-eq-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-eq-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "false\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-eq-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(sfloat left, sfloat right) -> bool\n    return left == right\nprint(compare(sfloat(0.0), sfloat(-0.0)))\n"
+      },
+      "operator": "==",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-eq-static-o0.ll:27:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq float %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-eq-static-o0.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-eq-static-o0.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-eq-static-o3.ll:27:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq float %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-eq-static-o3.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-eq-static-o3.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(sfloat left, sfloat right) -> bool\n    return left == right\ncompare(sfloat(0.0), sfloat(-0.0))\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "false\n",
+        "success": true
+      }
+    },
+    {
+      "case": "sfloat-zero-ne",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-ne-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-ne-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-ne-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-ne-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-ne-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-ne-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(sfloat left, sfloat right) -> bool\n    return left != right\nprint(compare(sfloat(0.0), sfloat(-0.0)))\n"
+      },
+      "operator": "!=",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-ne-static-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": true,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-ne-static-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-ne-static-o0.ll",
+            "native_executed": true,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-ne-static-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": true,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-ne-static-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-zero-ne-static-o3.ll",
+            "native_executed": true,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(sfloat left, sfloat right) -> bool\n    return left != right\ncompare(sfloat(0.0), sfloat(-0.0))\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "true\n",
+        "success": true
+      }
+    },
+    {
+      "case": "sfloat-negative-zero-eq",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-negative-zero-eq-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-negative-zero-eq-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-negative-zero-eq-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-negative-zero-eq-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-negative-zero-eq-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-negative-zero-eq-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(sfloat left, sfloat right) -> bool\n    return left == right\nprint(compare(sfloat(-0.0), sfloat(-0.0)))\n"
+      },
+      "operator": "==",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-negative-zero-eq-static-o0.ll:27:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq float %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-negative-zero-eq-static-o0.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-negative-zero-eq-static-o0.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-negative-zero-eq-static-o3.ll:27:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq float %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-negative-zero-eq-static-o3.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-negative-zero-eq-static-o3.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(sfloat left, sfloat right) -> bool\n    return left == right\ncompare(sfloat(-0.0), sfloat(-0.0))\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "true\n",
+        "success": true
+      }
+    },
+    {
+      "case": "sfloat-finite-eq",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-finite-eq-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-finite-eq-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-finite-eq-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-finite-eq-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-finite-eq-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-finite-eq-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(sfloat left, sfloat right) -> bool\n    return left == right\nprint(compare(sfloat(1.5), sfloat(1.5)))\n"
+      },
+      "operator": "==",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-finite-eq-static-o0.ll:26:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq float %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-finite-eq-static-o0.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-finite-eq-static-o0.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-finite-eq-static-o3.ll:26:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq float %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-finite-eq-static-o3.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-finite-eq-static-o3.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(sfloat left, sfloat right) -> bool\n    return left == right\ncompare(sfloat(1.5), sfloat(1.5))\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "true\n",
+        "success": true
+      }
+    },
+    {
+      "case": "sfloat-different-eq",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-different-eq-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-different-eq-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "false\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-different-eq-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-different-eq-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-different-eq-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "false\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-different-eq-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(sfloat left, sfloat right) -> bool\n    return left == right\nprint(compare(sfloat(1.5), sfloat(2.0)))\n"
+      },
+      "operator": "==",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-different-eq-static-o0.ll:26:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq float %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-different-eq-static-o0.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-different-eq-static-o0.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-different-eq-static-o3.ll:26:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t2 = fcmp eq float %t0, %t1\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-different-eq-static-o3.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\sfloat-different-eq-static-o3.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(sfloat left, sfloat right) -> bool\n    return left == right\ncompare(sfloat(1.5), sfloat(2.0))\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "false\n",
+        "success": true
+      }
+    },
+    {
+      "case": "mixed-integer-float",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-integer-float-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-integer-float-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-integer-float-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-integer-float-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-integer-float-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-integer-float-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(int left, float right) -> bool\n    return left == right\nprint(compare(1, 1.0))\n"
+      },
+      "operator": "==",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": false,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-integer-float-static-o0.ll:17:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t3 = fcmp eq double %t1, %t2\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-integer-float-static-o0.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-integer-float-static-o0.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": false,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-integer-float-static-o3.ll:17:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t3 = fcmp eq double %t1, %t2\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-integer-float-static-o3.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-integer-float-static-o3.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(int left, float right) -> bool\n    return left == right\ncompare(1, 1.0)\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "true\n",
+        "success": true
+      }
+    },
+    {
+      "case": "mixed-rounded-integer",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-rounded-integer-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-rounded-integer-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-rounded-integer-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-rounded-integer-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-rounded-integer-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-rounded-integer-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(int left, float right) -> bool\n    return left == right\nprint(compare(9007199254740993, 9007199254740992.0))\n"
+      },
+      "operator": "==",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": false,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-rounded-integer-static-o0.ll:17:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t3 = fcmp eq double %t1, %t2\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-rounded-integer-static-o0.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-rounded-integer-static-o0.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": false,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-rounded-integer-static-o3.ll:17:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t3 = fcmp eq double %t1, %t2\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-rounded-integer-static-o3.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-rounded-integer-static-o3.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(int left, float right) -> bool\n    return left == right\ncompare(9007199254740993, 9007199254740992.0)\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "true\n",
+        "success": true
+      }
+    },
+    {
+      "case": "mixed-sint-sfloat",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sint-sfloat-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sint-sfloat-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sint-sfloat-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sint-sfloat-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sint-sfloat-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sint-sfloat-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(sint left, sfloat right) -> bool\n    return left == right\nprint(compare(sint(1), sfloat(1.0)))\n"
+      },
+      "operator": "==",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sint-sfloat-static-o0.ll:28:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t3 = fcmp eq float %t1, %t2\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sint-sfloat-static-o0.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sint-sfloat-static-o0.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sint-sfloat-static-o3.ll:28:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t3 = fcmp eq float %t1, %t2\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sint-sfloat-static-o3.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sint-sfloat-static-o3.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(sint left, sfloat right) -> bool\n    return left == right\ncompare(sint(1), sfloat(1.0))\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "true\n",
+        "success": true
+      }
+    },
+    {
+      "case": "mixed-sfloat-float",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sfloat-float-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sfloat-float-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sfloat-float-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sfloat-float-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sfloat-float-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sfloat-float-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(sfloat left, float right) -> bool\n    return left == right\nprint(compare(sfloat(1.5), 1.5))\n"
+      },
+      "operator": "==",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sfloat-float-static-o0.ll:27:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t3 = fcmp eq double %t1, %t2\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sfloat-float-static-o0.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sfloat-float-static-o0.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 1,
+              "stderr": "D:/msys64/ucrt64/bin/llvm-as.exe: D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sfloat-float-static-o3.ll:27:14: error: expected fcmp predicate (e.g. 'oeq')\r\n  %t3 = fcmp eq double %t1, %t2\r\n             ^\r\n",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sfloat-float-static-o3.bc",
+            "contains_invalid_fcmp_eq": true,
+            "contains_numeric_fcmp_une": false,
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\mixed-sfloat-float-static-o3.ll",
+            "native_executed": false,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(sfloat left, float right) -> bool\n    return left == right\ncompare(sfloat(1.5), 1.5)\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "true\n",
+        "success": true
+      }
+    },
+    {
+      "case": "integer-control",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\integer-control-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\integer-control-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\integer-control-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\integer-control-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\integer-control-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "true\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\integer-control-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(int left, int right) -> bool\n    return left == right\nprint(compare(1, 1))\n"
+      },
+      "operator": "==",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": false,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\integer-control-static-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\integer-control-static-o0.exe",
+            "execution": {
+              "exit_code": 1,
+              "stderr": "",
+              "stdout": ""
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\integer-control-static-o0.ll",
+            "native_executed": true,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": false,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\integer-control-static-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\integer-control-static-o3.exe",
+            "execution": {
+              "exit_code": 1,
+              "stderr": "",
+              "stdout": ""
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\integer-control-static-o3.ll",
+            "native_executed": true,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(int left, int right) -> bool\n    return left == right\ncompare(1, 1)\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "true\n",
+        "success": true
+      }
+    },
+    {
+      "case": "boolean-control",
+      "dynamic": {
+        "observations": [
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\boolean-control-dynamic-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\boolean-control-dynamic-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "false\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\boolean-control-dynamic-o0.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": true,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\boolean-control-dynamic-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\boolean-control-dynamic-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "false\n"
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\boolean-control-dynamic-o3.ll",
+            "native_executed": true,
+            "observation": "normal exit status and printed boolean",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(bool left, bool right) -> bool\n    return left == right\nprint(compare(true, false))\n"
+      },
+      "operator": "==",
+      "static": {
+        "observations": [
+          {
+            "actual_uses_runtime": false,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\boolean-control-static-o0.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\boolean-control-static-o0.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\boolean-control-static-o0.ll",
+            "native_executed": true,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 0
+          },
+          {
+            "actual_uses_runtime": false,
+            "assembly": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "bitcode_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\boolean-control-static-o3.bc",
+            "build_text_matches_recorded": true,
+            "contains_invalid_fcmp_eq": false,
+            "contains_numeric_fcmp_une": false,
+            "executable": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\boolean-control-static-o3.exe",
+            "execution": {
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": ""
+            },
+            "llvm_path": "D:\\project\\Xiao\\.b5\\float-equality-preflight-20261117-01\\observations\\boolean-control-static-o3.ll",
+            "native_executed": true,
+            "observation": "test-only entry boolean observation: exit 0 means false, exit 1 means true",
+            "optimization": 3
+          }
+        ],
+        "runtime_checks_debug": "[]",
+        "source": "def compare(bool left, bool right) -> bool\n    return left == right\ncompare(true, false)\n"
+      },
+      "vm": {
+        "code": null,
+        "report_debug": "None",
+        "stdout": "false\n",
+        "success": true
+      }
+    }
+  ],
+  "codegen_version": 21,
+  "reference": {
+    "runtime_language_float_zero_eq": false,
+    "runtime_language_float_zero_ne": true,
+    "runtime_language_sfloat_zero_eq": false,
+    "runtime_language_sfloat_zero_ne": true,
+    "rust_numeric_float_zero_equality": true
+  },
+  "runtime_abi": 65555,
+  "scope": "unchanged generator-21 baseline observations; no repair acceptance"
+}

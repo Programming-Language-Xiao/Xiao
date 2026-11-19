@@ -1,0 +1,23 @@
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-modules)
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-ir)
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+error[E0425]: cannot find function `reachable_runtime_components` in this scope
+    --> crates\xiao-codegen-llvm\src\artifact.rs:1640:13
+     |
+1640 |             reachable_runtime_components(text),
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+note: function `crate::dynamic::runtime_abi::reachable_runtime_components` exists but is inaccessible
+    --> crates\xiao-codegen-llvm\src\dynamic\runtime_abi.rs:12:1
+     |
+  12 | pub(super) fn reachable_runtime_components(text: &str) -> Vec<String> {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+help: consider importing this function
+     |
+1570 +     use crate::artifact::reachable_runtime_components;
+     |
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `xiao-codegen-llvm` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

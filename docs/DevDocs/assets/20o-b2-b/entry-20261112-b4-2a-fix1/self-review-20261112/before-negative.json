@@ -1,0 +1,28 @@
+{
+  "audit_sha256": "90689666b8f75447c5ae164028bbe6dc957195d46c03cc3970e815f0245ceab1",
+  "cases": [
+    {
+      "case": "refresh_changes_language_state",
+      "argv_options": [
+        "--refresh-results"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"b4_2a_closed\": true, \"b4_2a_gate_restored\": true, \"b4_2b_started\": false, \"code_commit\": \"c4610211\", \"files\": 75, \"fix1_closed\": true, \"passed\": true}\n",
+      "stderr": ""
+    },
+    {
+      "case": "unlisted_nested_evidence",
+      "argv_options": [],
+      "exit_code": 0,
+      "stdout": "{\"b4_2a_closed\": true, \"b4_2a_gate_restored\": true, \"b4_2b_started\": false, \"code_commit\": \"c4610211\", \"files\": 75, \"fix1_closed\": true, \"passed\": true}\n",
+      "stderr": ""
+    },
+    {
+      "case": "parent_escape",
+      "argv_options": [],
+      "exit_code": 0,
+      "stdout": "{\"b4_2a_closed\": true, \"b4_2a_gate_restored\": true, \"b4_2b_started\": false, \"code_commit\": \"c4610211\", \"files\": 75, \"fix1_closed\": true, \"passed\": true}\n",
+      "stderr": ""
+    }
+  ]
+}

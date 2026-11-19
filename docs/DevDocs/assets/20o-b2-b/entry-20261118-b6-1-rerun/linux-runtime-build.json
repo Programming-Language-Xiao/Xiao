@@ -1,0 +1,193 @@
+{
+  "label": "linux-runtime-build",
+  "platform": "linux",
+  "stage": "runtime-build",
+  "code_commit": "43f18274175ba09ac84e759999c40cde72eae1c5",
+  "task_root": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01",
+  "source_root": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/source",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "build",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-runtime",
+    "--release"
+  ],
+  "cwd": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/source",
+  "pid": 1600,
+  "exit_code": 0,
+  "started_utc": "2026-11-18T00:29:52.398291+00:00",
+  "finished_utc": "2026-11-18T00:30:31.161287+00:00",
+  "elapsed_seconds": 38.762805578000005,
+  "os": {
+    "system": "Linux",
+    "release": "6.6.114.1-microsoft-standard-WSL2",
+    "machine": "x86_64",
+    "distribution": {
+      "NAME": "Ubuntu",
+      "ID": "ubuntu",
+      "PRETTY_NAME": "Ubuntu 26.04 LTS",
+      "VERSION_ID": "26.04",
+      "VERSION": "26.04 (Resolute Raccoon)",
+      "VERSION_CODENAME": "resolute",
+      "ID_LIKE": "debian",
+      "HOME_URL": "https://www.ubuntu.com/",
+      "SUPPORT_URL": "https://help.ubuntu.com/",
+      "BUG_REPORT_URL": "https://bugs.launchpad.net/ubuntu/",
+      "PRIVACY_POLICY_URL": "https://www.ubuntu.com/legal/terms-and-policies/privacy-policy",
+      "UBUNTU_CODENAME": "resolute",
+      "LOGO": "ubuntu-logo"
+    }
+  },
+  "environment_overrides": {
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "CARGO_TARGET_DIR": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/target",
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_TERM_COLOR": "never",
+    "TEMP": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/temp/runtime-build",
+    "TMP": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/temp/runtime-build",
+    "XIAO_HOME": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/home",
+    "XIAO_STDLIB_ROOT": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/source/stdlib",
+    "XIAO_RUNTIME_LIBRARY": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/target/release/libxiao_runtime.a",
+    "XIAO_TARGET_TRIPLE": "x86_64-unknown-linux-gnu",
+    "XIAO_CLANG": "/usr/bin/clang",
+    "XIAO_LLVM_AS": "/usr/bin/llvm-as",
+    "XIAO_LLC": "/usr/bin/llc",
+    "XIAO_B1_F10": "0",
+    "XIAO_B2_A_PERF": "0",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "TMPDIR": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/temp/runtime-build",
+    "RUSTC": "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc"
+  },
+  "removed_environment_names": [],
+  "libtest_threads": "repository .cargo/config.toml RUST_TEST_THREADS=4; no override",
+  "tools_before": {
+    "rustc": {
+      "binary": {
+        "path": "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "bytes": 646032,
+        "sha256": "ba4b837efb6612dfa8d941c5a72b8a50d1d03a0f36216743b173949aa8d9eb75"
+      },
+      "version": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-unknown-linux-gnu\nrelease: 1.96.0\nLLVM version: 22.1.2"
+    },
+    "cargo": {
+      "binary": {
+        "path": "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "bytes": 42865872,
+        "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f"
+      },
+      "version": "cargo 1.96.0 (30a34c682 2026-05-25)\nrelease: 1.96.0\ncommit-hash: 30a34c6821b57de0aaec83a901aca39f88f6778c\ncommit-date: 2026-05-25\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.19.0-DEV (sys:0.4.87+curl-8.19.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 26.4.0 (resolute) [64-bit]"
+    },
+    "XIAO_CLANG": {
+      "binary": {
+        "path": "/usr/lib/llvm-21/bin/clang",
+        "bytes": 137584,
+        "sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932"
+      },
+      "version": "Ubuntu clang version 21.1.8 (6ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/lib/llvm-21/bin"
+    },
+    "XIAO_LLVM_AS": {
+      "binary": {
+        "path": "/usr/lib/llvm-21/bin/llvm-as",
+        "bytes": 28512,
+        "sha256": "50526d303ae33ed44002023d8d9611186e916f4b8eaf70a608bdbf1d81122784"
+      },
+      "version": "Ubuntu LLVM version 21.1.8\n  Optimized build."
+    },
+    "XIAO_LLC": {
+      "binary": {
+        "path": "/usr/lib/llvm-21/bin/llc",
+        "bytes": 176760,
+        "sha256": "935bdae46915daba23b279efebc04400c085c56a8536dea633f1f5a96c9fd382"
+      },
+      "version": "Ubuntu LLVM version 21.1.8\n  Optimized build.\n  Default target: x86_64-pc-linux-gnu\n  Host CPU: znver5\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - AMD GCN GPUs\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    m68k        - Motorola 68000 family\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv64     - 64-bit RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    spirv       - SPIR-V Logical\n    spirv32     - SPIR-V 32-bit\n    spirv64     - SPIR-V 64-bit\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore\n    xtensa      - Xtensa 32"
+    }
+  },
+  "tools_after": {
+    "rustc": {
+      "binary": {
+        "path": "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "bytes": 646032,
+        "sha256": "ba4b837efb6612dfa8d941c5a72b8a50d1d03a0f36216743b173949aa8d9eb75"
+      },
+      "version": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-unknown-linux-gnu\nrelease: 1.96.0\nLLVM version: 22.1.2"
+    },
+    "cargo": {
+      "binary": {
+        "path": "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "bytes": 42865872,
+        "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f"
+      },
+      "version": "cargo 1.96.0 (30a34c682 2026-05-25)\nrelease: 1.96.0\ncommit-hash: 30a34c6821b57de0aaec83a901aca39f88f6778c\ncommit-date: 2026-05-25\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.19.0-DEV (sys:0.4.87+curl-8.19.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 26.4.0 (resolute) [64-bit]"
+    },
+    "XIAO_CLANG": {
+      "binary": {
+        "path": "/usr/lib/llvm-21/bin/clang",
+        "bytes": 137584,
+        "sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932"
+      },
+      "version": "Ubuntu clang version 21.1.8 (6ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/lib/llvm-21/bin"
+    },
+    "XIAO_LLVM_AS": {
+      "binary": {
+        "path": "/usr/lib/llvm-21/bin/llvm-as",
+        "bytes": 28512,
+        "sha256": "50526d303ae33ed44002023d8d9611186e916f4b8eaf70a608bdbf1d81122784"
+      },
+      "version": "Ubuntu LLVM version 21.1.8\n  Optimized build."
+    },
+    "XIAO_LLC": {
+      "binary": {
+        "path": "/usr/lib/llvm-21/bin/llc",
+        "bytes": 176760,
+        "sha256": "935bdae46915daba23b279efebc04400c085c56a8536dea633f1f5a96c9fd382"
+      },
+      "version": "Ubuntu LLVM version 21.1.8\n  Optimized build.\n  Default target: x86_64-pc-linux-gnu\n  Host CPU: znver5\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - AMD GCN GPUs\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    m68k        - Motorola 68000 family\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv64     - 64-bit RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    spirv       - SPIR-V Logical\n    spirv32     - SPIR-V 32-bit\n    spirv64     - SPIR-V 64-bit\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore\n    xtensa      - Xtensa 32"
+    }
+  },
+  "source_before": {
+    "path": "objects/sha256/8d/8d7459451243f16137a640aad1a9b88d6b9689fac402cac2251c0f021f1391f3.bin",
+    "bytes": 93945,
+    "sha256": "abe5ebe91f07f728e6a38a80659fac2d7e7693fb85c1c6891ddeb0cbad3a0240",
+    "encoding": "gzip",
+    "raw_bytes": 249943,
+    "raw_sha256": "8d7459451243f16137a640aad1a9b88d6b9689fac402cac2251c0f021f1391f3"
+  },
+  "source_after": {
+    "path": "objects/sha256/8d/8d7459451243f16137a640aad1a9b88d6b9689fac402cac2251c0f021f1391f3.bin",
+    "bytes": 93945,
+    "sha256": "abe5ebe91f07f728e6a38a80659fac2d7e7693fb85c1c6891ddeb0cbad3a0240",
+    "encoding": "gzip",
+    "raw_bytes": 249943,
+    "raw_sha256": "8d7459451243f16137a640aad1a9b88d6b9689fac402cac2251c0f021f1391f3"
+  },
+  "source_unchanged": true,
+  "runtime_before": null,
+  "runtime_after": {
+    "path": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/target/release/libxiao_runtime.a",
+    "bytes": 34143188,
+    "sha256": "08b88569645eb45d7cc6fea793adbe91a459a174392a91d1b57497d22349ad89"
+  },
+  "artifacts_after": {
+    "path": "objects/sha256/4f/4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945.bin",
+    "bytes": 2,
+    "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "encoding": "identity",
+    "raw_bytes": 2,
+    "raw_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "recorder_sha256": "9b19bb876b7b41cfeadc4ce9f34e3c502cfdd2e32f12aaa0f06bdace05f69715",
+  "common_sha256": "6057e9492f007bafd9f8263a55c5834ae7a44ad44d5cdd29c4f6e33cc4e77b4b",
+  "log": {
+    "path": "objects/sha256/d1/d12047a212ed00ea92a1eb31782666c1a05f43450e4539482ca3ca12303b52eb.bin",
+    "bytes": 1907,
+    "sha256": "d12047a212ed00ea92a1eb31782666c1a05f43450e4539482ca3ca12303b52eb",
+    "encoding": "identity",
+    "raw_bytes": 1907,
+    "raw_sha256": "d12047a212ed00ea92a1eb31782666c1a05f43450e4539482ca3ca12303b52eb"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "index": {
+    "path": "objects/sha256/2d/2de3f5d4d1d1c4e5bd4f068a344dfe805c02b0aad6b0aa33a20d7f457af7a18e.bin",
+    "bytes": 224,
+    "sha256": "2de3f5d4d1d1c4e5bd4f068a344dfe805c02b0aad6b0aa33a20d7f457af7a18e",
+    "encoding": "identity",
+    "raw_bytes": 224,
+    "raw_sha256": "2de3f5d4d1d1c4e5bd4f068a344dfe805c02b0aad6b0aa33a20d7f457af7a18e"
+  },
+  "executable": {
+    "path": "D:\\project\\Xiao\\.b5\\float-equality-fix-20261117-01\\cache-dynamic-o0-r2\\dynamic-o0-g21.exe",
+    "bytes": 1809408,
+    "sha256": "85aaacdd4b7a962133f2ccd4cffcdb51a2d662c723006586efcee95ebf1b005c"
+  }
+}

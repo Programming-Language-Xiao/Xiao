@@ -28,6 +28,10 @@ B1-IMP 的既有 `std.` 别名前置修复使 VM 与 `archive_closure.rs` 共用
 `xiao-standard-library::canonical_module_identity`；归档要求仍只记录 `stdlib.` 固定身份，
 不把别名当项目模块或复制官方函数体。原生回归复用 20C 入口，不增加 intrinsic 或 ABI。
 
+B4-4 的 `archive_run.rs` 在归档执行边界注册 `DriverModuleLoader`，协议与公开驱动器入口共用。
+`module_loader.rs` 显式登记可执行官方模块；新增官方模块必须随接线和验收同步登记，
+索引中出现源码不代表自动开放执行。归档写前扫描沿用该边界，函数选择导入不作为子模块处理。
+
 后续契约回归补齐 `std.` 的完整函数签名注入，避免公共别名退化成动态调用而绕过静态
 参数检查；`std.` 与 `stdlib.` 的类型、参数名及必填规则来自同一份标准库源码。
 

@@ -1,0 +1,88 @@
+; Xiao N0-A LLVM module
+; target = x86_64-pc-windows-msvc
+target triple = "x86_64-pc-windows-msvc"
+
+; xiao.source-map statement 0..55
+; xiao.source-map return 41..54
+; xiao.source-map statement 55..77
+%xiao.cmath.value = type { i32, i64 }
+declare i32 @xiao_runtime_abi_is_compatible(i32, i32)
+declare i32 @xiao_runtime_cmath_pow(ptr, ptr, ptr)
+declare i32 @xiao_runtime_error_attach_span(i64, i64)
+declare i32 @xiao_runtime_error_exit_code()
+declare i32 @xiao_runtime_error_raise_numeric(i32, ptr, i64, ptr, i64, i64, i64)
+declare ptr @llvm.stacksave()
+declare void @exit(i32)
+declare void @llvm.stackrestore(ptr)
+declare void @xiao_runtime_error_report()
+declare void @xiao_runtime_fatal_abi()
+
+define double @xiao_fn_0_probe(double %arg0, double %arg1) {
+entry:
+  %slot0 = alloca double
+  %slot1 = alloca double
+  store double %arg0, ptr %slot0
+  store double %arg1, ptr %slot1
+  %t0 = load double, ptr %slot0
+  %t1 = load double, ptr %slot1
+  %t2 = call ptr @llvm.stacksave()
+  %t3 = bitcast double %t0 to i64
+  %t4 = insertvalue %xiao.cmath.value zeroinitializer, i32 5, 0
+  %t5 = insertvalue %xiao.cmath.value %t4, i64 %t3, 1
+  %t6 = alloca %xiao.cmath.value, align 8
+  store %xiao.cmath.value %t5, ptr %t6
+  %t7 = bitcast double %t1 to i64
+  %t8 = insertvalue %xiao.cmath.value zeroinitializer, i32 5, 0
+  %t9 = insertvalue %xiao.cmath.value %t8, i64 %t7, 1
+  %t10 = alloca %xiao.cmath.value, align 8
+  store %xiao.cmath.value %t9, ptr %t10
+  %t11 = alloca %xiao.cmath.value, align 8
+  store %xiao.cmath.value zeroinitializer, ptr %t11
+  %t12 = call i32 @xiao_runtime_cmath_pow(ptr %t6, ptr %t10, ptr %t11)
+  switch i32 %t12, label %cmath.abi.failure2 [ i32 0, label %cmath.ok0 i32 6, label %cmath.error1 ]
+cmath.abi.failure2:
+  call void @llvm.stackrestore(ptr %t2)
+  call void @xiao_runtime_fatal_abi()
+  unreachable
+cmath.error1:
+  call void @llvm.stackrestore(ptr %t2)
+  call i32 @xiao_runtime_error_attach_span(i64 48, i64 54)
+  call void @xiao_runtime_error_report()
+  %t13 = call i32 @xiao_runtime_error_exit_code()
+  call void @exit(i32 %t13)
+  unreachable
+cmath.ok0:
+  %t14 = load %xiao.cmath.value, ptr %t11
+  %t15 = extractvalue %xiao.cmath.value %t14, 1
+  %t16 = bitcast i64 %t15 to double
+  call void @llvm.stackrestore(ptr %t2)
+  ret double %t16
+}
+
+define i64 @xiao_entry() {
+entry:
+  %slot0 = alloca i64
+  store i64 0, ptr %slot0
+  %t17 = call double @xiao_fn_0_probe(double 2.00000000000000000e0, double 3.00000000000000000e0)
+  %t18 = bitcast double %t17 to i64
+  %t19 = bitcast double 8.00000000000000000e0 to i64
+  %t20 = icmp ne i64 %t18, %t19
+  %t21 = zext i1 %t20 to i64
+  store i64 %t21, ptr %slot0
+  %t22 = load i64, ptr %slot0
+  ret i64 %t22
+}
+
+define i32 @main() {
+entry:
+  %xiao_runtime_abi_status = call i32 @xiao_runtime_abi_is_compatible(i32 1, i32 19)
+  %xiao_runtime_abi_ok = icmp eq i32 %xiao_runtime_abi_status, 1
+  br i1 %xiao_runtime_abi_ok, label %xiao.runtime.ok, label %xiao.runtime.incompatible
+xiao.runtime.incompatible:
+  call void @xiao_runtime_fatal_abi()
+  unreachable
+xiao.runtime.ok:
+  %xiao_exit = call i64 @xiao_entry()
+  %xiao_exit_code = trunc i64 %xiao_exit to i32
+  ret i32 %xiao_exit_code
+}

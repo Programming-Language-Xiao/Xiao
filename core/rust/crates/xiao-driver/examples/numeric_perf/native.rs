@@ -11,7 +11,7 @@ pub fn build(
     directory: &Path,
     artifact: &FrontendArtifact,
     level: u8,
-) -> PathBuf {
+) -> (PathBuf, String) {
     let required =
         |key| PathBuf::from(std::env::var_os(key).unwrap_or_else(|| panic!("缺少{key}")));
     let target = TargetDescription::host();
@@ -68,5 +68,5 @@ pub fn build(
         "{}",
         String::from_utf8_lossy(&output.stderr)
     );
-    executable
+    (executable, module.codegen_fingerprint)
 }

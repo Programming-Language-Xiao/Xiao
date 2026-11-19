@@ -1,0 +1,88 @@
+{
+  "label": "linux-runtime-tests-final-r2",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-runtime",
+    "--release",
+    "--",
+    "--nocapture"
+  ],
+  "wsl_distro": "Ubuntu-26.04",
+  "repository": "/mnt/d/project/Xiao/Xiao",
+  "task_root": "/home/xiaoczx/.b6/b6-1-20261117-01",
+  "pid": "1616",
+  "started_utc": "2026-11-17T15:36:01.401844+00:00",
+  "finished_utc": "2026-11-17T15:36:22.665084+00:00",
+  "elapsed_seconds": 21.25,
+  "wsl_exit_code": 0,
+  "source_before": {
+    "path": "objects/sha256/52/52aaa4bc68063b10fe258d13baec6ca4ef581b79f3a0b3c7eff0a1792ab5142b.bin",
+    "bytes": 67360,
+    "sha256": "52aaa4bc68063b10fe258d13baec6ca4ef581b79f3a0b3c7eff0a1792ab5142b",
+    "encoding": "gzip",
+    "raw_bytes": 233803,
+    "raw_sha256": "99dc75a74a224b1e042a8f508c3d5b46da68a38ee012911a8b70f9c266d9a548"
+  },
+  "source_after": {
+    "path": "objects/sha256/52/52aaa4bc68063b10fe258d13baec6ca4ef581b79f3a0b3c7eff0a1792ab5142b.bin",
+    "bytes": 67360,
+    "sha256": "52aaa4bc68063b10fe258d13baec6ca4ef581b79f3a0b3c7eff0a1792ab5142b",
+    "encoding": "gzip",
+    "raw_bytes": 233803,
+    "raw_sha256": "99dc75a74a224b1e042a8f508c3d5b46da68a38ee012911a8b70f9c266d9a548"
+  },
+  "source_unchanged": true,
+  "host": "xiaoCZX",
+  "kernel": "Linux 6.6.114.1-microsoft-standard-WSL2 x86_64 GNU/Linux",
+  "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+  "rustc_sha256": "ba4b837efb6612dfa8d941c5a72b8a50d1d03a0f36216743b173949aa8d9eb75",
+  "cargo": "cargo 1.96.0 (30a34c682 2026-05-25)",
+  "cargo_sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f",
+  "clang": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+  "llvm_as": "Ubuntu LLVM version 21.1.8",
+  "llc": "Ubuntu LLVM version 21.1.8",
+  "llvm_tools_sha256": "a885d5ae4f59e289de41505a39031d8f533e3c6d28c4ad50a9a105baf196acb1",
+  "runtime_line": "34143188 /home/xiaoczx/.b6/b6-1-20261117-01/target/release/libxiao_runtime.a",
+  "runtime_sha256": "08b88569645eb45d7cc6fea793adbe91a459a174392a91d1b57497d22349ad89",
+  "removed_environment_names": null,
+  "linux_runner": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261117-b6\\linux_run.sh",
+    "bytes": 3254,
+    "sha256": "2246457433295b1590a32ed003ed269cd25f13bbf606e3648d5b8c69fb4f35ae"
+  },
+  "runner": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261117-b6\\linux_run.sh",
+    "bytes": 3254,
+    "sha256": "2246457433295b1590a32ed003ed269cd25f13bbf606e3648d5b8c69fb4f35ae"
+  },
+  "default_libtest_threads": "repository Cargo config; RUST_TEST_THREADS unset",
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/xiaoczx/.b6/b6-1-20261117-01/target",
+    "TEMP": "/home/xiaoczx/.b6/b6-1-20261117-01/temp",
+    "TMP": "/home/xiaoczx/.b6/b6-1-20261117-01/temp",
+    "TMPDIR": "/home/xiaoczx/.b6/b6-1-20261117-01/temp",
+    "XIAO_HOME": "/home/xiaoczx/.b6/b6-1-20261117-01/home",
+    "XIAO_STDLIB_ROOT": "/mnt/d/project/Xiao/Xiao/stdlib",
+    "XIAO_B1_F10": "0",
+    "XIAO_B2_A_PERF": "0"
+  },
+  "recorder": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261117-b6\\linux_record.py",
+    "bytes": 7247,
+    "sha256": "2edac3b208d7d6feb701dde372b4b74f89c1ea346fc9f42d92433849c1e94db4"
+  },
+  "log": {
+    "path": "objects/sha256/a9/a9408c9c352d80da5ebdc1b31c43f26492da13f76a5be48443cac614dfeaeaba.bin",
+    "bytes": 40949,
+    "sha256": "a9408c9c352d80da5ebdc1b31c43f26492da13f76a5be48443cac614dfeaeaba",
+    "encoding": "gzip",
+    "raw_bytes": 220756,
+    "raw_sha256": "68a5b64b477739e5a64ec22057838ffae21eb068a79967d4be51099353918d6c"
+  }
+}

@@ -1,0 +1,2392 @@
+{
+  "scope": "本批最终文档和仓库布局门禁，不是产品验收",
+  "argv": [
+    "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+    "tools/repo-check/src/cli.ts",
+    "all"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 26168,
+  "started_utc": "2026-11-16T19:03:11.877543+00:00",
+  "finished_utc": "2026-11-16T19:03:48.582176+00:00",
+  "exit_code": 0,
+  "tool": {
+    "path": "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+    "bytes": 88825944,
+    "sha256": "627d2e4775c24bdedee2cd7ccc18dcadae061e5345274ab6e3c4c797927bfb8f"
+  },
+  "source_before": "0352517d611202e49509dec65d49d485ebbffd71aaf1fcbea9bd968ac613614f",
+  "source_after": "0352517d611202e49509dec65d49d485ebbffd71aaf1fcbea9bd968ac613614f",
+  "inputs_unchanged": true,
+  "inputs": {
+    "bun.lock": {
+      "bytes": 2825,
+      "sha256": "57f584636b264e751ebb89411cf5a46eb2fd81de6190b6db5fe87237c5755a50"
+    },
+    "docs/DevDocs/00-decisions.md": {
+      "bytes": 114885,
+      "sha256": "c0d2c271dad174554bf8da170c6034781487cdee72df7e13ceb3ea6e096fe455"
+    },
+    "docs/DevDocs/00a-a0-workspace-and-checkers.md": {
+      "bytes": 24655,
+      "sha256": "4aae1d304c5186ae5915efcb5c82444b0d3960c81cbb25184dd776411bbcde67"
+    },
+    "docs/DevDocs/00a-project-layout.md": {
+      "bytes": 17679,
+      "sha256": "44a9cc891c4846835e2efd0cc9e4aea9d6ac1d132e88a600f8413d9f1e7b6ba8"
+    },
+    "docs/DevDocs/00b-usedocs-policy.md": {
+      "bytes": 7984,
+      "sha256": "94a48eacffc85070a63247bb4dd79c9c6a5ae6d34ab31e3f9f2aff31458bb991"
+    },
+    "docs/DevDocs/00c-doc-lint-wiring.md": {
+      "bytes": 6750,
+      "sha256": "be321d32c5f1cbec8fd7a3ed91632df786dc57f2475dec35566237fd1fcfbe79"
+    },
+    "docs/DevDocs/00d-doc-adapter-protocol-v2-fixes.md": {
+      "bytes": 21532,
+      "sha256": "1692bbd838401fbfd15def2a081ac2225b33a8dceb9128010a3920d099aef115"
+    },
+    "docs/DevDocs/00e-file-size-gate.md": {
+      "bytes": 30490,
+      "sha256": "7efa2f598b8ba44d6bf7c3497032bc7a07971ce5355eda4113850cc9287b8919"
+    },
+    "docs/DevDocs/00f-parser-decoupling.md": {
+      "bytes": 3581,
+      "sha256": "272f5a79c007d30f69455e98f55dd037525f910e1d2b32e1590249ce676ff4c2"
+    },
+    "docs/DevDocs/01-lexical-and-grammar.md": {
+      "bytes": 12966,
+      "sha256": "e3cff8504fb3d24401e53515213227c51516af121d2938cb30689835ea131568"
+    },
+    "docs/DevDocs/01a-f0-l0-implementation.md": {
+      "bytes": 5328,
+      "sha256": "d0d91f572e27387b4cbe6bdf50eb8f262b50bcbaf8949c8e625c8add60c9b626"
+    },
+    "docs/DevDocs/01b-l1-implementation.md": {
+      "bytes": 4617,
+      "sha256": "1ffbd395963793c756ecd3860427dcd11d45bcedbd27e06cd7b21b620e7caa19"
+    },
+    "docs/DevDocs/01c-l2-implementation.md": {
+      "bytes": 5648,
+      "sha256": "1fe4e98bec008ad0fd24b8cd1a220f98235de2b77cad3c3ed011b651ccd638c9"
+    },
+    "docs/DevDocs/01d-p0-parser-implementation.md": {
+      "bytes": 6531,
+      "sha256": "f29691752a32a424346d3a72cf119a9fcac2bb45e0a126f34791cc2e459678d0"
+    },
+    "docs/DevDocs/01e-p1-expression-selectors.md": {
+      "bytes": 5455,
+      "sha256": "9142c07712c3a801871c72d23826ac34d3aa075398819f38223af8bc1a987d67"
+    },
+    "docs/DevDocs/01f-p2a-syntax-decoupling.md": {
+      "bytes": 2752,
+      "sha256": "ce1c44366f5bbb199877c5e41e8570d6a87b97d1ac6aad2922009c9a8939ba98"
+    },
+    "docs/DevDocs/02-type-system.md": {
+      "bytes": 12851,
+      "sha256": "d406a13f9afe3b1a88191ca9ef5255b6801a7a1b5ebd5bedf842c89a4678667e"
+    },
+    "docs/DevDocs/02a-p2-static-types.md": {
+      "bytes": 5945,
+      "sha256": "721cc6cec8ebfeb5567c17b7f6afd52313a6dc364bca2d70f4a2d9ab825e3436"
+    },
+    "docs/DevDocs/03-collections.md": {
+      "bytes": 29594,
+      "sha256": "2ef0af12c676aa031ec67d3fc96428e1b465ce029b08d1206ec20fbe8fbd4d2a"
+    },
+    "docs/DevDocs/03a-c0-containers.md": {
+      "bytes": 7487,
+      "sha256": "5e33f8157af242f6e615be6e8c4f50b2c8157cfd33c96f606443286e97fb914f"
+    },
+    "docs/DevDocs/03b-c1-ordered-selectors.md": {
+      "bytes": 9905,
+      "sha256": "d9dab6d1b8646ce84f8a0654573cd423f2a43ac5bb3dc95396518e9bd904ac55"
+    },
+    "docs/DevDocs/03c-c2a-sets.md": {
+      "bytes": 10490,
+      "sha256": "5cbd608da6a3e30409d1579e0fa0d67e41699e0eeff54bbd69a28869700042f8"
+    },
+    "docs/DevDocs/03d-c2b-heterogeneous-sets.md": {
+      "bytes": 7983,
+      "sha256": "a32f55546ddcae7073c0f3ef6f4544e5140d8b4e1fc79610a5976f21a46756ad"
+    },
+    "docs/DevDocs/03e-c2c-set-operations.md": {
+      "bytes": 10002,
+      "sha256": "843380c9903995f20a92c533a150e4b4245f4be2cce8cfaef74cae74bf3b8d87"
+    },
+    "docs/DevDocs/04-functions-and-control.md": {
+      "bytes": 12787,
+      "sha256": "2942f8f0d60465bceb482924beb2baa2a2034f21128df48d15b82391af3a4257"
+    },
+    "docs/DevDocs/05-tables-and-projects.md": {
+      "bytes": 15304,
+      "sha256": "a69e917c0f6fb0bee21e0be60fe6e3004f7d6a8010cddda31cf44024d538dd58"
+    },
+    "docs/DevDocs/05a-import-syntax.md": {
+      "bytes": 3917,
+      "sha256": "5be8572fb8d92f7621b892658d22d79dad7b818bfd193ca63ceafad4cfb01e46"
+    },
+    "docs/DevDocs/05b-local-module-resolution.md": {
+      "bytes": 6387,
+      "sha256": "f06c44815ee8099ef46929113d3db97b22cdfe7d4ec8140d2854e82fa18e680d"
+    },
+    "docs/DevDocs/05c-table-static-closure.md": {
+      "bytes": 6240,
+      "sha256": "7b000a0bfbdf4821de96f531ad5ce2b71d5dba4a4a9ded92401fcdd316ed6e0f"
+    },
+    "docs/DevDocs/05d-config-static-closure.md": {
+      "bytes": 6159,
+      "sha256": "fe65c8ff62d2450dcc34a5674b58ca663d1f06a2c54791cad70126c9dd712722"
+    },
+    "docs/DevDocs/06-memory-and-runtime.md": {
+      "bytes": 10188,
+      "sha256": "30702913a771d695a43af15f40bf0d280a7c8b028fa9e8165cafcb4cf131dd0c"
+    },
+    "docs/DevDocs/06a-lifetime-static-closure.md": {
+      "bytes": 10292,
+      "sha256": "6990e0c2d8351c98878418583287cd004efd2728471f19fbd3a387a2a4f923b3"
+    },
+    "docs/DevDocs/06b-runtime-objects-and-tables.md": {
+      "bytes": 9011,
+      "sha256": "1d6cd6b57cba93476613612fa8f5740a37f14e8121bc4364935d0bd32cbfb6bf"
+    },
+    "docs/DevDocs/07-concurrency-and-errors.md": {
+      "bytes": 25465,
+      "sha256": "f448d72541094fd214a443f4cc1062e922c5f7e33b9c5ecafa5014f28d19b7d1"
+    },
+    "docs/DevDocs/07d-closeout-and-concurrency-decisions.md": {
+      "bytes": 17274,
+      "sha256": "928830f71cf33e181ae7e5a9b95f805578af3456ac050bbf80e8942e51f4bdf6"
+    },
+    "docs/DevDocs/07d-concurrency-model-research.md": {
+      "bytes": 33284,
+      "sha256": "95054bd84f9752c3bfc12b2c8d12b8751d48dbbe20d3c9b27217f95af791cd7e"
+    },
+    "docs/DevDocs/07d10-clean-abi-layout-and-evidence-closeout.md": {
+      "bytes": 12056,
+      "sha256": "9bd7895ff5e1da2f63e74b70ad0eb51473ff83b87d5a75d1e639100c133eea59"
+    },
+    "docs/DevDocs/07d11-abi-cost-semantics-and-evidence-closeout.md": {
+      "bytes": 10496,
+      "sha256": "6b1e0854b1b07fa3363cf7994d9050ff01522d6eb2758061679e11a9a324a06f"
+    },
+    "docs/DevDocs/07d12-closeout-doc-sync-and-cross-platform-evidence.md": {
+      "bytes": 10432,
+      "sha256": "6a0e2f2f43b969d5aaf2a2ed39dedcbe096c59cc8fb823cdf55b4bf806d4e1de"
+    },
+    "docs/DevDocs/07d13-concurrency-prototype-final-closeout.md": {
+      "bytes": 12120,
+      "sha256": "ad2b77ec86aeb97ad69478f1a449af300333f742eba3057def439bc7323b6344"
+    },
+    "docs/DevDocs/07d2-entry-decisions-and-platform-closeout.md": {
+      "bytes": 14829,
+      "sha256": "b7fccd67e39d1ba5515cd7d0558d7377b876743962e3db99c2e7dbec0dcb87aa"
+    },
+    "docs/DevDocs/07d3-platform-reproduction-fix-and-closeout.md": {
+      "bytes": 15791,
+      "sha256": "1bff6911776ad379cb97264302e603288717012b5da2a1493455dcd014e39b6c"
+    },
+    "docs/DevDocs/07d4-final-evidence-backfill-and-entry-decisions.md": {
+      "bytes": 14773,
+      "sha256": "f534920155112bb6cf7801e841fd88bcb5bffad8794d884929909f49d108bd7a"
+    },
+    "docs/DevDocs/07d5-final-consistency-and-concurrency-entry.md": {
+      "bytes": 14032,
+      "sha256": "b45d47e1d4a5007df70097c6f74dbc4cf5027fba2deb1edf8bdece8c901a1c62"
+    },
+    "docs/DevDocs/07d6-minimal-os-thread-prototype.md": {
+      "bytes": 13139,
+      "sha256": "6fd363565a62022e529a168dcd9fca249e1c1e0776d8eab106e390b438b1bd83"
+    },
+    "docs/DevDocs/07d7-prototype-gate-and-evidence-fixes.md": {
+      "bytes": 14381,
+      "sha256": "fd3b6dbc48769ca28734c5ef77361edca3336201952164523ccc04cc82d716da"
+    },
+    "docs/DevDocs/07d8-atomic-handle-abi-prototype.md": {
+      "bytes": 13670,
+      "sha256": "fd3c99d02a280bd19741daf18b74b617f7c9bcd8bbb20e3c330afa99c9e018d8"
+    },
+    "docs/DevDocs/07d9-abi-layout-cleanup-and-cost-evidence.md": {
+      "bytes": 13190,
+      "sha256": "10b19ac15579e2ff73a617f5a6e8faf3bf0334ba6a8d5af381d9a67d582fbaa2"
+    },
+    "docs/DevDocs/08-frontend-pipeline.md": {
+      "bytes": 8284,
+      "sha256": "5b493937f669e9806ed9b9d10a3bb81b7e9063c6a2f018134562435f21703ab0"
+    },
+    "docs/DevDocs/08a-u0-frontend-implementation.md": {
+      "bytes": 4138,
+      "sha256": "45a6a4ebd8f5c92a679e384626935c7734f6083621bca1f6d15a7928deb924e0"
+    },
+    "docs/DevDocs/09-bytecode-runtime.md": {
+      "bytes": 14833,
+      "sha256": "7a34a2bbb4df4f0d5ab8379aaa69053c0a0781855fe9ea324e4e2153e103ef00"
+    },
+    "docs/DevDocs/09b0-bytecode-closure.md": {
+      "bytes": 35289,
+      "sha256": "271f211aa8aeae7b4a027c63d9dd890b7903d89c9b048c650f2526af99df3e04"
+    },
+    "docs/DevDocs/09b0b-production-vm.md": {
+      "bytes": 21002,
+      "sha256": "5ca05a6f316fccb86a0a21ec5dbaaf837af519ecb525db3899edded62c7d3ff6"
+    },
+    "docs/DevDocs/09b0c-frontend-to-vm-driver.md": {
+      "bytes": 17852,
+      "sha256": "da0b6f2347564060eddf00badf548ee243115fbda8876afaa94f4329561c8fab"
+    },
+    "docs/DevDocs/09b0d-exit-codes-and-linux-verification.md": {
+      "bytes": 20264,
+      "sha256": "8f7c9526a293a69bee32602a1282435dded564913ad06622291d0c7ef54ff3c2"
+    },
+    "docs/DevDocs/09b0e-vm-cancellation-checkpoint.md": {
+      "bytes": 24456,
+      "sha256": "e9848994d163c0f818c9549d624b88739d6172bb481498ff024fee0e3356d6e1"
+    },
+    "docs/DevDocs/09r-bytecode-machine-research.md": {
+      "bytes": 41038,
+      "sha256": "1e714918e7cd9f6aba11d443b3e51162b32c1f418ebf051bd56e936417639848"
+    },
+    "docs/DevDocs/09r2b-selector-execution.md": {
+      "bytes": 48670,
+      "sha256": "4683f363b190237286d1773d95433237e46a1212057b555ac724c2735de8eb17"
+    },
+    "docs/DevDocs/09r2b1-selector-verification.md": {
+      "bytes": 13467,
+      "sha256": "07bb5640345017ca451986e675f04642de2925c006a12430c545d10eb5ccd9c0"
+    },
+    "docs/DevDocs/09r2c-exception-control-flow.md": {
+      "bytes": 24087,
+      "sha256": "753f4c30509db34de51207ad67a07166c44b9262c0ece37f97adcacf35d1eb64"
+    },
+    "docs/DevDocs/09r2d-machines-and-encoder.md": {
+      "bytes": 63007,
+      "sha256": "42150cb6ebf97bdaade08ba75acbf8eeea5452aa614978296d4a539901bbbd13"
+    },
+    "docs/DevDocs/09r2e-research-encoder-decoupling.md": {
+      "bytes": 3348,
+      "sha256": "72b45db8081acc9d1e0bf850efe5e52186b0316018ec7191bed43ee248f06464"
+    },
+    "docs/DevDocs/09r2f-set-operations.md": {
+      "bytes": 21326,
+      "sha256": "7ea5e6d9105eac27b09db33adb1491217e31353bff35db7bafa9a891730ba29b"
+    },
+    "docs/DevDocs/09r2f1-set-operations-continuation.md": {
+      "bytes": 14684,
+      "sha256": "5ace83afacf3623d490717c269381d3ff4e4fa4080393915ce5087117220119a"
+    },
+    "docs/DevDocs/09r2g-for-and-iteration.md": {
+      "bytes": 16225,
+      "sha256": "8890cd497f6dbdef0c7ddbc8e39c3bb70535e2ad48c23f442645a5882463a9c6"
+    },
+    "docs/DevDocs/09r2h-table-declarations.md": {
+      "bytes": 16916,
+      "sha256": "ace102e2d01954076dfbb066c809cf0b0d42954a65a5ceaeeae263c652b18424"
+    },
+    "docs/DevDocs/09r3-benchmarks-and-freeze.md": {
+      "bytes": 12948,
+      "sha256": "0e497d3084e80b7f6258f0927ecfc692753561f3380ed8442352ea48a6060abf"
+    },
+    "docs/DevDocs/10-native-backend.md": {
+      "bytes": 6707,
+      "sha256": "f1a3a6c268defc43db1c0a6bae57edcff345ab34b15acef678d32f9fa6235475"
+    },
+    "docs/DevDocs/10a-n0-native-closure.md": {
+      "bytes": 21361,
+      "sha256": "39b66123d6aa9bd394196a461804b5a1726273e356c8107f6253c7e3a9e0892f"
+    },
+    "docs/DevDocs/10b-n0-runtime-abi.md": {
+      "bytes": 19496,
+      "sha256": "95bfd35c0c1eefea53ab70f7352d0ff7620a98b7552f527515a2f4a2068d1176"
+    },
+    "docs/DevDocs/10c-native-runtime-link-fix.md": {
+      "bytes": 8935,
+      "sha256": "d43e24736a8a34c707ffcb736281756fb507e3bb8ee84494dfa1ada09ff1f147"
+    },
+    "docs/DevDocs/10d-environment-gated-test-spec.md": {
+      "bytes": 19729,
+      "sha256": "d28b5e2332cf0cba298ddf31a6fba5d32e9f94defc8eb0a38905c8fb2c585612"
+    },
+    "docs/DevDocs/10e-n0c-error-paths-and-mapping.md": {
+      "bytes": 17551,
+      "sha256": "8f68de2b3b0769e06da9134a55e26d4560abdf498a7dbdc547a1e76192b14fba"
+    },
+    "docs/DevDocs/10f-n0c-audit-try-finally.md": {
+      "bytes": 12847,
+      "sha256": "3656595f9b5f0f4ba2fca2e8ac2dd5f3417e55e93bbfa7c79b2597622ae6fce8"
+    },
+    "docs/DevDocs/10g-n0c2-error-boundary-and-differential.md": {
+      "bytes": 22423,
+      "sha256": "20fef5b4ea082a6c8c22945a7eb4b82a60d4484ab170d83c9916b24ec519617b"
+    },
+    "docs/DevDocs/10h-n0c3-debug-window-and-debt.md": {
+      "bytes": 21678,
+      "sha256": "25164884c707442774b8dec32901f2480ef30e066794490eea61a29d4d696d65"
+    },
+    "docs/DevDocs/10i-n0d-artifact-verification-and-trimming.md": {
+      "bytes": 17850,
+      "sha256": "eb50272b1ab5c613d5c70e8210fb1a7bef047933242d556821f794efc57b8a58"
+    },
+    "docs/DevDocs/10j-cross-os-verification.md": {
+      "bytes": 10243,
+      "sha256": "9316704e94114a7718eb904e52f821dd5961b64ad5dbcd45ab7167464cd1ddfb"
+    },
+    "docs/DevDocs/10k-n0d-runtime-trimming-verification.md": {
+      "bytes": 11198,
+      "sha256": "e9550eb57e942eb39fb288283d4991f672853cc6cbd58adef552f769bc32fa54"
+    },
+    "docs/DevDocs/10l-native-dynamic-alignment.md": {
+      "bytes": 24021,
+      "sha256": "d393b3d65099d052a2397beefe472482da3c5205d8eb58ebff19084b8e95b8af"
+    },
+    "docs/DevDocs/10m-native-regression-and-verification.md": {
+      "bytes": 19589,
+      "sha256": "949041523aa9c463cdd030958a78f03a7dd84ac91bef83d3722397dd474cbf6c"
+    },
+    "docs/DevDocs/10n-native-selector-correctness.md": {
+      "bytes": 18278,
+      "sha256": "8fd4430633101f2198b9ed4d5728cae4298eb5cc8e07c2ea9c2fd174de9e89aa"
+    },
+    "docs/DevDocs/10p-differential-exemption-and-coverage.md": {
+      "bytes": 28712,
+      "sha256": "5472282ff74c5fc49c454c9bdffc72eb1f2f87d7d25fba547dab911d40fab0f0"
+    },
+    "docs/DevDocs/10q-i6-cleanup-followup.md": {
+      "bytes": 1460,
+      "sha256": "092c937336e04d2f7477ad196c6b6d03b697490dd9ee3ffe7ce88ecec9fbf753"
+    },
+    "docs/DevDocs/10q-selector-case-strength-and-release-audit.md": {
+      "bytes": 22318,
+      "sha256": "c857eba1da42316329ad0bffa142fb5d0ecb9d6dd58f8bd9f5494a69e8bc2daf"
+    },
+    "docs/DevDocs/10r-closeout.md": {
+      "bytes": 20891,
+      "sha256": "910c4e30f679f6d54881a5066e85ce02a3c39ffad0fabce91452968be9033c2e"
+    },
+    "docs/DevDocs/10r-release-accounting-and-native-ci-gate.md": {
+      "bytes": 27857,
+      "sha256": "ffd84d3dfb8d0b0872a903928c215dbfef036133dc01c0719bf49302e17d37db"
+    },
+    "docs/DevDocs/10r-static-overflow-followup.md": {
+      "bytes": 2708,
+      "sha256": "1b711bbdb76913aaa9496ef00390857af5f6cf7be01152f759e28c15245f96a1"
+    },
+    "docs/DevDocs/10r-static-overflow-implementation.md": {
+      "bytes": 36351,
+      "sha256": "767e4e2ea9218a8ed43427b7b4672d2a251e62a1494b2ee8ae0751c832224895"
+    },
+    "docs/DevDocs/10s-a1-table-method-abi-preparation.md": {
+      "bytes": 3965,
+      "sha256": "d239e26812bda6e9fbb81540f845ef1a0b184926f8fd6b63495ea276ff3c3cb8"
+    },
+    "docs/DevDocs/10s-cross-platform-evidence-and-release-closeout.md": {
+      "bytes": 30390,
+      "sha256": "6025c595beb0ac49499fd92ef803b6b2e2509f7d538a19bcc80d7f0ab06b7e08"
+    },
+    "docs/DevDocs/10s-linux-bare-metal-handoff.md": {
+      "bytes": 8947,
+      "sha256": "c5b9fa6d0196cfdfe46689de49c2225b3c0e1665ae0a1b44d8db76d36a4fc053"
+    },
+    "docs/DevDocs/10s-linux-bare-metal-log-20261007.md": {
+      "bytes": 19353,
+      "sha256": "e0b7b4df2d9d44f6f25e1687cf48a0461e6e625bff7af622d95483f555f59ff4"
+    },
+    "docs/DevDocs/10s-linux-bare-metal-results-20261007.md": {
+      "bytes": 13249,
+      "sha256": "94bdaaef6ba3e699a8f1a5110948b9d38f9434fc5857bcd4d6a6f778ca3a1db6"
+    },
+    "docs/DevDocs/10t-linux-bare-metal-handoff.md": {
+      "bytes": 8306,
+      "sha256": "d95a5068cfe0e2fd735fa7b6c5e61a18353b81c3b86ad0521cf0339cb82073fa"
+    },
+    "docs/DevDocs/10t-linux-bare-metal-log-20261008.md": {
+      "bytes": 17171,
+      "sha256": "dea95dccaf774e8e12eb07d00fe363f0cfbc89ba8900eafdf018de30cd75e2ca"
+    },
+    "docs/DevDocs/10t-linux-bare-metal-results-20261008.md": {
+      "bytes": 2474,
+      "sha256": "63a1d1d94c40fa2ee39ae3a96c12b30c1c7ab1025052194d9be701a67d2b3d9c"
+    },
+    "docs/DevDocs/10t-table-method-abi-implementation.md": {
+      "bytes": 32166,
+      "sha256": "142e86cd136abdac574197d48a23db4f2cab7bb937d1983d0c061eb6b1c88b88"
+    },
+    "docs/DevDocs/10u-table-construction-and-function-value-abi.md": {
+      "bytes": 19258,
+      "sha256": "662e4ba99ca3bce0f4891902b8953c39435deba19093e30a3fef52b15f930069"
+    },
+    "docs/DevDocs/10v-diagnostic-window-hold.md": {
+      "bytes": 15623,
+      "sha256": "ba8f2f92fd383933f12ece0a3f5376b452b9c4a5e8e20aa486b03a2e683b619c"
+    },
+    "docs/DevDocs/10w-a2-closeout-and-a3-boundary.md": {
+      "bytes": 20533,
+      "sha256": "c682efa7f94377d2feb9f2dfe0df88150e9dbd50eb70d72b5c2df1830b1376b3"
+    },
+    "docs/DevDocs/10x-b-series-triage.md": {
+      "bytes": 21729,
+      "sha256": "0fb8ce467c31d48cf8bf5b66cdedb9e56d969d133157b59e5cf895fdf0255750"
+    },
+    "docs/DevDocs/10y-b-series-triage-rework.md": {
+      "bytes": 27971,
+      "sha256": "75e94ffecc2be6367f18bb695b2f17d8fd1439269c8c53379a9accb7b36f74c9"
+    },
+    "docs/DevDocs/10z-19-closeout-and-b-series-implementation.md": {
+      "bytes": 30660,
+      "sha256": "5a6501894a632d910932a30d2954f790d7fca89054c00d12ddb76a751d2c2bcd"
+    },
+    "docs/DevDocs/10z-19-closeout-declaration.md": {
+      "bytes": 21920,
+      "sha256": "5935fd2768ca125595f276bfdda855d56ffc19b398718fd495675e2b9f73a8f0"
+    },
+    "docs/DevDocs/10z-ci-crate-and-test-coverage.md": {
+      "bytes": 19721,
+      "sha256": "7a61e16601a046d0485a14b992fe8cc15a7d3b8b8c1f500bb2236d3566e7e5d4"
+    },
+    "docs/DevDocs/10z-ci-push-coverage-followup.md": {
+      "bytes": 18722,
+      "sha256": "6d9a702de9ee290eef0cae04920600f86b07908935063b3e87f2f974c16bbe9d"
+    },
+    "docs/DevDocs/10z-closeout-execution.md": {
+      "bytes": 30411,
+      "sha256": "d2e77e490ab7a41bad4ddfa8e1e77c9225c56b979e397e591bccb8633229401d"
+    },
+    "docs/DevDocs/10z-closeout-implementation-audit.md": {
+      "bytes": 21596,
+      "sha256": "a6c3120be746688a1004374dba2eb549579d5ce873f5996a4f0bde8fb1d40f80"
+    },
+    "docs/DevDocs/10z-dynamic-error-constructor-followup.md": {
+      "bytes": 4206,
+      "sha256": "afc8f076c97938320858bccc8f03eac8d1f152494f4815c7062061cfccc50ef3"
+    },
+    "docs/DevDocs/10z-index-uniqueness-followup.md": {
+      "bytes": 17333,
+      "sha256": "719d746810d058387d532795ec96cc23d9daa564737ed7ce2ab20498cf213345"
+    },
+    "docs/DevDocs/10z-linux-bare-metal-handoff.md": {
+      "bytes": 11794,
+      "sha256": "18151a4091a58ba48ea24defeca89b709eed19d9330fd072379e6cdf5cb03193"
+    },
+    "docs/DevDocs/10z-linux-bare-metal-log-20261010.md": {
+      "bytes": 1205,
+      "sha256": "613b0914d104b57a99116da168d142980105d6f81a03bc0fa0a52fab80c88440"
+    },
+    "docs/DevDocs/10z-linux-bare-metal-results-20261010.md": {
+      "bytes": 2539,
+      "sha256": "19119dff79ed554f3d7aa12dc5ffef869db65081fdf95da1c988bbe6fe65da32"
+    },
+    "docs/DevDocs/10z-performance-driver.md": {
+      "bytes": 29072,
+      "sha256": "ac69ad02c20aa67a0ace33e693304f0d052687f20716ba60fcb9c7c8622dcdc4"
+    },
+    "docs/DevDocs/10z-performance-measurement-handoff.md": {
+      "bytes": 11774,
+      "sha256": "c36b44bd48a1d5ee0896c2ee98e251c141fea3691b31f3b3d3f3d0838bf6a49e"
+    },
+    "docs/DevDocs/10z-performance-measurement-results-20261011.md": {
+      "bytes": 2185,
+      "sha256": "b91a46973213e4b76c8f871f48851fffc16c6e99b159bc5053ca296588116945"
+    },
+    "docs/DevDocs/10z-y3-stage-report-log-20261010.md": {
+      "bytes": 41458,
+      "sha256": "b8d7c380e5e68b52133d0cacf6aefcf9d7965ade4f19faa342b579b54807910a"
+    },
+    "docs/DevDocs/10z-y3-stage-report.md": {
+      "bytes": 17876,
+      "sha256": "1533068cc2b82552effec4d55527c30b82156a08e94cccd5750cbdddef400b86"
+    },
+    "docs/DevDocs/10z-z1-scope-and-gap-verdict.md": {
+      "bytes": 14195,
+      "sha256": "70713f258d9d6776475aea3f13ef6c82b1c5ad16074bc8b17c9fe4ee365fab3f"
+    },
+    "docs/DevDocs/11-cli-config-and-platform.md": {
+      "bytes": 21305,
+      "sha256": "f257ecf1f3aff7da3621bc3395f0e3a448301ae76fb3ce48b75a18d7f2ab2573"
+    },
+    "docs/DevDocs/11a-concurrency-model.md": {
+      "bytes": 14778,
+      "sha256": "a3f03fd90916d0c9cfdb8fa110721c1de3229c486425d965da19a5c6da715531"
+    },
+    "docs/DevDocs/11a-environments-and-packages.md": {
+      "bytes": 46563,
+      "sha256": "681548ae2a3d0bd111f0dddccecc42603b06a9fea829a04459d5609069dec8e0"
+    },
+    "docs/DevDocs/11a1-package-source-protocol-review.md": {
+      "bytes": 12987,
+      "sha256": "293cba5e925643e7c9ef1c201d8df2816537834a0f4a281e234b4c4cb7e81ccd"
+    },
+    "docs/DevDocs/11ad1-package-contract-and-graph.md": {
+      "bytes": 15644,
+      "sha256": "f24c9b0a08afe8a620c7ba0683f41f75cb931d236ac2f117f155f09479544d63"
+    },
+    "docs/DevDocs/11ae0-environment-fingerprint-and-activation.md": {
+      "bytes": 23600,
+      "sha256": "fb0406fca0d7a4649e4edd9ed0c2ed63e7dfd5880261c1fd37680525f5749caf"
+    },
+    "docs/DevDocs/11ae1-local-dependencies-and-cache.md": {
+      "bytes": 26992,
+      "sha256": "ff098ead2e00cef40b7b244486bdaac0200f6699f0679f8fa1ad807dbf996a90"
+    },
+    "docs/DevDocs/11ae2a-lockfile-and-mapping.md": {
+      "bytes": 24659,
+      "sha256": "bd9114e97a4e288db696b9cb74e87079822d4caf11bf7a6f38829210e80d5cff"
+    },
+    "docs/DevDocs/11ae2b-sync-and-install.md": {
+      "bytes": 26471,
+      "sha256": "ebd4dd5e5add343dac7fd02252f9a7584176526987e923056d79b4df9933edba"
+    },
+    "docs/DevDocs/11ae3a-package-source-contract.md": {
+      "bytes": 27465,
+      "sha256": "538ee51925f9be739b67d3df11a1f3bc4234793c806779071e1c833d3c3f0e46"
+    },
+    "docs/DevDocs/11ae3b-fast-resolution-and-cache.md": {
+      "bytes": 19347,
+      "sha256": "6f93f4bc03d381f4b2ee1c64741e9cf6deb771f5960edc0dae7aab61471a932b"
+    },
+    "docs/DevDocs/11ae3c-static-and-github-sources.md": {
+      "bytes": 18895,
+      "sha256": "a4a095bd0e876c9eee02e8ceb596488b57fcf4c7ea736dc68a956693a449dc19"
+    },
+    "docs/DevDocs/11ae3d-package-operations.md": {
+      "bytes": 19329,
+      "sha256": "792fee098964ab3675fedfcb7ce9b5a9b8998378322920935bdfb860e7fb8d66"
+    },
+    "docs/DevDocs/11ae3d1-remote-closure.md": {
+      "bytes": 17667,
+      "sha256": "6ca7424ff24fb01bbac1eb8049f51746d6ce87ea02aba54934d0d40f19f67939"
+    },
+    "docs/DevDocs/11ae4-shell-delivery.md": {
+      "bytes": 13819,
+      "sha256": "614bcf59213019b755e44d081ad01f86b18042ef7a5820b10a18c470fb7f49a0"
+    },
+    "docs/DevDocs/11b-interactive-repl.md": {
+      "bytes": 22335,
+      "sha256": "88c244b3465aa710a621bef94933b9499d49f93deea31221684ef3530015fb87"
+    },
+    "docs/DevDocs/11bi0-fix-git-probe-blocking.md": {
+      "bytes": 15668,
+      "sha256": "52f1096152d309bdc4ed6458ccca027b16da3140df42f1dfe508fb5caf0752d7"
+    },
+    "docs/DevDocs/11bi0-terminal-skeleton.md": {
+      "bytes": 15904,
+      "sha256": "a6da86b6c2043a0e40d25564d381af5e01d789d01cb531e89bc71ae704377ab4"
+    },
+    "docs/DevDocs/11bi1a-multiline-buffer.md": {
+      "bytes": 19065,
+      "sha256": "45dd1c84fe2d6a6f56dfd270213c55083e940395d14941a4eb37099230d21cd7"
+    },
+    "docs/DevDocs/11bi1b-confirm-and-run.md": {
+      "bytes": 23461,
+      "sha256": "d1f1d041cb1886230ec043d939b1ed650c59d6d0062a1156c856d511dec96f74"
+    },
+    "docs/DevDocs/11bi1c-cursor-selection-clipboard.md": {
+      "bytes": 21810,
+      "sha256": "f9c3f88ff1a43aff98ed3686b134adc7793f48b4fa690c903ebbe12c19565f59"
+    },
+    "docs/DevDocs/11bi2-file-save.md": {
+      "bytes": 20820,
+      "sha256": "f060d4592ada0b70f0161c6634ab5626485e17edd06dd7af8c215b9e2740f169"
+    },
+    "docs/DevDocs/11bi3-command-panel.md": {
+      "bytes": 16625,
+      "sha256": "b3735950746068d8387ff7b73ff72d89d2c4bef41790385c4551c575226cc2b0"
+    },
+    "docs/DevDocs/11bi4a-package-view-protocol.md": {
+      "bytes": 19426,
+      "sha256": "8f73876fa477bdf12a73981545f9f2ae37b56dc871976b36002151af9730b72b"
+    },
+    "docs/DevDocs/11bi4a2-package-module-loading.md": {
+      "bytes": 19652,
+      "sha256": "eedcc2eed58ecb7edd4a11988636477a919967351d64eaffc6d0de1d407d9c8d"
+    },
+    "docs/DevDocs/11bi4b-session-lifetime.md": {
+      "bytes": 21159,
+      "sha256": "8d7536ca06e2f8d7699a5322515242204d6d6f6beb4d14c136cc80390021b6dd"
+    },
+    "docs/DevDocs/11c-localization.md": {
+      "bytes": 11582,
+      "sha256": "36360005033356766f81d727cc74e8d023072de4b5d39b3ee1535a1a093f7f76"
+    },
+    "docs/DevDocs/11c0-localization-core.md": {
+      "bytes": 18281,
+      "sha256": "f545450589ba8b5a00a0ce5101dfc4da300ea732f1a27de0bc810e4e4690164e"
+    },
+    "docs/DevDocs/11c1-message-migration.md": {
+      "bytes": 19441,
+      "sha256": "6079eca26e83898e4fb98918485d838d3e5ea45210810562492f65bd89bd2eb4"
+    },
+    "docs/DevDocs/11c2-language-pack-plugins.md": {
+      "bytes": 19223,
+      "sha256": "58b9dc782ec7023eb3b19705c7130929801897f9dd58b3585d11e5e2cdf5697f"
+    },
+    "docs/DevDocs/11x0-cli-protocol-and-toolchain.md": {
+      "bytes": 20421,
+      "sha256": "796c2376e21b3aec15c35abb16478f213c6793310c3ffe391dd710da321fbd9d"
+    },
+    "docs/DevDocs/11x0-platform-reproduction.md": {
+      "bytes": 28662,
+      "sha256": "d326806907bb8a9afd8a083dcc7ca93e9722b00f5822dc770b05c922f1696d39"
+    },
+    "docs/DevDocs/11x0b-cli-shell.md": {
+      "bytes": 15380,
+      "sha256": "fe8b884a1dc05b03faab467fe307f8de2e11805756d9fa4f7b576d8d226762dd"
+    },
+    "docs/DevDocs/11x0c-packaging-and-platforms.md": {
+      "bytes": 18575,
+      "sha256": "c50cbb7a0d00b2ae44a5ecad4338ead50b2e33132d3960804b1342d21a350d10"
+    },
+    "docs/DevDocs/11x0d-debug-diagnostics-window.md": {
+      "bytes": 19862,
+      "sha256": "455dce87e332b6ece327f6d7d7ee0c98fa1edb8655e8974a710493604311859a"
+    },
+    "docs/DevDocs/11x0e-build-and-toolchain.md": {
+      "bytes": 22832,
+      "sha256": "6b0ac9ec3e3194223092b3c6b3711d60b8f0c03c6c234a9743286f85ea351e2e"
+    },
+    "docs/DevDocs/11x0f-protocol-decoupling.md": {
+      "bytes": 13043,
+      "sha256": "be6646b4eb5ac6dc7f1797967eac621bbd62e9b8876a8701ebdb453c79037286"
+    },
+    "docs/DevDocs/11x0g-type-checker-decoupling.md": {
+      "bytes": 13594,
+      "sha256": "06903cfb0c1095ba6275a1891d3b50d23b8835e64ff19677074e4755522048d3"
+    },
+    "docs/DevDocs/11x0h-llvm-dynamic-decoupling.md": {
+      "bytes": 20471,
+      "sha256": "19e2617d1addf131930b31f3cff6d847b8f29ac9785e0482772fc1544d6f08b2"
+    },
+    "docs/DevDocs/11x0p1-platform-reproduction-closure.md": {
+      "bytes": 19749,
+      "sha256": "412d2a0e284bb22605c17aa02e345fa50eb95d81e2ab7e9f957ae21885ba193a"
+    },
+    "docs/DevDocs/11x0spec-project-rule-spec-tests.md": {
+      "bytes": 18391,
+      "sha256": "7e915d7d9d42db82f92f76ad79d4ec6766cd50462865db053f93a2f56d67c335"
+    },
+    "docs/DevDocs/11x0t-project-test-semantics.md": {
+      "bytes": 22554,
+      "sha256": "eb02d2cc52ea4da211e09459fa4aea1ddd180585653e6e82b4fb5abb9357a596"
+    },
+    "docs/DevDocs/12-tests-and-milestones.md": {
+      "bytes": 79295,
+      "sha256": "52fa0dcf8ad6ce3573f1435db40f97409bff85a03a411e208d540dff117fc020"
+    },
+    "docs/DevDocs/12a-stage-acceptance-audit.md": {
+      "bytes": 13411,
+      "sha256": "f072a45d599e216f8e0035dff575026643343b38608d22bfded45b1339f1d765"
+    },
+    "docs/DevDocs/13-optimization-contract.md": {
+      "bytes": 8867,
+      "sha256": "5bcdca23697c3a3905c12c0563c4278d216fdc009e9028e87fef291788af3f82"
+    },
+    "docs/DevDocs/13a-optimization-boundary-implementation.md": {
+      "bytes": 17721,
+      "sha256": "8f3298e2bed75e41418dc3d0dcc499d76ead9160e22e9ca09a8207c0b48de080"
+    },
+    "docs/DevDocs/13b-differential-suite-and-boundary-inputs.md": {
+      "bytes": 15886,
+      "sha256": "a1b625934773ffdd1743a2049eccbb4371e69f80997a9ce8092d632b5814124d"
+    },
+    "docs/DevDocs/14-bytecode-optimization.md": {
+      "bytes": 11517,
+      "sha256": "c56e14f5875f50794e8b3cfd2fe2a4e4ee3508f0310d833459d619771f437722"
+    },
+    "docs/DevDocs/14a-xiaoc-format-and-codec.md": {
+      "bytes": 17256,
+      "sha256": "b08d50bd19bc5f50776977878aa97843f8c80d965f73b904ca7492c79986c20f"
+    },
+    "docs/DevDocs/14b-bytecode-passes-and-differential.md": {
+      "bytes": 19720,
+      "sha256": "492d8f9ee9e560caff8f43933014bcf92b0ed34cba38e64d1b9d336bb4cffe4a"
+    },
+    "docs/DevDocs/15-native-optimization.md": {
+      "bytes": 5677,
+      "sha256": "31749137e21de5f12af67b942ab9e7fde28e6130c6463512d532093469ca443d"
+    },
+    "docs/DevDocs/15a-native-pass-mapping-and-runtime-trimming.md": {
+      "bytes": 21436,
+      "sha256": "942dcda783c25dfe5919712fc5a65f1d16f8d2eef599d03491c6ce56d8e7fc15"
+    },
+    "docs/DevDocs/15b-reproducible-builds-and-performance-baseline.md": {
+      "bytes": 18177,
+      "sha256": "284b38d3710a6fe2014989a6eb4db7bc87740fb5a892adbfde7a298cdb9aee6e"
+    },
+    "docs/DevDocs/15c-artifact-reproducibility-and-debug-mapping.md": {
+      "bytes": 18491,
+      "sha256": "712547be8318018f6f0d57180cc950ee8ea86fe0c13c13c3cbf23a0fc54270e2"
+    },
+    "docs/DevDocs/15d-linker-symbols-and-strip-acceptance.md": {
+      "bytes": 18638,
+      "sha256": "e07a88fb627cb4b1f3baca3ff291e7a4b6babaa4c1921630879089081712c24e"
+    },
+    "docs/DevDocs/15e-ci-gated-artifact-acceptance.md": {
+      "bytes": 18275,
+      "sha256": "2504272e066e4b50659deab7e43763356dd8aa0a83bf7b802aca29c9e1a73800"
+    },
+    "docs/DevDocs/16-content-addressed-artifacts.md": {
+      "bytes": 11690,
+      "sha256": "9cae1859ebcb197e904a78cd511d9d9d11b0de385d4f25ee4c68645a285db5c5"
+    },
+    "docs/DevDocs/16a-content-addressed-objects-and-indexes.md": {
+      "bytes": 23467,
+      "sha256": "505a8e094a31a8aba232511cfa2dd45bbd1cc8ef00df220abc3786660b14d5a3"
+    },
+    "docs/DevDocs/16a-fix-content-addressed-boundaries.md": {
+      "bytes": 11640,
+      "sha256": "0c15eea8c1de5d67ab0e9e330919d5fc950393479bced041d2a4726676f1a605"
+    },
+    "docs/DevDocs/16b-cache-maintenance.md": {
+      "bytes": 18432,
+      "sha256": "dc7a3d4ac9307ead8c13c6accff77a7b88735b65b73f3778d4ee95e20f3da463"
+    },
+    "docs/DevDocs/17-xar-archive.md": {
+      "bytes": 12732,
+      "sha256": "b9d82b5754133c6ea5fccbd06a31db630c11f386a25feb7de3ed842db2e48478"
+    },
+    "docs/DevDocs/17a-archive-format-and-codec.md": {
+      "bytes": 17758,
+      "sha256": "a49f721405d1b8bd729444539063b067070c12c781c1573a4513d8d7f16a26e4"
+    },
+    "docs/DevDocs/17b-resources-and-index-integration.md": {
+      "bytes": 18928,
+      "sha256": "e3466c6a0a185fd59eaf8c1e005fff408b6ffa8121b7adf23601e84608ed6c7c"
+    },
+    "docs/DevDocs/17c-entry-and-runner.md": {
+      "bytes": 16954,
+      "sha256": "e4749cba36183a2ae9e37bc89fea4418803049480667214488b522cd312dcf5c"
+    },
+    "docs/DevDocs/17c-fix-language-context.md": {
+      "bytes": 12085,
+      "sha256": "a94958c0b1b41fbd506a839c07ad95c1b4e3b4f66e3b6a50e9038f0a605e9e2b"
+    },
+    "docs/DevDocs/17d-platform-association-and-debug.md": {
+      "bytes": 20294,
+      "sha256": "59cfdd1ac32ef41d52a767a63b3faf3e1defc20b34ef6e5edcc19daef6a2ae67"
+    },
+    "docs/DevDocs/18-optimization-cli.md": {
+      "bytes": 9168,
+      "sha256": "218618e8c4e5ecd0d242794097176503daa15b5ec652345a8a980c714bda7ee6"
+    },
+    "docs/DevDocs/18a-optimization-parameters-and-config.md": {
+      "bytes": 18996,
+      "sha256": "45673a9763b14b7d0dc3a477226f4afadb5548a7b61088e7689e60a1a1269617"
+    },
+    "docs/DevDocs/18b-backend-calls-and-workflow.md": {
+      "bytes": 21922,
+      "sha256": "d8b271e239ceb2a062e2462b178402014ea9310ff0870cda5d77d59dd8d7547e"
+    },
+    "docs/DevDocs/18b-build-xar-and-closeout.md": {
+      "bytes": 20966,
+      "sha256": "30a86d71a6f5753ac74c3c51010eb313ceaecaf3ee39ff551570863c234be6ed"
+    },
+    "docs/DevDocs/18c-file-association-and-scripting.md": {
+      "bytes": 19622,
+      "sha256": "5c79dbce3de49a16bbb0a60a9e2ca3cc38e87c3edebf654cf3201c6d4abdd7d4"
+    },
+    "docs/DevDocs/19-optimization-release.md": {
+      "bytes": 8543,
+      "sha256": "d4e7ad511edb0e9012175ac82b24eb9527f4acb242767f817e985cf559700ce9"
+    },
+    "docs/DevDocs/19a-differential-and-fuzz.md": {
+      "bytes": 20271,
+      "sha256": "b274f4a55e51e9b40938daa3387c2757a422ad1576facc2be6f6f032d47f1519"
+    },
+    "docs/DevDocs/19b-cross-platform-and-release.md": {
+      "bytes": 24258,
+      "sha256": "076db19a6fde8b19e1c4045c43e12e888814e46bad3a73676a1c93df780be1c9"
+    },
+    "docs/DevDocs/19c-maintenance-and-debug.md": {
+      "bytes": 25741,
+      "sha256": "f4f3c8dab987a302ba35cce24b3cbd8ba42472bd0bc29fbfbc6c9c5d4b2f1467"
+    },
+    "docs/DevDocs/19d-performance-comparison.md": {
+      "bytes": 39047,
+      "sha256": "d48dff943c9072e7efa37cc7e4f217fa534ed66ba1f1f8fc580db424eaa6e930"
+    },
+    "docs/DevDocs/20-builtins-and-standard-library.md": {
+      "bytes": 27196,
+      "sha256": "af7c5f1c402c96f1662c3a363014189fed47e82b8c5a06591f0d56efb44482f9"
+    },
+    "docs/DevDocs/20a-intrinsics-contract-research.md": {
+      "bytes": 12721,
+      "sha256": "9ab1a96558ad11fb3a3fa3bceaa74906ff3f068c62263a83cd15d6019158f52c"
+    },
+    "docs/DevDocs/20ab-fix-lifetime-and-removal-verification.md": {
+      "bytes": 12606,
+      "sha256": "4c0a384cb53d026c9ecafecc3eddfd33c27c2c9112ef03a46f0d2b13f5950c4a"
+    },
+    "docs/DevDocs/20ab-intrinsics-contract-and-minimal-entry.md": {
+      "bytes": 15667,
+      "sha256": "6ca7e0f204caddfeea0835a01b600338b4d255f7671bbcc9579328a69e35387e"
+    },
+    "docs/DevDocs/20c-eighth-batch-conversion-and-dynamic-boundaries.md": {
+      "bytes": 33110,
+      "sha256": "164fa79f425349407d065f6453c24e0293a8851b85a8b368c8d9a17ad604ec1e"
+    },
+    "docs/DevDocs/20c-entry-and-skeleton.md": {
+      "bytes": 21679,
+      "sha256": "5ce91a95dbf30b43c4db1397b2a40a6ef9be5bdb0b6fbd829c963565261d8793"
+    },
+    "docs/DevDocs/20c-fifth-batch-reprobe-and-library.md": {
+      "bytes": 13842,
+      "sha256": "65e883f2dec67046d5c9ad9bb6168d40e64f84b526f8f92d4ee23b5ac84364fb"
+    },
+    "docs/DevDocs/20c-first-modules.md": {
+      "bytes": 20787,
+      "sha256": "ea0b2be0a2f31844e1599b1d6b236c128e44b53c732ed46069e4885cef05e039"
+    },
+    "docs/DevDocs/20c-fourth-batch-int-to-str.md": {
+      "bytes": 20268,
+      "sha256": "f6cdf6920310d9aa982b08f94f383a53cc114a28e88b657c8cd7dbe84dc9476f"
+    },
+    "docs/DevDocs/20c-freeze-and-10-series-closeout.md": {
+      "bytes": 22012,
+      "sha256": "229047c4e635bab6e5db2651670e49ac4e440d6a8068a8f62863404825b4332a"
+    },
+    "docs/DevDocs/20c-language-boundary-and-operators.md": {
+      "bytes": 59083,
+      "sha256": "7024dbc6a49a23e56030a37f914ce513aaf40af27e75b4cf50dd71562cbfd348"
+    },
+    "docs/DevDocs/20c-native-gate-residuals-fix.md": {
+      "bytes": 18729,
+      "sha256": "74430cce019c5b6c647945c483a3db0ce9e183d9a0cd6ad1be1fcb4c1f87b562"
+    },
+    "docs/DevDocs/20c-native-gates-red-fix.md": {
+      "bytes": 48345,
+      "sha256": "4f244e784641e5919aa854a16f7e45d93cc3a25a1be9cca0879a032390e4080f"
+    },
+    "docs/DevDocs/20c-ninth-batch-unsupported-diagnostic-split.md": {
+      "bytes": 32212,
+      "sha256": "ff7fea6e1c8133635288daeb29a2bd52c4d33076b23b3c4b5befeb56ae3d1f09"
+    },
+    "docs/DevDocs/20c-official-xiao-library.md": {
+      "bytes": 61212,
+      "sha256": "8475e2f7974a5ffe0a569fd2e396a799c293b24d76930901fc5ab74a471f10e5"
+    },
+    "docs/DevDocs/20c-second-batch-probe.md": {
+      "bytes": 20746,
+      "sha256": "df36af53f30f0ef6d52aa54a542a68503c5d9f0bfbaa2c53cace0f9902deb388"
+    },
+    "docs/DevDocs/20c-seventh-batch-str-to-int-and-ci-coverage.md": {
+      "bytes": 42103,
+      "sha256": "d283b8e62a51724a65d839832a1bb824cbddf75a3ae2498207478ed436d8365a"
+    },
+    "docs/DevDocs/20c-sixth-batch-case-conversion-and-api-closeout.md": {
+      "bytes": 20575,
+      "sha256": "88689b1aa66ddba9d3dc7d3071bfc8b560a8d769f3fe13537ebd01d70b9b900a"
+    },
+    "docs/DevDocs/20c-third-batch-reprobe-and-status.md": {
+      "bytes": 17830,
+      "sha256": "5ababd8d68d5e68cbebb6ab02538448d60c27bcd86d8607ad2813efde69a151a"
+    },
+    "docs/DevDocs/20d-capability-context.md": {
+      "bytes": 13704,
+      "sha256": "17fbd289fafec5cb6ff776055081b9b41b862b5bb8c6fa1f910e8f40d4814bed"
+    },
+    "docs/DevDocs/20d-cross-platform-handoff.md": {
+      "bytes": 8864,
+      "sha256": "eb29719bb358b5c78f9a48bce2543bf8e13e45bd80308279a11b75062f2611f7"
+    },
+    "docs/DevDocs/20d-cross-platform-log-20261018.md": {
+      "bytes": 24020,
+      "sha256": "a0b3ceac997eb6cd94a940000b0f2aa1457e043fe50cc6d66dc3e66eedf419e7"
+    },
+    "docs/DevDocs/20d-cross-platform-results-20261018.md": {
+      "bytes": 5428,
+      "sha256": "63aecdae20ff01a328be09ca08e66dbe680e1dcc7f9c20283e2b810515e1f8e2"
+    },
+    "docs/DevDocs/20d-first-api.md": {
+      "bytes": 43776,
+      "sha256": "1f459da1a10797ae4d7dbf83422540347e544ec902b1ed8f3bee0e8713d7b8f3"
+    },
+    "docs/DevDocs/20d-freeze-resource-contract.md": {
+      "bytes": 35419,
+      "sha256": "bf4d5372f8d717ee44a0c7733ea63997b0e78578213325849645867a63907f1e"
+    },
+    "docs/DevDocs/20d-platform-resources-stage-plan.md": {
+      "bytes": 17718,
+      "sha256": "e9c9e351e60cef1d853929610c822908354d166ebb4547e90623caa2e682472a"
+    },
+    "docs/DevDocs/20d-process-api.md": {
+      "bytes": 33409,
+      "sha256": "ff4edae556b53d209788ef8d0e3b12cb85aaf44c7fc92cc9bed6d370e66ad794"
+    },
+    "docs/DevDocs/20d-resource-carrier.md": {
+      "bytes": 20747,
+      "sha256": "f8d010c51a827e3365a7951e7a6270ba1f38774e92c969b3e17af3850ab30257"
+    },
+    "docs/DevDocs/20e-archive-wiring.md": {
+      "bytes": 28242,
+      "sha256": "81dfee06882a05d833aa8bc58399d7750ba2fa41284e9558779216a72fc06b86"
+    },
+    "docs/DevDocs/20f-container-parameters-and-collections.md": {
+      "bytes": 25072,
+      "sha256": "711e0977913692beffb39f7f3e78c53835c50439eaa0acc822e8fc788a4786db"
+    },
+    "docs/DevDocs/20g-set-mutation-and-20f-closeout.md": {
+      "bytes": 22695,
+      "sha256": "81ad18fd5d59b84ed6e7954b019f1abc54758d703a6852744730881757fb97bc"
+    },
+    "docs/DevDocs/20h-set-methods-and-20g-closeout.md": {
+      "bytes": 18639,
+      "sha256": "7de8b91eb8c08465f1e31f6f171e29a21c785902def5607829bddcd0cee9e2df"
+    },
+    "docs/DevDocs/20i-nonliteral-indexing-and-splitting.md": {
+      "bytes": 20572,
+      "sha256": "7a38d67097e5de4d826f8fcd7ba71d9fb59b77a180b4319ff9fe1cecb3573d4e"
+    },
+    "docs/DevDocs/20j-dynamic-dict-keys-and-20i-closeout.md": {
+      "bytes": 17970,
+      "sha256": "e3f2a231781c76120bc886a2c0a014b35116a91a8c31fd33aefdd48d3668862f"
+    },
+    "docs/DevDocs/20k-dict-write-and-annotations.md": {
+      "bytes": 18162,
+      "sha256": "11f8477de9b57b7ae264490f2391166caa5894fb2a0773f43e329f6fa1d59c91"
+    },
+    "docs/DevDocs/20l-dict-methods-and-20k-closeout.md": {
+      "bytes": 19547,
+      "sha256": "35b62676310b399e5f9620ae300f3eea4583dd2c1560e02b7c0e66eb222143a3"
+    },
+    "docs/DevDocs/20m-text-and-path-expansion.md": {
+      "bytes": 23087,
+      "sha256": "3328c17c089f049546e1995834f958c37341502141476a24eb80f748260b6349"
+    },
+    "docs/DevDocs/20n-standard-library-expansion-roadmap.md": {
+      "bytes": 18911,
+      "sha256": "aa6f4ae1cd0a90a3acc97225162a1a53060a8c313edb0e38fa29724ef761beb7"
+    },
+    "docs/DevDocs/20o-b0-baseline-and-b1-draft.md": {
+      "bytes": 16320,
+      "sha256": "bfdb270033964dab8539adc331820e753ad6ad94c452871c9df860f7104054da"
+    },
+    "docs/DevDocs/20o-b1-close-self-review.md": {
+      "bytes": 5291,
+      "sha256": "641a16d7ee42785eb597bc3961078af5ade538e4f59243fc9adf9f349633e795"
+    },
+    "docs/DevDocs/20o-b1-closeout-plan.md": {
+      "bytes": 7218,
+      "sha256": "315b2b631a24c40037ead6149d2a043e2c5dc48b3d19caed0b7b02e89cf0220e"
+    },
+    "docs/DevDocs/20o-b1-closeout.md": {
+      "bytes": 8782,
+      "sha256": "43fb486860aecead521ed96e6ea12b88646fb4680df14bf490829c32bc8779ed"
+    },
+    "docs/DevDocs/20o-b1-fix-a-contract-closeout.md": {
+      "bytes": 10748,
+      "sha256": "f35cbb9fe943792bf375b3683295c40d766a3e1cefbdea4148a16bd7cf7e5a8d"
+    },
+    "docs/DevDocs/20o-b1-fix-b-closeout.md": {
+      "bytes": 10354,
+      "sha256": "b5082a759c65bf83dab9fe051779544822185778998b38ea9fa0f9bdb71c5eaa"
+    },
+    "docs/DevDocs/20o-b1-fix-b-implementation-plan.md": {
+      "bytes": 19809,
+      "sha256": "351366795796f15f15a615a5ca98368b4bf7a2f92f3d04277f82b918235cdc7c"
+    },
+    "docs/DevDocs/20o-b1-freeze-draft.md": {
+      "bytes": 39296,
+      "sha256": "db5820869aff02d0efc05bd593c85ade6ad9125a159a385582ad30ef7284e01d"
+    },
+    "docs/DevDocs/20o-b1-imp-blockers.md": {
+      "bytes": 8055,
+      "sha256": "984a00f736961c742dee791e5b29aecce9eb5d0ce7e68cc9dd654724b3a1a553"
+    },
+    "docs/DevDocs/20o-b1-imp-remainder.md": {
+      "bytes": 14014,
+      "sha256": "eaa43c159b69b1f25ccb97ab40bb28533eb497cc695b327c5992e9535368d138"
+    },
+    "docs/DevDocs/20o-b1-imp-seven-libraries.md": {
+      "bytes": 23959,
+      "sha256": "c775dd100e69d604d0eb1503b4e5eb261f57b93710cfa44fff5a31450266f270"
+    },
+    "docs/DevDocs/20o-b1-implementation-plan.md": {
+      "bytes": 14280,
+      "sha256": "67953b2271eef7150ec2644c7305c6584e0901401e27366ef2c0fe0467f9ac32"
+    },
+    "docs/DevDocs/20o-b1-native-named-prerequisite.md": {
+      "bytes": 3078,
+      "sha256": "7d0011f45a162cb3b331fbb63e5d6995ccf1105584c0ced0ab4c5f7ec63929bb"
+    },
+    "docs/DevDocs/20o-b1-rem-evidence.md": {
+      "bytes": 12625,
+      "sha256": "1580eb7ec7b72f30324b7087403340a7c5173191ed50afe858253563f4899c96"
+    },
+    "docs/DevDocs/20o-b1-rem-release-prerequisite.md": {
+      "bytes": 4457,
+      "sha256": "04a585f80bcc9b62ec9bf4bc3fd5588557f6be79493278b63da0a9bcd8a56cf0"
+    },
+    "docs/DevDocs/20o-b1-rem-self-review.md": {
+      "bytes": 4661,
+      "sha256": "229170a90a205c860d956b3b50c28756da746dcceaeb6584c45ba03ea44cbfc0"
+    },
+    "docs/DevDocs/20o-b1-rem-string-bridge.md": {
+      "bytes": 1691,
+      "sha256": "d109845057df69188cb207aaaf8e37cbe02dca848536c83e2c357f26a448ceb8"
+    },
+    "docs/DevDocs/20o-b1-self-review.md": {
+      "bytes": 3128,
+      "sha256": "93f55b723b43719ea12bb708b24f93721194aaf16422397a9f0550d97f8b541f"
+    },
+    "docs/DevDocs/20o-b1-string-index-prerequisite.md": {
+      "bytes": 2302,
+      "sha256": "cdb6e2e24f6aa2643a4bb7ea7e6654b90debca07acd5c0bf9eee80c98ba5f57c"
+    },
+    "docs/DevDocs/20o-b2-a-implementation-plan.md": {
+      "bytes": 29495,
+      "sha256": "27536c4fe4060b886d9bfe29489e3cef12cfb885cda6058f05d1a60f65861cbf"
+    },
+    "docs/DevDocs/20o-b2-a0-baseline-plan.md": {
+      "bytes": 14349,
+      "sha256": "04ed28f278a4ad2f0f450dc02d4fb48941ae19b03e0d027d4628205221c22d9d"
+    },
+    "docs/DevDocs/20o-b2-a1-dependency-value-identity-plan.md": {
+      "bytes": 13346,
+      "sha256": "470695dd1c55132b7dc62a6e7b6fa80908f1bf4450d5521d0f8e28db94f8dadd"
+    },
+    "docs/DevDocs/20o-b2-a2-a3-arithmetic-plan.md": {
+      "bytes": 14312,
+      "sha256": "1d164bfb7b67fe17cfb0f5874ed54132ef5d569cf265a9424863397e8d51c15c"
+    },
+    "docs/DevDocs/20o-b2-a2-a3-arithmetic-progress.md": {
+      "bytes": 4322,
+      "sha256": "615687d3090afa77305dd8d2d5f97278d104526c04662f38285d640a85adea60"
+    },
+    "docs/DevDocs/20o-b2-a4-conversions-plan.md": {
+      "bytes": 8111,
+      "sha256": "96db3fdf1d097175b649b2e2419f12cbfa11cc25a99055fd5d0b1ae86075d268"
+    },
+    "docs/DevDocs/20o-b2-a4-conversions-progress.md": {
+      "bytes": 3685,
+      "sha256": "7c817e82eb9695a747c9d4c6ce1fb0ec86a143e0a88329c49e2593a2889d3610"
+    },
+    "docs/DevDocs/20o-b2-a4-self-review.md": {
+      "bytes": 2756,
+      "sha256": "43daf8c3b8bf730aa18185bc7a51a02123b97886576a0f2cbb836eb6f9867e12"
+    },
+    "docs/DevDocs/20o-b2-a5-language-integration-plan.md": {
+      "bytes": 9517,
+      "sha256": "1c7aa699cfde9b9d914cb9de0c348a143ccf04b7b203d9bb22949ce3a9e7c891"
+    },
+    "docs/DevDocs/20o-b2-a5-language-integration-progress.md": {
+      "bytes": 5325,
+      "sha256": "acd9fbf865512e97afa4a95118b796a60e3e9f4eba2c6a5addfd08fc6a2c6224"
+    },
+    "docs/DevDocs/20o-b2-a5-self-review.md": {
+      "bytes": 3863,
+      "sha256": "63c575876d0c2da08bb94a0758965db6aae36308299376a05e2105e62cec36f0"
+    },
+    "docs/DevDocs/20o-b2-a6-resource-performance-plan.md": {
+      "bytes": 8597,
+      "sha256": "2dd03fcacebb155e2ba9a48eabc711035917e1dca20b409a6568f44d999f002a"
+    },
+    "docs/DevDocs/20o-b2-a6-resource-performance-progress.md": {
+      "bytes": 6087,
+      "sha256": "cc50bd06ba710eac6cdfa2d5dc0006cd20aee1aa76e4c62b339a7e37a839a4fd"
+    },
+    "docs/DevDocs/20o-b2-a6-self-review.md": {
+      "bytes": 5459,
+      "sha256": "4b276ac52c4c80d79ad6d9e9ad241984bcde0f3b0c0d1e721d8cfb45599d29c2"
+    },
+    "docs/DevDocs/20o-b2-a7-b1-regression-b2a-closeout-plan.md": {
+      "bytes": 8003,
+      "sha256": "10fab2cd03f5366073ad9cb74f91817e098095cd7fce30116f2268476c7e5b87"
+    },
+    "docs/DevDocs/20o-b2-a7-b2a-closeout.md": {
+      "bytes": 6442,
+      "sha256": "4db36b588c7275e1211df32a94793b07baaa971803e50b23c7daf3568e2b2be1"
+    },
+    "docs/DevDocs/20o-b2-a7-self-review.md": {
+      "bytes": 3966,
+      "sha256": "313cab692a39d36b1d7059ac13654f84e991eb20ecdba2b840ec95e0d6a45048"
+    },
+    "docs/DevDocs/20o-b2-b-implementation-plan.md": {
+      "bytes": 16252,
+      "sha256": "8f01056f848367596b304b05c55d19b91eeb90d47e9ed627c7c474f010d585c2"
+    },
+    "docs/DevDocs/20o-b2-b0-b1-closeout.md": {
+      "bytes": 1921,
+      "sha256": "4130763146fbf0d9f443049063d11166c162ea8ec8192a3b3b7c9c0446d27914"
+    },
+    "docs/DevDocs/20o-b2-b0-b1-kickoff-plan.md": {
+      "bytes": 13168,
+      "sha256": "79d7e5f6357dcedfc77d7eb44dd5721795187c25d70bb237c91dee35ed0ffa17"
+    },
+    "docs/DevDocs/20o-b2-b2-lfloat-divide-plan.md": {
+      "bytes": 10999,
+      "sha256": "77ff1817f8cc0cf1962088994f8c622135660257cdff55bfdb8fcb06f8b31e29"
+    },
+    "docs/DevDocs/20o-b2-b2-lfloat-divide-progress.md": {
+      "bytes": 5227,
+      "sha256": "6118fae20c9bc8315c19d1f4ba45e2aaa4b6e6fceb9849e49241758060e589e8"
+    },
+    "docs/DevDocs/20o-b2-b2-self-review.md": {
+      "bytes": 2476,
+      "sha256": "55b97ec7913c681450f99e69eefc9933a488e9944fad4956fcdc820408384d61"
+    },
+    "docs/DevDocs/20o-b2-b3-0-b3-1-kickoff-plan.md": {
+      "bytes": 9909,
+      "sha256": "ec326cbf5a652245b0638e80d683b58e2d893f572a95efc160051e4c40ef6f3e"
+    },
+    "docs/DevDocs/20o-b2-b3-2-b3-5-kickoff-plan.md": {
+      "bytes": 10476,
+      "sha256": "050449406a44a32011d51a93f0c7034c224f6e3ede390bbf434bba3818a7a059"
+    },
+    "docs/DevDocs/20o-b2-b3-2a-pow-switch-plan.md": {
+      "bytes": 8304,
+      "sha256": "a581cdc629bd3e9c1feb4d7e6d47862a23dce8c4514bb60ac14314f7d691e61c"
+    },
+    "docs/DevDocs/20o-b2-b3-3a-b-c-abi-intrinsics-plan.md": {
+      "bytes": 10106,
+      "sha256": "06e4690027fc610722594e7369231e635be1d1790e88b82ed2f707410837060c"
+    },
+    "docs/DevDocs/20o-b2-b3-3a-b-progress.md": {
+      "bytes": 3900,
+      "sha256": "a80ba1a6125a4384d4609d56eb497d90e956fade9beab93e6a33f04646029fb9"
+    },
+    "docs/DevDocs/20o-b2-b3-4-closeout-plan.md": {
+      "bytes": 8960,
+      "sha256": "8580dc74250230e90b211e7ecd9c8a6d9261ae225a1293db641157c933c4fc67"
+    },
+    "docs/DevDocs/20o-b2-b3-4-stdlib-wrapper-plan.md": {
+      "bytes": 8474,
+      "sha256": "c97024ec5866e00bea4e3a2b54d25fc944140a691aa717e0a815f72d4b42a4e3"
+    },
+    "docs/DevDocs/20o-b2-b3-cmath-plan.md": {
+      "bytes": 14988,
+      "sha256": "328d52f1ad8cdf1915a51e9e3e36f6976fb83982f457288234ac5667dd051a23"
+    },
+    "docs/DevDocs/20o-b2-b4-0-b4-1-kickoff-plan.md": {
+      "bytes": 8648,
+      "sha256": "190293acc36653b25663a317cb36da42e1a129f234cd513b0dad625ef22fc422"
+    },
+    "docs/DevDocs/20o-b2-b4-2-tac-vm-plan.md": {
+      "bytes": 11509,
+      "sha256": "d195746138e82b30ba26b881df42b22d5f1faf30e3b89c9da3aa1b82dee907fa"
+    },
+    "docs/DevDocs/20o-b2-b4-2a-b-execution-plan.md": {
+      "bytes": 14422,
+      "sha256": "6b93ba4195c9746cfcdc374bbdeafa76dc6895a5bce34cffb3c612ed6f7ef6fd"
+    },
+    "docs/DevDocs/20o-b2-b4-2a-fix1-cmath-boundary-plan.md": {
+      "bytes": 9491,
+      "sha256": "fe646d542968fcc7956f204678d6f5331b7339bc287523933c073aa287a2782e"
+    },
+    "docs/DevDocs/20o-b2-b4-3-fix1-numeric-range-routing-plan.md": {
+      "bytes": 10289,
+      "sha256": "a728764584676580d878b3078df7152e273de6e17c2768ebcbff36180f91f9cd"
+    },
+    "docs/DevDocs/20o-b2-b4-3-llvm-plan.md": {
+      "bytes": 12333,
+      "sha256": "3a8cd1a98030fc7cb823cba6d4ac97b872dd94fabf577675aad888c1f076f0ff"
+    },
+    "docs/DevDocs/20o-b2-b4-4-dual-path-archive-plan.md": {
+      "bytes": 12866,
+      "sha256": "f9156181aa0b417f6dcb5be6c54c011799f15f1e2c47a881c8ed6029c380fd4e"
+    },
+    "docs/DevDocs/20o-b2-b4-4-self-review.md": {
+      "bytes": 3457,
+      "sha256": "e52ef08239005e0be2e04419f7eaacb2bc0af9a676fd8f20b17f3aed3bfd3fde"
+    },
+    "docs/DevDocs/20o-b2-b4-5-closeout-plan.md": {
+      "bytes": 17135,
+      "sha256": "3ccf359330689679870718937a51784524ac1e657c1ea651910c5bafd87c2d69"
+    },
+    "docs/DevDocs/20o-b2-b4-language-integration-plan.md": {
+      "bytes": 12448,
+      "sha256": "607679bc82b7f19718714035e230379253b7aacc24fcd11b83f14db932f1c0c1"
+    },
+    "docs/DevDocs/20o-b2-b5-version-matrix-plan.md": {
+      "bytes": 30868,
+      "sha256": "19c1f5490b1e87215364b581900700d118987ccbba2a74cfb1e646f9dfc81cad"
+    },
+    "docs/DevDocs/20o-b2-b6-resource-performance-plan.md": {
+      "bytes": 16867,
+      "sha256": "ab913bbc261bb335b19b9527a2527dcab9955d139c71164b2908e7625283d206"
+    },
+    "docs/DevDocs/20o-b2-b7-closeout-plan.md": {
+      "bytes": 13808,
+      "sha256": "020a17e0e81c9e38e63b435bbd6434898d9d70f738329f5da4650e61340a25dc"
+    },
+    "docs/DevDocs/20o-b2-c-final-closeout-plan.md": {
+      "bytes": 16945,
+      "sha256": "b076a37cc362cf55cc0378f50fa0fa641e438c00ffb8bffa725951c776479e64"
+    },
+    "docs/DevDocs/20o-b2-freeze-a-closeout-plan.md": {
+      "bytes": 6257,
+      "sha256": "c1a22d6befe319d84709e76ed246e8655c3b3fa009fa9faf60c7d72cbb74272a"
+    },
+    "docs/DevDocs/20o-b2-freeze-a-numeric-semantics-plan.md": {
+      "bytes": 9949,
+      "sha256": "f93743c1fc0fe2941113cb95ade5b4ea4db225bdfcc8338c9a7b087b616dfab6"
+    },
+    "docs/DevDocs/20o-b2-freeze-b-contract-plan.md": {
+      "bytes": 9600,
+      "sha256": "5b436c9b079107f56eb3390ff4183b461b2b598b947bcdaf9db7f175151c797d"
+    },
+    "docs/DevDocs/20o-b2-freeze-b1-closeout-plan.md": {
+      "bytes": 7051,
+      "sha256": "a862873b2f87c0335443aef9cbbd4a4fbc983d1c3e7c0076bb689f2282312977"
+    },
+    "docs/DevDocs/20o-b2-freeze-b2-version-matrix-plan.md": {
+      "bytes": 7995,
+      "sha256": "624e8c5cb752f9c4e0fba33e556e1046907d49e9ca882f7dcfa9fcf276be9d8e"
+    },
+    "docs/DevDocs/20o-b2-freeze-b3-error-table-plan.md": {
+      "bytes": 8370,
+      "sha256": "f7645ff33eb1e4d9795563c5fb3a7ea729cb89749e17c2b1761bee701ca30777"
+    },
+    "docs/DevDocs/20o-b2-freeze-c-resource-dependency-plan.md": {
+      "bytes": 10284,
+      "sha256": "e648d89c162aacc387c92f6d35ed2179382f280b047c2b0d34c965a5443da4ca"
+    },
+    "docs/DevDocs/20o-b2-freeze-closeout-plan.md": {
+      "bytes": 14196,
+      "sha256": "bd0ea938778238042915f927ddf5204c20a594d3e9e5aca8dd3d9b0ce16108bd"
+    },
+    "docs/DevDocs/20o-b2-freeze-d-signature-plan.md": {
+      "bytes": 10657,
+      "sha256": "8ac4f6ead6fc2653c41d67ef7fa11636607c10b18426a77aaef7d48cb8eae374"
+    },
+    "docs/DevDocs/20o-b2-freeze-draft.md": {
+      "bytes": 60561,
+      "sha256": "45fe0b27b9b7783a6872c325b64f8a5eaf1e3891a3fac406f506d9191eab359f"
+    },
+    "docs/DevDocs/20o-b2-numeric-foundation-plan.md": {
+      "bytes": 22829,
+      "sha256": "50bdef993229695da77c146f3de4d16bb4bddc4dad820a99b918553814b2a76e"
+    },
+    "docs/DevDocs/20o-b2-static-float-equality-fix-plan.md": {
+      "bytes": 11974,
+      "sha256": "20fa34268ac44e12a3d6f050bd9804b82a53a47b0f0b3401255da49ffa1dabd2"
+    },
+    "docs/DevDocs/20o-b3-host-libraries-plan.md": {
+      "bytes": 12392,
+      "sha256": "a42af490a1f9ea9147d5d2b57e77b358eabaa8f6191c3a406aba5cf769bc53ff"
+    },
+    "docs/DevDocs/20o-b4-json-toml-plan.md": {
+      "bytes": 11880,
+      "sha256": "b0842213be6272a6689d9aff2b905a32dcdacd54ab089742a3af6ed934e99ac3"
+    },
+    "docs/DevDocs/20o-b5-numeric-libraries-plan.md": {
+      "bytes": 8047,
+      "sha256": "5bd1d881604a6ebb6af4667d350d0ebd9c036ce820187fe3066bd852c1de9476"
+    },
+    "docs/DevDocs/20o-b6-native-tools-plan.md": {
+      "bytes": 12329,
+      "sha256": "6297153a3f3a8baa2a83afc7afd4903e634b6768c3c333c9e993415749c7d310"
+    },
+    "docs/DevDocs/20o-b7-security-plan.md": {
+      "bytes": 15774,
+      "sha256": "06a9f0608af696fb732e8e1b7d3281306c5c529edffbf5a4d2ae6852cb6a3ff7"
+    },
+    "docs/DevDocs/20o-b8-http-plan.md": {
+      "bytes": 14589,
+      "sha256": "ea8378c08c9809f1dc14ef78f0322f1a2180d57667609736021be8418e517dad"
+    },
+    "docs/DevDocs/20o-official-library-program.md": {
+      "bytes": 28689,
+      "sha256": "e1dfcb4fa17eb464aceff98099b67bd9bd6389e218fa3248492ca1d2bdec48e3"
+    },
+    "docs/DevDocs/20p-day1-library-architecture.md": {
+      "bytes": 17374,
+      "sha256": "fb2f6f56fe48e9a86c8a64bdd48c4d4373223b406ea800baff3d4ade1882d12a"
+    },
+    "docs/DevDocs/21-rc-cycles-and-concurrency.md": {
+      "bytes": 25172,
+      "sha256": "12b272fcbecc50bfa4b96dd232eba0b7c198d75f3552182ec9c2f63463570b58"
+    },
+    "docs/DevDocs/21a-rc-cycles-and-concurrency-handoff.md": {
+      "bytes": 13113,
+      "sha256": "73686b4ce7f7f5cae44c9cd3891e560bf26055ad716ea65216a1d4990de4b076"
+    },
+    "docs/DevDocs/22-concurrency-execution-and-shared-handles.md": {
+      "bytes": 16968,
+      "sha256": "c83f59d61dfcfea14cec544bf20205f1ac401e24da874d48733561d2b218e891"
+    },
+    "docs/DevDocs/22a-concurrency-freeze.md": {
+      "bytes": 41640,
+      "sha256": "a64bc069d425f0b07c91f31c39305224709a6e3fbad9f7faa03fabfaf0502ca3"
+    },
+    "docs/DevDocs/22a-fix-concurrency-freeze.md": {
+      "bytes": 24592,
+      "sha256": "83e4e29be5da1b07ce9d5f2f70e1a7a9383253f0f5dbab66d6c15bf869129122"
+    },
+    "docs/DevDocs/22b-concurrency-types-lifetime-ir.md": {
+      "bytes": 23370,
+      "sha256": "00a8a3597ece9e8a79f563e90019867659bcb9f779763aae030bcfb981f8e1d9"
+    },
+    "docs/DevDocs/22b-fix-concurrency-wiring.md": {
+      "bytes": 18163,
+      "sha256": "7c21d1971c85322d64135f72f9d8391c7c9fc083e5884201b0f601af00cd37fd"
+    },
+    "docs/DevDocs/22b-fix1-concurrency-wiring-residuals.md": {
+      "bytes": 19171,
+      "sha256": "c742d5bcc8c1e43ba1310dc64281a73b55d2b5916524bdb04c911648717ab0db"
+    },
+    "docs/DevDocs/22c-concurrency-runtime-abi-vm.md": {
+      "bytes": 18357,
+      "sha256": "18256151ad959d809e8493e5b0f059c3945335318a09a07104336115c885820a"
+    },
+    "docs/DevDocs/22c-fix1-concurrency-vm-wiring.md": {
+      "bytes": 19653,
+      "sha256": "a2e08b4173a2e3570dfe00621e02427cd40a1f06c7d2d584781620104bcbb9da"
+    },
+    "docs/DevDocs/22d-fix1-concurrency-differential-closure.md": {
+      "bytes": 16348,
+      "sha256": "8620f6f103f765212e3044e15fca38b41bbe525aeeba4163fb25d6563492faa5"
+    },
+    "docs/DevDocs/22d-llvm-concurrency-differential.md": {
+      "bytes": 45009,
+      "sha256": "fbff934e89eeb272cb8d5050b16110e53d3ca022db20b5a28dd176b2ceaefcb2"
+    },
+    "docs/DevDocs/22e-standard-library-and-release.md": {
+      "bytes": 24249,
+      "sha256": "f701da442b2fa574902dac4eb028da157cc041d3fd0eb3755d7e47cf7c80e908"
+    },
+    "docs/DevDocs/assets/20c-capability-20261011/README.md": {
+      "bytes": 407,
+      "sha256": "46a90f7d88161d11bce0f9b6a08d8f3b8cb9dfad5e31f5d492dbc15997da91cb"
+    },
+    "docs/DevDocs/assets/20o-b1-close/41498029910/README.md": {
+      "bytes": 3307,
+      "sha256": "b8bdaf55c9d82a82e1304559622267693a137e0ef737b845ea0cb057c521b8a2"
+    },
+    "docs/DevDocs/assets/20o-b1-close/preflight-20261103/README.md": {
+      "bytes": 1016,
+      "sha256": "c0ab599d22160afaebe8b74f3f6102bbe1fd4d1b7c9dd93f98534708d3303e8e"
+    },
+    "docs/DevDocs/assets/20o-b1-close/README.md": {
+      "bytes": 5091,
+      "sha256": "de48f2b5ce2b82eaf9f28136f6accb28c3ef725ce4aa215886d3d2f167fcf887"
+    },
+    "docs/DevDocs/assets/20o-b1-close/review-fix-20261103/README.md": {
+      "bytes": 3083,
+      "sha256": "f93ad55b039a6396b7671f2db0ff4a1d21a10ed0d7364edf915f12f88a8648e1"
+    },
+    "docs/DevDocs/assets/20o-b1-close/self-review-20261103/README.md": {
+      "bytes": 1731,
+      "sha256": "9a87577ce13387f7fb23d29414276cc975f77c59de670c04909adec56e24d981"
+    },
+    "docs/DevDocs/assets/20o-b1-close/source-root-replay-20261103/README.md": {
+      "bytes": 3251,
+      "sha256": "6a33ad2f98f85efa82f44de9d629f4be644f559e7d3a90a6fbaee541ceba9beb"
+    },
+    "docs/DevDocs/assets/20o-b1-fix-a/maintenance-41285853958/README.md": {
+      "bytes": 1494,
+      "sha256": "b48c04101b873afe2a67c036d30602bb5c2b8fc6e94d47567f5e1842828a8eac"
+    },
+    "docs/DevDocs/assets/20o-b1-fix-a/README.md": {
+      "bytes": 662,
+      "sha256": "ca771cf863caa4f01baf8c04bbce80fa344705b7b8c4ebe4ff583f69f9c6546f"
+    },
+    "docs/DevDocs/assets/20o-b1-fix-b/41310926623/README.md": {
+      "bytes": 2585,
+      "sha256": "b72122656d3dcdf434becfa9b302a90c145ae28c7d756e0eefc0979841f8867e"
+    },
+    "docs/DevDocs/assets/20o-b1-fix-b/README.md": {
+      "bytes": 707,
+      "sha256": "3fc47b1ba420958b7383631e2239301285658e7ba30c1e9e1d98dc698d315863"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/local-20261102/README.md": {
+      "bytes": 2181,
+      "sha256": "2c4ae3073cad615d8d011d2d04a5bd297da2d508926391cfefa653a36316605e"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/maintenance-41372968883/README.md": {
+      "bytes": 2921,
+      "sha256": "83ead5a9a824e791fc2a6b14ec5af2f7a586bebeb84709727602a292479a0a4a"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/maintenance-rem-41411981994/README.md": {
+      "bytes": 1647,
+      "sha256": "b5adbdaeb30ea329cd20ae4c05ec4c6081173f5a23e8ce9efc98c5d47f1c832c"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/maintenance-rem-cg20-41415412610/README.md": {
+      "bytes": 2011,
+      "sha256": "d2ceac90255bfb931563c9a1649a9f1bade836cb359524a33a03795b3f39dde9"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/README.md": {
+      "bytes": 979,
+      "sha256": "04a2a25f3a6843bb93be1b40aa80c0513b7dcefb54c1208be02df2257ae9a7c5"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/rem-base64-local-20261102/README.md": {
+      "bytes": 1150,
+      "sha256": "088b34d31fe99f5fbf8cc220cc65932b36b3ba0fa2783d1c6d0e7a2bc0cc2e31"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/rem-f10-41415412610/README.md": {
+      "bytes": 1494,
+      "sha256": "c06dbcb9fb0c2f5dc67c22958fdce382b5bf555fd386e3df10a12f41c242b7b6"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/rem-f10-41421336871/README.md": {
+      "bytes": 2368,
+      "sha256": "e0a04de9073838b1409126377d2e1febf1b2be7468bf1a705bc5c8ef92c77ab8"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/rem-final-41433194454/README.md": {
+      "bytes": 4331,
+      "sha256": "be9d0d96a8b4e2d90ec383fb70212df398005d71ab3bcac21f9476a3535253fb"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/rem-identity-csv-local-20261102/README.md": {
+      "bytes": 666,
+      "sha256": "03031c885bf8ae7ae2779ff955c0881315ac8f5961471e1aa1dc7e5da156d999"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/rem-identity-f10-41457598606/README.md": {
+      "bytes": 963,
+      "sha256": "bd316d2c36c01727033a6990612fc7af30a5cf77a6a21a975f71db1e361df7f4"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/rem-identity-final-41464439400/README.md": {
+      "bytes": 5422,
+      "sha256": "469d10b8e8abe4fc786c852924f85992ae61b5c52baf764bd0c681662ff9e691"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/rem-local-20261102/README.md": {
+      "bytes": 2899,
+      "sha256": "8ec34793290c572b8ec1716c8318431ae9ac078179e1e725f10730b8fc2d8673"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/rem-release-cg20-local-20261102/README.md": {
+      "bytes": 1271,
+      "sha256": "0e4738443a1885b29eabe23c21d5b0a1c2b35565b7f539c625bec528627700f4"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/rem-release-local-20261102/README.md": {
+      "bytes": 998,
+      "sha256": "0699f436107c261cef8055b4074e8a0480a29f9df79dba592a83f2cb893ecb56"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/rem-self-review-local-20261102/README.md": {
+      "bytes": 1213,
+      "sha256": "e6843bf3dcdf93d6818f199118dd8022cd33fe78f787475972c9c01bc8324648"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/rem-windows-22c-41433194454/README.md": {
+      "bytes": 792,
+      "sha256": "bc88d48f87d0ced0ed7098971dccb4e86a871c1b8ccfc073ca482333dd23bc4d"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/review-local-20261102/README.md": {
+      "bytes": 3635,
+      "sha256": "3a7ff104558ab1c160285db02314dd94fc266c095477294fff8adb4a0c1fa5e8"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/self-review-41385483703/README.md": {
+      "bytes": 2440,
+      "sha256": "5b26cfb444a099a5ac165e5ad3054b7a2ce0abadbdffacfa95f06c6c70d37123"
+    },
+    "docs/DevDocs/assets/20o-b1-imp/self-review-local-20261102/README.md": {
+      "bytes": 1714,
+      "sha256": "a5a24ecad6cf8dbe9a9c8e3bbb296af36919ec976b4e5040f1f8892c4c7ae756"
+    },
+    "docs/DevDocs/assets/20o-b1-p3/README.md": {
+      "bytes": 661,
+      "sha256": "dd283121e21f47540df1bf3c02e83b847b85023d3b14192591a9261fa1490336"
+    },
+    "docs/DevDocs/assets/20o-b2-a/entry-20261105/README.md": {
+      "bytes": 3809,
+      "sha256": "aea0db2a2ea27c24a3894a3567d4cb28b3a29187cefe6a0053204c9382592400"
+    },
+    "docs/DevDocs/assets/20o-b2-a/review-fix-20261105/README.md": {
+      "bytes": 4993,
+      "sha256": "c9b4b1e384e7298116232a65702e5eedc6525197324f19acca695ae22ddaf4c2"
+    },
+    "docs/DevDocs/assets/20o-b2-a0/entry-20261105/preflight-01/README.md": {
+      "bytes": 522,
+      "sha256": "c54803a36d68b3b2d958c9e6147e2f4c2f5736ebc2dfed9b90dc8196d8582d90"
+    },
+    "docs/DevDocs/assets/20o-b2-a0/entry-20261105/README.md": {
+      "bytes": 8214,
+      "sha256": "2a405325ffe29479e564cf7a1f7f6ae906e61fb1c65ca275ae1ca7c048bb062b"
+    },
+    "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/README.md": {
+      "bytes": 3715,
+      "sha256": "0049bfff41170a112afddc70eba51a3f5a18c7fc5e3a2a971698b8b45362a120"
+    },
+    "docs/DevDocs/assets/20o-b2-a1/entry-20261106/README.md": {
+      "bytes": 8767,
+      "sha256": "f0f0c5788f0c6c7b9c8f02a3f5d102d9e08005228ae28481a047e83c87b5e171"
+    },
+    "docs/DevDocs/assets/20o-b2-a2-a3/entry-20261106/README.md": {
+      "bytes": 6216,
+      "sha256": "7be96390aeabaeade6963b54a9d9ac631b54d2863d21f52fc4e7fbc40197b2cb"
+    },
+    "docs/DevDocs/assets/20o-b2-a4/entry-20261106/README.md": {
+      "bytes": 6477,
+      "sha256": "230f79e305fc9399669b5293549a7d7c66b4ab68a546acef68c89b2322f579c5"
+    },
+    "docs/DevDocs/assets/20o-b2-a4-self-review/entry-20261106/README.md": {
+      "bytes": 3711,
+      "sha256": "5a212da5f8dfb0f82c392466b4699de892696fc30d570f1faf65b159a4dc2dc0"
+    },
+    "docs/DevDocs/assets/20o-b2-a5/entry-20261106/README.md": {
+      "bytes": 6255,
+      "sha256": "14d36363284614054092b59249f8fd6bb6af622def95a9192612cbe19421d4f2"
+    },
+    "docs/DevDocs/assets/20o-b2-a5/entry-20261106/self-review/README.md": {
+      "bytes": 508,
+      "sha256": "ff718bc20bc83f872bad232da8d3dfe55debd76ee8e1f587433fa66e745fcf9d"
+    },
+    "docs/DevDocs/assets/20o-b2-a5/README.md": {
+      "bytes": 211,
+      "sha256": "6856f8ed9ced03cd15121ce5034a6c2257d743c51dbb0a103dd01a3d006f31f0"
+    },
+    "docs/DevDocs/assets/20o-b2-a5/self-review-20261107/legacy-regression/README.md": {
+      "bytes": 127,
+      "sha256": "a97daad0f12d2b9ef2551112be69bbfccba249cc2c397d8b7b832a13f6678a3f"
+    },
+    "docs/DevDocs/assets/20o-b2-a5/self-review-20261107/README.md": {
+      "bytes": 3165,
+      "sha256": "fb9de25a3f524f9ed5affd9ac9177418cbae70afa91a4bc2a8cf8805083d4e6a"
+    },
+    "docs/DevDocs/assets/20o-b2-a5/self-review-20261107/regression/README.md": {
+      "bytes": 109,
+      "sha256": "8dcacd3997abf1c7b7d1ba0042765ac2d40d177affc9b9da200df15efb6f81ae"
+    },
+    "docs/DevDocs/assets/20o-b2-a6/entry-20261107/README.md": {
+      "bytes": 5187,
+      "sha256": "7478bc24ba4135d070e6a939fc74c4082105c5b806c17ea46fbdb62e1e1aa770"
+    },
+    "docs/DevDocs/assets/20o-b2-a6/README.md": {
+      "bytes": 255,
+      "sha256": "95053779f0df1a6de9f83f0c84c5e9c3c847b6bf8bec1d16ac3ccf00b3ffe25e"
+    },
+    "docs/DevDocs/assets/20o-b2-a6/self-review-20261107/README.md": {
+      "bytes": 3406,
+      "sha256": "dcf21e1102eb2779c836b38191b1ed05969346d27b073b9cdf2d944895e81980"
+    },
+    "docs/DevDocs/assets/20o-b2-a7/entry-20261107/README.md": {
+      "bytes": 2727,
+      "sha256": "76bab86409b3a8dcf03389038e672966351966a7ae04b14061c29475a733b889"
+    },
+    "docs/DevDocs/assets/20o-b2-a7/README.md": {
+      "bytes": 400,
+      "sha256": "a5054b46d08985f02021d4f2fdee38214d76791b0280fe7d338d3633b3c014fc"
+    },
+    "docs/DevDocs/assets/20o-b2-a7/self-review-20261107/README.md": {
+      "bytes": 645,
+      "sha256": "dfebff89a55bb209c5cf67beb4cb9c3d41fa1d71a829009c575b4d5d08848659"
+    },
+    "docs/DevDocs/assets/20o-b2-a7/self-review-final-20261107/README.md": {
+      "bytes": 341,
+      "sha256": "a5f9b73d7ed12726b935867015f37bfd5734b3e6f176be3fecdd19d71fde3e9e"
+    },
+    "docs/DevDocs/assets/20o-b2-a7/self-review-final2-20261107/README.md": {
+      "bytes": 785,
+      "sha256": "1baea8dea075ff1a07135f49fa53523f27a7036ee7d20d8084246bbecd43b269"
+    },
+    "docs/DevDocs/assets/20o-b2-b/audit-repair-20261108/README.md": {
+      "bytes": 2302,
+      "sha256": "c6e5f1731cd52454e53107229da92964c223069be00ad4221d479e6cb2999888"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261107/README.md": {
+      "bytes": 2005,
+      "sha256": "6445d711ecbbed5607e8cde7b372196f536b1baa2c55b92ef6961498103b6b5c"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261108-b1/README.md": {
+      "bytes": 2490,
+      "sha256": "c3e26d93256eb99e98e87556eed1d3f58cb2cb095c6bfa5f286c974e84825187"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261108-b2/README.md": {
+      "bytes": 1736,
+      "sha256": "e41a6b60c1467cdc6250ddfaef34497f3eda1ee1d8026a5ae3ebd55b2156dbb5"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261108-b2-replay/README.md": {
+      "bytes": 616,
+      "sha256": "0df5b4b92eec3a6d2f73271d933ec0c6334151b9bbbb4dd36f3b961d156bed44"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261108-b3/README.md": {
+      "bytes": 6795,
+      "sha256": "0df01ebb0e1290720b9cdf65263209f0aef0c4bc4a9c2e96c4647e9054209b01"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261108-b3/self-review-20261108/README.md": {
+      "bytes": 2752,
+      "sha256": "ed1d0105cad95c59c26bbd549c9ddd540acf6d9512a76fb4532931ed93fd9840"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261109-b3-cabi/README.md": {
+      "bytes": 4763,
+      "sha256": "41ea0420500e5d34a81297322b20ac62221a0898607ff90aaea4e3a849263800"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261109-b3-cabi/self-review-3411c506/README.md": {
+      "bytes": 2476,
+      "sha256": "1b669c7423143063aa509b95ba58875f2756aa379f5a0831e82cecadbde98ed0"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261109-b3-wrapper/README.md": {
+      "bytes": 1664,
+      "sha256": "0a8341c0482041b5672a1ef0aa6fdbda25c8a93ded298c52f469fd0673d26ef5"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261110-b3-fix-802/README.md": {
+      "bytes": 2358,
+      "sha256": "0fd70c6e0a5db50eecedf083437364a832244ce88329fb03e51754c69ba3dfdd"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261110-b3-reachability/README.md": {
+      "bytes": 2378,
+      "sha256": "cd27c773459ba1be90d60edc77764b103a71df214280d6a5b8b7c783e98edfe7"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261110-b3-wrapper-final/handoff-b4.md": {
+      "bytes": 1476,
+      "sha256": "ffae65c8de74efc6b61dff3cd57e2188b894e4c31330552ced04c75b9ef79aa2"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261110-b3-wrapper-final/README.md": {
+      "bytes": 4588,
+      "sha256": "e94a10e1a95bee3826b5b122775d599f24a9dc5877019ee98c1f8bc24099cabe"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261110-b4-0-1/README.md": {
+      "bytes": 3137,
+      "sha256": "762ecdcdd4b7b8030336eed47994ed4856603aa513341cc3eb4363039f3f231d"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261112-b4-2a/README.md": {
+      "bytes": 3890,
+      "sha256": "39f492f52faa6ba96c48cbc8adfcd50fa91a2be4926c6bbf15c908ba88972047"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261112-b4-2a/review-20261112/README.md": {
+      "bytes": 4238,
+      "sha256": "52c8728bcaaa5160fa387047f862889ff68ae818b90ef0176eb70092cee4b6fd"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md": {
+      "bytes": 10216,
+      "sha256": "82e6d0310afdbdfb95562a0c18520467a18cd18fc14613f798b76acc963d78f0"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261113-b4-2b/README.md": {
+      "bytes": 6706,
+      "sha256": "da8e397157cc793f6755013ac575ddc415ed41361d71cb03327a7cbeb0d0b471"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261113-b4-3/README.md": {
+      "bytes": 4543,
+      "sha256": "52d5eb99a67beaa0483159d9a3eafa0d8b0082fb138ab3e364abf6c8455b32e8"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261115-b4-3-fix1/README.md": {
+      "bytes": 3318,
+      "sha256": "177313b1cb41c4a0879a2fcc1eb2cb0f3076a5a2d75a94dcb0894132de248cb2"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261115-b4-4/README.md": {
+      "bytes": 6084,
+      "sha256": "8ac7bba518820bfe4dbd4405b22df3354abb0cedbc7cb0aee5246efde199ab41"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261115-b4-5/README.md": {
+      "bytes": 2263,
+      "sha256": "f44adb0ecfccc6d54efe716d5f4b22abb10912da4a9b05d457050edfc5f2c861"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261116-b4-5-rerun/README.md": {
+      "bytes": 3853,
+      "sha256": "6a55b63ebc30cef83cb4b5058901fadcafc20fd5a471305ab8193b11295619f3"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261116-b5/README.md": {
+      "bytes": 2321,
+      "sha256": "27503a3641f2b6b575ab87b6ac76de243dbfb636549a4afb27fa4ef58f48cc20"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261116-b5-rebuild/README.md": {
+      "bytes": 5285,
+      "sha256": "c97419c5f702f64df272dd6eb947a4788ac8fd1de518717284b71007b11a565e"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261116-b5-url-timing-20261116-01/README.md": {
+      "bytes": 6842,
+      "sha256": "7e81143dd3543fb8d3a5b9e2121a1d3091dc7780c1acf7a91687765cb7bebf9d"
+    },
+    "docs/DevDocs/assets/20o-b2-b/entry-20261116-b5-watchdog-attribution/README.md": {
+      "bytes": 3651,
+      "sha256": "adab3724a3aa7be5c885dc4721bae07ce1698f4170df37f7a1d85488b2c6f88c"
+    },
+    "docs/DevDocs/assets/20o-b2-b/README.md": {
+      "bytes": 2290,
+      "sha256": "cdf88e4269296ae0c16f91e35d46da5f24ab00403b31da61630153be1fc67722"
+    },
+    "docs/DevDocs/assets/20o-b2-b/review-20261113-b4-2b/README.md": {
+      "bytes": 4303,
+      "sha256": "3497a11e29357d89a6ce4cd5cdc3395e6832b0e7220f3dcd58f038580a4eb9f9"
+    },
+    "docs/DevDocs/assets/20o-b2-b/self-review-20261108/README.md": {
+      "bytes": 1472,
+      "sha256": "5f34b8602f1d39d03fbbd28eaf961e50c74f6ed64b6a9d07588c56e0c8918dc7"
+    },
+    "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/README.md": {
+      "bytes": 2775,
+      "sha256": "e23d9c0d4a5aa2ad723872c77dbae5c09194ce4228dca7f942581c1107aac062"
+    },
+    "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/README.md": {
+      "bytes": 1758,
+      "sha256": "70859f615eb175b32291fb17a12e068deb5b0e73dab198e31cb80f3e37720e52"
+    },
+    "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/README.md": {
+      "bytes": 3063,
+      "sha256": "4e8d0ebb8c44b8150f47e65d3287a7bdada3c15a392f2fab8e3e8c095ce0a1bf"
+    },
+    "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/README.md": {
+      "bytes": 3053,
+      "sha256": "a32f7953bfece9d10304f662b5f87888c50dba4788ce67bcbd4f83ca51792785"
+    },
+    "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/README.md": {
+      "bytes": 5152,
+      "sha256": "a58da136294f40d5de9a676dd29a0546bedb5f5b3eeb2248e06d59dea0a0ec06"
+    },
+    "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/README.md": {
+      "bytes": 3763,
+      "sha256": "f041ab4ac7a15e12ecc0c3196b04070f71b646e04db026e262f7d50a7249f760"
+    },
+    "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/README.md": {
+      "bytes": 2999,
+      "sha256": "6fda47aa1f7599184f517e995e7a722448846a2b8002883598ffe34bbf96416b"
+    },
+    "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/b2-a-planning-handoff.md": {
+      "bytes": 1462,
+      "sha256": "96e3993ad2d05bc9375adc448574a03a1806c3921c87f4ad0f2006cbec3848f5"
+    },
+    "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/README.md": {
+      "bytes": 7814,
+      "sha256": "da6a60b6e7293a2e9418baa05facca38af7dd4b66ae4729ff87516206a8680d9"
+    },
+    "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/README.md": {
+      "bytes": 3326,
+      "sha256": "11a7c92829482346312124cc33138877d1dde728db847b058ad2ea5a0f037b63"
+    },
+    "docs/DevDocs/assets/20o-b2-static-float-equality/entry-20261117-review/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "docs/DevDocs/assets/20o-b2-static-float-equality/entry-20261117-review/audit.py": {
+      "bytes": 14019,
+      "sha256": "aa9138cd3e6c683a66a754c1e7c56733caf38119311604a73d07a14b347a239f"
+    },
+    "docs/DevDocs/assets/20o-b2-static-float-equality/entry-20261117-review/build-probe.py": {
+      "bytes": 7870,
+      "sha256": "2abcc4c5164d8e266afea3d59b395f38cffd4a3c764bb6c89736e9c745fe5d21"
+    },
+    "docs/DevDocs/assets/20o-b2-static-float-equality/entry-20261117-review/collect-docs.py": {
+      "bytes": 4362,
+      "sha256": "851c2927e9dca4187b69e731514c0ba6a7b0620f4a4016f06519e7db59452bc5"
+    },
+    "docs/DevDocs/assets/20o-b2-static-float-equality/entry-20261117-review/probe.rs": {
+      "bytes": 9188,
+      "sha256": "e11d9feb39ad7c6d11554dcd6c6cf5a9e2af14c6422d7ccc2bd68e24e25463bd"
+    },
+    "docs/DevDocs/assets/20o-b2-static-float-equality/entry-20261117-review/README.md": {
+      "bytes": 4749,
+      "sha256": "f00055afba3f6d83350f82ade01e1b24210eb16e4cde80e126befb45cc09e4f1"
+    },
+    "docs/DevDocs/assets/20o-b2-static-float-equality/entry-20261117-review/rejected-oeq-test.rs": {
+      "bytes": 1615,
+      "sha256": "c21a722640030d1289773e125404df5e643e78d0c689686affd69af1e396b64f"
+    },
+    "docs/DevDocs/assets/20o-b2-static-float-equality/entry-20261117-review/run-probe.py": {
+      "bytes": 8748,
+      "sha256": "708d525dd1efd6d07da749106925ec9533980d2875e8ebeba414f1d61265333f"
+    },
+    "docs/DevDocs/assets/20o-b2-static-float-equality/entry-20261117-review/seal.py": {
+      "bytes": 2433,
+      "sha256": "ffe8c967751ece0463a951c38e57529819c4935898593c84f606b8601258475d"
+    },
+    "docs/DevDocs/README.md": {
+      "bytes": 148641,
+      "sha256": "69abd291a45254a51a1de66e65ee4c7e7150ecf6606557a59f188738e62d0cb0"
+    },
+    "docs/module-registry.json": {
+      "bytes": 78089,
+      "sha256": "b4f747c9e6c9f1efd936dbb097d136ad5a3d1ce72b901ca54a285545d05a3101"
+    },
+    "docs/UseDocs/_templates/README.md": {
+      "bytes": 531,
+      "sha256": "638ea982978786167c565d32db470cde1f06bd97a4715512d1a7f97d31cb8e3a"
+    },
+    "docs/UseDocs/getting-started/installation/README.md": {
+      "bytes": 591,
+      "sha256": "419cb5bf6d0371568a3509ceb8edcbd30e6fc1c1d061a270604568d1af65abb3"
+    },
+    "docs/UseDocs/getting-started/README.md": {
+      "bytes": 617,
+      "sha256": "5e78fefab159b5f305533350aedc2ddb4649be05b03db2fb13f0c0c6f880090a"
+    },
+    "docs/UseDocs/guides/README.md": {
+      "bytes": 326,
+      "sha256": "4278cdafd75a2e8976efd4db9d7d164a4d9e19af8bd60e673300ea6435710ee9"
+    },
+    "docs/UseDocs/language/basics/p0-syntax/errors.md": {
+      "bytes": 1999,
+      "sha256": "cb359b6ebe8cee57ecf8ce5daf269d1209e6241ba79f652de2baa476aa056d6b"
+    },
+    "docs/UseDocs/language/basics/p0-syntax/README.md": {
+      "bytes": 1050,
+      "sha256": "05822aa37c1a80d6116e0633368f9a4631e411ff5b2e8748f69bae228b7325fa"
+    },
+    "docs/UseDocs/language/basics/p0-syntax/statements.md": {
+      "bytes": 1594,
+      "sha256": "f9e8786ff4a67974a6c611843b6cde0cd97244d85b9bb93595bced18e5f55ba6"
+    },
+    "docs/UseDocs/language/basics/p1-expressions/calls-and-casts.md": {
+      "bytes": 2054,
+      "sha256": "e16dc4d882c384b8fcd1dcbf09c402e7145a6ff1ecea5ffa3bbf93a66398331d"
+    },
+    "docs/UseDocs/language/basics/p1-expressions/errors.md": {
+      "bytes": 1919,
+      "sha256": "4a11b7002a889f26ec62db92606cf010a65d99baf9dc622c488d707f4fea8a56"
+    },
+    "docs/UseDocs/language/basics/p1-expressions/operators.md": {
+      "bytes": 4991,
+      "sha256": "271ece4c780de6d4ae5554f06063b11f80daec6bac81f70986057c2615cfe0a7"
+    },
+    "docs/UseDocs/language/basics/p1-expressions/README.md": {
+      "bytes": 1724,
+      "sha256": "d4e1f898430d5b4fcbe9f8d0dd81d0514960085eeadcb903890b2bd3b1d460c0"
+    },
+    "docs/UseDocs/language/basics/p1-expressions/selectors.md": {
+      "bytes": 2121,
+      "sha256": "4db5fa1e17af7d7b6288d45773d9c2621baae480b1a3f2b4b803b447949e161b"
+    },
+    "docs/UseDocs/language/basics/README.md": {
+      "bytes": 959,
+      "sha256": "c461fe0b115c78a32af8e421b11285c7ef9039913bdbd69ed8578727f9e33292"
+    },
+    "docs/UseDocs/language/basics/types/constants.md": {
+      "bytes": 897,
+      "sha256": "d0081fcce29602775e1735ccc26b842c3dd74dd7f4b259708191696bf0f32912"
+    },
+    "docs/UseDocs/language/basics/types/conversions.md": {
+      "bytes": 13374,
+      "sha256": "3ceb83c65a153f5796d70c7ba6d9f390e5b8ae9c1b421bc0dd4e6ce87f094c8d"
+    },
+    "docs/UseDocs/language/basics/types/errors.md": {
+      "bytes": 1280,
+      "sha256": "eed70fa1368124ffa92a1ee94cabc257740f1f06c02accb84a86aab091f641c0"
+    },
+    "docs/UseDocs/language/basics/types/README.md": {
+      "bytes": 882,
+      "sha256": "820b165788b03dc54119a3751591e0df0f1eeaeaf3c90fe1dcc5e6114b73b57d"
+    },
+    "docs/UseDocs/language/basics/types/variables.md": {
+      "bytes": 1058,
+      "sha256": "9c38a534ac08a81a8d4c488fa2e7c183c2a88e342f4350dc74568d776fa33108"
+    },
+    "docs/UseDocs/language/collections/advanced-selection.md": {
+      "bytes": 3869,
+      "sha256": "d496727c0638c2833e5de3584d87f5fecaee567decaeb3ede6612ff575156dcc"
+    },
+    "docs/UseDocs/language/collections/arrays.md": {
+      "bytes": 1292,
+      "sha256": "8c10695378e7b74c68832b36b025f209b67329b24cb31b76a22e53a7e988ed1c"
+    },
+    "docs/UseDocs/language/collections/broadcast-assignment.md": {
+      "bytes": 2440,
+      "sha256": "50cbd71fe184d4a970b42d8d19c69bef90f8be82b232acba42a4b9e56d55cefc"
+    },
+    "docs/UseDocs/language/collections/dictionaries.md": {
+      "bytes": 3899,
+      "sha256": "fd33798f9c5a44e266427dcf772d8bcb21b2008521b51ddac0623bc5f0ed8189"
+    },
+    "docs/UseDocs/language/collections/errors.md": {
+      "bytes": 6127,
+      "sha256": "1160384270a9dc9cfd6e4cbc68452b97189cd7bead39bda43f03b19cf4afc73a"
+    },
+    "docs/UseDocs/language/collections/indexing.md": {
+      "bytes": 2740,
+      "sha256": "33dc491eeff7a955ea1b1aada0b1d08bace7cedea9e4c78015777c47b0fe544d"
+    },
+    "docs/UseDocs/language/collections/random-selection.md": {
+      "bytes": 3299,
+      "sha256": "9892346c307c96fd0082c0355fe09e02d6d4c88a64960fbd5b6b918a46eb48fe"
+    },
+    "docs/UseDocs/language/collections/README.md": {
+      "bytes": 1698,
+      "sha256": "ec2e628de35e2662faad3a42349e088be35be0a7e4a39aa36d5aacbf6c71d4c8"
+    },
+    "docs/UseDocs/language/collections/sets.md": {
+      "bytes": 6660,
+      "sha256": "edd8124d25500cf67e3dc72f16083a35c10bba4273bcd8f516d944dfd3eed69a"
+    },
+    "docs/UseDocs/language/collections/tuples.md": {
+      "bytes": 897,
+      "sha256": "b8cfa0bfe8676b3001dd7fb6d5a8b6d6bd4d44efd8dc7786ebefbba8284258d6"
+    },
+    "docs/UseDocs/language/compiler/bytecode-runtime/benchmarks-and-freeze.md": {
+      "bytes": 1525,
+      "sha256": "f3892abd138172e68eed1b7f37b1ab3de8bc978296fbcd6f7aa5c37d27be7704"
+    },
+    "docs/UseDocs/language/compiler/bytecode-runtime/README.md": {
+      "bytes": 3754,
+      "sha256": "79557b0d0b9ea7e1afc537d719df8b0c3cbefa6acbee6a6cfeeb24272d0ac0e9"
+    },
+    "docs/UseDocs/language/compiler/driver/README.md": {
+      "bytes": 3123,
+      "sha256": "a7207bc38025a7f06dfc84578d219a592133cdb3dc6ddb1dc6eeefbfc90ed49f"
+    },
+    "docs/UseDocs/language/compiler/frontend/README.md": {
+      "bytes": 1164,
+      "sha256": "dbea2879fab71120b7329122c36ccbd5ae3b4df7db42d9951fd9a6d01bd43249"
+    },
+    "docs/UseDocs/language/compiler/ir/README.md": {
+      "bytes": 1320,
+      "sha256": "9d3e289b47d8180fe9108e1860351bd48e5b52ee4c4ef8ec242f8da0695016ba"
+    },
+    "docs/UseDocs/language/compiler/native/README.md": {
+      "bytes": 5234,
+      "sha256": "e88bef74456ca7875c0515af1e9036e5759234ea9ddb8abae546d95e24e649b2"
+    },
+    "docs/UseDocs/language/compiler/README.md": {
+      "bytes": 1066,
+      "sha256": "2e24a8bfd3c01bd238186bfb0a3722f1d090062a2f10d2e5c82264198145e7e3"
+    },
+    "docs/UseDocs/language/concurrency/README.md": {
+      "bytes": 12266,
+      "sha256": "34b3435acbc772664cc9dc0f5ab11bb1941e16c52ee8a036e48e7946c2f8f663"
+    },
+    "docs/UseDocs/language/control-flow/conditions-and-loops.md": {
+      "bytes": 1528,
+      "sha256": "07461d668a8cb86837d6dd5c8607f1c7d1b502d50e0733c52a423f618fbdbcc1"
+    },
+    "docs/UseDocs/language/control-flow/error-handling.md": {
+      "bytes": 4116,
+      "sha256": "8ab6f1278bf33f24744d70c6544af332a941dbd681a84b1723db9982a64c1611"
+    },
+    "docs/UseDocs/language/control-flow/errors.md": {
+      "bytes": 1311,
+      "sha256": "121f52e87fee1175805d6b5a22fb4bb833d85955b02d506520c5ded6b3b1cbe8"
+    },
+    "docs/UseDocs/language/control-flow/README.md": {
+      "bytes": 1070,
+      "sha256": "beb11c62191eb379ca661473e62d652f98985db8a6674c5b5ac10d48b063392e"
+    },
+    "docs/UseDocs/language/control-flow/returns-and-control.md": {
+      "bytes": 1262,
+      "sha256": "1a870036d3c120aedb3cd116d62b7bed04404e6317a817788108a517aa1a2201"
+    },
+    "docs/UseDocs/language/entry/README.md": {
+      "bytes": 1032,
+      "sha256": "9502f3a265f4a01d98dc644a5f1635ab94ac423714ffd4d8dd067f6ba3052d6f"
+    },
+    "docs/UseDocs/language/functions/calls.md": {
+      "bytes": 1616,
+      "sha256": "4f08524dbf0ddcde28d53e6e953f91f399af57e4546a8bc474f6edf61ff055ea"
+    },
+    "docs/UseDocs/language/functions/definitions.md": {
+      "bytes": 1774,
+      "sha256": "76b0d205bd74c6821b0f36decc23dbc0022200d03dcd9cbf6f43ff8503d84cd6"
+    },
+    "docs/UseDocs/language/functions/errors.md": {
+      "bytes": 1345,
+      "sha256": "5bc4654cbddf72d056897b6df1cf74ddb1b61246f2775c421574d4ba0d6e063c"
+    },
+    "docs/UseDocs/language/functions/README.md": {
+      "bytes": 816,
+      "sha256": "3682d87684b359fcdc167ae933eae7c2992f66152a973feef01620600d5fcac3"
+    },
+    "docs/UseDocs/language/lexical/backtick-identifiers.md": {
+      "bytes": 1611,
+      "sha256": "50478ae1d8c6b05afd46ba7a3095c0d023e4fe86199949cefa18b2abced24f99"
+    },
+    "docs/UseDocs/language/lexical/basic-tokens.md": {
+      "bytes": 2767,
+      "sha256": "31a42a87456fe6f5784a205dab2bd3356156dbd6595104df3709cf3b434fa31e"
+    },
+    "docs/UseDocs/language/lexical/comments-and-indentation.md": {
+      "bytes": 2055,
+      "sha256": "aa7c4e15466350cafa0b61812e8f65d118287944112997e2545f461b9e9a4da5"
+    },
+    "docs/UseDocs/language/lexical/minimal-tokens.md": {
+      "bytes": 1580,
+      "sha256": "7a2e79dcf46b4ea6ef2264bda8ff21173d6d1ebc1a5f05ca16208d4f9610bd09"
+    },
+    "docs/UseDocs/language/lexical/README.md": {
+      "bytes": 1466,
+      "sha256": "4852eeead5323c5d7ef7b2a27f67faec9815b9aa7fd6ec1618e5b9bef7bdf6f5"
+    },
+    "docs/UseDocs/language/lexical/source-positions.md": {
+      "bytes": 1363,
+      "sha256": "0dfbbf95cd5ad9daee878e7827c563abf54982393744e8c8f349562e0d47097d"
+    },
+    "docs/UseDocs/language/memory/README.md": {
+      "bytes": 1248,
+      "sha256": "b6f94b24ff0011cf613b5fed304e11d6cb7f1bbcb8229d154751ddfbd190af3e"
+    },
+    "docs/UseDocs/language/memory/release-and-errors.md": {
+      "bytes": 1894,
+      "sha256": "9c5e4ec2cdca14844c1f3cd5fe45d05fad4ff3786143766c3d72d89bbb8fb380"
+    },
+    "docs/UseDocs/language/memory/runtime/errors-and-unwind.md": {
+      "bytes": 2139,
+      "sha256": "4563b2c4438ccdf00ce624662f852f82918a66d129110ac6bca78d2558740d63"
+    },
+    "docs/UseDocs/language/memory/runtime/objects-and-handles.md": {
+      "bytes": 1794,
+      "sha256": "4819074baa2c91db219730a1f7403770abbae4dfc92b86a7012f47d13ef0cb16"
+    },
+    "docs/UseDocs/language/memory/runtime/README.md": {
+      "bytes": 1398,
+      "sha256": "873f1456c084755866fc9e29b3001509d00cf1928f6941276ff57800ae68f2cf"
+    },
+    "docs/UseDocs/language/memory/runtime/table-lifecycle.md": {
+      "bytes": 2097,
+      "sha256": "4edcb14a510b23e28eb66404325f4f0874d422b056f1cbd56acae1d70a573fb1"
+    },
+    "docs/UseDocs/language/memory/static-analysis.md": {
+      "bytes": 1651,
+      "sha256": "3aa18324088eecb12ea33c33a0c4625e05e448be3ebf1f06d3b46e602c1ec390"
+    },
+    "docs/UseDocs/language/modules/errors.md": {
+      "bytes": 1796,
+      "sha256": "3c2e55af81d5309d38fc9fc975138c1085a8a9d74c039835a6b4de2b349f2d87"
+    },
+    "docs/UseDocs/language/modules/imports.md": {
+      "bytes": 2732,
+      "sha256": "323eacac104900dbe6b7f137d2ef1945e8b5fc0cb8e773a84e391634360c0148"
+    },
+    "docs/UseDocs/language/modules/project-layout.md": {
+      "bytes": 1957,
+      "sha256": "704a65301adfe511febd5826cabfd969a84d7236e46aab906b61dc07dee93292"
+    },
+    "docs/UseDocs/language/modules/README.md": {
+      "bytes": 1082,
+      "sha256": "19755a6c0aee4232d864671c9188cfc121d371c82cb00f06c6c68c0f7ca202a2"
+    },
+    "docs/UseDocs/language/modules/scope-and-exports.md": {
+      "bytes": 1741,
+      "sha256": "faa2cddecc255cdfabfe3c22f017802efadb65b75ff6e03e56be2c5584ca5bfb"
+    },
+    "docs/UseDocs/language/README.md": {
+      "bytes": 1249,
+      "sha256": "27e047ab8c64abc08acbd6d66906ca06972bdc3768777ee62bd281142f5226ec"
+    },
+    "docs/UseDocs/language/tables/construction-and-lifecycle.md": {
+      "bytes": 1568,
+      "sha256": "5eb6e99a23fcf5d1f3ae3b9e2bc59cc5785093e2a663d78df5874912e8ab5d03"
+    },
+    "docs/UseDocs/language/tables/definitions.md": {
+      "bytes": 1326,
+      "sha256": "98408fcb60196afd4ef6304557b4be3dd6ee1e06ce93829c466ce8289f7b8d2f"
+    },
+    "docs/UseDocs/language/tables/errors.md": {
+      "bytes": 1325,
+      "sha256": "7c6b47e1123e9b8975fae5bab66b090dc2c768470f4ba2904b9901ce652aed1a"
+    },
+    "docs/UseDocs/language/tables/members-and-visibility.md": {
+      "bytes": 1464,
+      "sha256": "ed4ffe323241811530bdf5033c4b36bb9d6d21e9dc1ba54fde9c8be0e09e3f84"
+    },
+    "docs/UseDocs/language/tables/README.md": {
+      "bytes": 1159,
+      "sha256": "01cdd3312524ff19b9410fa46e2e83efc5f6b172a08bb71263bde6b52df8c0a0"
+    },
+    "docs/UseDocs/library/base64.md": {
+      "bytes": 13827,
+      "sha256": "d2d8124860811b57396857bf6e7bdd5c016d0fdb1fec265825f4d9fc4790dc2e"
+    },
+    "docs/UseDocs/library/cmath.md": {
+      "bytes": 5389,
+      "sha256": "db7fe5c1ebd3645d7d77d666c74db4b27fb1ab466ff402e79f9f8ba9fa611ca4"
+    },
+    "docs/UseDocs/library/csv.md": {
+      "bytes": 11813,
+      "sha256": "787660609592be4579077518358d1a8eb981d5e60209a7a1c28a3a478a0b6089"
+    },
+    "docs/UseDocs/library/dict.md": {
+      "bytes": 1215,
+      "sha256": "c9a53b725624dbff3ddc6ad5b51ab46010f1d68b429e462a1e005aab74320394"
+    },
+    "docs/UseDocs/library/fmt.md": {
+      "bytes": 10613,
+      "sha256": "65000289fcfd0d3fd8eb9616f458f6eb1eb1244b0a8380c2c6086cb7145d9f34"
+    },
+    "docs/UseDocs/library/hex.md": {
+      "bytes": 11388,
+      "sha256": "9aacdef04e4d6a0c1aab478d917aae133572918b032eb9c4e579d9e532510873"
+    },
+    "docs/UseDocs/library/math.md": {
+      "bytes": 9442,
+      "sha256": "d1a47e8756b438b54de55d98784c56e9a1bd33b77da59c6ba6c0bf3ccb963e3d"
+    },
+    "docs/UseDocs/library/os.md": {
+      "bytes": 4311,
+      "sha256": "489cd8cdfa3a4700977903b08fb7e9b5693146ee653eb53619bc727cd772c2c9"
+    },
+    "docs/UseDocs/library/path.md": {
+      "bytes": 3111,
+      "sha256": "1d6a0698bdadd3cda536cc50e89e42ec2c167202550cf45a62409663310e1457"
+    },
+    "docs/UseDocs/library/README.md": {
+      "bytes": 3300,
+      "sha256": "e354668fcaf621ffa553398d707e5c208fa861bdc00ab6d80a2fbd6ff7ad2b8c"
+    },
+    "docs/UseDocs/library/set.md": {
+      "bytes": 1094,
+      "sha256": "1b50ae495b1580a618708171cfc882073b068f64728ec26429c762cc7c587089"
+    },
+    "docs/UseDocs/library/statistics.md": {
+      "bytes": 9400,
+      "sha256": "dc33546316b4daca658c4f5f7a8312f648ffce599a4d6eb4aaaaf55446edbc62"
+    },
+    "docs/UseDocs/library/text.md": {
+      "bytes": 6458,
+      "sha256": "44a9a0ddc30b4b485d53d825b09375881d1816dbf8c267b16e98573d474cfd2c"
+    },
+    "docs/UseDocs/library/url.md": {
+      "bytes": 10967,
+      "sha256": "336a11cc38c9784549a62e94eadddb749bce86f383e5448b42deb797c12461f4"
+    },
+    "docs/UseDocs/README.md": {
+      "bytes": 1571,
+      "sha256": "0e8bdaffedef52da9327867912bfc12f2306b657c7a96e018150b5ee57c2d61b"
+    },
+    "docs/UseDocs/reference/README.md": {
+      "bytes": 310,
+      "sha256": "f6065b8b42961d2e7a46b8289d918ff1b297d1be39bbd4820e4420035249b85e"
+    },
+    "docs/UseDocs/tooling/cli/build.md": {
+      "bytes": 8153,
+      "sha256": "dc096a5149973008fbb274b8ac6f529346cc6669672c5f45420bfa2bb0a21c05"
+    },
+    "docs/UseDocs/tooling/cli/debug.md": {
+      "bytes": 4039,
+      "sha256": "2c0041290cc06e2df7e5f485192c2981901e086bed02ca56e7dd9c06dfb5bf55"
+    },
+    "docs/UseDocs/tooling/cli/doc-coverage-rust.md": {
+      "bytes": 3555,
+      "sha256": "c09d43969a00249c2208d5cfad5cb1958b2a6c220f7c5fe1cb0c5f139d5dc8ef"
+    },
+    "docs/UseDocs/tooling/cli/doc-coverage.md": {
+      "bytes": 1892,
+      "sha256": "6ed5a220e01f76d4439e1c2e1722969431e6c4056c299c375bb43a549d2051c5"
+    },
+    "docs/UseDocs/tooling/cli/environments.md": {
+      "bytes": 5328,
+      "sha256": "33643054bf7115338ae4c19d7c73d2333b471da0d6765588385a37d555035448"
+    },
+    "docs/UseDocs/tooling/cli/file-association.md": {
+      "bytes": 1649,
+      "sha256": "f29b964d21d285b1a0f698e33ae9d14f89d21cb160c2ab1a6007d917ad3db953"
+    },
+    "docs/UseDocs/tooling/cli/language-packs.md": {
+      "bytes": 8470,
+      "sha256": "cf282d9a4a04d7d2fd4b79a11ffc55bc3b4a9ae5538dcca7ba0bd7766abc428d"
+    },
+    "docs/UseDocs/tooling/cli/localization.md": {
+      "bytes": 3336,
+      "sha256": "bc040984bf55056b21be7e4343490ce538e689d930d412824660d8ece2b0d0a5"
+    },
+    "docs/UseDocs/tooling/cli/package-cache.md": {
+      "bytes": 3760,
+      "sha256": "9b8a92e7506ef158104fdf0ac0bdd6a14dfc8a4967737ecc12bc1e13cd58bcb1"
+    },
+    "docs/UseDocs/tooling/cli/package-lockfile.md": {
+      "bytes": 4590,
+      "sha256": "bf0f2c63a3dce728afd037c1de26e4d6c72e40700a146d6631124285ee7e69b7"
+    },
+    "docs/UseDocs/tooling/cli/package-sources.md": {
+      "bytes": 7677,
+      "sha256": "d827155025f2d6dd7381f417b38052a17fe4d37fee91835eb965c53b4cb1af52"
+    },
+    "docs/UseDocs/tooling/cli/packaging.md": {
+      "bytes": 2850,
+      "sha256": "67b4e3089ea7ac72a7a90e76695877d375dce3d29fb28bf726b9aec1022e4fe2"
+    },
+    "docs/UseDocs/tooling/cli/platform-reproduction.md": {
+      "bytes": 2257,
+      "sha256": "c8e4100f75212fe14dedbfbd2cd9e29f43695c4311cc8a1b64dd653790987085"
+    },
+    "docs/UseDocs/tooling/cli/protocol.md": {
+      "bytes": 11015,
+      "sha256": "9079852c9e95ee4dce1486e371e96fe18e279fbbfe6c10e4adb90d222d1c4ef1"
+    },
+    "docs/UseDocs/tooling/cli/README.md": {
+      "bytes": 2912,
+      "sha256": "ce593fe9e213d32bf65f9b4f57c8198edc0bc22191bed6b2ce4ff4633e177f49"
+    },
+    "docs/UseDocs/tooling/cli/repo-check.md": {
+      "bytes": 4433,
+      "sha256": "4f3db6656697ba75a6a9fae42810cb2920eff287aea7d141e907e99f83355e4f"
+    },
+    "docs/UseDocs/tooling/cli/shell.md": {
+      "bytes": 2727,
+      "sha256": "e0401e5a0b57c6ad03ff750cd11bb2a780eb471065d88c5d1248d8d08664317d"
+    },
+    "docs/UseDocs/tooling/cli/sync.md": {
+      "bytes": 3971,
+      "sha256": "270adfe5e2b681e5a9a2a99687b673c212eb71275b4809799faa0acd7643c453"
+    },
+    "docs/UseDocs/tooling/cli/test.md": {
+      "bytes": 3214,
+      "sha256": "6c6ad74a2900484efc1f8af27f34935af5cd3e983b83f3799ab1ed75a5ef10db"
+    },
+    "docs/UseDocs/tooling/config/errors.md": {
+      "bytes": 3769,
+      "sha256": "aad7d2d612c195b318d8a2672805685bd539fdf4ee03b0019b7f95ac6565c25a"
+    },
+    "docs/UseDocs/tooling/config/README.md": {
+      "bytes": 1145,
+      "sha256": "fd13883dc581a3048ac92e91c21ed831e47e8c7f0d69f405ad544768852bd67d"
+    },
+    "docs/UseDocs/tooling/config/syntax.md": {
+      "bytes": 4664,
+      "sha256": "53c5607e6c931b8ea86c436b1799d400fc11a6592acad2eab6af44208b8929b1"
+    },
+    "docs/UseDocs/tooling/README.md": {
+      "bytes": 439,
+      "sha256": "27a283747ba842438e31bd22768b0993f8a9c31eb49f28153c1c15cda8e9ee0b"
+    },
+    "docs/UseDocs/tooling/repl/README.md": {
+      "bytes": 7623,
+      "sha256": "78d22873d2a08b2805550f81262c56c67c7a07f8229e9062afdd83c825c3239b"
+    },
+    "docs/UseDocs/troubleshooting/diagnostics-structure.md": {
+      "bytes": 2760,
+      "sha256": "ade33f842e568c4fff1496e2a7f59a3b014447b63e873f31ad8d1056ef2bc2b9"
+    },
+    "docs/UseDocs/troubleshooting/errors-and-reports.md": {
+      "bytes": 4821,
+      "sha256": "8ba6b56918a13eca14773161e4a734c0775b189e2eb0528847758504aebc78c8"
+    },
+    "docs/UseDocs/troubleshooting/README.md": {
+      "bytes": 1175,
+      "sha256": "c7e9f7887584483a90276aacd461a78409bbb49720812fa2f14b93542d1a0c04"
+    },
+    "package.json": {
+      "bytes": 1089,
+      "sha256": "dd45b11525b96086fb5e676f3562034df6e094f6633dd199cc2728155f0dfb0c"
+    },
+    "stdlib/base64.md": {
+      "bytes": 1872,
+      "sha256": "789770cfb9e2a9d063e23c9cff04beca8bbc755f86143eade7779fdb31cf0f2c"
+    },
+    "stdlib/base64.xiao": {
+      "bytes": 4639,
+      "sha256": "de0fe3ef8079258a39c8b3e29e1014902d684254c7cf0ca4a41c29d67372e946"
+    },
+    "stdlib/cmath.md": {
+      "bytes": 2622,
+      "sha256": "ebade7481fbb455234c0ace2d4d8b40eab6e9b7148f14d2c47e7d9236fcd502b"
+    },
+    "stdlib/cmath.xiao": {
+      "bytes": 1030,
+      "sha256": "7774267d040e03243059504b1050700f632a0c22f25997887c1f044c85104ec1"
+    },
+    "stdlib/csv.md": {
+      "bytes": 1966,
+      "sha256": "31e195e9dfe01a96b1bcdcf184c4af5831d841cf7ac2947a4fa16db3bfb7adee"
+    },
+    "stdlib/csv.xiao": {
+      "bytes": 7648,
+      "sha256": "58001e847de6bc1664f849227e89ae711fa4d1495185067d54352bb27b528159"
+    },
+    "stdlib/dict.md": {
+      "bytes": 968,
+      "sha256": "061f718b6b074a70fc401a59d83e79b2198691fc1669125946f0b36f63d9f5a6"
+    },
+    "stdlib/dict.xiao": {
+      "bytes": 1013,
+      "sha256": "256710ae1132c3be2dc5479b0477d62fd9c073eb3dd9c87cb831cc389b634c02"
+    },
+    "stdlib/fmt.md": {
+      "bytes": 1530,
+      "sha256": "0482d2150f049175cb4ff1c50e2ac893c18a778e6015ad552b9477d45fb3746c"
+    },
+    "stdlib/fmt.xiao": {
+      "bytes": 3707,
+      "sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40"
+    },
+    "stdlib/hex.md": {
+      "bytes": 1461,
+      "sha256": "d5c1dab3272dd0d3e1b0dce61c3915c2b5a37c841b4dd4d2bde8077f196a8311"
+    },
+    "stdlib/hex.xiao": {
+      "bytes": 2461,
+      "sha256": "2480c9350da1f5ad12892932816109f1dda48750ddb70572df422cac5fe03d25"
+    },
+    "stdlib/math.md": {
+      "bytes": 1556,
+      "sha256": "95f98e3163f196165dc4251a27d89afa8334136521150e4bb7611611ada97bff"
+    },
+    "stdlib/math.xiao": {
+      "bytes": 1386,
+      "sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482"
+    },
+    "stdlib/os.md": {
+      "bytes": 2723,
+      "sha256": "56df831c9a9248390d14d8ed6eafd65a4057a6a574a067971d836c377316211e"
+    },
+    "stdlib/os.xiao": {
+      "bytes": 830,
+      "sha256": "621dc326a9b74732ec0568b3782b324df2da47b1d13d39369f6f9c32035cadaa"
+    },
+    "stdlib/path.md": {
+      "bytes": 1761,
+      "sha256": "a42b5ae984c79b9a02bc07e75b1efa23a8b00d36dd9986c8362694ecd6ebacd1"
+    },
+    "stdlib/path.xiao": {
+      "bytes": 1060,
+      "sha256": "1286a766b42df1cff6ec688feeaf9f74e7e97302505511d4f5610aa3b15795c9"
+    },
+    "stdlib/README.md": {
+      "bytes": 3882,
+      "sha256": "9620dd23fc8c3e87ae2f01f4577d34d5c1ed70c6a2396208d7b4c39d63f65011"
+    },
+    "stdlib/set.md": {
+      "bytes": 1170,
+      "sha256": "586a1463778cb73522e7559a35da20fbd300994bac0aea72543cee37e72ed986"
+    },
+    "stdlib/set.xiao": {
+      "bytes": 978,
+      "sha256": "56456fe661ff1ba024e3ec0c9edb9353357cb333e1dfa74bf9341f0cf902b35c"
+    },
+    "stdlib/statistics.md": {
+      "bytes": 1339,
+      "sha256": "c9b783e5d4b86200f2ce5accb3835c03bcd49ef40d4f4618df8ff5e2ae47e14d"
+    },
+    "stdlib/statistics.xiao": {
+      "bytes": 1079,
+      "sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8"
+    },
+    "stdlib/text.md": {
+      "bytes": 2944,
+      "sha256": "cb0a5021b2ccf8962825283012b9bbe0bde3be81a1654ea1fce9482da6544cb2"
+    },
+    "stdlib/text.xiao": {
+      "bytes": 4173,
+      "sha256": "e0b132881bf5787d66dc19e149de76017cdfdc624de29680b906ca3e5bada40b"
+    },
+    "stdlib/url.md": {
+      "bytes": 1555,
+      "sha256": "7db89984b603c0bc33b7fafbf800a076258fe156d0cef2c71fe5b7846291cdb5"
+    },
+    "stdlib/url.xiao": {
+      "bytes": 8068,
+      "sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c"
+    },
+    "tools/repo-check/src/cli.ts": {
+      "bytes": 4858,
+      "sha256": "92430f7810f7e5d94894220b836cd086abd6556641d18934a56a7545e434e752"
+    },
+    "tools/repo-check/src/commit.ts": {
+      "bytes": 4242,
+      "sha256": "372e43a6939a3da0033b90112cf239daf1fd4fa703fee520385639dc678570ae"
+    },
+    "tools/repo-check/src/docs.ts": {
+      "bytes": 19058,
+      "sha256": "cbe552701beb4817b62cd886813bb8d4c2ceaa0747a9fc5bd7e09a50d31b5e2d"
+    },
+    "tools/repo-check/src/layout.ts": {
+      "bytes": 7942,
+      "sha256": "b5eccc488d8c1b0ea3c70731930ea5a28190a13ea0e497260c6a66f438ae86a1"
+    },
+    "tools/repo-check/src/manifest.ts": {
+      "bytes": 8049,
+      "sha256": "284cd6cb7aa7718f9cafd58a572052be53bdd95cb645052f466f99183d3f6f19"
+    },
+    "tools/repo-check/src/paths.ts": {
+      "bytes": 8913,
+      "sha256": "85f307541ac02b05c5329b98413b01c912059ad35c23a5b3d08b3b1274c5ae6c"
+    },
+    "tools/repo-check/src/README.md": {
+      "bytes": 998,
+      "sha256": "b8cd401e9bcf1a6a900cb830df50bbe9ce75208bc41f39e9c0df50b58b7acb3d"
+    },
+    "tools/repo-check/src/report.ts": {
+      "bytes": 3696,
+      "sha256": "71f1ae83b3340baa691a70dc5aa2badd107c4b09a6948980977fb2b0dafe4f08"
+    },
+    "tools/repo-check/src/size.ts": {
+      "bytes": 14102,
+      "sha256": "e16ff4085fe96f6f5f6c30fd3155f1b5f30d4c6fd6e40941f4280d533d2f2ee7"
+    },
+    "tools/repo-check/src/types.ts": {
+      "bytes": 2897,
+      "sha256": "5e4f625f4ff0aa998c3251822737f26a286fe312db1793f4500c355d42a0199b"
+    },
+    "tools/repo-check/src/workspace.ts": {
+      "bytes": 8943,
+      "sha256": "d81fbd01bde502ede9bbadd83dfb277f5dc2eae4395c925e573414fdbb3cf017"
+    }
+  },
+  "log": {
+    "path": "objects/sha256/d4/d4ab44a3467603055c1d730912ecd2a34befca36bac48aa668564e9bf5a5c667.bin",
+    "bytes": 20330,
+    "sha256": "d4ab44a3467603055c1d730912ecd2a34befca36bac48aa668564e9bf5a5c667",
+    "encoding": "gzip",
+    "raw_bytes": 289545,
+    "raw_sha256": "edd9617c46e53d0a941ae90710bd64ed9780a4e8e121e1f1cab2b84352f9fd71"
+  },
+  "repair_applied": false
+}

@@ -1,0 +1,23 @@
+{
+  "attempt": 1,
+  "command": [
+    "bun",
+    "tools/repo-check/src/cli.ts",
+    "all",
+    "--format",
+    "json"
+  ],
+  "gate_report_passed": true,
+  "collector_status": "failed_after_child_exit",
+  "collector_error": "AttributeError: 回执封装引用了不存在的record.canonical辅助函数",
+  "child_pid_recorded": false,
+  "elapsed_seconds_recorded": false,
+  "log": {
+    "path": "objects/sha256/3a/3ab52005b7d9e3f9fbc78748b3342ac27db8bf06b1453364ac3d3f8e6dff241b.bin",
+    "bytes": 23232,
+    "sha256": "3ab52005b7d9e3f9fbc78748b3342ac27db8bf06b1453364ac3d3f8e6dff241b",
+    "encoding": "gzip",
+    "raw_bytes": 521857,
+    "raw_sha256": "3716da9af9085a4f5791fcd67b253f734f2593166bb5e4b4e6501a92e021a854"
+  }
+}

@@ -38,9 +38,19 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--rebuild", action="store_true",
                         help="基于新增执行记录重建本脚本生成的 closeout/evidence")
+    parser.add_argument("--refresh-evidence", action="store_true",
+                        help="仅按实际字节刷新文件清单，不改写历史收口和执行记录")
     args = parser.parse_args()
     closeout_path = ROOT / "closeout.json"
     evidence_path = ROOT / "evidence.json"
+    if args.refresh_evidence:
+        if args.rebuild or not (closeout_path.exists() and evidence_path.exists()):
+            raise SystemExit("--refresh-evidence 只适用于已有证据且不能与 --rebuild 合用")
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+        evidence["files"] = inventory()
+        write_json(evidence_path, evidence, True)
+        print(json.dumps({"refreshed_files": len(evidence["files"]), "closeout_unchanged": True}))
+        return
     if args.rebuild and not (closeout_path.exists() and evidence_path.exists()):
         raise SystemExit("--rebuild要求closeout.json和evidence.json均已存在")
     if not args.rebuild and (closeout_path.exists() or evidence_path.exists()):

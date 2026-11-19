@@ -62,6 +62,15 @@ jobs:
       - name: Configure locked Cargo and numeric environment
         run: python tools/gates/controlled-cargo.py --install
 
+      - name: Record B6-4 checkout before gates
+        continue-on-error: true
+        run: python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py before
+
       - name: Run workspace gates
         shell: bash
         run: bash tools/gates/run.sh
+
+      - name: Record B6-4 checkout after gates
+        if: always()
+        continue-on-error: true
+        run: python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py after

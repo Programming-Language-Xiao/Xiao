@@ -10,10 +10,17 @@ mod archive;
 mod archive_closure;
 /// 归档输出与源码、资源和缓存的路径隔离。
 mod archive_output;
+/// 归档执行时的固定官方加载器接线。
+mod archive_run;
 /// 统一前端请求、上下文、结果和编排器。
 mod frontend;
 /// 统一前端向 VM 提供按需模块编译的接线。
 mod module_loader;
+
+/// 为使用自定义 VM 事件接收器的宿主提供当前任务的官方模块加载器。
+pub fn standard_library_module_loader() -> impl xiao_vm::ModuleLoader {
+    module_loader::DriverModuleLoader::new(None, None)
+}
 
 /// `-debug` 独立诊断进程与终端启动编排。
 pub mod diagnostics;
@@ -55,6 +62,8 @@ pub use archive::{
     ArchiveBuildError, ArchiveBuildRequest, ArchiveBuildResult, ArchiveModuleObservation,
     build_archive,
 };
+/// 带固定官方加载器及取消控制的归档执行入口。
+pub use archive_run::{run_archive, run_archive_with_control};
 /// 重导出前端到 LLVM 原生程序的结构化构建接口。
 pub use native::{FrontendNativeDriver, NativeBuildRequest, NativeBuildResult, NativeDriverError};
 /// 可注入的环境包映射及其具体文件模块。

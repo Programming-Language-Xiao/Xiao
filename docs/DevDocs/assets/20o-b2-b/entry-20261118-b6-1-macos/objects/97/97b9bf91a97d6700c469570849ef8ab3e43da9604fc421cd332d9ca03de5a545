@@ -1,0 +1,12 @@
+   Compiling xiao-driver v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-gb726qcz/source/core/rust/crates/xiao-driver)
+    Finished `release` profile [optimized] target(s) in 3.02s
+     Running tests/20o_b2_b2_divide.rs (/Users/runner/work/_temp/xiao-b6-1-gb726qcz/target/release/deps/20o_b2_b2_divide-96966eb664fb846e)
+
+running 1 test
+B2-A5-LANGUAGE case=b2_explicit_divide backend=native optimization=0 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/divide/xiao-b2-a5-native-6391-1794979327226812000/b2_explicit_divide-o0 result=success
+B2-A5-LANGUAGE case=b2_explicit_divide backend=native optimization=3 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/divide/xiao-b2-a5-native-6391-1794979327226812000/b2_explicit_divide-o3 result=success
+B2-B2-DIVIDE backend=native optimization=0,3 intrinsic=33 result=success
+test lfloat_divide_matches_native_golden_outputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.89s
+

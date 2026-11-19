@@ -1,0 +1,85 @@
+{
+  "argv": [
+    "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+    "tools/repo-check/src/cli.ts",
+    "all",
+    "--format",
+    "json"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 61260,
+  "started_utc": "2026-11-17T18:32:19.997763+00:00",
+  "finished_utc": "2026-11-17T18:33:01.983604+00:00",
+  "elapsed_seconds": 41.98399999999674,
+  "exit_code": 0,
+  "environment_overrides": {
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "RUSTC": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.b6\\b6-1-20261117-01\\target",
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_TERM_COLOR": "never",
+    "TEMP": "D:\\project\\Xiao\\.b6\\b6-1-20261117-01\\temp",
+    "TMP": "D:\\project\\Xiao\\.b6\\b6-1-20261117-01\\temp",
+    "XIAO_HOME": "D:\\project\\Xiao\\.b6\\b6-1-20261117-01\\home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\Xiao\\stdlib",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.b6\\b6-1-20261117-01\\target\\release\\xiao_runtime.lib",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_B1_F10": "0",
+    "XIAO_B2_A_PERF": "0",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8"
+  },
+  "removed_environment_names": [],
+  "bun": {
+    "binary": {
+      "path": "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+      "bytes": 88825944,
+      "sha256": "627d2e4775c24bdedee2cd7ccc18dcadae061e5345274ab6e3c4c797927bfb8f"
+    },
+    "version": "1.4.0"
+  },
+  "docs_before": {
+    "path": "objects/sha256/35/3518042f7b83e7fae2838297cafeca558c7c089844aa2b36c285a430b8181d8f.bin",
+    "bytes": 3552,
+    "sha256": "3518042f7b83e7fae2838297cafeca558c7c089844aa2b36c285a430b8181d8f",
+    "encoding": "gzip",
+    "raw_bytes": 15543,
+    "raw_sha256": "93385c33f1be352a301d4855f418be10d0c1c6ee19a811a8c18fe6666dfa2038"
+  },
+  "docs_after": {
+    "path": "objects/sha256/35/3518042f7b83e7fae2838297cafeca558c7c089844aa2b36c285a430b8181d8f.bin",
+    "bytes": 3552,
+    "sha256": "3518042f7b83e7fae2838297cafeca558c7c089844aa2b36c285a430b8181d8f",
+    "encoding": "gzip",
+    "raw_bytes": 15543,
+    "raw_sha256": "93385c33f1be352a301d4855f418be10d0c1c6ee19a811a8c18fe6666dfa2038"
+  },
+  "product_before": {
+    "path": "objects/sha256/52/52aaa4bc68063b10fe258d13baec6ca4ef581b79f3a0b3c7eff0a1792ab5142b.bin",
+    "bytes": 67360,
+    "sha256": "52aaa4bc68063b10fe258d13baec6ca4ef581b79f3a0b3c7eff0a1792ab5142b",
+    "encoding": "gzip",
+    "raw_bytes": 233803,
+    "raw_sha256": "99dc75a74a224b1e042a8f508c3d5b46da68a38ee012911a8b70f9c266d9a548"
+  },
+  "product_after": {
+    "path": "objects/sha256/52/52aaa4bc68063b10fe258d13baec6ca4ef581b79f3a0b3c7eff0a1792ab5142b.bin",
+    "bytes": 67360,
+    "sha256": "52aaa4bc68063b10fe258d13baec6ca4ef581b79f3a0b3c7eff0a1792ab5142b",
+    "encoding": "gzip",
+    "raw_bytes": 233803,
+    "raw_sha256": "99dc75a74a224b1e042a8f508c3d5b46da68a38ee012911a8b70f9c266d9a548"
+  },
+  "source_unchanged": true,
+  "log": {
+    "path": "objects/sha256/10/1059fc537b5115469474bb0e31b4920daddcae32ca7bb241fb5ec963825da27e.bin",
+    "bytes": 23232,
+    "sha256": "1059fc537b5115469474bb0e31b4920daddcae32ca7bb241fb5ec963825da27e",
+    "encoding": "gzip",
+    "raw_bytes": 521857,
+    "raw_sha256": "a702847c8876cacead81aeaa82abd85ba1705fcfb96398d9640336566fee375c"
+  }
+}

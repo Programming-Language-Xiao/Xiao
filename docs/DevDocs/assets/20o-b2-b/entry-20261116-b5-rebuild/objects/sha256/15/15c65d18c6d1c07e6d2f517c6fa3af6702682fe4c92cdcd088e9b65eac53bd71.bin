@@ -1,0 +1,191 @@
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling proc-macro2 v1.0.107
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+   Compiling itoa v1.0.18
+   Compiling zmij v1.0.23
+   Compiling memchr v2.8.3
+   Compiling syn v3.0.5
+   Compiling cfg-if v1.0.5
+   Compiling serde_json v1.0.151
+   Compiling version_check v0.9.5
+   Compiling typenum v1.20.1
+   Compiling generic-array v0.14.7
+   Compiling xiao-runtime-abi v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime-abi)
+   Compiling cpufeatures v0.2.17
+   Compiling xiao-source v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-source)
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling digest v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling serde_derive v1.0.229
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling zeroize v1.9.0
+   Compiling rustls-pki-types v1.15.1
+   Compiling cc v1.5.1
+   Compiling getrandom v0.2.17
+   Compiling untrusted v0.9.0
+   Compiling autocfg v1.5.1
+   Compiling httparse v1.10.1
+   Compiling rustls v0.23.45
+   Compiling bytes v1.12.1
+   Compiling log v0.4.34
+   Compiling ring v0.17.14
+   Compiling http v1.5.0
+   Compiling base64 v0.23.1
+   Compiling subtle v2.6.1
+   Compiling once_cell v1.21.4
+   Compiling ureq-proto v0.6.4
+   Compiling num-traits v0.2.19
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-i18n)
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-intrinsics)
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-standard-library)
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-syntax)
+   Compiling xiao-lock v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lock)
+   Compiling webpki-roots v1.0.9
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-modules)
+   Compiling xiao-config v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-config)
+   Compiling rustls-webpki v0.103.15
+   Compiling filetime v0.2.29
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling utf8-zero v0.8.1
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-ir)
+   Compiling percent-encoding v2.3.2
+   Compiling tar v0.4.46
+   Compiling libm v0.2.16
+   Compiling ureq v3.4.2
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+   Compiling num-integer v0.1.47
+   Compiling bigdecimal v0.4.11
+   Compiling libc v0.2.189
+   Compiling num-bigint v0.4.8
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+   Compiling windows-targets v0.52.6
+   Compiling windows-sys v0.52.0
+   Compiling crc32fast v1.5.2
+   Compiling simd-adler32 v0.3.10
+   Compiling adler2 v2.0.1
+   Compiling miniz_oxide v0.9.1
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+   Compiling flate2 v1.1.10
+   Compiling xiao-platform v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-platform)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+   Compiling syn v2.0.119
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+   Compiling xiao-doc-coverage-rust v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-doc-coverage-rust)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 03s
+     Running unittests src\lib.rs (D:\project\Xiao\.b5\20261116\current\target\debug\deps\xiao_artifacts-88e53382a7fb35a1.exe)
+
+running 25 tests
+test tests::archive_index_entry_validation_is_symmetric ... ok
+test tests::archive_index_rejects_unknown_required_features ... ok
+test tests::archive_rejects_unknown_capabilities_and_overflowing_interface_version ... ok
+test tests::archive_index_extended_metadata_round_trips_without_changing_old_fields ... ok
+test tests::archive_requires_new_feature_and_version_fields ... ok
+test tests::archive_requirements_round_trip_is_canonical ... ok
+test tests::cleanup_plan_defers_invalid_object_isolation_until_apply ... ok
+test tests::cleanup_rechecks_references_added_after_plan_creation ... ok
+test tests::cleanup_archive_reference_protects_its_object ... ok
+test tests::cleanup_reference_source_failure_is_conservative ... ok
+test tests::cleanup_plan_protects_project_lock_references_and_apply_is_explicit ... ok
+test tests::cleanup_revalidates_and_quarantines_object_changed_after_plan ... ok
+test tests::corrupt_object_is_quarantined ... ok
+test tests::conservative_reference_set_protects_objects_when_sources_are_unavailable ... ok
+test tests::digest_and_sharded_xiaoc_object_are_deterministic ... ok
+test tests::indexes_round_trip_deterministically_and_reject_unknown_major ... ok
+test tests::index_store_commits_global_snapshot_atomically ... ok
+test tests::new_archive_feature_rejects_legacy_reader_without_changing_global_index ... ok
+test tests::interrupted_object_write_cleans_temporary_input ... ok
+test tests::global_index_can_rebuild_from_verified_objects_and_query_both_directions ... ok
+test tests::seeded_index_mutations_never_panic_and_are_rejected_without_io_errors ... ok
+test tests::xiaoc_validation_comes_from_authoritative_codec ... ok
+test tests::indexes_remain_readable_while_their_write_locks_are_held ... ok
+test tests::scan_quarantines_objects_with_invalid_names_or_shards ... ok
+test tests::objects_are_read_only_and_hash_collisions_quarantine_both_inputs ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running unittests src\lib.rs (D:\project\Xiao\.b5\20261116\current\target\debug\deps\xiao_bytecode-9cd6fe4f24d3bb69.exe)
+
+running 33 tests
+test encode::tests::bad_references_and_fixed_width_overflow_are_rejected ... ok
+test encode::tests::damaged_inputs_are_rejected_structurally ... ok
+test encode::tests::check_expected_type_round_trips_in_both_widths ... ok
+test encode::tests::all_opcodes_and_abi_fields_round_trip_in_both_widths ... ok
+test encode::tests::fixed_width_reports_the_overflowing_handler_binding ... ok
+test encode::tests::resource_constant_is_rejected_with_fatal_identity_at_encode_boundary ... ok
+test encode::tests::scalar_and_release_tags_have_one_bidirectional_mapping ... ok
+test encode::tests::set_tags_have_explicit_bidirectional_mapping ... ok
+test encode::tests::unsigned_and_signed_leb128_cover_integer_boundaries ... ok
+test encode::tests::decoded_intrinsic_ids_are_checked_in_both_operand_widths ... ok
+test liveness::tests::does_not_invent_fallthrough_and_tracks_explicit_branch ... ok
+test liveness::tests::protected_blocks_keep_handler_inputs_live ... ok
+test liveness::tests::release_plan_is_an_indirect_register_use ... ok
+test lower::expr::tests::unresolved_type_variables_keep_set_only_operators_and_membership_lowerable ... ok
+test optimize::tests::o0_skips_semantic_passes_without_claiming_optimization ... ok
+test optimize::tests::optimization_pipeline_preserves_observable_operation_families ... ok
+test optimize::tests::standard_passes_report_snapshots_and_skip_reasons ... ok
+test optimize::tests::unreachable_block_pass_remaps_targets_and_keeps_execution_blocks ... ok
+test optimize::tests::unreachable_protected_region_is_kept_for_handler_remapping ... ok
+test sig::tests::intrinsic_id_round_trips_full_u32_through_two_u16_slots ... ok
+test sig::tests::zero_intrinsic_id_is_preserved_for_validator_rejection ... ok
+test verify::tests::finally_subroutine_cannot_fall_through_into_continuation ... ok
+test verify::tests::production_entry_distinguishes_known_unsupported ... ok
+test verify::tests::production_entry_rejects_resource_constant_boundary ... ok
+test verify::tests::production_entry_rejects_unsupported_as_internal_error ... ok
+test verify::tests::program_level_categories_are_not_used_for_function_validation ... ok
+test xiaoc::tests::inferred_concurrency_types_require_abi_features_before_vm_load ... ok
+test xiaoc::tests::malformed_random_bytes_never_panic ... ok
+test xiaoc::tests::rejects_truncation_overlap_unknown_required_and_compression ... ok
+test xiaoc::tests::round_trip_is_deterministic_and_variable_length_header_is_supported ... ok
+test xiaoc::tests::runtime_requirements_reject_unknown_features_and_old_abi ... ok
+test encode::tests::module_dependency_direction_is_acyclic ... ok
+test encode::tests::concurrency_plans_round_trip_in_both_widths ... ok
+
+test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s
+
+     Running unittests src\bin\xiaoc-check.rs (D:\project\Xiao\.b5\20261116\current\target\debug\deps\xiaoc_check-04bc4ff9b9576c3d.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\b0_a_api.rs (D:\project\Xiao\.b5\20261116\current\target\debug\deps\b0_a_api-c7fad84c6cd788a5.exe)
+
+running 1 test
+test root_and_research_paths_share_the_production_verifier ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\b4_cmath_tac.rs (D:\project\Xiao\.b5\20261116\current\target\debug\deps\b4_cmath_tac-7b9bdee80f8af2d1.exe)
+
+running 2 tests
+test cmath_intrinsics_round_trip_tac_and_bytecode_without_version_changes ... FAILED
+test cmath_unknown_intrinsic_ids_are_rejected_before_encoding ... ok
+
+failures:
+
+---- cmath_intrinsics_round_trip_tac_and_bytecode_without_version_changes stdout ----
+
+thread 'cmath_intrinsics_round_trip_tac_and_bytecode_without_version_changes' (12260) panicked at crates\xiao-bytecode\tests\b4_cmath_tac.rs:264:5:
+assertion `left == right` failed
+  left: 65555
+ right: 65554
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    cmath_intrinsics_round_trip_tac_and_bytecode_without_version_changes
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+error: test failed, to rerun pass `-p xiao-bytecode --test b4_cmath_tac`

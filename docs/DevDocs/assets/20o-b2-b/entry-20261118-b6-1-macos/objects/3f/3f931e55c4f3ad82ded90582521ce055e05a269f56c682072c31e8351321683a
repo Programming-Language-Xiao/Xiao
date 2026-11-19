@@ -1,0 +1,229 @@
+ Downloading crates ...
+  Downloaded webpki-roots v1.0.9
+  Downloaded rustls-pki-types v1.15.1
+  Downloaded bytes v1.12.1
+  Downloaded subtle v2.6.1
+  Downloaded base64 v0.23.1
+  Downloaded zeroize v1.9.0
+  Downloaded miniz_oxide v0.9.1
+  Downloaded ureq v3.4.2
+  Downloaded http v1.5.0
+  Downloaded filetime v0.2.29
+  Downloaded once_cell v1.21.4
+  Downloaded log v0.4.34
+  Downloaded getrandom v0.2.17
+  Downloaded cc v1.5.1
+  Downloaded crc32fast v1.5.2
+  Downloaded untrusted v0.9.0
+  Downloaded shlex v2.0.1
+  Downloaded rustls-webpki v0.103.15
+  Downloaded find-msvc-tools v0.1.14
+  Downloaded utf8-zero v0.8.1
+  Downloaded ureq-proto v0.6.4
+  Downloaded tar v0.4.46
+  Downloaded flate2 v1.1.10
+  Downloaded simd-adler32 v0.3.10
+  Downloaded percent-encoding v2.3.2
+  Downloaded httparse v1.10.1
+  Downloaded adler2 v2.0.1
+  Downloaded rustls v0.23.45
+  Downloaded ring v0.17.14
+   Compiling serde_json v1.0.151
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling zeroize v1.9.0
+   Compiling cc v1.5.1
+   Compiling rustls-pki-types v1.15.1
+   Compiling getrandom v0.2.17
+   Compiling httparse v1.10.1
+   Compiling untrusted v0.9.0
+   Compiling xiao-standard-library v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-standard-library)
+   Compiling log v0.4.34
+   Compiling rustls v0.23.45
+   Compiling crc32fast v1.5.2
+   Compiling bytes v1.12.1
+   Compiling ring v0.17.14
+   Compiling once_cell v1.21.4
+   Compiling base64 v0.23.1
+   Compiling xiao-i18n v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-i18n)
+   Compiling http v1.5.0
+   Compiling xiao-diagnostics v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-diagnostics)
+   Compiling xiao-lock v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-lock)
+   Compiling xiao-syntax v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-syntax)
+   Compiling xiao-types v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-types)
+   Compiling xiao-modules v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-modules)
+   Compiling xiao-lifetime v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-lifetime)
+   Compiling xiao-ir v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-ir)
+   Compiling rustls-webpki v0.103.15
+   Compiling xiao-optimizer v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-bytecode)
+   Compiling simd-adler32 v0.3.10
+   Compiling subtle v2.6.1
+   Compiling adler2 v2.0.1
+   Compiling miniz_oxide v0.9.1
+   Compiling xiao-runtime v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-runtime)
+   Compiling xiao-config v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-config)
+   Compiling ureq-proto v0.6.4
+   Compiling webpki-roots v1.0.9
+   Compiling filetime v0.2.29
+   Compiling percent-encoding v2.3.2
+   Compiling utf8-zero v0.8.1
+   Compiling ureq v3.4.2
+   Compiling tar v0.4.46
+   Compiling flate2 v1.1.10
+   Compiling xiao-artifacts v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-artifacts)
+   Compiling xiao-vm v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-vm)
+   Compiling xiao-codegen-llvm v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-codegen-llvm)
+   Compiling xiao-xar v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-xar)
+   Compiling xiao-package v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-package)
+   Compiling xiao-driver v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/source/core/rust/crates/xiao-driver)
+    Finished `release` profile [optimized] target(s) in 2m 55s
+     Running tests/20o_b2_a_contract.rs (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/target/release/deps/20o_b2_a_contract-47eb49435aa0bc07)
+
+running 13 tests
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=vm result=success
+B2-A5-LANGUAGE case=a5_conversions backend=vm result=success
+test a5_conversion_language_preserves_values_and_promotion ... ok
+B2-A5-LANGUAGE case=a5_bindings backend=vm result=success
+test a5_assignments_and_constants_keep_the_declared_numeric_value ... ok
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=vm result=success
+B2-A5-LANGUAGE case=a5_conversions backend=vm result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=vm result=success
+test a5_decimal_language_preserves_frozen_scales ... ok
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=vm result=success
+test a5_integer_language_uses_exact_runtime_arithmetic ... ok
+B2-A5-LANGUAGE case=a5_matrix backend=vm result=success
+test a5_encoded_numeric_matrix_matches_all_existing_carriers ... ok
+test a5_complete_numeric_language_matrix_matches_independent_golden ... ok
+test a5_language_values_match_native_golden_outputs ... ignored, 需要本任务新Runtime与显式LLVM/平台链接器
+test a5_portable_numeric_payloads_cannot_bypass_admission ... ok
+test a5_preserves_existing_function_type_boundaries ... ok
+test a5_static_invalid_numeric_combinations_remain_rejected ... ok
+B2-A5-LANGUAGE case=a5_errors backend=vm result=success
+test a5_language_errors_remain_recoverable_and_observable ... ok
+B2-A5-LANGUAGE case=a5_carriers backend=vm result=success
+test a5_language_carriers_preserve_numeric_types_and_values ... ok
+B2-A5-LANGUAGE case=a5_carriers backend=vm result=success
+B2-A5-LANGUAGE case=a5_errors backend=vm result=success
+B2-A5-LANGUAGE case=a5_matrix backend=vm result=success
+B2-A5-LANGUAGE case=a5_bindings backend=vm result=success
+B2-A5-ERROR case=narrow backend=vm code=X06-RUNTIME-009 span=6..40 result=success
+B2-A5-ERROR case=syntax backend=vm code=X06-RUNTIME-012 span=6..20 result=success
+B2-A5-ERROR case=zero backend=vm code=X06-RUNTIME-013 span=21..30 result=success
+B2-A5-ERROR case=admission backend=vm code=X06-RUNTIME-033 span=6..24 result=success
+B2-A5-ERROR case=quotient backend=vm code=X06-RUNTIME-033 span=47..53 result=success
+B2-A5-ERROR case=nonterminating backend=vm code=X06-RUNTIME-034 span=15..24 result=success
+B2-A5-ERROR case=allocation backend=vm code=X06-RUNTIME-011 source_unchanged=true result=success
+B2-A5-REPLAY case=a5_integer_arithmetic format=xiaoc result=success
+B2-A5-REPLAY case=a5_integer_arithmetic format=xar artifact=/Users/runner/work/_temp/xiao-b6-1-_gffly1m/vm/xiao-b2-a5-replay-5846-1794979400128332000/a5_integer_arithmetic.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_decimal_arithmetic format=xiaoc result=success
+B2-A5-REPLAY case=a5_decimal_arithmetic format=xar artifact=/Users/runner/work/_temp/xiao-b6-1-_gffly1m/vm/xiao-b2-a5-replay-5846-1794979400128332000/a5_decimal_arithmetic.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_conversions format=xiaoc result=success
+B2-A5-REPLAY case=a5_conversions format=xar artifact=/Users/runner/work/_temp/xiao-b6-1-_gffly1m/vm/xiao-b2-a5-replay-5846-1794979400128332000/a5_conversions.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_carriers format=xar artifact=/Users/runner/work/_temp/xiao-b6-1-_gffly1m/vm/xiao-b2-a5-replay-5846-1794979400128332000/a5_carriers.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_errors format=xiaoc result=success
+B2-A5-REPLAY case=a5_errors format=xar artifact=/Users/runner/work/_temp/xiao-b6-1-_gffly1m/vm/xiao-b2-a5-replay-5846-1794979400128332000/a5_errors.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_matrix format=xiaoc result=success
+B2-A5-REPLAY case=a5_matrix format=xar artifact=/Users/runner/work/_temp/xiao-b6-1-_gffly1m/vm/xiao-b2-a5-replay-5846-1794979400128332000/a5_matrix.xar source_removed=true result=success
+B2-A5-REPLAY case=a5_bindings format=xiaoc result=success
+B2-A5-REPLAY case=a5_bindings format=xar artifact=/Users/runner/work/_temp/xiao-b6-1-_gffly1m/vm/xiao-b2-a5-replay-5846-1794979400128332000/a5_bindings.xar source_removed=true result=success
+test a5_complete_vm_entry_covers_resources_and_portable_replay ... ok
+
+test result: ok. 12 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.13s
+
+     Running tests/20o_b2_a_resources.rs (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/target/release/deps/20o_b2_a_resources-6878c511bd1ec278)
+
+running 8 tests
+test controlled_allocation_failure_is_distinct_from_numeric_limit ... ok
+test abi_semantic_failures_preserve_owned_out_and_inputs ... ok
+test mixed_error_priority_is_stable_at_the_language_entry ... ok
+test admission_boundaries_and_error_order_preserve_inputs ... ok
+test successful_abi_replacement_releases_old_out_without_clearing_pending ... ok
+test quotient_remainder_and_nontermination_have_independent_budgets ... ok
+test actual_results_accept_strong_cancellation_and_balanced_products ... ok
+test power_and_conversion_limits_do_not_expand_unbounded_values ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/20o_b2_b2_divide.rs (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/target/release/deps/20o_b2_b2_divide-96966eb664fb846e)
+
+running 3 tests
+test lfloat_divide_matches_native_golden_outputs ... ignored, 需要本任务新Runtime和显式LLVM工具链；维护原生精确入口调用相同套件
+test lfloat_divide_requires_the_frozen_public_contract ... ok
+B2-B2-DIVIDE backend=vm formats=source,xiaoc,xar intrinsic=33 source_removed=true result=success
+test lfloat_divide_has_vm_golden_outputs ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/20o_b2_b4_cmath_boundary.rs (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/target/release/deps/20o_b2_b4_cmath_boundary-4d779a9cf9519d46)
+
+running 4 tests
+test unknown_official_imports_fail_without_output_or_temporary_residue ... ok
+FIX1-ISOLATION project_cmath=success unimported_cmath=excluded archive=success
+test unrelated_and_project_cmath_modules_keep_their_existing_boundaries ... ok
+B4-4-CHILD cases=32 identity=stdlib.cmath output=exact result=passed
+test child_executes_cmath_alias_imports_and_calls ... ok
+B4-4-ARCHIVE cases=48 source_removed=true bundled_official=false result=passed
+test archive_executes_cmath_without_source_or_bundled_official_bodies ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.67s
+
+     Running tests/20o_b2_b4_cmath_library.rs (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/target/release/deps/20o_b2_b4_cmath_library-02534469fa47d088)
+
+running 6 tests
+test cmath_library_matches_native_o0_o3 ... ignored, B4-4需要独立冷构建Runtime和显式LLVM工具链；固定任务精确执行
+B4-4-REPLAY path=std.cmath source,xiaoc,xar=passed source_removed=true official_bundled=false ids_checked=false
+B4-4-REPLAY path=std.cmath source,xiaoc,xar=passed source_removed=true official_bundled=false ids_checked=true
+B4-4-SIGNATURES functions=15 paths=2 invalid_types=8 each_parameter=checked shapes=checked result=passed
+test imported_signatures_reject_invalid_types_and_argument_shapes ... ok
+B4-4-REPLAY path=stdlib.cmath source,xiaoc,xar=passed source_removed=true official_bundled=false ids_checked=false
+test child_float_values_and_text_survive_portable_replay ... ok
+test imported_domain_and_overflow_errors_preserve_numeric_identity ... ok
+B4-4-REPLAY path=stdlib.cmath source,xiaoc,xar=passed source_removed=true official_bundled=false ids_checked=true
+test aliases_replay_from_xiaoc_and_xar_after_application_source_removal ... ok
+B4-4-LLVM-REMOVAL functions=15 paths=2 source_body=removed fallback=rejected result=passed
+test native_module_removal_cannot_reuse_preloaded_function_bindings ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 3.01s
+
+     Running tests/20o_b2_b4_cmath_vm.rs (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/target/release/deps/20o_b2_b4_cmath_vm-20e0838a1d977b11)
+
+running 7 tests
+B4-2B-VM primitives=15 source=O0,O3 xiaoc=production result=passed
+test all_direct_primitives_execute_in_source_and_production_xiaoc ... ok
+B4-2B-VM-DECODED-CATCH width=Leb128 error=009 handler=ArithmeticError finally=2 releases=present result=passed
+B4-2B-VM-DECODED-CATCH width=FixedU16 error=009 handler=ArithmeticError finally=2 releases=present result=passed
+B4-2B-VM-OWNERSHIP cases=45 errors=002 input=readonly temporary_refs=restored partial_results=none result=passed
+test failing_cmath_calls_do_not_leak_heap_arguments_or_partial_results ... ok
+test named_argument_expression_failures_keep_source_evaluation_order ... ok
+test vm_calls_leave_runtime_abi_pending_error_unchanged ... ok
+B4-2B-VM-ERROR error=009 decoded_span=exact catch=1 finally=2 optimization=O0..O3 release_sequence=exact result=passed
+test domain_errors_keep_decoded_span_and_observable_cleanup ... ok
+B4-2B-VM-NEGATIVE ids=15 dynamic_types=8 shape=checked unknown=49-rejected result=passed
+test vm_rejects_invalid_shapes_types_and_unknown_ids ... ok
+B4-2B-VM-IDENTITY cases=1440 ids=34..48 carriers=3 binding=positional,reversed-named result=passed
+test decoded_vm_calls_match_runtime_bits_and_errors_for_all_ids ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/20o_b2_b4_numeric_range_routing.rs (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/target/release/deps/20o_b2_b4_numeric_range_routing-3837baff033645a5)
+
+running 3 tests
+FIX1-RANGE class=integer kind=numeric_range span=84..93 expression="depth - 1"
+FIX1-ROUTE class=float-pow check_span=58..74 lowering=static kernel=cmath_pow llvm_pow_f64=false result=passed
+test sfloat_pow_keeps_existing_static_f32_intrinsic ... ok
+test integer_numeric_range_only_keeps_dynamic_weak_runtime ... ok
+FIX1-ROUTE class=mixed integer_range=dynamic float_pow=shared_runtime result=passed
+test float_pow_numeric_range_keeps_static_shared_kernel ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/20o_b2_b6_resources.rs (/Users/runner/work/_temp/xiao-b6-1-_gffly1m/target/release/deps/20o_b2_b6_resources-16916034198997a2)
+
+running 1 test
+B6-1-LANGUAGE module=std.cmath math=15 lfloat_errors=009,013,033,034 finally=passed input_unchanged=true result=passed
+B6-1-LANGUAGE module=stdlib.cmath math=15 lfloat_errors=009,013,033,034 finally=passed input_unchanged=true result=passed
+test b6_numeric_and_cmath_errors_are_catchable_and_atomic_on_both_aliases ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+

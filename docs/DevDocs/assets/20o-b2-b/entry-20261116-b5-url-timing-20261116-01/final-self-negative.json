@@ -1,0 +1,42 @@
+{
+  "audit_sha256": "2560c7750ef96d03596728f3d1f87e5491d0f386502234389a48476da832dff0",
+  "cases": [
+    {
+      "after_sha256": "87ddc84e048a2e50c5a5e93c65882d02c1c7fffcf1ee369012135f7e5c9f0e33",
+      "before_sha256": "87ddc84e048a2e50c5a5e93c65882d02c1c7fffcf1ee369012135f7e5c9f0e33",
+      "case": "baseline",
+      "exit_code": 0,
+      "expected_reason": "",
+      "read_only": true,
+      "stderr": ""
+    },
+    {
+      "after_sha256": "78f9e60d9bb3053a85848b31ca9301b3e573f6aa89f15f363c1217f7332b093c",
+      "before_sha256": "78f9e60d9bb3053a85848b31ca9301b3e573f6aa89f15f363c1217f7332b093c",
+      "case": "budget",
+      "exit_code": 1,
+      "expected_reason": "计时预算被改动",
+      "read_only": true,
+      "stderr": "计时预算被改动\n"
+    },
+    {
+      "after_sha256": "e90c056902d66d286f797801816387927e0cc77d582b7f3e61611d45e3171a8e",
+      "before_sha256": "e90c056902d66d286f797801816387927e0cc77d582b7f3e61611d45e3171a8e",
+      "case": "source",
+      "exit_code": 1,
+      "expected_reason": "计时源码身份不符",
+      "read_only": true,
+      "stderr": "计时源码身份不符\n"
+    },
+    {
+      "after_sha256": "8d0a02cb259af5c3b214a7f8ee0664607d10f5ee4fa16c7165c248add921ce7d",
+      "before_sha256": "8d0a02cb259af5c3b214a7f8ee0664607d10f5ee4fa16c7165c248add921ce7d",
+      "case": "object",
+      "exit_code": 1,
+      "expected_reason": "计时对象摘要不符",
+      "read_only": true,
+      "stderr": "计时对象摘要不符\n"
+    }
+  ],
+  "passed": true
+}

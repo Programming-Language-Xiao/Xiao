@@ -1,0 +1,52 @@
+{
+  "argv": [
+    "/Users/runner/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--release",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b2_b6_resources",
+    "--test",
+    "20o_b2_a_resources",
+    "--test",
+    "20o_b2_a_contract",
+    "--test",
+    "20o_b2_b2_divide",
+    "--test",
+    "20o_b2_b4_cmath_vm",
+    "--test",
+    "20o_b2_b4_cmath_library",
+    "--test",
+    "20o_b2_b4_cmath_boundary",
+    "--test",
+    "20o_b2_b4_numeric_range_routing",
+    "--",
+    "--nocapture"
+  ],
+  "cwd": "/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source",
+  "exit_code": 101,
+  "finished_utc": "2026-11-18T05:13:42.513852+00:00",
+  "log": {
+    "bytes": 6692,
+    "name": "vm.log",
+    "sha256": "208af3babf8a06b002f87603d09688aadaf96d004cc247783a55aa1f898583a1"
+  },
+  "passed": false,
+  "pid": 2499,
+  "reason": "vm退出101",
+  "runtime_after": {
+    "bytes": 25667552,
+    "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+  },
+  "runtime_before": {
+    "bytes": 25667552,
+    "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+  },
+  "source_after_sha256": "a0a6bac702dfbe4f2cefe8fcda83145d5a6c11a8db5700ebf5aa7f2c0e9b7bbc",
+  "started_utc": "2026-11-18T05:11:50.419670+00:00",
+  "temp": "/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/vm"
+}

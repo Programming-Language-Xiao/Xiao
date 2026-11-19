@@ -64,7 +64,7 @@ impl VmEventSink for Sink {
 }
 
 /// VM已构造后，语言程序先发baseline再构造输入；每个进程只运行一个规模。
-pub fn vm(path: &Path) {
+pub fn vm(path: &Path, loader: Option<&dyn xiao_vm::ModuleLoader>) {
     if cfg!(debug_assertions) {
         panic!("A6测量必须使用release VM/Runtime");
     }
@@ -78,6 +78,9 @@ pub fn vm(path: &Path) {
             warmed: false,
         },
     );
+    if let Some(loader) = loader {
+        vm = vm.with_module_loader(loader);
+    }
     let result = vm.run();
     assert!(
         matches!(result, RunResult::Success),

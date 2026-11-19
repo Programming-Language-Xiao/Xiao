@@ -1,0 +1,62 @@
+{
+  "variant": "b4",
+  "label": "cache-abi-verified-old",
+  "argv": [
+    "D:\\project\\Xiao\\.b5\\20261116\\b4\\b5-host.exe",
+    "cache",
+    "D:\\project\\Xiao\\.b5\\20261116\\sealed-cache-abi-verified",
+    "D:\\project\\Xiao\\.b5\\20261116\\sealed-cache-abi-verified\\old.exe",
+    "21",
+    "D:\\project\\Xiao\\.b5\\20261116\\b4\\target\\release\\xiao_runtime.lib"
+  ],
+  "cwd": "D:\\project\\Xiao\\.b5\\20261116\\b4\\source",
+  "pid": 62448,
+  "started_utc": "2026-11-16T11:49:30.212428+00:00",
+  "finished_utc": "2026-11-16T11:49:31.510705+00:00",
+  "exit_code": 0,
+  "source_before": "d32530a357a213ac6a55bdec3f4a3baac82b822775f6361ba0923b25f8a5b737",
+  "source_after": "d32530a357a213ac6a55bdec3f4a3baac82b822775f6361ba0923b25f8a5b737",
+  "source_unchanged": true,
+  "docs_before": {
+    "raw_sha256": "fd3aecb2a8aaf4560278dcbd1b6375d01baeedda12f1c7a6e514036ec83c5f10",
+    "canonical_sha256": "7817f036d3085457d1f005352fe48d738216a18ff7fde2d77604f928bbbda854",
+    "files": {
+      "path": "objects/sha256/b2/b23c82072c0c3729ff89a533bcd5b6a8b15f5e0a417ec1f24d81c4254ca6fa82.bin",
+      "bytes": 40713,
+      "sha256": "b23c82072c0c3729ff89a533bcd5b6a8b15f5e0a417ec1f24d81c4254ca6fa82",
+      "media_type": "application/json"
+    }
+  },
+  "docs_after": {
+    "raw_sha256": "fd3aecb2a8aaf4560278dcbd1b6375d01baeedda12f1c7a6e514036ec83c5f10",
+    "canonical_sha256": "7817f036d3085457d1f005352fe48d738216a18ff7fde2d77604f928bbbda854",
+    "files": {
+      "path": "objects/sha256/b2/b23c82072c0c3729ff89a533bcd5b6a8b15f5e0a417ec1f24d81c4254ca6fa82.bin",
+      "bytes": 40713,
+      "sha256": "b23c82072c0c3729ff89a533bcd5b6a8b15f5e0a417ec1f24d81c4254ca6fa82",
+      "media_type": "application/json"
+    }
+  },
+  "docs_unchanged": true,
+  "tools_commit": "57515c76359fe1541c853278266f2a89561c5273",
+  "runner_sha256": "b2c056900179eb7e73686d9aed616a4013a8c1126caf6746208df74a9a717488",
+  "environment_sha256": "d909f254f8b20fd63419f66ceb77860fe71ac9ffdf01002794bed1ab5ca0b613",
+  "runtime_before": {
+    "path": "D:\\project\\Xiao\\.b5\\20261116\\b4\\target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27617830,
+    "sha256": "15d4afcfc07aec0ba1f5162549dd9ba31d265f741c30ed395165519d71e83e69"
+  },
+  "runtime_after": {
+    "path": "D:\\project\\Xiao\\.b5\\20261116\\b4\\target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27617830,
+    "sha256": "15d4afcfc07aec0ba1f5162549dd9ba31d265f741c30ed395165519d71e83e69"
+  },
+  "log": {
+    "path": "objects/sha256/69/6963b3366344befc3ae8ea2df18066883613d4e8f119d656a27d7af4c3afe333.bin",
+    "bytes": 1319,
+    "sha256": "6963b3366344befc3ae8ea2df18066883613d4e8f119d656a27d7af4c3afe333",
+    "media_type": "text/plain; charset=utf-8"
+  }
+}

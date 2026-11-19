@@ -1,0 +1,36 @@
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `release` profile [optimized] target(s) in 1m 34s
+     Running tests\20o_b2_b4_numeric_range_routing.rs (D:\project\Xiao\.b5\20261116\current\target\release\deps\20o_b2_b4_numeric_range_routing-fa7aaa52a91368f5.exe)
+
+running 3 tests
+FIX1-RANGE class=integer kind=numeric_range span=84..93 expression="depth - 1"
+FIX1-ROUTE class=float-pow check_span=58..74 lowering=static kernel=cmath_pow llvm_pow_f64=false result=passed
+test sfloat_pow_keeps_existing_static_f32_intrinsic ... ok
+test integer_numeric_range_only_keeps_dynamic_weak_runtime ... ok
+FIX1-ROUTE class=mixed integer_range=dynamic float_pow=shared_runtime result=passed
+test float_pow_numeric_range_keeps_static_shared_kernel ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\20o_b2_b5_versions.rs (D:\project\Xiao\.b5\20261116\current\target\release\deps\20o_b2_b5_versions-4ebb0551ebdf3def.exe)
+
+running 2 tests
+test frozen_abi18_baselines_are_rejected_before_entry ... ok
+test current_artifacts_bind_exact_abi19_and_codegen21 ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests\compatibility_matrix.rs (D:\project\Xiao\.b5\20261116\current\target\release\deps\compatibility_matrix-db2b2d5cb9135560.exe)
+
+running 5 tests
+test current_version_cells_are_direct_and_mismatches_are_explicit ... ok
+test every_generated_cell_has_an_explicit_action_and_stable_axis ... ok
+test index_major_cell_is_backed_by_the_authoritative_codec ... ok
+test target_support_matrix_distinguishes_unsupported_and_unverified ... ok
+test xiaoc_version_cells_are_backed_by_the_authoritative_codec ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

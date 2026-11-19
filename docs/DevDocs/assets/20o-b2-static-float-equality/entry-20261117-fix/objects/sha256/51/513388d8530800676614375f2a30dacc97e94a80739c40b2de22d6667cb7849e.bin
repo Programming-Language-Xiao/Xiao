@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-static-float-equality\entry-20261117-fix\run-versions.py", line 119, in <module>
+    row = invoke("cache-" + mode + "-o" + level + "-g" + label,
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-static-float-equality\entry-20261117-fix\run-versions.py", line 31, in invoke
+    record.require(result.returncode == 0,
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-static-float-equality\entry-20261117-fix\record.py", line 25, in require
+    raise ValueError(message)
+ValueError: 版本探针失败：cache-static-o0-g21
+
+thread 'main' (34872) panicked at D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-static-float-equality\entry-20261117-fix\version-probe.rs:102:9:
+assertion `left == right` failed
+  left: "xiao-fnv1a64-d02f91c62333af7f"
+ right: "xiao-fnv1a64-1e82bd4566d62047"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+

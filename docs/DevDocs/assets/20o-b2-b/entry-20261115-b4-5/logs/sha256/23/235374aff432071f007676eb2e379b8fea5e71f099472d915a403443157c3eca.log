@@ -1,0 +1,25 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.31s
+     Running tests\n0_b_dynamic_native.rs (D:\project\Xiao\.b4-5\20261115\final\target\debug\deps\n0_b_dynamic_native-415d76f709736c98.exe)
+
+running 1 test
+
+thread 'generic_value_copy_registers_weak_dependency_only_when_called' (7504) panicked at crates\xiao-driver\tests\n0_b_dynamic_native.rs:352:9:
+assertion `left == right` failed: def recurse(int depth) -> int
+    if depth == 0
+        return 0
+    return recurse(depth - 1)
+result = recurse(2)
+
+  left: false
+ right: true
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test generic_value_copy_registers_weak_dependency_only_when_called ... FAILED
+
+failures:
+
+failures:
+    generic_value_copy_registers_weak_dependency_only_when_called
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 14 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p xiao-driver --test n0_b_dynamic_native`

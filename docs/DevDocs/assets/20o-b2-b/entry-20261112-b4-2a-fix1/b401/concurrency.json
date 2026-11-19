@@ -1,0 +1,30 @@
+{
+  "label": "concurrency",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "22c_vm_concurrency",
+    "--",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\.b4-2a-fix1\\20261112-2f862f51\\b401\\source",
+  "pid": 57672,
+  "started_utc": "2026-11-12T04:29:31.988465+00:00",
+  "finished_utc": "2026-11-12T04:30:41.914775+00:00",
+  "exit_code": 101,
+  "source_before": "abff79fdced9b028f9841a4ffbb42d691472618bce152662a853885874d7671e",
+  "source_after": "abff79fdced9b028f9841a4ffbb42d691472618bce152662a853885874d7671e",
+  "source_unchanged": true,
+  "log": "concurrency.log",
+  "log_bytes": 10443,
+  "log_sha256": "58130847acb9bb359f7f54ff1bec4c9cba9e22da95410dd27745d0580a284348",
+  "runner_sha256": "dfca5bbef4bb5014802bc46a27309b680c58232af6d52e37b2337fc095312633",
+  "environment_sha256": "498aa133df33af8cd1ad3a4616ff5a90e94f2444ae7492cf0799ea07726aca51"
+}

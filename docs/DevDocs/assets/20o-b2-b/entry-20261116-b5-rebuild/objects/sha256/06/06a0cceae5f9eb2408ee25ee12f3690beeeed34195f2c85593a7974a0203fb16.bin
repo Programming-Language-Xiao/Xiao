@@ -1,0 +1,19 @@
+error: no rules expected `.`
+  --> D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261116-b5-rebuild\host.rs:98:68
+   |
+98 |       "artifacts": ["main.xiaoc","main.xar","main.exe","main.meta"].iter().map(|name|(*name,digest(&out.join(name)))).collect::<std:...
+   |                                                                    ^ no rules expected this token in macro call
+   |
+   = note: while trying to match end of macro
+
+error: aborting due to 1 previous error
+
+Traceback (most recent call last):
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261116-b5-rebuild\build_host.py", line 51, in <module>
+    if __name__=="__main__":main()
+                            ^^^^^^
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261116-b5-rebuild\build_host.py", line 44, in main
+    subprocess.run(argv,check=True)
+  File "D:\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['rustc', '+1.96.0', '--edition=2024', '--crate-name', 'b5_host', 'D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261116-b5-rebuild\\host.rs', '-L', 'dependency=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps', '-o', 'D:\\project\\Xiao\\.b5\\20261116\\b1\\b5-host.exe', '-L', 'native=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\build\\ring-e8824e5e901ed37d\\out', '-L', 'native=C:\\Users\\xiaoc\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\windows_x86_64_msvc-0.52.6\\lib', '--extern', 'xiao_driver=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_driver-764680e2f775720e.rlib', '--extern', 'xiao_bytecode=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_bytecode-3da1e2392db7eaba.rlib', '--extern', 'xiao_codegen_llvm=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_codegen_llvm-827a3aa234d7cb2c.rlib', '--extern', 'xiao_runtime=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_runtime-dc9e82a85121e745.rlib', '--extern', 'xiao_runtime_abi=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_runtime_abi-016b9b60175c9973.rlib', '--extern', 'xiao_artifacts=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_artifacts-53ec0b0438ce9098.rlib', '--extern', 'xiao_xar=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libxiao_xar-2f780f399abb3e1f.rlib', '--extern', 'serde_json=D:\\project\\Xiao\\.b5\\20261116\\b1\\target\\release\\deps\\libserde_json-9700d0a1a9f726a5.rlib']' returned non-zero exit status 1.

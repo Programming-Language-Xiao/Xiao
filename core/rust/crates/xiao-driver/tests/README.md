@@ -86,3 +86,14 @@ Windows 原生准备方式见 `docs/DevDocs/10d-environment-gated-test-spec.md` 
 实际 `xiao-core` 进程在隔离 `XIAO_HOME` 中验证协议构建/运行、官方加载及 REPL 缓存隔离。
 
 `20o_b2_a_contract.rs`覆盖A5完整六类型矩阵、静态拒绝、值错误、三个既有VM载体与非法载荷恢复。`20o_b2_a_support/`将六份完整语言语料、资源/位置、真实归档重放和O0/O3清理差分追加到B1既有两个精确目标，保留B1/A1原场景和28/28守卫。新增教程范围继续planned；本批不作为A6性能成绩。
+
+`20o_b2_b4_cmath_vm.rs` 覆盖 B4-2B 的 15 项直接原语、生产 `.xiaoc`、三载体的数值位模式/错误、
+位置及逆序命名参数、畸形内部实参的002、decode后的009/span、O0～O3下未使用结果的catch与释放序列，
+并验证 Runtime ABI 挂起槽和失败时堆值强引用不变。内部 TAC 注入与合法源码执行分开记证，
+不单独证明 `std.cmath` 模块导入或 LLVM 接线；旧30条planned拒绝由B3-4/B4-2固定历史证据保留。
+
+B4-4将wrapper的30条双路径测试迁为实际执行；`20o_b2_b4_cmath_library.rs`使用共享源码与独立黄金，
+覆盖15项包装、类型/形参负例、逐函数体移除、模块/函数别名与同名导出、逆序命名求值、009错误、
+删除应用源码后的协议/驱动器 `.xiaoc` / `.xar` 重放，以及float负零的子VM/XCON承载。
+原生O0/O3精确目标要求显式Runtime/LLVM工具链，不属于默认环境；边界回归同时保留未知官方模块拒绝，
+不修改容器、XCON或Runtime布局。`22c_vm_concurrency.rs`仍为29项。

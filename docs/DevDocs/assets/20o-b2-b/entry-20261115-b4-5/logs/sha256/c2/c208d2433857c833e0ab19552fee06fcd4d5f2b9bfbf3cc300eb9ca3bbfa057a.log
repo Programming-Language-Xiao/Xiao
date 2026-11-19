@@ -1,0 +1,1 @@
+{"passed": true, "files": 99, "checks": 14, "exact_checks": 4, "code_commit": "37b92c5338274121afe98320d4e076620744449f", "abi": "1.18", "codegen": 20, "max_active_intrinsic": 33, "scope": "B2内部单入口"}

@@ -1,0 +1,144 @@
+{
+  "files": [
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-62684-0\\std-o0.exe",
+      "bytes": 1390080,
+      "sha256": "1eabd256d5fe09633b25c086186f4a5478bbea34de3566320b6d4603bf5ae227",
+      "kind": ".exe",
+      "application_source_removed": true
+    },
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-62684-0\\std-o0.ll",
+      "bytes": 402199,
+      "sha256": "dfae874cc6eb8e44255932fc28d07b97a01ed0735e2b7648122f8a129534a877",
+      "kind": ".ll",
+      "application_source_removed": true,
+      "object": "artifacts/sha256/dfae874cc6eb8e44255932fc28d07b97a01ed0735e2b7648122f8a129534a877.ll"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-62684-0\\std-o3.exe",
+      "bytes": 1369088,
+      "sha256": "a33429876d21505d3c5a2b38fb654575c8e3a5665907f75a27f0408b4c4904ae",
+      "kind": ".exe",
+      "application_source_removed": true
+    },
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-62684-0\\std-o3.ll",
+      "bytes": 402199,
+      "sha256": "dfae874cc6eb8e44255932fc28d07b97a01ed0735e2b7648122f8a129534a877",
+      "kind": ".ll",
+      "application_source_removed": true,
+      "object": "artifacts/sha256/dfae874cc6eb8e44255932fc28d07b97a01ed0735e2b7648122f8a129534a877.ll"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-62684-0\\stdlib-o0.exe",
+      "bytes": 1390080,
+      "sha256": "877959532d0622a5e608c01419bdb621fb0eb8eee70090490639f05872aff539",
+      "kind": ".exe",
+      "application_source_removed": true
+    },
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-62684-0\\stdlib-o0.ll",
+      "bytes": 402200,
+      "sha256": "ad8c8dc9d84d0281220eeb61633943c645f2f5712a2f2dc1aaaa9e25319f416a",
+      "kind": ".ll",
+      "application_source_removed": true,
+      "object": "artifacts/sha256/ad8c8dc9d84d0281220eeb61633943c645f2f5712a2f2dc1aaaa9e25319f416a.ll"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-62684-0\\stdlib-o3.exe",
+      "bytes": 1369088,
+      "sha256": "93c9a4181f53427a8c2eff16ee28a29af42d5c9d3ee89ac253424a12eab0929f",
+      "kind": ".exe",
+      "application_source_removed": true
+    },
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-62684-0\\stdlib-o3.ll",
+      "bytes": 402200,
+      "sha256": "ad8c8dc9d84d0281220eeb61633943c645f2f5712a2f2dc1aaaa9e25319f416a",
+      "kind": ".ll",
+      "application_source_removed": true,
+      "object": "artifacts/sha256/ad8c8dc9d84d0281220eeb61633943c645f2f5712a2f2dc1aaaa9e25319f416a.ll"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-66932-0\\main.xar",
+      "bytes": 2061,
+      "sha256": "1afd3ee2c9552012009368be5e3fbe77f17c704aa068604b52e541facbcf0b88",
+      "kind": ".xar",
+      "application_source_removed": true,
+      "object": "artifacts/sha256/1afd3ee2c9552012009368be5e3fbe77f17c704aa068604b52e541facbcf0b88.xar",
+      "members": [
+        "META-INF/xiao/index.pb",
+        "objects/xiaoc/sha256/9b/9b3afdfa0567ff9a2301c5730607638dde85d9c7c0ac61254ae5cd78c21d5259.xiaoc"
+      ]
+    },
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-66932-0\\main.xiaoc",
+      "bytes": 3340,
+      "sha256": "e71682e6a4ea1c650a2e69c524c595551e002feb195c05d11f026a84ac02c6dd",
+      "kind": ".xiaoc",
+      "application_source_removed": true,
+      "object": "artifacts/sha256/e71682e6a4ea1c650a2e69c524c595551e002feb195c05d11f026a84ac02c6dd.xiaoc"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-66932-1\\main.xar",
+      "bytes": 5443,
+      "sha256": "03d29d83a035852676bb433b83c2c6b7252196c358a6849267da106af0d68561",
+      "kind": ".xar",
+      "application_source_removed": true,
+      "object": "artifacts/sha256/03d29d83a035852676bb433b83c2c6b7252196c358a6849267da106af0d68561.xar",
+      "members": [
+        "META-INF/xiao/index.pb",
+        "objects/xiaoc/sha256/2d/2d0e18f443c21d40f09a7804467fa6b561e2a4ab1614230245724151e7e9b57b.xiaoc"
+      ]
+    },
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-66932-1\\main.xiaoc",
+      "bytes": 14780,
+      "sha256": "2c6dcf1f600b47dd96a7fd4c6bf510ccb4914e970a1dec0daa4c531d5554a77a",
+      "kind": ".xiaoc",
+      "application_source_removed": true,
+      "object": "artifacts/sha256/2c6dcf1f600b47dd96a7fd4c6bf510ccb4914e970a1dec0daa4c531d5554a77a.xiaoc"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-66932-2\\main.xar",
+      "bytes": 2060,
+      "sha256": "0ad477cb00b0700fd201a636863ff9b14928bc3ad89ac85b7ca111b9af512eb5",
+      "kind": ".xar",
+      "application_source_removed": true,
+      "object": "artifacts/sha256/0ad477cb00b0700fd201a636863ff9b14928bc3ad89ac85b7ca111b9af512eb5.xar",
+      "members": [
+        "META-INF/xiao/index.pb",
+        "objects/xiaoc/sha256/5c/5cae31c8d987532019bf8bdb2e65454d81e3cb2f9e36be2f1d894a3799ddea42.xiaoc"
+      ]
+    },
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-66932-2\\main.xiaoc",
+      "bytes": 3348,
+      "sha256": "4eb29ae333dddac89d98ba108adf66c6f06684905f9c4e5c83f854c9255c7c69",
+      "kind": ".xiaoc",
+      "application_source_removed": true,
+      "object": "artifacts/sha256/4eb29ae333dddac89d98ba108adf66c6f06684905f9c4e5c83f854c9255c7c69.xiaoc"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-66932-3\\main.xar",
+      "bytes": 5455,
+      "sha256": "8f90271806902c891fa13833a3f2f93e84f209d01dcc91d102db034f18e0c5ca",
+      "kind": ".xar",
+      "application_source_removed": true,
+      "object": "artifacts/sha256/8f90271806902c891fa13833a3f2f93e84f209d01dcc91d102db034f18e0c5ca.xar",
+      "members": [
+        "META-INF/xiao/index.pb",
+        "objects/xiaoc/sha256/65/65ce3de739503c906c9630f58218f4381e579173358919f2d448556436f0444f.xiaoc"
+      ]
+    },
+    {
+      "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\temp\\b4-4-library-66932-3\\main.xiaoc",
+      "bytes": 14876,
+      "sha256": "4ea20d6c3d1111f7e2302fc26c2353f02197afd3d4f50de4a0c7cc2c26faaae7",
+      "kind": ".xiaoc",
+      "application_source_removed": true,
+      "object": "artifacts/sha256/4ea20d6c3d1111f7e2302fc26c2353f02197afd3d4f50de4a0c7cc2c26faaae7.xiaoc"
+    }
+  ]
+}

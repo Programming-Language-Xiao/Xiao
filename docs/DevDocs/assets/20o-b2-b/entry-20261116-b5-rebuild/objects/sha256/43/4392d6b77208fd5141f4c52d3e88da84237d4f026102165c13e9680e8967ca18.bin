@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261116-b5-rebuild\guards.py", line 82, in <module>
+    if __name__=="__main__":main()
+                            ^^^^^^
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261116-b5-rebuild\guards.py", line 68, in main
+    require((run.returncode==0)==accept,"B5真实输出守卫误判："+platform+"/"+name)
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261113-b4-3\record.py", line 31, in require
+    raise ValueError(message)
+ValueError: B5真实输出守卫误判：default/actual

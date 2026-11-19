@@ -23,7 +23,7 @@
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
-pub const ABI_MINOR_VERSION: u32 = 18;
+pub const ABI_MINOR_VERSION: u32 = 19;
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -1043,7 +1043,7 @@ unsafe extern "C" {
     pub fn xiao_runtime_error_code(value: *const XiaoValue, out: *mut XiaoAbiBytes) -> i32;
     /// B2 内部单入口：四个实参借读，out 已初始化、拥有且与输入不重叠。
     /// 成功0释放替换out，失败1/2/3不触碰挂起槽；语义失败6保留out并正常传播错误。
-    /// 当前1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_lfloat_divide(
         numerator: *const XiaoValue,
         denominator: *const XiaoValue,
@@ -1053,31 +1053,31 @@ unsafe extern "C" {
     ) -> i32;
     /// B3内部cmath sqrt：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
-    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_sqrt(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
     /// B3内部cmath floor：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
-    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_floor(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
     /// B3内部cmath ceil：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
-    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_ceil(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
     /// B3内部cmath round：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
-    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_round(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
     /// B3内部cmath trunc：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
-    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_trunc(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
     /// B3内部cmath abs：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
-    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_abs(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
     /// B3内部cmath min：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
-    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_min(
         left: *const XiaoValue,
         right: *const XiaoValue,
@@ -1085,7 +1085,7 @@ unsafe extern "C" {
     ) -> i32;
     /// B3内部cmath max：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
-    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_max(
         left: *const XiaoValue,
         right: *const XiaoValue,
@@ -1093,7 +1093,7 @@ unsafe extern "C" {
     ) -> i32;
     /// B3内部cmath pow：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
-    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_pow(
         base: *const XiaoValue,
         exponent: *const XiaoValue,
@@ -1101,27 +1101,27 @@ unsafe extern "C" {
     ) -> i32;
     /// B3内部cmath sin：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
-    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_sin(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
     /// B3内部cmath cos：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
-    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_cos(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
     /// B3内部cmath tan：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
-    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_tan(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
     /// B3内部cmath exp：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
-    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_exp(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
     /// B3内部cmath ln：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
-    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_ln(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
     /// B3内部cmath log10：输入借读且强引用覆盖调用；out已初始化、拥有且不重叠。
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
-    /// 1.18/20仅供内部验证，最终版本切换留B5。
+    /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_log10(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
     /// 读取当前线程挂起错误的机器字段。
     pub fn xiao_runtime_error_snapshot(out: *mut XiaoAbiErrorSnapshot) -> i32;
@@ -1413,9 +1413,9 @@ mod tests {
     #[test]
     /// 版本编码能区分主版本并保留次版本比较空间。
     fn version_encoding_is_stable() {
-        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0012);
+        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0013);
         assert_eq!(ABI_MAJOR_VERSION, 1);
-        assert_eq!(ABI_MINOR_VERSION, 18);
+        assert_eq!(ABI_MINOR_VERSION, 19);
     }
 
     #[test]

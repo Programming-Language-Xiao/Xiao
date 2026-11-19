@@ -1,0 +1,64 @@
+   Compiling serde_json v1.0.151
+   Compiling find-msvc-tools v0.1.14
+   Compiling shlex v2.0.1
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling zeroize v1.9.0
+   Compiling rustls-pki-types v1.15.1
+   Compiling cc v1.5.1
+   Compiling getrandom v0.2.17
+   Compiling untrusted v0.9.0
+   Compiling httparse v1.10.1
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-i18n)
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-standard-library)
+   Compiling rustls v0.23.45
+   Compiling ring v0.17.14
+   Compiling crc32fast v1.5.2
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-syntax)
+   Compiling bytes v1.12.1
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-modules)
+   Compiling log v0.4.34
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-ir)
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+   Compiling rustls-webpki v0.103.15
+   Compiling http v1.5.0
+   Compiling windows-targets v0.52.6
+   Compiling xiao-lock v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lock)
+   Compiling base64 v0.23.1
+   Compiling once_cell v1.21.4
+   Compiling adler2 v2.0.1
+   Compiling simd-adler32 v0.3.10
+   Compiling subtle v2.6.1
+   Compiling miniz_oxide v0.9.1
+   Compiling ureq-proto v0.6.4
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+   Compiling windows-sys v0.52.0
+   Compiling xiao-config v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-config)
+   Compiling webpki-roots v1.0.9
+   Compiling filetime v0.2.29
+   Compiling utf8-zero v0.8.1
+   Compiling percent-encoding v2.3.2
+   Compiling ureq v3.4.2
+   Compiling tar v0.4.46
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+   Compiling flate2 v1.1.10
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `release` profile [optimized] target(s) in 2m 55s
+     Running tests\20o_b2_b4_cmath_library.rs (D:\project\Xiao\.b4-4\20261115\fixed-final\target\release\deps\20o_b2_b4_cmath_library-79a5325eb9df7391.exe)
+
+running 1 test
+B4-4-NATIVE path=std.cmath optimization=0 executable=D:\project\Xiao\.b4-4\20261115\fixed-final\temp\b4-4-library-65092-0\std-o0.exe stdout=golden errors=009 result=passed
+B4-4-NATIVE path=std.cmath optimization=3 executable=D:\project\Xiao\.b4-4\20261115\fixed-final\temp\b4-4-library-65092-0\std-o3.exe stdout=golden errors=009 result=passed
+B4-4-NATIVE path=stdlib.cmath optimization=0 executable=D:\project\Xiao\.b4-4\20261115\fixed-final\temp\b4-4-library-65092-0\stdlib-o0.exe stdout=golden errors=009 result=passed
+B4-4-NATIVE path=stdlib.cmath optimization=3 executable=D:\project\Xiao\.b4-4\20261115\fixed-final\temp\b4-4-library-65092-0\stdlib-o3.exe stdout=golden errors=009 result=passed
+test cmath_library_matches_native_o0_o3 ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 11.31s
+

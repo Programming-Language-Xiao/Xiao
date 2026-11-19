@@ -1,0 +1,36 @@
+{
+  "passed": true,
+  "source_commit": "7c49fd65b56e82dbb4b179a97f5db5eadbc754cf",
+  "math_implementation": "246bea46",
+  "b4_2_closed": true,
+  "b4_closed": false,
+  "language_available": false,
+  "tests": 50,
+  "decoded_catch_widths": [
+    "Leb128",
+    "FixedU16"
+  ],
+  "repaired_audit_cases": 3,
+  "runs": {
+    "regressions": {
+      "pid": 56888,
+      "log_sha256": "2fe71378b8e9b460ba6640da1d18a73750a1a9889e9bcfdcbb0a5cfff9c8adad",
+      "docs_commit": "5047462e8abc7e421fc2d50a1d95891d32f67d5c"
+    },
+    "clippy": {
+      "pid": 26972,
+      "log_sha256": "f0b744ec6ed1ac61f5495f4d88e6285ce3045c9ef33a81cade4767e6da7a0b6c",
+      "docs_commit": "5047462e8abc7e421fc2d50a1d95891d32f67d5c"
+    },
+    "fmt": {
+      "pid": 70388,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "docs_commit": "5047462e8abc7e421fc2d50a1d95891d32f67d5c"
+    },
+    "docs": {
+      "pid": 22144,
+      "log_sha256": "6e080e67e4a931adff0134b9736b88d4a62b5ba52a4f9ff6248d783cbb63f711",
+      "docs_commit": "5047462e8abc7e421fc2d50a1d95891d32f67d5c"
+    }
+  }
+}

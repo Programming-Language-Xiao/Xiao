@@ -1,0 +1,41 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "reason": null,
+      "stderr": "",
+      "read_only": true,
+      "before_sha256": "89eba0a8ae402ba55d0e787fc43132d63ba6fd60baa2f860b61b28db74242634",
+      "after_sha256": "89eba0a8ae402ba55d0e787fc43132d63ba6fd60baa2f860b61b28db74242634"
+    },
+    {
+      "case": "manifest",
+      "exit_code": 1,
+      "reason": "B5证据清单不符",
+      "stderr": "B5证据清单不符\n",
+      "read_only": true,
+      "before_sha256": "0a71e00441bb9bf4adceff873dc2d3ea9220e4362dcda51e99336605eb9f189d",
+      "after_sha256": "0a71e00441bb9bf4adceff873dc2d3ea9220e4362dcda51e99336605eb9f189d"
+    },
+    {
+      "case": "missing",
+      "exit_code": 1,
+      "reason": "B5已登记文件缺失",
+      "stderr": "B5已登记文件缺失\n",
+      "read_only": true,
+      "before_sha256": "070af51c1a4766f41038cb7eae17ae474369134af0c08c33bd8e1191cd2330c7",
+      "after_sha256": "070af51c1a4766f41038cb7eae17ae474369134af0c08c33bd8e1191cd2330c7"
+    },
+    {
+      "case": "status",
+      "exit_code": 1,
+      "reason": "B5阻塞状态冒进",
+      "stderr": "B5阻塞状态冒进\n",
+      "read_only": true,
+      "before_sha256": "e7400e129e8eab7726cea2b8e3fed1204206cd119d9168fdfac471c42f9f3828",
+      "after_sha256": "e7400e129e8eab7726cea2b8e3fed1204206cd119d9168fdfac471c42f9f3828"
+    }
+  ]
+}

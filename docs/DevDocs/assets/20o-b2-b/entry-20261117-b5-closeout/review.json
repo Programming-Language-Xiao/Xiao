@@ -1,0 +1,82 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "mode": "prepare",
+      "expected_reason": null,
+      "exit_code": 0,
+      "passed": true,
+      "sealed": false,
+      "b5_closed": true,
+      "b6_entry_open": true,
+      "b6_started": false,
+      "code_commit": "67319d61c18b2f02a57f974883c57600f70c724d",
+      "runtime_abi": "1.19",
+      "codegen_version": 22,
+      "workspace": [
+        1754,
+        0,
+        55
+      ],
+      "resource_tests": 18,
+      "files_including_manifest": 12,
+      "multi_platform_or_ci_passed": false,
+      "read_only": true
+    },
+    {
+      "case": "missing",
+      "mode": "prepare",
+      "expected_reason": "收口必需文件缺失：.gitattributes",
+      "exit_code": 1,
+      "passed": false,
+      "reason": "收口必需文件缺失：.gitattributes",
+      "read_only": true
+    },
+    {
+      "case": "source",
+      "mode": "prepare",
+      "expected_reason": "收口引用偏离固定Git来源",
+      "exit_code": 1,
+      "passed": false,
+      "reason": "收口引用偏离固定Git来源",
+      "read_only": true
+    },
+    {
+      "case": "component",
+      "mode": "prepare",
+      "expected_reason": "四类收口证据缺失或被替换",
+      "exit_code": 1,
+      "passed": false,
+      "reason": "四类收口证据缺失或被替换",
+      "read_only": true
+    },
+    {
+      "case": "historical",
+      "mode": "prepare",
+      "expected_reason": "历史失败/重建来源边界被改写",
+      "exit_code": 1,
+      "passed": false,
+      "reason": "历史失败/重建来源边界被改写",
+      "read_only": true
+    },
+    {
+      "case": "statistics",
+      "mode": "prepare",
+      "expected_reason": "当前默认workspace统计不符",
+      "exit_code": 1,
+      "passed": false,
+      "reason": "当前默认workspace统计不符",
+      "read_only": true
+    },
+    {
+      "case": "state",
+      "mode": "prepare",
+      "expected_reason": "收口状态或发布边界冒进",
+      "exit_code": 1,
+      "passed": false,
+      "reason": "收口状态或发布边界冒进",
+      "read_only": true
+    }
+  ]
+}

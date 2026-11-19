@@ -1,0 +1,824 @@
+{
+  "archive": {
+    "bytes": 13305774,
+    "sha256": "699438bf60669cba481c2fb46598265cdccfca4fdccfc717fce2e14a96e46661"
+  },
+  "coverage": {
+    "linux/o0": {
+      "backend": "o0",
+      "complete": true,
+      "counts": {
+        "passed": 183
+      },
+      "full_catalog": true,
+      "passed": true,
+      "platform": "linux",
+      "pow": {
+        "v16177": {
+          "operator.cmath.pow": {
+            "median_seconds": 4.299498100280762e-07,
+            "resident_increment_upper_bytes": 495616,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 3.442224151611328e-07,
+            "resident_increment_upper_bytes": 348160,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 3.584373748779297e-07,
+            "resident_increment_upper_bytes": 487424,
+            "status": "passed"
+          }
+        },
+        "v16181": {
+          "operator.cmath.pow": {
+            "median_seconds": 1.84026875e-06,
+            "resident_increment_upper_bytes": 442368,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 2.267902791341146e-06,
+            "resident_increment_upper_bytes": 462848,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 2.361455055930398e-06,
+            "resident_increment_upper_bytes": 495616,
+            "status": "passed"
+          }
+        },
+        "v16544": {
+          "operator.cmath.pow": {
+            "median_seconds": 3.5590395507812503e-07,
+            "resident_increment_upper_bytes": 458752,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 3.364390899658203e-07,
+            "resident_increment_upper_bytes": 327680,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 3.592274658203125e-07,
+            "resident_increment_upper_bytes": 458752,
+            "status": "passed"
+          }
+        }
+      },
+      "source_commit": "79ea0375d7f2d823a5bdde73cb2c9a1c33c3e4c3",
+      "url": {
+        "16384": {
+          "median_seconds": 0.051951213,
+          "peak_bytes": 753664,
+          "ratio": 1.9378321770582962,
+          "status": "passed"
+        },
+        "4096": {
+          "median_seconds": 0.013884375125,
+          "peak_bytes": 643072,
+          "ratio": null,
+          "status": "passed"
+        },
+        "8192": {
+          "median_seconds": 0.026808933,
+          "peak_bytes": 692224,
+          "ratio": 1.9308706915969327,
+          "status": "passed"
+        },
+        "maximum": {
+          "median_seconds": 0.650984036,
+          "peak_bytes": 2048000,
+          "ratio": null,
+          "status": "passed"
+        }
+      }
+    },
+    "linux/o3": {
+      "backend": "o3",
+      "complete": true,
+      "counts": {
+        "passed": 183
+      },
+      "full_catalog": true,
+      "passed": true,
+      "platform": "linux",
+      "pow": {
+        "v16177": {
+          "operator.cmath.pow": {
+            "median_seconds": 3.7162412414550784e-07,
+            "resident_increment_upper_bytes": 499712,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 4.5622399520874024e-07,
+            "resident_increment_upper_bytes": 495616,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 3.6261963806152345e-07,
+            "resident_increment_upper_bytes": 487424,
+            "status": "passed"
+          }
+        },
+        "v16181": {
+          "operator.cmath.pow": {
+            "median_seconds": 1.8175125209263392e-06,
+            "resident_increment_upper_bytes": 495616,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 2.2278020833333334e-06,
+            "resident_increment_upper_bytes": 499712,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 2.2358143107096356e-06,
+            "resident_increment_upper_bytes": 442368,
+            "status": "passed"
+          }
+        },
+        "v16544": {
+          "operator.cmath.pow": {
+            "median_seconds": 3.959104347229004e-07,
+            "resident_increment_upper_bytes": 458752,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 3.5217532653808594e-07,
+            "resident_increment_upper_bytes": 458752,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 3.568716857910156e-07,
+            "resident_increment_upper_bytes": 458752,
+            "status": "passed"
+          }
+        }
+      },
+      "source_commit": "79ea0375d7f2d823a5bdde73cb2c9a1c33c3e4c3",
+      "url": {
+        "16384": {
+          "median_seconds": 0.055383949,
+          "peak_bytes": 684032,
+          "ratio": 2.0517734673890287,
+          "status": "passed"
+        },
+        "4096": {
+          "median_seconds": 0.013359046625,
+          "peak_bytes": 634880,
+          "ratio": null,
+          "status": "passed"
+        },
+        "8192": {
+          "median_seconds": 0.0269932085,
+          "peak_bytes": 684032,
+          "ratio": 2.0205939284233914,
+          "status": "passed"
+        },
+        "maximum": {
+          "median_seconds": 0.622506946,
+          "peak_bytes": 1916928,
+          "ratio": null,
+          "status": "passed"
+        }
+      }
+    },
+    "linux/vm": {
+      "backend": "vm",
+      "complete": true,
+      "counts": {
+        "passed": 183
+      },
+      "full_catalog": true,
+      "passed": true,
+      "platform": "linux",
+      "pow": {
+        "v16177": {
+          "operator.cmath.pow": {
+            "median_seconds": 1.9923860473632815e-06,
+            "resident_increment_upper_bytes": 667648,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 4.914850341796875e-05,
+            "resident_increment_upper_bytes": 2482176,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 2.780071044921875e-06,
+            "resident_increment_upper_bytes": 2387968,
+            "status": "passed"
+          }
+        },
+        "v16181": {
+          "operator.cmath.pow": {
+            "median_seconds": 4.9487199707031246e-06,
+            "resident_increment_upper_bytes": 860160,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 5.31286669921875e-05,
+            "resident_increment_upper_bytes": 2347008,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 7.388801696777344e-06,
+            "resident_increment_upper_bytes": 2285568,
+            "status": "passed"
+          }
+        },
+        "v16544": {
+          "operator.cmath.pow": {
+            "median_seconds": 2.020093546549479e-06,
+            "resident_increment_upper_bytes": 798720,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 4.903165234375e-05,
+            "resident_increment_upper_bytes": 2486272,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 2.7595131022135416e-06,
+            "resident_increment_upper_bytes": 2306048,
+            "status": "passed"
+          }
+        }
+      },
+      "source_commit": "79ea0375d7f2d823a5bdde73cb2c9a1c33c3e4c3",
+      "url": {
+        "16384": {
+          "median_seconds": 0.227629333,
+          "peak_bytes": 4296704,
+          "ratio": 1.9419356800319432,
+          "status": "passed"
+        },
+        "4096": {
+          "median_seconds": 0.057670597,
+          "peak_bytes": 3702784,
+          "ratio": null,
+          "status": "passed"
+        },
+        "8192": {
+          "median_seconds": 0.117217751,
+          "peak_bytes": 3559424,
+          "ratio": 2.0325392331208225,
+          "status": "passed"
+        },
+        "maximum": {
+          "median_seconds": 2.731410051,
+          "peak_bytes": 3682304,
+          "ratio": null,
+          "status": "passed"
+        }
+      }
+    },
+    "macos/b6-2-macos-o0-44249501458-1/o0": {
+      "backend": "o0",
+      "complete": true,
+      "counts": {
+        "passed": 183
+      },
+      "full_catalog": true,
+      "passed": true,
+      "platform": "macos",
+      "pow": {
+        "v16177": {
+          "operator.cmath.pow": {
+            "median_seconds": 2.0652198791503906e-07,
+            "resident_increment_upper_bytes": 278528,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 2.2876412527901784e-07,
+            "resident_increment_upper_bytes": 311296,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 2.0513725280761718e-07,
+            "resident_increment_upper_bytes": 294912,
+            "status": "passed"
+          }
+        },
+        "v16181": {
+          "operator.cmath.pow": {
+            "median_seconds": 1.6402130126953126e-06,
+            "resident_increment_upper_bytes": 573440,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 2.15966796875e-06,
+            "resident_increment_upper_bytes": 573440,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 2.1963568793402775e-06,
+            "resident_increment_upper_bytes": 540672,
+            "status": "passed"
+          }
+        },
+        "v16544": {
+          "operator.cmath.pow": {
+            "median_seconds": 2.1858651297433038e-07,
+            "resident_increment_upper_bytes": 278528,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 2.212505340576172e-07,
+            "resident_increment_upper_bytes": 294912,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 1.9732284545898438e-07,
+            "resident_increment_upper_bytes": 278528,
+            "status": "passed"
+          }
+        }
+      },
+      "source_commit": "79ea0375d7f2d823a5bdde73cb2c9a1c33c3e4c3",
+      "url": {
+        "16384": {
+          "median_seconds": 0.03884575,
+          "peak_bytes": 1359872,
+          "ratio": 2.445282009316379,
+          "status": "passed"
+        },
+        "4096": {
+          "median_seconds": 0.008697071428571429,
+          "peak_bytes": 1114112,
+          "ratio": null,
+          "status": "passed"
+        },
+        "8192": {
+          "median_seconds": 0.015886,
+          "peak_bytes": 1228800,
+          "ratio": 1.8265918741119753,
+          "status": "passed"
+        },
+        "maximum": {
+          "median_seconds": 0.419651,
+          "peak_bytes": 3833856,
+          "ratio": null,
+          "status": "passed"
+        }
+      }
+    },
+    "macos/b6-2-macos-o3-44249501458-1/o3": {
+      "backend": "o3",
+      "complete": true,
+      "counts": {
+        "passed": 183
+      },
+      "full_catalog": true,
+      "passed": true,
+      "platform": "macos",
+      "pow": {
+        "v16177": {
+          "operator.cmath.pow": {
+            "median_seconds": 2.3548316955566406e-07,
+            "resident_increment_upper_bytes": 278528,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 2.3539951869419644e-07,
+            "resident_increment_upper_bytes": 294912,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 2.2211129324776786e-07,
+            "resident_increment_upper_bytes": 278528,
+            "status": "passed"
+          }
+        },
+        "v16181": {
+          "operator.cmath.pow": {
+            "median_seconds": 1.6537017822265625e-06,
+            "resident_increment_upper_bytes": 524288,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 2.236346905048077e-06,
+            "resident_increment_upper_bytes": 606208,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 2.2336629231770834e-06,
+            "resident_increment_upper_bytes": 573440,
+            "status": "passed"
+          }
+        },
+        "v16544": {
+          "operator.cmath.pow": {
+            "median_seconds": 2.1983718872070312e-07,
+            "resident_increment_upper_bytes": 278528,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 2.4047415597098216e-07,
+            "resident_increment_upper_bytes": 278528,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 2.1808433532714843e-07,
+            "resident_increment_upper_bytes": 245760,
+            "status": "passed"
+          }
+        }
+      },
+      "source_commit": "79ea0375d7f2d823a5bdde73cb2c9a1c33c3e4c3",
+      "url": {
+        "16384": {
+          "median_seconds": 0.026402,
+          "peak_bytes": 1277952,
+          "ratio": 1.2755909859543773,
+          "status": "passed"
+        },
+        "4096": {
+          "median_seconds": 0.006993,
+          "peak_bytes": 1081344,
+          "ratio": null,
+          "status": "passed"
+        },
+        "8192": {
+          "median_seconds": 0.020697857142857146,
+          "peak_bytes": 1146880,
+          "ratio": 2.9597965312251033,
+          "status": "passed"
+        },
+        "maximum": {
+          "median_seconds": 0.379194,
+          "peak_bytes": 3653632,
+          "ratio": null,
+          "status": "passed"
+        }
+      }
+    },
+    "macos/b6-2-macos-vm-44249501458-1/vm": {
+      "backend": "vm",
+      "complete": true,
+      "counts": {
+        "passed": 183
+      },
+      "full_catalog": true,
+      "passed": true,
+      "platform": "macos",
+      "pow": {
+        "v16177": {
+          "operator.cmath.pow": {
+            "median_seconds": 1.5099509506225585e-06,
+            "resident_increment_upper_bytes": 819200,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 3.7007498604910716e-05,
+            "resident_increment_upper_bytes": 819200,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 2.468508039202009e-06,
+            "resident_increment_upper_bytes": 491520,
+            "status": "passed"
+          }
+        },
+        "v16181": {
+          "operator.cmath.pow": {
+            "median_seconds": 4.0989990234375006e-06,
+            "resident_increment_upper_bytes": 1064960,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 3.537610463169643e-05,
+            "resident_increment_upper_bytes": 933888,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 6.829581689453125e-06,
+            "resident_increment_upper_bytes": 753664,
+            "status": "passed"
+          }
+        },
+        "v16544": {
+          "operator.cmath.pow": {
+            "median_seconds": 1.3539505004882813e-06,
+            "resident_increment_upper_bytes": 819200,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 3.633446121651785e-05,
+            "resident_increment_upper_bytes": 802816,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 2.0137894897460937e-06,
+            "resident_increment_upper_bytes": 589824,
+            "status": "passed"
+          }
+        }
+      },
+      "source_commit": "79ea0375d7f2d823a5bdde73cb2c9a1c33c3e4c3",
+      "url": {
+        "16384": {
+          "median_seconds": 0.124713209,
+          "peak_bytes": 589824,
+          "ratio": 1.6241642251760648,
+          "status": "passed"
+        },
+        "4096": {
+          "median_seconds": 0.02745522925,
+          "peak_bytes": 1441792,
+          "ratio": null,
+          "status": "passed"
+        },
+        "8192": {
+          "median_seconds": 0.076786083,
+          "peak_bytes": 851968,
+          "ratio": 2.7967744250396307,
+          "status": "passed"
+        },
+        "maximum": {
+          "median_seconds": 1.5715503750000002,
+          "peak_bytes": 2637824,
+          "ratio": null,
+          "status": "passed"
+        }
+      }
+    },
+    "windows/o0": {
+      "backend": "o0",
+      "complete": true,
+      "counts": {
+        "passed": 183
+      },
+      "full_catalog": true,
+      "passed": true,
+      "platform": "windows",
+      "pow": {
+        "v16177": {
+          "operator.cmath.pow": {
+            "median_seconds": 5.698028564453124e-07,
+            "resident_increment_upper_bytes": 135168,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 6.561681111653647e-07,
+            "resident_increment_upper_bytes": 139264,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 5.640106201171875e-07,
+            "resident_increment_upper_bytes": 151552,
+            "status": "passed"
+          }
+        },
+        "v16181": {
+          "operator.cmath.pow": {
+            "median_seconds": 3.523301478794643e-06,
+            "resident_increment_upper_bytes": 192512,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 4.48226318359375e-06,
+            "resident_increment_upper_bytes": 245760,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 4.3770361328125e-06,
+            "resident_increment_upper_bytes": 225280,
+            "status": "passed"
+          }
+        },
+        "v16544": {
+          "operator.cmath.pow": {
+            "median_seconds": 5.236918131510417e-07,
+            "resident_increment_upper_bytes": 118784,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 4.48663330078125e-07,
+            "resident_increment_upper_bytes": 151552,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 4.430389404296875e-07,
+            "resident_increment_upper_bytes": 151552,
+            "status": "passed"
+          }
+        }
+      },
+      "source_commit": "79ea0375d7f2d823a5bdde73cb2c9a1c33c3e4c3",
+      "url": {
+        "16384": {
+          "median_seconds": 0.0780664,
+          "peak_bytes": 589824,
+          "ratio": 1.8997416439878485,
+          "status": "passed"
+        },
+        "4096": {
+          "median_seconds": 0.0201261,
+          "peak_bytes": 389120,
+          "ratio": null,
+          "status": "passed"
+        },
+        "8192": {
+          "median_seconds": 0.04109316666666667,
+          "peak_bytes": 479232,
+          "ratio": 2.041784879667033,
+          "status": "passed"
+        },
+        "maximum": {
+          "median_seconds": 0.9681943,
+          "peak_bytes": 2752512,
+          "ratio": null,
+          "status": "passed"
+        }
+      }
+    },
+    "windows/o3": {
+      "backend": "o3",
+      "complete": true,
+      "counts": {
+        "passed": 183
+      },
+      "full_catalog": true,
+      "passed": true,
+      "platform": "windows",
+      "pow": {
+        "v16177": {
+          "operator.cmath.pow": {
+            "median_seconds": 6.688044230143229e-07,
+            "resident_increment_upper_bytes": 118784,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 5.102078755696614e-07,
+            "resident_increment_upper_bytes": 139264,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 5.70208740234375e-07,
+            "resident_increment_upper_bytes": 143360,
+            "status": "passed"
+          }
+        },
+        "v16181": {
+          "operator.cmath.pow": {
+            "median_seconds": 3.5178606305803573e-06,
+            "resident_increment_upper_bytes": 200704,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 4.4408040364583335e-06,
+            "resident_increment_upper_bytes": 229376,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 4.950642903645833e-06,
+            "resident_increment_upper_bytes": 233472,
+            "status": "passed"
+          }
+        },
+        "v16544": {
+          "operator.cmath.pow": {
+            "median_seconds": 5.00357437133789e-07,
+            "resident_increment_upper_bytes": 122880,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 5.985916137695313e-07,
+            "resident_increment_upper_bytes": 139264,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 6.159271240234375e-07,
+            "resident_increment_upper_bytes": 135168,
+            "status": "passed"
+          }
+        }
+      },
+      "source_commit": "79ea0375d7f2d823a5bdde73cb2c9a1c33c3e4c3",
+      "url": {
+        "16384": {
+          "median_seconds": 0.0792634,
+          "peak_bytes": 548864,
+          "ratio": 2.041178919538355,
+          "status": "passed"
+        },
+        "4096": {
+          "median_seconds": 0.019477633333333334,
+          "peak_bytes": 356352,
+          "ratio": null,
+          "status": "passed"
+        },
+        "8192": {
+          "median_seconds": 0.03883216666666667,
+          "peak_bytes": 450560,
+          "ratio": 1.993679930313231,
+          "status": "passed"
+        },
+        "maximum": {
+          "median_seconds": 0.9554286,
+          "peak_bytes": 2748416,
+          "ratio": null,
+          "status": "passed"
+        }
+      }
+    },
+    "windows/vm": {
+      "backend": "vm",
+      "complete": true,
+      "counts": {
+        "passed": 183
+      },
+      "full_catalog": true,
+      "passed": true,
+      "platform": "windows",
+      "pow": {
+        "v16177": {
+          "operator.cmath.pow": {
+            "median_seconds": 7.566021728515625e-06,
+            "resident_increment_upper_bytes": 245760,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 6.6681640625e-05,
+            "resident_increment_upper_bytes": 6029312,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 1.0273445638020832e-05,
+            "resident_increment_upper_bytes": 6258688,
+            "status": "passed"
+          }
+        },
+        "v16181": {
+          "operator.cmath.pow": {
+            "median_seconds": 1.476878662109375e-05,
+            "resident_increment_upper_bytes": 294912,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 7.762140625e-05,
+            "resident_increment_upper_bytes": 6111232,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 1.98616943359375e-05,
+            "resident_increment_upper_bytes": 6070272,
+            "status": "passed"
+          }
+        },
+        "v16544": {
+          "operator.cmath.pow": {
+            "median_seconds": 7.532476806640625e-06,
+            "resident_increment_upper_bytes": 233472,
+            "status": "passed"
+          },
+          "std.cmath.pow": {
+            "median_seconds": 6.738313802083333e-05,
+            "resident_increment_upper_bytes": 6234112,
+            "status": "passed"
+          },
+          "stdlib.cmath.pow": {
+            "median_seconds": 1.0624918619791668e-05,
+            "resident_increment_upper_bytes": 6131712,
+            "status": "passed"
+          }
+        }
+      },
+      "source_commit": "79ea0375d7f2d823a5bdde73cb2c9a1c33c3e4c3",
+      "url": {
+        "16384": {
+          "median_seconds": 0.5876844,
+          "peak_bytes": 7983104,
+          "ratio": 1.992890918117375,
+          "status": "passed"
+        },
+        "4096": {
+          "median_seconds": 0.1504322,
+          "peak_bytes": 8409088,
+          "ratio": null,
+          "status": "passed"
+        },
+        "8192": {
+          "median_seconds": 0.2948904,
+          "peak_bytes": 8040448,
+          "ratio": 1.9602877575412712,
+          "status": "passed"
+        },
+        "maximum": {
+          "median_seconds": 8.3672072,
+          "peak_bytes": 8171520,
+          "ratio": null,
+          "status": "passed"
+        }
+      }
+    }
+  },
+  "files": 26425,
+  "matrix_complete": true,
+  "perf_pass": true,
+  "successful_processes": 8235,
+  "unique_objects": 18181,
+  "verified": true
+}

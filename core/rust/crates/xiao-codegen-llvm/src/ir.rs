@@ -19,6 +19,9 @@ use crate::error::{CodegenError, Result};
 use crate::optimization::LlvmOptimizationReport;
 use crate::target::TargetDescription;
 use crate::text::{escape_llvm, stable_hash};
+#[path = "static_cmath.rs"]
+/// 静态标量到cmath C ABI的窄桥，不依赖动态降低器。
+mod cmath;
 
 /// 入口结果的观察策略。
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -495,16 +498,17 @@ impl<'a> ModuleGenerator<'a> {
                 .as_bytes()
             )
         );
+        let runtime_components = if self.uses_runtime {
+            crate::artifact::reachable_runtime_components(&text)
+        } else {
+            Vec::new()
+        };
         Ok(LlvmModule {
             text,
             target: self.options.target.clone(),
             entry_symbol: "xiao_entry".to_owned(),
             uses_runtime: self.uses_runtime,
-            runtime_components: if self.uses_runtime {
-                vec!["value".to_owned()]
-            } else {
-                Vec::new()
-            },
+            runtime_components,
             runtime_abi_version: self.uses_runtime.then_some(ABI_ENCODED_VERSION),
             codegen_fingerprint: fingerprint,
             source_map: source_map_for_program(self.program),
@@ -1210,6 +1214,9 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
             .ok_or_else(|| CodegenError::InvalidIr {
                 message: format!("未知或已废弃的 intrinsic ID {id}"),
             })?;
+        if declaration.kind == xiao_intrinsics::IntrinsicKind::Cmath {
+            return self.emit_cmath_intrinsic(declaration, arguments, expected, span);
+        }
         if declaration.kind != xiao_intrinsics::IntrinsicKind::ScalarConversion {
             return Err(unsupported(
                 format!("静态 intrinsic {}", declaration.public_name),
@@ -1350,15 +1357,34 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
                 .ok_or_else(|| unsupported("比较类型", Some(span)))?;
             let left = self.cast_value(left, left_ty, common, span)?;
             let right = self.cast_value(right, right_ty, common, span)?;
+            if common.is_float() && matches!(operator, "==" | "!=") {
+                // Runtime 的语言相等在数值提升后比较位模式，必须保留异号零的区别。
+                // bitcast 不改变数值或精度，也不放宽非有限值的既有入口检查。
+                let bits_ty = if common == Scalar::Float {
+                    "i64"
+                } else {
+                    "i32"
+                };
+                let left_bits = self.module.next_temp();
+                let right_bits = self.module.next_temp();
+                self.emit_line(format!(
+                    "  {left_bits} = bitcast {} {left} to {bits_ty}",
+                    common.llvm()
+                ));
+                self.emit_line(format!(
+                    "  {right_bits} = bitcast {} {right} to {bits_ty}",
+                    common.llvm()
+                ));
+                let predicate = if operator == "==" { "eq" } else { "ne" };
+                let temp = self.module.next_temp();
+                self.emit_line(format!(
+                    "  {temp} = icmp {predicate} {bits_ty} {left_bits}, {right_bits}"
+                ));
+                return Ok((temp, Scalar::Bool));
+            }
             let predicate = match operator {
                 "==" => "eq",
-                "!=" => {
-                    if common.is_float() {
-                        "une"
-                    } else {
-                        "ne"
-                    }
-                }
+                "!=" => "ne",
                 "<" => {
                     if common.is_float() {
                         "olt"
@@ -1699,12 +1725,11 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         span: IrSpan,
         constant_exponent: Option<i128>,
     ) -> Result<String> {
-        if ty.is_float() {
-            let intrinsic = if ty == Scalar::Float {
-                "llvm.pow.f64"
-            } else {
-                "llvm.pow.f32"
-            };
+        if ty == Scalar::Float {
+            return self.emit_cmath_scalar_call("cmath_pow", &[left, right], span);
+        }
+        if ty == Scalar::Sfloat {
+            let intrinsic = "llvm.pow.f32";
             self.module.declaration(format!(
                 "declare {} @{intrinsic}({}, {})",
                 ty.llvm(),

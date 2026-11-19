@@ -1,0 +1,33 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "manifest",
+      "exit_code": 1,
+      "reason": "B4-5证据清单不符",
+      "stderr": "B4-5证据清单不符\n",
+      "read_only": true
+    },
+    {
+      "case": "missing",
+      "exit_code": 1,
+      "reason": "B4-5已登记文件缺失",
+      "stderr": "B4-5已登记文件缺失\n",
+      "read_only": true
+    },
+    {
+      "case": "source",
+      "exit_code": 1,
+      "reason": "B4-5固定产品身份不符",
+      "stderr": "B4-5固定产品身份不符\n",
+      "read_only": true
+    },
+    {
+      "case": "public",
+      "exit_code": 1,
+      "reason": "B4-5公共状态提前升级",
+      "stderr": "B4-5公共状态提前升级\n",
+      "read_only": true
+    }
+  ]
+}

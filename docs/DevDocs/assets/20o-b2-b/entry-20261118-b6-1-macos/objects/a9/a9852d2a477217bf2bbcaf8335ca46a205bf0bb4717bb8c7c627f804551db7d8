@@ -1,0 +1,43 @@
+   Compiling xiao-driver v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-gb726qcz/source/core/rust/crates/xiao-driver)
+    Finished `release` profile [optimized] target(s) in 3.00s
+     Running tests/20o_b2_a_contract.rs (/Users/runner/work/_temp/xiao-b6-1-gb726qcz/target/release/deps/20o_b2_a_contract-47eb49435aa0bc07)
+
+running 1 test
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=native optimization=0 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-native-5946-1794979312529570000/a5_integer_arithmetic-o0 result=success
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=native optimization=3 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-native-5946-1794979312529570000/a5_integer_arithmetic-o3 result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=native optimization=0 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-native-5946-1794979312529570000/a5_decimal_arithmetic-o0 result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=native optimization=3 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-native-5946-1794979312529570000/a5_decimal_arithmetic-o3 result=success
+B2-A5-LANGUAGE case=a5_conversions backend=native optimization=0 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-native-5946-1794979312529570000/a5_conversions-o0 result=success
+B2-A5-LANGUAGE case=a5_conversions backend=native optimization=3 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-native-5946-1794979312529570000/a5_conversions-o3 result=success
+B2-A5-LANGUAGE case=a5_carriers backend=native optimization=0 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-native-5946-1794979312529570000/a5_carriers-o0 result=success
+B2-A5-LANGUAGE case=a5_carriers backend=native optimization=3 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-native-5946-1794979312529570000/a5_carriers-o3 result=success
+B2-A5-LANGUAGE case=a5_errors backend=native optimization=0 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-native-5946-1794979312529570000/a5_errors-o0 result=success
+B2-A5-LANGUAGE case=a5_errors backend=native optimization=3 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-native-5946-1794979312529570000/a5_errors-o3 result=success
+B2-A5-LANGUAGE case=a5_matrix backend=native optimization=0 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-native-5946-1794979312529570000/a5_matrix-o0 result=success
+B2-A5-LANGUAGE case=a5_matrix backend=native optimization=3 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-native-5946-1794979312529570000/a5_matrix-o3 result=success
+B2-A5-LANGUAGE case=a5_bindings backend=native optimization=0 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-native-5946-1794979312529570000/a5_bindings-o0 result=success
+B2-A5-LANGUAGE case=a5_bindings backend=native optimization=3 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-native-5946-1794979312529570000/a5_bindings-o3 result=success
+B2-A5-ERROR case=narrow backend=native optimization=0 code=X06-RUNTIME-009 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/narrow-o0 result=success
+B2-A5-ERROR case=narrow backend=native optimization=3 code=X06-RUNTIME-009 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/narrow-o3 result=success
+B2-A5-ERROR case=syntax backend=native optimization=0 code=X06-RUNTIME-012 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/syntax-o0 result=success
+B2-A5-ERROR case=syntax backend=native optimization=3 code=X06-RUNTIME-012 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/syntax-o3 result=success
+B2-A5-ERROR case=zero backend=native optimization=0 code=X06-RUNTIME-013 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/zero-o0 result=success
+B2-A5-ERROR case=zero backend=native optimization=3 code=X06-RUNTIME-013 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/zero-o3 result=success
+B2-A5-ERROR case=admission backend=native optimization=0 code=X06-RUNTIME-033 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/admission-o0 result=success
+B2-A5-ERROR case=admission backend=native optimization=3 code=X06-RUNTIME-033 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/admission-o3 result=success
+B2-A5-ERROR case=quotient backend=native optimization=0 code=X06-RUNTIME-033 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/quotient-o0 result=success
+B2-A5-ERROR case=quotient backend=native optimization=3 code=X06-RUNTIME-033 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/quotient-o3 result=success
+B2-A5-ERROR case=nonterminating backend=native optimization=0 code=X06-RUNTIME-034 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/nonterminating-o0 result=success
+B2-A5-ERROR case=nonterminating backend=native optimization=3 code=X06-RUNTIME-034 artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/nonterminating-o3 result=success
+B2-A5-CLEANUP case=cast-success optimization=0 temporary=once artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/lifetime-cast-success-o0 result=success
+B2-A5-CLEANUP case=cast-success optimization=3 temporary=once artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/lifetime-cast-success-o3 result=success
+B2-A5-CLEANUP case=cast-failure optimization=0 temporary=once artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/lifetime-cast-failure-o0 result=success
+B2-A5-CLEANUP case=cast-failure optimization=3 temporary=once artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/lifetime-cast-failure-o3 result=success
+B2-A5-CLEANUP case=right-failure optimization=0 temporary=once artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/lifetime-right-failure-o0 result=success
+B2-A5-CLEANUP case=right-failure optimization=3 temporary=once artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/lifetime-right-failure-o3 result=success
+B2-A5-ALLOCATION optimization=0 code=X06-RUNTIME-011 out=unchanged source_unchanged=true artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/lifetime-allocation-o0 result=success
+B2-A5-ALLOCATION optimization=3 code=X06-RUNTIME-011 out=unchanged source_unchanged=true artifact=/Users/runner/work/_temp/xiao-b6-1-gb726qcz/errors/xiao-b2-a5-errors-5946-1794979318799956000/lifetime-allocation-o3 result=success
+test a5_language_values_match_native_golden_outputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out; finished in 11.47s
+

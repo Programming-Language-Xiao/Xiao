@@ -1,0 +1,32 @@
+{
+  "cases": [
+    {
+      "after_sha256": "efff899e5500cdac88671d50b71bdcc622e06c51fda28f42b1ec604cf61be1ec",
+      "before_sha256": "efff899e5500cdac88671d50b71bdcc622e06c51fda28f42b1ec604cf61be1ec",
+      "case": "budget",
+      "exit_code": 1,
+      "expected_reason": "计时预算被改动",
+      "read_only": true,
+      "stderr": "计时预算被改动\n"
+    },
+    {
+      "after_sha256": "2973bffa2c5834ddc9f8b7aef160f27b98e9734e5942a45386bd5f90d90f3570",
+      "before_sha256": "2973bffa2c5834ddc9f8b7aef160f27b98e9734e5942a45386bd5f90d90f3570",
+      "case": "source",
+      "exit_code": 1,
+      "expected_reason": "计时源码身份不符",
+      "read_only": true,
+      "stderr": "计时源码身份不符\n"
+    },
+    {
+      "after_sha256": "bfa9755482b8e73d16a5c6c123f55235fffc8917fdc8c61cd8f7ba8b568085c0",
+      "before_sha256": "bfa9755482b8e73d16a5c6c123f55235fffc8917fdc8c61cd8f7ba8b568085c0",
+      "case": "object",
+      "exit_code": 1,
+      "expected_reason": "计时对象摘要不符",
+      "read_only": true,
+      "stderr": "计时对象摘要不符\n"
+    }
+  ],
+  "passed": true
+}

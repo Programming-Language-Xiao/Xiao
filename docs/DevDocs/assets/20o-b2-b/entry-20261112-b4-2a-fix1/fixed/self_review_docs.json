@@ -1,0 +1,23 @@
+{
+  "label": "self_review_docs",
+  "argv": [
+    "bun",
+    "tools/repo-check/src/cli.ts",
+    "all",
+    "--format",
+    "json"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 40112,
+  "started_utc": "2026-11-12T10:37:32.351108+00:00",
+  "finished_utc": "2026-11-12T10:38:16.628113+00:00",
+  "exit_code": 0,
+  "source_before": "25d60f02d710202c7d52eb458a0a3c6d3b1f6b8751b5e00d43163cde33847fa7",
+  "source_after": "25d60f02d710202c7d52eb458a0a3c6d3b1f6b8751b5e00d43163cde33847fa7",
+  "source_unchanged": true,
+  "log": "self_review_docs.log",
+  "log_bytes": 513382,
+  "log_sha256": "e8bf444c34f90429668594b93f765f1fc279ec9533649eb6e4ea89b898951bc1",
+  "runner_sha256": "8c4b4fa686234cf58f000d2123afdf2cea8fc9a9752127f50fd78f3b3e637ece",
+  "environment_sha256": "232af1c0e8e55e0e64bb052930f9c59a5c41b394a8e7db98a57d06310d9d7943"
+}

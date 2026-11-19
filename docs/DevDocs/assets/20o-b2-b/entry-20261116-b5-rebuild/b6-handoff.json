@@ -1,0 +1,46 @@
+{
+  "passed": false,
+  "stage": "B5-blocked",
+  "runtime_abi": "1.19",
+  "codegen_version": 21,
+  "stdlib_interface": 1,
+  "product_commit": "71e611f82bbd4d7963c05d83db29b5c6ccb664bd",
+  "final_test_commit": "5864cbde627f727483ab676c6f4bc1bf0a7819bb",
+  "cmath": "planned",
+  "b6_started": false,
+  "baseline_kind": "reconstructed_from_B1_source",
+  "historical_originals_available": false,
+  "blocker": {
+    "passed": false,
+    "failure": "URL Unicode result budget hit unchanged 60s watchdog",
+    "receipt": "final3/workspace-complete.json"
+  },
+  "next_step": "resolve or explicitly disposition the default parallel workspace watchdog before closing B5; do not start B6",
+  "b6_required": [
+    "resource/error/atomicity and three-platform performance evidence",
+    "retain default workspace watchdog failure and remeasure under controlled conditions"
+  ],
+  "b2_c_required": [
+    "full 721 F10 on final snapshot",
+    "three-platform public artifacts",
+    "tutorial/registry closeout"
+  ],
+  "independent_issues": [
+    {
+      "owner": "static LLVM Float comparison",
+      "evidence": "known-issues.json",
+      "historical_reproduction": "b4/static-float-equality-reproduction.json",
+      "message": "float equality emits fcmp eq; numeric value proof uses explicit C bit observer; product fix deferred to independent batch"
+    },
+    {
+      "passed": false,
+      "failure": "URL Unicode result budget hit unchanged 60s watchdog",
+      "receipt": "final3/workspace-complete.json"
+    }
+  ],
+  "retained_debts": [
+    "22C",
+    "22D",
+    "19/11/22"
+  ]
+}

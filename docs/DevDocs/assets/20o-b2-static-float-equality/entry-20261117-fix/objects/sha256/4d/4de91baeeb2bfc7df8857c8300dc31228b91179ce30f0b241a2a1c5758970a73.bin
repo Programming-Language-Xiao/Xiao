@@ -1,0 +1,10 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.27s
+     Running tests\20o_static_float_equality.rs (D:\project\Xiao\.b5\float-equality-fix-20261117-01\target\debug\deps\20o_static_float_equality-2d723e0bb2fc3b33.exe)
+
+running 1 test
+test native_static_dynamic_comparisons_match_vm_o0_o3 has been running for over 60 seconds
+FLOAT-EQUALITY cases=62 native=248 llvm_as=248 vm=62 result=passed
+test native_static_dynamic_comparisons_match_vm_o0_o3 ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 313.01s
+

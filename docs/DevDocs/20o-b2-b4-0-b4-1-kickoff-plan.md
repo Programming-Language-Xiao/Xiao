@@ -1,10 +1,13 @@
 # 20O-B2-B4-0/B4-1. 向量迁移与 cmath 类型/IR 开工规划
 
-> **B3-4 源码包装已收口；B4-0/B4-1 已按本计划完成 Windows 本机验证，B4-2 起、B5～B7 与 B2-C 仍未开始。**
+> 本页阶段状态记录当时的退出时点；后续B4-2B已在 `246bea46` 完成Windows本机内部验收，见[B4-2B记录](assets/20o-b2-b/entry-20261113-b4-2b/README.md)。原退出条件及历史证据保持其时点身份。
+
+> **B3-4 源码包装已收口；B4-0/B4-1 已完成当时的 Windows 本机验证，后续 planned 回归已由 FIX1 修复；B4-2A 已退出，B4-2B 起、B5～B7 与 B2-C 仍未开始。**
 > B4-0/B4-1 固定产品提交为 `c7a45e10b76b26915499717563761ed20fda6e6c`；[本机收口证据](assets/20o-b2-b/entry-20261110-b4-0-1/README.md)。这不是三平台或 cmath 可执行性证据。
 > 入口为 B3-4 产品代码 `7d8b85e4` 与 66 文件收口证据；当前 34～48 只有内部声明，VM/LLVM 未绑定。
 > B4-0 只迁移产品测试正式向量，B4-1 只接类型/IR；不接 TAC/VM/LLVM、不升 ABI 1.19/21、不改 registry。
 > `stdlib.cmath` 仍 planned；30 条 cmath 导入路径仍明确拒绝。
+> 2026-11-12 加注：FIX1 对本页固定 `c7a45e10` 直接重跑 22c 为 27/29，对 B3-4 `7d8b85e4` 为 29/29，确认本页类型接入让原有“包装编译失败”拒绝失效。当时的前端/向量收口不包含这两项通过结论；`c4610211` 增加驱动器 planned 门控，22c 已恢复 29/29，见[归属记录](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)。历史执行和收口文件保持原样。
 
 ## 一、入口与目标
 
@@ -122,7 +125,7 @@ B4-0/B4-1 是 B4 的开工前置，不是语言可用性完成；B4-2 才接 TAC
 5. 30 条 planned 导入路径仍拒绝；
 6. 无 TAC/VM/LLVM/序列化/归档、C ABI/intrinsic/ABI/registry/锁改动；
 7. B3-4/B1/B2/B3 回归通过；旧 721 未运行；
-8. B4-2 未开始；`stdlib.cmath` 仍 planned。
+8. 本页原退出时 B4-2 未开始；后续 B4-2A/FIX1 退出见[当前 FIX1 记录](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)，`stdlib.cmath` 仍 planned。
 
 ## 七、风险与禁止
 

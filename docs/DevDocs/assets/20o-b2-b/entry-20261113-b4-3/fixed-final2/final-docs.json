@@ -1,0 +1,33 @@
+{
+  "label": "final-docs",
+  "argv": [
+    "bun",
+    "tools/repo-check/src/cli.ts",
+    "all",
+    "--format",
+    "json"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 73320,
+  "started_utc": "2026-11-13T10:40:48.047762+00:00",
+  "finished_utc": "2026-11-13T10:41:35.626771+00:00",
+  "exit_code": 0,
+  "source_before": "e4cc58cb2dc9ebcac2867d184d46437af2f8a9127eb881e68cd6c4fb0273ced4",
+  "source_after": "e4cc58cb2dc9ebcac2867d184d46437af2f8a9127eb881e68cd6c4fb0273ced4",
+  "source_unchanged": true,
+  "docs_commit": "372a6fe26a8acdd9a424076a92076f4ea9ca56ed",
+  "docs_commit_after": "372a6fe26a8acdd9a424076a92076f4ea9ca56ed",
+  "docs_tree_before": "e7add0b0cdd1ba1c5788bef8e1181ab2ed6be0d2de628d11d6ffcfed6af3b6ae",
+  "docs_tree_after": "e7add0b0cdd1ba1c5788bef8e1181ab2ed6be0d2de628d11d6ffcfed6af3b6ae",
+  "docs_tree_sha256": "e7add0b0cdd1ba1c5788bef8e1181ab2ed6be0d2de628d11d6ffcfed6af3b6ae",
+  "docs_tree_canonical_before": "424cda88960dfff806ef11378339624daae82424b23f5f0538d4dc5195d37cee",
+  "docs_tree_canonical_after": "424cda88960dfff806ef11378339624daae82424b23f5f0538d4dc5195d37cee",
+  "docs_tree_commit_raw_sha256": "80090e122c8919bb3e559f965c6e9d9cbb127337757284ab8b10b38d922caad3",
+  "docs_tree_commit_canonical_sha256": "424cda88960dfff806ef11378339624daae82424b23f5f0538d4dc5195d37cee",
+  "docs_tree_unchanged": true,
+  "log_ref": "logs/sha256/ef/efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b.log",
+  "log_bytes": 514572,
+  "log_sha256": "efd3ff00a7150a79bf639566ffc0b54b351a7d032b415cfb790c4d3d01f1944b",
+  "runner_sha256": "351258493aa35f6ae8c8bdd8ae6126aec6e5dde78fd655eb6f7176057251e8d6",
+  "environment_sha256": "369da11793f19fe72333f316da68df9fe4d1b61abc4a671538f3f1b188cee62e"
+}

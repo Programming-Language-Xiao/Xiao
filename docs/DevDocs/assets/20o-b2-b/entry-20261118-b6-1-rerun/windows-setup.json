@@ -1,0 +1,18 @@
+{
+  "task_root": "D:\\project\\Xiao\\.b6\\b6-1-rerun-20261118-01\\windows",
+  "source_root": "D:\\project\\Xiao\\.b6\\b6-1-rerun-20261118-01\\windows\\source",
+  "task_root_existed_before": false,
+  "target_existed_before": false,
+  "runtime_existed_before": false,
+  "source_matches_fixed_git_bytes": true,
+  "archive_sha256": "77f766ded5fed589dec9d991989fbe6d54b6407b9e7a1631924d9fdef555c8c6",
+  "file_count": 1076,
+  "source": {
+    "path": "objects/sha256/8d/8d7459451243f16137a640aad1a9b88d6b9689fac402cac2251c0f021f1391f3.bin",
+    "bytes": 93945,
+    "sha256": "abe5ebe91f07f728e6a38a80659fac2d7e7693fb85c1c6891ddeb0cbad3a0240",
+    "encoding": "gzip",
+    "raw_bytes": 249943,
+    "raw_sha256": "8d7459451243f16137a640aad1a9b88d6b9689fac402cac2251c0f021f1391f3"
+  }
+}

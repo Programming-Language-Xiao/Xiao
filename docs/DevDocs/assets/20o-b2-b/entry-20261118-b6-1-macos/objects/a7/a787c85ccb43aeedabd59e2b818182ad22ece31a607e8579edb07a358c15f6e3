@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "runner_commit": "4bc244c90b41da2aa314d3da05e2d30bd647cc5f",
+  "runtime": {
+    "bytes": 25667552,
+    "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+  },
+  "source_sha256": "4040e675c82aa18ca99f6e675b7658f49497ba8fc9f0ec285659af31dfd3f4db",
+  "suite": "resources"
+}

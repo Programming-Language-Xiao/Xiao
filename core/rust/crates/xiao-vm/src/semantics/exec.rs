@@ -34,7 +34,7 @@ mod concurrent;
 /// 模块初始化与上下文切换。
 #[path = "module_exec.rs"]
 mod module_exec;
-/// 显式精度除法的Runtime单入口绑定。
+/// 显式精度除法与 cmath 的 Runtime 单入口绑定。
 #[path = "numeric_intrinsics.rs"]
 mod numeric_intrinsics;
 /// 集合变更 intrinsic 的执行绑定。
@@ -1848,6 +1848,9 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             return Err(Fault::Error(XiaoError::capability_unavailable(
                 declaration.capability.as_str(),
             )));
+        }
+        if declaration.kind == xiao_intrinsics::IntrinsicKind::Cmath {
+            return numeric_intrinsics::cmath(declaration, arguments, span);
         }
         match declaration.vm_binding {
             VmBinding::ScalarCast => {

@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261116-b5-rebuild\c_abi.py", line 55, in <module>
+    if __name__=="__main__":main()
+                            ^^^^^^
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261116-b5-rebuild\c_abi.py", line 40, in main
+    run=subprocess.run([str(executable)],check=True,capture_output=True,encoding="utf-8")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['D:\\project\\Xiao\\.b5\\20261116\\current\\old-caller-b1.exe']' returned non-zero exit status 21.

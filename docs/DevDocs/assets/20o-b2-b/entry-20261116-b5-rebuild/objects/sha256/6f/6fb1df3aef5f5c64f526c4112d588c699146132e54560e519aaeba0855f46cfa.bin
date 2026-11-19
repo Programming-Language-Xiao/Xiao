@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261116-b5-rebuild\build_host.py", line 50, in <module>
+    if __name__=="__main__":main()
+                            ^^^^^^
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261116-b5-rebuild\build_host.py", line 31, in main
+    require(len(matched)==1,"B5宿主依赖指纹不能唯一匹配："+name)
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b2-b\entry-20261113-b4-3\record.py", line 31, in require
+    raise ValueError(message)
+ValueError: B5宿主依赖指纹不能唯一匹配：serde_json

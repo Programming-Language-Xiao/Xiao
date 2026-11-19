@@ -250,7 +250,8 @@ impl Display for XarRunError {
 
 impl std::error::Error for XarRunError {}
 
-/// 打开、完整验证并运行归档入口。
+/// 打开、完整验证并运行归档入口；需要官方源码模块时，宿主须使用
+/// `run_archive_with_module_loader`注册只读加载器（驱动器公开归档入口已提供接线）。
 pub fn run_archive(
     bytes: &[u8],
     options: XarRunOptions,

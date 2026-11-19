@@ -1,0 +1,59 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "read_only": true,
+      "reason": null
+    },
+    {
+      "case": "manifest",
+      "exit_code": 1,
+      "read_only": true,
+      "reason": "证据字节清单不符"
+    },
+    {
+      "case": "attributes",
+      "exit_code": 1,
+      "read_only": true,
+      "reason": "证据属性缺失或变化"
+    },
+    {
+      "case": "orphan",
+      "exit_code": 1,
+      "read_only": true,
+      "reason": "存在没有回执引用的日志对象"
+    },
+    {
+      "case": "docs",
+      "exit_code": 1,
+      "read_only": true,
+      "reason": "DevDocs运行字节或提交绑定不符：docs"
+    },
+    {
+      "case": "source",
+      "exit_code": 1,
+      "read_only": true,
+      "reason": "固定产品源码身份不符"
+    },
+    {
+      "case": "state",
+      "exit_code": 1,
+      "read_only": true,
+      "reason": "阶段结论与实际回执不符"
+    },
+    {
+      "case": "environment",
+      "exit_code": 1,
+      "read_only": true,
+      "reason": "执行路径逃出独立任务根"
+    },
+    {
+      "case": "negative_report",
+      "exit_code": 1,
+      "read_only": true,
+      "reason": "自反例报告计数或只读结论不符"
+    }
+  ]
+}

@@ -29,7 +29,7 @@ pub(super) fn replay() {
         let decoded = xiao_bytecode::decode_xiaoc(&bytes).unwrap();
         assert_eq!(
             u64::from(decoded.header.runtime_abi_min),
-            xiao_runtime_abi::encoded_abi_version(1, 18)
+            xiao_runtime_abi::ABI_ENCODED_VERSION
         );
         assert_eq!(
             decoded.header.runtime_abi_min,

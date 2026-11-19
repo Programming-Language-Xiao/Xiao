@@ -1,0 +1,39 @@
+{
+  "passed": false,
+  "evidence_valid": true,
+  "stage_passed": false,
+  "blocked": true,
+  "b5_closed": false,
+  "b6_started": false,
+  "causal_attribution_proven": false,
+  "runs": [
+    {
+      "label": "pre-b5-cfa79381",
+      "commit": "cfa79381bbae027cec11136ca380e82f66720c34",
+      "exit_code": 0,
+      "elapsed_seconds": 986.828,
+      "url_passed": true,
+      "workspace": {
+        "targets": 187,
+        "passed": 1747,
+        "failed": 0,
+        "ignored": 54
+      }
+    },
+    {
+      "label": "b5-idle-replay",
+      "commit": "5864cbde627f727483ab676c6f4bc1bf0a7819bb",
+      "exit_code": 101,
+      "elapsed_seconds": 839.625,
+      "url_passed": false,
+      "workspace": {
+        "targets": 188,
+        "passed": 1748,
+        "failed": 1,
+        "ignored": 54
+      }
+    }
+  ],
+  "docs_gate_passed": true,
+  "self_negative_passed": true
+}

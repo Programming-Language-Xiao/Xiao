@@ -1,0 +1,172 @@
+B6-1 macOS native	Run the B6-1 suite	﻿2026-11-18T05:11:24.8558390Z ##[group]Run python3 -B tools/gates/b2_b6_macos.py run \
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:11:24.8559040Z ^[[36;1mpython3 -B tools/gates/b2_b6_macos.py run \^[[0m
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:11:24.8562700Z ^[[36;1m  --suite "$XIAO_B6_SUITE" --llvm-bin "$(brew --prefix llvm@21)/bin" \^[[0m
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:11:24.8565760Z ^[[36;1m  --output "$RUNNER_TEMP/b6-evidence"^[[0m
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:11:24.8650550Z shell: /bin/bash -e {0}
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:11:24.8650940Z env:
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:11:24.8651250Z   HOMEBREW_NO_AUTO_UPDATE: 1
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:11:24.8651510Z   XIAO_B6_SUITE: native
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:11:24.8651900Z ##[endgroup]
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:12:14.4198250Z B6-1-MACOS runtime-build pid=2921 exit=0 passed=True
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:42.8885670Z B6-1-MACOS wrappers pid=4140 exit=0 passed=True
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0096000Z    Compiling xiao-driver v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-0npan8rg/source/core/rust/crates/xiao-driver)
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0097090Z     Finished `release` profile [optimized] target(s) in 2.35s
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0097710Z B6-1-MACOS core pid=7937 exit=101 passed=False
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0099810Z      Running tests/20o_b2_b4_cmath_llvm.rs (/Users/runner/work/_temp/xiao-b6-1-0npan8rg/target/release/deps/20o_b2_b4_cmath_llvm-414d505522a5c153)
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0107810Z 
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0108060Z running 1 test
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0108320Z 
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0108790Z thread 'native_cmath_static_dynamic_o0_o3_and_shared_pow' (24339) panicked at crates/xiao-driver/tests/support/b4_cmath_native.rs:341:18:
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0119830Z called `Result::unwrap()` on an `Err` value: ToolchainFailed { tool: "clang", status: Some(1), stderr: "ld: warning: ignoring duplicate libraries: '-lSystem'\nUndefined symbols for architecture arm64:\n  \"xiao_fn_0_probe0\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_10_probe10\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_11_probe11\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_12_probe12\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_13_probe13\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_14_probe14\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_15_probe15\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_1_probe1\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_2_probe2\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_3_probe3\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_4_probe4\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_5_probe5\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_6_probe6\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_7_probe7\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_8_probe8\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_9_probe9\", referenced from:\n      _invoke in harness-false.obj\nld: symbol(s) not found for architecture arm64\nclang-21: error: linker command failed with exit code 1 (use -v to see invocation)" }
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0125300Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0125900Z test native_cmath_static_dynamic_o0_o3_and_shared_pow ... FAILED
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0126110Z 
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0126240Z failures:
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0126350Z 
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0126470Z failures:
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0126700Z     native_cmath_static_dynamic_o0_o3_and_shared_pow
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0126970Z 
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0127260Z test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.64s
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0127620Z 
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0128320Z error: test failed, to rerun pass `-p xiao-driver --test 20o_b2_b4_cmath_llvm`
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0128650Z 
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0130840Z core退出101
+B6-1 macOS native	Run the B6-1 suite	2026-11-18T05:14:46.0203320Z ##[error]Process completed with exit code 1.
+B6-1 macOS resources	Run the B6-1 suite	﻿2026-11-18T05:11:04.6309870Z ##[group]Run python3 -B tools/gates/b2_b6_macos.py run \
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:11:04.6310990Z ^[[36;1mpython3 -B tools/gates/b2_b6_macos.py run \^[[0m
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:11:04.6311810Z ^[[36;1m  --suite "$XIAO_B6_SUITE" --llvm-bin "$(brew --prefix llvm@21)/bin" \^[[0m
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:11:04.6313330Z ^[[36;1m  --output "$RUNNER_TEMP/b6-evidence"^[[0m
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:11:04.6365740Z shell: /bin/bash -e {0}
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:11:04.6366570Z env:
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:11:04.6367010Z   HOMEBREW_NO_AUTO_UPDATE: 1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:11:04.6367280Z   XIAO_B6_SUITE: resources
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:11:04.6368450Z ##[endgroup]
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:11:34.0689930Z B6-1-MACOS runtime-build pid=1635 exit=0 passed=True
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:11:50.4060330Z B6-1-MACOS runtime pid=2184 exit=0 passed=True
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7125820Z  Downloading crates ...
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7126450Z   Downloaded bytes v1.12.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7126760Z   Downloaded untrusted v0.9.0
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7127010Z   Downloaded percent-encoding v2.3.2
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7127720Z   Downloaded subtle v2.6.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7128660Z   Downloaded adler2 v2.0.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7128990Z   Downloaded utf8-zero v0.8.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7129240Z   Downloaded find-msvc-tools v0.1.14
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7129570Z   Downloaded shlex v2.0.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7129990Z   Downloaded simd-adler32 v0.3.10
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7130280Z   Downloaded filetime v0.2.29
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7131100Z   Downloaded rustls-pki-types v1.15.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7131410Z   Downloaded zeroize v1.9.0
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7131740Z   Downloaded tar v0.4.46
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7132010Z   Downloaded miniz_oxide v0.9.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7132360Z   Downloaded http v1.5.0
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7133390Z   Downloaded cc v1.5.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7133630Z   Downloaded base64 v0.23.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7134000Z   Downloaded ureq v3.4.2
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7134290Z   Downloaded rustls-webpki v0.103.15
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7134710Z   Downloaded webpki-roots v1.0.9
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7135830Z   Downloaded log v0.4.34
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7136200Z   Downloaded flate2 v1.1.10
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7136500Z   Downloaded ureq-proto v0.6.4
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7136880Z   Downloaded once_cell v1.21.4
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7137270Z   Downloaded crc32fast v1.5.2
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7137560Z   Downloaded httparse v1.10.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7137940Z   Downloaded getrandom v0.2.17
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7138320Z   Downloaded rustls v0.23.45
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7138630Z   Downloaded ring v0.17.14
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7139020Z    Compiling serde_json v1.0.151
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7139300Z    Compiling find-msvc-tools v0.1.14
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7139720Z    Compiling shlex v2.0.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7140010Z    Compiling zeroize v1.9.0
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7140400Z    Compiling cc v1.5.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7140750Z    Compiling rustls-pki-types v1.15.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7141230Z    Compiling getrandom v0.2.17
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7141520Z    Compiling httparse v1.10.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7141890Z    Compiling untrusted v0.9.0
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7142570Z    Compiling xiao-standard-library v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-standard-library)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7143190Z    Compiling log v0.4.34
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7143550Z    Compiling rustls v0.23.45
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7143820Z    Compiling crc32fast v1.5.2
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7144190Z    Compiling bytes v1.12.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7145100Z    Compiling ring v0.17.14
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7145710Z    Compiling xiao-i18n v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-i18n)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7146260Z    Compiling http v1.5.0
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7146850Z    Compiling xiao-diagnostics v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-diagnostics)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7147730Z    Compiling xiao-lock v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-lock)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7148450Z    Compiling xiao-syntax v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-syntax)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7150310Z    Compiling xiao-types v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-types)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7151050Z    Compiling xiao-modules v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-modules)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7151920Z    Compiling xiao-lifetime v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-lifetime)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7152680Z    Compiling xiao-ir v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-ir)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7153290Z    Compiling rustls-webpki v0.103.15
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7153920Z    Compiling xiao-optimizer v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-optimizer)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7154690Z    Compiling xiao-bytecode v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-bytecode)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7155350Z    Compiling subtle v2.6.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7155610Z    Compiling simd-adler32 v0.3.10
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7156430Z    Compiling adler2 v2.0.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7156790Z    Compiling base64 v0.23.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7157280Z    Compiling once_cell v1.21.4
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7157810Z    Compiling xiao-runtime v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-runtime)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7158730Z    Compiling ureq-proto v0.6.4
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7159260Z    Compiling miniz_oxide v0.9.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7160070Z    Compiling xiao-config v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-config)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7161820Z    Compiling webpki-roots v1.0.9
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7162140Z    Compiling filetime v0.2.29
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7162500Z    Compiling percent-encoding v2.3.2
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7162820Z    Compiling utf8-zero v0.8.1
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7163140Z    Compiling ureq v3.4.2
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7163430Z    Compiling tar v0.4.46
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7164360Z    Compiling xiao-vm v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-vm)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7164900Z    Compiling flate2 v1.1.10
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7165360Z    Compiling xiao-artifacts v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-artifacts)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7166160Z    Compiling xiao-codegen-llvm v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-codegen-llvm)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7166860Z    Compiling xiao-xar v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-xar)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7167590Z    Compiling xiao-package v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-package)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7168300Z    Compiling xiao-driver v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/source/core/rust/crates/xiao-driver)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7168840Z     Finished `release` profile [optimized] target(s) in 1m 51s
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7169890Z      Running tests/20o_b2_a_contract.rs (/Users/runner/work/_temp/xiao-b6-1-5iyu0sry/target/release/deps/20o_b2_a_contract-47eb49435aa0bc07)
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7170430Z 
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7170490Z running 13 tests
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7170680Z 
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7171100Z thread 'a5_conversion_language_preserves_values_and_promotion' (18025) panicked at crates/xiao-driver/tests/20o_b2_a_support/mod.rs:54:14:
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7177480Z called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7178080Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7178610Z test a5_conversion_language_preserves_values_and_promotion ... FAILED
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7178840Z 
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7179280Z thread 'a5_decimal_language_preserves_frozen_scales' (18026) panicked at crates/xiao-driver/tests/20o_b2_a_support/mod.rs:54:14:
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7180030Z called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7180890Z test a5_decimal_language_preserves_frozen_scales ... FAILED
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7181290Z B2-A5-LANGUAGE case=a5_bindings backend=vm result=success
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7181750Z B2-A5-LANGUAGE case=a5_integer_arithmetic backend=vm result=success
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7181970Z 
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7182350Z thread 'a5_complete_vm_entry_covers_resources_and_portable_replay' (18024) panicked at crates/xiao-driver/tests/20o_b2_a_support/mod.rs:54:14:
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7183200Z called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7183770Z test a5_assignments_and_constants_keep_the_declared_numeric_value ... ok
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7184360Z test a5_complete_vm_entry_covers_resources_and_portable_replay ... FAILED
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7184820Z B2-A5-LANGUAGE case=a5_integer_arithmetic backend=vm result=success
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7185390Z test a5_integer_language_uses_exact_runtime_arithmetic ... ok
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7185750Z B2-A5-LANGUAGE case=a5_errors backend=vm result=success
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7186160Z test a5_language_errors_remain_recoverable_and_observable ... ok
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7189300Z test a5_language_values_match_native_golden_outputs ... ignored, 需要本任务新Runtime与显式LLVM/平台链接器
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7189800Z test a5_portable_numeric_payloads_cannot_bypass_admission ... ok
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7190240Z test a5_preserves_existing_function_type_boundaries ... ok
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7190620Z test a5_static_invalid_numeric_combinations_remain_rejected ... ok
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7191070Z test a5_encoded_numeric_matrix_matches_all_existing_carriers ... ok
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7191440Z B2-A5-LANGUAGE case=a5_matrix backend=vm result=success
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7191890Z test a5_complete_numeric_language_matrix_matches_independent_golden ... ok
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7192350Z B2-A5-LANGUAGE case=a5_carriers backend=vm result=success
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7193030Z test a5_language_carriers_preserve_numeric_types_and_values ... ok
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7193250Z 
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7193350Z failures:
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7193480Z 
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7193600Z failures:
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7193840Z     a5_complete_vm_entry_covers_resources_and_portable_replay
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7194200Z     a5_conversion_language_preserves_values_and_promotion
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7194590Z     a5_decimal_language_preserves_frozen_scales
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7194810Z 
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7195090Z test result: FAILED. 9 passed; 3 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.16s
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7195370Z 
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7195610Z error: test failed, to rerun pass `-p xiao-driver --test 20o_b2_a_contract`
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7195900Z 
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7196090Z vm退出101
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7196330Z B6-1-MACOS vm pid=2499 exit=101 passed=False
+B6-1 macOS resources	Run the B6-1 suite	2026-11-18T05:13:42.7261060Z ##[error]Process completed with exit code 1.

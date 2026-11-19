@@ -1,0 +1,24 @@
+{
+  "generated_from_actual_bytes": true,
+  "generator": "self_negative.py --record",
+  "source_manifest_commit": "b74d5ed3e1308a5c3177b30edfd1a457684ba1e6",
+  "file_count_excluding_manifest": 4,
+  "files": {
+    ".gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "negative-cases.json": {
+      "bytes": 9658,
+      "sha256": "8b39495d89f9dd4f3bfee97d9a574edec148c57911c5d4c4daae017dba1e1337"
+    },
+    "README.md": {
+      "bytes": 1698,
+      "sha256": "59cd1e1391e08ad0ee23df61edfe3ae1ee384e2b7e6effc92fc6e7a7af35f670"
+    },
+    "self_negative.py": {
+      "bytes": 8006,
+      "sha256": "1c5b17d70bc92d89026797196a0e47afd0f4692ca0386ec90e12da6da5ee8a4c"
+    }
+  }
+}

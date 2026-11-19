@@ -1,0 +1,584 @@
+{
+  "passed": true,
+  "stage": "B4-4",
+  "b4_4_closed": true,
+  "b4_closed": false,
+  "language_available": false,
+  "dual_path_internal_executable": true,
+  "cmath": "planned",
+  "runtime_abi": "1.18",
+  "codegen_version": 21,
+  "stdlib_interface": 1,
+  "baseline_commit": "c93f74654c5a956bd9dfbe2083b28dbbe6b52d6a",
+  "product_commit": "bb0b8196479e90d28d676f1bdefd04403e4ba6eb",
+  "final_docs_commit": "95751878e8b7c0223c4fa9e3a8e4453811805d2e",
+  "product_files": 1064,
+  "changed_product_paths": [
+    "core/rust/crates/xiao-driver/README.md",
+    "core/rust/crates/xiao-driver/src/README.md",
+    "core/rust/crates/xiao-driver/src/archive_closure.rs",
+    "core/rust/crates/xiao-driver/src/archive_run.rs",
+    "core/rust/crates/xiao-driver/src/lib.rs",
+    "core/rust/crates/xiao-driver/src/module_loader.rs",
+    "core/rust/crates/xiao-driver/src/protocol/run.rs",
+    "core/rust/crates/xiao-driver/tests/20o_b2_b3_wrapper.rs",
+    "core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_boundary.rs",
+    "core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_library.rs",
+    "core/rust/crates/xiao-driver/tests/22c_vm_concurrency.rs",
+    "core/rust/crates/xiao-driver/tests/README.md",
+    "core/rust/crates/xiao-driver/tests/support/b4_cmath_library_native.rs",
+    "core/rust/crates/xiao-xar/README.md",
+    "core/rust/crates/xiao-xar/src/runner.rs",
+    "docs/UseDocs/library/README.md",
+    "docs/UseDocs/library/cmath.md",
+    "stdlib/README.md",
+    "stdlib/cmath.md",
+    "tests/fixtures/docs/cmath/README.md",
+    "tests/fixtures/docs/numeric/README.md",
+    "tests/fixtures/docs/numeric/cmath-library.stdout",
+    "tests/fixtures/docs/numeric/cmath-library.xiao"
+  ],
+  "runtime": {
+    "path": "D:\\project\\Xiao\\.b4-4\\20261115\\fixed-verified\\target\\release\\xiao_runtime.lib",
+    "exists": true,
+    "bytes": 27482962,
+    "sha256": "27b460d2fde00c0e36f2799474e3a21310d5555530cbc8d7694caf6df220702d"
+  },
+  "artifacts": {
+    "xiaoc": 4,
+    "xar": 4,
+    "llvm_ir": 4,
+    "native_executable_hashes": 4
+  },
+  "regressions": {
+    "20o_b2_b4_cmath_library": [
+      5,
+      1
+    ],
+    "20o_b2_b4_cmath_llvm": [
+      4,
+      1
+    ],
+    "20o_b2_b4_cmath_vm": [
+      7,
+      0
+    ],
+    "20o_b2_b4_frontend": [
+      3,
+      0
+    ],
+    "20o_b2_b4_cmath_boundary": [
+      4,
+      0
+    ],
+    "20o_b2_b3_wrapper": [
+      8,
+      0
+    ],
+    "20o_b2_b2_divide": [
+      2,
+      1
+    ],
+    "20o_b2_a1_identity": [
+      1,
+      1
+    ],
+    "20o_b2_a_contract": [
+      12,
+      1
+    ],
+    "20o_b2_a_resources": [
+      8,
+      0
+    ],
+    "22c_vm_concurrency": [
+      29,
+      0
+    ]
+  },
+  "core_test_targets": {
+    "xiao_bytecode": [
+      33,
+      0
+    ],
+    "xiaoc_check": [
+      0,
+      0
+    ],
+    "b0_a_api": [
+      1,
+      0
+    ],
+    "b4_cmath_tac": [
+      2,
+      0
+    ],
+    "fuzz_xiaoc": [
+      2,
+      0
+    ],
+    "r2_tac": [
+      27,
+      0
+    ],
+    "xiao_codegen_llvm": [
+      56,
+      0
+    ],
+    "15e_ci_gated": [
+      0,
+      5
+    ],
+    "n0_a": [
+      16,
+      7
+    ],
+    "n0_b_dynamic": [
+      27,
+      1
+    ],
+    "n0_c_errors": [
+      4,
+      2
+    ],
+    "stdlib_bindings": [
+      4,
+      0
+    ],
+    "xiao_intrinsics": [
+      8,
+      0
+    ],
+    "xiao_runtime": [
+      272,
+      0
+    ],
+    "b06_runtime": [
+      9,
+      0
+    ],
+    "b1_string_bridge": [
+      1,
+      0
+    ],
+    "b2_a1_identity_allocations": [
+      1,
+      0
+    ],
+    "n0_c2_error_boundary": [
+      1,
+      1
+    ],
+    "r2a_containers": [
+      17,
+      0
+    ],
+    "xiao_vm": [
+      35,
+      0
+    ],
+    "b0_b_production": [
+      9,
+      0
+    ],
+    "b0_e_checkpoint_performance": [
+      1,
+      0
+    ],
+    "r2_iteration_values": [
+      2,
+      0
+    ],
+    "r2_selector_values": [
+      7,
+      0
+    ],
+    "r2_set_values": [
+      6,
+      0
+    ],
+    "r2_stack": [
+      55,
+      0
+    ],
+    "r2_table_values": [
+      13,
+      0
+    ],
+    "r2_vectors": [
+      8,
+      0
+    ],
+    "xiao_xar": [
+      23,
+      0
+    ],
+    "fuzz_archive": [
+      2,
+      0
+    ],
+    "xiao_bytecode:doc": [
+      0,
+      0
+    ],
+    "xiao_codegen_llvm:doc": [
+      0,
+      0
+    ],
+    "xiao_intrinsics:doc": [
+      0,
+      0
+    ],
+    "xiao_runtime:doc": [
+      4,
+      0
+    ],
+    "xiao_vm:doc": [
+      0,
+      0
+    ],
+    "xiao_xar:doc": [
+      0,
+      0
+    ]
+  },
+  "historical_audits": [
+    "b0",
+    "b1",
+    "b2",
+    "b3",
+    "b3-cabi",
+    "b3-wrapper",
+    "b4-0-1",
+    "b4-2b",
+    "b4-3",
+    "fix1"
+  ],
+  "native_module_values": "existing unsupported boundary retained; selected imports tested",
+  "platforms_executed": [
+    "Windows x86_64-pc-windows-msvc"
+  ],
+  "not_executed": [
+    "Linux",
+    "macOS",
+    "remote CI",
+    "performance budget",
+    "B1 721 F10"
+  ],
+  "next_stage": "B4-5 (not started)",
+  "capture_interruption": "retained; no PID/time receipt; excluded",
+  "runs": {
+    "baseline/entry": {
+      "pid": 20892,
+      "exit_code": 0,
+      "log_sha256": "66e31c1db30860f5d34e41e3abb2134f43f05f1b68ab031885fb529d151ca105",
+      "docs_commit": "9effdb5461ea58a677c871a594122422da8767e5"
+    },
+    "docs-final/final-docs": {
+      "pid": 70632,
+      "exit_code": 0,
+      "log_sha256": "e7193d9195389a58de1ed44284b6daa0f6951a2c3ac020755e61dadcd5593727",
+      "docs_commit": "2080ab424b4b8c71a97ec8acd380a0eccff5df69"
+    },
+    "docs-final/final-docs-confirmed": {
+      "pid": 70048,
+      "exit_code": 0,
+      "log_sha256": "e7193d9195389a58de1ed44284b6daa0f6951a2c3ac020755e61dadcd5593727",
+      "docs_commit": "95751878e8b7c0223c4fa9e3a8e4453811805d2e"
+    },
+    "fixed/native-library": {
+      "pid": 42888,
+      "exit_code": 101,
+      "log_sha256": "c0422fbe81037fbf7dde43e81865247e979f1ec0e3168de8b4403db3837e5e03",
+      "docs_commit": "e2f2422224c59a454e0a9a227d49f1ecd3e183ab"
+    },
+    "fixed/runtime-build": {
+      "pid": 16624,
+      "exit_code": 0,
+      "log_sha256": "c03ec90cc75633f361a97d5bff26a27afada7de5752f9b8dd1c96648cc3392c4",
+      "docs_commit": "e2f2422224c59a454e0a9a227d49f1ecd3e183ab"
+    },
+    "fixed-final/artifacts": {
+      "pid": 69820,
+      "exit_code": 0,
+      "log_sha256": "99b5a91ad301895d28d354998819580b9ccee1d84e22112e8b4024e053cb5a16",
+      "docs_commit": "a112493449a98da80b0f278c70094ee17655ec56"
+    },
+    "fixed-final/audit-b0": {
+      "pid": 45956,
+      "exit_code": 0,
+      "log_sha256": "d5c48c8cb10b2b0bbc0ac529b188eb3816ea382af97e50b4fc75b22696c0d9aa",
+      "docs_commit": "a112493449a98da80b0f278c70094ee17655ec56"
+    },
+    "fixed-final/audit-b1": {
+      "pid": 45748,
+      "exit_code": 0,
+      "log_sha256": "444688deca25c129ebc8c01884229068766105e2d746c6eb16d3318a10ff96a6",
+      "docs_commit": "a112493449a98da80b0f278c70094ee17655ec56"
+    },
+    "fixed-final/audit-b2": {
+      "pid": 49948,
+      "exit_code": 0,
+      "log_sha256": "c208d2433857c833e0ab19552fee06fcd4d5f2b9bfbf3cc300eb9ca3bbfa057a",
+      "docs_commit": "a112493449a98da80b0f278c70094ee17655ec56"
+    },
+    "fixed-final/audit-b3": {
+      "pid": 45816,
+      "exit_code": 0,
+      "log_sha256": "8c0600bc48ba55ae300cc16296a5e940c9c1b448942d3b0ca506d7b46f10a12a",
+      "docs_commit": "a112493449a98da80b0f278c70094ee17655ec56"
+    },
+    "fixed-final/audit-b3-cabi": {
+      "pid": 41032,
+      "exit_code": 0,
+      "log_sha256": "42419cd9935a8f78f2795dbd0450c62bb3fd8d3b29a1b2f88a43a97e3e173ec3",
+      "docs_commit": "a112493449a98da80b0f278c70094ee17655ec56"
+    },
+    "fixed-final/audit-b3-wrapper": {
+      "pid": 71820,
+      "exit_code": 0,
+      "log_sha256": "547d9e8ab8b0915ac06ac6c0a126b1f79a7ccc5a42cf916d0c754e4a828cc5cd",
+      "docs_commit": "a112493449a98da80b0f278c70094ee17655ec56"
+    },
+    "fixed-final/audit-b4-0-1": {
+      "pid": 45256,
+      "exit_code": 0,
+      "log_sha256": "3a2b125314bdb0908b9ec2bd3c68e6b300f7658126abfbeda60f1b3f066ff657",
+      "docs_commit": "a112493449a98da80b0f278c70094ee17655ec56"
+    },
+    "fixed-final/audit-b4-2b": {
+      "pid": 23344,
+      "exit_code": 0,
+      "log_sha256": "bf36fa5161a917e8c0a8708702f34452775eaf3f98365acccf4ddd117958725c",
+      "docs_commit": "a112493449a98da80b0f278c70094ee17655ec56"
+    },
+    "fixed-final/audit-b4-3": {
+      "pid": 29472,
+      "exit_code": 0,
+      "log_sha256": "77d4628301541cc5bf541e11f1f497fd2085b95af8ca554c94e41a0cc8eea389",
+      "docs_commit": "a112493449a98da80b0f278c70094ee17655ec56"
+    },
+    "fixed-final/audit-fix1": {
+      "pid": 38240,
+      "exit_code": 0,
+      "log_sha256": "24b35148ac4d96f08a5ab5f08b192c05f43bba17c08b59caa9d2b8900723a451",
+      "docs_commit": "a112493449a98da80b0f278c70094ee17655ec56"
+    },
+    "fixed-final/b1-native": {
+      "pid": 15556,
+      "exit_code": 0,
+      "log_sha256": "b4e6dcd7b932dddc572536fd7ab2b61da7056b008c1d5c1fad021603f9252f84",
+      "docs_commit": "eb65a3b607e046656e7943e49e6e9c70f3007f3f"
+    },
+    "fixed-final/b1-vm": {
+      "pid": 30980,
+      "exit_code": 0,
+      "log_sha256": "96ba5924225b8c8c1c7a53b3233aea4e980436d716c7dcb5b8ee1a9bfbf144ee",
+      "docs_commit": "eb65a3b607e046656e7943e49e6e9c70f3007f3f"
+    },
+    "fixed-final/clippy": {
+      "pid": 29528,
+      "exit_code": 0,
+      "log_sha256": "6b325309702d6e7254a9c6b8f29a014ae185052fc975dcf1be5830cf5083b7ea",
+      "docs_commit": "eb65a3b607e046656e7943e49e6e9c70f3007f3f"
+    },
+    "fixed-final/collector": {
+      "pid": 51480,
+      "exit_code": 0,
+      "log_sha256": "64ceba708aa7d0eae6d91e8aaa8f5c8b3cd03d2c621c92c0d7b061faf7eb577d",
+      "docs_commit": "eb65a3b607e046656e7943e49e6e9c70f3007f3f"
+    },
+    "fixed-final/core-tests": {
+      "pid": 53824,
+      "exit_code": 0,
+      "log_sha256": "5fc619ee12d6a50c9f790bef47aaf657bf5344ba8f0b946cf615cad2557089ba",
+      "docs_commit": "eb65a3b607e046656e7943e49e6e9c70f3007f3f"
+    },
+    "fixed-final/driver-unit": {
+      "pid": 57084,
+      "exit_code": 0,
+      "log_sha256": "1d0bdc06eae87bf64caf4d36547238ffe5ab6025f4fc8987235c35019900e127",
+      "docs_commit": "eb65a3b607e046656e7943e49e6e9c70f3007f3f"
+    },
+    "fixed-final/final-docs": {
+      "pid": 60524,
+      "exit_code": 1,
+      "log_sha256": "353e7546da58464374a4509f14e8f1a50329372d59baffb6f0290e8abab0326f",
+      "docs_commit": "8cb08bab0a57f91174487a5747e9937667ec3731"
+    },
+    "fixed-final/fmt": {
+      "pid": 55368,
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "docs_commit": "eb65a3b607e046656e7943e49e6e9c70f3007f3f"
+    },
+    "fixed-final/native-library": {
+      "pid": 51100,
+      "exit_code": 0,
+      "log_sha256": "6c7a70e55e4b733c2db71b0f7bb7fa9b3e00386e9cb63fa19d14cee25a7ee65c",
+      "docs_commit": "eb65a3b607e046656e7943e49e6e9c70f3007f3f"
+    },
+    "fixed-final/native-matrix": {
+      "pid": 69700,
+      "exit_code": 0,
+      "log_sha256": "38370b7d1885305d83d51656affcc91811e2e9e6b8c624153b7a6ae834c6103a",
+      "docs_commit": "eb65a3b607e046656e7943e49e6e9c70f3007f3f"
+    },
+    "fixed-final/regressions": {
+      "pid": 38696,
+      "exit_code": 0,
+      "log_sha256": "6d71dc638cb29863281c912c40747c44a9655f1e0a17e11bf5278e6480202f5f",
+      "docs_commit": "eb65a3b607e046656e7943e49e6e9c70f3007f3f"
+    },
+    "fixed-final/runtime-build": {
+      "pid": 65152,
+      "exit_code": 0,
+      "log_sha256": "374b71c939b895607a5e6449d291a997fb0ffda2b49be6710715b8b0dca5c044",
+      "docs_commit": "eb65a3b607e046656e7943e49e6e9c70f3007f3f"
+    },
+    "fixed-final/toolchain": {
+      "pid": 72628,
+      "exit_code": 0,
+      "log_sha256": "854c95e9b9d95763338e70f15abc1226a054f6d1df33265369311f00347d2951",
+      "docs_commit": "eb65a3b607e046656e7943e49e6e9c70f3007f3f"
+    },
+    "fixed-verified/artifacts": {
+      "pid": 52036,
+      "exit_code": 0,
+      "log_sha256": "c15d0c207e6e91f95453165f6a236d94e32ba17350274d8d360a89e7af599206",
+      "docs_commit": "6dcec55fda5670834f062f2373c52800c9be6c66"
+    },
+    "fixed-verified/audit-b0": {
+      "pid": 6080,
+      "exit_code": 0,
+      "log_sha256": "d5c48c8cb10b2b0bbc0ac529b188eb3816ea382af97e50b4fc75b22696c0d9aa",
+      "docs_commit": "6dcec55fda5670834f062f2373c52800c9be6c66"
+    },
+    "fixed-verified/audit-b1": {
+      "pid": 64112,
+      "exit_code": 0,
+      "log_sha256": "444688deca25c129ebc8c01884229068766105e2d746c6eb16d3318a10ff96a6",
+      "docs_commit": "6dcec55fda5670834f062f2373c52800c9be6c66"
+    },
+    "fixed-verified/audit-b2": {
+      "pid": 51752,
+      "exit_code": 0,
+      "log_sha256": "c208d2433857c833e0ab19552fee06fcd4d5f2b9bfbf3cc300eb9ca3bbfa057a",
+      "docs_commit": "6dcec55fda5670834f062f2373c52800c9be6c66"
+    },
+    "fixed-verified/audit-b3": {
+      "pid": 4024,
+      "exit_code": 0,
+      "log_sha256": "8c0600bc48ba55ae300cc16296a5e940c9c1b448942d3b0ca506d7b46f10a12a",
+      "docs_commit": "6dcec55fda5670834f062f2373c52800c9be6c66"
+    },
+    "fixed-verified/audit-b3-cabi": {
+      "pid": 49768,
+      "exit_code": 0,
+      "log_sha256": "42419cd9935a8f78f2795dbd0450c62bb3fd8d3b29a1b2f88a43a97e3e173ec3",
+      "docs_commit": "6dcec55fda5670834f062f2373c52800c9be6c66"
+    },
+    "fixed-verified/audit-b3-wrapper": {
+      "pid": 55552,
+      "exit_code": 0,
+      "log_sha256": "547d9e8ab8b0915ac06ac6c0a126b1f79a7ccc5a42cf916d0c754e4a828cc5cd",
+      "docs_commit": "6dcec55fda5670834f062f2373c52800c9be6c66"
+    },
+    "fixed-verified/audit-b4-0-1": {
+      "pid": 56280,
+      "exit_code": 0,
+      "log_sha256": "3a2b125314bdb0908b9ec2bd3c68e6b300f7658126abfbeda60f1b3f066ff657",
+      "docs_commit": "6dcec55fda5670834f062f2373c52800c9be6c66"
+    },
+    "fixed-verified/audit-b4-2b": {
+      "pid": 70044,
+      "exit_code": 0,
+      "log_sha256": "bf36fa5161a917e8c0a8708702f34452775eaf3f98365acccf4ddd117958725c",
+      "docs_commit": "6dcec55fda5670834f062f2373c52800c9be6c66"
+    },
+    "fixed-verified/audit-b4-3": {
+      "pid": 56280,
+      "exit_code": 0,
+      "log_sha256": "77d4628301541cc5bf541e11f1f497fd2085b95af8ca554c94e41a0cc8eea389",
+      "docs_commit": "6dcec55fda5670834f062f2373c52800c9be6c66"
+    },
+    "fixed-verified/audit-fix1": {
+      "pid": 3992,
+      "exit_code": 0,
+      "log_sha256": "24b35148ac4d96f08a5ab5f08b192c05f43bba17c08b59caa9d2b8900723a451",
+      "docs_commit": "6dcec55fda5670834f062f2373c52800c9be6c66"
+    },
+    "fixed-verified/b1-native": {
+      "pid": 31924,
+      "exit_code": 0,
+      "log_sha256": "df25a63bcf8998ee0cf9cc33420afa2594cf1ced64ea2f609bf7570143d0baff",
+      "docs_commit": "e206a0755422f49be4d88662bdbeaf92a04ba445"
+    },
+    "fixed-verified/b1-vm": {
+      "pid": 44896,
+      "exit_code": 0,
+      "log_sha256": "bcfb2951231aa3ecf4f35a7841922f8fd0976b701ba79f40d5a9d168045b2811",
+      "docs_commit": "e206a0755422f49be4d88662bdbeaf92a04ba445"
+    },
+    "fixed-verified/clippy": {
+      "pid": 11168,
+      "exit_code": 0,
+      "log_sha256": "659a1325096c96dc3e877996e54f0663faeb62a5f82ca107dce0a06076e8cd24",
+      "docs_commit": "e206a0755422f49be4d88662bdbeaf92a04ba445"
+    },
+    "fixed-verified/collector": {
+      "pid": 63100,
+      "exit_code": 0,
+      "log_sha256": "64ceba708aa7d0eae6d91e8aaa8f5c8b3cd03d2c621c92c0d7b061faf7eb577d",
+      "docs_commit": "6dcec55fda5670834f062f2373c52800c9be6c66"
+    },
+    "fixed-verified/core-tests": {
+      "pid": 39516,
+      "exit_code": 0,
+      "log_sha256": "d63ca02e6989d51b26bd3d363234dbe1ea390930271d270480ca0d5baee03115",
+      "docs_commit": "cc6484f5ce8ef5bb4e640c8e72753a5adb1c3c36"
+    },
+    "fixed-verified/driver-unit": {
+      "pid": 43352,
+      "exit_code": 0,
+      "log_sha256": "43aabd693d85fe2d802b450916964a1907cd967b8224d31d4124e4070eea1c74",
+      "docs_commit": "cc6484f5ce8ef5bb4e640c8e72753a5adb1c3c36"
+    },
+    "fixed-verified/fmt": {
+      "pid": 67308,
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "docs_commit": "6dcec55fda5670834f062f2373c52800c9be6c66"
+    },
+    "fixed-verified/native-library": {
+      "pid": 54524,
+      "exit_code": 0,
+      "log_sha256": "683030d3b3ab6bd65873c878ab9fead7c8d088e66504155439341fc092f2eb8f",
+      "docs_commit": "f8475adf98fd3b203322f010146fe16fecbe13bb"
+    },
+    "fixed-verified/native-matrix": {
+      "pid": 57636,
+      "exit_code": 0,
+      "log_sha256": "1ace0785c5dc554f3d75b6e68e62d7c0d9b16b661d7222648f4392372b976f28",
+      "docs_commit": "cc6484f5ce8ef5bb4e640c8e72753a5adb1c3c36"
+    },
+    "fixed-verified/regressions": {
+      "pid": 21828,
+      "exit_code": 0,
+      "log_sha256": "2398b7f0755871e75448f6e7b3d73ad6aec8a521c0609b0342d1099a2c791005",
+      "docs_commit": "cc6484f5ce8ef5bb4e640c8e72753a5adb1c3c36"
+    },
+    "fixed-verified/runtime-build": {
+      "pid": 31024,
+      "exit_code": 0,
+      "log_sha256": "d1e886ae56b9db169d50bb11becb6fed62222c155bf2232bf0ebbf79228ede77",
+      "docs_commit": "f8475adf98fd3b203322f010146fe16fecbe13bb"
+    },
+    "fixed-verified/toolchain": {
+      "pid": 40280,
+      "exit_code": 0,
+      "log_sha256": "854c95e9b9d95763338e70f15abc1226a054f6d1df33265369311f00347d2951",
+      "docs_commit": "6dcec55fda5670834f062f2373c52800c9be6c66"
+    }
+  }
+}

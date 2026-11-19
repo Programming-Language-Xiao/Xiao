@@ -1,0 +1,19 @@
+{
+  "owner": "static LLVM Float comparison",
+  "preexisting_proven": true,
+  "old_source_commit": "cfa79381bbae027cec11136ca380e82f66720c34",
+  "old_receipt": "b4/static-float-equality-reproduction.json",
+  "old_receipt_sha256": "5bb2be05c1966c2dcffd7b4a5945eaac1d418b6eafc93ed70f56958faba3ef43",
+  "new_receipt": "current/numeric-range-verified.json",
+  "new_receipt_sha256": "8547d7e639f1edf0647dda8c5310588a4647bb025fce13d30085c42f34d38626",
+  "source": {
+    "path": "objects/sha256/38/382cc6a082b481d6389bcc3a3d2b897cc0f6b72c4558e6a45468561e3d2e4b45.bin",
+    "bytes": 78,
+    "sha256": "382cc6a082b481d6389bcc3a3d2b897cc0f6b72c4558e6a45468561e3d2e4b45",
+    "media_type": "text/plain"
+  },
+  "observed": "llvm-as rejects generated fcmp eq double",
+  "fixed_in_B5": false,
+  "discarded_attempt": "b4/known-static-float-equality.json: original host ignored optional source argument; not used as reproduction",
+  "numeric_scope": "float pow return observed with explicit C bit check; dynamic output checked; comparison semantics unchanged"
+}

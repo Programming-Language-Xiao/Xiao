@@ -1,0 +1,372 @@
+{
+  "stage": "B6-1-RERUN",
+  "rerun_completed": true,
+  "rerun_closed": true,
+  "stage_passed": false,
+  "b6_1_status": "restricted",
+  "linux_original_blocker_resolved": true,
+  "code_commit": "43f18274175ba09ac84e759999c40cde72eae1c5",
+  "runtime_abi": "1.19",
+  "codegen_version": 22,
+  "stdlib_interface_version": 1,
+  "source_files": 1076,
+  "platforms": {
+    "windows": {
+      "functional_status": "passed",
+      "export_integrity": "unverifiable",
+      "artifact_verification": "UnverifiedCoffExports",
+      "runtime": {
+        "path": "D:\\project\\Xiao\\.b6\\b6-1-rerun-20261118-01\\windows\\target\\release\\xiao_runtime.lib",
+        "bytes": 27483016,
+        "sha256": "fa493d79b129cf7fa600993605381830f6abeaab23ec0ea48c0a910554de0fff"
+      },
+      "runtime_tests": {
+        "targets": 7,
+        "passed": 305,
+        "failed": 0,
+        "ignored": 1
+      },
+      "formal_reference_cases": 17243,
+      "vm_resource_archive_tests": {
+        "targets": 8,
+        "passed": 42,
+        "failed": 0,
+        "ignored": 3
+      },
+      "a6_resource_tests": 8,
+      "codegen_tests": {
+        "targets": 7,
+        "passed": 109,
+        "failed": 0,
+        "ignored": 15
+      },
+      "extra_driver_tests": {
+        "targets": 2,
+        "passed": 17,
+        "failed": 0,
+        "ignored": 3
+      },
+      "native_wrapper_rows": [
+        {
+          "module": "std.cmath",
+          "optimization": 0,
+          "executable": "D:\\project\\Xiao\\.b6\\b6-1-rerun-20261118-01\\windows\\temp\\wrappers\\b4-4-library-10728-0\\std-o0.exe",
+          "verification": "UnverifiedCoffExports",
+          "declared": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "observed": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "stdout": "golden",
+          "errors": "009",
+          "result": "passed",
+          "executable_identity": {
+            "bytes": 1390080,
+            "path": "D:\\project\\Xiao\\.b6\\b6-1-rerun-20261118-01\\windows\\temp\\wrappers\\b4-4-library-10728-0\\std-o0.exe",
+            "sha256": "74cafbd4cd29fa31a44785e8591a2fb776cd0f8292d1f683b7c62804103615a5"
+          },
+          "cargo_pid": 72568
+        },
+        {
+          "module": "std.cmath",
+          "optimization": 3,
+          "executable": "D:\\project\\Xiao\\.b6\\b6-1-rerun-20261118-01\\windows\\temp\\wrappers\\b4-4-library-10728-0\\std-o3.exe",
+          "verification": "UnverifiedCoffExports",
+          "declared": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "observed": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "stdout": "golden",
+          "errors": "009",
+          "result": "passed",
+          "executable_identity": {
+            "bytes": 1369088,
+            "path": "D:\\project\\Xiao\\.b6\\b6-1-rerun-20261118-01\\windows\\temp\\wrappers\\b4-4-library-10728-0\\std-o3.exe",
+            "sha256": "d45228b2346231de85cbd3d9391d4a85c9408566f94a75da4dd1b6752256f254"
+          },
+          "cargo_pid": 72568
+        },
+        {
+          "module": "stdlib.cmath",
+          "optimization": 0,
+          "executable": "D:\\project\\Xiao\\.b6\\b6-1-rerun-20261118-01\\windows\\temp\\wrappers\\b4-4-library-10728-0\\stdlib-o0.exe",
+          "verification": "UnverifiedCoffExports",
+          "declared": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "observed": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "stdout": "golden",
+          "errors": "009",
+          "result": "passed",
+          "executable_identity": {
+            "bytes": 1390592,
+            "path": "D:\\project\\Xiao\\.b6\\b6-1-rerun-20261118-01\\windows\\temp\\wrappers\\b4-4-library-10728-0\\stdlib-o0.exe",
+            "sha256": "15b58dae4dbf0d773e3bfc0c03435c6c010187f5594cf8e0d04560eea9ba92a7"
+          },
+          "cargo_pid": 72568
+        },
+        {
+          "module": "stdlib.cmath",
+          "optimization": 3,
+          "executable": "D:\\project\\Xiao\\.b6\\b6-1-rerun-20261118-01\\windows\\temp\\wrappers\\b4-4-library-10728-0\\stdlib-o3.exe",
+          "verification": "UnverifiedCoffExports",
+          "declared": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "observed": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "stdout": "golden",
+          "errors": "009",
+          "result": "passed",
+          "executable_identity": {
+            "bytes": 1369088,
+            "path": "D:\\project\\Xiao\\.b6\\b6-1-rerun-20261118-01\\windows\\temp\\wrappers\\b4-4-library-10728-0\\stdlib-o3.exe",
+            "sha256": "e79e1a8fe4571fd8e3d78b6ee1b241e5d493858d0a798bd45a774d7500d8fad3"
+          },
+          "cargo_pid": 72568
+        }
+      ],
+      "native_core": "passed",
+      "native_errors_atomicity": "passed",
+      "native_explicit_divide": "passed",
+      "fmt": "passed",
+      "clippy": "passed",
+      "receipts": [
+        "windows-runtime-build.json",
+        "windows-wrappers.json",
+        "windows-runtime-tests.json",
+        "windows-vm-regressions.json",
+        "windows-codegen-tests.json",
+        "windows-driver-regressions.json",
+        "windows-native-core.json",
+        "windows-native-errors.json",
+        "windows-native-divide.json",
+        "windows-fmt.json",
+        "windows-clippy-r2.json"
+      ]
+    },
+    "linux": {
+      "functional_status": "passed",
+      "export_integrity": "passed",
+      "artifact_verification": "Complete",
+      "runtime": {
+        "path": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/target/release/libxiao_runtime.a",
+        "bytes": 34143188,
+        "sha256": "08b88569645eb45d7cc6fea793adbe91a459a174392a91d1b57497d22349ad89"
+      },
+      "runtime_tests": {
+        "targets": 7,
+        "passed": 305,
+        "failed": 0,
+        "ignored": 1
+      },
+      "formal_reference_cases": 17243,
+      "vm_resource_archive_tests": {
+        "targets": 8,
+        "passed": 43,
+        "failed": 0,
+        "ignored": 3
+      },
+      "a6_resource_tests": 8,
+      "codegen_tests": {
+        "targets": 7,
+        "passed": 109,
+        "failed": 0,
+        "ignored": 15
+      },
+      "extra_driver_tests": {
+        "targets": 2,
+        "passed": 17,
+        "failed": 0,
+        "ignored": 3
+      },
+      "native_wrapper_rows": [
+        {
+          "module": "std.cmath",
+          "optimization": 0,
+          "executable": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/temp/wrappers/b4-4-library-4507-0/std-o0",
+          "verification": "Complete",
+          "declared": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "observed": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "stdout": "golden",
+          "errors": "009",
+          "result": "passed",
+          "executable_identity": {
+            "bytes": 5625664,
+            "path": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/temp/wrappers/b4-4-library-4507-0/std-o0",
+            "sha256": "318899a1b282e4ee7bf919b620fe31a6c21486f120d0425dee803cbbcea8511f"
+          },
+          "cargo_pid": 2882
+        },
+        {
+          "module": "std.cmath",
+          "optimization": 3,
+          "executable": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/temp/wrappers/b4-4-library-4507-0/std-o3",
+          "verification": "Complete",
+          "declared": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "observed": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "stdout": "golden",
+          "errors": "009",
+          "result": "passed",
+          "executable_identity": {
+            "bytes": 5617472,
+            "path": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/temp/wrappers/b4-4-library-4507-0/std-o3",
+            "sha256": "b70fd160946440b2dd20525e0808945cf9b478bee01450598894abee7629c599"
+          },
+          "cargo_pid": 2882
+        },
+        {
+          "module": "stdlib.cmath",
+          "optimization": 0,
+          "executable": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/temp/wrappers/b4-4-library-4507-0/stdlib-o0",
+          "verification": "Complete",
+          "declared": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "observed": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "stdout": "golden",
+          "errors": "009",
+          "result": "passed",
+          "executable_identity": {
+            "bytes": 5625664,
+            "path": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/temp/wrappers/b4-4-library-4507-0/stdlib-o0",
+            "sha256": "d2bbee137d750d3901d400f65d432b7eec203124c46c4ff94eb6b4e0ee55f1d3"
+          },
+          "cargo_pid": 2882
+        },
+        {
+          "module": "stdlib.cmath",
+          "optimization": 3,
+          "executable": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/temp/wrappers/b4-4-library-4507-0/stdlib-o3",
+          "verification": "Complete",
+          "declared": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "observed": [
+            "containers",
+            "rc",
+            "value",
+            "weak"
+          ],
+          "stdout": "golden",
+          "errors": "009",
+          "result": "passed",
+          "executable_identity": {
+            "bytes": 5617472,
+            "path": "/home/xiaoczx/.b6/b6-1-rerun-20261118-01/temp/wrappers/b4-4-library-4507-0/stdlib-o3",
+            "sha256": "c404de8d988f43e1ec70a7b81cc6a1c52e83cd08b74562293cdcbd4428798310"
+          },
+          "cargo_pid": 2882
+        }
+      ],
+      "native_core": "passed",
+      "native_errors_atomicity": "passed",
+      "native_explicit_divide": "passed",
+      "fmt": "passed",
+      "clippy": "not_run: Rust1.96工具链未安装Clippy",
+      "receipts": [
+        "linux-runtime-build.json",
+        "linux-wrappers.json",
+        "linux-runtime-tests.json",
+        "linux-vm-regressions.json",
+        "linux-codegen-tests.json",
+        "linux-driver-regressions.json",
+        "linux-native-core.json",
+        "linux-native-errors.json",
+        "linux-native-divide.json",
+        "linux-fmt.json"
+      ]
+    }
+  },
+  "reference_fixture": {
+    "path": "tests/fixtures/docs/cmath/reference-vectors.tsv",
+    "bytes": 1755726,
+    "sha256": "0e61a2da361448477b15f5508df6d612a3f01e29a06e50699d6ed48a917d1ed3",
+    "binary": false,
+    "lf_sha256": "0e61a2da361448477b15f5508df6d612a3f01e29a06e50699d6ed48a917d1ed3"
+  },
+  "retained_clippy_failure": "windows-clippy.json; missing exported tests/spec; exit=101",
+  "compile_fixture_supplement": "supplemental-source.json; fixed Git original bytes",
+  "macos": {
+    "status": "unverifiable",
+    "reason": "无macOS主机或已配置远程Mac Runner"
+  },
+  "three_platform_passed": false,
+  "b6_closed": false,
+  "b6_2_started": false,
+  "b6_2_entry": {
+    "status": "restricted_windows_linux",
+    "requires_frozen_b6_protocol": true,
+    "macos_unverified": true,
+    "full_three_platform_gate_satisfied": false
+  },
+  "performance": "not_started",
+  "url_full_escaped_maximum_measured": false,
+  "remote_ci": "not_run",
+  "full_721": "not_run",
+  "b7_started": false,
+  "b2_c_started": false,
+  "historical_b6_1_status": "blocked; stage_passed=false; unchanged",
+  "historical_files": 952
+}

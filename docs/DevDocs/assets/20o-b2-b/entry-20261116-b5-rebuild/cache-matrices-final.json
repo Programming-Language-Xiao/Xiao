@@ -1,0 +1,211 @@
+{
+  "passed": true,
+  "scope": "production ArtifactStore/GlobalIndex/fingerprint; explicit probe orchestration",
+  "no_global_cache": true,
+  "rows": [
+    {
+      "group": "generator",
+      "step": "old",
+      "variant": "b1",
+      "receipt": "b1/cache-generator-verified-old.json",
+      "receipt_sha256": "38c3230946b53d3a84dbb9aa5074b811cd92332ff15ae03a023448240592065f",
+      "result": {
+        "abi": 65554,
+        "actual_codegen": 20,
+        "cache_hit": false,
+        "cache_scope": "production ArtifactStore/GlobalIndex with production Toolchain fingerprint; explicit probe orchestration",
+        "executable": "D:\\project\\Xiao\\.b5\\20261116\\sealed-cache-generator-verified\\old.exe",
+        "executed": true,
+        "fingerprint": "xiao-fnv1a64-7028f7c5cca0bd2d",
+        "index_path": "D:\\project\\Xiao\\.b5\\20261116\\sealed-cache-generator-verified\\global.index.pb",
+        "index_sha256": "d8722b4298557d6f46703163b7fd8849df0716d9ee26a36d37ffdeddd13f5cd1",
+        "input_sha256": "5a2d65f51df22d34c278a5e09300dc2bb8df67bcde66a700ffbf72e5aee684ef",
+        "library": "D:\\project\\Xiao\\.b5\\20261116\\b4\\target\\release\\xiao_runtime.lib",
+        "llvm_sha256": "224e95861a0ecfeb782df7300af333308fb79bb4eb54343a0272c56de4bfbe98",
+        "object_path": "D:\\project\\Xiao\\.b5\\20261116\\sealed-cache-generator-verified\\objects\\native\\sha256\\8c\\8c55b99b1f76273914b0ddeee1ca90514605ce30a8efabadb6e6f141fedd2863.bin",
+        "optimization": 0,
+        "optimization_plan": "xiao-llvm-fnv1a64-697e58cae659863c",
+        "previous": [],
+        "regenerated": true,
+        "request_key": "b5:5a2d65f51df22d34c278a5e09300dc2bb8df67bcde66a700ffbf72e5aee684ef:xiao-fnv1a64-7028f7c5cca0bd2d",
+        "requested_codegen": 20,
+        "runtime_sha256": "15d4afcfc07aec0ba1f5162549dd9ba31d265f741c30ed395165519d71e83e69",
+        "sha256": "8c55b99b1f76273914b0ddeee1ca90514605ce30a8efabadb6e6f141fedd2863"
+      },
+      "index_bytes": {
+        "path": "objects/sha256/d8/d8722b4298557d6f46703163b7fd8849df0716d9ee26a36d37ffdeddd13f5cd1.bin",
+        "bytes": 211,
+        "sha256": "d8722b4298557d6f46703163b7fd8849df0716d9ee26a36d37ffdeddd13f5cd1",
+        "media_type": "application/octet-stream"
+      },
+      "native_object": {
+        "path": "objects/sha256/8c/8c55b99b1f76273914b0ddeee1ca90514605ce30a8efabadb6e6f141fedd2863.bin",
+        "bytes": 2309120,
+        "sha256": "8c55b99b1f76273914b0ddeee1ca90514605ce30a8efabadb6e6f141fedd2863",
+        "media_type": "application/octet-stream"
+      },
+      "executable": {
+        "path": "objects/sha256/8c/8c55b99b1f76273914b0ddeee1ca90514605ce30a8efabadb6e6f141fedd2863.bin",
+        "bytes": 2309120,
+        "sha256": "8c55b99b1f76273914b0ddeee1ca90514605ce30a8efabadb6e6f141fedd2863",
+        "media_type": "application/octet-stream"
+      }
+    },
+    {
+      "group": "generator",
+      "step": "new",
+      "variant": "b4",
+      "receipt": "b4/cache-generator-verified-new.json",
+      "receipt_sha256": "9a60083285ab6f249036ed8939572fe540276eb724cd6df69c479e56ad7db94a",
+      "result": {
+        "abi": 65554,
+        "actual_codegen": 21,
+        "cache_hit": false,
+        "cache_scope": "production ArtifactStore/GlobalIndex with production Toolchain fingerprint; explicit probe orchestration",
+        "executable": "D:\\project\\Xiao\\.b5\\20261116\\sealed-cache-generator-verified\\new.exe",
+        "executed": true,
+        "fingerprint": "xiao-fnv1a64-3ae584022ac7d816",
+        "index_path": "D:\\project\\Xiao\\.b5\\20261116\\sealed-cache-generator-verified\\global.index.pb",
+        "index_sha256": "7a7dd39bb958c7a635c3ae091e2b3f230a0e994dde80a3ee1a6fe4f9f9fa2d05",
+        "input_sha256": "5a2d65f51df22d34c278a5e09300dc2bb8df67bcde66a700ffbf72e5aee684ef",
+        "library": "D:\\project\\Xiao\\.b5\\20261116\\b4\\target\\release\\xiao_runtime.lib",
+        "llvm_sha256": "96e649d78a3e9d90c833b719b9826d58ecff8ce14ea880538e0d9039bf0d97f7",
+        "object_path": "D:\\project\\Xiao\\.b5\\20261116\\sealed-cache-generator-verified\\objects\\native\\sha256\\8e\\8e73a999633e6fce64c5df8ef216b2e070b1545319dd5b0ffba3e117684b612e.bin",
+        "optimization": 0,
+        "optimization_plan": "xiao-llvm-fnv1a64-697e58cae659863c",
+        "previous": [
+          {
+            "codegen": 20,
+            "key": "b5:5a2d65f51df22d34c278a5e09300dc2bb8df67bcde66a700ffbf72e5aee684ef:xiao-fnv1a64-7028f7c5cca0bd2d",
+            "sha256": "8c55b99b1f76273914b0ddeee1ca90514605ce30a8efabadb6e6f141fedd2863"
+          }
+        ],
+        "regenerated": true,
+        "request_key": "b5:5a2d65f51df22d34c278a5e09300dc2bb8df67bcde66a700ffbf72e5aee684ef:xiao-fnv1a64-3ae584022ac7d816",
+        "requested_codegen": 21,
+        "runtime_sha256": "15d4afcfc07aec0ba1f5162549dd9ba31d265f741c30ed395165519d71e83e69",
+        "sha256": "8e73a999633e6fce64c5df8ef216b2e070b1545319dd5b0ffba3e117684b612e"
+      },
+      "index_bytes": {
+        "path": "objects/sha256/7a/7a7dd39bb958c7a635c3ae091e2b3f230a0e994dde80a3ee1a6fe4f9f9fa2d05.bin",
+        "bytes": 413,
+        "sha256": "7a7dd39bb958c7a635c3ae091e2b3f230a0e994dde80a3ee1a6fe4f9f9fa2d05",
+        "media_type": "application/octet-stream"
+      },
+      "native_object": {
+        "path": "objects/sha256/8e/8e73a999633e6fce64c5df8ef216b2e070b1545319dd5b0ffba3e117684b612e.bin",
+        "bytes": 1061888,
+        "sha256": "8e73a999633e6fce64c5df8ef216b2e070b1545319dd5b0ffba3e117684b612e",
+        "media_type": "application/octet-stream"
+      },
+      "executable": {
+        "path": "objects/sha256/8e/8e73a999633e6fce64c5df8ef216b2e070b1545319dd5b0ffba3e117684b612e.bin",
+        "bytes": 1061888,
+        "sha256": "8e73a999633e6fce64c5df8ef216b2e070b1545319dd5b0ffba3e117684b612e",
+        "media_type": "application/octet-stream"
+      }
+    },
+    {
+      "group": "abi",
+      "step": "old",
+      "variant": "b4",
+      "receipt": "b4/cache-abi-verified-old.json",
+      "receipt_sha256": "4d12361cb11fa86c8dd80bb879747e749a886e1d326795a8ed465ad46cf57e12",
+      "result": {
+        "abi": 65554,
+        "actual_codegen": 21,
+        "cache_hit": false,
+        "cache_scope": "production ArtifactStore/GlobalIndex with production Toolchain fingerprint; explicit probe orchestration",
+        "executable": "D:\\project\\Xiao\\.b5\\20261116\\sealed-cache-abi-verified\\old.exe",
+        "executed": true,
+        "fingerprint": "xiao-fnv1a64-3ae584022ac7d816",
+        "index_path": "D:\\project\\Xiao\\.b5\\20261116\\sealed-cache-abi-verified\\global.index.pb",
+        "index_sha256": "d6e9a5b6497759ee6f454bb275b7bdd090c5e2f9a26d1dbf26e02e3082b15402",
+        "input_sha256": "5a2d65f51df22d34c278a5e09300dc2bb8df67bcde66a700ffbf72e5aee684ef",
+        "library": "D:\\project\\Xiao\\.b5\\20261116\\b4\\target\\release\\xiao_runtime.lib",
+        "llvm_sha256": "96e649d78a3e9d90c833b719b9826d58ecff8ce14ea880538e0d9039bf0d97f7",
+        "object_path": "D:\\project\\Xiao\\.b5\\20261116\\sealed-cache-abi-verified\\objects\\native\\sha256\\95\\9506f90b993bb0f27f39ac22002b617f5aef572d258a28e5ea79d6045aa6c5d8.bin",
+        "optimization": 0,
+        "optimization_plan": "xiao-llvm-fnv1a64-697e58cae659863c",
+        "previous": [],
+        "regenerated": true,
+        "request_key": "b5:5a2d65f51df22d34c278a5e09300dc2bb8df67bcde66a700ffbf72e5aee684ef:xiao-fnv1a64-3ae584022ac7d816",
+        "requested_codegen": 21,
+        "runtime_sha256": "15d4afcfc07aec0ba1f5162549dd9ba31d265f741c30ed395165519d71e83e69",
+        "sha256": "9506f90b993bb0f27f39ac22002b617f5aef572d258a28e5ea79d6045aa6c5d8"
+      },
+      "index_bytes": {
+        "path": "objects/sha256/d6/d6e9a5b6497759ee6f454bb275b7bdd090c5e2f9a26d1dbf26e02e3082b15402.bin",
+        "bytes": 210,
+        "sha256": "d6e9a5b6497759ee6f454bb275b7bdd090c5e2f9a26d1dbf26e02e3082b15402",
+        "media_type": "application/octet-stream"
+      },
+      "native_object": {
+        "path": "objects/sha256/95/9506f90b993bb0f27f39ac22002b617f5aef572d258a28e5ea79d6045aa6c5d8.bin",
+        "bytes": 1061888,
+        "sha256": "9506f90b993bb0f27f39ac22002b617f5aef572d258a28e5ea79d6045aa6c5d8",
+        "media_type": "application/octet-stream"
+      },
+      "executable": {
+        "path": "objects/sha256/95/9506f90b993bb0f27f39ac22002b617f5aef572d258a28e5ea79d6045aa6c5d8.bin",
+        "bytes": 1061888,
+        "sha256": "9506f90b993bb0f27f39ac22002b617f5aef572d258a28e5ea79d6045aa6c5d8",
+        "media_type": "application/octet-stream"
+      }
+    },
+    {
+      "group": "abi",
+      "step": "new",
+      "variant": "final3",
+      "receipt": "final3/cache-abi-verified-new.json",
+      "receipt_sha256": "a69aa0bb6c1e5cf5fc1a50fb926aa245a9425f6017cfb5d8e80bdd4cd351b27b",
+      "result": {
+        "abi": 65555,
+        "actual_codegen": 21,
+        "cache_hit": false,
+        "cache_scope": "production ArtifactStore/GlobalIndex with production Toolchain fingerprint; explicit probe orchestration",
+        "executable": "D:\\project\\Xiao\\.b5\\20261116\\sealed-cache-abi-verified\\new.exe",
+        "executed": true,
+        "fingerprint": "xiao-fnv1a64-e055149c5f3b7e2a",
+        "index_path": "D:\\project\\Xiao\\.b5\\20261116\\sealed-cache-abi-verified\\global.index.pb",
+        "index_sha256": "7f725357fc5f911d303b877eb99ac6a559b21a621719cce2909d604e70735919",
+        "input_sha256": "5a2d65f51df22d34c278a5e09300dc2bb8df67bcde66a700ffbf72e5aee684ef",
+        "library": "D:\\project\\Xiao\\.b5\\20261116\\current\\target\\release\\xiao_runtime.lib",
+        "llvm_sha256": "259a2c2b3624109f6daf72783f1e566b077b726e5302011437653f72be214b46",
+        "object_path": "D:\\project\\Xiao\\.b5\\20261116\\sealed-cache-abi-verified\\objects\\native\\sha256\\7f\\7fd716ca6627bd38bc72f93f43f11866d0f01d4e01228e00c57bc8c76a5be116.bin",
+        "optimization": 0,
+        "optimization_plan": "xiao-llvm-fnv1a64-697e58cae659863c",
+        "previous": [
+          {
+            "codegen": 21,
+            "key": "b5:5a2d65f51df22d34c278a5e09300dc2bb8df67bcde66a700ffbf72e5aee684ef:xiao-fnv1a64-3ae584022ac7d816",
+            "sha256": "9506f90b993bb0f27f39ac22002b617f5aef572d258a28e5ea79d6045aa6c5d8"
+          }
+        ],
+        "regenerated": true,
+        "request_key": "b5:5a2d65f51df22d34c278a5e09300dc2bb8df67bcde66a700ffbf72e5aee684ef:xiao-fnv1a64-e055149c5f3b7e2a",
+        "requested_codegen": 21,
+        "runtime_sha256": "3bcc6081c6a85db867987c9d42ad1abeb0bc3801a6654e4442ef65e1af0697c5",
+        "sha256": "7fd716ca6627bd38bc72f93f43f11866d0f01d4e01228e00c57bc8c76a5be116"
+      },
+      "index_bytes": {
+        "path": "objects/sha256/7f/7f725357fc5f911d303b877eb99ac6a559b21a621719cce2909d604e70735919.bin",
+        "bytes": 412,
+        "sha256": "7f725357fc5f911d303b877eb99ac6a559b21a621719cce2909d604e70735919",
+        "media_type": "application/octet-stream"
+      },
+      "native_object": {
+        "path": "objects/sha256/7f/7fd716ca6627bd38bc72f93f43f11866d0f01d4e01228e00c57bc8c76a5be116.bin",
+        "bytes": 1061888,
+        "sha256": "7fd716ca6627bd38bc72f93f43f11866d0f01d4e01228e00c57bc8c76a5be116",
+        "media_type": "application/octet-stream"
+      },
+      "executable": {
+        "path": "objects/sha256/7f/7fd716ca6627bd38bc72f93f43f11866d0f01d4e01228e00c57bc8c76a5be116.bin",
+        "bytes": 1061888,
+        "sha256": "7fd716ca6627bd38bc72f93f43f11866d0f01d4e01228e00c57bc8c76a5be116",
+        "media_type": "application/octet-stream"
+      }
+    }
+  ]
+}

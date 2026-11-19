@@ -4,6 +4,7 @@
 > 入口为 B3-3 代码 `89d782e1`、B3-4 包装提交 `6ddc0c35`、802/可达性修复 `ea9e33ba`/`7d8b85e4`，以及修复证据。
 > B3-4 只收口“planned 源码包装 + 隔离修复”，不是 `std.cmath` 语言可用；类型/IR/TAC/VM/LLVM 仍留 B4。
 > `stdlib.cmath` registry 仍 planned；不升 ABI 1.19/21，不跑旧 721。
+> 2026-11-12 归属加注：FIX1 直接复跑本页固定 `7d8b85e4` 的 22c 为 29/29；B4-1 `c7a45e10` 为 27/29，回归由后者类型接入后失去隐式拒绝引入。`c4610211` 已恢复 29/29，见[归属与修复记录](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)。本页原收口仅证明 B3-4 固定快照，历史文件未改写。
 
 ## 一、入口与范围
 
@@ -19,7 +20,7 @@
 
 B3-4 收口只确认“包装源码、planned 边界和隔离修复可复核”，不能写成 `std.cmath` 可执行、B3 整批完成或 B2-C 发布。
 
-本机收口结果绑定固定代码 `7d8b85e4`：wrapper 8/0、并发 29/0、LLVM 56 单测和4项标准库绑定回归、archive wiring 11/0、Rust workspace测试、Clippy、fmt、锁与仓库文档门禁通过；B1 18/18、B2 14项/4个精确目标及B3-CABI 22项为固定历史审计。完整命令和原始日志见[收口证据](assets/20o-b2-b/entry-20261110-b3-wrapper-final/README.md)。审计不要求当前HEAD等于产品提交，但校验其为HEAD祖先且受保护产品树未变。
+本机收口结果绑定固定代码 `7d8b85e4`：wrapper 8/0、并发 29/0、LLVM 56 单测和4项标准库绑定回归、archive wiring 11/0、Rust workspace测试、Clippy、fmt、锁与仓库文档门禁通过；B1 18/18、B2 14项/4个精确目标及B3-CABI 22项为固定历史审计。完整命令和原始日志见[收口证据](assets/20o-b2-b/entry-20261110-b3-wrapper-final/README.md)。审计只读固定 Git tree/blob，不要求当前 HEAD 或当前工作树保持旧快照。
 
 ### 1.1 要交付
 
@@ -125,7 +126,7 @@ B3-4 收口只确认“包装源码、planned 边界和隔离修复可复核”�
 4. registry/UseDocs/stdlib README 仍 planned；
 5. 无 intrinsic 34～48 语言绑定、C ABI/VM/LLVM 改动；
 6. ABI 1.18/生成器 20/接口 1/1～48/ID 100 未变；
-7. 旧 721 未运行；历史债务未核销；B4 未开始；
+7. 旧 721 未运行；历史债务未核销；本页 B3-4 退出时 B4 未开始；后续 B4 状态见[FIX1 归属记录](assets/20o-b2-b/entry-20261112-b4-2a-fix1/README.md)；
 8. B4 向量迁移/双路径清单已交接。
 
 ## 六、风险与禁止

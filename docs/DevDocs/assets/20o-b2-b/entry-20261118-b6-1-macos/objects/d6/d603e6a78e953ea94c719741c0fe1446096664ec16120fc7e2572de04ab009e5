@@ -1,0 +1,19 @@
+   Compiling xiao-driver v0.1.0 (/Users/runner/work/_temp/xiao-b6-1-0npan8rg/source/core/rust/crates/xiao-driver)
+    Finished `release` profile [optimized] target(s) in 2.35s
+     Running tests/20o_b2_b4_cmath_llvm.rs (/Users/runner/work/_temp/xiao-b6-1-0npan8rg/target/release/deps/20o_b2_b4_cmath_llvm-414d505522a5c153)
+
+running 1 test
+
+thread 'native_cmath_static_dynamic_o0_o3_and_shared_pow' (24339) panicked at crates/xiao-driver/tests/support/b4_cmath_native.rs:341:18:
+called `Result::unwrap()` on an `Err` value: ToolchainFailed { tool: "clang", status: Some(1), stderr: "ld: warning: ignoring duplicate libraries: '-lSystem'\nUndefined symbols for architecture arm64:\n  \"xiao_fn_0_probe0\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_10_probe10\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_11_probe11\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_12_probe12\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_13_probe13\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_14_probe14\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_15_probe15\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_1_probe1\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_2_probe2\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_3_probe3\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_4_probe4\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_5_probe5\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_6_probe6\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_7_probe7\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_8_probe8\", referenced from:\n      _invoke in harness-false.obj\n  \"xiao_fn_9_probe9\", referenced from:\n      _invoke in harness-false.obj\nld: symbol(s) not found for architecture arm64\nclang-21: error: linker command failed with exit code 1 (use -v to see invocation)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test native_cmath_static_dynamic_o0_o3_and_shared_pow ... FAILED
+
+failures:
+
+failures:
+    native_cmath_static_dynamic_o0_o3_and_shared_pow
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.64s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b2_b4_cmath_llvm`

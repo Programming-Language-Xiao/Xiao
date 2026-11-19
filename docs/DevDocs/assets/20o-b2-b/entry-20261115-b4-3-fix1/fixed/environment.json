@@ -1,0 +1,26 @@
+{
+  "task_root": "D:\\project\\Xiao\\.b4-3-fix1\\20261116\\fixed",
+  "source_root": "D:\\project\\Xiao\\Xiao",
+  "removed_environment_prefixes": [
+    "XIAO_",
+    "RUST_BIGDECIMAL_"
+  ],
+  "overrides": {
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.b4-3-fix1\\20261116\\fixed\\target",
+    "XIAO_HOME": "D:\\project\\Xiao\\.b4-3-fix1\\20261116\\fixed\\home",
+    "TEMP": "D:\\project\\Xiao\\.b4-3-fix1\\20261116\\fixed\\temp",
+    "TMP": "D:\\project\\Xiao\\.b4-3-fix1\\20261116\\fixed\\temp",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.b4-3-fix1\\20261116\\fixed\\target\\release\\xiao_runtime.lib",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\Xiao\\stdlib",
+    "XIAO_B1_F10": "0",
+    "XIAO_B2_A_PERF": "0",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "CARGO_TERM_COLOR": "never",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe"
+  }
+}

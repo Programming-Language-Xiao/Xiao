@@ -1,0 +1,10 @@
+
+running 1 test
+B4-4-NATIVE path=std.cmath optimization=0 executable=/home/xiaoczx/.b4/b4-3-fix2-20261118-01/temp/fix2-linux-test-run-r5/b4-4-library-1638-0/std-o0 components=["containers", "rc", "value", "weak"] stdout=golden errors=009 result=passed
+B4-4-NATIVE path=std.cmath optimization=3 executable=/home/xiaoczx/.b4/b4-3-fix2-20261118-01/temp/fix2-linux-test-run-r5/b4-4-library-1638-0/std-o3 components=["containers", "rc", "value", "weak"] stdout=golden errors=009 result=passed
+B4-4-NATIVE path=stdlib.cmath optimization=0 executable=/home/xiaoczx/.b4/b4-3-fix2-20261118-01/temp/fix2-linux-test-run-r5/b4-4-library-1638-0/stdlib-o0 components=["containers", "rc", "value", "weak"] stdout=golden errors=009 result=passed
+B4-4-NATIVE path=stdlib.cmath optimization=3 executable=/home/xiaoczx/.b4/b4-3-fix2-20261118-01/temp/fix2-linux-test-run-r5/b4-4-library-1638-0/stdlib-o3 components=["containers", "rc", "value", "weak"] stdout=golden errors=009 result=passed
+test cmath_library_matches_native_o0_o3 ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 4.70s
+

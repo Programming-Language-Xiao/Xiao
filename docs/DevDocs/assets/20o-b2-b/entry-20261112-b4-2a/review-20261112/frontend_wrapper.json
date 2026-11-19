@@ -1,0 +1,32 @@
+{
+  "label": "frontend_wrapper",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b2_b4_frontend",
+    "--test",
+    "20o_b2_b3_wrapper",
+    "--",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 39288,
+  "started_utc": "2026-11-12T02:00:02.055420+00:00",
+  "finished_utc": "2026-11-12T02:01:23.935756+00:00",
+  "exit_code": 0,
+  "source_before": "ca4abf3227ed67c334d921e1af13e909459c9e56053f009685856822fed1a6f6",
+  "source_after": "ca4abf3227ed67c334d921e1af13e909459c9e56053f009685856822fed1a6f6",
+  "source_unchanged": true,
+  "log": "frontend_wrapper.log",
+  "log_bytes": 8461,
+  "log_sha256": "ea49d17c8dce73f2d52ee86c284e0198e7630e2155ac9b1a7c7faef7d8b57121",
+  "environment_sha256": "3a1d2db0b8fa2093e495feceb630d1419f5d96a8f479a79dbe49ac36f015abcd",
+  "runner_sha256": "7ecd8c270c4f05f8f825ed32a78d9e06358bcb742b6e71417c4de84016e20f6d"
+}

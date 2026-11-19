@@ -1,0 +1,75 @@
+{
+  "active_build_processes_before": [],
+  "argv": [
+    "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\20o_b1_imp_resources-29cf7055ec1b195c.exe",
+    "--nocapture",
+    "--color",
+    "never"
+  ],
+  "binary": {
+    "bytes": 14919168,
+    "path": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target\\debug\\deps\\20o_b1_imp_resources-29cf7055ec1b195c.exe",
+    "sha256": "588f0ee511f50fcb92aa80099819d84ea81419890e8d2d565a9a03179385b3f8"
+  },
+  "commit": "5864cbde627f727483ab676c6f4bc1bf0a7819bb",
+  "cwd": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\source",
+  "driver_code_debug": "None",
+  "driver_elapsed_ns": 58184357000,
+  "driver_end_unix_ns": 1794844541555974100,
+  "driver_start_unix_ns": 1794844483371614500,
+  "driver_success": true,
+  "environment": {
+    "default_test_threads": true,
+    "overrides": {
+      "CARGO_BUILD_JOBS": "4",
+      "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\target",
+      "CARGO_TERM_COLOR": "never",
+      "PYTHONIOENCODING": "utf-8",
+      "PYTHONUTF8": "1",
+      "RUSTUP_TOOLCHAIN": "1.96.0",
+      "TEMP": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\runs\\07\\temp",
+      "TMP": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\runs\\07\\temp",
+      "XIAO_B1_F10": "0",
+      "XIAO_B2_A_PERF": "0",
+      "XIAO_HOME": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\runs\\07\\home",
+      "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\.b5\\url-timing-20261116-01\\B\\source\\stdlib"
+    },
+    "removed_names": []
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-16T15:56:03.399263+00:00",
+  "index": 7,
+  "label": "B",
+  "log": {
+    "bytes": 1442,
+    "encoding": "identity",
+    "path": "objects/sha256/8c/8c9045c36d0cce4bc04e19032ed8328df8b8923aeddde87d0a58b2ac7252f453.bin",
+    "raw_bytes": 1442,
+    "raw_sha256": "8c9045c36d0cce4bc04e19032ed8328df8b8923aeddde87d0a58b2ac7252f453",
+    "sha256": "8c9045c36d0cce4bc04e19032ed8328df8b8923aeddde87d0a58b2ac7252f453"
+  },
+  "marker_pid": 49452,
+  "measurement_valid": true,
+  "pid": 49452,
+  "process_wall_ns": 80087835600,
+  "resource_target_complete": true,
+  "resource_target_counts": {
+    "failed": 0,
+    "filtered": 0,
+    "ignored": 0,
+    "measured": 0,
+    "passed": 17
+  },
+  "right_censored_at_original_timeout": false,
+  "source_after": "23839618033377b8210aaaaddf71c8980b0b895d9a3d38479ded5d0112f24582",
+  "source_before": "23839618033377b8210aaaaddf71c8980b0b895d9a3d38479ded5d0112f24582",
+  "started_utc": "2026-11-16T15:54:43.311300+00:00",
+  "telemetry": {
+    "bytes": 11610,
+    "encoding": "gzip",
+    "path": "objects/sha256/75/75ad47769a53a8a023ee80f02c2c0bb02f7ff672130db67f8fcd6588a239a0e6.bin",
+    "raw_bytes": 167241,
+    "raw_sha256": "f5b04de6ff8f40efc438602d05e0acf1bb18cd0d02d945fc2e2a429759e2020b",
+    "sha256": "75ad47769a53a8a023ee80f02c2c0bb02f7ff672130db67f8fcd6588a239a0e6"
+  }
+}

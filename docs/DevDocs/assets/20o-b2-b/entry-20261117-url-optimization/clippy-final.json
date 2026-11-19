@@ -1,0 +1,124 @@
+{
+  "label": "clippy-final",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "clippy",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--workspace",
+    "--all-targets",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "pid": 10016,
+  "started_utc": "2026-11-17T09:58:09.038340+00:00",
+  "finished_utc": "2026-11-17T09:58:51.255773+00:00",
+  "elapsed_seconds": 42.21899999998277,
+  "exit_code": 0,
+  "entry_commit": "cba346fc6f3039cbc76889f4907ea8539c38ff48",
+  "environment_overrides": {
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.b5\\url-case-opt-20261118-01\\target",
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_TERM_COLOR": "never",
+    "TEMP": "D:\\project\\Xiao\\.b5\\url-case-opt-20261118-01\\temp",
+    "TMP": "D:\\project\\Xiao\\.b5\\url-case-opt-20261118-01\\temp",
+    "XIAO_HOME": "D:\\project\\Xiao\\.b5\\url-case-opt-20261118-01\\home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\Xiao\\stdlib",
+    "XIAO_B1_F10": "0",
+    "XIAO_B2_A_PERF": "0",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8"
+  },
+  "removed_environment_names": [],
+  "default_libtest_threads": "Cargo config RUST_TEST_THREADS=4; no command override",
+  "cargo_target_cache": "isolated target created earlier this task; warm for this replay",
+  "source_before": {
+    "path": "objects/sha256/d3/d32b392562a8f879b357350b8307236d237411c5912e1eef3953d6b6e6d2efbc.bin",
+    "bytes": 67307,
+    "sha256": "d32b392562a8f879b357350b8307236d237411c5912e1eef3953d6b6e6d2efbc",
+    "encoding": "gzip",
+    "raw_bytes": 233573,
+    "raw_sha256": "94f96f3c87f9972e3b30477a43a635357533723f13ecb5990a7aa283a05b2d35"
+  },
+  "source_after": {
+    "path": "objects/sha256/d3/d32b392562a8f879b357350b8307236d237411c5912e1eef3953d6b6e6d2efbc.bin",
+    "bytes": 67307,
+    "sha256": "d32b392562a8f879b357350b8307236d237411c5912e1eef3953d6b6e6d2efbc",
+    "encoding": "gzip",
+    "raw_bytes": 233573,
+    "raw_sha256": "94f96f3c87f9972e3b30477a43a635357533723f13ecb5990a7aa283a05b2d35"
+  },
+  "source_unchanged": true,
+  "tools": {
+    "rustc": {
+      "binary": {
+        "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+        "bytes": 111104,
+        "sha256": "acb138286bbe20c6cf3ec39a7e0a68c3fab0cd949baa2912cf466514d0d531ab"
+      },
+      "stdout": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-pc-windows-msvc\nrelease: 1.96.0\nLLVM version: 22.1.2\n",
+      "stderr": ""
+    },
+    "cargo": {
+      "binary": {
+        "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+        "bytes": 31347200,
+        "sha256": "122f18d28a63fa358f3db266abee1ff1d8aabf0ab7f2dd9ac38a38da99977ae5"
+      },
+      "stdout": "cargo 1.96.0 (30a34c682 2026-05-25)\nrelease: 1.96.0\ncommit-hash: 30a34c6821b57de0aaec83a901aca39f88f6778c\ncommit-date: 2026-05-25\nhost: x86_64-pc-windows-msvc\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.19.0-DEV (sys:0.4.87+curl-8.19.0 vendored ssl:Schannel)\nos: Windows 10.0.26200 (Windows 11 Professional) [64-bit]\n",
+      "stderr": ""
+    }
+  },
+  "runtime_and_test_binaries_before": {
+    "deps\\xiao_runtime-d56a2478740ee922.lib": {
+      "path": "D:\\project\\Xiao\\.b5\\url-case-opt-20261118-01\\target\\debug\\deps\\xiao_runtime-d56a2478740ee922.lib",
+      "bytes": 63203770,
+      "sha256": "00a46651f0047caee10b71ca84ce96baacc87dbb95dd82c2b909b4eee83efa6e"
+    },
+    "deps\\libxiao_runtime-d56a2478740ee922.rlib": {
+      "path": "D:\\project\\Xiao\\.b5\\url-case-opt-20261118-01\\target\\debug\\deps\\libxiao_runtime-d56a2478740ee922.rlib",
+      "bytes": 18611284,
+      "sha256": "555fff6c2e3414a8c99f37ae7a7dd84877be5e3df6a8fce3fc5d5a88e144c057"
+    },
+    "deps\\20o_b1_imp_resources-29cf7055ec1b195c.exe": {
+      "path": "D:\\project\\Xiao\\.b5\\url-case-opt-20261118-01\\target\\debug\\deps\\20o_b1_imp_resources-29cf7055ec1b195c.exe",
+      "bytes": 14915584,
+      "sha256": "effc63ea30e9d0ae4fd612778c3e121d548274c070922edffd4c28e94a27fc20"
+    }
+  },
+  "runtime_and_test_binaries_after": {
+    "deps\\xiao_runtime-d56a2478740ee922.lib": {
+      "path": "D:\\project\\Xiao\\.b5\\url-case-opt-20261118-01\\target\\debug\\deps\\xiao_runtime-d56a2478740ee922.lib",
+      "bytes": 63203770,
+      "sha256": "00a46651f0047caee10b71ca84ce96baacc87dbb95dd82c2b909b4eee83efa6e"
+    },
+    "deps\\libxiao_runtime-d56a2478740ee922.rlib": {
+      "path": "D:\\project\\Xiao\\.b5\\url-case-opt-20261118-01\\target\\debug\\deps\\libxiao_runtime-d56a2478740ee922.rlib",
+      "bytes": 18611284,
+      "sha256": "555fff6c2e3414a8c99f37ae7a7dd84877be5e3df6a8fce3fc5d5a88e144c057"
+    },
+    "deps\\20o_b1_imp_resources-29cf7055ec1b195c.exe": {
+      "path": "D:\\project\\Xiao\\.b5\\url-case-opt-20261118-01\\target\\debug\\deps\\20o_b1_imp_resources-29cf7055ec1b195c.exe",
+      "bytes": 14915584,
+      "sha256": "effc63ea30e9d0ae4fd612778c3e121d548274c070922edffd4c28e94a27fc20"
+    }
+  },
+  "recorder": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-b\\entry-20261117-url-optimization\\record.py",
+    "bytes": 6836,
+    "sha256": "0aa45a53e7ed940d6eea74f7e807fa334e5e0cafc3b39c7ceaf3596f07098ade"
+  },
+  "log": {
+    "path": "objects/sha256/09/090a8fec80543e906b491790acd1c174df55c1dcaf12d2fc66b4da107f938347.bin",
+    "bytes": 3777,
+    "sha256": "090a8fec80543e906b491790acd1c174df55c1dcaf12d2fc66b4da107f938347",
+    "encoding": "identity",
+    "raw_bytes": 3777,
+    "raw_sha256": "090a8fec80543e906b491790acd1c174df55c1dcaf12d2fc66b4da107f938347"
+  }
+}

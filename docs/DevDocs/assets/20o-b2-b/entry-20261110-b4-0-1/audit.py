@@ -92,24 +92,39 @@ def inventory(root):
     return rows
 
 
-def current_product_snapshot(repository):
-    names = set()
-    for flags in [[], ["--others", "--exclude-standard"]]:
-        raw = git(repository, "ls-files", "-z", *flags, "--", *PRODUCT_ROOTS)
-        names.update(value.decode("utf-8") for value in raw.split(b"\0") if value)
+def product_blobs(repository, revision):
+    raw = git(repository, "ls-tree", "-r", "-z", "--full-tree", revision, "--", *PRODUCT_ROOTS)
+    entries = []
+    for item in raw.split(b"\0"):
+        if item:
+            metadata, name = item.split(b"\t", 1)
+            _, kind, object_id = metadata.split()
+            require(kind == b"blob", "固定Git树包含非Blob：" + name.decode("utf-8"))
+            entries.append((name.decode("utf-8"), object_id))
+    output = git(repository, "cat-file", "--batch", data=b"".join(oid + b"\n" for _, oid in entries))
+    blobs, offset = {}, 0
+    for name, object_id in entries:
+        end = output.index(b"\n", offset)
+        header = output[offset:end].split()
+        require(len(header) == 3 and header[:2] == [object_id, b"blob"], "固定Git Blob响应不符：" + name)
+        length = int(header[2])
+        blobs[name] = output[end + 1:end + 1 + length]
+        offset = end + length + 2
+    require(offset == len(output), "固定Git Blob流长度不符")
+    return blobs
+
+
+def product_snapshot(blobs):
     files = []
-    for name in sorted(names):
-        path = repository / name
-        data = path.read_bytes() if path.is_file() else None
-        files.append({"path": name, "bytes": None if data is None else len(data),
-                      "raw_sha256": None if data is None else sha(data),
-                      "utf8_lf_or_binary_sha256": None if data is None else sha(canonical(data))})
+    for name, data in sorted(blobs.items()):
+        files.append({"path": name, "bytes": len(data), "raw_sha256": sha(data),
+                      "utf8_lf_or_binary_sha256": sha(canonical(data))})
     raw_tree = sha(json.dumps(files, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode())
     lf_tree = sha(json.dumps([[row["path"], row["utf8_lf_or_binary_sha256"]] for row in files],
                              ensure_ascii=False, separators=(",", ":")).encode())
     locks = {}
     for name in ["core/rust/Cargo.lock", "tests/benchmarks/Cargo.lock"]:
-        data = (repository / name).read_bytes()
+        data = blobs[name]
         locks[name] = {"bytes": len(data), "sha256": sha(data)}
     return {"raw_tree_sha256": raw_tree, "utf8_lf_tree_sha256": lf_tree,
             "files": len(files), "product_files": files, "locks": locks}
@@ -122,8 +137,9 @@ def read_run(root, repository, key):
     log = data.decode("utf-8", errors="strict")
     require(record["phase"] == phase and record["label"] == key and record["argv"] == argv,
             "B4执行点命令身份不符：" + key)
-    require(record["cwd"] == str(repository) and record["pid"] > 0 and record["task_root"]
-            == json.loads((root / "bootstrap.json").read_text(encoding="utf-8"))["task_root"],
+    bootstrap = json.loads((root / "bootstrap.json").read_text(encoding="utf-8"))
+    require(record["cwd"] == bootstrap["repository_root"] and record["pid"] > 0 and record["task_root"]
+            == bootstrap["task_root"],
             "B4执行点cwd/PID/task身份不符：" + key)
     require(record["exit_code"] == 0 and record["source_unchanged"]
             and record["source_before"] == record["source_after"], "B4执行失败或期间源码变化：" + key)
@@ -137,69 +153,64 @@ def read_run(root, repository, key):
 
 def validate_source_manifest(snapshotter, manifest, current, product_commit, product_files):
     require(manifest["product_commit"] == product_commit, "B4源清单产品提交SHA不符")
-    require(snapshotter["summary"](manifest) == current, "B4源清单与当前产品树/锁不符")
-    require(manifest["product_files"] == product_files,
-            "B4源清单文件集合/字节摘要与产品快照不符")
+    require(snapshotter["summary"](manifest) == current, "B4源清单与执行快照/锁不符")
+    rows = manifest["product_files"]
+    expected = {row["path"]: row["utf8_lf_or_binary_sha256"] for row in product_files}
+    require(len(rows) == manifest["files"] == len(expected)
+            and {row["path"]: row["utf8_lf_or_binary_sha256"] for row in rows} == expected,
+            "B4源清单逐路径规范摘要与固定Git对象不符")
+    raw_tree = sha(json.dumps(rows, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode())
+    lf_tree = sha(json.dumps([[row["path"], row["utf8_lf_or_binary_sha256"]] for row in rows],
+                             ensure_ascii=False, separators=(",", ":")).encode())
+    require(raw_tree == manifest["raw_tree_sha256"] and lf_tree == manifest["utf8_lf_tree_sha256"],
+            "B4源清单内部树摘要不符")
+    indexed = {row["path"]: row for row in rows}
+    require(set(manifest["locks"]) == {"core/rust/Cargo.lock", "tests/benchmarks/Cargo.lock"},
+            "B4源清单锁集合不符")
+    for name, lock in manifest["locks"].items():
+        require(lock == {"bytes": indexed[name]["bytes"], "sha256": indexed[name]["raw_sha256"]},
+                "B4源清单原始锁摘要不自洽：" + name)
 
 
 def check_static_contract(repository):
     entry = git(repository, "rev-parse", BASELINE).decode("ascii").strip()
     code = git(repository, "rev-parse", CODE).decode("ascii").strip()
-    head = git(repository, "rev-parse", "HEAD").decode("ascii").strip()
     for ancestor, descendant, reason in [
         (entry, code, "B4产品代码不在B3-4基线历史之后"),
-        (code, head, "固定B4产品代码不是当前HEAD祖先"),
     ]:
         result = subprocess.run(["cmd", "/c", "git", "merge-base", "--is-ancestor", ancestor, descendant], cwd=repository)
         require(result.returncode == 0, reason)
     changed = set(git(repository, "diff", "--name-only", entry, code, "--", *PRODUCT_ROOTS).decode("utf-8").splitlines())
     require(changed == ALLOWED_PATHS, "B4-0/B4-1相对入口产品路径集合偏离登记")
-    post = subprocess.run(["cmd", "/c", "git", "diff", "--quiet", code, head, "--", *PRODUCT_ROOTS], cwd=repository)
-    require(post.returncode == 0 and not git(repository, "ls-files", "--others", "--exclude-standard", "--", *PRODUCT_ROOTS).strip(),
-            "固定B4代码提交后的受保护产品树发生变化")
-    tracked = {name.decode("utf-8") for name in git(repository, "ls-tree", "-r", "--name-only", "-z", code, "--", *PRODUCT_ROOTS).split(b"\0") if name}
-    require(ALLOWED_PATHS <= tracked, "B4产品提交缺少登记路径")
-    requests = "".join(code + ":" + name + "\n" for name in sorted(ALLOWED_PATHS)).encode()
-    blobs = subprocess.check_output(["cmd", "/c", "git", "cat-file", "--batch"], cwd=repository, input=requests)
-    offset = 0
-    for name in sorted(ALLOWED_PATHS):
-        end = blobs.index(b"\n", offset)
-        header = blobs[offset:end].split()
-        require(len(header) == 3 and header[1] == b"blob", "B4代码对象缺Blob：" + name)
-        length = int(header[2])
-        content = blobs[end + 1:end + 1 + length]
-        offset = end + length + 2
-        require((repository / name).is_file()
-                and canonical(content) == canonical((repository / name).read_bytes()),
-                "B4工作树偏离固定产品Blob：" + name)
-    require(offset == len(blobs), "B4产品Blob流解析长度不符")
+    blobs = product_blobs(repository, code)
+    require(ALLOWED_PATHS <= set(blobs), "B4产品提交缺少登记路径")
 
-    fixture = (repository / FIXTURE).read_bytes()
-    original = (repository / REFERENCE).read_bytes()
+    fixture = blobs[FIXTURE]
+    original = git(repository, "show", code + ":" + REFERENCE)
     historical = git(repository, "show", B3_CABI + ":" + REFERENCE)
     require(fixture == original == historical and sha(fixture) == REFERENCE_SHA256
             and len(fixture) == 1755726, "B4向量迁移字节、历史Git对象、大小或摘要不符")
     for name in ["core/rust/crates/xiao-runtime/src/value/arithmetic/cmath_tests.rs",
                  "core/rust/crates/xiao-runtime/src/abi_cmath_tests.rs"]:
-        text = (repository / name).read_text(encoding="utf-8").replace("\r\n", "\n")
+        text = canonical(blobs[name]).decode("utf-8")
         require(FIXTURE in text and "entry-20261108-b3" not in text,
                 "B4 Runtime测试仍引用DevDocs向量：" + name)
 
-    intrinsic_table = json.loads((repository / "core/rust/crates/xiao-intrinsics/intrinsics.json").read_text(encoding="utf-8"))["intrinsics"]
+    intrinsic_table = json.loads(blobs["core/rust/crates/xiao-intrinsics/intrinsics.json"])["intrinsics"]
     require(sorted(row["id"] for row in intrinsic_table if row["status"] == "active") == list(range(1, 49))
             and next(row for row in intrinsic_table if row["id"] == 100)["status"] == "tombstone",
             "B4-0/B4-1修改intrinsic活动范围或ID100")
-    abi_text = (repository / "core/rust/crates/xiao-runtime-abi/src/lib.rs").read_text(encoding="utf-8")
-    codegen_text = (repository / "core/rust/crates/xiao-codegen-llvm/src/lib.rs").read_text(encoding="utf-8")
+    abi_text = blobs["core/rust/crates/xiao-runtime-abi/src/lib.rs"].decode("utf-8")
+    codegen_text = blobs["core/rust/crates/xiao-codegen-llvm/src/lib.rs"].decode("utf-8")
     require(re.search(r"ABI_MINOR_VERSION[^=]*=\s*18", abi_text)
             and re.search(r"pub const CODEGEN_VERSION:\s*u32\s*=\s*20;", codegen_text),
             "B4-0/B4-1改动ABI或生成器版本")
-    registry = json.loads((repository / "docs/module-registry.json").read_text(encoding="utf-8"))
+    registry = json.loads(blobs["docs/module-registry.json"])
     cmath = next(row for row in registry["modules"] if row["id"] == "stdlib.cmath")
     require(cmath["status"] == "planned" and cmath["code"] == [] and cmath["tests"] == [],
             "B4-0/B4-1把cmath提前提升为产品")
-    return {"entry_commit": entry, "code_commit": code, "head_commit": head,
-            "source": current_product_snapshot(repository),
+    return {"entry_commit": entry, "code_commit": code,
+            "source": product_snapshot(blobs),
             "fixture": {"path": FIXTURE, "source": REFERENCE, "bytes": len(fixture), "sha256": sha(fixture)},
             "runtime_abi": "1.18", "codegen_version": 20, "stdlib_interface": 1,
             "active_intrinsics": [1, 48], "cmath_status": "planned"}
@@ -216,10 +227,9 @@ def main():
     require(attributes == "* -text\n*.log -diff\n", "B4证据目录属性不符")
     source = check_static_contract(repository)
     snapshotter = runpy.run_path(str(root / "record-step.py"))
-    snapshotter["REPOSITORY"] = repository
-    current = snapshotter["summary"](snapshotter["manifest_value"]())
     manifest_path = root / "source-manifest.json"
     source_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    current = snapshotter["summary"](source_manifest)
     validate_source_manifest(snapshotter, source_manifest, current, source["code_commit"],
                              source["source"]["product_files"])
     invalid_manifest = json.loads((root / "source-manifest-invalid-product-sha.json")
@@ -294,9 +304,9 @@ def main():
                 "B4 evidence scope不符")
         require(evidence["baseline_commit"] == source["entry_commit"]
                 and evidence["product_commit"] == source["code_commit"]
-                and evidence["product_files"] == source["source"]["files"]
-                and evidence["raw_tree_sha256"] == source["source"]["raw_tree_sha256"]
-                and evidence["utf8_lf_tree_sha256"] == source["source"]["utf8_lf_tree_sha256"]
+                and evidence["product_files"] == source_manifest["files"]
+                and evidence["raw_tree_sha256"] == source_manifest["raw_tree_sha256"]
+                and evidence["utf8_lf_tree_sha256"] == source_manifest["utf8_lf_tree_sha256"]
                 and evidence["runtime_abi"] == "1.18" and evidence["codegen_version"] == 20
                 and evidence["runs"] == list(RUNS),
                 "B4 evidence源码、版本或运行范围不符")

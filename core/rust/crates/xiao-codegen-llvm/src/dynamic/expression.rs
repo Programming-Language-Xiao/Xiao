@@ -579,6 +579,9 @@ impl<'a> DynamicGenerator<'a> {
             .ok_or_else(|| CodegenError::InvalidIr {
                 message: format!("未知或已废弃的 intrinsic ID {id}"),
             })?;
+        if declaration.kind == xiao_intrinsics::IntrinsicKind::Cmath {
+            return self.emit_cmath(declaration, arguments, span);
+        }
         match declaration.vm_binding {
             xiao_intrinsics::VmBinding::ScalarCast => {
                 if arguments.len() != 1
