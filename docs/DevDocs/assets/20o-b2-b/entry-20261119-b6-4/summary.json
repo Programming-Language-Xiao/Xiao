@@ -1,0 +1,2491 @@
+{
+  "archive": {
+    "bytes": 898618,
+    "files": 198,
+    "sha256": "7fc75dc8c72fc8f12128e197d70872f44442b762dcf5c16b2cf024ddc43f59ef",
+    "unique_objects": 100
+  },
+  "b6_1": {
+    "linux_clippy": "not_run",
+    "stage_passed": false,
+    "status": "restricted",
+    "windows_coff": "unverifiable"
+  },
+  "b6_2_performance_commit": "79ea0375d7f2d823a5bdde73cb2c9a1c33c3e4c3",
+  "b6_3_boundary_commit": "58176ff5299441f921f3b54fbdc300e2e46b9bb0",
+  "b6_4_passed": false,
+  "b6_5_started": false,
+  "engineering": {
+    "linux_workspace_default": {
+      "command": "cargo test --manifest-path core/rust/Cargo.toml --workspace -- --skip b1_capabilities_have_vm_golden_outputs",
+      "counts": {
+        "failed": 0,
+        "ignored": 55,
+        "passed": 1758
+      },
+      "job": 135358661595,
+      "status": "passed"
+    },
+    "linux_workspace_gates": {
+      "check_lock": "passed",
+      "clippy": "passed",
+      "commands": [
+        "bun tools/repo-check/src/cli.ts all && bun run check:clippy && bun run check:lock",
+        "cargo clippy --manifest-path core/rust/Cargo.toml --workspace --all-targets -- -D warnings",
+        "cargo check --manifest-path core/rust/Cargo.toml --workspace && cargo check --manifest-path tests/benchmarks/Cargo.toml && git diff --exit-code -- core/rust/Cargo.lock tests/benchmarks/Cargo.lock"
+      ],
+      "fmt": "passed",
+      "job": 135358660716,
+      "repo_check": "passed",
+      "repo_check_warning_lines": 1291,
+      "status": "passed"
+    },
+    "simulated_guards": {
+      "job": 135358661595,
+      "passed": 28
+    }
+  },
+  "guard_replay": {
+    "actual": 4,
+    "derived": 24,
+    "passed": 28,
+    "results": {
+      "default/actual": {
+        "cargo_exit": 0,
+        "exit": 0,
+        "input_sha256": "bbbe9010441a07740c8b037c7c3383043b9bd4abb53b6551fff68af119821f83",
+        "produced_reason": null,
+        "source_sha256": "bbbe9010441a07740c8b037c7c3383043b9bd4abb53b6551fff68af119821f83"
+      },
+      "default/duplicate": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "4d8d7adf1a9e2ab30b4ee09426dd84ca6be85b3de14e0debfe17fe648c2e10b1",
+        "produced_reason": null,
+        "source_sha256": "bbbe9010441a07740c8b037c7c3383043b9bd4abb53b6551fff68af119821f83"
+      },
+      "default/failed": {
+        "cargo_exit": 101,
+        "exit": 1,
+        "input_sha256": "0ef9a452eb8cda8d41d6d0a7b80a12c0b41c702812bf23594c1e9f2ea3816a68",
+        "produced_reason": null,
+        "source_sha256": "bbbe9010441a07740c8b037c7c3383043b9bd4abb53b6551fff68af119821f83"
+      },
+      "default/failed-exit": {
+        "cargo_exit": 101,
+        "exit": 1,
+        "input_sha256": "bbbe9010441a07740c8b037c7c3383043b9bd4abb53b6551fff68af119821f83",
+        "produced_reason": null,
+        "source_sha256": "bbbe9010441a07740c8b037c7c3383043b9bd4abb53b6551fff68af119821f83"
+      },
+      "default/ignored": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "0781cbbfb4ef974fa8cb9adca81aa0b955d97794c8e344d4a63fefe0418e9387",
+        "produced_reason": null,
+        "source_sha256": "bbbe9010441a07740c8b037c7c3383043b9bd4abb53b6551fff68af119821f83"
+      },
+      "default/two": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "fdb529b2e83ae1de824e9daa2345770b5ee46dcb820c0154c0aeb509210d96d8",
+        "produced_reason": null,
+        "source_sha256": "bbbe9010441a07740c8b037c7c3383043b9bd4abb53b6551fff68af119821f83"
+      },
+      "default/zero": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "d511367037a09ecdac27b528d3f84ab791d9c01d06d3c22efcc385f218a76605",
+        "produced_reason": null,
+        "source_sha256": "bbbe9010441a07740c8b037c7c3383043b9bd4abb53b6551fff68af119821f83"
+      },
+      "linux/actual": {
+        "cargo_exit": 0,
+        "exit": 0,
+        "input_sha256": "c6a3c1d87ccf72899d8ea32bb50379486bbc3c323653da16515d8d05578b37d4",
+        "produced_reason": null,
+        "source_sha256": "c6a3c1d87ccf72899d8ea32bb50379486bbc3c323653da16515d8d05578b37d4"
+      },
+      "linux/duplicate": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "113e95faa9c98792c626f6e43c035e0eec7526413c7b635b4916b8e2a61d132e",
+        "produced_reason": "Native test did not execute exactly one case: b1_capabilities_match_native_golden_outputs",
+        "source_sha256": "c6a3c1d87ccf72899d8ea32bb50379486bbc3c323653da16515d8d05578b37d4"
+      },
+      "linux/failed": {
+        "cargo_exit": 101,
+        "exit": 1,
+        "input_sha256": "cbbd35388b78364ac75ce09e407a707f12ecb283b2d9c713dca22d1b99053f45",
+        "produced_reason": null,
+        "source_sha256": "c6a3c1d87ccf72899d8ea32bb50379486bbc3c323653da16515d8d05578b37d4"
+      },
+      "linux/failed-exit": {
+        "cargo_exit": 101,
+        "exit": 1,
+        "input_sha256": "c6a3c1d87ccf72899d8ea32bb50379486bbc3c323653da16515d8d05578b37d4",
+        "produced_reason": null,
+        "source_sha256": "c6a3c1d87ccf72899d8ea32bb50379486bbc3c323653da16515d8d05578b37d4"
+      },
+      "linux/ignored": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "f3fb0ac7efcc7871de1a2c1b85abcaf736e08867b5a4950ce4321c8b29ce8600",
+        "produced_reason": "Native test did not execute exactly one case: b1_capabilities_match_native_golden_outputs",
+        "source_sha256": "c6a3c1d87ccf72899d8ea32bb50379486bbc3c323653da16515d8d05578b37d4"
+      },
+      "linux/two": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "a9f26dde77eb1efad26906e3eeb749566d73b7b89ffe13c9ba55564656ec0770",
+        "produced_reason": "Native test did not execute exactly one case: b1_capabilities_match_native_golden_outputs",
+        "source_sha256": "c6a3c1d87ccf72899d8ea32bb50379486bbc3c323653da16515d8d05578b37d4"
+      },
+      "linux/zero": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "5bc6929bf2d7bfcca1d3279cb913f0fb9cb583bccda164fae2e9e686069d7962",
+        "produced_reason": "Native test did not execute exactly one case: b1_capabilities_match_native_golden_outputs",
+        "source_sha256": "c6a3c1d87ccf72899d8ea32bb50379486bbc3c323653da16515d8d05578b37d4"
+      },
+      "macos/actual": {
+        "cargo_exit": 0,
+        "exit": 0,
+        "input_sha256": "4c35756c0da848ca90b2f7beb73768bdaba74438c923a1f64360995970f0cce1",
+        "produced_reason": null,
+        "source_sha256": "4c35756c0da848ca90b2f7beb73768bdaba74438c923a1f64360995970f0cce1"
+      },
+      "macos/duplicate": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "eeee4c1f151af676d830093d44e5c0d22f691c4e684a3132df01cd7154ab6941",
+        "produced_reason": "Native test did not execute exactly one case: b1_capabilities_match_native_golden_outputs",
+        "source_sha256": "4c35756c0da848ca90b2f7beb73768bdaba74438c923a1f64360995970f0cce1"
+      },
+      "macos/failed": {
+        "cargo_exit": 101,
+        "exit": 1,
+        "input_sha256": "3a230c75f14d9c1180774c72556c779445c69b5b3e78a390a3c4edb809754a60",
+        "produced_reason": null,
+        "source_sha256": "4c35756c0da848ca90b2f7beb73768bdaba74438c923a1f64360995970f0cce1"
+      },
+      "macos/failed-exit": {
+        "cargo_exit": 101,
+        "exit": 1,
+        "input_sha256": "4c35756c0da848ca90b2f7beb73768bdaba74438c923a1f64360995970f0cce1",
+        "produced_reason": null,
+        "source_sha256": "4c35756c0da848ca90b2f7beb73768bdaba74438c923a1f64360995970f0cce1"
+      },
+      "macos/ignored": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "2ccd18b3ec1566bc58058d63b48ac2db063901f37540919d23c652c280c8b7df",
+        "produced_reason": "Native test did not execute exactly one case: b1_capabilities_match_native_golden_outputs",
+        "source_sha256": "4c35756c0da848ca90b2f7beb73768bdaba74438c923a1f64360995970f0cce1"
+      },
+      "macos/two": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "500b2cb885db0f605c0082628b7eff1b0f92290345a800947f6248671df41368",
+        "produced_reason": "Native test did not execute exactly one case: b1_capabilities_match_native_golden_outputs",
+        "source_sha256": "4c35756c0da848ca90b2f7beb73768bdaba74438c923a1f64360995970f0cce1"
+      },
+      "macos/zero": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "aa0df1e8731637931bbafcd0b30b973292be083eaa2022455d5f27322a96503b",
+        "produced_reason": "Native test did not execute exactly one case: b1_capabilities_match_native_golden_outputs",
+        "source_sha256": "4c35756c0da848ca90b2f7beb73768bdaba74438c923a1f64360995970f0cce1"
+      },
+      "windows/actual": {
+        "cargo_exit": 0,
+        "exit": 0,
+        "input_sha256": "859be3c7b97400265d10b87050d3483d3d34bf93be19dce9e5db66033e0f8d25",
+        "produced_reason": null,
+        "source_sha256": "859be3c7b97400265d10b87050d3483d3d34bf93be19dce9e5db66033e0f8d25"
+      },
+      "windows/duplicate": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "8c18de0662160bf132cdad0ff449aa5ce7665e1386366bc7a5e989a4062afc59",
+        "produced_reason": "     | B1 native probe must pass exactly one case without ignoring it",
+        "source_sha256": "859be3c7b97400265d10b87050d3483d3d34bf93be19dce9e5db66033e0f8d25"
+      },
+      "windows/failed": {
+        "cargo_exit": 101,
+        "exit": 101,
+        "input_sha256": "446afea0d60ec8d5fe7f0dbc7ec4bf3671d0680b411c20eeda11033d4c875b7d",
+        "produced_reason": null,
+        "source_sha256": "859be3c7b97400265d10b87050d3483d3d34bf93be19dce9e5db66033e0f8d25"
+      },
+      "windows/failed-exit": {
+        "cargo_exit": 101,
+        "exit": 101,
+        "input_sha256": "859be3c7b97400265d10b87050d3483d3d34bf93be19dce9e5db66033e0f8d25",
+        "produced_reason": null,
+        "source_sha256": "859be3c7b97400265d10b87050d3483d3d34bf93be19dce9e5db66033e0f8d25"
+      },
+      "windows/ignored": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "79f31c759650e74ac76084c652a40c9f775ce37c1a7479eb02fe6e8e0205f4a1",
+        "produced_reason": "     | B1 native probe must pass exactly one case without ignoring it",
+        "source_sha256": "859be3c7b97400265d10b87050d3483d3d34bf93be19dce9e5db66033e0f8d25"
+      },
+      "windows/two": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "7a5df4c648c4293c2fab4c514eb0da1c7109341efef3c0f8e01280b5efb877c7",
+        "produced_reason": "     | B1 native probe must pass exactly one case without ignoring it",
+        "source_sha256": "859be3c7b97400265d10b87050d3483d3d34bf93be19dce9e5db66033e0f8d25"
+      },
+      "windows/zero": {
+        "cargo_exit": 0,
+        "exit": 1,
+        "input_sha256": "467b4f2d474997528e4810416666ad052c8fd39f05527c40eadfeade70d83ea8",
+        "produced_reason": "     | B1 native probe must pass exactly one case without ignoring it",
+        "source_sha256": "859be3c7b97400265d10b87050d3483d3d34bf93be19dce9e5db66033e0f8d25"
+      }
+    },
+    "sources": {
+      "default": {
+        "attempt": 1,
+        "cargo_output": {
+          "bytes": 4720,
+          "sha256": "bbbe9010441a07740c8b037c7c3383043b9bd4abb53b6551fff68af119821f83"
+        },
+        "job": 135358661595,
+        "job_log_sha256": "35bb223530f7956da994dc93003a54bea4aebd4ff846d0ed65621eb8bedfa56b",
+        "markers": 9,
+        "run": 44464422497
+      },
+      "linux": {
+        "attempt": 1,
+        "cargo_output": {
+          "bytes": 14931,
+          "sha256": "c6a3c1d87ccf72899d8ea32bb50379486bbc3c323653da16515d8d05578b37d4"
+        },
+        "job": 135377693905,
+        "job_log_sha256": "2025c5df9ac48a6a898d10cbf8fb4fb52c89b95bcb60e81f48589653877d2d45",
+        "markers": 18,
+        "run": 44470256490
+      },
+      "macos": {
+        "attempt": 1,
+        "cargo_output": {
+          "bytes": 16538,
+          "sha256": "4c35756c0da848ca90b2f7beb73768bdaba74438c923a1f64360995970f0cce1"
+        },
+        "job": 135377693561,
+        "job_log_sha256": "c9755079778530eb04fbf7f365c978ec2c765c73ae52042416a75cf817c8a102",
+        "markers": 18,
+        "run": 44470256490
+      },
+      "windows": {
+        "attempt": 1,
+        "cargo_output": {
+          "bytes": 15133,
+          "sha256": "859be3c7b97400265d10b87050d3483d3d34bf93be19dce9e5db66033e0f8d25"
+        },
+        "job": 135358661620,
+        "job_log_sha256": "ec0d229607365af34a9c4e9ad44918633ae5786101ac028ea2f09f2e5cacd081",
+        "markers": 18,
+        "run": 44464422497
+      }
+    }
+  },
+  "native_maintenance": {
+    "linux": {
+      "case": "original-pow-eq-static-o0",
+      "job": 135358661593,
+      "owner": "B4 LLVM Runtime 组件",
+      "reason": "产物观察到未由 IR 登记的 Runtime 组件：rc",
+      "status": "failed"
+    },
+    "macos": {
+      "case": "original-pow-eq-static-o0",
+      "job": 135358661515,
+      "owner": "B4 LLVM Runtime 组件",
+      "reason": "产物观察到未由 IR 登记的 Runtime 组件：rc",
+      "status": "failed"
+    },
+    "windows": {
+      "case": "native-lock-wait-027",
+      "job": 135358661620,
+      "owner": "22D",
+      "reason": "native-lock-wait-027: 稳定共享对象释放顺序",
+      "status": "failed"
+    }
+  },
+  "runs": {
+    "44460712945": {
+      "conclusion": "failure",
+      "event": "push",
+      "head_branch": "codex/b6-4-gates-runner",
+      "head_sha": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+      "id": 44460712945,
+      "jobs": {
+        "135346523473": {
+          "cache": "setup-bun:hit",
+          "conclusion": "failure",
+          "failed_steps": [
+            "Run workspace gates"
+          ],
+          "identity": {
+            "after": {
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "linux-workspace-gates",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44460712945",
+                "GITHUB_SHA": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261116.376.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux"
+              },
+              "devdocs_tree": "528d84a99a0227957b4bd90cbb85395c0b110c99",
+              "head": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": null,
+              "tracked_changes": [],
+              "tree": "5c57000ef83a6a0ac5578e3073b84d5d55731701"
+            },
+            "before": {
+              "bun": "1.4.1",
+              "cargo_delegate": {
+                "bytes": 42865872,
+                "path": "/home/runner/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+                "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f"
+              },
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "clippy": "clippy 0.1.96 (ac68faa20c 2026-05-25)",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "linux-workspace-gates",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44460712945",
+                "GITHUB_SHA": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261116.376.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux"
+              },
+              "controlled_cargo": "/home/runner/work/_temp/xiao-controlled-cargo-b53e1edcca6f450da4dba360d3530f37/cargo",
+              "devdocs_tree": "528d84a99a0227957b4bd90cbb85395c0b110c99",
+              "head": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+              "host": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": null,
+              "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-unknown-linux-gnu\nrelease: 1.96.0\nLLVM version: 22.1.2",
+              "rustfmt": "rustfmt 1.9.0-stable (ac68faa20c 2026-05-25)",
+              "tracked_changes": [],
+              "tree": "5c57000ef83a6a0ac5578e3073b84d5d55731701"
+            }
+          },
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "log": "ci/44460712945/135346523473.log",
+          "log_sha256": "45e960298b067d09f5ffb318a8cfb093340eacee8e33995c15fa80d2351ac547",
+          "name": "Linux workspace gates"
+        }
+      },
+      "path": ".github/workflows/workspace-gates.yml",
+      "run_attempt": 1,
+      "workflow_id": 379178019
+    },
+    "44460712977": {
+      "conclusion": "failure",
+      "event": "push",
+      "head_branch": "codex/b6-4-gates-runner",
+      "head_sha": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+      "id": 44460712977,
+      "jobs": {
+        "135346523696": {
+          "cache": "rust-cache:miss",
+          "conclusion": "failure",
+          "failed_steps": [
+            "Build runtime and run macOS native gates"
+          ],
+          "identity": {
+            "after": {
+              "cargo_target_dir": "/Users/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44460712977",
+                "GITHUB_SHA": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+                "ImageOS": "macos15",
+                "ImageVersion": "20261104.0514.1",
+                "RUNNER_ARCH": "ARM64",
+                "RUNNER_OS": "macOS",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "devdocs_tree": "528d84a99a0227957b4bd90cbb85395c0b110c99",
+              "head": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/Users/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/Users/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": {
+                "bytes": 25667552,
+                "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+              },
+              "tracked_changes": [],
+              "tree": "5c57000ef83a6a0ac5578e3073b84d5d55731701"
+            },
+            "before": {
+              "cargo_delegate": {
+                "bytes": 31817288,
+                "path": "/Users/runner/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+                "sha256": "fec239e6b74df873f54ef52912bfcfcc8d8414bc14a7ae1e0be80460bae72841"
+              },
+              "cargo_target_dir": "/Users/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44460712977",
+                "GITHUB_SHA": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+                "ImageOS": "macos15",
+                "ImageVersion": "20261104.0514.1",
+                "RUNNER_ARCH": "ARM64",
+                "RUNNER_OS": "macOS",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "controlled_cargo": "/Users/runner/work/_temp/xiao-controlled-cargo-5114e6cd01ad4ec281962eb41a42806b/cargo",
+              "devdocs_tree": "528d84a99a0227957b4bd90cbb85395c0b110c99",
+              "head": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+              "host": "macOS-15.8.2-arm64-arm-64bit-Mach-O",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/Users/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/Users/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": null,
+              "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: aarch64-apple-darwin\nrelease: 1.96.0\nLLVM version: 22.1.2",
+              "tracked_changes": [],
+              "tree": "5c57000ef83a6a0ac5578e3073b84d5d55731701"
+            },
+            "native": {
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44460712977",
+                "GITHUB_SHA": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+                "ImageOS": "macos15",
+                "ImageVersion": "20261104.0514.1",
+                "RUNNER_ARCH": "ARM64",
+                "RUNNER_OS": "macOS",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "diagnostics": {
+                "bytes": 1997568,
+                "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/debug/xiao-diagnostics",
+                "sha256": "9c99ec7e2dc1ea6476c8f033136a1cb805b6cc6642e523cc3bc153da46d3a473"
+              },
+              "llvm": {
+                "XIAO_CLANG": {
+                  "bytes": 137848,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/clang-23",
+                  "sha256": "4f55f770c8e4e0a33deb3ea2007fd4a7a1d73f0dbd493fb241a8cd43952824e5",
+                  "version": "Homebrew clang version 23.1.4\nTarget: arm64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /opt/homebrew/Cellar/llvm/23.1.4/bin"
+                },
+                "XIAO_LLC": {
+                  "bytes": 208032,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/llc",
+                  "sha256": "9c679c2ae5ea5c4f1de80fadb59f37aae9117277238d5997c1dcc1e96a14c53b",
+                  "version": "Homebrew LLVM version 23.1.4\n  Optimized build.\n  Default target: arm64-apple-darwin24.6.0\n  Host CPU: (unknown)\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - legacy name for amdgpu\n    amdgpu      - AMDGPU gfx6+\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv32be   - 32-bit big endian RISC-V\n    riscv64     - 64-bit RISC-V\n    riscv64be   - 64-bit big endian RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    spirv       - SPIR-V Logical\n    spirv32     - SPIR-V 32-bit\n    spirv64     - SPIR-V 64-bit\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore"
+                },
+                "XIAO_LLVM_AS": {
+                  "bytes": 44680,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/llvm-as",
+                  "sha256": "13075e1b90b47d573944916939f4a4bf9f57d12bb2b16905bf02f871d9a15af0",
+                  "version": "Homebrew LLVM version 23.1.4\n  Optimized build."
+                },
+                "XIAO_STRIP": {
+                  "bytes": 262464,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/llvm-objcopy",
+                  "sha256": "3568e6209a9e2c782832a5f704123f10cd2711c9b391622b9021e291697b9905",
+                  "version": "llvm-strip, compatible with GNU strip\nHomebrew LLVM version 23.1.4\n  Optimized build."
+                }
+              },
+              "runtime": {
+                "bytes": 25667552,
+                "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+              },
+              "target": "aarch64-apple-darwin"
+            }
+          },
+          "labels": [
+            "macos-15"
+          ],
+          "log": "ci/44460712977/135346523696.log",
+          "log_sha256": "444634daee9bdbbf2b63dde3527c8a55b698325702d3447de47a7dc154f2455e",
+          "name": "Native differential regression (macOS)"
+        },
+        "135346523733": {
+          "cache": "rust-cache:miss",
+          "conclusion": "success",
+          "failed_steps": [],
+          "identity": {},
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "log": "ci/44460712977/135346523733.log",
+          "log_sha256": "02bb8c0e160c9d02d8e23039527deb675a4083d04021094f388236e9e7e61915",
+          "name": "Deterministic parser and artifact security regression"
+        },
+        "135346523758": {
+          "cache": "rust-cache:miss",
+          "conclusion": "failure",
+          "failed_steps": [
+            "Run default workspace tests"
+          ],
+          "identity": {
+            "after": {
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "workspace-default-tests",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44460712977",
+                "GITHUB_SHA": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261111.370.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "devdocs_tree": "528d84a99a0227957b4bd90cbb85395c0b110c99",
+              "head": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": null,
+              "tracked_changes": [],
+              "tree": "5c57000ef83a6a0ac5578e3073b84d5d55731701"
+            },
+            "before": {
+              "cargo_delegate": {
+                "bytes": 42865872,
+                "path": "/home/runner/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+                "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f"
+              },
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "workspace-default-tests",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44460712977",
+                "GITHUB_SHA": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261111.370.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "controlled_cargo": "/home/runner/work/_temp/xiao-controlled-cargo-d58fc082663a41a59b8e0aff8a8398d4/cargo",
+              "devdocs_tree": "528d84a99a0227957b4bd90cbb85395c0b110c99",
+              "head": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+              "host": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": null,
+              "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-unknown-linux-gnu\nrelease: 1.96.0\nLLVM version: 22.1.2",
+              "tracked_changes": [],
+              "tree": "5c57000ef83a6a0ac5578e3073b84d5d55731701"
+            }
+          },
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "log": "ci/44460712977/135346523758.log",
+          "log_sha256": "3c7e627b0986e36fcf448ffe0a23fd8899b1784f73964525ae6af742ad8dc07f",
+          "name": "Rust workspace default tests (Linux)"
+        },
+        "135346523781": {
+          "cache": "rust-cache:miss",
+          "conclusion": "success",
+          "failed_steps": [],
+          "identity": {},
+          "labels": [
+            "windows-2025"
+          ],
+          "log": "ci/44460712977/135346523781.log",
+          "log_sha256": "90003462c16dacd2748de8602fafdbcfe928c77c0c3705305273ce2b802edacd",
+          "name": "Deterministic artifact size regression (Windows baseline)"
+        },
+        "135346523788": {
+          "cache": "rust-cache:miss",
+          "conclusion": "failure",
+          "failed_steps": [
+            "Build runtime and run Linux native gates"
+          ],
+          "identity": {
+            "after": {
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44460712977",
+                "GITHUB_SHA": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261111.127.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "devdocs_tree": "528d84a99a0227957b4bd90cbb85395c0b110c99",
+              "head": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": {
+                "bytes": 34143086,
+                "path": "/home/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+              },
+              "tracked_changes": [],
+              "tree": "5c57000ef83a6a0ac5578e3073b84d5d55731701"
+            },
+            "before": {
+              "cargo_delegate": {
+                "bytes": 42865872,
+                "path": "/home/runner/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+                "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f"
+              },
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44460712977",
+                "GITHUB_SHA": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261111.127.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "controlled_cargo": "/home/runner/work/_temp/xiao-controlled-cargo-82489adc34f7420cb20ef548718cc997/cargo",
+              "devdocs_tree": "528d84a99a0227957b4bd90cbb85395c0b110c99",
+              "head": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+              "host": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": null,
+              "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-unknown-linux-gnu\nrelease: 1.96.0\nLLVM version: 22.1.2",
+              "tracked_changes": [],
+              "tree": "5c57000ef83a6a0ac5578e3073b84d5d55731701"
+            },
+            "native": {
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44460712977",
+                "GITHUB_SHA": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261111.127.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "diagnostics": {
+                "bytes": 7628616,
+                "path": "/home/runner/work/Xiao/Xiao/core/rust/target/debug/xiao-diagnostics",
+                "sha256": "7a0e9e83e81803e410ee762204f2caaae2b0c9596bc12eb30cbe4a94f81b02f5"
+              },
+              "llvm": {
+                "XIAO_CLANG": {
+                  "bytes": 140592,
+                  "path": "/usr/lib/llvm-18/bin/clang",
+                  "sha256": "8ef402d453d1ba4902e4ee0f0f847f6cfa01400c95aa43c24e97818b9c0e3f45",
+                  "version": "Ubuntu clang version 18.1.3 (1ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin"
+                },
+                "XIAO_LLC": {
+                  "bytes": 164560,
+                  "path": "/usr/lib/llvm-18/bin/llc",
+                  "sha256": "1efd161c597a2c4255987800505303e298eba00dbee1e93468271c1f7f738181",
+                  "version": "Ubuntu LLVM version 18.1.3\n  Optimized build.\n  Default target: x86_64-pc-linux-gnu\n  Host CPU: graniterapids\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - AMD GCN GPUs\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    m68k        - Motorola 68000 family\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv64     - 64-bit RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore\n    xtensa      - Xtensa 32"
+                },
+                "XIAO_LLVM_AS": {
+                  "bytes": 31480,
+                  "path": "/usr/lib/llvm-18/bin/llvm-as",
+                  "sha256": "8e7460eff4ba4e22d8ae881404bb24c5fc346996264e883ba26d41da4188215d",
+                  "version": "Ubuntu LLVM version 18.1.3\n  Optimized build."
+                },
+                "XIAO_STRIP": {
+                  "bytes": 187416,
+                  "path": "/usr/lib/llvm-18/bin/llvm-objcopy",
+                  "sha256": "f52b9997b3c5019b4b3043e12b1ae2e821df67996ca344921c234c89c4d23e34",
+                  "version": "llvm-strip, compatible with GNU strip\nUbuntu LLVM version 18.1.3\n  Optimized build."
+                }
+              },
+              "runtime": {
+                "bytes": 34143086,
+                "path": "/home/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+              },
+              "target": "x86_64-unknown-linux-gnu"
+            }
+          },
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "log": "ci/44460712977/135346523788.log",
+          "log_sha256": "b2fbdacba0d10febeacba1ecc4878ba40f8d3db629ad45b1357fb648653ef9f2",
+          "name": "Native differential regression (Linux)"
+        },
+        "135346524047": {
+          "cache": "rust-cache:miss",
+          "conclusion": "failure",
+          "failed_steps": [
+            "Build runtime and run native gates"
+          ],
+          "identity": {
+            "after": {
+              "cargo_target_dir": "D:\\a\\Xiao\\Xiao\\core\\rust\\target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44460712977",
+                "GITHUB_SHA": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+                "ImageOS": "win25-vs2026",
+                "ImageVersion": "20261103.298.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Windows",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "devdocs_tree": "528d84a99a0227957b4bd90cbb85395c0b110c99",
+              "head": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 20472,
+                  "path": "D:\\a\\Xiao\\Xiao\\core\\rust\\Cargo.lock",
+                  "sha256": "d8046478bad7c8b2188cb63968c9f6ea31752ad84dcdd7e23c9dcb95f32c5fb2"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 20053,
+                  "path": "D:\\a\\Xiao\\Xiao\\tests\\benchmarks\\Cargo.lock",
+                  "sha256": "3d8ddc71c7c24bd48ac54729aa78b3d742ed2f4045fb4c8cfb43943bf5e677c0"
+                }
+              },
+              "runtime": {
+                "bytes": 27483636,
+                "path": "D:\\a\\Xiao\\Xiao\\core\\rust\\target\\release\\xiao_runtime.lib",
+                "sha256": "f6f82d845940ac8060e77a7a366d68f476e03000df8bbf2e8600eb3503a486e5"
+              },
+              "tracked_changes": [],
+              "tree": "5c57000ef83a6a0ac5578e3073b84d5d55731701"
+            },
+            "before": {
+              "cargo_delegate": {
+                "bytes": 31347200,
+                "path": "C:\\Users\\runneradmin\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+                "sha256": "122f18d28a63fa358f3db266abee1ff1d8aabf0ab7f2dd9ac38a38da99977ae5"
+              },
+              "cargo_target_dir": "D:\\a\\Xiao\\Xiao\\core\\rust\\target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44460712977",
+                "GITHUB_SHA": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+                "ImageOS": "win25-vs2026",
+                "ImageVersion": "20261103.298.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Windows",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "controlled_cargo": "D:\\a\\_temp\\xiao-controlled-cargo-ea74c72382e64bd08cb1dfd55bbca36a\\cargo.CMD",
+              "devdocs_tree": "528d84a99a0227957b4bd90cbb85395c0b110c99",
+              "head": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+              "host": "Windows-2025Server-10.0.26100-SP0",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 20472,
+                  "path": "D:\\a\\Xiao\\Xiao\\core\\rust\\Cargo.lock",
+                  "sha256": "d8046478bad7c8b2188cb63968c9f6ea31752ad84dcdd7e23c9dcb95f32c5fb2"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 20053,
+                  "path": "D:\\a\\Xiao\\Xiao\\tests\\benchmarks\\Cargo.lock",
+                  "sha256": "3d8ddc71c7c24bd48ac54729aa78b3d742ed2f4045fb4c8cfb43943bf5e677c0"
+                }
+              },
+              "runtime": null,
+              "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-pc-windows-msvc\nrelease: 1.96.0\nLLVM version: 22.1.2",
+              "tracked_changes": [],
+              "tree": "5c57000ef83a6a0ac5578e3073b84d5d55731701"
+            },
+            "native": {
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44460712977",
+                "GITHUB_SHA": "5758aa51dd54b30d62fb450b8518c3f92e336909",
+                "ImageOS": "win25-vs2026",
+                "ImageVersion": "20261103.298.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Windows",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "diagnostics": {
+                "bytes": 1146368,
+                "path": "D:\\a\\Xiao\\Xiao\\core\\rust\\target\\debug\\xiao-diagnostics.exe",
+                "sha256": "dba17b84b7f2f2f3eda677f6def4484bafdc9764fcd820ec523d69ded16e249b"
+              },
+              "llvm": {
+                "XIAO_CLANG": {
+                  "bytes": 150897,
+                  "path": "D:\\a\\_temp\\msys64\\ucrt64\\bin\\clang.exe",
+                  "sha256": "37547ce077449047ad31cc3483b2fb841050397fed0340e429ee879bffaf3f17",
+                  "version": "clang version 23.1.5 (https://github.com/msys2/MINGW-packages efc96badda99c076509ef01986c673d1cd30f725)\nTarget: x86_64-w64-windows-gnu\nThread model: posix\nInstalledDir: D:/a/_temp/msys64/ucrt64/bin"
+                },
+                "XIAO_LLC": {
+                  "bytes": 194047,
+                  "path": "D:\\a\\_temp\\msys64\\ucrt64\\bin\\llc.exe",
+                  "sha256": "8361ce63472b1de1cf81f1a1e8aa34d47b854e606bd81fbf51602a4648fd9ddb",
+                  "version": "LLVM (http://llvm.org/):\n  LLVM version 23.1.5\n  Optimized build.\n  Default target: x86_64-w64-windows-gnu\n  Host CPU: icelake-server\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - legacy name for amdgpu\n    amdgpu      - AMDGPU gfx6+\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv32be   - 32-bit big endian RISC-V\n    riscv64     - 64-bit RISC-V\n    riscv64be   - 64-bit big endian RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    spirv       - SPIR-V Logical\n    spirv32     - SPIR-V 32-bit\n    spirv64     - SPIR-V 64-bit\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore"
+                },
+                "XIAO_LLVM_AS": {
+                  "bytes": 34676,
+                  "path": "D:\\a\\_temp\\msys64\\ucrt64\\bin\\llvm-as.exe",
+                  "sha256": "38d067ef545592aa9db6ebca2b62cc3830f2ade4666009af04575dc5d69901b1",
+                  "version": "LLVM (http://llvm.org/):\n  LLVM version 23.1.5\n  Optimized build."
+                },
+                "XIAO_STRIP": {
+                  "bytes": 244173,
+                  "path": "D:\\a\\_temp\\msys64\\ucrt64\\bin\\llvm-strip.exe",
+                  "sha256": "190d95aee98f2e9f5a521a1dc5cdf66719dd3ecd0cbc739525843228fe11c0cf",
+                  "version": "llvm-strip, compatible with GNU strip\nLLVM (http://llvm.org/):\n  LLVM version 23.1.5\n  Optimized build."
+                }
+              },
+              "runtime": {
+                "bytes": 27483636,
+                "path": "D:\\a\\Xiao\\Xiao\\core\\rust\\target\\release\\xiao_runtime.lib",
+                "sha256": "f6f82d845940ac8060e77a7a366d68f476e03000df8bbf2e8600eb3503a486e5"
+              },
+              "target": "x86_64-pc-windows-msvc"
+            }
+          },
+          "labels": [
+            "windows-2025"
+          ],
+          "log": "ci/44460712977/135346524047.log",
+          "log_sha256": "35a123ec4eb77559bf520cc1805f7e0cd1f6435089a5358db01899a98495e2dc",
+          "name": "Native differential regression (Windows)"
+        }
+      },
+      "path": ".github/workflows/maintenance-regression.yml",
+      "run_attempt": 1,
+      "workflow_id": 376663825
+    },
+    "44464422364": {
+      "conclusion": "success",
+      "event": "workflow_dispatch",
+      "head_branch": "codex/b6-4-gates-runner",
+      "head_sha": "97d5f288117d496706d24d5aac304b3c122c6d62",
+      "id": 44464422364,
+      "jobs": {
+        "135358660716": {
+          "cache": "setup-bun:hit",
+          "conclusion": "success",
+          "failed_steps": [],
+          "identity": {
+            "after": {
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_JOB": "linux-workspace-gates",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44464422364",
+                "GITHUB_SHA": "97d5f288117d496706d24d5aac304b3c122c6d62",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261111.370.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux"
+              },
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "97d5f288117d496706d24d5aac304b3c122c6d62",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": {
+                "bytes": 34143086,
+                "path": "/home/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+              },
+              "tracked_changes": [],
+              "tree": "a576241b855042fee038ae1c6852a85bc19a86fe"
+            },
+            "before": {
+              "bun": "1.4.1",
+              "cargo_delegate": {
+                "bytes": 42865872,
+                "path": "/home/runner/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+                "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f"
+              },
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "clippy": "clippy 0.1.96 (ac68faa20c 2026-05-25)",
+              "context": {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_JOB": "linux-workspace-gates",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44464422364",
+                "GITHUB_SHA": "97d5f288117d496706d24d5aac304b3c122c6d62",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261111.370.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux"
+              },
+              "controlled_cargo": "/home/runner/work/_temp/xiao-controlled-cargo-8e615f4bc3f44088aecb44e5c89e153a/cargo",
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "97d5f288117d496706d24d5aac304b3c122c6d62",
+              "host": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": null,
+              "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-unknown-linux-gnu\nrelease: 1.96.0\nLLVM version: 22.1.2",
+              "rustfmt": "rustfmt 1.9.0-stable (ac68faa20c 2026-05-25)",
+              "tracked_changes": [],
+              "tree": "a576241b855042fee038ae1c6852a85bc19a86fe"
+            },
+            "native": {
+              "context": {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_JOB": "linux-workspace-gates",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44464422364",
+                "GITHUB_SHA": "97d5f288117d496706d24d5aac304b3c122c6d62",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261111.370.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux"
+              },
+              "llvm": {
+                "XIAO_CLANG": {
+                  "bytes": 140592,
+                  "path": "/usr/lib/llvm-18/bin/clang",
+                  "sha256": "8ef402d453d1ba4902e4ee0f0f847f6cfa01400c95aa43c24e97818b9c0e3f45",
+                  "version": "Ubuntu clang version 18.1.3 (1ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin"
+                },
+                "XIAO_LLC": {
+                  "bytes": 164560,
+                  "path": "/usr/lib/llvm-18/bin/llc",
+                  "sha256": "1efd161c597a2c4255987800505303e298eba00dbee1e93468271c1f7f738181",
+                  "version": "Ubuntu LLVM version 18.1.3\n  Optimized build.\n  Default target: x86_64-pc-linux-gnu\n  Host CPU: icelake-server\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - AMD GCN GPUs\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    m68k        - Motorola 68000 family\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv64     - 64-bit RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore\n    xtensa      - Xtensa 32"
+                },
+                "XIAO_LLVM_AS": {
+                  "bytes": 31480,
+                  "path": "/usr/lib/llvm-18/bin/llvm-as",
+                  "sha256": "8e7460eff4ba4e22d8ae881404bb24c5fc346996264e883ba26d41da4188215d",
+                  "version": "Ubuntu LLVM version 18.1.3\n  Optimized build."
+                },
+                "XIAO_STRIP": {
+                  "bytes": 187416,
+                  "path": "/usr/lib/llvm-18/bin/llvm-objcopy",
+                  "sha256": "f52b9997b3c5019b4b3043e12b1ae2e821df67996ca344921c234c89c4d23e34",
+                  "version": "llvm-strip, compatible with GNU strip\nUbuntu LLVM version 18.1.3\n  Optimized build."
+                }
+              },
+              "runtime": {
+                "bytes": 34143086,
+                "path": "/home/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+              },
+              "target": "x86_64-unknown-linux-gnu"
+            }
+          },
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "log": "ci/44464422364/135358660716.log",
+          "log_sha256": "2757f18644f3d49fb460432edde779c75ffbaf8eedabf962db3efcd4fd60630f",
+          "name": "Linux workspace gates"
+        }
+      },
+      "path": ".github/workflows/workspace-gates.yml",
+      "run_attempt": 1,
+      "workflow_id": 379178019
+    },
+    "44464422497": {
+      "conclusion": "failure",
+      "event": "workflow_dispatch",
+      "head_branch": "codex/b6-4-gates-runner",
+      "head_sha": "97d5f288117d496706d24d5aac304b3c122c6d62",
+      "id": 44464422497,
+      "jobs": {
+        "135358661136": {
+          "cache": "rust-cache:hit",
+          "conclusion": "success",
+          "failed_steps": [],
+          "identity": {},
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "log": "ci/44464422497/135358661136.log",
+          "log_sha256": "1ee247367e7b61ba3ac1b0a0f6ef44d0558e30c8975f7ff74bd3672bb775076d",
+          "name": "Deterministic parser and artifact security regression"
+        },
+        "135358661515": {
+          "cache": "rust-cache:miss",
+          "conclusion": "failure",
+          "failed_steps": [
+            "Build runtime and run macOS native gates"
+          ],
+          "identity": {
+            "after": {
+              "cargo_target_dir": "/Users/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44464422497",
+                "GITHUB_SHA": "97d5f288117d496706d24d5aac304b3c122c6d62",
+                "ImageOS": "macos15",
+                "ImageVersion": "20261104.0514.1",
+                "RUNNER_ARCH": "ARM64",
+                "RUNNER_OS": "macOS",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "97d5f288117d496706d24d5aac304b3c122c6d62",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/Users/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/Users/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": {
+                "bytes": 25667552,
+                "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+              },
+              "tracked_changes": [],
+              "tree": "a576241b855042fee038ae1c6852a85bc19a86fe"
+            },
+            "before": {
+              "cargo_delegate": {
+                "bytes": 31817288,
+                "path": "/Users/runner/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+                "sha256": "fec239e6b74df873f54ef52912bfcfcc8d8414bc14a7ae1e0be80460bae72841"
+              },
+              "cargo_target_dir": "/Users/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44464422497",
+                "GITHUB_SHA": "97d5f288117d496706d24d5aac304b3c122c6d62",
+                "ImageOS": "macos15",
+                "ImageVersion": "20261104.0514.1",
+                "RUNNER_ARCH": "ARM64",
+                "RUNNER_OS": "macOS",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "controlled_cargo": "/Users/runner/work/_temp/xiao-controlled-cargo-81754972398f44959f0aac7d364d51f1/cargo",
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "97d5f288117d496706d24d5aac304b3c122c6d62",
+              "host": "macOS-15.8.2-arm64-arm-64bit-Mach-O",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/Users/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/Users/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": null,
+              "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: aarch64-apple-darwin\nrelease: 1.96.0\nLLVM version: 22.1.2",
+              "tracked_changes": [],
+              "tree": "a576241b855042fee038ae1c6852a85bc19a86fe"
+            },
+            "native": {
+              "context": {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44464422497",
+                "GITHUB_SHA": "97d5f288117d496706d24d5aac304b3c122c6d62",
+                "ImageOS": "macos15",
+                "ImageVersion": "20261104.0514.1",
+                "RUNNER_ARCH": "ARM64",
+                "RUNNER_OS": "macOS",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "diagnostics": {
+                "bytes": 1997568,
+                "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/debug/xiao-diagnostics",
+                "sha256": "9c99ec7e2dc1ea6476c8f033136a1cb805b6cc6642e523cc3bc153da46d3a473"
+              },
+              "float_equality_output": {
+                "exists": false,
+                "path": "/Users/runner/work/_temp/xiao-float-equality.7auEwo7W/observations"
+              },
+              "llvm": {
+                "XIAO_CLANG": {
+                  "bytes": 137848,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/clang-23",
+                  "sha256": "4f55f770c8e4e0a33deb3ea2007fd4a7a1d73f0dbd493fb241a8cd43952824e5",
+                  "version": "Homebrew clang version 23.1.4\nTarget: arm64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /opt/homebrew/Cellar/llvm/23.1.4/bin"
+                },
+                "XIAO_LLC": {
+                  "bytes": 208032,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/llc",
+                  "sha256": "9c679c2ae5ea5c4f1de80fadb59f37aae9117277238d5997c1dcc1e96a14c53b",
+                  "version": "Homebrew LLVM version 23.1.4\n  Optimized build.\n  Default target: arm64-apple-darwin24.6.0\n  Host CPU: (unknown)\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - legacy name for amdgpu\n    amdgpu      - AMDGPU gfx6+\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv32be   - 32-bit big endian RISC-V\n    riscv64     - 64-bit RISC-V\n    riscv64be   - 64-bit big endian RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    spirv       - SPIR-V Logical\n    spirv32     - SPIR-V 32-bit\n    spirv64     - SPIR-V 64-bit\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore"
+                },
+                "XIAO_LLVM_AS": {
+                  "bytes": 44680,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/llvm-as",
+                  "sha256": "13075e1b90b47d573944916939f4a4bf9f57d12bb2b16905bf02f871d9a15af0",
+                  "version": "Homebrew LLVM version 23.1.4\n  Optimized build."
+                },
+                "XIAO_STRIP": {
+                  "bytes": 262464,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/llvm-objcopy",
+                  "sha256": "3568e6209a9e2c782832a5f704123f10cd2711c9b391622b9021e291697b9905",
+                  "version": "llvm-strip, compatible with GNU strip\nHomebrew LLVM version 23.1.4\n  Optimized build."
+                }
+              },
+              "runtime": {
+                "bytes": 25667552,
+                "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+              },
+              "target": "aarch64-apple-darwin"
+            }
+          },
+          "labels": [
+            "macos-15"
+          ],
+          "log": "ci/44464422497/135358661515.log",
+          "log_sha256": "a2a95623fd3a75ad443db1ee1075e75e7887240c037113a2820f4dec1f02048d",
+          "name": "Native differential regression (macOS)"
+        },
+        "135358661585": {
+          "cache": "rust-cache:hit",
+          "conclusion": "success",
+          "failed_steps": [],
+          "identity": {},
+          "labels": [
+            "windows-2025"
+          ],
+          "log": "ci/44464422497/135358661585.log",
+          "log_sha256": "07bf5aa4a4aaa04f3de4da207a1a5047c6207d092458b72092bbc0ed224f9c58",
+          "name": "Deterministic artifact size regression (Windows baseline)"
+        },
+        "135358661593": {
+          "cache": "rust-cache:miss",
+          "conclusion": "failure",
+          "failed_steps": [
+            "Build runtime and run Linux native gates"
+          ],
+          "identity": {
+            "after": {
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44464422497",
+                "GITHUB_SHA": "97d5f288117d496706d24d5aac304b3c122c6d62",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261116.133.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "97d5f288117d496706d24d5aac304b3c122c6d62",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": {
+                "bytes": 34143086,
+                "path": "/home/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+              },
+              "tracked_changes": [],
+              "tree": "a576241b855042fee038ae1c6852a85bc19a86fe"
+            },
+            "before": {
+              "cargo_delegate": {
+                "bytes": 42865872,
+                "path": "/home/runner/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+                "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f"
+              },
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44464422497",
+                "GITHUB_SHA": "97d5f288117d496706d24d5aac304b3c122c6d62",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261116.133.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "controlled_cargo": "/home/runner/work/_temp/xiao-controlled-cargo-f10280afdca142e39dbcad87af2fe712/cargo",
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "97d5f288117d496706d24d5aac304b3c122c6d62",
+              "host": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": null,
+              "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-unknown-linux-gnu\nrelease: 1.96.0\nLLVM version: 22.1.2",
+              "tracked_changes": [],
+              "tree": "a576241b855042fee038ae1c6852a85bc19a86fe"
+            },
+            "native": {
+              "context": {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44464422497",
+                "GITHUB_SHA": "97d5f288117d496706d24d5aac304b3c122c6d62",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261116.133.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "diagnostics": {
+                "bytes": 7628616,
+                "path": "/home/runner/work/Xiao/Xiao/core/rust/target/debug/xiao-diagnostics",
+                "sha256": "7a0e9e83e81803e410ee762204f2caaae2b0c9596bc12eb30cbe4a94f81b02f5"
+              },
+              "float_equality_output": {
+                "exists": false,
+                "path": "/home/runner/work/_temp/xiao-float-equality.va2XHQYK/observations"
+              },
+              "llvm": {
+                "XIAO_CLANG": {
+                  "bytes": 140592,
+                  "path": "/usr/lib/llvm-18/bin/clang",
+                  "sha256": "8ef402d453d1ba4902e4ee0f0f847f6cfa01400c95aa43c24e97818b9c0e3f45",
+                  "version": "Ubuntu clang version 18.1.3 (1ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin"
+                },
+                "XIAO_LLC": {
+                  "bytes": 164560,
+                  "path": "/usr/lib/llvm-18/bin/llc",
+                  "sha256": "1efd161c597a2c4255987800505303e298eba00dbee1e93468271c1f7f738181",
+                  "version": "Ubuntu LLVM version 18.1.3\n  Optimized build.\n  Default target: x86_64-pc-linux-gnu\n  Host CPU: graniterapids\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - AMD GCN GPUs\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    m68k        - Motorola 68000 family\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv64     - 64-bit RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore\n    xtensa      - Xtensa 32"
+                },
+                "XIAO_LLVM_AS": {
+                  "bytes": 31480,
+                  "path": "/usr/lib/llvm-18/bin/llvm-as",
+                  "sha256": "8e7460eff4ba4e22d8ae881404bb24c5fc346996264e883ba26d41da4188215d",
+                  "version": "Ubuntu LLVM version 18.1.3\n  Optimized build."
+                },
+                "XIAO_STRIP": {
+                  "bytes": 187416,
+                  "path": "/usr/lib/llvm-18/bin/llvm-objcopy",
+                  "sha256": "f52b9997b3c5019b4b3043e12b1ae2e821df67996ca344921c234c89c4d23e34",
+                  "version": "llvm-strip, compatible with GNU strip\nUbuntu LLVM version 18.1.3\n  Optimized build."
+                }
+              },
+              "runtime": {
+                "bytes": 34143086,
+                "path": "/home/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+              },
+              "target": "x86_64-unknown-linux-gnu"
+            }
+          },
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "log": "ci/44464422497/135358661593.log",
+          "log_sha256": "53431511a022964d790f407565bcb02a77fa531141baf116981a14ecd42a41ea",
+          "name": "Native differential regression (Linux)"
+        },
+        "135358661595": {
+          "cache": "rust-cache:miss",
+          "conclusion": "success",
+          "failed_steps": [],
+          "identity": {
+            "after": {
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_JOB": "workspace-default-tests",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44464422497",
+                "GITHUB_SHA": "97d5f288117d496706d24d5aac304b3c122c6d62",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261116.133.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "97d5f288117d496706d24d5aac304b3c122c6d62",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": {
+                "bytes": 34143086,
+                "path": "/home/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+              },
+              "tracked_changes": [],
+              "tree": "a576241b855042fee038ae1c6852a85bc19a86fe"
+            },
+            "before": {
+              "cargo_delegate": {
+                "bytes": 42865872,
+                "path": "/home/runner/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+                "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f"
+              },
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_JOB": "workspace-default-tests",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44464422497",
+                "GITHUB_SHA": "97d5f288117d496706d24d5aac304b3c122c6d62",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261116.133.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "controlled_cargo": "/home/runner/work/_temp/xiao-controlled-cargo-ffdfd7dd5556482ba37ea7316014cf28/cargo",
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "97d5f288117d496706d24d5aac304b3c122c6d62",
+              "host": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": null,
+              "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-unknown-linux-gnu\nrelease: 1.96.0\nLLVM version: 22.1.2",
+              "tracked_changes": [],
+              "tree": "a576241b855042fee038ae1c6852a85bc19a86fe"
+            },
+            "native": {
+              "context": {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_JOB": "workspace-default-tests",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44464422497",
+                "GITHUB_SHA": "97d5f288117d496706d24d5aac304b3c122c6d62",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261116.133.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "llvm": {
+                "XIAO_CLANG": {
+                  "bytes": 140592,
+                  "path": "/usr/lib/llvm-18/bin/clang",
+                  "sha256": "8ef402d453d1ba4902e4ee0f0f847f6cfa01400c95aa43c24e97818b9c0e3f45",
+                  "version": "Ubuntu clang version 18.1.3 (1ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin"
+                },
+                "XIAO_LLC": {
+                  "bytes": 164560,
+                  "path": "/usr/lib/llvm-18/bin/llc",
+                  "sha256": "1efd161c597a2c4255987800505303e298eba00dbee1e93468271c1f7f738181",
+                  "version": "Ubuntu LLVM version 18.1.3\n  Optimized build.\n  Default target: x86_64-pc-linux-gnu\n  Host CPU: graniterapids\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - AMD GCN GPUs\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    m68k        - Motorola 68000 family\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv64     - 64-bit RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore\n    xtensa      - Xtensa 32"
+                },
+                "XIAO_LLVM_AS": {
+                  "bytes": 31480,
+                  "path": "/usr/lib/llvm-18/bin/llvm-as",
+                  "sha256": "8e7460eff4ba4e22d8ae881404bb24c5fc346996264e883ba26d41da4188215d",
+                  "version": "Ubuntu LLVM version 18.1.3\n  Optimized build."
+                },
+                "XIAO_STRIP": {
+                  "bytes": 187416,
+                  "path": "/usr/lib/llvm-18/bin/llvm-objcopy",
+                  "sha256": "f52b9997b3c5019b4b3043e12b1ae2e821df67996ca344921c234c89c4d23e34",
+                  "version": "llvm-strip, compatible with GNU strip\nUbuntu LLVM version 18.1.3\n  Optimized build."
+                }
+              },
+              "runtime": {
+                "bytes": 34143086,
+                "path": "/home/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+              },
+              "target": "x86_64-unknown-linux-gnu"
+            }
+          },
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "log": "ci/44464422497/135358661595.log",
+          "log_sha256": "35bb223530f7956da994dc93003a54bea4aebd4ff846d0ed65621eb8bedfa56b",
+          "name": "Rust workspace default tests (Linux)"
+        },
+        "135358661620": {
+          "cache": "rust-cache:miss",
+          "conclusion": "failure",
+          "failed_steps": [
+            "Build runtime and run native gates"
+          ],
+          "identity": {
+            "after": {
+              "cargo_target_dir": "D:\\a\\Xiao\\Xiao\\core\\rust\\target",
+              "context": {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44464422497",
+                "GITHUB_SHA": "97d5f288117d496706d24d5aac304b3c122c6d62",
+                "ImageOS": "win25-vs2026",
+                "ImageVersion": "20261103.298.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Windows",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "97d5f288117d496706d24d5aac304b3c122c6d62",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 20472,
+                  "path": "D:\\a\\Xiao\\Xiao\\core\\rust\\Cargo.lock",
+                  "sha256": "d8046478bad7c8b2188cb63968c9f6ea31752ad84dcdd7e23c9dcb95f32c5fb2"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 20053,
+                  "path": "D:\\a\\Xiao\\Xiao\\tests\\benchmarks\\Cargo.lock",
+                  "sha256": "3d8ddc71c7c24bd48ac54729aa78b3d742ed2f4045fb4c8cfb43943bf5e677c0"
+                }
+              },
+              "runtime": {
+                "bytes": 27483636,
+                "path": "D:\\a\\Xiao\\Xiao\\core\\rust\\target\\release\\xiao_runtime.lib",
+                "sha256": "f6f82d845940ac8060e77a7a366d68f476e03000df8bbf2e8600eb3503a486e5"
+              },
+              "tracked_changes": [],
+              "tree": "a576241b855042fee038ae1c6852a85bc19a86fe"
+            },
+            "before": {
+              "cargo_delegate": {
+                "bytes": 31347200,
+                "path": "C:\\Users\\runneradmin\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+                "sha256": "122f18d28a63fa358f3db266abee1ff1d8aabf0ab7f2dd9ac38a38da99977ae5"
+              },
+              "cargo_target_dir": "D:\\a\\Xiao\\Xiao\\core\\rust\\target",
+              "context": {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44464422497",
+                "GITHUB_SHA": "97d5f288117d496706d24d5aac304b3c122c6d62",
+                "ImageOS": "win25-vs2026",
+                "ImageVersion": "20261103.298.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Windows",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "controlled_cargo": "D:\\a\\_temp\\xiao-controlled-cargo-94a8a12804194500aef0d547f53e53f9\\cargo.CMD",
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "97d5f288117d496706d24d5aac304b3c122c6d62",
+              "host": "Windows-2025Server-10.0.26100-SP0",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 20472,
+                  "path": "D:\\a\\Xiao\\Xiao\\core\\rust\\Cargo.lock",
+                  "sha256": "d8046478bad7c8b2188cb63968c9f6ea31752ad84dcdd7e23c9dcb95f32c5fb2"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 20053,
+                  "path": "D:\\a\\Xiao\\Xiao\\tests\\benchmarks\\Cargo.lock",
+                  "sha256": "3d8ddc71c7c24bd48ac54729aa78b3d742ed2f4045fb4c8cfb43943bf5e677c0"
+                }
+              },
+              "runtime": null,
+              "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-pc-windows-msvc\nrelease: 1.96.0\nLLVM version: 22.1.2",
+              "tracked_changes": [],
+              "tree": "a576241b855042fee038ae1c6852a85bc19a86fe"
+            },
+            "native": {
+              "context": {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_JOB": "native-regression",
+                "GITHUB_REF": "refs/heads/codex/b6-4-gates-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44464422497",
+                "GITHUB_SHA": "97d5f288117d496706d24d5aac304b3c122c6d62",
+                "ImageOS": "win25-vs2026",
+                "ImageVersion": "20261103.298.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Windows",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "diagnostics": {
+                "bytes": 1146368,
+                "path": "D:\\a\\Xiao\\Xiao\\core\\rust\\target\\debug\\xiao-diagnostics.exe",
+                "sha256": "1610caf5dcf27124ec84a2640253bb27e7032581ae0ff5d047c5782448871e05"
+              },
+              "float_equality_output": {
+                "exists": false,
+                "path": "D:\\a\\_temp\\xiao-float-equality-01d680c44d8a4024ac7b3f116ebb2ce9"
+              },
+              "llvm": {
+                "XIAO_CLANG": {
+                  "bytes": 150897,
+                  "path": "D:\\a\\_temp\\msys64\\ucrt64\\bin\\clang.exe",
+                  "sha256": "37547ce077449047ad31cc3483b2fb841050397fed0340e429ee879bffaf3f17",
+                  "version": "clang version 23.1.5 (https://github.com/msys2/MINGW-packages efc96badda99c076509ef01986c673d1cd30f725)\nTarget: x86_64-w64-windows-gnu\nThread model: posix\nInstalledDir: D:/a/_temp/msys64/ucrt64/bin"
+                },
+                "XIAO_LLC": {
+                  "bytes": 194047,
+                  "path": "D:\\a\\_temp\\msys64\\ucrt64\\bin\\llc.exe",
+                  "sha256": "8361ce63472b1de1cf81f1a1e8aa34d47b854e606bd81fbf51602a4648fd9ddb",
+                  "version": "LLVM (http://llvm.org/):\n  LLVM version 23.1.5\n  Optimized build.\n  Default target: x86_64-w64-windows-gnu\n  Host CPU: znver3\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - legacy name for amdgpu\n    amdgpu      - AMDGPU gfx6+\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv32be   - 32-bit big endian RISC-V\n    riscv64     - 64-bit RISC-V\n    riscv64be   - 64-bit big endian RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    spirv       - SPIR-V Logical\n    spirv32     - SPIR-V 32-bit\n    spirv64     - SPIR-V 64-bit\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore"
+                },
+                "XIAO_LLVM_AS": {
+                  "bytes": 34676,
+                  "path": "D:\\a\\_temp\\msys64\\ucrt64\\bin\\llvm-as.exe",
+                  "sha256": "38d067ef545592aa9db6ebca2b62cc3830f2ade4666009af04575dc5d69901b1",
+                  "version": "LLVM (http://llvm.org/):\n  LLVM version 23.1.5\n  Optimized build."
+                },
+                "XIAO_STRIP": {
+                  "bytes": 244173,
+                  "path": "D:\\a\\_temp\\msys64\\ucrt64\\bin\\llvm-strip.exe",
+                  "sha256": "190d95aee98f2e9f5a521a1dc5cdf66719dd3ecd0cbc739525843228fe11c0cf",
+                  "version": "llvm-strip, compatible with GNU strip\nLLVM (http://llvm.org/):\n  LLVM version 23.1.5\n  Optimized build."
+                }
+              },
+              "runtime": {
+                "bytes": 27483636,
+                "path": "D:\\a\\Xiao\\Xiao\\core\\rust\\target\\release\\xiao_runtime.lib",
+                "sha256": "f6f82d845940ac8060e77a7a366d68f476e03000df8bbf2e8600eb3503a486e5"
+              },
+              "target": "x86_64-pc-windows-msvc"
+            }
+          },
+          "labels": [
+            "windows-2025"
+          ],
+          "log": "ci/44464422497/135358661620.log",
+          "log_sha256": "ec0d229607365af34a9c4e9ad44918633ae5786101ac028ea2f09f2e5cacd081",
+          "name": "Native differential regression (Windows)"
+        }
+      },
+      "path": ".github/workflows/maintenance-regression.yml",
+      "run_attempt": 1,
+      "workflow_id": 376663825
+    },
+    "44467531829": {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "codex/b6-4-b1-runner",
+      "head_sha": "9ea348f4ab0dee4fda2b2ee86086bb05df4f3f47",
+      "id": 44467531829,
+      "jobs": {
+        "135368808231": {
+          "cache": "no-rust-cache-action",
+          "conclusion": "success",
+          "failed_steps": [],
+          "identity": {
+            "after": {
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "exact",
+                "GITHUB_REF": "refs/heads/codex/b6-4-b1-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44467531829",
+                "GITHUB_SHA": "9ea348f4ab0dee4fda2b2ee86086bb05df4f3f47",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261116.133.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "9ea348f4ab0dee4fda2b2ee86086bb05df4f3f47",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": {
+                "bytes": 36690376,
+                "path": "/home/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "ae7627f2a719b741af14e67acf429950d27fcccff286b49ce58113e987de0ef3"
+              },
+              "tracked_changes": [],
+              "tree": "f11f54fa967660a8b24739cd658e561d1df76c3c"
+            },
+            "before": {
+              "cargo_delegate": {
+                "bytes": 36100400,
+                "path": "/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+                "sha256": "84d55d77232a921da96bcf2e1f78532ef5c5221803aae4448d9e220d48ebd808"
+              },
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "exact",
+                "GITHUB_REF": "refs/heads/codex/b6-4-b1-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44467531829",
+                "GITHUB_SHA": "9ea348f4ab0dee4fda2b2ee86086bb05df4f3f47",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261116.133.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "controlled_cargo": "/home/runner/work/_temp/xiao-controlled-cargo-34968f78edf946edbbd33e9c775508b4/cargo",
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "9ea348f4ab0dee4fda2b2ee86086bb05df4f3f47",
+              "host": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": null,
+              "rustc": "rustc 1.100.0 (0ef1bc386 2026-11-09)\nbinary: rustc\ncommit-hash: 0ef1bc386059596dada8fb65b50425aab2ea637a\ncommit-date: 2026-11-09\nhost: x86_64-unknown-linux-gnu\nrelease: 1.100.0\nLLVM version: 23.1.5",
+              "tracked_changes": [],
+              "tree": "f11f54fa967660a8b24739cd658e561d1df76c3c"
+            },
+            "native": {
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "exact",
+                "GITHUB_REF": "refs/heads/codex/b6-4-b1-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44467531829",
+                "GITHUB_SHA": "9ea348f4ab0dee4fda2b2ee86086bb05df4f3f47",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261116.133.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "llvm": {
+                "XIAO_CLANG": {
+                  "bytes": 140592,
+                  "path": "/usr/lib/llvm-18/bin/clang",
+                  "sha256": "8ef402d453d1ba4902e4ee0f0f847f6cfa01400c95aa43c24e97818b9c0e3f45",
+                  "version": "Ubuntu clang version 18.1.3 (1ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin"
+                },
+                "XIAO_LLC": {
+                  "bytes": 164560,
+                  "path": "/usr/lib/llvm-18/bin/llc",
+                  "sha256": "1efd161c597a2c4255987800505303e298eba00dbee1e93468271c1f7f738181",
+                  "version": "Ubuntu LLVM version 18.1.3\n  Optimized build.\n  Default target: x86_64-pc-linux-gnu\n  Host CPU: graniterapids\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - AMD GCN GPUs\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    m68k        - Motorola 68000 family\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv64     - 64-bit RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore\n    xtensa      - Xtensa 32"
+                },
+                "XIAO_LLVM_AS": {
+                  "bytes": 31480,
+                  "path": "/usr/lib/llvm-18/bin/llvm-as",
+                  "sha256": "8e7460eff4ba4e22d8ae881404bb24c5fc346996264e883ba26d41da4188215d",
+                  "version": "Ubuntu LLVM version 18.1.3\n  Optimized build."
+                },
+                "XIAO_STRIP": {
+                  "bytes": 187416,
+                  "path": "/usr/lib/llvm-18/bin/llvm-objcopy",
+                  "sha256": "f52b9997b3c5019b4b3043e12b1ae2e821df67996ca344921c234c89c4d23e34",
+                  "version": "llvm-strip, compatible with GNU strip\nUbuntu LLVM version 18.1.3\n  Optimized build."
+                }
+              },
+              "runtime": {
+                "bytes": 36690376,
+                "path": "/home/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "ae7627f2a719b741af14e67acf429950d27fcccff286b49ce58113e987de0ef3"
+              },
+              "target": "x86_64-unknown-linux-gnu"
+            }
+          },
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "log": "ci/44467531829/135368808231.log",
+          "log_sha256": "70d80e473df2205eebf2b9ad430c76b2a8d95e24a3556cc7756bcf4447a58d08",
+          "name": "B6-4 B1 native exact (linux)"
+        },
+        "135368808627": {
+          "cache": "no-rust-cache-action",
+          "conclusion": "success",
+          "failed_steps": [],
+          "identity": {
+            "after": {
+              "cargo_target_dir": "/Users/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "exact",
+                "GITHUB_REF": "refs/heads/codex/b6-4-b1-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44467531829",
+                "GITHUB_SHA": "9ea348f4ab0dee4fda2b2ee86086bb05df4f3f47",
+                "ImageOS": "macos15",
+                "ImageVersion": "20261104.0514.1",
+                "RUNNER_ARCH": "ARM64",
+                "RUNNER_OS": "macOS",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "9ea348f4ab0dee4fda2b2ee86086bb05df4f3f47",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/Users/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/Users/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": {
+                "bytes": 27535608,
+                "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "84e3960c3a643aa7931d39366d36420aeab2d5c2fbe8f848f743d6a652b023e7"
+              },
+              "tracked_changes": [],
+              "tree": "f11f54fa967660a8b24739cd658e561d1df76c3c"
+            },
+            "before": {
+              "cargo_delegate": {
+                "bytes": 32182376,
+                "path": "/Users/runner/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+                "sha256": "6d576d8058f8ca643e8fce55b64ee3c614ba64c9da2e536bae843e6a2e1f3951"
+              },
+              "cargo_target_dir": "/Users/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "exact",
+                "GITHUB_REF": "refs/heads/codex/b6-4-b1-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44467531829",
+                "GITHUB_SHA": "9ea348f4ab0dee4fda2b2ee86086bb05df4f3f47",
+                "ImageOS": "macos15",
+                "ImageVersion": "20261104.0514.1",
+                "RUNNER_ARCH": "ARM64",
+                "RUNNER_OS": "macOS",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "controlled_cargo": "/Users/runner/work/_temp/xiao-controlled-cargo-9435f6bfb5734366bce43518bf21ee1b/cargo",
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "9ea348f4ab0dee4fda2b2ee86086bb05df4f3f47",
+              "host": "macOS-15.8.2-arm64-arm-64bit-Mach-O",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/Users/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/Users/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": null,
+              "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: aarch64-apple-darwin\nrelease: 1.99.1\nLLVM version: 23.1.1",
+              "tracked_changes": [],
+              "tree": "f11f54fa967660a8b24739cd658e561d1df76c3c"
+            },
+            "native": {
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "exact",
+                "GITHUB_REF": "refs/heads/codex/b6-4-b1-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44467531829",
+                "GITHUB_SHA": "9ea348f4ab0dee4fda2b2ee86086bb05df4f3f47",
+                "ImageOS": "macos15",
+                "ImageVersion": "20261104.0514.1",
+                "RUNNER_ARCH": "ARM64",
+                "RUNNER_OS": "macOS",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "llvm": {
+                "XIAO_CLANG": {
+                  "bytes": 137848,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/clang-23",
+                  "sha256": "4f55f770c8e4e0a33deb3ea2007fd4a7a1d73f0dbd493fb241a8cd43952824e5",
+                  "version": "Homebrew clang version 23.1.4\nTarget: arm64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /opt/homebrew/Cellar/llvm/23.1.4/bin"
+                },
+                "XIAO_LLC": {
+                  "bytes": 208032,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/llc",
+                  "sha256": "9c679c2ae5ea5c4f1de80fadb59f37aae9117277238d5997c1dcc1e96a14c53b",
+                  "version": "Homebrew LLVM version 23.1.4\n  Optimized build.\n  Default target: arm64-apple-darwin24.6.0\n  Host CPU: (unknown)\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - legacy name for amdgpu\n    amdgpu      - AMDGPU gfx6+\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv32be   - 32-bit big endian RISC-V\n    riscv64     - 64-bit RISC-V\n    riscv64be   - 64-bit big endian RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    spirv       - SPIR-V Logical\n    spirv32     - SPIR-V 32-bit\n    spirv64     - SPIR-V 64-bit\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore"
+                },
+                "XIAO_LLVM_AS": {
+                  "bytes": 44680,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/llvm-as",
+                  "sha256": "13075e1b90b47d573944916939f4a4bf9f57d12bb2b16905bf02f871d9a15af0",
+                  "version": "Homebrew LLVM version 23.1.4\n  Optimized build."
+                },
+                "XIAO_STRIP": {
+                  "bytes": 262464,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/llvm-objcopy",
+                  "sha256": "3568e6209a9e2c782832a5f704123f10cd2711c9b391622b9021e291697b9905",
+                  "version": "llvm-strip, compatible with GNU strip\nHomebrew LLVM version 23.1.4\n  Optimized build."
+                }
+              },
+              "runtime": {
+                "bytes": 27535608,
+                "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "84e3960c3a643aa7931d39366d36420aeab2d5c2fbe8f848f743d6a652b023e7"
+              },
+              "target": "aarch64-apple-darwin"
+            }
+          },
+          "labels": [
+            "macos-15"
+          ],
+          "log": "ci/44467531829/135368808627.log",
+          "log_sha256": "d7985b0bf436ad595ab74c3c177d7ceaf8acd6799c2d1ce8c79922304dd1fc02",
+          "name": "B6-4 B1 native exact (macos)"
+        }
+      },
+      "path": ".github/workflows/b2-b6-b1-supplement.yml",
+      "run_attempt": 1,
+      "workflow_id": 423459955
+    },
+    "44470256490": {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "codex/b6-4-b1-runner",
+      "head_sha": "907c4cb35cee1abc70fc5a93943a0e46610ac44d",
+      "id": 44470256490,
+      "jobs": {
+        "135377693561": {
+          "cache": "no-rust-cache-action",
+          "conclusion": "success",
+          "failed_steps": [],
+          "identity": {
+            "after": {
+              "cargo_target_dir": "/Users/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "exact",
+                "GITHUB_REF": "refs/heads/codex/b6-4-b1-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44470256490",
+                "GITHUB_SHA": "907c4cb35cee1abc70fc5a93943a0e46610ac44d",
+                "ImageOS": "macos15",
+                "ImageVersion": "20261104.0514.1",
+                "RUNNER_ARCH": "ARM64",
+                "RUNNER_OS": "macOS",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "907c4cb35cee1abc70fc5a93943a0e46610ac44d",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/Users/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/Users/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": {
+                "bytes": 25667552,
+                "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+              },
+              "tracked_changes": [],
+              "tree": "57e84e4f1c1efc01d7eeec0e502802e7ff86d97d"
+            },
+            "before": {
+              "cargo_delegate": {
+                "bytes": 31817288,
+                "path": "/Users/runner/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+                "sha256": "fec239e6b74df873f54ef52912bfcfcc8d8414bc14a7ae1e0be80460bae72841"
+              },
+              "cargo_target_dir": "/Users/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "exact",
+                "GITHUB_REF": "refs/heads/codex/b6-4-b1-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44470256490",
+                "GITHUB_SHA": "907c4cb35cee1abc70fc5a93943a0e46610ac44d",
+                "ImageOS": "macos15",
+                "ImageVersion": "20261104.0514.1",
+                "RUNNER_ARCH": "ARM64",
+                "RUNNER_OS": "macOS",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "controlled_cargo": "/Users/runner/work/_temp/xiao-controlled-cargo-cee26af4842a4ee09620fb0569b579dd/cargo",
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "907c4cb35cee1abc70fc5a93943a0e46610ac44d",
+              "host": "macOS-15.8.2-arm64-arm-64bit-Mach-O",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/Users/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/Users/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": null,
+              "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: aarch64-apple-darwin\nrelease: 1.96.0\nLLVM version: 22.1.2",
+              "tracked_changes": [],
+              "tree": "57e84e4f1c1efc01d7eeec0e502802e7ff86d97d"
+            },
+            "native": {
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "exact",
+                "GITHUB_REF": "refs/heads/codex/b6-4-b1-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44470256490",
+                "GITHUB_SHA": "907c4cb35cee1abc70fc5a93943a0e46610ac44d",
+                "ImageOS": "macos15",
+                "ImageVersion": "20261104.0514.1",
+                "RUNNER_ARCH": "ARM64",
+                "RUNNER_OS": "macOS",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "llvm": {
+                "XIAO_CLANG": {
+                  "bytes": 137848,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/clang-23",
+                  "sha256": "4f55f770c8e4e0a33deb3ea2007fd4a7a1d73f0dbd493fb241a8cd43952824e5",
+                  "version": "Homebrew clang version 23.1.4\nTarget: arm64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /opt/homebrew/Cellar/llvm/23.1.4/bin"
+                },
+                "XIAO_LLC": {
+                  "bytes": 208032,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/llc",
+                  "sha256": "9c679c2ae5ea5c4f1de80fadb59f37aae9117277238d5997c1dcc1e96a14c53b",
+                  "version": "Homebrew LLVM version 23.1.4\n  Optimized build.\n  Default target: arm64-apple-darwin24.6.0\n  Host CPU: (unknown)\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - legacy name for amdgpu\n    amdgpu      - AMDGPU gfx6+\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv32be   - 32-bit big endian RISC-V\n    riscv64     - 64-bit RISC-V\n    riscv64be   - 64-bit big endian RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    spirv       - SPIR-V Logical\n    spirv32     - SPIR-V 32-bit\n    spirv64     - SPIR-V 64-bit\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore"
+                },
+                "XIAO_LLVM_AS": {
+                  "bytes": 44680,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/llvm-as",
+                  "sha256": "13075e1b90b47d573944916939f4a4bf9f57d12bb2b16905bf02f871d9a15af0",
+                  "version": "Homebrew LLVM version 23.1.4\n  Optimized build."
+                },
+                "XIAO_STRIP": {
+                  "bytes": 262464,
+                  "path": "/opt/homebrew/Cellar/llvm/23.1.4/bin/llvm-objcopy",
+                  "sha256": "3568e6209a9e2c782832a5f704123f10cd2711c9b391622b9021e291697b9905",
+                  "version": "llvm-strip, compatible with GNU strip\nHomebrew LLVM version 23.1.4\n  Optimized build."
+                }
+              },
+              "runtime": {
+                "bytes": 25667552,
+                "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+              },
+              "target": "aarch64-apple-darwin"
+            }
+          },
+          "labels": [
+            "macos-15"
+          ],
+          "log": "ci/44470256490/135377693561.log",
+          "log_sha256": "c9755079778530eb04fbf7f365c978ec2c765c73ae52042416a75cf817c8a102",
+          "name": "B6-4 B1 native exact (macos)"
+        },
+        "135377693905": {
+          "cache": "no-rust-cache-action",
+          "conclusion": "success",
+          "failed_steps": [],
+          "identity": {
+            "after": {
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "exact",
+                "GITHUB_REF": "refs/heads/codex/b6-4-b1-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44470256490",
+                "GITHUB_SHA": "907c4cb35cee1abc70fc5a93943a0e46610ac44d",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261111.127.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "907c4cb35cee1abc70fc5a93943a0e46610ac44d",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": {
+                "bytes": 34143086,
+                "path": "/home/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+              },
+              "tracked_changes": [],
+              "tree": "57e84e4f1c1efc01d7eeec0e502802e7ff86d97d"
+            },
+            "before": {
+              "cargo_delegate": {
+                "bytes": 42865872,
+                "path": "/home/runner/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+                "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f"
+              },
+              "cargo_target_dir": "/home/runner/work/Xiao/Xiao/core/rust/target",
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "exact",
+                "GITHUB_REF": "refs/heads/codex/b6-4-b1-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44470256490",
+                "GITHUB_SHA": "907c4cb35cee1abc70fc5a93943a0e46610ac44d",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261111.127.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "controlled_cargo": "/home/runner/work/_temp/xiao-controlled-cargo-859391e2a828445dada5003e067aecf1/cargo",
+              "devdocs_tree": "e6ddbd8346724532796d6bdedc8951889c81312c",
+              "head": "907c4cb35cee1abc70fc5a93943a0e46610ac44d",
+              "host": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+              "locks": {
+                "core/rust/Cargo.lock": {
+                  "bytes": 19599,
+                  "path": "/home/runner/work/Xiao/Xiao/core/rust/Cargo.lock",
+                  "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+                },
+                "tests/benchmarks/Cargo.lock": {
+                  "bytes": 19203,
+                  "path": "/home/runner/work/Xiao/Xiao/tests/benchmarks/Cargo.lock",
+                  "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+                }
+              },
+              "runtime": null,
+              "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-unknown-linux-gnu\nrelease: 1.96.0\nLLVM version: 22.1.2",
+              "tracked_changes": [],
+              "tree": "57e84e4f1c1efc01d7eeec0e502802e7ff86d97d"
+            },
+            "native": {
+              "context": {
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_JOB": "exact",
+                "GITHUB_REF": "refs/heads/codex/b6-4-b1-runner",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_RUN_ID": "44470256490",
+                "GITHUB_SHA": "907c4cb35cee1abc70fc5a93943a0e46610ac44d",
+                "ImageOS": "ubuntu24",
+                "ImageVersion": "20261111.127.1",
+                "RUNNER_ARCH": "X64",
+                "RUNNER_OS": "Linux",
+                "XIAO_B1_F10": "0",
+                "XIAO_B2_A_PERF": "0"
+              },
+              "llvm": {
+                "XIAO_CLANG": {
+                  "bytes": 140592,
+                  "path": "/usr/lib/llvm-18/bin/clang",
+                  "sha256": "8ef402d453d1ba4902e4ee0f0f847f6cfa01400c95aa43c24e97818b9c0e3f45",
+                  "version": "Ubuntu clang version 18.1.3 (1ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin"
+                },
+                "XIAO_LLC": {
+                  "bytes": 164560,
+                  "path": "/usr/lib/llvm-18/bin/llc",
+                  "sha256": "1efd161c597a2c4255987800505303e298eba00dbee1e93468271c1f7f738181",
+                  "version": "Ubuntu LLVM version 18.1.3\n  Optimized build.\n  Default target: x86_64-pc-linux-gnu\n  Host CPU: graniterapids\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - AMD GCN GPUs\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    m68k        - Motorola 68000 family\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv64     - 64-bit RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore\n    xtensa      - Xtensa 32"
+                },
+                "XIAO_LLVM_AS": {
+                  "bytes": 31480,
+                  "path": "/usr/lib/llvm-18/bin/llvm-as",
+                  "sha256": "8e7460eff4ba4e22d8ae881404bb24c5fc346996264e883ba26d41da4188215d",
+                  "version": "Ubuntu LLVM version 18.1.3\n  Optimized build."
+                },
+                "XIAO_STRIP": {
+                  "bytes": 187416,
+                  "path": "/usr/lib/llvm-18/bin/llvm-objcopy",
+                  "sha256": "f52b9997b3c5019b4b3043e12b1ae2e821df67996ca344921c234c89c4d23e34",
+                  "version": "llvm-strip, compatible with GNU strip\nUbuntu LLVM version 18.1.3\n  Optimized build."
+                }
+              },
+              "runtime": {
+                "bytes": 34143086,
+                "path": "/home/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+                "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+              },
+              "target": "x86_64-unknown-linux-gnu"
+            }
+          },
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "log": "ci/44470256490/135377693905.log",
+          "log_sha256": "2025c5df9ac48a6a898d10cbf8fb4fb52c89b95bcb60e81f48589653877d2d45",
+          "name": "B6-4 B1 native exact (linux)"
+        }
+      },
+      "path": ".github/workflows/b2-b6-b1-supplement.yml",
+      "run_attempt": 1,
+      "workflow_id": 423459955
+    }
+  },
+  "source": {
+    "locks": {
+      "core/rust/Cargo.lock": {
+        "bytes": 19599,
+        "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+      },
+      "tests/benchmarks/Cargo.lock": {
+        "bytes": 19203,
+        "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+      }
+    },
+    "planning": "5376f7fe5ae7dbd1081fd799eed374650e041a7e",
+    "product": "58176ff5299441f921f3b54fbdc300e2e46b9bb0",
+    "snapshots": {
+      "5758aa51dd54b30d62fb450b8518c3f92e336909": {
+        ".github/workflows/maintenance-regression.yml": {
+          "bytes": 27988,
+          "sha256": "8847de33d21595d61884e997b0f3971a391bcff96a408a759aeb383e6448757b"
+        },
+        ".github/workflows/workspace-gates.yml": {
+          "bytes": 1941,
+          "sha256": "bb024f1e1877b2d0690626f0fe3b58a97c44466d01ac74cb7d27f12a7e4ec80e"
+        },
+        "docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py": {
+          "bytes": 3202,
+          "sha256": "383cb4b30761ebe4e74dc578cb9dc8b493e205d62a94fcde2a01d5a84603f256"
+        },
+        "tools/gates/b1-probe-guards.ps1": {
+          "bytes": 9471,
+          "sha256": "3671bdffdf035f0d356ad82a8adcb8422c01aaeb2ed626caecdcf459e60a3f9d"
+        },
+        "tools/gates/controlled-cargo.py": {
+          "bytes": 4800,
+          "sha256": "69577e43dbe041132377944994cc6999aae51180f68b0dfbaa2b12a3c1c1086c"
+        },
+        "tools/gates/run.sh": {
+          "bytes": 4481,
+          "sha256": "3fe3cf6872caa4c32c4fc4b686d43011c89cd78698a6f862cbfbdc4d5964c7d3"
+        }
+      },
+      "907c4cb35cee1abc70fc5a93943a0e46610ac44d": {
+        ".github/workflows/b2-b6-b1-supplement.yml": {
+          "bytes": 3288,
+          "sha256": "1a5bb9922f57a18d58173849e3e016e5aa3233c38c778a068326001e3717d935"
+        },
+        ".github/workflows/maintenance-regression.yml": {
+          "bytes": 28713,
+          "sha256": "f2d6b436ae16ef0cf9482e6f3d3201a272de682e6117e42e02252e38699b427a"
+        },
+        "docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py": {
+          "bytes": 3490,
+          "sha256": "9e650aaf0354426bdf4a3b60e80fd82aa87567225d02ea5646fe416cd3b85dfc"
+        },
+        "docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/linux_runtime.sh": {
+          "bytes": 701,
+          "sha256": "613cbc0f4397f27cc2c41a6a0828a8fa81751521a197ef1928432d022a571dde"
+        },
+        "tools/gates/controlled-cargo.py": {
+          "bytes": 4800,
+          "sha256": "69577e43dbe041132377944994cc6999aae51180f68b0dfbaa2b12a3c1c1086c"
+        }
+      },
+      "97d5f288117d496706d24d5aac304b3c122c6d62": {
+        ".github/workflows/maintenance-regression.yml": {
+          "bytes": 28713,
+          "sha256": "f2d6b436ae16ef0cf9482e6f3d3201a272de682e6117e42e02252e38699b427a"
+        },
+        ".github/workflows/workspace-gates.yml": {
+          "bytes": 2304,
+          "sha256": "d90c55ffe8189a5a1d1d11d65c14aa76cf5c904f92a9394cb5de12b6747d45a4"
+        },
+        "bun.lock": {
+          "bytes": 2825,
+          "sha256": "57f584636b264e751ebb89411cf5a46eb2fd81de6190b6db5fe87237c5755a50"
+        },
+        "docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py": {
+          "bytes": 3490,
+          "sha256": "9e650aaf0354426bdf4a3b60e80fd82aa87567225d02ea5646fe416cd3b85dfc"
+        },
+        "docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/linux_runtime.sh": {
+          "bytes": 701,
+          "sha256": "613cbc0f4397f27cc2c41a6a0828a8fa81751521a197ef1928432d022a571dde"
+        },
+        "package.json": {
+          "bytes": 1089,
+          "sha256": "dd45b11525b96086fb5e676f3562034df6e094f6633dd199cc2728155f0dfb0c"
+        },
+        "tools/gates/b1-probe-guards.ps1": {
+          "bytes": 9471,
+          "sha256": "3671bdffdf035f0d356ad82a8adcb8422c01aaeb2ed626caecdcf459e60a3f9d"
+        },
+        "tools/gates/b2-a6-selection.py": {
+          "bytes": 1654,
+          "sha256": "5b490a15e76b09fa53a2670cb741d669a84787d8800adff52eb3a9b447b213e0"
+        },
+        "tools/gates/controlled-cargo.py": {
+          "bytes": 4800,
+          "sha256": "69577e43dbe041132377944994cc6999aae51180f68b0dfbaa2b12a3c1c1086c"
+        },
+        "tools/gates/run.sh": {
+          "bytes": 4481,
+          "sha256": "3fe3cf6872caa4c32c4fc4b686d43011c89cd78698a6f862cbfbdc4d5964c7d3"
+        }
+      },
+      "9ea348f4ab0dee4fda2b2ee86086bb05df4f3f47": {
+        ".github/workflows/b2-b6-b1-supplement.yml": {
+          "bytes": 3188,
+          "sha256": "c5b769ccad8d6071213b6591450cf9ad906cc6a8210d2b3e9bea05299a4c27c3"
+        },
+        "docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py": {
+          "bytes": 3490,
+          "sha256": "9e650aaf0354426bdf4a3b60e80fd82aa87567225d02ea5646fe416cd3b85dfc"
+        },
+        "docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/linux_runtime.sh": {
+          "bytes": 701,
+          "sha256": "613cbc0f4397f27cc2c41a6a0828a8fa81751521a197ef1928432d022a571dde"
+        },
+        "tools/gates/controlled-cargo.py": {
+          "bytes": 4800,
+          "sha256": "69577e43dbe041132377944994cc6999aae51180f68b0dfbaa2b12a3c1c1086c"
+        }
+      }
+    }
+  },
+  "verified": true
+}

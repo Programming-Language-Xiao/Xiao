@@ -1,0 +1,40 @@
+{
+  "archive_read_only": true,
+  "cases": {
+    "changed_attempt_rehashed": {
+      "archive": {
+        "bytes": 898541,
+        "sha256": "cb84b84cd2fd04f0719eac66be808e3f56221e7d96b26982a0f5f9bdd1c88ac4"
+      },
+      "exit": 1,
+      "expected_reason": "CI 运行身份不符：44464422497",
+      "read_only": true,
+      "stderr_last_line": "ValueError: CI 运行身份不符：44464422497"
+    },
+    "missing_object": {
+      "archive": {
+        "bytes": 896360,
+        "sha256": "26b08070aeaf656128a92fa6e56eac402d0b3e7de8b5c4d77537859281f91e77"
+      },
+      "exit": 1,
+      "expected_reason": "证据包清单不符",
+      "read_only": true,
+      "stderr_last_line": "ValueError: 证据包清单不符"
+    },
+    "original": {
+      "archive": {
+        "bytes": 898618,
+        "sha256": "7fc75dc8c72fc8f12128e197d70872f44442b762dcf5c16b2cf024ddc43f59ef"
+      },
+      "exit": 0,
+      "expected_reason": null,
+      "read_only": true,
+      "stderr_last_line": null
+    }
+  },
+  "original": {
+    "bytes": 898618,
+    "sha256": "7fc75dc8c72fc8f12128e197d70872f44442b762dcf5c16b2cf024ddc43f59ef"
+  },
+  "passed": true
+}

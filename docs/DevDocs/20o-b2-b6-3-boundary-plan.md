@@ -1,6 +1,7 @@
 # 20O-B2-B6-3. cmath/lfloat 错误与资源边界负载实施规划
 
-> **B6-3 三平台边界验收通过（2026-11-18）。** 固定 `58176ff5` 的 85 条用例在每平台的 VM、原生 O0 和 O3 各通过一次，共 765 次。每平台 11 项 C ABI 观察通过，B1/B4 回归及 28 条计数守卫通过。B6-4 待执行。[原始证据与复跑命令](assets/20o-b2-b/entry-20261118-b6-3/README.md)
+> **B6-3 三平台边界验收通过（2026-11-18）。** 固定 `58176ff5` 的 85 条用例在每平台的 VM、原生 O0 和 O3 各通过一次，共 765 次。每平台 11 项 C ABI 观察通过，B1/B4 回归及 28 条计数守卫通过。[原始证据与复跑命令](assets/20o-b2-b/entry-20261118-b6-3/README.md)
+> 2026-11-19，B6-4 的 Linux 工程门禁通过，三平台原生维护失败。[B6-4 执行证据](assets/20o-b2-b/entry-20261119-b6-4/README.md)
 > 入口：B6-2 固定 `79ea0375` 的九组性能证据与 [source-boundary 证明](assets/20o-b2-b/entry-20261118-b6-2/review/README.md)；当前产品为 `58176ff5`（ABI1.19/生成器22/接口1），B6-3 使用自身源码、Runtime 和工具身份。
 > 只做 F-3 §6.1/F-12 错误、资源、原子性与 C ABI 状态边界；不重跑 B6-2 性能、不跑 721、不改产品/ABI/registry/教程。
 > B6-1 仍为 `restricted/stage_passed=false`：Windows COFF 导出完整性未验证、Linux Clippy 未执行；B6-3 不得据此写成 B6-1 全通过。
@@ -151,4 +152,4 @@ core/rust/crates/xiao-driver/examples/                 受控测量入口（若�
 docs/DevDocs/assets/20o-b2-b/entry-20261118-b6-3/      B6-3 证据
 ```
 
-本页只做 B6-3；B6-4、B6-5 与 B7/B2-C 仍后置。
+本页记录 B6-3 的验收范围。后续执行状态见 [B6-4 规划](20o-b2-b6-4-ci-gates-plan.md)。

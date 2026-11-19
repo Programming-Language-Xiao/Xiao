@@ -1,6 +1,6 @@
 # 20O-B2-B6. cmath/lfloat 资源、错误与三平台性能规划
 
-> **B6当前状态（2026-11-18）**　B6-1 为 `restricted`，`stage_passed=false`。官方包装两别名 O0/O3 在三平台功能通过。Linux ELF 与 macOS Mach-O 均为 `Complete`，Windows COFF 导出完整性未验证，Linux Clippy 未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，固定 `79ea0375` 的九组性能测量通过，见 §2.7；B6-3 边界负载见[B6-3规划](20o-b2-b6-3-boundary-plan.md)；B6-4 工程门禁见[B6-4规划](20o-b2-b6-4-ci-gates-plan.md)。[Windows/Linux 限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)、[macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)、[B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)
+> **B6 当前状态（2026-11-19）**　B6-1 为 `restricted`，`stage_passed=false`。官方包装两别名 O0/O3 在三平台功能通过。Linux ELF 与 macOS Mach-O 均为 `Complete`，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，固定 `79ea0375` 的九组性能测量通过，见 §2.7。B6-3 边界功能通过。B6-4 的 Linux 工程门禁通过，三平台原生维护均失败，B6-5 尚未开始。[B6-3 规划](20o-b2-b6-3-boundary-plan.md) · [B6-4 执行证据](assets/20o-b2-b/entry-20261119-b6-4/README.md)
 
 > B5固定1.19/21矩阵和[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)保持只读历史身份；当前产品1.19/22。B6每轮均绑定自己的源码、Runtime和工具身份。B1原件缺口、22C/22D与19/11/22债务独立保留。
 > B5固定测试快照5864cbde为ABI1.19/生成器21/接口1。原17项资源目标及8次直接计时为旧负载历史证据；优化后18项资源目标和完整默认workspace均通过，详见URL优化记录。B6当前测量使用ABI1.19/生成器22 Runtime，并同时对账B5矩阵与21→22增量证据。
@@ -19,7 +19,8 @@
 | B6-1 | `restricted`，`stage_passed=false`。三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 未执行 |
 | B6-2 | 固定`79ea0375`，三平台各测VM、O0、O3，每组183项通过，`perf_pass=true` |
 | B6-3 | `58176ff5` 三平台边界验收通过，765 次语言执行，C ABI 每平台 11 项，计数守卫 28/28。[实测证据](assets/20o-b2-b/entry-20261118-b6-3/README.md) |
-| 后续批次 | B6-4 三平台与 CI 工程门禁、B6-5 收口 |
+| B6-4 | `97d5f288` 的 Linux 仓库门禁及默认 workspace 通过，三平台原生维护回归失败。B1 四条精确入口与计数守卫通过，`b6_4_passed=false`。[执行证据](assets/20o-b2-b/entry-20261119-b6-4/README.md) |
+| 后续批次 | B6-5 收口，接收 B6-4 的原生失败与后续归属 |
 | 测量入口版本/工具链 | 当前快照ABI1.19/生成器22/接口1；同时引用B5固定1.19/21拒绝/缓存矩阵与静态比较21→22增量证据。intrinsic1～48、Rust1.96.0与Cargo `--locked`；每轮测量固定源码/Runtime工具身份，优化后另建快照并重测受影响项 |
 | 本批目标 | cmath/lfloat 资源/错误/原子性、VM/原生三平台性能与 CI 证据 |
 | 未做 | B7 收口、B2-C 721/教程/registry/最终公共发布 |
@@ -179,6 +180,8 @@ B6-2使用`tools/gates/b2_b6_performance.py`从同一固定源码重建三平台
 6. 不修改工作流阈值/默认超时来补绿；A6 已批准的 `b2_a_perf` 40分钟只覆盖既有 A6 模式，B6 不自动继承该时限。实施前列出实际测量入口和 CI 命令；若需调整作业时限，先请星崽另行裁定。
 
 退出：三平台 CI/本机证据逐项绑定源码与 Runtime 身份；有不可验证项时只得出受限结论，不标为 B6 三平台通过。
+
+2026-11-19 执行记录。Linux 仓库门禁（含 Clippy）和默认 workspace 在 `97d5f288` 上通过。Linux/macOS 的静态浮点比较被 `rc` 组件校验拒绝，交 B4 LLVM Runtime 组件登记范围调查。Windows 的 `native-lock-wait-027` 释放顺序断言失败，归 22D 单列追踪。四条 B1 精确入口和两类守卫均有回执，三平台原生失败继续登记，`b6_4_passed=false`。[原始日志与审计](assets/20o-b2-b/entry-20261119-b6-4/README.md)
 
 ### B6-5：收口与 B7 交接
 
