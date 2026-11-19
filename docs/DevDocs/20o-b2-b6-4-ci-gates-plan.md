@@ -22,8 +22,8 @@ B6-4 是 **工程门禁与 CI 证据批**，不是性能或边界验收批。B6-
 ### 1.1 要做
 
 1. 固定产品基线 `58176ff5`，并记录每次 CI 的实际 `head_sha`、锁、工具链与目标；B6-2 `79ea0375` 和 B6-3 `58176ff5` 只作为各自阶段的独立证据引用；
-2. Linux 执行 `workspace-gates.yml` 的完整仓库门禁，并通过 `maintenance-regression.yml` 记录 Rust workspace 默认测试；不要把 `workspace-gates` 单独称为完整 Rust workspace 测试；
-3. 通过维护工作流的 Windows/Linux/macOS 原生回归取得三平台执行与 CI 身份；保存 run/job/attempt、工作流/脚本摘要、源码/Runtime/tool/target、日志与平台身份；
+2. Linux 执行 `workspace-gates.yml` 的完整仓库门禁，并通过 `maintenance-regression.yml` 记录 Rust workspace 默认测试；不要把 `workspace-gates` 单独称为完整 Rust workspace 测试；记录实际执行的 controlled-cargo、`check:clippy`、`check:lock` 命令与两份锁文件摘要，不以工作流名称代替；
+3. 通过维护工作流的 Windows/Linux/macOS 原生回归取得三平台执行与 CI 身份；保存 run/job/attempt、工作流/脚本摘要、源码/Runtime/tool/target、日志与平台身份；Linux 默认测试的 `--skip b1_capabilities_have_vm_golden_outputs` 与随后的精确 B1 单跑必须分成两段记录，不得写成无跳过完整运行；
 4. B1 计数守卫：从维护工作流采集 VM 与 Windows/Linux/macOS 三条原生入口的 4 份真实 Cargo 输出，再做 24 项派生负例回放；这是工作流自检，不代替产品测试；保存脚本/工作流摘要；
 5. push 路径过滤：按各工作流实际过滤条件和事件记录；未触发时不把其他 CI 记录当成覆盖证明；
 6. 逐平台/后端/优化级别记录结果；失败与不可验证项保留，不得汇总为通过；
@@ -61,6 +61,16 @@ B6-4 是 **工程门禁与 CI 证据批**，不是性能或边界验收批。B6-
 4. `workspace-gates.yml` 的 Linux fmt/Clippy/`check:lock`/`repo-check` 入口可复现；B6-1 的 Linux Clippy `not_run` 作为历史事实保留，不替代 B6-4 本批门禁；
 5. CI 每个 job 使用独立 Runner；维护工作流若恢复 Cargo 缓存，记录其状态与 target 路径，不标为冷构建；本机复跑另建唯一任务根；历史证据只读；
 6. 不改工作流阈值/默认超时；若需要调整，先请星崽另行裁定。
+
+### 2.1 开工单（2026-11-19）
+
+1. 入口：B6-3 `58176ff5` 边界功能通过（765 次语言执行、C ABI 11 项、B1 9/18、B4 两别名、4 条真实输出 + 24 条派生负例）；B6-2 `79ea0375` 性能与 source-boundary 证明；B6-1 `restricted/stage_passed=false`。产品基线 `58176ff5`，ABI1.19/生成器22/接口1；开工前复核到 HEAD 的产品/测试/工具/锁树无差异。
+2. 第一批：Linux `workspace-gates.yml`。保存 event/ref/head_sha/run/job/attempt、缓存动作与命中状态、实际 controlled-cargo/`check:clippy`/`check:lock` 命令、两份锁文件摘要；不得用工作流名称或 YAML 文本代替命令回执。
+3. 第二批：手动派发 `maintenance-regression.yml`，`b1_f10=false`、`b2_a_perf=false`。分别记录 Linux `workspace-default-tests` 的默认 workspace 测试（含 `--skip b1_capabilities_have_vm_golden_outputs`）与随后的精确 B1 单跑；以及 Windows/Linux/macOS `native-regression` 三作业的 run/job/attempt、head_sha、缓存/环境/Runtime/tool/target。
+4. 守卫：单独记录 `b1-probe-guards.ps1` 的 28 个模拟输入；另以 4 份真实 Cargo 输出执行 24 项派生负例回放。两类回执分开保存，均不代表产品矩阵。
+5. 平台完整性只引用 B6-3 历史快照：Windows COFF `UnverifiedCoffExports`、Linux ELF 与 macOS Mach-O `Complete`；B6-4 维护回归不重跑组件完整性，也不升级验证等级。
+6. 证据：新建 `assets/20o-b2-b/entry-20261119-b6-4/`；日志按 SHA-256 内容寻址；历史 B6-1/B6-2/B6-3 目录不改写；文档定稿后单次 docs 门禁。
+7. 退出：工程门禁、三平台 CI、守卫回执齐全，失败/缺项明确，B6-5 入口明确；本批不启动 B6-5、不重跑 B6-2 性能或 B6-3 全边界、不跑721。
 
 ## 三、分批执行
 
