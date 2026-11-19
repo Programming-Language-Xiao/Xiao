@@ -103,6 +103,14 @@ jobs:
       - name: Verify controlled measurement selection guards
         run: python tools/gates/b2-a6-selection.py --self-test
 
+      - name: Prepare Linux toolchain and Runtime for B6 diagnostics
+        shell: bash
+        run: bash docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/linux_runtime.sh
+
+      - name: Record Linux Runtime for B6 diagnostics
+        continue-on-error: true
+        run: python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py native
+
       - name: Run default workspace tests
         run: cargo test --manifest-path core/rust/Cargo.toml --workspace -- --skip b1_capabilities_have_vm_golden_outputs
 
@@ -285,6 +293,7 @@ jobs:
           $env:XIAO_RUNTIME_LIBRARY = Join-Path $pwd 'core/rust/target/release/xiao_runtime.lib'
           $env:XIAO_DIAGNOSTICS_PATH = Join-Path $pwd 'core/rust/target/debug/xiao-diagnostics.exe'
           $env:XIAO_DIAGNOSTICS_HOLD_MS = '0'
+          $env:XIAO_FLOAT_EQUALITY_OUTPUT = Join-Path $env:RUNNER_TEMP ('xiao-float-equality-' + [guid]::NewGuid().ToString('N'))
           foreach ($artifact in @($env:XIAO_RUNTIME_LIBRARY, $env:XIAO_DIAGNOSTICS_PATH)) {
             if (-not (Test-Path $artifact)) { throw "Required artifact missing: $artifact" }
           }
@@ -383,6 +392,7 @@ jobs:
           export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
           export XIAO_DIAGNOSTICS_PATH="$PWD/core/rust/target/debug/xiao-diagnostics"
           export XIAO_DIAGNOSTICS_HOLD_MS=0
+          export XIAO_FLOAT_EQUALITY_OUTPUT="$(mktemp -d "$RUNNER_TEMP/xiao-float-equality.XXXXXXXX")/observations"
           test -f "$XIAO_RUNTIME_LIBRARY"
           test -x "$XIAO_DIAGNOSTICS_PATH"
           python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py native || printf 'B6-4 native identity missing\n'
@@ -457,6 +467,7 @@ jobs:
           export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
           export XIAO_DIAGNOSTICS_PATH="$PWD/core/rust/target/debug/xiao-diagnostics"
           export XIAO_DIAGNOSTICS_HOLD_MS=0
+          export XIAO_FLOAT_EQUALITY_OUTPUT="$(mktemp -d "$RUNNER_TEMP/xiao-float-equality.XXXXXXXX")/observations"
           test -f "$XIAO_RUNTIME_LIBRARY"
           test -x "$XIAO_DIAGNOSTICS_PATH"
           python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py native || printf 'B6-4 native identity missing\n'

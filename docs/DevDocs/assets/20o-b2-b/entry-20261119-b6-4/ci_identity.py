@@ -62,16 +62,21 @@ def snapshot(phase):
 
 
 def native():
-    return {
+    identity = {
         "target": os.environ["XIAO_TARGET_TRIPLE"],
         "runtime": file_identity(os.environ["XIAO_RUNTIME_LIBRARY"]),
-        "diagnostics": file_identity(os.environ["XIAO_DIAGNOSTICS_PATH"]),
         "llvm": {
             name: file_identity(os.environ[name])
             | {"version": version([os.environ[name], "--version"])}
             for name in LLVM
         },
     }
+    if "XIAO_DIAGNOSTICS_PATH" in os.environ:
+        identity["diagnostics"] = file_identity(os.environ["XIAO_DIAGNOSTICS_PATH"])
+    if "XIAO_FLOAT_EQUALITY_OUTPUT" in os.environ:
+        output = Path(os.environ["XIAO_FLOAT_EQUALITY_OUTPUT"])
+        identity["float_equality_output"] = {"path": str(output), "exists": output.exists()}
+    return identity
 
 
 def main():

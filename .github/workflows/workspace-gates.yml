@@ -66,6 +66,14 @@ jobs:
         continue-on-error: true
         run: python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py before
 
+      - name: Prepare Linux toolchain and Runtime for B6 diagnostics
+        shell: bash
+        run: bash docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/linux_runtime.sh
+
+      - name: Record Linux Runtime for B6 diagnostics
+        continue-on-error: true
+        run: python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py native
+
       - name: Run workspace gates
         shell: bash
         run: bash tools/gates/run.sh
