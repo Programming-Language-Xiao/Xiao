@@ -1,0 +1,88 @@
+name: Xiao B6-4 B1 exact supplement
+
+on:
+  push:
+    branches: [codex/b6-4-b1-runner]
+    paths: ['.github/workflows/b2-b6-b1-supplement.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  exact:
+    name: B6-4 B1 native exact (${{ matrix.platform }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux
+            runner: ubuntu-24.04
+          - platform: macos
+            runner: macos-15
+    env:
+      XIAO_B1_F10: '0'
+      XIAO_B2_A_PERF: '0'
+      B1_PLATFORM: ${{ matrix.platform }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Rust 1.96.0
+        run: rustup toolchain install 1.96.0 --profile minimal
+
+      - name: Configure locked Cargo and numeric environment
+        run: python3 tools/gates/controlled-cargo.py --install
+
+      - name: Record B6-4 checkout before gates
+        run: python3 -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py before
+
+      - name: Prepare Linux LLVM and Runtime
+        if: runner.os == 'Linux'
+        run: bash docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/linux_runtime.sh
+
+      - name: Prepare macOS LLVM and Runtime
+        if: runner.os == 'macOS'
+        run: |
+          set -euo pipefail
+          brew install llvm
+          llvm_root="$(brew --prefix llvm)/bin"
+          runtime="$PWD/core/rust/target/release/libxiao_runtime.a"
+          target="$(rustc -vV | sed -n 's/^host: //p')"
+          test -n "$target"
+          cargo build --manifest-path core/rust/Cargo.toml --locked --release -p xiao-runtime
+          test -s "$runtime"
+          {
+            printf 'XIAO_RUNTIME_LIBRARY=%s\n' "$runtime"
+            printf 'XIAO_TARGET_TRIPLE=%s\n' "$target"
+            printf 'XIAO_CLANG=%s\n' "$llvm_root/clang"
+            printf 'XIAO_LLVM_AS=%s\n' "$llvm_root/llvm-as"
+            printf 'XIAO_LLC=%s\n' "$llvm_root/llc"
+            printf 'XIAO_STRIP=%s\n' "$llvm_root/llvm-strip"
+          } >> "$GITHUB_ENV"
+
+      - name: Record B6-4 native Runtime and tools
+        run: python3 -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py native
+
+      - name: Run B1 native probe exactly once
+        run: |
+          set -euo pipefail
+          printf 'B6-4-B1 begin %s\n' "$B1_PLATFORM"
+          if ! output="$(cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_probe -- --ignored b1_capabilities_match_native_golden_outputs --exact --nocapture 2>&1)"; then
+            printf '%s\n' "$output"
+            exit 1
+          fi
+          printf '%s\n' "$output"
+          test "$(printf '%s\n' "$output" | grep -c '^test result:')" -eq 1
+          printf '%s\n' "$output" | grep -Eq '^test result: ok\. 1 passed; 0 failed; 0 ignored;'
+          printf 'B6-4-B1 end %s\n' "$B1_PLATFORM"
+
+      - name: Record B6-4 checkout after gates
+        if: always()
+        run: python3 -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py after
