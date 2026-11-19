@@ -1,0 +1,43 @@
+# B6-4 原生组件修复与 Windows 22D 复跑
+
+源码修复为 `9d75ab1a`。CI 在 `97d5f288` 的 Runner 分支上应用同一补丁，执行提交为 `e1191445`。两份提交的受保护源码、测试、工具和锁文件一致。原 B6-4 归档的结果为 `b6_4_passed=false`。B6-5 尚未启动。[原始 B6-4 证据](../entry-20261119-b6-4/README.md)
+
+## Runtime 组件
+
+基线 `58176ff5` 在 Linux 本机复现了 `original-pow-eq-static-o0` 的 `rc` 拒绝。LLVM 调用 `xiao_runtime_cmath_pow`。该入口通过 `write_value` 替换拥有输出槽，链接后的 ELF 保留了 `xiao_runtime_release`。121 个单入口 ELF 链接样本中，15 个 cmath 入口和 `lfloat_divide` 均保留强引用释放，表和并发入口还存在跨组件依赖。源码修复从可达的 ABI 符号递归推导这些依赖，产物校验继续独立读取符号表。复现用例修复前后的 LLVM 字节及 SHA-256 `e8efb02c1f6b14968f71fc6f25e306806fd7c40cf68c62ca21eea2d1625d6be8` 一致。
+
+Linux 本机以独立任务根重建 release Runtime，随后完成 62 个 VM 用例、248 次 `llvm-as` 和 248 次原生观测。两种 cmath 导入、显式除法、B1 精确原生入口、已登记回调与动态字符串回归均通过。两条首跑因找不到 `rustdoc` 或 `rustc` 退出，显式引入 Rust 1.96.0 工具路径后复跑通过。WSL 工具链缺少 Clippy 组件。[本机回执与原始日志](followup.zip)
+
+修复快照的三个原生维护作业各完成 248 次浮点比较原生观测、两种 cmath 导入 O0/O3 和既有 B1 精确入口。Linux ELF 与 macOS Mach-O 在静态幂等于及不等于的 O0/O3 产物均观察到 `rc` 和 `value`，校验等级为 `Complete`。Windows 功能通过，COFF 内部符号完整性为 `UnverifiedCoffExports`。[Linux 作业](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44541850714/job/135621969980) · [macOS 作业](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44541850714/job/135621970069) · [Windows 作业](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44541850714/job/135621969868)
+
+同一修复快照的 Linux 默认 workspace、B1 VM 精确用例与仓库门禁通过。仓库门禁包括 fmt、workspace Clippy、`check:lock` 和文档检查。[维护运行](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44541850714) · [仓库门禁](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44543362261)
+
+## Windows 22D
+
+原 Windows Runner 三次执行均绑定 `97d5f288`，使用 `windows-2025`、Rust 1.96.0、LLVM 23.1.5。Runtime、Clang 摘要一致。第 1 次原生轨迹投影少一组 `shared_destroy`／`weak_release`，后两次完整原生作业均通过。两次重跑的 Runner 镜像由 `20261103.298.1` 换为 `20261116.315.1`，原始失败作业只保留断言投影。[尝试 1](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44464422497/job/135358661620) · [尝试 2](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44464422497/job/135613903433) · [尝试 3](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/44464422497/job/135623035222)
+
+本机 Windows 在固定 `58176ff5`、Rust 1.96.0、LLVM 22.1.2 上执行原入口 5 轮。第 1、3、5 轮通过。第 2、4 轮分别在 `xcon-bounded-string-success` 和 `spawn-join-str-multiargument` 的释放断言提前退出。另用只选择 `native-lock-wait-027` 的临时测试入口运行 25 轮，沿用源码夹具、黄金与断言。25 轮均通过，每轮 VM 和原生各保留两组共享对象销毁与弱引用释放事件。[进程与轨迹归档](followup.zip)
+
+同一产品和 Runtime 的原入口得到失败与成功两种结果。`native-lock-wait-027` 登记为间歇性释放差分，具体原因未定，归 22D 继续追踪。若再次触发，需保留失败轮的 VM 和原生完整轨迹，定位缺失的是对象释放还是记录事件。[22D 记录](../../../22d-llvm-concurrency-differential.md#十一后续维护回归)
+
+## 只读复核
+
+归档的 173 个路径引用 127 个 SHA-256 对象。审计核对固定 Git 对象、源码/Runtime 摘要、用例日志和 GitHub 作业身份。缺少对象或改写 macOS 组件验证等级时，审计按各自的校验拒绝。`docs-gate.zip` 保存定稿文档门禁的日志与执行前后的文档摘要。新检出可获取修复 Runner 对象后复跑。[反例回执](negative-cases.json)
+
+```powershell
+cmd /c git fetch origin codex/b6-4-runtime-components-runner
+python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4-followup/audit.py
+```
+
+Linux 原生复验入口如下。运行前设置 Rust 1.96.0、LLVM、任务 release Runtime 及全新 `XIAO_FLOAT_EQUALITY_OUTPUT`。归档中的 `linux/fixed/environment.json` 和各进程回执保存实际路径、命令、PID 与摘要。
+
+```powershell
+cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_static_float_equality -- --ignored --exact native_static_dynamic_comparisons_match_vm_o0_o3 --nocapture
+cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_b4_cmath_library -- --ignored --exact cmath_library_matches_native_o0_o3 --nocapture
+```
+
+Windows 复验命令沿用 B6-4 原入口，完整进程与单夹具进程分别有回执。变更夹具选择的临时差异在 `windows/single-fixture.diff`。
+
+```powershell
+cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored --exact native_concurrency_vm_native_differential_matches_from_same_ir --nocapture
+```

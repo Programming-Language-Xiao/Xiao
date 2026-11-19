@@ -1,6 +1,6 @@
 # 20O-B2-B6-4. 三平台与 CI 工程门禁实施规划
 
-> **2026-11-19，B6-4 已执行并归档，原生维护回归未通过。** Linux 仓库门禁、默认 workspace 和 B1 守卫通过。Linux/macOS 原生作业被 `rc` 组件校验拒绝，Windows 原生作业在 22D 释放顺序断言失败。B6-5 尚未开始。[执行证据](assets/20o-b2-b/entry-20261119-b6-4/README.md)
+> **2026-11-19，组件修复后，三平台原生维护及 Linux 工程门禁通过。** 原 B6-4 的归档结果为 `b6_4_passed=false`。Windows 22D 释放断言两次复跑通过，原因仍待归因。B6-5 尚未开始。[原执行证据](assets/20o-b2-b/entry-20261119-b6-4/README.md) · [修复及复跑证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
 > 入口：B6-3 固定 `58176ff5` 的三平台边界证据（765 次语言执行、C ABI 11 项、B1 契约 9/9 与资源 18/18、B4 回归、4 条真实输出加 24 条派生负例）；B6-2 性能绑定 `79ea0375` 及其 source-boundary 证明；B6-1 仍为 `restricted/stage_passed=false`。
 > B6-4 只做三平台执行、CI 与工程门禁证据；不重跑 B6-2 性能、不重跑 B6-3 全边界、不跑 721、不改产品/工作流阈值/ABI/registry。
 > B6-1 的 Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-4 的 Linux workspace Clippy 已通过。
@@ -81,6 +81,10 @@ Linux 和 macOS 在浮点比较 `original-pow-eq-static-o0` 上遇到相同的 `
 三平台临时测试可执行文件的字节身份登记为 `unverifiable`。原生日志记录用例结果和部分产物路径，Runtime 与工具摘要另有实测回执。[证据范围](assets/20o-b2-b/entry-20261119-b6-4/README.md#只读复核)
 
 Linux 和 macOS 的 B1 原生精确入口在维护作业中未到达，由同一产品树单独补验。首次补验的工具链偏差已保留，最终四份实际输出均来自 Rust 1.96.0。28 项模拟守卫与 4 份真实输出、24 项派生负例回放均通过。[完整作业编号、原始日志与只读复核](assets/20o-b2-b/entry-20261119-b6-4/README.md)
+
+### 2.3 后续修复与复跑（2026-11-19）
+
+B4 在 `9d75ab1a` 将可达 ABI 的传递链接依赖纳入组件声明。CI 执行提交 `e1191445` 的 Linux、macOS、Windows 原生维护，以及 Linux 默认 workspace 和工程门禁均通过。Windows 原生功能通过，COFF 内部符号完整性未验证。原 Windows 作业沿 `97d5f288` 两次复跑均通过，`native-lock-wait-027` 登记为待归因的间歇性差分。后续快照和原 B6-4 执行记录各自绑定实际提交及作业。[修复与复跑证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
 
 ## 三、分批执行
 

@@ -17,6 +17,7 @@
 > **2026-11-18 macOS补验及B6-2**　macOS 专项两项作业通过，四格 Mach-O 均为 `Complete`。B6-1 仍为 `restricted`，`stage_passed=false`。三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 未执行。B6-2 按星崽裁定启动，固定 `79ea0375` 的三平台 VM、O0、O3 共 1,647 项通过。[macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)与[B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)
 > **2026-11-18 B6-3 边界验收**　固定 `58176ff5`，三平台共 765 次语言执行通过，每平台 11 项 C ABI 观察通过。B1/B4 回归及 28 条计数守卫通过。[B6-3 归档](assets/20o-b2-b/entry-20261118-b6-3/README.md)
 > **2026-11-19 B6-4 门禁实测**　Linux 仓库门禁和默认 workspace 通过。Linux/macOS 原生作业被 `rc` 组件校验拒绝，Windows 原生作业在 22D 释放顺序断言失败。B1 四条精确入口及计数守卫通过，`b6_4_passed=false`，B6-5 尚未开始。[B6-4 执行证据](assets/20o-b2-b/entry-20261119-b6-4/README.md)
+> **2026-11-19 B6-4 后续**　可达 ABI 的传递链接组件登记已修复，修复快照的三平台原生维护和 Linux 工程门禁通过。Windows 22D 原作业两次复跑通过，首次释放差分待归因。B6-5 尚未开始。[修复及复跑证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
 > **已确认（2026-11-01）：D-1 取甲（成熟 Rust 数值库）、B1 首批范围、
 > D-7 取专用 `json_value` 类型、B7→B8→B9 后置**。B0 已逐条询问并记录其余方向裁定，
 > 见 §五及 20P §六；具体 API 不因此自动冻结。基线、探测、教程与待审草案见

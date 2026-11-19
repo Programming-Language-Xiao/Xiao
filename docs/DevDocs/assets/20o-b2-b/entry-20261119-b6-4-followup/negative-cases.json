@@ -1,0 +1,29 @@
+{
+  "archive": {
+    "bytes": 661376,
+    "sha256": "ddfc8249c662e60a4bf3fa93d9a1e4eec3caf12878e7bd6125a65f2a96a5f46d"
+  },
+  "cases": [
+    {
+      "case": "unchanged",
+      "exit": 0,
+      "expected": "verified=true",
+      "observed": "verified=true",
+      "read_only": true
+    },
+    {
+      "case": "missing-object",
+      "exit": 1,
+      "expected": "证据包清单不符",
+      "observed": "ValueError: 证据包清单不符",
+      "read_only": true
+    },
+    {
+      "case": "forged-macos-observation",
+      "exit": 1,
+      "expected": "Runner 浮点矩阵不符：macOS",
+      "observed": "ValueError: Runner 浮点矩阵不符：macOS",
+      "read_only": true
+    }
+  ]
+}

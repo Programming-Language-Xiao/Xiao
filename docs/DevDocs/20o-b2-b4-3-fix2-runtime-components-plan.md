@@ -4,6 +4,7 @@
 > FIX-0复现确认：Linux真实 `std.cmath`/`stdlib.cmath` 包装 O0/O3 原先被 `ArtifactVerification` 拒绝；IR与ELF含 `xiao_runtime_array_new`/`array_push`，组件声明漏 `containers`。Windows同语料通过，但COFF状态为 `UnverifiedCoffExports`，不能证明完整符号表一致。
 > 根因：既有 Runtime 组件遍历跟随 `br`，未跟随 Cmath 状态路径发出的 LLVM `switch`；FIX.2将 `br`/`switch`/`indirectbr` 可达性与共享符号映射用于静态、动态模块组件登记，保留未调用函数和未注册回调裁剪。
 > 只修 codegen-llvm 的组件推导/登记与必要测试；不改 cmath 数学、资源上限、ABI1.19/生成器22/接口1、registry/教程；不跑旧721。
+> **2026-11-19 后续修复**　B6-4 独立暴露出 Runtime ABI 的传递链接依赖。`9d75ab1a` 将可达 ABI 入口的内部依赖纳入组件登记。涉及 ABI 所有权或跨组件调用的变更需同步核对依赖和目标平台的实际链接符号。[修复与复验](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
 
 ## 一、入口与范围
 
