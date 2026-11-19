@@ -1,10 +1,14 @@
 # B6-4 原生组件修复与 Windows 22D 复跑
 
-源码修复为 `9d75ab1a`。CI 在 `97d5f288` 的 Runner 分支上应用同一补丁，执行提交为 `e1191445`。两份提交的受保护源码、测试、工具和锁文件一致。原 B6-4 归档的结果为 `b6_4_passed=false`。B6-5 尚未启动。[原始 B6-4 证据](../entry-20261119-b6-4/README.md)
+**B6-4 受限交接，正式结果 `b6_4_passed=false`。** 原归档为 `original_passed=false`，修复快照复验为 `followup_passed=true`，22D 间歇性释放差分为 `22d_open=true`。B6-5 与 B7 沿用这组状态。[交接状态](status.json) · [原始 B6-4 证据](../entry-20261119-b6-4/README.md)
+
+源码修复为 `9d75ab1a`。CI 在 `97d5f288` 的 Runner 分支上应用同一补丁，执行提交为 `e1191445`。两份提交的受保护源码、测试、工具和锁文件一致。
 
 ## Runtime 组件
 
-基线 `58176ff5` 在 Linux 本机复现了 `original-pow-eq-static-o0` 的 `rc` 拒绝。LLVM 调用 `xiao_runtime_cmath_pow`。该入口通过 `write_value` 替换拥有输出槽，链接后的 ELF 保留了 `xiao_runtime_release`。121 个单入口 ELF 链接样本中，15 个 cmath 入口和 `lfloat_divide` 均保留强引用释放，表和并发入口还存在跨组件依赖。源码修复从可达的 ABI 符号递归推导这些依赖，产物校验继续独立读取符号表。复现用例修复前后的 LLVM 字节及 SHA-256 `e8efb02c1f6b14968f71fc6f25e306806fd7c40cf68c62ca21eea2d1625d6be8` 一致。
+基线 `58176ff5` 在 Linux 本机复现了 `original-pow-eq-static-o0` 的 `rc` 拒绝。LLVM 调用 `xiao_runtime_cmath_pow`。该入口通过 `write_value` 替换拥有输出槽，链接后的 ELF 保留了 `xiao_runtime_release`。121 个单入口 ELF 链接样本中，15 个 cmath 入口和 `lfloat_divide` 均保留强引用释放，表和并发入口还存在跨组件依赖。`9d75ab1a` 从 LLVM 可达的 ABI 符号出发，递归展开手工维护的 `runtime_link_dependencies` 表。产物校验独立读取最终可执行文件的符号表。复现用例修复前后的 LLVM 字节及 SHA-256 `e8efb02c1f6b14968f71fc6f25e306806fd7c40cf68c62ca21eea2d1625d6be8` 一致。
+
+后续 Linux 原生门禁从 release Runtime 静态库枚举导出，逐符号链接，对账组件声明与实际 ELF 组件集合。新增的导出会进入同一检查。[对账入口](../../../20o-b2-b4-3-fix2-runtime-components-plan.md)
 
 Linux 本机以独立任务根重建 release Runtime，随后完成 62 个 VM 用例、248 次 `llvm-as` 和 248 次原生观测。两种 cmath 导入、显式除法、B1 精确原生入口、已登记回调与动态字符串回归均通过。两条首跑因找不到 `rustdoc` 或 `rustc` 退出，显式引入 Rust 1.96.0 工具路径后复跑通过。WSL 工具链缺少 Clippy 组件。[本机回执与原始日志](followup.zip)
 
@@ -18,15 +22,16 @@ Linux 本机以独立任务根重建 release Runtime，随后完成 62 个 VM �
 
 本机 Windows 在固定 `58176ff5`、Rust 1.96.0、LLVM 22.1.2 上执行原入口 5 轮。第 1、3、5 轮通过。第 2、4 轮分别在 `xcon-bounded-string-success` 和 `spawn-join-str-multiargument` 的释放断言提前退出。另用只选择 `native-lock-wait-027` 的临时测试入口运行 25 轮，沿用源码夹具、黄金与断言。25 轮均通过，每轮 VM 和原生各保留两组共享对象销毁与弱引用释放事件。[进程与轨迹归档](followup.zip)
 
-同一产品和 Runtime 的原入口得到失败与成功两种结果。`native-lock-wait-027` 登记为间歇性释放差分，具体原因未定，归 22D 继续追踪。若再次触发，需保留失败轮的 VM 和原生完整轨迹，定位缺失的是对象释放还是记录事件。[22D 记录](../../../22d-llvm-concurrency-differential.md#十一后续维护回归)
+22D 的完整释放差分已有三个失败点。本机单夹具的 25 轮只覆盖 `native-lock-wait-027`，修复快照留有一轮三平台原生维护绿灯。B6-5 与 B7 按间歇性释放差分未关闭交接。后续复现保存失败轮的 VM 和原生完整轨迹。[22D 记录](../../../22d-llvm-concurrency-differential.md#十一后续维护回归)
 
 ## 只读复核
 
-归档的 173 个路径引用 127 个 SHA-256 对象。审计核对固定 Git 对象、源码/Runtime 摘要、用例日志和 GitHub 作业身份。缺少对象或改写 macOS 组件验证等级时，审计按各自的校验拒绝。`docs-gate.zip` 保存定稿文档门禁的日志与执行前后的文档摘要。新检出可获取修复 Runner 对象后复跑。[反例回执](negative-cases.json)
+归档的 173 个路径引用 127 个 SHA-256 对象。审计核对固定 Git 对象、源码/Runtime 摘要、用例日志和 GitHub 作业身份。自反例在临时副本上删除日志对象或改写 macOS 验证等级并重算清单，逐项核对退出码、拒绝原因和输入摘要。`docs-gate.zip` 保存 `b73d975b` 的定稿门禁日志及当时的文档摘要。新检出可获取修复 Runner 对象后复跑。[反例回执](negative-cases.json)
 
 ```powershell
 cmd /c git fetch origin codex/b6-4-runtime-components-runner
 python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4-followup/audit.py
+python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4-followup/self_negative.py
 ```
 
 Linux 原生复验入口如下。运行前设置 Rust 1.96.0、LLVM、任务 release Runtime 及全新 `XIAO_FLOAT_EQUALITY_OUTPUT`。归档中的 `linux/fixed/environment.json` 和各进程回执保存实际路径、命令、PID 与摘要。

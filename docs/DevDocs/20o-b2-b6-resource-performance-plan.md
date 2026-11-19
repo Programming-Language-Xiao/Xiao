@@ -1,6 +1,6 @@
 # 20O-B2-B6. cmath/lfloat 资源、错误与三平台性能规划
 
-> **B6 当前状态（2026-11-19）**　B6-1 为 `restricted`，`stage_passed=false`。官方包装两别名 O0/O3 在三平台功能通过。Linux ELF 与 macOS Mach-O 均为 `Complete`，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，固定 `79ea0375` 的九组性能测量通过，见 §2.7。B6-3 边界功能通过。组件修复后的三平台原生维护与 Linux 工程门禁通过，Windows 22D 间歇性差分待归因。B6-5 尚未开始。[B6-3 规划](20o-b2-b6-3-boundary-plan.md) · [B6-4 修复与复跑证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
+> **B6 当前状态（2026-11-19）**　B6-1 为 `restricted`，`stage_passed=false`。官方包装两别名 O0/O3 在三平台功能通过。Linux ELF 与 macOS Mach-O 均为 `Complete`，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，固定 `79ea0375` 的九组性能测量通过，见 §2.7。B6-3 边界功能通过。B6-4 受限交接，正式结果为 `b6_4_passed=false`，修复快照复验通过，22D 间歇性释放差分未关闭。B6-5 尚未开始。[B6-3 规划](20o-b2-b6-3-boundary-plan.md) · [B6-4 交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json)
 
 > B5固定1.19/21矩阵和[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)保持只读历史身份；当前产品1.19/22。B6每轮均绑定自己的源码、Runtime和工具身份。B1原件缺口、22C/22D与19/11/22债务独立保留。
 > B5固定测试快照5864cbde为ABI1.19/生成器21/接口1。原17项资源目标及8次直接计时为旧负载历史证据；优化后18项资源目标和完整默认workspace均通过，详见URL优化记录。B6当前测量使用ABI1.19/生成器22 Runtime，并同时对账B5矩阵与21→22增量证据。
@@ -19,7 +19,7 @@
 | B6-1 | `restricted`，`stage_passed=false`。三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 未执行 |
 | B6-2 | 固定`79ea0375`，三平台各测VM、O0、O3，每组183项通过，`perf_pass=true` |
 | B6-3 | `58176ff5` 三平台边界验收通过，765 次语言执行，C ABI 每平台 11 项，计数守卫 28/28。[实测证据](assets/20o-b2-b/entry-20261118-b6-3/README.md) |
-| B6-4 | 初次归档为 `b6_4_passed=false`。组件修复后的 `e1191445` 通过 Linux 工程门禁和三平台原生维护，Windows COFF 导出完整性未验证。22D 原作业两次复跑通过，首次失败待归因。[原执行证据](assets/20o-b2-b/entry-20261119-b6-4/README.md) · [后续证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md) |
+| B6-4 | 受限交接。`b6_4_passed=false`，`original_passed=false`，`followup_passed=true`，`22d_open=true`。修复后的 `e1191445` 通过 Linux 工程门禁和三平台原生维护，Windows COFF 导出完整性未验证。[原执行证据](assets/20o-b2-b/entry-20261119-b6-4/README.md) · [后续证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md) |
 | 后续批次 | B6-5 收口，对账 B6-4 原始失败、后续修复和复跑结果 |
 | 测量入口版本/工具链 | 当前快照ABI1.19/生成器22/接口1；同时引用B5固定1.19/21拒绝/缓存矩阵与静态比较21→22增量证据。intrinsic1～48、Rust1.96.0与Cargo `--locked`；每轮测量固定源码/Runtime工具身份，优化后另建快照并重测受影响项 |
 | 本批目标 | cmath/lfloat 资源/错误/原子性、VM/原生三平台性能与 CI 证据 |
@@ -183,12 +183,12 @@ B6-2使用`tools/gates/b2_b6_performance.py`从同一固定源码重建三平台
 
 2026-11-19 执行记录。Linux 仓库门禁（含 Clippy）和默认 workspace 在 `97d5f288` 上通过。Linux/macOS 的静态浮点比较被 `rc` 组件校验拒绝，交 B4 LLVM Runtime 组件登记范围调查。Windows 的 `native-lock-wait-027` 释放顺序断言失败，归 22D 单列追踪。四条 B1 精确入口和两类守卫均有回执，三平台原生失败继续登记，`b6_4_passed=false`。[原始日志与审计](assets/20o-b2-b/entry-20261119-b6-4/README.md)
 
-后续组件修复为 `9d75ab1a`。同产品树 `e1191445` 的维护运行 `44541850714` 和仓库门禁 `44543362261` 通过。Windows 22D 的原作业在固定 `97d5f288` 上两次复跑通过，释放差异仍待归因。[修复与复跑](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
+后续组件修复为 `9d75ab1a`。同产品树 `e1191445` 的维护运行 `44541850714` 和仓库门禁 `44543362261` 通过。Windows 原作业复跑两次通过，本机完整入口仍有另外两处释放断言失败。三处失败都归 22D 待归因。[修复与复跑](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
 
 ### B6-5：收口与 B7 交接
 
 1. 汇总资源、错误、原子性、性能与 CI。B6-1 单列 `restricted`、`stage_passed=false`、三平台功能通过、Windows COFF 导出完整性未验证、Linux Clippy 未执行，并登记 B6-2 的开工裁定。
-2. 分平台记录执行/未执行/失败样本；
+2. 分平台记录执行、未执行和失败样本。B6-4 按 `b6_4_passed=false`、`original_passed=false`、`followup_passed=true`、`22d_open=true` 受限交接，B7 接收 22D 间歇性释放差分未关闭的记录。[B6-4 交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json)
 3. 复核 cmath 语义、ABI、registry 与教程边界。对照生产差异和语言拒绝回执，确认 `Vm::with_module_loader` 与 `xiao_driver::standard_library_module_loader` 仅在 Rust 宿主层公开。[Rust API 边界](assets/20o-b2-b/entry-20261118-b6-2/review/README.md)
 4. 复核旧721未跑、历史债务未核销；
 5. 在 B6 最终源码上运行完整 workspace gates：`cargo +1.96.0 test --manifest-path core/rust/Cargo.toml --workspace --locked`、`cargo +1.96.0 clippy --manifest-path core/rust/Cargo.toml --workspace --all-targets --locked -- -D warnings`、`cargo +1.96.0 fmt --manifest-path core/rust/Cargo.toml --all -- --check`、`bun run check:lock`、`bun tools/repo-check/src/cli.ts all`；最大负载由独立 release 测量入口执行，不塞入默认 debug 测试；

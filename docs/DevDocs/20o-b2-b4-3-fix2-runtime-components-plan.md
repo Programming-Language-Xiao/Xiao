@@ -4,7 +4,7 @@
 > FIX-0复现确认：Linux真实 `std.cmath`/`stdlib.cmath` 包装 O0/O3 原先被 `ArtifactVerification` 拒绝；IR与ELF含 `xiao_runtime_array_new`/`array_push`，组件声明漏 `containers`。Windows同语料通过，但COFF状态为 `UnverifiedCoffExports`，不能证明完整符号表一致。
 > 根因：既有 Runtime 组件遍历跟随 `br`，未跟随 Cmath 状态路径发出的 LLVM `switch`；FIX.2将 `br`/`switch`/`indirectbr` 可达性与共享符号映射用于静态、动态模块组件登记，保留未调用函数和未注册回调裁剪。
 > 只修 codegen-llvm 的组件推导/登记与必要测试；不改 cmath 数学、资源上限、ABI1.19/生成器22/接口1、registry/教程；不跑旧721。
-> **2026-11-19 后续修复**　B6-4 独立暴露出 Runtime ABI 的传递链接依赖。`9d75ab1a` 将可达 ABI 入口的内部依赖纳入组件登记。涉及 ABI 所有权或跨组件调用的变更需同步核对依赖和目标平台的实际链接符号。[修复与复验](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
+> **2026-11-19 后续修复**　B6-4 独立暴露出 Runtime ABI 的传递链接依赖。`9d75ab1a` 按手工维护的 `runtime_link_dependencies` 表展开 LLVM 可达入口的组件。后续增加 Linux release 静态库对账，见 §九。[修复与复验](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
 
 ## 一、入口与范围
 
@@ -140,3 +140,16 @@ docs/DevDocs/assets/20o-b2-b/entry-20261118-b4-component-fix/ FIX.2证据
 ```
 
 FIX.2 已按本页范围完成并收口；B6-1 仍需在自身任务根重跑，B6-2 与后续批次仍后置。
+
+## 九、Linux release 静态库对账
+
+`runtime_link_dependencies` 由源码维护。对账测试用 `llvm-nm` 枚举 release 静态库的 `xiao_runtime_*` 导出，逐个以单一 ABI 符号为根链接探针。测试从 ELF 符号表读取实际保留的导出，核对组件集合、依赖表登记的符号和导出分类。新增导出自动进入对账。缺失组件、冗余组件、未分类入口或表中登记但未被链接的依赖都会让测试失败。
+
+Linux 原生维护通过现有的 workspace `--ignored` 入口执行。独立复验时使用 Rust 1.96.0，先构建 release Runtime。`XIAO_RUNTIME_LIBRARY`、`XIAO_CLANG` 和 `XIAO_LLVM_AS` 须指向本次环境。`XIAO_LLVM_NM` 可显式指定，默认使用同目录的 `llvm-nm`。
+
+```bash
+cargo +1.96.0 build --locked --manifest-path core/rust/Cargo.toml --release -p xiao-runtime
+cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-codegen-llvm --lib -- --ignored --exact artifact::link_tests::runtime_components_match_release_archive_exports --nocapture
+```
+
+本机 Linux x86_64 使用 LLVM 21.1.8 对账 164 个导出，结果通过。该实测覆盖 ELF，macOS 和 Windows 的产物验证按各自运行记录引用。

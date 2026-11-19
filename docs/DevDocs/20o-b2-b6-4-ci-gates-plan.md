@@ -1,6 +1,6 @@
 # 20O-B2-B6-4. 三平台与 CI 工程门禁实施规划
 
-> **2026-11-19，组件修复后，三平台原生维护及 Linux 工程门禁通过。** 原 B6-4 的归档结果为 `b6_4_passed=false`。Windows 22D 释放断言两次复跑通过，原因仍待归因。B6-5 尚未开始。[原执行证据](assets/20o-b2-b/entry-20261119-b6-4/README.md) · [修复及复跑证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
+> **2026-11-19，B6-4 受限交接，正式结果 `b6_4_passed=false`。** `original_passed=false`，`followup_passed=true`，`22d_open=true`。修复快照的三平台原生维护及 Linux 工程门禁通过。Windows 22D 的三处间歇性释放差分待归因。B6-5 尚未开始。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) · [修复及复跑证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
 > 入口：B6-3 固定 `58176ff5` 的三平台边界证据（765 次语言执行、C ABI 11 项、B1 契约 9/9 与资源 18/18、B4 回归、4 条真实输出加 24 条派生负例）；B6-2 性能绑定 `79ea0375` 及其 source-boundary 证明；B6-1 仍为 `restricted/stage_passed=false`。
 > B6-4 只做三平台执行、CI 与工程门禁证据；不重跑 B6-2 性能、不重跑 B6-3 全边界、不跑 721、不改产品/工作流阈值/ABI/registry。
 > B6-1 的 Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-4 的 Linux workspace Clippy 已通过。
@@ -84,7 +84,7 @@ Linux 和 macOS 的 B1 原生精确入口在维护作业中未到达，由同一
 
 ### 2.3 后续修复与复跑（2026-11-19）
 
-B4 在 `9d75ab1a` 将可达 ABI 的传递链接依赖纳入组件声明。CI 执行提交 `e1191445` 的 Linux、macOS、Windows 原生维护，以及 Linux 默认 workspace 和工程门禁均通过。Windows 原生功能通过，COFF 内部符号完整性未验证。原 Windows 作业沿 `97d5f288` 两次复跑均通过，`native-lock-wait-027` 登记为待归因的间歇性差分。后续快照和原 B6-4 执行记录各自绑定实际提交及作业。[修复与复跑证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
+B4 在 `9d75ab1a` 按手工维护的 ABI 依赖表展开可达入口的组件。CI 执行提交 `e1191445` 的三平台原生维护、Linux 默认 workspace 和工程门禁各通过一轮。Windows COFF 内部符号完整性未验证。Windows 原作业失败于 `native-lock-wait-027`，本机完整入口另在 `xcon-bounded-string-success` 和 `spawn-join-str-multiargument` 失败。三个释放差分均归 22D 追踪。[修复与复跑证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
 
 ## 三、分批执行
 
@@ -155,7 +155,7 @@ B4 在 `9d75ab1a` 将可达 ABI 的传递链接依赖纳入组件声明。CI 执
 
 ## 七、交接
 
-B6-4 交接状态为 `b6_4_passed=false`。B6-5 收口应引用三平台原生失败和各自后续归属。B6-1 按 `restricted` 引用，B6-2 性能绑定 `79ea0375`，B6-3 边界绑定 `58176ff5`。B6-4 门禁复跑绑定 `97d5f288`，B1 补验另绑定 `907c4cb3`。
+B6-5 按 `b6_4_passed=false`、`original_passed=false`、`followup_passed=true`、`22d_open=true` 接收 B6-4，并将 22D 间歇性释放差分未关闭的状态交接 B7。B6-1 按 `restricted` 引用，B6-2 性能绑定 `79ea0375`，B6-3 边界绑定 `58176ff5`。原 B6-4 门禁绑定 `97d5f288`，B1 补验绑定 `907c4cb3`，组件修复后复验绑定 `e1191445`。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json)
 
 新 Agent 先读：
 

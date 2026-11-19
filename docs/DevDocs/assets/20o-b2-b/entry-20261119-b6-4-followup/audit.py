@@ -24,6 +24,7 @@ TRACE_CASE = "native-lock-wait-027"
 TRACE_PASS = f"22D-CASE {TRACE_CASE}: ok"
 TRACE_FAILURE = f"{TRACE_CASE}: 稳定共享对象释放顺序"
 FLOAT_PASS = "FLOAT-EQUALITY cases=62 native=248 llvm_as=248 vm=62 result=passed"
+ORIGINAL_EVIDENCE = "docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4"
 
 
 def verify_source(bundle):
@@ -123,6 +124,7 @@ def verify_local_windows(bundle):
             identity = {key: receipt["produced_files"][name][key] for key in ("bytes", "sha256")}
             require(actions == [b"shared_destroy", b"weak_release"] * 2 and identity == digest(trace),
                     f"Windows 单夹具原始轨迹不符：{round_number}/{backend}")
+    return {"passed": 3, "failed_before_fixture": len(expected), "failed_cases": list(expected.values())}
 
 
 def completed_job(bundle, run_id, attempt, job_id, head):
@@ -155,7 +157,7 @@ def windows_tool_identity(log):
 
 
 def verify_runner_windows(bundle):
-    recorded = blob(CLOSEOUT, "docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci.zip")
+    recorded = blob(CLOSEOUT, f"{ORIGINAL_EVIDENCE}/ci.zip")
     with ZipFile(BytesIO(recorded)) as archive:
         original = clean_log(Evidence(archive).raw("ci/44464422497/135358661620.log"))
     require(TRACE_FAILURE in original and 'left: [(0, "shared_destroy"), (0, "weak_release")]' in original
@@ -211,11 +213,18 @@ def main():
         bundle = Evidence(archive)
         verify_source(bundle)
         verify_linux(bundle)
-        verify_local_windows(bundle)
+        local_windows = verify_local_windows(bundle)
         verify_engineering(bundle)
+        fix_runner = verify_fix_runner(bundle)
+        original_windows = verify_runner_windows(bundle)
+        original_passed = json.loads(blob(CLOSEOUT, f"{ORIGINAL_EVIDENCE}/summary.json"))["b6_4_passed"]
+        status = {"b6_4_passed": original_passed, "original_passed": original_passed,
+                  "followup_passed": all(job["conclusion"] == "success" for job in fix_runner.values()),
+                  "22d_open": True}
+        require(json.loads((ROOT / "status.json").read_text(encoding="utf-8")) == status, "B6-4 交接状态不符")
         print(json.dumps({"verified": True, "files": len(bundle.entries), "objects": bundle.unique,
-                          "fix_runner": verify_fix_runner(bundle), "original_windows": verify_runner_windows(bundle),
-                          "local_windows_full": {"passed": 3, "failed_before_fixture": 2},
+                          **status, "fix_runner": fix_runner, "original_windows": original_windows,
+                          "local_windows_full": local_windows,
                           "local_windows_single_passed": 25, "engineering_passed": True}, ensure_ascii=False))
 
 

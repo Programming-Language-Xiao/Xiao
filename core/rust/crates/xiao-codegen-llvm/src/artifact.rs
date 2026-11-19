@@ -1297,7 +1297,7 @@ pub(crate) fn components_for_symbols(symbols: &[String]) -> Vec<String> {
     components.into_iter().collect()
 }
 
-/// 从 main 可达的 LLVM 调用和这些调用的 Runtime 内部链接依赖推导组件。
+/// 从 main 可达的 LLVM 调用出发，按手工维护的 ABI 依赖表推导组件。
 pub(crate) fn reachable_runtime_components(text: &str) -> Vec<String> {
     let mut blocks: BTreeMap<(&str, &str), Vec<&str>> = BTreeMap::new();
     let mut function = None;
@@ -1373,7 +1373,7 @@ pub(crate) fn reachable_runtime_components(text: &str) -> Vec<String> {
     components.into_iter().collect()
 }
 
-/// ABI 入口链接时带入的其他组件符号。链接后仍从实际符号表独立验证组件。
+/// 手工登记 ABI 入口的跨组件依赖，由 Linux 原生门禁逐个链接静态库导出核对。
 fn runtime_link_dependencies(symbol: &str) -> &'static [&'static str] {
     if symbol.starts_with("xiao_runtime_cmath_") {
         // cmath 共享 write_value，输出槽原有的强值经 xiao_runtime_release 释放。
@@ -1381,7 +1381,9 @@ fn runtime_link_dependencies(symbol: &str) -> &'static [&'static str] {
     }
     match symbol {
         // 拥有输出槽替换和持有句柄的构造路径会链接强引用释放。
-        "xiao_runtime_array_new"
+        "xiao_runtime_array_get"
+        | "xiao_runtime_array_new"
+        | "xiao_runtime_concurrency_detached_error_take"
         | "xiao_runtime_dict_get"
         | "xiao_runtime_dict_new"
         | "xiao_runtime_dynamic_member_get"
@@ -1392,6 +1394,7 @@ fn runtime_link_dependencies(symbol: &str) -> &'static [&'static str] {
         | "xiao_runtime_table_get"
         | "xiao_runtime_table_get_value"
         | "xiao_runtime_table_new"
+        | "xiao_runtime_tuple_get"
         | "xiao_runtime_tuple_new"
         | "xiao_runtime_value_binary"
         | "xiao_runtime_value_cast"
@@ -1406,7 +1409,25 @@ fn runtime_link_dependencies(symbol: &str) -> &'static [&'static str] {
         "xiao_runtime_value_copy"
         | "xiao_runtime_value_release"
         | "xiao_runtime_value_release_any" => &["xiao_runtime_weak_release"],
-        "xiao_runtime_concurrency_call" => &["xiao_runtime_concurrency_call_with_entry"],
+        // 这些 C 入口共用带线程入口参数的调度器。
+        "xiao_runtime_concurrency_call"
+        | "xiao_runtime_concurrency_cancel"
+        | "xiao_runtime_concurrency_current_runtime"
+        | "xiao_runtime_concurrency_detach"
+        | "xiao_runtime_concurrency_join"
+        | "xiao_runtime_concurrency_lock"
+        | "xiao_runtime_concurrency_lock_read"
+        | "xiao_runtime_concurrency_lock_write"
+        | "xiao_runtime_concurrency_pool_create"
+        | "xiao_runtime_concurrency_read"
+        | "xiao_runtime_concurrency_runtime_close"
+        | "xiao_runtime_concurrency_runtime_create"
+        | "xiao_runtime_concurrency_shared_mut_create"
+        | "xiao_runtime_concurrency_shared_read"
+        | "xiao_runtime_concurrency_shutdown"
+        | "xiao_runtime_concurrency_spawn"
+        | "xiao_runtime_concurrency_submit"
+        | "xiao_runtime_concurrency_wait" => &["xiao_runtime_concurrency_call_with_entry"],
         "xiao_runtime_concurrency_call_with_entry" => &["xiao_runtime_value_release"],
         "xiao_runtime_table_new_v2" => &["xiao_runtime_table_new_v2_with_args"],
         "xiao_runtime_table_new_v2_with_args" => &[
@@ -1419,6 +1440,10 @@ fn runtime_link_dependencies(symbol: &str) -> &'static [&'static str] {
     }
 }
 
+#[cfg(all(test, target_os = "linux"))]
+#[path = "artifact_link_tests.rs"]
+mod link_tests;
+
 /// 将一个 Runtime 符号登记到它所属的组件集合。
 fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
     if symbol.starts_with("xiao_runtime_value_")
@@ -1429,6 +1454,7 @@ fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
         || symbol.starts_with("xiao_runtime_abi_")
         || symbol.starts_with("xiao_runtime_language_context_")
         || symbol.starts_with("xiao_runtime_fatal_")
+        || symbol == "xiao_runtime_dynamic_check"
         || symbol == "xiao_runtime_random_seed"
         || symbol == "xiao_runtime_write_i64"
         || symbol.starts_with("xiao_runtime_print_values")
@@ -1453,6 +1479,7 @@ fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
         components.insert("rc".to_owned());
     }
     if symbol.starts_with("xiao_runtime_weak_")
+        || symbol == "xiao_runtime_weak"
         || symbol == "xiao_runtime_value_weak"
         || symbol == "xiao_runtime_value_release_weak"
     {
@@ -1470,7 +1497,9 @@ fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
     {
         components.insert("containers".to_owned());
     }
-    if symbol.starts_with("xiao_runtime_table_") || symbol.starts_with("xiao_runtime_value_table_")
+    if symbol.starts_with("xiao_runtime_table_")
+        || symbol.starts_with("xiao_runtime_value_table_")
+        || symbol == "xiao_runtime_dynamic_member_get"
     {
         components.insert("tables".to_owned());
     }
