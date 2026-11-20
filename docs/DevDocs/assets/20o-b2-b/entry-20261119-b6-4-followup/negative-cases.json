@@ -9,6 +9,7 @@
   },
   "status_matrix": {
     "checked": 128,
+    "followup_pass_cases": 4,
     "stage_pass_cases": 1
   },
   "cases": [
@@ -42,6 +43,13 @@
     },
     {
       "case": "forged-windows-coff",
+      "exit": 1,
+      "expected": "B6-4 交接状态不符",
+      "observed": "ValueError: B6-4 交接状态不符",
+      "read_only": true
+    },
+    {
+      "case": "forged-followup-pass",
       "exit": 1,
       "expected": "B6-4 交接状态不符",
       "observed": "ValueError: B6-4 交接状态不符",

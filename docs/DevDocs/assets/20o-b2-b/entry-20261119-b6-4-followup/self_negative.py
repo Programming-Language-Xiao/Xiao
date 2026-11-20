@@ -96,6 +96,7 @@ def verify(case, path, reason, *, status=STATUS, local_checks=LOCAL_CHECKS):
 
 def verify_status_combinations():
     checked = 0
+    followup_pass_cases = 0
     stage_pass_cases = 0
     for original, engineering, differential_open, windows_ok, elf_complete, macho_complete, coff_complete in product(
         (False, True), repeat=7
@@ -106,9 +107,9 @@ def verify_status_combinations():
             "Windows": {"conclusion": "success" if windows_ok else "failure",
                         "verification": "complete" if coff_complete else "unverified-coff-exports"},
         }
-        followup = all((engineering, windows_ok, elf_complete, macho_complete))
+        followup = all((engineering, windows_ok, elf_complete, macho_complete, coff_complete))
         expected = {
-            "b6_4_passed": original and followup and not differential_open and coff_complete,
+            "b6_4_passed": original and followup and not differential_open,
             "original_passed": original,
             "followup_passed": followup,
             "windows_coff_verified": coff_complete,
@@ -117,8 +118,10 @@ def verify_status_combinations():
         actual = derive_status(original, runners, engineering, differential_open)
         require(actual == expected, f"B6-4 状态组合不符：期望 {expected}，实际 {actual}")
         checked += 1
+        followup_pass_cases += int(actual["followup_passed"])
         stage_pass_cases += int(actual["b6_4_passed"])
-    return {"checked": checked, "stage_pass_cases": stage_pass_cases}
+    return {"checked": checked, "followup_pass_cases": followup_pass_cases,
+            "stage_pass_cases": stage_pass_cases}
 
 
 def run_cases():
@@ -139,6 +142,10 @@ def run_cases():
             changed = root / f"{case}.json"
             changed.write_text(json.dumps({**status, field: True}), encoding="utf-8")
             cases.append(verify(case, unchanged, "B6-4 交接状态不符", status=changed))
+        changed = root / "forged-followup-pass.json"
+        changed.write_text(json.dumps({**status, "b6_4_passed": True, "followup_passed": True,
+                                       "windows_coff_verified": True}), encoding="utf-8")
+        cases.append(verify("forged-followup-pass", unchanged, "B6-4 交接状态不符", status=changed))
         forged_local = root / "forged-local-checks.zip"
         forge_export_count(LOCAL_CHECKS, forged_local)
         cases.append(verify("forged-export-count", unchanged, "Linux 导出对账输出不符", local_checks=forged_local))

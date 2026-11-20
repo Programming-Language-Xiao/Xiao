@@ -11,7 +11,7 @@
 | --- | --- |
 | B4 | B4-5以cfa79381产品和新Runtime重跑，内部language_available=true；最终签收以重开证据的文档回执与封存审计通过为准 |
 | B5历史矩阵 | ABI1.19/21产品71e611f8、最终测试5864cbde；版本/缓存/C ABI与串行workspace通过，原默认workspace失败保留；URL优化后的当前22完整workspace已通过，B5已通过四类证据联合收口 |
-| B6 | B6-1 为 `restricted`，`stage_passed=false`。三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 的 1,647 项测量绑定 `79ea0375`，B6-3 的 765 次边界执行绑定 `58176ff5`。B6-4 受限交接，`b6_4_passed=false`、`original_passed=false`、`followup_passed=true`、`windows_coff_verified=false`、`22d_open=true`。B7 接收 22D 间歇性释放差分未关闭的记录，B6-5 尚未开始。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) |
+| B6 | B6-1 为 `restricted`，`stage_passed=false`。三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 的 1,647 项测量绑定 `79ea0375`，B6-3 的 765 次边界执行绑定 `58176ff5`。B6-4 受限交接，`b6_4_passed=false`、`original_passed=false`、`followup_passed=false`、`windows_coff_verified=false`、`22d_open=true`。B7 接收 22D 间歇性释放差分未关闭的记录，B6-5 尚未开始。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) |
 | 当前版本 | ABI1.19/生成器22、接口1、intrinsic1～48；B7仍须等B6完成，且引用B5固定1.19/21矩阵与21→22增量 |
 | 本批目标 | B1 20入口回归、A0～A7与B0～B6证据对账、语言/教程/registry边界、B2-C交接 |
 | 未做 | B2-C 721、最终三平台公共产物、registry/教程 verified、历史债务关闭 |

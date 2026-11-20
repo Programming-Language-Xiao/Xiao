@@ -1,6 +1,6 @@
 # B6-4 原生组件修复与 Windows 22D 复跑
 
-**B6-4 受限交接，正式结果 `b6_4_passed=false`。** 原归档为 `original_passed=false`。修复快照的功能及 Linux 工程门禁复验通过，`followup_passed=true`。Windows COFF 导出完整性未验证，`windows_coff_verified=false`。22D 间歇性释放差分未关闭，`22d_open=true`。B6-5 与 B7 沿用这组状态。[交接状态](status.json) · [原始 B6-4 证据](../entry-20261119-b6-4/README.md)
+**B6-4 受限交接，正式结果 `b6_4_passed=false`。** 原归档为 `original_passed=false`。修复快照的功能及 Linux 工程门禁通过，但未达到三平台完整验证，严格口径下 `followup_passed=false`。Windows COFF 导出完整性未验证，`windows_coff_verified=false`。22D 间歇性释放差分未关闭，`22d_open=true`。B6-5 与 B7 沿用这组状态。[交接状态](status.json) · [原始 B6-4 证据](../entry-20261119-b6-4/README.md)
 
 源码修复为 `9d75ab1a`。CI 在 `97d5f288` 的 Runner 分支上应用同一补丁，执行提交为 `e1191445`。两份提交的受保护源码、测试、工具和锁文件一致。
 
@@ -30,11 +30,11 @@ Linux 本机以独立任务根重建 release Runtime，随后完成 62 个 VM �
 
 `followup.zip` 的 173 个路径引用 127 个 SHA-256 对象，绑定 `9d75ab1a` 和 `e1191445`。`local-checks.zip` 的 13 个路径引用 11 个对象，绑定 `780398e5`。两个归档分别核对固定 Git 对象、源码与 Runtime 摘要及原始输出，CI 回执另核对作业身份。`docs-gate.zip` 保存 `b73d975b` 的定稿门禁日志及当时的文档摘要。
 
-`b6_4_passed` 要求原批通过、后续复验通过、`22d_open=false` 且 `windows_coff_verified=true`。`followup_passed` 要求 Linux 工程门禁、三平台原生功能通过，并核对 Linux ELF 和 macOS Mach-O 的完整符号观测；Windows 功能复验可接受 `UnverifiedCoffExports`，但该等级只记录在 `windows_coff_verified`，不能替代 B6-4 通过条件。审计从原作业和本机完整差分的实际失败记录计算本次 `22d_open`。[阶段验收条款](../../../20o-b2-b6-4-ci-gates-plan.md#五退出条件)
+`b6_4_passed` 要求原批通过、后续复验通过且 `22d_open=false`。`followup_passed` 要求 Linux 工程门禁和三平台完整验证通过：Linux ELF、macOS Mach-O 与 Windows COFF 均须为 `Complete`；Windows 的 `UnverifiedCoffExports` 不计入 `followup_passed`，只在 `windows_coff_verified` 记录。审计从原作业和本机完整差分的实际失败记录计算本次 `22d_open`。[阶段验收条款](../../../20o-b2-b6-4-ci-gates-plan.md#五退出条件)
 
-`self_negative.py` 枚举原批、工程门禁、22D、Windows 功能及三平台符号验证等级的 128 组布尔组合，核对审计派生的状态并输出 `status_matrix`；严格口径下只有 COFF 完整时 `b6_4_passed` 才可能为 true，`stage_pass_cases=1`。该检查使用构造的输入状态。
+`self_negative.py` 枚举原批、工程门禁、22D、Windows 功能及三平台符号验证等级的 128 组布尔组合，核对审计派生的状态并输出 `status_matrix`；严格口径下 `followup_pass_cases=4`、`stage_pass_cases=1`，只有三平台完整验证且原批、22D 条件同时满足时 `b6_4_passed` 才为 true。该检查使用构造的输入状态。
 
-自反例在临时副本上删除日志对象、改写 macOS 验证等级，或伪造阶段通过和 Windows COFF 已验证。补验归档反例把导出数由 164 改成 163，并重算进程输出回执和内容寻址清单，审计以 `Linux 导出对账输出不符` 拒绝。各项核对退出码、拒绝原因与输入摘要。新检出可获取修复 Runner 对象后复跑。[状态组合与反例回执](negative-cases.json)
+自反例在临时副本上删除日志对象、改写 macOS 验证等级，或伪造阶段通过、后续复验通过和 Windows COFF 已验证。补验归档反例把导出数由 164 改成 163，并重算进程输出回执和内容寻址清单，审计以 `Linux 导出对账输出不符` 拒绝。各项核对退出码、拒绝原因与输入摘要。新检出可获取修复 Runner 对象后复跑。[状态组合与反例回执](negative-cases.json)
 
 ```powershell
 cmd /c git fetch origin codex/b6-4-runtime-components-runner

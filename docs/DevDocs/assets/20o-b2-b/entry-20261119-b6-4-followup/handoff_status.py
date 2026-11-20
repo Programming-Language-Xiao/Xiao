@@ -2,18 +2,18 @@
 
 
 def derive_status(original_passed, fix_runner, engineering_passed, release_differential_open):
-    """Windows 功能复验接受 UnverifiedCoffExports，但 B6-4 通过还要求 COFF 完整。"""
+    """后续复验要求三平台完整验证；Windows COFF 未验证时 followup_passed 为 false。"""
     windows = fix_runner["Windows"]
+    coff_complete = windows["verification"] == "complete"
     followup_passed = (
         engineering_passed
         and all(fix_runner[host]["conclusion"] == "success" and fix_runner[host]["verification"] == "complete"
                 for host in ("Linux", "macOS"))
         and windows["conclusion"] == "success"
-        and windows["verification"] in ("complete", "unverified-coff-exports")
+        and coff_complete
     )
-    coff_complete = windows["verification"] == "complete"
     return {
-        "b6_4_passed": original_passed and followup_passed and not release_differential_open and coff_complete,
+        "b6_4_passed": original_passed and followup_passed and not release_differential_open,
         "original_passed": original_passed,
         "followup_passed": followup_passed,
         "windows_coff_verified": coff_complete,
