@@ -8,7 +8,7 @@
 > **2026-11-17 URL门禁同步：** 星崽批准仅优化URL Unicode结果预算测试输入表示，不改冻结预算或60秒Driver timeout。资源目标18/18通过；当前1.19/22完整默认workspace为191个测试目标、1,809个测试用例（1,754 passed、0 failed、55 ignored）。B5已由四类证据联合收口，B6的B5前置已满足；B6-1于本日开始实施，后续状态见下一条记录；B6入口同时绑定固定B5 1.19/21矩阵与21→22证据。
 > **2026-11-17 B6-1首轮记录：** Windows/Linux执行中，Linux官方Cmath包装原生被Runtime组件完整性校验阻断，macOS当时未验证。[首轮证据](assets/20o-b2-b/entry-20261117-b6/README.md)
 > **2026-11-18 B6-1 交叉回归记录**　两平台 Runtime/VM、Linux Cmath 核心原生均通过。该轮 Linux 真实包装原生仍受 Runtime 组件完整性校验阻断。
-> **2026-11-19 B6 状态**　B6-1 为 `restricted`，`stage_passed=false`。三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 按裁定在 macOS 专项通过后启动，固定 `79ea0375` 的九组性能测量通过。B6-3 在 `58176ff5` 上通过三平台边界验收。B6-4 受限交接，`b6_4_passed=false`、`original_passed=false`、`followup_passed=true`、`windows_coff_verified=false`、`22d_open=true`。B6-5 尚未开始。[B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md) · [B6-3 回执](assets/20o-b2-b/entry-20261118-b6-3/README.md) · [B6-4 交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json)
+> **2026-11-20 B6 状态**　B6-1 为 `restricted`，`stage_passed=false`。三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 按裁定在 macOS 专项通过后启动，固定 `79ea0375` 的九组性能测量通过。B6-3 在 `58176ff5` 上通过三平台边界验收。B6-4 受限交接，`b6_4_passed=false`、`original_passed=false`、`followup_passed=true`、`windows_coff_verified=false`、`22d_open=true`。B6-5 尚未开始。[B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md) · [B6-3 回执](assets/20o-b2-b/entry-20261118-b6-3/README.md) · [B6-4 交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json)
 
 ## 一、入口与不变量
 

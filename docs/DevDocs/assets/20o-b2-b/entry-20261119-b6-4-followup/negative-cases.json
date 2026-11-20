@@ -3,6 +3,14 @@
     "bytes": 661376,
     "sha256": "ddfc8249c662e60a4bf3fa93d9a1e4eec3caf12878e7bd6125a65f2a96a5f46d"
   },
+  "local_checks_archive": {
+    "bytes": 10805,
+    "sha256": "70718a0fc01050804846fe31a30d3320c2a5c2ef282ef5b4374288688fe2fe8f"
+  },
+  "status_matrix": {
+    "checked": 128,
+    "stage_pass_cases": 2
+  },
   "cases": [
     {
       "case": "unchanged",
@@ -37,6 +45,13 @@
       "exit": 1,
       "expected": "B6-4 交接状态不符",
       "observed": "ValueError: B6-4 交接状态不符",
+      "read_only": true
+    },
+    {
+      "case": "forged-export-count",
+      "exit": 1,
+      "expected": "Linux 导出对账输出不符",
+      "observed": "ValueError: Linux 导出对账输出不符",
       "read_only": true
     }
   ]

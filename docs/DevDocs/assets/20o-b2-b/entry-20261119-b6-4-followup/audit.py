@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT.with_name("entry-20261119-b6-4")))
 
 from evidence import CLOSEOUT, COMPONENT_ERROR, LOCKS, MAINTENANCE, PRODUCT, PROTECTED, RERUN, WORKSPACE
 from evidence import Evidence, blob, clean_log, digest, git, observed_identity, require
+from handoff_status import derive_status
 from local_checks import verify_local_checks
 
 
@@ -207,28 +208,11 @@ def verify_engineering(bundle):
     return True
 
 
-def derive_status(original_passed, fix_runner, engineering_passed, release_differential_open):
-    windows = fix_runner["Windows"]
-    followup_passed = (
-        engineering_passed
-        and all(fix_runner[host]["conclusion"] == "success" and fix_runner[host]["verification"] == "complete"
-                for host in ("Linux", "macOS"))
-        and windows["conclusion"] == "success"
-        and windows["verification"] in ("complete", "unverified-coff-exports")
-    )
-    return {
-        "b6_4_passed": original_passed and followup_passed and not release_differential_open,
-        "original_passed": original_passed,
-        "followup_passed": followup_passed,
-        "windows_coff_verified": windows["verification"] == "complete",
-        "22d_open": release_differential_open,
-    }
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--archive", type=Path, default=ROOT / "followup.zip")
     parser.add_argument("--status", type=Path, default=ROOT / "status.json")
+    parser.add_argument("--local-checks", type=Path, default=ROOT / "local-checks.zip")
     args = parser.parse_args()
     with ZipFile(args.archive) as archive:
         bundle = Evidence(archive)
@@ -246,7 +230,7 @@ def main():
         recorded_status = json.loads(args.status.read_text(encoding="utf-8"))
         require(recorded_status == status and all(isinstance(value, bool) for value in recorded_status.values()),
                 "B6-4 交接状态不符")
-        local_checks = verify_local_checks(ROOT / "local-checks.zip")
+        local_checks = verify_local_checks(args.local_checks)
         print(json.dumps({"verified": True, "files": len(bundle.entries), "objects": bundle.unique,
                           **status, "fix_runner": fix_runner, "original_windows": original_windows,
                           "local_windows_full": local_windows,
