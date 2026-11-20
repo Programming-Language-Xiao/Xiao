@@ -1,6 +1,6 @@
 # 20O-B2-B6. cmath/lfloat 资源、错误与三平台性能规划
 
-> **B6 当前状态（2026-11-19）**　B6-1 为 `restricted`，`stage_passed=false`。官方包装两别名 O0/O3 在三平台功能通过。Linux ELF 与 macOS Mach-O 均为 `Complete`，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，固定 `79ea0375` 的九组性能测量通过，见 §2.7。B6-3 边界功能通过。B6-4 受限交接，正式结果为 `b6_4_passed=false`，修复快照复验通过，22D 间歇性释放差分未关闭。B6-5 尚未开始。[B6-3 规划](20o-b2-b6-3-boundary-plan.md) · [B6-4 交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json)
+> **B6 当前状态（2026-11-19）**　B6-1 为 `restricted`，`stage_passed=false`。官方包装两别名 O0/O3 在三平台功能通过。Linux ELF 与 macOS Mach-O 均为 `Complete`，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，固定 `79ea0375` 的九组性能测量通过，见 §2.7。B6-3 边界功能通过。B6-4 受限交接，正式结果为 `b6_4_passed=false`，修复快照的功能复验通过，Windows COFF 导出完整性未验证（`windows_coff_verified=false`），22D 间歇性释放差分未关闭。B6-5 尚未开始。[B6-3 规划](20o-b2-b6-3-boundary-plan.md) · [B6-4 交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json)
 
 > B5固定1.19/21矩阵和[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)保持只读历史身份；当前产品1.19/22。B6每轮均绑定自己的源码、Runtime和工具身份。B1原件缺口、22C/22D与19/11/22债务独立保留。
 > B5固定测试快照5864cbde为ABI1.19/生成器21/接口1。原17项资源目标及8次直接计时为旧负载历史证据；优化后18项资源目标和完整默认workspace均通过，详见URL优化记录。B6当前测量使用ABI1.19/生成器22 Runtime，并同时对账B5矩阵与21→22增量证据。

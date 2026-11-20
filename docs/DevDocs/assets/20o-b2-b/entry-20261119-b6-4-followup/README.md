@@ -30,9 +30,9 @@ Linux 本机以独立任务根重建 release Runtime，随后完成 62 个 VM �
 
 `followup.zip` 的 173 个路径引用 127 个 SHA-256 对象，绑定 `9d75ab1a` 和 `e1191445`。`local-checks.zip` 的 13 个路径引用 11 个对象，绑定 `780398e5`。两个归档分别核对固定 Git 对象、源码与 Runtime 摘要及原始输出，CI 回执另核对作业身份。`docs-gate.zip` 保存 `b73d975b` 的定稿门禁日志及当时的文档摘要。
 
-`b6_4_passed` 要求原批通过、后续复验通过且 `22d_open=false`。`followup_passed` 要求 Linux 工程门禁、三平台原生功能通过，并核对 Linux ELF 和 macOS Mach-O 的完整符号观测。按开工单 §2.1 的平台口径，Windows 功能复验可接受 `UnverifiedCoffExports`，COFF 完整性由 `windows_coff_verified` 单列。审计从原作业和本机完整差分的实际失败记录计算本次 `22d_open`。[阶段验收条款](../../../20o-b2-b6-4-ci-gates-plan.md#五退出条件)
+`b6_4_passed` 要求原批通过、后续复验通过、`22d_open=false` 且 `windows_coff_verified=true`。`followup_passed` 要求 Linux 工程门禁、三平台原生功能通过，并核对 Linux ELF 和 macOS Mach-O 的完整符号观测；Windows 功能复验可接受 `UnverifiedCoffExports`，但该等级只记录在 `windows_coff_verified`，不能替代 B6-4 通过条件。审计从原作业和本机完整差分的实际失败记录计算本次 `22d_open`。[阶段验收条款](../../../20o-b2-b6-4-ci-gates-plan.md#五退出条件)
 
-`self_negative.py` 枚举原批、工程门禁、22D、Windows 功能及三平台符号验证等级的 128 组布尔组合，核对审计派生的状态并输出 `status_matrix`。该检查使用构造的输入状态。
+`self_negative.py` 枚举原批、工程门禁、22D、Windows 功能及三平台符号验证等级的 128 组布尔组合，核对审计派生的状态并输出 `status_matrix`；严格口径下只有 COFF 完整时 `b6_4_passed` 才可能为 true，`stage_pass_cases=1`。该检查使用构造的输入状态。
 
 自反例在临时副本上删除日志对象、改写 macOS 验证等级，或伪造阶段通过和 Windows COFF 已验证。补验归档反例把导出数由 164 改成 163，并重算进程输出回执和内容寻址清单，审计以 `Linux 导出对账输出不符` 拒绝。各项核对退出码、拒绝原因与输入摘要。新检出可获取修复 Runner 对象后复跑。[状态组合与反例回执](negative-cases.json)
 

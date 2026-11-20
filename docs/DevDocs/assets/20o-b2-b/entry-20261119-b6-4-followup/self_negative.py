@@ -108,7 +108,7 @@ def verify_status_combinations():
         }
         followup = all((engineering, windows_ok, elf_complete, macho_complete))
         expected = {
-            "b6_4_passed": original and followup and not differential_open,
+            "b6_4_passed": original and followup and not differential_open and coff_complete,
             "original_passed": original,
             "followup_passed": followup,
             "windows_coff_verified": coff_complete,

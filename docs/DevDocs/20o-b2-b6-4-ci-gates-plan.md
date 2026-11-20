@@ -144,7 +144,7 @@ B4 在 `9d75ab1a` 按手工维护的 ABI 依赖表展开可达入口的组件。
 6. 未把 Linux 专属仓库门禁写成三平台门禁；B6-1 的 Windows COFF 未验证与 Linux Clippy 未执行继续按历史事实表述，不混入 B6-4 本批结果；
 7. B6-5 入口明确；B6-5/B7/B2-C 未开始。
 
-`b6_4_passed` 要求原批通过、后续复验通过且 22D 已关闭。按 §2.1 的平台口径，Windows 回归可登记功能通过及 `UnverifiedCoffExports`，COFF 完整性以 `windows_coff_verified` 单列。三平台产物完整通过要求各平台实际达到 `Complete`。受限交接的平台缺项纳入 B2-C 补验。[B2-C 开工闸门](20o-b2-c-final-closeout-plan.md#二开工闸门)
+`b6_4_passed` 要求原批通过、后续复验通过、22D 已关闭且 `windows_coff_verified=true`。按 §2.1 的平台口径，Windows 回归可登记功能通过及 `UnverifiedCoffExports`，但该等级不满足 B6-4 通过条件；COFF 完整性以 `windows_coff_verified` 单列，三平台产物完整通过要求各平台实际达到 `Complete`。受限交接的平台缺项纳入 B2-C 补验。[B2-C 开工闸门](20o-b2-c-final-closeout-plan.md#二开工闸门)
 
 ## 六、风险与禁止
 
