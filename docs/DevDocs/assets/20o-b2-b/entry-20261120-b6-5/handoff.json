@@ -1,0 +1,35 @@
+{
+  "b7_started": false,
+  "b2_c_started": false,
+  "b7": {
+    "b1_entries": 20,
+    "b1_resources": 18,
+    "b1_guards": 28,
+    "stage_reconciliation": ["A0-A7", "B0-B6"],
+    "cmath": "planned"
+  },
+  "b2_c": {
+    "new_snapshot_f10": 721,
+    "public_artifacts": ["windows", "linux", "macos"],
+    "final_tutorial_and_registry": "pending",
+    "b6_numeric_workloads": "pending"
+  },
+  "open_items": {
+    "22d": {
+      "owner": "B7",
+      "cases": ["native-lock-wait-027", "xcon-bounded-string-success", "spawn-join-str-multiargument"]
+    },
+    "windows_coff": {
+      "owner": "B2-C",
+      "verification": "UnverifiedCoffExports"
+    },
+    "b6_1_linux_clippy": {
+      "owner": "B7-4",
+      "historical": "not_run"
+    },
+    "final_tree_artifact_verification": {
+      "owner": "B2-C",
+      "pending": ["windows", "macos"]
+    }
+  }
+}

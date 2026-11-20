@@ -1,0 +1,90 @@
+{
+  "22d_open": true,
+  "archive": {
+    "bytes": 125716,
+    "files": 85,
+    "objects": 66,
+    "sha256": "c95e511c3aea158895dcbf6ba081342025a9a2c7b5c6ef361089ae4d51089ff3"
+  },
+  "b6_1_stage_passed": false,
+  "b6_2_final_tree_covered": true,
+  "b6_2_measured_source": "79ea0375d7f2d823a5bdde73cb2c9a1c33c3e4c3",
+  "b6_2_perf_pass": true,
+  "b6_3_boundary_passed": true,
+  "b6_3_boundary_source": "58176ff5299441f921f3b54fbdc300e2e46b9bb0",
+  "b6_3_final_tree_covered": false,
+  "b6_4_passed": false,
+  "b6_5_passed": true,
+  "b6_accepted": false,
+  "b7_entry_ready": true,
+  "compatibility": {
+    "abi": "1.19",
+    "active_intrinsics": [
+      1,
+      48
+    ],
+    "cmath": "planned",
+    "generator": 22,
+    "stdlib_interface": 1,
+    "tombstone": 100
+  },
+  "evidence_inventory_complete": true,
+  "final_tree_artifact_verification_pending": [
+    "windows",
+    "macos"
+  ],
+  "final_workspace_gates_passed": true,
+  "followup_passed": false,
+  "historical_replays": 11,
+  "linux": {
+    "gates": {
+      "check-lock": 0,
+      "clippy": 0,
+      "fmt": 0,
+      "repo-check": 0,
+      "workspace": 0
+    },
+    "point_checks": {
+      "linux_abi_exports": 164,
+      "native": [
+        "exports",
+        "cmath",
+        "divide",
+        "float",
+        "callback",
+        "dynamic-string"
+      ],
+      "rust_api_cases": 8
+    },
+    "repo_check": {
+      "diagnostics": {
+        "A0-COVERAGE-002": 1294
+      },
+      "initial_environment_failure": 1,
+      "markdown": {
+        "bytes": 44346,
+        "files": 448,
+        "sha256": "75a5969c5a7f9066bb1669ca8ece377b868954c9622b091fa5af1f2adedc5aca"
+      }
+    },
+    "runtime": {
+      "bytes": 34143188,
+      "sha256": "08b88569645eb45d7cc6fea793adbe91a459a174392a91d1b57497d22349ad89"
+    },
+    "target": "x86_64-unknown-linux-gnu",
+    "workspace": {
+      "failed": 0,
+      "ignored": 56,
+      "passed": 1760,
+      "targets": 192
+    }
+  },
+  "new_performance_samples": 0,
+  "open_items_assigned": true,
+  "original_passed": false,
+  "product": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+  "stage_reconciliation_complete": true,
+  "status_fields_consistent": true,
+  "tree": "80be41eefc3983001cd3968db0ccceee541f698d",
+  "windows_coff_verified": false
+}

@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "state_matrix": {
+    "checked": 2048,
+    "b6_accepted": 32,
+    "b6_5_passed": 64,
+    "b7_entry_ready": 64
+  },
+  "cases": {
+    "unchanged": {
+      "expected_reason": null,
+      "observed_reason": null,
+      "exit": 0,
+      "read_only": true
+    },
+    "forged-stage-pass": {
+      "expected_reason": "封存状态与固定证据派生结果不符",
+      "observed_reason": "封存状态与固定证据派生结果不符",
+      "exit": 1,
+      "read_only": true
+    },
+    "missing-object": {
+      "expected_reason": "证据包清单不符",
+      "observed_reason": "证据包清单不符",
+      "exit": 1,
+      "read_only": true
+    },
+    "rehashed-exports": {
+      "expected_reason": "Linux 导出对账输出不符",
+      "observed_reason": "Linux 导出对账输出不符",
+      "exit": 1,
+      "read_only": true
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # 20O-B2-B6-5. B6 整批收口与 B7/B2-C 交接规划
 
-> **状态（2026-11-20）：B6-5 规划完成，未开始。** B6-1 为 `restricted/stage_passed=false`；B6-2 `perf_pass=true` 绑定 `79ea0375`；B6-3 `boundary_passed=true` 绑定 `58176ff5`；B6-4 为受限交接，五字段为 `b6_4_passed=false`、`original_passed=false`、`followup_passed=false`、`windows_coff_verified=false`、`22d_open=true`。B6-5 只做整批收口、最终工程门禁和 B7/B2-C 入口，不把受限状态改成通过。
+> **状态（2026-11-20）　B6-5 已完成内部收口。** 固定产品 `e79fab3c` 的 Linux 工程门禁通过，`b6_5_passed=true`、`b7_entry_ready=true`、`b6_accepted=false`。B6-1 维持受限，B6-4 五字段按正式回执交接。B7 与 B2-C 未开工。[收口证据与只读审计](assets/20o-b2-b/entry-20261120-b6-5/README.md)
 > 入口：[B6-4 交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json)、[B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)、[B6-3 实测](assets/20o-b2-b/entry-20261118-b6-3/README.md)、[B6-1 重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)、[B6-1 macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)。
 > B6-5 不重跑 B6-2 全量性能、不重跑 B6-3 全边界、不跑旧 721、不改产品/ABI/registry/教程/工作流阈值，不关闭 22D 或 Windows COFF 缺项。
 
@@ -207,6 +207,8 @@ b7_entry_ready
 - 在 B6-5 内修 22D/COFF/产品缺陷，或把“已登记”当作签收。
 
 ## 七、交接
+
+B6-5 已在最终树上完成 Linux workspace、Clippy、fmt、锁和仓库门禁，默认 workspace 为 1,760 通过、0 失败、56 项原有忽略。B6-2 的最终树覆盖来自源码路径核对，测量成绩固定于原快照。B6-3 的最终树 Linux 定向补验通过，Windows 和 macOS 最终树产物验证归 B2-C。B7 接收 [交接清单](assets/20o-b2-b/entry-20261120-b6-5/handoff.json)。
 
 B6-5 完成后，B7 按以下入口接收：
 

@@ -3,6 +3,7 @@
 > **2026-11-16历史状态：B5版本/缓存/C ABI矩阵及完整串行workspace通过，但默认并发workspace的URL Unicode用例触发60秒看门狗，B5未封存。** 失败记录、B1历史原件缺失/重建来源标记和独立LLVM比较问题见[B5证据](assets/20o-b2-b/entry-20261116-b5-rebuild/README.md)；B6闸门未开，B7/B2-C未开始。
 > **2026-11-18 实施同步**　B5 固定矩阵绑定 ABI 1.19、生成器 21。当前产品为 1.19/22，B5 已联合收口。FIX.2 保持生成器 22。B6-1 为 `restricted`，`stage_passed=false`，三平台功能通过。Windows COFF 导出完整性未验证，Linux Clippy 未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，九组性能结果绑定 `79ea0375`。B6-3 的三平台边界结果绑定 `58176ff5`。B7 等待 B6 整批收口。[B6-1 限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)、[macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)、[B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)、[B6-3 实测](assets/20o-b2-b/entry-20261118-b6-3/README.md)、[21→22 增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)、[FIX.2 证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)
 > B7 只做 B2-B 内部收口、B1 回归、B2-A 与 B2-B 前序阶段证据对账和 B2-C 交接。
+> **2026-11-20 开工入口**　`b6_5_passed=true`、`b7_entry_ready=true`、`b6_accepted=false`。B7 尚未开始执行。[B6-5 收口证据](assets/20o-b2-b/entry-20261120-b6-5/README.md)
 > 不运行旧 721、不升级 registry/教程、不关闭历史债务；B2-C 才做最终三平台、721 和公共发布。
 
 ## 一、入口与范围
@@ -11,8 +12,8 @@
 | --- | --- |
 | B4 | B4-5以cfa79381产品和新Runtime重跑，内部language_available=true；最终签收以重开证据的文档回执与封存审计通过为准 |
 | B5历史矩阵 | ABI1.19/21产品71e611f8、最终测试5864cbde；版本/缓存/C ABI与串行workspace通过，原默认workspace失败保留；URL优化后的当前22完整workspace已通过，B5已通过四类证据联合收口 |
-| B6 | B6-1 为 `restricted`，`stage_passed=false`。三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 的 1,647 项测量绑定 `79ea0375`，B6-3 的 765 次边界执行绑定 `58176ff5`。B6-4 受限交接，`b6_4_passed=false`、`original_passed=false`、`followup_passed=false`、`windows_coff_verified=false`、`22d_open=true`。B7 接收 22D 间歇性释放差分未关闭的记录，B6-5 规划完成，未开始；[规划](20o-b2-b6-5-closeout-plan.md)。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) |
-| 当前版本 | ABI1.19/生成器22、接口1、intrinsic1～48；B7仍须等B6完成，且引用B5固定1.19/21矩阵与21→22增量 |
+| B6 | B6-1 为 `restricted/stage_passed=false`，三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 的 1,647 项测量仍绑定 `79ea0375`，最终树为源码路径覆盖。B6-3 的 765 次边界执行仍绑定 `58176ff5`，最终树 Linux 已定向补验，Windows/macOS 产物待 B2-C。B6-4 受限交接，`b6_4_passed=false`、`original_passed=false`、`followup_passed=false`、`windows_coff_verified=false`、`22d_open=true`。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) |
+| 当前版本 | 固定 `e79fab3c`，ABI 1.19、生成器 22、接口 1、intrinsic 1～48。B5 固定 1.19/21 矩阵与 21→22 增量分列 |
 | 本批目标 | B1 20入口回归、A0～A7与B0～B6证据对账、语言/教程/registry边界、B2-C交接 |
 | 未做 | B2-C 721、最终三平台公共产物、registry/教程 verified、历史债务关闭 |
 
@@ -48,7 +49,7 @@ B7 只更新收口文档和本批证据，回归复用前序测试。若发现�
 
 ## 二、开工闸门
 
-1. B4-5、B5、B6 审计通过，最终源码/证据/平台身份固定；
+1. B4-5、B5、B6-5 的只读审计通过，最终源码、证据与平台身份固定。B7 入口使用 `b7_entry_ready=true`，保留 B6-1/B6-4 受限结论及 `b6_accepted=false`；
 2. 15 项 cmath、30 条导入、双路径/归档/序列化可复现；
 3. 当前ABI1.19/生成器22；复核B5固定20/21生成器历史范围、ABI拒绝/缓存矩阵，并单独校验21→22增量；不继承冷构建为矩阵通过；
 4. B6 证据清单与逐项结果可复核，功能/资源/性能/平台结论分别登记；不可验证项未被汇总为通过，实测失败有处理或裁定依据；
