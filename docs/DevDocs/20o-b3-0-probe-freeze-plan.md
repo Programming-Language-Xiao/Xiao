@@ -1,6 +1,6 @@
 # 20O-B3-0. 简单宿主库探测、冻结与教程草案实施规划
 
-> **状态（2026-11-22）：B3-0 规划完成，执行未开始。** B2-C 已按历史同链接例外完成公共收口；B3-0 只做探测、契约冻结、版本身份和教程草案，不写产品，不升级 registry/教程，不启动 B3-1。
+> **状态（2026-11-22）**　B3-0A 的固定基线、三平台探测和 B1 前置已通过只读复核。B3-0B 首轮裁定待答，整批冻结与 B3-1 入口待后续验收。[入口证据](assets/20o-b3/entry-20261122-b3-0/README.md) · [裁定台账](assets/20o-b3/entry-20261122-b3-0/decisions.md)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B2-C 的同链接 10 份候选只是历史例外，不得继承。B3-0 的探测记录不能替代 B3 产品验收。
 > 入口：[B3 宿主库规划](20o-b3-host-libraries-plan.md)、[B2-C 收口证据](assets/20o-b2-c/entry-20261122-b2-c/README.md)、[20P Day-1 架构](20p-day1-library-architecture.md)、[D-8/D-9/D-10 方向](20o-official-library-program.md#五决策清单)。
 > B3-0 不实现六个模块，不改 ABI/intrinsic/registry/教程，不跑旧 721，不启动 B3-1/B4。
@@ -61,7 +61,7 @@ b3_1_entry_ready = b3_0_passed and decisions_approved and no_product_change
 1. B2-C 已完成公共收口；B3-0 规划经确认；B3-1/B4 未开始；
 2. 固定产品 `e79fab3c`、两个 Cargo.lock、Runtime/工具链/目标身份可核对；B3-0 不修改产品；
 3. 20P Day-1 标准、D-8/D-9/D-10 方向、20D 能力位/错误/取消边界可读；
-4. B1 七库 20 入口/17 资源/双精确/28 守卫可复现；旧 721 不启用；
+4. B1 七库 20 入口、18 项资源、VM 与原生双精确入口及 28 项守卫可复现。28 项含 4 项实测输出和 24 项派生负例，资源数沿 B2-C 基线。旧 721 不启用；
 5. 三平台目标/工具链/CI 或等价探测环境可用；缺平台只能记 `unverifiable`，不能写成通过；
 6. 唯一任务根、独立 target/Runtime/缓存、每模块/平台/探测项独占输出目录；
 7. 有歧义的 API/能力/env/log 语义已列入待裁定清单，未裁定项不得标为冻结；
@@ -70,6 +70,8 @@ b3_1_entry_ready = b3_0_passed and decisions_approved and no_product_change
 ## 三、分批执行
 
 ### B3-0A：基线、决定台账与探测矩阵
+
+本轮以 `e79fab3c` 及两个锁文件为基线，Windows 本机、Linux/macOS Runner 使用独立 release Runtime。B1 双精确、18 项资源与 28 项守卫通过，`b3_0a_baseline_frozen=true`。[入口回执](assets/20o-b3/entry-20261122-b3-0/entry.json)
 
 1. 固定 B2-C 最终产品、ABI/生成器/接口、两个锁、Runtime/工具/目标；
 2. 建立六模块探测矩阵：模块、平台、现有 API/能力位、可探测项、预期风险、证据路径；

@@ -1,0 +1,223 @@
+{
+  "archive": {
+    "bytes": 296821,
+    "objects": 124,
+    "paths": 206,
+    "sha256": "21c4fc059247686001cb2e6204a048ca16ed3a63446c7de5a8bbc6cb87714c95"
+  },
+  "b3_0_passed": false,
+  "b3_0a_baseline_frozen": true,
+  "b3_1_entry_ready": false,
+  "b3_product_started": false,
+  "collateral_workspace": {
+    "conclusion": "failure",
+    "run": 45033610101
+  },
+  "decisions_approved": false,
+  "guards": {
+    "actual": 4,
+    "derived": 24,
+    "passed": 28
+  },
+  "inherited": {
+    "22d_open": true,
+    "b6_1_stage_passed": false,
+    "b6_3_final_tree_covered": false,
+    "b6_4_passed": false,
+    "b6_accepted": false,
+    "followup_passed": false,
+    "original_passed": false,
+    "windows_coff_verified": false
+  },
+  "old_721_executed": false,
+  "platforms": {
+    "linux": {
+      "b1": {
+        "entries": 20,
+        "native_exact": 1,
+        "resource_targets": 18,
+        "vm_exact": 1
+      },
+      "ci": {
+        "artifact": 14759116233,
+        "attempt": 1,
+        "job": 137242370871,
+        "run": 45033610157,
+        "sha256": "709d2d1f516e545043f1f693248d5a3fe990f181c0ffd6afba907b6fd15583bf"
+      },
+      "observed": {
+        "argv": [
+          "argv0_present=true argv_count=10 valid_exact=true malformed_roundtrip=true"
+        ],
+        "cli": [
+          "{\"argv\":[\"run\",\"probe.xiao\"],\"kind\":\"run\",\"publicKeys\":[\"file\",\"kind\",\"optimizationExplicit\",\"optimizationLevel\",\"options\"]}",
+          "{\"argv\":[\"run\",\"probe.xiao\",\"--\",\"\",\"two words\"],\"code\":\"X11-CLI-ARG-001\"}",
+          "{\"argv\":[\"run\",\"probe.xiao\",\"--\",\"--help\"],\"kind\":\"help\",\"publicKeys\":[\"kind\",\"options\"]}",
+          "{\"argv\":[\"-xar\",\"probe.xar\",\"--\",\"--flag\"],\"code\":\"X11-CLI-ARG-001\"}"
+        ],
+        "env": [
+          "child_with_values",
+          "value_present=true case_folded=false empty_present=true absent=true malformed_roundtrip=true",
+          "child_with_value_removed",
+          "value_present=false case_folded=false empty_present=true absent=true malformed_roundtrip=true"
+        ],
+        "fs": [
+          "create_new_existing=AlreadyExists/Some(17) original_intact=true",
+          "same_directory_replace=success new_content=true temporary_removed=true",
+          "replace_directory=IsADirectory/Some(21) source_retained=true",
+          "directory_link=success",
+          "link_parent_read=Ok(true)",
+          "readonly_open_for_write=PermissionDenied/Some(13)"
+        ],
+        "log": [
+          "concurrent_stdout_records=48 exact=true stderr_separate=true exit=exit status: 0",
+          "closed_stdout_write=BrokenPipe/Some(32)",
+          "closed_stream_child=exit status: 0"
+        ],
+        "time": [
+          "wall_unix_ns=1795358175643624006",
+          "monotonic_min_observed_ns=Some(49) regressions=0",
+          "sleep_requested_ms=0 observed_ns=[221, 40, 30, 30, 30]",
+          "sleep_requested_ms=1 observed_ns=[1070564, 1048031, 1106604, 1069613, 1067969]",
+          "sleep_requested_ms=10 observed_ns=[10074545, 10076036, 10079394, 10074885, 10075766]",
+          "host_wakeable_wait_received=true observed_ns=67770",
+          "host_wait_deadline=true"
+        ]
+      },
+      "runtime": {
+        "bytes": 34143086,
+        "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+      },
+      "target": "x86_64-unknown-linux-gnu"
+    },
+    "macos": {
+      "b1": {
+        "entries": 20,
+        "native_exact": 1,
+        "resource_targets": 18,
+        "vm_exact": 1
+      },
+      "ci": {
+        "artifact": 14758976939,
+        "attempt": 1,
+        "job": 137242370630,
+        "run": 45033610157,
+        "sha256": "399167416e037b907c4bb593423d2d70d39dbd45a4a4a9447f4ecdc25d0bf884"
+      },
+      "observed": {
+        "argv": [
+          "argv0_present=true argv_count=10 valid_exact=true malformed_roundtrip=true"
+        ],
+        "cli": [
+          "{\"argv\":[\"run\",\"probe.xiao\"],\"kind\":\"run\",\"publicKeys\":[\"file\",\"kind\",\"optimizationExplicit\",\"optimizationLevel\",\"options\"]}",
+          "{\"argv\":[\"run\",\"probe.xiao\",\"--\",\"\",\"two words\"],\"code\":\"X11-CLI-ARG-001\"}",
+          "{\"argv\":[\"run\",\"probe.xiao\",\"--\",\"--help\"],\"kind\":\"help\",\"publicKeys\":[\"kind\",\"options\"]}",
+          "{\"argv\":[\"-xar\",\"probe.xar\",\"--\",\"--flag\"],\"code\":\"X11-CLI-ARG-001\"}"
+        ],
+        "env": [
+          "child_with_values",
+          "value_present=true case_folded=false empty_present=true absent=true malformed_roundtrip=true",
+          "child_with_value_removed",
+          "value_present=false case_folded=false empty_present=true absent=true malformed_roundtrip=true"
+        ],
+        "fs": [
+          "create_new_existing=AlreadyExists/Some(17) original_intact=true",
+          "same_directory_replace=success new_content=true temporary_removed=true",
+          "replace_directory=IsADirectory/Some(21) source_retained=true",
+          "directory_link=success",
+          "link_parent_read=Ok(true)",
+          "readonly_open_for_write=PermissionDenied/Some(13)"
+        ],
+        "log": [
+          "concurrent_stdout_records=48 exact=true stderr_separate=true exit=exit status: 0",
+          "closed_stdout_write=BrokenPipe/Some(32)",
+          "closed_stream_child=exit status: 0"
+        ],
+        "time": [
+          "wall_unix_ns=1795358196455855000",
+          "monotonic_min_observed_ns=Some(41) regressions=0",
+          "sleep_requested_ms=0 observed_ns=[42, 42, 0, 42, 0]",
+          "sleep_requested_ms=1 observed_ns=[7533792, 5668000, 5072709, 4761500, 4150667]",
+          "sleep_requested_ms=10 observed_ns=[40438417, 10331792, 18882042, 17221875, 17007875]",
+          "host_wakeable_wait_received=true observed_ns=90750",
+          "host_wait_deadline=true"
+        ]
+      },
+      "runtime": {
+        "bytes": 25667552,
+        "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+      },
+      "target": "aarch64-apple-darwin"
+    },
+    "windows": {
+      "b1": {
+        "entries": 20,
+        "native_exact": 1,
+        "resource_targets": 18,
+        "vm_exact": 1
+      },
+      "observed": {
+        "argv": [
+          "argv0_present=true argv_count=10 valid_exact=true malformed_roundtrip=true"
+        ],
+        "cli": [
+          "{\"argv\":[\"run\",\"probe.xiao\"],\"kind\":\"run\",\"publicKeys\":[\"file\",\"kind\",\"optimizationExplicit\",\"optimizationLevel\",\"options\"]}",
+          "{\"argv\":[\"run\",\"probe.xiao\",\"--\",\"\",\"two words\"],\"code\":\"X11-CLI-ARG-001\"}",
+          "{\"argv\":[\"run\",\"probe.xiao\",\"--\",\"--help\"],\"kind\":\"help\",\"publicKeys\":[\"kind\",\"options\"]}",
+          "{\"argv\":[\"-xar\",\"probe.xar\",\"--\",\"--flag\"],\"code\":\"X11-CLI-ARG-001\"}"
+        ],
+        "env": [
+          "child_with_values",
+          "value_present=true case_folded=true empty_present=true absent=true malformed_roundtrip=true",
+          "child_with_value_removed",
+          "value_present=false case_folded=true empty_present=true absent=true malformed_roundtrip=true"
+        ],
+        "fs": [
+          "create_new_existing=AlreadyExists/Some(80) original_intact=true",
+          "same_directory_replace=success new_content=true temporary_removed=true",
+          "replace_directory=PermissionDenied/Some(5) source_retained=true",
+          "directory_link=success",
+          "link_parent_read=Err(Os { code: 2, kind: NotFound, message: \"系统找不到指定的文件。\" })",
+          "readonly_open_for_write=PermissionDenied/Some(5)"
+        ],
+        "log": [
+          "concurrent_stdout_records=48 exact=true stderr_separate=true exit=exit code: 0",
+          "closed_stdout_write=BrokenPipe/Some(232)",
+          "closed_stream_child=exit code: 0"
+        ],
+        "time": [
+          "wall_unix_ns=1795358063470640100",
+          "monotonic_min_observed_ns=Some(100) regressions=0",
+          "sleep_requested_ms=0 observed_ns=[7400, 500, 300, 400, 400]",
+          "sleep_requested_ms=1 observed_ns=[1065100, 1552900, 1545900, 1720400, 1671000]",
+          "sleep_requested_ms=10 observed_ns=[10298500, 10510200, 10515900, 10206800, 10516800]",
+          "host_wakeable_wait_received=true observed_ns=178200",
+          "host_wait_deadline=true"
+        ]
+      },
+      "runtime": {
+        "bytes": 27483016,
+        "sha256": "fa493d79b129cf7fa600993605381830f6abeaab23ec0ea48c0a910554de0fff"
+      },
+      "target": "x86_64-pc-windows-msvc"
+    }
+  },
+  "product": {
+    "commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+    "files": 1222,
+    "locks": {
+      "core/rust/Cargo.lock": {
+        "bytes": 19599,
+        "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+      },
+      "tests/benchmarks/Cargo.lock": {
+        "bytes": 19203,
+        "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+      }
+    },
+    "tree": "80be41eefc3983001cd3968db0ccceee541f698d",
+    "tree_list_sha256": "2d6494d5d7e27fb000e7f23719ce5bd7d816f147aac7b828d31cb52be7b78e3f"
+  },
+  "registry_verified": false,
+  "runner": "0aa8540f9ffcb0ba1ed7a4acf85bc88c8a78ce16"
+}
