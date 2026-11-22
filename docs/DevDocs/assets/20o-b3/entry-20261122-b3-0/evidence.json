@@ -5,8 +5,8 @@
       "sha256": "cd7cc4cc85773fdc502f952cefca9fe075bfdd349add7778ab6a0e4f8b618814"
     },
     "README.md": {
-      "bytes": 3713,
-      "sha256": "23232458b0410e84ae83f8fa603b4ae3872b6cd454e7fb45c93708d7225b044f"
+      "bytes": 4248,
+      "sha256": "46d263d443fcf5473bbc071ba93141247a588c3a363bcdd290603065d87d5fd7"
     },
     "audit_entry.py": {
       "bytes": 13091,
@@ -35,6 +35,14 @@
     "seal_entry.py": {
       "bytes": 860,
       "sha256": "9e8c93f2911351996e597988f2e16e0bf610f88bd4d26ba79305e577e6a84b86"
+    },
+    "self-negative-result.json": {
+      "bytes": 667,
+      "sha256": "c4d61395292de83ed2b3c2c163534092ae31b26fa220d1ea4824c1e4b114ece5"
+    },
+    "self_negative.py": {
+      "bytes": 4462,
+      "sha256": "81492e4a441ae82028a38ea9dd601c88a8ff84216383a1995bf5932fa96c0a20"
     }
   },
   "schema": 1

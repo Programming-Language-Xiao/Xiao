@@ -84,6 +84,8 @@ b3_1_entry_ready = b3_0_passed and decisions_approved and no_product_change
 
 ### B3-0B：`time`、`args`、`cli` 探测与冻结
 
+B3-0B 的详细开工单、首轮裁定和冻结证据见 [B3-0B 实施规划](20o-b3-0b-time-args-cli-plan.md)。
+
 1. `time`：探测 UTC 墙钟/单调钟来源、精度、时区、格式化能力、时钟回退、sleep 单位/零/负/上限/取消/安全点；冻结阻塞期取消、清理和错误传播；
 2. `args`：探测 argv 快照时点、程序名/数组边界、空参数、非 UTF-8/非法 Unicode、Windows 引号规则、`--`/重复项/选项解析边界；
 3. `cli`：冻结与 `args` 的分工，禁止重复解析入口；只保留冻结范围内的辅助；

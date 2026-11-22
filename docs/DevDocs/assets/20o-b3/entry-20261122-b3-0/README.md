@@ -23,9 +23,16 @@ Windows 本机、Linux Runner 与 macOS Runner 使用 Rust 1.96.0，分别在独
 
 `observations.zip` 以 SHA-256 引用原始命令、日志与 CI 上传包。审计复核固定工作流、探测配方、作业身份、所有路径和当前入口结论。裁定台账记录本次入口时点，后续答复另行登记。[入口回执](entry.json) · [清单](evidence.json) · [裁定台账](decisions.md)
 
+本提交的 docs、UseDocs 和布局检查为本机检查；最终封存文档门禁在 B3-0F 执行，不由本提交的局部检查代替。
+
+## 自反例
+
+`self_negative.py` 在临时副本上验证四个篡改样例：清单改写、缺 `.gitattributes`、伪造 `b3_0_passed` 和伪造 `decisions_approved`；审计或派生检查必须按对应理由拒绝，且原件只读。结果见 [self-negative-result.json](self-negative-result.json)。
+
 ```powershell
 cmd /c git fetch origin codex/b3-0-probe-runner
 python -B -X utf8 docs/DevDocs/assets/20o-b3/entry-20261122-b3-0/audit_entry.py
+python -B -X utf8 docs/DevDocs/assets/20o-b3/entry-20261122-b3-0/self_negative.py
 ```
 
 B3-0B 的时间单位、参数来源和 cli 范围已列为待答。六模块精确契约、B3-0 收口和 B3-1 入口仍待实际裁定。
