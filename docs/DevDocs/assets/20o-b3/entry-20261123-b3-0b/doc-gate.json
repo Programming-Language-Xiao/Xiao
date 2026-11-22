@@ -1,4 +1,96 @@
 {
+  "after": {
+    "commit": "8c8c5fb19441346c607add19bf1b381160104612",
+    "docs_tree_sha256": "c1a6673f055c85573efd6b1717c08039d63939047f5a64c01a060ac64f60f43a",
+    "markdown": {
+      "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": {
+        "bytes": 15058,
+        "sha256": "9e5f9cb01e8e7fad9731b28891f9af696210670570a8f561e4be4016991c6a7e"
+      },
+      "docs/DevDocs/20o-b3-0b-time-args-cli-plan.md": {
+        "bytes": 14345,
+        "sha256": "696020a0cb4b17b4579ac281872335cebf939ce18350e10f033b9611a85d98eb"
+      },
+      "docs/DevDocs/20o-b3-host-libraries-plan.md": {
+        "bytes": 13719,
+        "sha256": "f1f829ba0a905e1ed13a467c310bbca7d397c83ba1a73ddd2eed4739cbdaa985"
+      },
+      "docs/DevDocs/20o-official-library-program.md": {
+        "bytes": 33319,
+        "sha256": "2a0eac02cf88e986c84f36c18dc19a70862945662d048d2931e847313e85a3d6"
+      },
+      "docs/DevDocs/README.md": {
+        "bytes": 152860,
+        "sha256": "f696e3cba868560c9e436c756a23b7f7e54c8657d7df8ae9911d70cbad4d0a2a"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/README.md": {
+        "bytes": 3494,
+        "sha256": "6b19931a84fd892e7a6fd5aacad6fde8362d9dfebf262ed14e6cac0484fdb86a"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/contract-draft.md": {
+        "bytes": 10653,
+        "sha256": "6c7a94dcbc6062b81a6be6d8c42707bb2f221fe6ad1a11f877db15e04773a6e8"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/args.md": {
+        "bytes": 1909,
+        "sha256": "3d6a0e0424f9ff7c6eb1810667a57f867a103c903a5eacf904e9fbd24df30c80"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/cli.md": {
+        "bytes": 1568,
+        "sha256": "e8e8c99b252feecb8f1502f7b2642906f159ddea801a2d7e8f9c6ae8bcca54cb"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/time.md": {
+        "bytes": 2117,
+        "sha256": "d90823da316346ec99c4cbf79b1e33e925dc71af52d8270b971c8944cd41b960"
+      }
+    }
+  },
+  "before": {
+    "commit": "8c8c5fb19441346c607add19bf1b381160104612",
+    "docs_tree_sha256": "c1a6673f055c85573efd6b1717c08039d63939047f5a64c01a060ac64f60f43a",
+    "markdown": {
+      "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": {
+        "bytes": 15058,
+        "sha256": "9e5f9cb01e8e7fad9731b28891f9af696210670570a8f561e4be4016991c6a7e"
+      },
+      "docs/DevDocs/20o-b3-0b-time-args-cli-plan.md": {
+        "bytes": 14345,
+        "sha256": "696020a0cb4b17b4579ac281872335cebf939ce18350e10f033b9611a85d98eb"
+      },
+      "docs/DevDocs/20o-b3-host-libraries-plan.md": {
+        "bytes": 13719,
+        "sha256": "f1f829ba0a905e1ed13a467c310bbca7d397c83ba1a73ddd2eed4739cbdaa985"
+      },
+      "docs/DevDocs/20o-official-library-program.md": {
+        "bytes": 33319,
+        "sha256": "2a0eac02cf88e986c84f36c18dc19a70862945662d048d2931e847313e85a3d6"
+      },
+      "docs/DevDocs/README.md": {
+        "bytes": 152860,
+        "sha256": "f696e3cba868560c9e436c756a23b7f7e54c8657d7df8ae9911d70cbad4d0a2a"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/README.md": {
+        "bytes": 3494,
+        "sha256": "6b19931a84fd892e7a6fd5aacad6fde8362d9dfebf262ed14e6cac0484fdb86a"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/contract-draft.md": {
+        "bytes": 10653,
+        "sha256": "6c7a94dcbc6062b81a6be6d8c42707bb2f221fe6ad1a11f877db15e04773a6e8"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/args.md": {
+        "bytes": 1909,
+        "sha256": "3d6a0e0424f9ff7c6eb1810667a57f867a103c903a5eacf904e9fbd24df30c80"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/cli.md": {
+        "bytes": 1568,
+        "sha256": "e8e8c99b252feecb8f1502f7b2642906f159ddea801a2d7e8f9c6ae8bcca54cb"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/time.md": {
+        "bytes": 2117,
+        "sha256": "d90823da316346ec99c4cbf79b1e33e925dc71af52d8270b971c8944cd41b960"
+      }
+    }
+  },
   "checks": [
     {
       "argv": [
@@ -7,9 +99,9 @@
         "check:docs"
       ],
       "exit": 0,
-      "finished_utc": "2026-11-22T18:55:47.965941+00:00",
-      "pid": 46880,
-      "started_utc": "2026-11-22T18:55:41.854700+00:00",
+      "finished_utc": "2026-11-22T22:54:47.654775+00:00",
+      "pid": 67280,
+      "started_utc": "2026-11-22T22:54:39.667342+00:00",
       "stderr": "$ bun tools/repo-check/src/cli.ts docs\n",
       "stdout": "通过：未发现 A0 规则问题。\n"
     },
@@ -20,9 +112,9 @@
         "check:usedocs"
       ],
       "exit": 0,
-      "finished_utc": "2026-11-22T18:55:50.030943+00:00",
-      "pid": 62492,
-      "started_utc": "2026-11-22T18:55:47.965941+00:00",
+      "finished_utc": "2026-11-22T22:54:50.443073+00:00",
+      "pid": 69320,
+      "started_utc": "2026-11-22T22:54:47.654775+00:00",
       "stderr": "$ bun tools/repo-check/src/cli.ts usedocs\n",
       "stdout": "通过：未发现 A0 规则问题。\n"
     },
@@ -33,161 +125,17 @@
         "check:layout"
       ],
       "exit": 0,
-      "finished_utc": "2026-11-22T18:56:01.251453+00:00",
-      "pid": 71308,
-      "started_utc": "2026-11-22T18:55:50.030943+00:00",
+      "finished_utc": "2026-11-22T22:55:01.939542+00:00",
+      "pid": 69064,
+      "started_utc": "2026-11-22T22:54:50.443073+00:00",
       "stderr": "$ bun tools/repo-check/src/cli.ts layout\n",
       "stdout": "通过：未发现 A0 规则问题。\n"
     }
   ],
-  "contract": "4a4f7eb8e421d7ea59c470fa89d74d437a5f92ee",
-  "cwd": "D:\\project\\Xiao\\Xiao",
-  "markdown_after": {
-    "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": {
-      "blob": "46d25afe36c3d600ee9bf5aecf36b7e0324026da",
-      "text": {
-        "bytes": 15125,
-        "sha256": "57ada4bb339e91acd00617e660a6e6f3962263ebcf51c8170e247b469ace6722"
-      }
-    },
-    "docs/DevDocs/20o-b3-0b-time-args-cli-plan.md": {
-      "blob": "dcf95a0673fe93e9ae27c2dba55c31e0ae29bb5e",
-      "text": {
-        "bytes": 14371,
-        "sha256": "081f2a41c0d876105d7a0ee9c8422d00544c35ac9f5ae7cbb169214694edb480"
-      }
-    },
-    "docs/DevDocs/20o-b3-host-libraries-plan.md": {
-      "blob": "5b65b1ddc7fcb7b6311610d02c297d6680e17b67",
-      "text": {
-        "bytes": 13753,
-        "sha256": "e420e65f6481480d8633ded5946bb7d5f5dfb3234d6ad53e2f65951e360acb46"
-      }
-    },
-    "docs/DevDocs/20o-official-library-program.md": {
-      "blob": "459f0fac9622375d503c25ee0c0d445d05cedfc1",
-      "text": {
-        "bytes": 33365,
-        "sha256": "fe2fb9b313923cc54ba4c3c40d92aa457ae5ad396117a030534b2c8f35161d18"
-      }
-    },
-    "docs/DevDocs/README.md": {
-      "blob": "d7fac2856e1b5364e367ff0dd8f7989b78293e42",
-      "text": {
-        "bytes": 152907,
-        "sha256": "3ed10ac88c8e20e0db074efa139615fb7cfde1d8cece3a32839cf581b1e3e238"
-      }
-    },
-    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/README.md": {
-      "blob": "17e8997cb2b6feb4cbc5f9a07255f152c77ff705",
-      "text": {
-        "bytes": 3471,
-        "sha256": "6f397dba01b4109a0f9a77cb009b20edbefb04d07680b2b4a5fec192fc10a13b"
-      }
-    },
-    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/contract-draft.md": {
-      "blob": "bcb3d8f748419601b9d7d04050d70287bc5deb4f",
-      "text": {
-        "bytes": 10627,
-        "sha256": "216c765131049aecd235ad2ba47fd014ba52366a1ac94fc29634e85de9f05513"
-      }
-    },
-    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/args.md": {
-      "blob": "7caba726827ceebaeba8cbc94403a6b477d547cd",
-      "text": {
-        "bytes": 1909,
-        "sha256": "3d6a0e0424f9ff7c6eb1810667a57f867a103c903a5eacf904e9fbd24df30c80"
-      }
-    },
-    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/cli.md": {
-      "blob": "15a5a338c5b5dc285dbe3457a100efb7d30acc96",
-      "text": {
-        "bytes": 1587,
-        "sha256": "80a46b1de6564f26e36dbb51052cd604ce58229ce10a8e0c115f505d20831698"
-      }
-    },
-    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/time.md": {
-      "blob": "3363d5d72ea3808c8854799c6adb18220868ad8b",
-      "text": {
-        "bytes": 2117,
-        "sha256": "d90823da316346ec99c4cbf79b1e33e925dc71af52d8270b971c8944cd41b960"
-      }
-    }
-  },
-  "markdown_before": {
-    "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": {
-      "blob": "46d25afe36c3d600ee9bf5aecf36b7e0324026da",
-      "text": {
-        "bytes": 15125,
-        "sha256": "57ada4bb339e91acd00617e660a6e6f3962263ebcf51c8170e247b469ace6722"
-      }
-    },
-    "docs/DevDocs/20o-b3-0b-time-args-cli-plan.md": {
-      "blob": "dcf95a0673fe93e9ae27c2dba55c31e0ae29bb5e",
-      "text": {
-        "bytes": 14371,
-        "sha256": "081f2a41c0d876105d7a0ee9c8422d00544c35ac9f5ae7cbb169214694edb480"
-      }
-    },
-    "docs/DevDocs/20o-b3-host-libraries-plan.md": {
-      "blob": "5b65b1ddc7fcb7b6311610d02c297d6680e17b67",
-      "text": {
-        "bytes": 13753,
-        "sha256": "e420e65f6481480d8633ded5946bb7d5f5dfb3234d6ad53e2f65951e360acb46"
-      }
-    },
-    "docs/DevDocs/20o-official-library-program.md": {
-      "blob": "459f0fac9622375d503c25ee0c0d445d05cedfc1",
-      "text": {
-        "bytes": 33365,
-        "sha256": "fe2fb9b313923cc54ba4c3c40d92aa457ae5ad396117a030534b2c8f35161d18"
-      }
-    },
-    "docs/DevDocs/README.md": {
-      "blob": "d7fac2856e1b5364e367ff0dd8f7989b78293e42",
-      "text": {
-        "bytes": 152907,
-        "sha256": "3ed10ac88c8e20e0db074efa139615fb7cfde1d8cece3a32839cf581b1e3e238"
-      }
-    },
-    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/README.md": {
-      "blob": "17e8997cb2b6feb4cbc5f9a07255f152c77ff705",
-      "text": {
-        "bytes": 3471,
-        "sha256": "6f397dba01b4109a0f9a77cb009b20edbefb04d07680b2b4a5fec192fc10a13b"
-      }
-    },
-    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/contract-draft.md": {
-      "blob": "bcb3d8f748419601b9d7d04050d70287bc5deb4f",
-      "text": {
-        "bytes": 10627,
-        "sha256": "216c765131049aecd235ad2ba47fd014ba52366a1ac94fc29634e85de9f05513"
-      }
-    },
-    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/args.md": {
-      "blob": "7caba726827ceebaeba8cbc94403a6b477d547cd",
-      "text": {
-        "bytes": 1909,
-        "sha256": "3d6a0e0424f9ff7c6eb1810667a57f867a103c903a5eacf904e9fbd24df30c80"
-      }
-    },
-    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/cli.md": {
-      "blob": "15a5a338c5b5dc285dbe3457a100efb7d30acc96",
-      "text": {
-        "bytes": 1587,
-        "sha256": "80a46b1de6564f26e36dbb51052cd604ce58229ce10a8e0c115f505d20831698"
-      }
-    },
-    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/time.md": {
-      "blob": "3363d5d72ea3808c8854799c6adb18220868ad8b",
-      "text": {
-        "bytes": 2117,
-        "sha256": "d90823da316346ec99c4cbf79b1e33e925dc71af52d8270b971c8944cd41b960"
-      }
-    }
-  },
+  "cwd": "D:\\project\\Xiao\\.b3-0b\\20261123-01\\review-docs-checkout",
   "tool": {
     "bytes": 88825944,
+    "path": "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
     "sha256": "627d2e4775c24bdedee2cd7ccc18dcadae061e5345274ab6e3c4c797927bfb8f"
   }
 }
