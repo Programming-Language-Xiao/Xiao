@@ -57,6 +57,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: 'fc015cba2d96a9d796aeef5f9b01222b5e23ce96'
+      - name: Record B2-C fixed checkout before
+        shell: python
+        run: |
+          import hashlib, json, os, subprocess
+          git = ['cmd', '/c', 'git'] if os.name == 'nt' else ['git']
+          def read(*args):
+              return subprocess.check_output([*git, *args])
+          revision = read('rev-parse', 'HEAD').strip().decode()
+          assert revision == 'fc015cba2d96a9d796aeef5f9b01222b5e23ce96'
+          assert not read('status', '--porcelain', '--untracked-files=no')
+          locks = ('core/rust/Cargo.lock', 'tests/benchmarks/Cargo.lock')
+          identity = {'commit': revision, 'tree': read('cat-file', '-p', 'HEAD').splitlines()[0].decode().removeprefix('tree '),
+                      'docs_tree_sha256': hashlib.sha256(read('ls-tree', '-rz', 'HEAD', '--', 'docs', 'stdlib')).hexdigest(),
+                      'locks': {path: hashlib.sha256(read('show', f'HEAD:{path}')).hexdigest() for path in locks}}
+          print('B2-C-STATE before ' + json.dumps(identity, sort_keys=True))
 
       - name: Validate controlled measurement selection
         run: python tools/gates/b2-a6-selection.py
@@ -99,6 +116,34 @@ jobs:
       - name: Verify controlled measurement selection guards
         run: python tools/gates/b2-a6-selection.py --self-test
 
+      - name: Prepare LLVM and locked release Runtime for B2-C
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          sudo apt-get update
+          sudo apt-get install --yes clang llvm
+
+          clang="$(command -v clang)"
+          llvm_as="$(command -v llvm-as)"
+          llc="$(command -v llc)"
+          strip="$(command -v llvm-strip)"
+          target="$(rustc -vV | sed -n 's/^host: //p')"
+          test -n "$target"
+
+          runtime="$PWD/core/rust/target/release/libxiao_runtime.a"
+          cargo build --manifest-path core/rust/Cargo.toml --locked --release -p xiao-runtime
+          test -s "$runtime"
+
+          {
+            printf 'XIAO_RUNTIME_LIBRARY=%s\n' "$runtime"
+            printf 'XIAO_TARGET_TRIPLE=%s\n' "$target"
+            printf 'XIAO_CLANG=%s\n' "$clang"
+            printf 'XIAO_LLVM_AS=%s\n' "$llvm_as"
+            printf 'XIAO_LLC=%s\n' "$llc"
+            printf 'XIAO_STRIP=%s\n' "$strip"
+          } >> "$GITHUB_ENV"
+
       - name: Run default workspace tests
         run: cargo test --manifest-path core/rust/Cargo.toml --workspace -- --skip b1_capabilities_have_vm_golden_outputs
 
@@ -113,6 +158,9 @@ jobs:
           printf '%s\n' "$output"
           test "$(printf '%s\n' "$output" | grep -c '^test result:')" -eq 1
           printf '%s\n' "$output" | grep -Eq '^test result: ok\. 1 passed; 0 failed; 0 ignored;'
+
+      - name: Run unsplit locked workspace tests
+        run: cargo test --locked --manifest-path core/rust/Cargo.toml --workspace
 
       - name: Run benchmark workspace tests and driver self-test
         run: |
@@ -134,6 +182,23 @@ jobs:
           path: b1-f10-vm.json
           if-no-files-found: warn
 
+      - name: Record B2-C fixed checkout after
+        if: always()
+        shell: python
+        run: |
+          import hashlib, json, os, subprocess
+          git = ['cmd', '/c', 'git'] if os.name == 'nt' else ['git']
+          def read(*args):
+              return subprocess.check_output([*git, *args])
+          revision = read('rev-parse', 'HEAD').strip().decode()
+          assert revision == 'fc015cba2d96a9d796aeef5f9b01222b5e23ce96'
+          assert not read('status', '--porcelain', '--untracked-files=no')
+          locks = ('core/rust/Cargo.lock', 'tests/benchmarks/Cargo.lock')
+          identity = {'commit': revision, 'tree': read('cat-file', '-p', 'HEAD').splitlines()[0].decode().removeprefix('tree '),
+                      'docs_tree_sha256': hashlib.sha256(read('ls-tree', '-rz', 'HEAD', '--', 'docs', 'stdlib')).hexdigest(),
+                      'locks': {path: hashlib.sha256(read('show', f'HEAD:{path}')).hexdigest() for path in locks}}
+          print('B2-C-STATE after ' + json.dumps(identity, sort_keys=True))
+
   deterministic-size:
     name: Deterministic artifact size regression (Windows baseline)
     runs-on: windows-2025
@@ -141,6 +206,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: 'fc015cba2d96a9d796aeef5f9b01222b5e23ce96'
+      - name: Record B2-C fixed checkout before
+        shell: python
+        run: |
+          import hashlib, json, os, subprocess
+          git = ['cmd', '/c', 'git'] if os.name == 'nt' else ['git']
+          def read(*args):
+              return subprocess.check_output([*git, *args])
+          revision = read('rev-parse', 'HEAD').strip().decode()
+          assert revision == 'fc015cba2d96a9d796aeef5f9b01222b5e23ce96'
+          assert not read('status', '--porcelain', '--untracked-files=no')
+          locks = ('core/rust/Cargo.lock', 'tests/benchmarks/Cargo.lock')
+          identity = {'commit': revision, 'tree': read('cat-file', '-p', 'HEAD').splitlines()[0].decode().removeprefix('tree '),
+                      'docs_tree_sha256': hashlib.sha256(read('ls-tree', '-rz', 'HEAD', '--', 'docs', 'stdlib')).hexdigest(),
+                      'locks': {path: hashlib.sha256(read('show', f'HEAD:{path}')).hexdigest() for path in locks}}
+          print('B2-C-STATE before ' + json.dumps(identity, sort_keys=True))
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@1.96.0
@@ -158,6 +240,23 @@ jobs:
       - name: Check deterministic artifact size baseline
         run: cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test artifact_size_regression
 
+      - name: Record B2-C fixed checkout after
+        if: always()
+        shell: python
+        run: |
+          import hashlib, json, os, subprocess
+          git = ['cmd', '/c', 'git'] if os.name == 'nt' else ['git']
+          def read(*args):
+              return subprocess.check_output([*git, *args])
+          revision = read('rev-parse', 'HEAD').strip().decode()
+          assert revision == 'fc015cba2d96a9d796aeef5f9b01222b5e23ce96'
+          assert not read('status', '--porcelain', '--untracked-files=no')
+          locks = ('core/rust/Cargo.lock', 'tests/benchmarks/Cargo.lock')
+          identity = {'commit': revision, 'tree': read('cat-file', '-p', 'HEAD').splitlines()[0].decode().removeprefix('tree '),
+                      'docs_tree_sha256': hashlib.sha256(read('ls-tree', '-rz', 'HEAD', '--', 'docs', 'stdlib')).hexdigest(),
+                      'locks': {path: hashlib.sha256(read('show', f'HEAD:{path}')).hexdigest() for path in locks}}
+          print('B2-C-STATE after ' + json.dumps(identity, sort_keys=True))
+
   security-maintenance:
     name: Deterministic parser and artifact security regression
     runs-on: ubuntu-24.04
@@ -165,6 +264,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: 'fc015cba2d96a9d796aeef5f9b01222b5e23ce96'
+      - name: Record B2-C fixed checkout before
+        shell: python
+        run: |
+          import hashlib, json, os, subprocess
+          git = ['cmd', '/c', 'git'] if os.name == 'nt' else ['git']
+          def read(*args):
+              return subprocess.check_output([*git, *args])
+          revision = read('rev-parse', 'HEAD').strip().decode()
+          assert revision == 'fc015cba2d96a9d796aeef5f9b01222b5e23ce96'
+          assert not read('status', '--porcelain', '--untracked-files=no')
+          locks = ('core/rust/Cargo.lock', 'tests/benchmarks/Cargo.lock')
+          identity = {'commit': revision, 'tree': read('cat-file', '-p', 'HEAD').splitlines()[0].decode().removeprefix('tree '),
+                      'docs_tree_sha256': hashlib.sha256(read('ls-tree', '-rz', 'HEAD', '--', 'docs', 'stdlib')).hexdigest(),
+                      'locks': {path: hashlib.sha256(read('show', f'HEAD:{path}')).hexdigest() for path in locks}}
+          print('B2-C-STATE before ' + json.dumps(identity, sort_keys=True))
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@1.96.0
@@ -188,6 +304,23 @@ jobs:
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-xar
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test cross_platform_release --test release_report
 
+      - name: Record B2-C fixed checkout after
+        if: always()
+        shell: python
+        run: |
+          import hashlib, json, os, subprocess
+          git = ['cmd', '/c', 'git'] if os.name == 'nt' else ['git']
+          def read(*args):
+              return subprocess.check_output([*git, *args])
+          revision = read('rev-parse', 'HEAD').strip().decode()
+          assert revision == 'fc015cba2d96a9d796aeef5f9b01222b5e23ce96'
+          assert not read('status', '--porcelain', '--untracked-files=no')
+          locks = ('core/rust/Cargo.lock', 'tests/benchmarks/Cargo.lock')
+          identity = {'commit': revision, 'tree': read('cat-file', '-p', 'HEAD').splitlines()[0].decode().removeprefix('tree '),
+                      'docs_tree_sha256': hashlib.sha256(read('ls-tree', '-rz', 'HEAD', '--', 'docs', 'stdlib')).hexdigest(),
+                      'locks': {path: hashlib.sha256(read('show', f'HEAD:{path}')).hexdigest() for path in locks}}
+          print('B2-C-STATE after ' + json.dumps(identity, sort_keys=True))
+
   native-regression:
     name: Native differential regression (${{ matrix.name }})
     strategy:
@@ -208,6 +341,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: 'fc015cba2d96a9d796aeef5f9b01222b5e23ce96'
+      - name: Record B2-C fixed checkout before
+        shell: python
+        run: |
+          import hashlib, json, os, subprocess
+          git = ['cmd', '/c', 'git'] if os.name == 'nt' else ['git']
+          def read(*args):
+              return subprocess.check_output([*git, *args])
+          revision = read('rev-parse', 'HEAD').strip().decode()
+          assert revision == 'fc015cba2d96a9d796aeef5f9b01222b5e23ce96'
+          assert not read('status', '--porcelain', '--untracked-files=no')
+          locks = ('core/rust/Cargo.lock', 'tests/benchmarks/Cargo.lock')
+          identity = {'commit': revision, 'tree': read('cat-file', '-p', 'HEAD').splitlines()[0].decode().removeprefix('tree '),
+                      'docs_tree_sha256': hashlib.sha256(read('ls-tree', '-rz', 'HEAD', '--', 'docs', 'stdlib')).hexdigest(),
+                      'locks': {path: hashlib.sha256(read('show', f'HEAD:{path}')).hexdigest() for path in locks}}
+          print('B2-C-STATE before ' + json.dumps(identity, sort_keys=True))
       - name: Validate controlled measurement selection
         run: python tools/gates/b2-a6-selection.py
 
@@ -271,6 +421,14 @@ jobs:
           $env:XIAO_RUNTIME_LIBRARY = Join-Path $pwd 'core/rust/target/release/xiao_runtime.lib'
           $env:XIAO_DIAGNOSTICS_PATH = Join-Path $pwd 'core/rust/target/debug/xiao-diagnostics.exe'
           $env:XIAO_DIAGNOSTICS_HOLD_MS = '0'
+          $env:XIAO_FLOAT_EQUALITY_OUTPUT = Join-Path $env:RUNNER_TEMP ('xiao-float-equality-' + [guid]::NewGuid().ToString('N'))
+          rustc -Vv
+          & $env:XIAO_CLANG --version
+          Write-Output ('B2-C-RUNTIME ' + (Get-FileHash -Algorithm SHA256 $env:XIAO_RUNTIME_LIBRARY).Hash.ToLowerInvariant())
+          cargo tree --locked --manifest-path core/rust/Cargo.toml -p bigdecimal -p num-bigint -p libm --edges normal,build --prefix none --format '{p}|{f}'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_b4_cmath_library -- aliases_replay_from_xiaoc_and_xar_after_application_source_removal --exact --nocapture
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           foreach ($artifact in @($env:XIAO_RUNTIME_LIBRARY, $env:XIAO_DIAGNOSTICS_PATH)) {
             if (-not (Test-Path $artifact)) { throw "Required artifact missing: $artifact" }
           }
@@ -326,6 +484,8 @@ jobs:
           if (($releaseOutput | Out-String) -notmatch 'test result: ok\. 1 passed; 0 failed;') {
             throw '22E native release case must execute exactly once'
           }
+          cargo test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_b4_cmath_library -- --ignored cmath_library_matches_native_o0_o3 --exact --nocapture
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           foreach ($testName in @('text_path_candidates_match_native_golden_outputs', 'text_path_interfaces_match_native_golden_outputs')) {
             $textPathOutput = cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20m_text_and_path -- --ignored $testName --exact --nocapture 2>&1
             $textPathExit = $LASTEXITCODE
@@ -363,8 +523,14 @@ jobs:
           export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
           export XIAO_DIAGNOSTICS_PATH="$PWD/core/rust/target/debug/xiao-diagnostics"
           export XIAO_DIAGNOSTICS_HOLD_MS=0
+          export XIAO_FLOAT_EQUALITY_OUTPUT="$(mktemp -d "$RUNNER_TEMP/xiao-float-equality.XXXXXXXX")/observations"
           test -f "$XIAO_RUNTIME_LIBRARY"
           test -x "$XIAO_DIAGNOSTICS_PATH"
+          rustc -Vv
+          "$XIAO_CLANG" --version
+          python -c 'import hashlib, os; print("B2-C-RUNTIME " + hashlib.file_digest(open(os.environ["XIAO_RUNTIME_LIBRARY"], "rb"), "sha256").hexdigest())'
+          cargo tree --locked --manifest-path core/rust/Cargo.toml -p bigdecimal -p num-bigint -p libm --edges normal,build --prefix none --format '{p}|{f}'
+          cargo test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_b4_cmath_library -- aliases_replay_from_xiaoc_and_xar_after_application_source_removal --exact --nocapture
           if [ "$XIAO_B2_A_PERF" = '1' ]; then
             cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_a_resources --test 20o_b2_a_performance_protocol
             rustc -Vv
@@ -406,6 +572,7 @@ jobs:
           run_exact_native_test text_path_candidates_match_native_golden_outputs 20m_text_and_path
           run_exact_native_test text_path_interfaces_match_native_golden_outputs 20m_text_and_path
           run_exact_native_test b1_capabilities_match_native_golden_outputs 20o_b1_probe
+          run_exact_native_test cmath_library_matches_native_o0_o3 20o_b2_b4_cmath_library
 
           if [ "$XIAO_B1_F10" = '1' ]; then
             rustc -Vv
@@ -434,8 +601,14 @@ jobs:
           export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
           export XIAO_DIAGNOSTICS_PATH="$PWD/core/rust/target/debug/xiao-diagnostics"
           export XIAO_DIAGNOSTICS_HOLD_MS=0
+          export XIAO_FLOAT_EQUALITY_OUTPUT="$(mktemp -d "$RUNNER_TEMP/xiao-float-equality.XXXXXXXX")/observations"
           test -f "$XIAO_RUNTIME_LIBRARY"
           test -x "$XIAO_DIAGNOSTICS_PATH"
+          rustc -Vv
+          "$XIAO_CLANG" --version
+          python -c 'import hashlib, os; print("B2-C-RUNTIME " + hashlib.file_digest(open(os.environ["XIAO_RUNTIME_LIBRARY"], "rb"), "sha256").hexdigest())'
+          cargo tree --locked --manifest-path core/rust/Cargo.toml -p bigdecimal -p num-bigint -p libm --edges normal,build --prefix none --format '{p}|{f}'
+          cargo test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_b4_cmath_library -- aliases_replay_from_xiaoc_and_xar_after_application_source_removal --exact --nocapture
           if [ "$XIAO_B2_A_PERF" = '1' ]; then
             cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_a_resources --test 20o_b2_a_performance_protocol
             rustc -Vv
@@ -478,6 +651,7 @@ jobs:
           run_exact_native_test text_path_candidates_match_native_golden_outputs 20m_text_and_path
           run_exact_native_test text_path_interfaces_match_native_golden_outputs 20m_text_and_path
           run_exact_native_test b1_capabilities_match_native_golden_outputs 20o_b1_probe
+          run_exact_native_test cmath_library_matches_native_o0_o3 20o_b2_b4_cmath_library
 
           if [ "$XIAO_B1_F10" = '1' ]; then
             rustc -Vv
@@ -512,3 +686,20 @@ jobs:
         if: runner.os != 'Windows'
         shell: bash
         run: cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20d_first_api --test 20d_process_api --test 20e_archive_wiring
+
+      - name: Record B2-C fixed checkout after
+        if: always()
+        shell: python
+        run: |
+          import hashlib, json, os, subprocess
+          git = ['cmd', '/c', 'git'] if os.name == 'nt' else ['git']
+          def read(*args):
+              return subprocess.check_output([*git, *args])
+          revision = read('rev-parse', 'HEAD').strip().decode()
+          assert revision == 'fc015cba2d96a9d796aeef5f9b01222b5e23ce96'
+          assert not read('status', '--porcelain', '--untracked-files=no')
+          locks = ('core/rust/Cargo.lock', 'tests/benchmarks/Cargo.lock')
+          identity = {'commit': revision, 'tree': read('cat-file', '-p', 'HEAD').splitlines()[0].decode().removeprefix('tree '),
+                      'docs_tree_sha256': hashlib.sha256(read('ls-tree', '-rz', 'HEAD', '--', 'docs', 'stdlib')).hexdigest(),
+                      'locks': {path: hashlib.sha256(read('show', f'HEAD:{path}')).hexdigest() for path in locks}}
+          print('B2-C-STATE after ' + json.dumps(identity, sort_keys=True))

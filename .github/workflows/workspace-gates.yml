@@ -48,6 +48,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: 'fc015cba2d96a9d796aeef5f9b01222b5e23ce96'
+      - name: Record B2-C fixed checkout before
+        shell: python
+        run: |
+          import hashlib, json, os, subprocess
+          git = ['cmd', '/c', 'git'] if os.name == 'nt' else ['git']
+          def read(*args):
+              return subprocess.check_output([*git, *args])
+          revision = read('rev-parse', 'HEAD').strip().decode()
+          assert revision == 'fc015cba2d96a9d796aeef5f9b01222b5e23ce96'
+          assert not read('status', '--porcelain', '--untracked-files=no')
+          locks = ('core/rust/Cargo.lock', 'tests/benchmarks/Cargo.lock')
+          identity = {'commit': revision, 'tree': read('cat-file', '-p', 'HEAD').splitlines()[0].decode().removeprefix('tree '),
+                      'docs_tree_sha256': hashlib.sha256(read('ls-tree', '-rz', 'HEAD', '--', 'docs', 'stdlib')).hexdigest(),
+                      'locks': {path: hashlib.sha256(read('show', f'HEAD:{path}')).hexdigest() for path in locks}}
+          print('B2-C-STATE before ' + json.dumps(identity, sort_keys=True))
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -62,6 +79,51 @@ jobs:
       - name: Configure locked Cargo and numeric environment
         run: python tools/gates/controlled-cargo.py --install
 
+      - name: Prepare LLVM and locked release Runtime for B2-C
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          sudo apt-get update
+          sudo apt-get install --yes clang llvm
+
+          clang="$(command -v clang)"
+          llvm_as="$(command -v llvm-as)"
+          llc="$(command -v llc)"
+          strip="$(command -v llvm-strip)"
+          target="$(rustc -vV | sed -n 's/^host: //p')"
+          test -n "$target"
+
+          runtime="$PWD/core/rust/target/release/libxiao_runtime.a"
+          cargo build --manifest-path core/rust/Cargo.toml --locked --release -p xiao-runtime
+          test -s "$runtime"
+
+          {
+            printf 'XIAO_RUNTIME_LIBRARY=%s\n' "$runtime"
+            printf 'XIAO_TARGET_TRIPLE=%s\n' "$target"
+            printf 'XIAO_CLANG=%s\n' "$clang"
+            printf 'XIAO_LLVM_AS=%s\n' "$llvm_as"
+            printf 'XIAO_LLC=%s\n' "$llc"
+            printf 'XIAO_STRIP=%s\n' "$strip"
+          } >> "$GITHUB_ENV"
+
       - name: Run workspace gates
         shell: bash
         run: bash tools/gates/run.sh
+
+      - name: Record B2-C fixed checkout after
+        if: always()
+        shell: python
+        run: |
+          import hashlib, json, os, subprocess
+          git = ['cmd', '/c', 'git'] if os.name == 'nt' else ['git']
+          def read(*args):
+              return subprocess.check_output([*git, *args])
+          revision = read('rev-parse', 'HEAD').strip().decode()
+          assert revision == 'fc015cba2d96a9d796aeef5f9b01222b5e23ce96'
+          assert not read('status', '--porcelain', '--untracked-files=no')
+          locks = ('core/rust/Cargo.lock', 'tests/benchmarks/Cargo.lock')
+          identity = {'commit': revision, 'tree': read('cat-file', '-p', 'HEAD').splitlines()[0].decode().removeprefix('tree '),
+                      'docs_tree_sha256': hashlib.sha256(read('ls-tree', '-rz', 'HEAD', '--', 'docs', 'stdlib')).hexdigest(),
+                      'locks': {path: hashlib.sha256(read('show', f'HEAD:{path}')).hexdigest() for path in locks}}
+          print('B2-C-STATE after ' + json.dumps(identity, sort_keys=True))
