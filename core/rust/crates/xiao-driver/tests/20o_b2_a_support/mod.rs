@@ -45,11 +45,17 @@ fn fixture(name: &str) -> (FrontendRequest, String) {
         .unwrap()
         .replace("\r\n", "\n");
     let tutorial = match name {
-        "a5_conversions" => Some("docs/UseDocs/language/basics/types/conversions.md"),
-        "a5_decimal_arithmetic" => Some("docs/UseDocs/language/basics/p1-expressions/operators.md"),
+        "a5_conversions" => Some((
+            "docs/UseDocs/language/basics/types/conversions.md",
+            "## 完整转换示例（verified）",
+        )),
+        "a5_decimal_arithmetic" => Some((
+            "docs/UseDocs/language/basics/p1-expressions/operators.md",
+            "## 高精度算术（verified）",
+        )),
         _ => None,
     };
-    if let Some(page) = tutorial {
+    if let Some((page, heading)) = tutorial {
         let page = fs::read_to_string(repository().join(page))
             .unwrap()
             .replace("\r\n", "\n");
@@ -61,7 +67,10 @@ fn fixture(name: &str) -> (FrontendRequest, String) {
             page.contains(&format!("```text\n{golden}```")),
             "{name}教程黄金漂移"
         );
-        assert!(page.contains("（planned）"), "A5新增教程范围不能提前升级");
+        assert!(
+            page.lines().any(|line| line == heading),
+            "{name}教程验收范围漂移"
+        );
     }
     (FrontendRequest::from_text_at(source, path), golden)
 }

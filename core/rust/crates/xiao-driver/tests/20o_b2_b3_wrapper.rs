@@ -141,9 +141,7 @@ fn source_contract_exports_exactly_fifteen_frozen_forwarders() {
             "return_type":"float","primitive":format!("cmath_{name}"),"intrinsic_id":34+index});
         println!("B3-WRAPPER-EXPORT\t{row}");
     }
-    println!(
-        "B3-CMATH-WRAPPER functions=15 validation=AST-interface status=planned result=success"
-    );
+    println!("B3-CMATH-WRAPPER functions=15 validation=AST-interface result=success");
 }
 
 #[test]
