@@ -30,7 +30,7 @@ str text = flag as str       # 结果是小写 true 或 false
 `X02-TYPE-007`。隐式声明不会借用这条截断规则。
 
 数值提升顺序为 `sint < int < lint` 与 `sfloat < float < lfloat`。`/` 返回浮点族，
-`//` 与 `%` 原有范围只接受整数；B2新增的lfloat路径见下方planned段落。布尔值有一个专用规则：只有布尔在左、整数在右时，偶数保持、
+`//` 与 `%` 支持整数及共同类型为 `lfloat` 的高精度路径，规则见下文。布尔值有一个专用规则：只有布尔在左、整数在右时，偶数保持、
 奇数翻转，结果仍是 `bool`：
 
 ```xiao
@@ -41,13 +41,13 @@ flag -= 2   # true
 
 反向运算、布尔与布尔、布尔与浮点数的加减都会报告 `X02-TYPE-005`。
 
-## B2-A高精度基础：内部验收通过，最终发布（planned）
+## 高精度基础（verified）
 
-B2-A 已将精确内核接入类型检查、VM、原生、字节码、归档和并发值承载。A7 的三平台内部证据固定在 ABI 1.18、生成器 20。B2-B 的当前内部快照使用 ABI 1.19、生成器 22，显式除法和 `cmath` 均已接入。页首 verified 覆盖原有规则，新增范围的公共发布仍为 planned。[B7 内部回归](../../../../DevDocs/20o-b2-b7-closeout-plan.md)
+本节覆盖 ABI 1.19、生成器 22 的高精度转换，含 VM、原生、字节码、归档与并发值承载。[B2-C 三平台验收](../../../../DevDocs/assets/20o-b2-c/entry-20261122-b2-c/README.md)
 
 `lint`/`lfloat`继续使用十进制文本边界。`1.50`与`1.5`相等且同哈希，分别显示各自精度；非零显示尾零保留，所有十进制零统一显示0。负scale或普通表示超过65,536字节时使用整数系数和e指数，例如1e100000。计算与转换均受下方固定预算约束，不表示无界分配。
 
-| 方向 | B2-A内部已验证规则 |
+| 方向 | 已验证规则 |
 | --- | --- |
 | 整数族→lint/lfloat | 精确；进入lfloat的整数显示scale=0，例如10显示10；不隐式窄化 |
 | str→int/sint/lint | 保留单码点转换；`"1"`得到49，`"42"`因多个码点而拒绝。数字文本先经lfloat再显式转整数 |
@@ -115,9 +115,9 @@ catch original as Error
     print(error_code(original))
 ```
 
-这份[完整finally示例](../../../../../tests/fixtures/docs/numeric/a1_pending_finally.xiao)预期输出`1.50`和`A1_ORIGINAL`，各占一行，已完成B2-A内部两后端与三平台验证；最终发布仍planned，同样进入上述执行测试。
+完整 `finally` 示例预期输出 `1.50` 和 `A1_ORIGINAL`，各占一行。B2-C 的三平台回归核对既有黄金与恢复顺序。[示例源码](../../../../../tests/fixtures/docs/numeric/a1_pending_finally.xiao)
 
-## 完整转换示例：B2-A内部已验证，最终发布（planned）
+## 完整转换示例（verified）
 
 str到整数仍是单码点转换；数值文本先经lfloat解析。显式lfloat到整数向零截断，定宽结果检查范围；float/sfloat到lfloat承接实际二进制数值，因此二进制0.1与十进制0.1不同。整数值转入lfloat时scale为0，文本输入保留非零显示精度。
 涉及lint/lfloat的值错误保留Runtime检查，可在语言中捕获；其余定宽常量检查保持原规则，静态非法类型仍编译拒绝。
@@ -178,7 +178,7 @@ false
 true
 ```
 
-[完整源码](../../../../../tests/fixtures/docs/numeric/a5_conversions.xiao)由默认VM和维护原生两个精确入口执行，O0/O3逐字核对。完整六类型转换、资源/错误及并发承载另有独立回归；本段已完成B2-A内部验收，最终发布仍planned。
+该示例已在 Windows、Linux 和 macOS 核对 VM、原生 O0/O3 和删源归档。六类型转换、资源错误及并发承载另有独立回归。[完整源码](../../../../../tests/fixtures/docs/numeric/a5_conversions.xiao)
 
 ## B2-A内部资源与错误边界
 
@@ -206,11 +206,11 @@ true
 
 [上一页：变量声明](variables.md) · [下一页：编译期常量](constants.md)
 
-## B2显式精度除法（planned）
+## B2显式精度除法（verified）
 
 全局 `lfloat_divide(lfloat numerator, lfloat denominator, int precision, str rounding) -> lfloat` 的四参数都必填，支持位置和命名调用。precision 是最多有效数字（1～32,768）；只在最终商上舍入一次，短结果不补零。
 
-七种 rounding 为 `half_even`、`half_up`、`half_down`、`toward_zero`、`away_from_zero`、`floor`、`ceiling`。Runtime 依次检查类型、precision、rounding、输入接纳、除零、结果预算，相关错误均可捕获。以下示例对应 B2-B 的内部 1.19/22 快照，最终公共发布仍为 planned。
+七种 rounding 为 `half_even`、`half_up`、`half_down`、`toward_zero`、`away_from_zero`、`floor`、`ceiling`。Runtime 依次检查类型、precision、rounding、输入接纳、除零、结果预算，相关错误均可捕获。以下是三平台已核对的示例。
 
 ```xiao
 lfloat one = 1.00

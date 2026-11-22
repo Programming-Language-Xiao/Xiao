@@ -26,7 +26,7 @@ error_code已由[独立FIX-B](../../DevDocs/20o-b1-fix-b-closeout.md)实现并�
 
 ## B2数值基础与后续库
 
-当前 B2-B 内部 1.19/22 已接入 `cmath` 的双路径、归档、VM 与原生入口，以及全局函数 `lfloat_divide`。`cmath` 教程和库登记仍为 planned，最终公共产物由 B2-C 验收。[浮点数学](cmath.md)
+ABI 1.19、生成器 22 提供 `cmath` 的 15 个浮点包装，以及全局函数 `lfloat_divide`。浮点数学教程和登记为 verified。[浮点数学](cmath.md)
 
 `lint`、`lfloat` 属于语言数值基础。内核、显式除法和转换的证据范围见[转换说明](../language/basics/types/conversions.md)。
 

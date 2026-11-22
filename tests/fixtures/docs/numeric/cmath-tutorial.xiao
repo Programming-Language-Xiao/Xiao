@@ -1,0 +1,28 @@
+from std.cmath import sqrt as root, floor as floor_value, ceil as ceil_value
+from std.cmath import round as nearest, trunc as truncate, abs as absolute
+from std.cmath import min as smallest, max as largest, pow as power
+from stdlib.cmath import sin as sine, cos as cosine, tan as tangent
+from stdlib.cmath import exp as exponential, ln as natural_log, log10 as common_log
+
+print(root(4.0))
+print(floor_value(value = 1.5))
+print(ceil_value(1.5))
+print(nearest(value = 2.5))
+print(truncate(-1.5))
+print(absolute(value = -3.0))
+print(smallest(right = 2.0, left = 7.0))
+print(largest(7.0, 2.0))
+print(power(exponent = 3.0, base = 2.0))
+print(sine(-0.0))
+print(cosine(value = 0.0))
+print(tangent(0.0))
+print(exponential(value = 0.0))
+print(natural_log(1.0))
+print(common_log(value = 1.0))
+
+try
+    root(-1.0)
+catch failure as ArithmeticError
+    print(error_code(failure))
+finally
+    print("clean")

@@ -20,13 +20,12 @@
   [`statistics`](statistics.md)三项。公共路径`std.<module>`，固定身份`stdlib.<module>`，接口版本1。
   产品、完整教程与独立黄金由VM及三平台原生O0/O3执行，包含真实导出、移除、归档和普通包隔离。
   固定源码身份的721条F10、生成器20释放与状态提交门禁见[B1-CLOSE](../docs/DevDocs/20o-b1-closeout.md)。
-- `cmath` 保存15个冻结的float包装及对应源码说明；源码包装和内部C ABI/intrinsic已登记，
-  B4已落地类型/IR/VM/LLVM及双路径/归档的内部接线，B4-4独立取证见[记录](../docs/DevDocs/assets/20o-b2-b/entry-20261115-b4-4/README.md)。
-  `stdlib.cmath`、教程与registry继续planned；B4-5整批语言收口和B2-C最终发布仍后置。
+- [`cmath`](cmath.md) 提供 15 个 `float` 包装。公共路径为 `std.cmath` 与 `stdlib.cmath`，固定身份为 `stdlib.cmath`，标准库接口版本为 1。
+  登记和教程为 verified。Windows、Linux 和 macOS 已执行 VM、原生 O0/O3 和删源归档回归。[教程](../docs/UseDocs/library/cmath.md) · [B2-C 证据](../docs/DevDocs/assets/20o-b2-c/entry-20261122-b2-c/README.md)
 - `std.concurrent` 是虚拟原生模块：冻结的 17 项签名位于 `xiao-types/src/concurrency.rs`，
   行为由 VM/TAC 计划和 Runtime 实现提供；不新增 `concurrent.xiao`，不作为普通源码对象
   放入归档。公共接口唯一权威页为 [并发执行与共享句柄](../docs/UseDocs/language/concurrency/README.md)，
-  兼容身份沿用工具链标准库接口版本 1，当前 Runtime ABI 为 1.18。
+  兼容身份沿用工具链标准库接口版本 1，当前 Runtime ABI 为 1.19。
 - `dict` 模块提供 `get`、`set`、`remove`、`contains`、`keys`、`values` 六个自由函数，动态缺失键保持
   `X06-RUNTIME-015`，不支持新增键；20L 同时提供八个等价的静态字典方法。
 

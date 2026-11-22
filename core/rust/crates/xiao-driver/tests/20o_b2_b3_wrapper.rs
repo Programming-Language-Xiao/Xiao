@@ -224,16 +224,26 @@ fn source_contract_tutorial_tracks_registry_and_requires_verified_evidence() {
         .lines()
         .filter_map(|line| line.strip_prefix("status: "))
         .collect();
-    assert_eq!(statuses, [entry["status"].as_str().unwrap()]);
-    if entry["status"] == "verified" {
-        assert!(
-            entry["code"]
-                .as_array()
-                .unwrap()
-                .iter()
-                .any(|p| p == "stdlib/cmath.xiao")
-        );
-        assert!(!entry["tests"].as_array().unwrap().is_empty());
+    assert_eq!(entry["stage"], "20O-B2-C");
+    assert_eq!(entry["status"], "verified");
+    assert_eq!(statuses, ["verified"]);
+    assert!(
+        entry["code"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|p| p == "stdlib/cmath.xiao")
+    );
+    assert!(!entry["tests"].as_array().unwrap().is_empty());
+    let examples = root().join("tests/fixtures/docs/numeric");
+    for (language, file) in [
+        ("xiao", "cmath-tutorial.xiao"),
+        ("text", "cmath-tutorial.stdout"),
+    ] {
+        let example = fs::read_to_string(examples.join(file))
+            .unwrap()
+            .replace("\r\n", "\n");
+        assert!(tutorial.contains(&format!("```{language}\n{example}```")));
     }
 }
 

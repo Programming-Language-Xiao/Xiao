@@ -34,6 +34,17 @@ fn fixture(prefix: &str) -> (String, String) {
     )
 }
 
+/// 完整教程及其独立黄金原样进入已有精确入口。
+fn tutorial_fixture() -> (String, String) {
+    let root = fixture_root();
+    (
+        fs::read_to_string(root.join("cmath-tutorial.xiao")).unwrap(),
+        fs::read_to_string(root.join("cmath-tutorial.stdout"))
+            .unwrap()
+            .replace("\r\n", "\n"),
+    )
+}
+
 /// 每个测试独立创建临时目录，防止旧可执行文件或归档复用。
 fn workspace() -> PathBuf {
     static NEXT: AtomicU64 = AtomicU64::new(0);
@@ -79,6 +90,9 @@ fn aliases_replay_from_xiaoc_and_xar_after_application_source_removal() {
         let (source, golden) = fixture(prefix);
         replay(prefix, &source, &golden, true);
     }
+    let (source, golden) = tutorial_fixture();
+    replay("tutorial", &source, &golden, true);
+    println!("B2-C-TUTORIAL vm,xiaoc,xar=passed source_removed=true");
 }
 
 /// 真前端编码保留直接34～48调用，同时归档仅包含应用模块、官方代码从宿主加载。

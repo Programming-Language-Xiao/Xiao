@@ -11,7 +11,7 @@ use xiao_vm::VmEvent;
 
 use crate::b2_a as native_support;
 
-/// 仓库定位独立于进程工作目录；完整示例与planned教程逐字一致。
+/// 仓库定位独立于进程工作目录，完整示例与已验收教程逐字一致。
 fn fixture() -> (FrontendRequest, String) {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .ancestors()
@@ -27,7 +27,7 @@ fn fixture() -> (FrontendRequest, String) {
         .replace("\r\n", "\n");
     assert!(page.contains(&format!("```xiao\n{source}```")));
     assert!(page.contains(&format!("```text\n{golden}```")));
-    assert!(page.contains("B2显式精度除法（planned）"));
+    assert!(page.contains("B2显式精度除法（verified）"));
     (FrontendRequest::from_text_at(source, path), golden)
 }
 

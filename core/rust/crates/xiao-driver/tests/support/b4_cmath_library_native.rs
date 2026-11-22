@@ -24,6 +24,7 @@ pub fn run() {
         .probe_native_static_libraries("rustc", &target)
         .unwrap();
     let root = super::workspace();
+    let mut examples = Vec::new();
     for prefix in ["std", "stdlib"] {
         let (mut source, golden) = super::fixture(prefix);
         // B1已登记原生模块值/限定调用后置；同一语料改用已支持的选择导入别名，
@@ -34,6 +35,11 @@ pub fn run() {
             source = source.replace(&format!("math.{name}("), &format!("f{index}("));
         }
         assert!(!source.contains("math."));
+        examples.push((prefix, source, golden));
+    }
+    let (source, golden) = super::tutorial_fixture();
+    examples.push(("tutorial", source, golden));
+    for (prefix, source, golden) in examples {
         let request = FrontendRequest::from_text(source);
         let artifact = FrontendCompiler::new().compile(&request).unwrap();
         for level in [0, 3] {

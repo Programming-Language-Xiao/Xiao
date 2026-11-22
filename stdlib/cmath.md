@@ -1,8 +1,8 @@
-# `cmath` 模块源码（planned）
+# `cmath` 模块源码
 
-工程阶段：20O-B2-B4-4内部接线。规范源码为 [cmath.xiao](cmath.xiao)，只包含15个公开包装，每个函数仅转发到已确认的 `cmath_*` 原语。参数全必填，沿既有位置/命名规则，无默认值、重载、别名或隐式转换。
+规范源码包含 15 个公开包装，每个函数转发到对应的 `cmath_*` 原语。参数全必填，支持位置与命名调用。[cmath.xiao](cmath.xiao)
 
-类型/IR/VM/LLVM与双路径、归档的内部接线已落地；`std.cmath` 与 `stdlib.cmath` 使用同一固定官方加载器。registry与[教程](../docs/UseDocs/library/cmath.md)继续planned，B4-4独立取证、B4-5整批语言收口及B2-C发布验收分别登记，不能据此声称三平台或最终发布通过。
+`std.cmath` 与 `stdlib.cmath` 使用同一官方加载器，教程与 registry 登记为 verified。B2-C 的固定候选在 Windows、Linux 和 macOS 通过 VM、原生 O0/O3 与删源归档验证。[教程](../docs/UseDocs/library/cmath.md) · [B2-C 证据](../docs/DevDocs/assets/20o-b2-c/entry-20261122-b2-c/README.md)
 
 | 包装签名 | 唯一调用的原语 |
 | --- | --- |
@@ -24,6 +24,6 @@
 
 包装不复制NaN/Inf、定义域、舍入或ULP判断。底层按冻结规则传播TypeError/X06-RUNTIME-002、ArithmeticError/X06-RUNTIME-009等错误，纯float成功路径不分配数值载荷；包装没有额外错误码或处理分支。错误顺序、C ABI状态和所有权见[冻结契约](../docs/DevDocs/20o-b2-freeze-draft.md)。
 
-源级路径为 `std.cmath`，固定身份 `stdlib.cmath`，标准库接口1；不加入普通包依赖或锁。当前内部ABI1.18/生成器21；B5只将ABI升至1.19，生成器沿用21。ID34～48经VM/LLVM调用同一Runtime内核；最终兼容与发布证据仍后置。
+固定身份为 `stdlib.cmath`，当前 ABI 1.19、生成器 22、标准库接口 1。ID 34～48 经 VM 和 LLVM 调用同一 Runtime 内核。官方加载器独立于普通包依赖和锁。
 
-早期LLVM未引用函数发射失败与修复见[B3-4实施记录](../docs/DevDocs/20o-b2-b3-4-progress.md)，保留为历史。当前只收集实际导入可达模块；正式参考向量已迁入共享测试数据。B4-4的双路径、移除、归档和承载证据见[独立记录](../docs/DevDocs/assets/20o-b2-b/entry-20261115-b4-4/README.md)；旧721和最终教程/registry升级仍由B2-C负责。
+LLVM 从实际导入的可达模块收集源码。B4-4 保留双路径、移除、归档和承载的内部实现记录。[B4-4 双路径证据](../docs/DevDocs/assets/20o-b2-b/entry-20261115-b4-4/README.md)

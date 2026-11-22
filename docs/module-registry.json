@@ -4,12 +4,25 @@
   "modules": [
     {
       "id": "stdlib.cmath",
-      "stage": "20O-B2-FREEZE",
-      "status": "planned",
-      "code": [],
-      "tests": [],
+      "stage": "20O-B2-C",
+      "status": "verified",
+      "code": [
+        "stdlib/cmath.xiao",
+        "core/rust/crates/xiao-intrinsics/intrinsics.json",
+        "core/rust/crates/xiao-runtime/src/value/arithmetic/cmath.rs",
+        "core/rust/crates/xiao-runtime/src/abi_cmath.rs"
+      ],
+      "tests": [
+        "core/rust/crates/xiao-driver/tests/20o_b2_b3_wrapper.rs",
+        "core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_library.rs",
+        "core/rust/crates/xiao-runtime/src/abi_cmath_tests.rs",
+        "tests/fixtures/docs/cmath/reference-vectors.tsv",
+        "tests/fixtures/docs/numeric/cmath-tutorial.xiao",
+        "tests/fixtures/docs/numeric/cmath-tutorial.stdout"
+      ],
       "usedocs": [
         "docs/UseDocs/library/cmath.md",
+        "docs/DevDocs/assets/20o-b2-c/entry-20261122-b2-c/README.md",
         "docs/DevDocs/20o-b2-numeric-foundation-plan.md",
         "docs/DevDocs/20o-b2-freeze-draft.md"
       ]
