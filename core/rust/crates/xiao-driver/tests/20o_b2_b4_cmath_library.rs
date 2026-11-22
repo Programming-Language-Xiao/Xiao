@@ -91,7 +91,8 @@ fn aliases_replay_from_xiaoc_and_xar_after_application_source_removal() {
         replay(prefix, &source, &golden, true);
     }
     let (source, golden) = tutorial_fixture();
-    replay("tutorial", &source, &golden, true);
+    // 选择导入由宿主加载官方模块，应用字节码通过官方模块身份调用包装。
+    replay("tutorial", &source, &golden, false);
     println!("B2-C-TUTORIAL vm,xiaoc,xar=passed source_removed=true");
 }
 

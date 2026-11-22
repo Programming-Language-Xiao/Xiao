@@ -35,11 +35,11 @@ pub fn run() {
             source = source.replace(&format!("math.{name}("), &format!("f{index}("));
         }
         assert!(!source.contains("math."));
-        examples.push((prefix, source, golden));
+        examples.push((prefix, source, golden, "containers"));
     }
     let (source, golden) = super::tutorial_fixture();
-    examples.push(("tutorial", source, golden));
-    for (prefix, source, golden) in examples {
+    examples.push(("tutorial", source, golden, "value"));
+    for (prefix, source, golden, required_component) in examples {
         let request = FrontendRequest::from_text(source);
         let artifact = FrontendCompiler::new().compile(&request).unwrap();
         for level in [0, 3] {
@@ -60,8 +60,8 @@ pub fn run() {
                     .module
                     .runtime_components
                     .iter()
-                    .any(|component| component == "containers"),
-                "{prefix}.cmath O{level} missing emitted container ABI: {:?}",
+                    .any(|component| component == required_component),
+                "{prefix}.cmath O{level} missing emitted {required_component} ABI: {:?}",
                 result.native.module.runtime_components
             );
             match result.native.artifact_runtime.verification {
