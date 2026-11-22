@@ -43,7 +43,7 @@ flag -= 2   # true
 
 ## B2-A高精度基础：内部验收通过，最终发布（planned）
 
-B2-A已将精确内核接入类型检查、VM、原生、字节码/归档和并发值承载，并完成三平台内部验收。这里记录ABI1.18/生成器20内部快照的能力；上文verified状态继续覆盖原有规则，新增范围的最终公共发布仍planned。`lfloat_divide`的后续B2内部实现见下方planned段落；`cmath`与最终1.19/21产物尚未交付，B2-C再完成最终教程/registry和721条F10。
+B2-A 已将精确内核接入类型检查、VM、原生、字节码、归档和并发值承载。A7 的三平台内部证据固定在 ABI 1.18、生成器 20。B2-B 的当前内部快照使用 ABI 1.19、生成器 22，显式除法和 `cmath` 均已接入。页首 verified 覆盖原有规则，新增范围的公共发布仍为 planned。[B7 内部回归](../../../../DevDocs/20o-b2-b7-closeout-plan.md)
 
 `lint`/`lfloat`继续使用十进制文本边界。`1.50`与`1.5`相等且同哈希，分别显示各自精度；非零显示尾零保留，所有十进制零统一显示0。负scale或普通表示超过65,536字节时使用整数系数和e指数，例如1e100000。计算与转换均受下方固定预算约束，不表示无界分配。
 
@@ -210,7 +210,7 @@ true
 
 全局 `lfloat_divide(lfloat numerator, lfloat denominator, int precision, str rounding) -> lfloat` 的四参数都必填，支持位置和命名调用。precision 是最多有效数字（1～32,768）；只在最终商上舍入一次，短结果不补零。
 
-七种 rounding 为 `half_even`、`half_up`、`half_down`、`toward_zero`、`away_from_zero`、`floor`、`ceiling`。错误类型、输入预算和精度/舍入参数均在 Runtime 检查，仍可捕获；按类型、precision、rounding、输入接纳、除零、结果预算的顺序处理。本段只登记 B2 内部快照，最终发布仍 planned，B3 的 cmath 与 B5 版本切换后置。
+七种 rounding 为 `half_even`、`half_up`、`half_down`、`toward_zero`、`away_from_zero`、`floor`、`ceiling`。Runtime 依次检查类型、precision、rounding、输入接纳、除零、结果预算，相关错误均可捕获。以下示例对应 B2-B 的内部 1.19/22 快照，最终公共发布仍为 planned。
 
 ```xiao
 lfloat one = 1.00

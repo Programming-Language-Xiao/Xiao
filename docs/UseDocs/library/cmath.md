@@ -16,16 +16,14 @@ related:
 
 ## 适用范围与状态
 
-本页为planned教程提纲。15项Runtime/C ABI、intrinsic34～48及源码包装已存在；B4已落地类型/IR/VM/LLVM与双路径/归档的内部接线，三平台与最终产品验收仍后置。
+当前内部 1.19/22 快照包含 15 项 Runtime/C ABI、intrinsic 34～48、源码包装、VM 与原生接线，以及双路径归档。教程和库登记仍为 planned，公共发布由 B2-C 验收。
 星崽已确认首批15个float入口，floor/ceil/round/trunc也返回float，sfloat与高精度超越函数后置。
 F-A已确认定义域、舍入、特殊值和误差；F-5进一步确认参数名、原语及C ABI契约。F-6版本与产物矩阵、F-12完整错误表与优先级也已确认；F-3/F-7也已确认接纳/工作量/性能协议与依赖策略；F-D已实际签字并激活联合冻结，见[B2冻结草案](../../DevDocs/20o-b2-freeze-draft.md)。当前内部实施进度见[B3-3A/B记录](../../DevDocs/20o-b2-b3-3a-b-progress.md)。
-当前只有Windows本机内部证据，完整源码库与三平台产品证据尚未交付，本页保持planned。
+Windows、Linux 和 macOS 已有固定快照的内部功能记录。Windows COFF 导出完整性及最终树的跨平台公共产物验证由 B2-C 继续补齐。[B6-5 交接](../../DevDocs/assets/20o-b2-b/entry-20261120-b6-5/README.md)
 
 ## 导入与准备
 
-计划公共路径std.cmath，固定身份stdlib.cmath，标准库接口版本1。
-产品将随工具链提供，不作为普通包安装。F-6已确认B2-B的未来交付目标为Runtime ABI1.19、生成器21，当前仓库实际为1.18/21。
-B4-4的双路径与归档内部验证见[记录](../../DevDocs/assets/20o-b2-b/entry-20261115-b4-4/README.md)；B4-5整批语言收口、B5兼容矩阵和B2-C最终发布仍后置。
+内部工具链可通过 `std.cmath` 和 `stdlib.cmath` 导入。两条路径使用同一个标准库身份 `stdlib.cmath`，接口版本为 1。B5 的 ABI 1.19、生成器 21 矩阵保留为历史记录，当前生成器为 22。[双路径与归档](../../DevDocs/assets/20o-b2-b/entry-20261115-b4-4/README.md) · [B5 版本记录](../../DevDocs/20o-b2-b5-version-matrix-plan.md)
 
 ## 五分钟运行与完整示例
 
@@ -49,7 +47,7 @@ cmath是固定64位二进制浮点库，不是复数库，也不是lfloat高精�
 | min、max、pow | 两个float到float | 内部语言接线已落地；最终验收后置 |
 | sin、cos、tan、exp、ln、log10 | float到float | 内部语言接线已落地；最终验收后置 |
 
-底层已按F-7冻结Rust libm0.2.16，六包闭包与构建策略见冻结草案§四；内部快照已登记ID34～48和15个xiao_runtime_cmath_*符号。当前ABI1.18/生成器21仅用于内部验收；B5只将ABI升至1.19，生成器沿用21。
+底层使用已冻结的 Rust libm 0.2.16。内部快照登记 ID 34～48 和 15 个 `xiao_runtime_cmath_*` 符号，依赖闭包与构建策略见[冻结草案](../../DevDocs/20o-b2-freeze-draft.md)。
 
 ## 错误与恢复
 
@@ -58,15 +56,13 @@ F-12已确认：NaN/Inf输入或非有限结果、sqrt负输入、ln/log10非正
 
 ## 资源、性能与安全边界
 
-F-3已确认B2受控性能与OS内存测量协议；资源和性能仍是待实测验收目标，不是当前产品成绩，也不是任意硬件时延保证。
+B6-2 的资源与性能实测绑定其独立快照。B2-C 按 F-3 协议核对最终产品、工具链和负载。[B6 性能记录](../../DevDocs/20o-b2-b6-resource-performance-plan.md)
 已确认sqrt正确舍入0 ULP，取整/abs/min/max逐位，普通超越与pow非零结果≤4 ULP；零、符号、定义域和错误精确核对。
 B1的721条F10不能作为B2当前性能。B2-C必须在新Runtime/ABI快照完整重跑该批数据，并另测B2新增数值路径。
 
 ## 示例如何进入 CI
 
-产品实现后，完整示例与执行fixture必须逐字一致，进入默认VM与Windows/Linux/macOS受控原生门禁。
-实际执行点、每个入口的移除/错误/资源及版本拒绝证据将在B2实现/收口文档登记。
-当前没有对应产品示例执行证据，计划中的测试路径尚不登记为已完成测试。
+内部回归已执行 `cmath-library.xiao` 的黄金输出、两种导入别名、原生 O0/O3 和错误 009。B2-C 固定最终教程示例后，在三平台逐字核对该候选示例和黄金。[B7 内部回归](../../DevDocs/20o-b2-b7-closeout-plan.md)
 
 ## 兼容与废弃
 
@@ -76,6 +72,6 @@ B1七库仍按其历史快照verified；19/11/22与历史22C/22D债务不在本�
 
 ## 故障排查与下一步
 
-当前包装源码已存在，语言原语仍未接线；模块导入失败应登记具体诊断，不能当作源码产品已支持。
+内部导入失败时，记录实际诊断、ABI、生成器版本及加载的标准库根。
 先查看[B2规划](../../DevDocs/20o-b2-numeric-foundation-plan.md)与[冻结草案](../../DevDocs/20o-b2-freeze-draft.md)，
 需要已交付整数运算时使用[math](math.md)，返回[官方库索引](README.md)。

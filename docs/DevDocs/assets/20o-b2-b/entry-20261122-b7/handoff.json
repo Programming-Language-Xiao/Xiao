@@ -1,0 +1,20 @@
+{
+  "product": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+  "b2_c_started": false,
+  "required_final_checks": {
+    "b1_f10_new_snapshot": 721,
+    "public_artifacts": ["windows", "linux", "macos"],
+    "final_tutorial_and_registry": "pending",
+    "b6_numeric_workloads": "pending"
+  },
+  "open_items": {
+    "22d": {
+      "owner": "B7",
+      "cases": ["native-lock-wait-027", "xcon-bounded-string-success", "spawn-join-str-multiargument"]
+    },
+    "windows_coff": {"owner": "B2-C", "verification": "UnverifiedCoffExports"},
+    "final_tree_artifact_verification": {"owner": "B2-C", "pending": ["windows", "macos"]},
+    "b6_1_linux_clippy": {"owner": "B7-4", "historical": "not_run", "b7_gate": "linux/clippy.json"}
+  },
+  "historical_debts": ["B1 原件缺失", "22C", "22D", "19", "11", "22"]
+}

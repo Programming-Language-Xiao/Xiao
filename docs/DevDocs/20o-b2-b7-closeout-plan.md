@@ -3,7 +3,7 @@
 > **2026-11-16历史状态：B5版本/缓存/C ABI矩阵及完整串行workspace通过，但默认并发workspace的URL Unicode用例触发60秒看门狗，B5未封存。** 失败记录、B1历史原件缺失/重建来源标记和独立LLVM比较问题见[B5证据](assets/20o-b2-b/entry-20261116-b5-rebuild/README.md)；B6闸门未开，B7/B2-C未开始。
 > **2026-11-18 历史记录**　B5 固定矩阵绑定 ABI 1.19、生成器 21。产品已升至 1.19/22，B5 已联合收口。B6-1 受限，三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，九组性能结果绑定 `79ea0375`。B6-3 的三平台边界结果绑定 `58176ff5`。[B6-1 限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md) · [macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md) · [B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md) · [B6-3 实测](assets/20o-b2-b/entry-20261118-b6-3/README.md) · [21→22 增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md) · [FIX.2 证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)
 > B7 只做 B2-B 内部收口、B1 回归、B2-A 与 B2-B 前序阶段证据对账和 B2-C 交接。
-> **2026-11-22 开工单**　B6-5 已完成内部收口，`b6_5_passed=true`、`b7_entry_ready=true`、`b6_accepted=false`。B7 开工单就绪，执行未开始；B7 不改写 B6-1/B6-4 受限、B6-3 最终树缺项和 22D 未关闭状态。[B6-5 收口证据](assets/20o-b2-b/entry-20261120-b6-5/README.md)
+> **2026-11-22 执行记录**　B7 固定使用 `e79fab3c` 的 1.19/22 内部产品。三平台功能与完整默认 workspace 通过，原始 CI 的环境失败和取证分支复验分别归档。最终结论和 B2-C 开工状态以只读审计派生字段为准。[B7 证据](assets/20o-b2-b/entry-20261122-b7/README.md) · [B6-5 收口证据](assets/20o-b2-b/entry-20261120-b6-5/README.md)
 > 不运行旧 721、不升级 registry/教程、不关闭历史债务；B2-C 才做最终三平台、721 和公共发布。
 
 ## 一、入口与范围

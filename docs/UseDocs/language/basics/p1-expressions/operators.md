@@ -56,7 +56,7 @@ value = factory(
 
 lint加减乘、商余和非负整数幂保持精确；lfloat使用有限十进制，语言`/`只接受精确有限结果，非终止结果报可恢复的`X06-RUNTIME-034`。`//`向下取整，`%`与其配对且余数为零或随除数符号；当共同数值类型为lfloat时也支持这两个算子，其余定宽浮点商余继续拒绝。
 
-B2-A的两后端功能、三平台资源/性能已完成内部验收；本页新增范围限定为ABI1.18/生成器20内部快照，最终发布仍planned，页面原有语法的verified范围不因此扩大。`lfloat_divide`与15项`cmath`尚未交付，留B2-B；最终1.19/21产物和教程/registry收口留B2-C。
+B2-A 的两后端功能和三平台资源性能证据绑定当时的 1.18/20 快照。当前 B2-B 内部 1.19/22 已接入 `lfloat_divide` 和 15 项 `cmath`。页首 verified 覆盖原有语法，高精度算术和新增接口的公共发布仍为 planned。[B7 内部回归](../../../../DevDocs/20o-b2-b7-closeout-plan.md)
 
 `lint`是精确整数，`lfloat`是有限十进制，均受资源预算约束。涉及它们的混合运算精确承接整数及实际有限二进制数值；不会先把大整数近似为float。其余定宽旧规则保持现状。
 
@@ -123,4 +123,4 @@ true
 1.50
 ```
 
-[完整源码](../../../../../tests/fixtures/docs/numeric/a5_decimal_arithmetic.xiao)在VM和原生O0/O3逐字执行，显示scale、极端scale差、比较与有界余数共享同一Runtime内核。B2-A内部证据见[A7回归与收口记录](../../../../DevDocs/20o-b2-a7-b2a-closeout.md)；完整1.19/21公共交付与721条F10重跑仍留B2-C。
+完整示例在 VM 和原生 O0/O3 核对输出，显示尺度、极端尺度差、比较与有界余数共享同一 Runtime 内核。B2-C 在最终候选快照重跑完整 721 条 F10，并收齐公共产物证据。[完整源码](../../../../../tests/fixtures/docs/numeric/a5_decimal_arithmetic.xiao) · [A7 历史回归](../../../../DevDocs/20o-b2-a7-b2a-closeout.md)
