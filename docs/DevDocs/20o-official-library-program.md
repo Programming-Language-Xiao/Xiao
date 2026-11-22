@@ -6,10 +6,10 @@
 > 并对数值计算做专项研究。新接手的 Agent 必须从本文件开始读。
 >
 > 状态：**总纲与B1契约已确认；七库IMP/REM已交付，CLOSE已收口、七库教程/registry为verified，106b99c7的41498029910/41498029872通过（2026-11-03）**。
-> B2 数值基础批的 30 条裁定已由星崽确认，F-D 已签字。B2-A 已完成内部 1.18/20 收口，B7 已完成 B2-B 内部 1.19/22 收口。B6 整体验收为受限交接，B2-C 入口就绪，公共发布尚未开始。[B2 冻结记录](20o-b2-freeze-draft.md) · [B7 收口证据](assets/20o-b2-b/entry-20261122-b7/README.md)
+> B2 数值基础批的 30 条裁定已由星崽确认，F-D 已签字。B2-C 已完成公共收口，ABI 1.19、生成器 22、标准库接口 1。B6 的受限交接按原字段保留。[B2-C 收口证据](assets/20o-b2-c/entry-20261122-b2-c/README.md)
 > B1进度见[B1-CLOSE收口](20o-b1-closeout.md)，B2精确裁定见[冻结草案](20o-b2-freeze-draft.md)。原规划基线为6dc0773，原规划/B0/FIX-A只做研究、探测与拆分，
 > 当时未改变ABI1.17；后续FIX-B实现ABI1.18，B4-3前历史生成器为20；B5固定证据为ABI1.19/21历史快照，当前产品为ABI1.19/22。本总纲不写产品函数体。
-> **2026-11-16 B5历史记录：星崽批准方案2，以106b99c7固定源码和工具链重建并标记B1 1.18/20基线；历史原件缺口仍保留。** B5当时升ABI1.19并沿用生成器21；版本/缓存/C ABI和串行workspace通过，当时默认workspace的URL超时使B5未封存。后续比较修复和URL优化见下一条当前状态；B6/B7/B2-C未开始，公共cmath仍planned。
+> **2026-11-16 B5历史记录：星崽批准方案2，以106b99c7固定源码和工具链重建并标记B1 1.18/20基线；历史原件缺口仍保留。** B5当时升ABI1.19并沿用生成器21；版本/缓存/C ABI和串行workspace通过，当时默认workspace的URL超时使B5未封存。后续比较修复和URL优化见随后收口记录；该时点 B6/B7/B2-C 尚未开始，公共 cmath 为 planned。
 > **2026-11-17 B5收口时点记录：** B5固定产物和版本/缓存矩阵为1.19/21历史证据；静态比较独立修复后的当前产品为1.19/22。按星崽裁定优化URL测试负载后，18项资源目标及当前版本完整默认workspace通过（191个测试目标、1,809个测试用例：1,754 passed、0 failed、55 ignored），未改60秒timeout或预算；B5已完成[四类证据联合收口](assets/20o-b2-b/entry-20261117-b5-closeout/README.md)，B6的B5前置已满足；该收口快照形成时B6尚未开始。
 > **2026-11-18 B6-1首轮历史审定：** Windows与Linux Runtime测试均305 passed、0 failed、1 ignored；A6资源/原子性8/8。Windows规定范围通过；Linux VM/归档、Cmath核心原生及数值原生回归通过，但官方Cmath包装原生被Runtime组件完整性校验阻断，诊断确认IR调用数组Runtime入口而组件清单漏记；B6-1保持blocked，B6-2、macOS、远端CI和完整721未执行。详见[B6-1证据](assets/20o-b2-b/entry-20261117-b6/README.md)。
 > **2026-11-18 B4-3-FIX.2交接时点：** LLVM Runtime组件推导修复已在Windows/Linux真实包装两别名O0/O3验证；B6-1历史状态不改写，需由B6-1在自有任务根重跑后再决定是否收口。详见[FIX.2证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)。
@@ -19,7 +19,8 @@
 > **2026-11-19 B6-4 门禁实测**　Linux 仓库门禁和默认 workspace 通过。Linux/macOS 原生作业被 `rc` 组件校验拒绝，Windows 原生作业在 22D 释放顺序断言失败。B1 四条精确入口及计数守卫通过，`b6_4_passed=false`，B6-5 尚未开始。[B6-4 执行证据](assets/20o-b2-b/entry-20261119-b6-4/README.md)
 > **2026-11-19 B6-4 后续**　修复快照的三平台原生功能和 Linux 工程门禁验证通过，Windows COFF 导出完整性未验证，`followup_passed=false`。B6-4 受限交接，`b6_4_passed=false`，22D 三处间歇性释放差分未关闭。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) · [修复及复跑证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
 > **2026-11-20 B6-5 收口**　B6-5 已完成内部收口，`b6_5_passed=true`、`b6_accepted=false`。最终产品 `e79fab3c` 的本机 Linux 工程门禁通过。[B6-5 收口证据](assets/20o-b2-b/entry-20261120-b6-5/README.md)
-> **2026-11-22 B7 收口**　固定 1.19/22 快照的三平台 B1、数值回归及完整默认 workspace 通过。`b7_passed=true`、`b2c_entry_ready=true`。22D 与 Windows COFF 缺项分别交接，`stdlib.cmath` 仍为 planned。[B7 封存状态](assets/20o-b2-b/entry-20261122-b7/closeout.json)
+> **2026-11-22 B7 收口**　固定 1.19/22 快照的三平台 B1、数值回归及完整默认 workspace 通过。`b7_passed=true`、`b2c_entry_ready=true`。22D 与 Windows COFF 缺项分别交接，`stdlib.cmath` 在该快照为 planned。[B7 封存状态](assets/20o-b2-b/entry-20261122-b7/closeout.json)
+> **2026-11-22 B2-C 收口**　721 条 F10 和 1,647 项 F-3 使用最终产品重跑。三平台公共候选、教程和最终工程门禁通过。Windows 同链接补验 10 份，B6 COFF 历史字段保留。B3-0 待开工。[B2-C 收口证据](assets/20o-b2-c/entry-20261122-b2-c/README.md)
 > **已确认（2026-11-01）：D-1 取甲（成熟 Rust 数值库）、B1 首批范围、
 > D-7 取专用 `json_value` 类型、B7→B8→B9 后置**。B0 已逐条询问并记录其余方向裁定，
 > 见 §五及 20P §六；具体 API 不因此自动冻结。基线、探测、教程与待审草案见
@@ -56,7 +57,7 @@
 | 已交付 stdlib | `text` 11项、`path` 4项、`set`、`dict`、`os`（读/目录/进程）、虚拟`std.concurrent`；B1七库20项已有同源证据，教程/registry在CLOSE同步verified |
 | 标准库接口版本 | 1 |
 | Runtime ABI | 当前B5内部1.19；B4历史快照为1.18，原规划/B0/FIX-A取证时为1.17 |
-| 语言数值 | `int`/`sint`/`float`/`sfloat` 已实现；`lint`/`lfloat`已完成B2-A内部1.18/20的精确算术/转换与资源验收；不是最终公共发布，显式精度除法与cmath仍后置 |
+| 语言数值 | int/sint/float/sfloat 沿用既有入口。B2-C 已验收 lint/lfloat 的精确算术与转换、显式精度除法和 15 项 cmath。[B2-C 收口证据](assets/20o-b2-c/entry-20261122-b2-c/README.md) |
 | 容器 | 公开同质注解 `[T]`、`dict<str,T>`、`set<T>` 已有；内部异构容器不等于公开动态/嵌套签名已冻结 |
 | 动态值 | 类型层内部有 `dynamic` 退化，但公开注解/边界未冻结 |
 | 宿主能力 | 能力位 `filesystem/clock/process/network/native_extension/stdout/stdin` 已存在；没有 time/argv/网络/文件写入 intrinsic |
@@ -218,7 +219,7 @@ Rust 数值底座；字符串往返精确，除法需显式精度与舍入。精
 | --- | --- | --- | --- |
 | B0 | 总纲/目录复核、D-1～D-22 逐条裁定、基线门禁、B1 探测/教程与冻结草案 | 无 | [B0记录](20o-b0-baseline-and-b1-draft.md)；方向确认完成，B1细项随后在FIX-A逐条冻结 |
 | B1 | 七项一起冻结：math、hex、base64、url、csv 记录子集、fmt、statistics 整数子集 | error_code共同前置、精确契约确认与三平台探测已完成 | [冻结契约](20o-b1-freeze-draft.md)；IMP/REM已交付20/20及721条F10，教程/registry在[CLOSE](20o-b1-closeout.md)同步verified，新状态门禁另记 |
-| B2 | 数值基础批：`lint`/`lfloat` 算术与转换、浮点原语、`cmath`（首批含超越函数） | B0；ABI 次版本 | [规划](20o-b2-numeric-foundation-plan.md) / [冻结草案](20o-b2-freeze-draft.md) / [收口规划](20o-b2-freeze-closeout-plan.md) / [F-A](20o-b2-freeze-a-numeric-semantics-plan.md) / [F-A收口](20o-b2-freeze-a-closeout-plan.md) / [F-B](20o-b2-freeze-b-contract-plan.md) / [F-B1](20o-b2-freeze-b1-closeout-plan.md) / [F-B2](20o-b2-freeze-b2-version-matrix-plan.md) / [F-B3](20o-b2-freeze-b3-error-table-plan.md) / [F-C](20o-b2-freeze-c-resource-dependency-plan.md) / [F-D](20o-b2-freeze-d-signature-plan.md) / [B2-A](20o-b2-a-implementation-plan.md) / [A0](20o-b2-a0-baseline-plan.md) / [A1](20o-b2-a1-dependency-value-identity-plan.md) / [A2-A3](20o-b2-a2-a3-arithmetic-plan.md) / [A4](20o-b2-a4-conversions-plan.md) / [A5](20o-b2-a5-language-integration-plan.md) / [A6](20o-b2-a6-resource-performance-plan.md) / [A7](20o-b2-a7-b1-regression-b2a-closeout-plan.md) / [B2-B](20o-b2-b-implementation-plan.md)；F-A/F-B/F-C裁定30/0，F-D已签字并激活联合冻结；A0 Windows本地基线已通过，A1已退出；A2/A3内核已完成本批验收，B2-A内部范围已收口，B2-B已在37b92c53接通lfloat_divide/intrinsic33内部单入口，B3及B4-0/1/2/3已完成Windows内部验收（B4-3产品e0d5993e，ABI1.18/生成器21），B4-4与B4-3-FIX.1已完成Windows内部验收；B4-5已按FIX.1登记Windows内部收口，最终签收见重开证据；B5矩阵固定1.19/21；当前产品1.19/22的默认workspace在URL用例优化后通过，B5四类证据已联合收口；B6-1为 `restricted`，`stage_passed=false`，三平台功能通过，Windows COFF导出完整性未验证，Linux Clippy未执行；B6-2 三平台性能结果绑定 `79ea0375`；B7 已完成内部 1.19/22 收口，B2-C 入口就绪、尚未开工 |
+| B2 | 数值基础批：`lint`/`lfloat` 算术与转换、浮点原语、`cmath`（首批含超越函数） | B0；ABI 次版本 | [规划](20o-b2-numeric-foundation-plan.md) / [冻结草案](20o-b2-freeze-draft.md) / [收口规划](20o-b2-freeze-closeout-plan.md) / [F-A](20o-b2-freeze-a-numeric-semantics-plan.md) / [F-A收口](20o-b2-freeze-a-closeout-plan.md) / [F-B](20o-b2-freeze-b-contract-plan.md) / [F-B1](20o-b2-freeze-b1-closeout-plan.md) / [F-B2](20o-b2-freeze-b2-version-matrix-plan.md) / [F-B3](20o-b2-freeze-b3-error-table-plan.md) / [F-C](20o-b2-freeze-c-resource-dependency-plan.md) / [F-D](20o-b2-freeze-d-signature-plan.md) / [B2-A](20o-b2-a-implementation-plan.md) / [A0](20o-b2-a0-baseline-plan.md) / [A1](20o-b2-a1-dependency-value-identity-plan.md) / [A2-A3](20o-b2-a2-a3-arithmetic-plan.md) / [A4](20o-b2-a4-conversions-plan.md) / [A5](20o-b2-a5-language-integration-plan.md) / [A6](20o-b2-a6-resource-performance-plan.md) / [A7](20o-b2-a7-b1-regression-b2a-closeout-plan.md) / [B2-B](20o-b2-b-implementation-plan.md)；F-A/F-B/F-C裁定30/0，F-D已签字并激活联合冻结；A0 Windows本地基线已通过，A1已退出；A2/A3内核已完成本批验收，B2-A内部范围已收口，B2-B已在37b92c53接通lfloat_divide/intrinsic33内部单入口，B3及B4-0/1/2/3已完成Windows内部验收（B4-3产品e0d5993e，ABI1.18/生成器21），B4-4与B4-3-FIX.1已完成Windows内部验收；B4-5已按FIX.1登记Windows内部收口，最终签收见重开证据；B5矩阵固定1.19/21；当前产品1.19/22的默认workspace在URL用例优化后通过，B5四类证据已联合收口；B6-1为 `restricted`，`stage_passed=false`，三平台功能通过，Windows COFF导出完整性未验证，Linux Clippy未执行；B6-2 三平台性能结果绑定 `79ea0375`；B7 已完成内部 1.19/22 收口，B2-C 已完成公共收口，cmath 与对应数值教程为 verified，见[B2-C 收口证据](assets/20o-b2-c/entry-20261122-b2-c/README.md) |
 | B3 | 简单宿主批：`time`（UTC + sleep）、`args`/`cli`、`fs` 扩展、`env`、`log` 时间戳 | B0；ABI | [规划](20o-b3-host-libraries-plan.md)；能力/错误/取消/三平台 |
 | B4 | JSON/TOML 值模型 + `json`/`toml` 解析器 | B0；语言冻结 | [规划](20o-b4-json-toml-plan.md)；类型/IR/两后端/生命周期 |
 | B5 | 数值库批：`decimal`、`fractions`、`statistics` 浮点、确定性 `random` | B2 | [规划](20o-b5-numeric-libraries-plan.md)；精度/舍入/边界/三平台 |

@@ -9,6 +9,7 @@ import struct
 import subprocess
 
 from measure import base
+from performance_audit import identity
 
 RUNTIME = re.compile(r"(?m)^\s*([A-Fa-f0-9]{4}):([A-Fa-f0-9]{8})\s+(xiao_runtime_\w+)\s+"
                      r"([A-Fa-f0-9]+)\s+f\s+(xiao_runtime[^\r\n]+)$")
@@ -36,8 +37,7 @@ def components(symbol):
     return result
 
 
-def pe_code_sections(file):
-    data = file.read_bytes()
+def pe_code_sections(data):
     pe, = struct.unpack_from("<I", data, 0x3C)
     base.require(data[:2] == b"MZ" and data[pe:pe + 4] == b"PE\0\0", "候选不是 PE")
     machine, count, stamp, _, _, length, _ = struct.unpack_from("<HHIIIHH", data, pe + 4)
@@ -54,17 +54,11 @@ def pe_code_sections(file):
     return image, stamp, sections
 
 
-def inspect(folder, level, llvm, out):
-    stem = f"native-o{level}"
-    executable = folder / f"{stem}.exe"
-    map_file = folder / f"{stem}.exe.map"
-    receipt = json.loads((folder / f"coff-o{level}.json").read_bytes())
-    base.require(receipt["map"] == base.identity(map_file) and receipt["exe"] == base.identity(executable),
+def verify(executable, map_file, receipt, raw, wire):
+    base.require(receipt["map"] == identity(map_file) and receipt["exe"] == identity(executable),
                  "候选或同链接映射字节不符")
-    raw = subprocess.check_output([llvm, "--file-header", "--sections", "--coff-exports", executable])
-    (out / f"{folder.name}-o{level}.readobj.log").write_bytes(raw)
     exports = dict(re.findall(r"(?ms)^  Name: (xiao_runtime_\w+)\s*\n  RVA: (0x[0-9A-Fa-f]+)", raw.decode("utf-8")))
-    link_map = map_file.read_text(encoding="utf-8")
+    link_map = map_file.decode("utf-8").replace("\r\n", "\n")
     image, stamp, sections = pe_code_sections(executable)
     base.require(int(re.search(r"Preferred load address is ([0-9a-fA-F]+)", link_map)[1], 16) == image
                  and int(re.search(r"Timestamp is ([0-9a-fA-F]+)", link_map)[1], 16) == stamp, "链接映射 PE 身份不符")
@@ -83,7 +77,6 @@ def inspect(folder, level, llvm, out):
     for symbol in rows:
         for component in components(symbol):
             observed[component].append(symbol)
-    wire = (folder / f"build-o{level}.stdout").read_bytes()
     from candidate import frames
     _, reply = frames(wire)
     product = reply["artifact"]["artifact_runtime"]
@@ -93,6 +86,16 @@ def inspect(folder, level, llvm, out):
     return {"product_verification": product["verification"], "same_link_verified": True,
             "exports": exports, "symbols": rows, "components": dict(observed),
             "executable": receipt["exe"], "link_map": receipt["map"]}
+
+
+def inspect(folder, level, llvm, out):
+    stem = f"native-o{level}"
+    executable = folder / f"{stem}.exe"
+    raw = subprocess.check_output([llvm, "--file-header", "--sections", "--coff-exports", executable])
+    (out / f"{folder.name}-o{level}.readobj.log").write_bytes(raw)
+    return verify(executable.read_bytes(), (folder / f"{stem}.exe.map").read_bytes(),
+                  json.loads((folder / f"coff-o{level}.json").read_bytes()), raw,
+                  (folder / f"build-o{level}.stdout").read_bytes())
 
 
 if __name__ == "__main__":

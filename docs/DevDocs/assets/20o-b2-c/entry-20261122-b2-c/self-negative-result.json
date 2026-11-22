@@ -1,0 +1,203 @@
+{
+  "cases": [
+    {
+      "after": "a5345abbbec8e1eca53e5d769ca08bc48629275859185791a047cf6dfa01c5c5",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-c\\entry-20261122-b2-c\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-c-audit-5lh6gffm\\unchanged",
+        "--preflight"
+      ],
+      "before": "a5345abbbec8e1eca53e5d769ca08bc48629275859185791a047cf6dfa01c5c5",
+      "case": "unchanged",
+      "exit": 0,
+      "read_only": true,
+      "rejection": null
+    },
+    {
+      "after": "9241835d3f7ee23e9cada2ac232eefed57f9508afdcb7c46ffbf2e91b230aaf1",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-c\\entry-20261122-b2-c\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-c-audit-5lh6gffm\\manifest-tampered",
+        "--preflight"
+      ],
+      "before": "9241835d3f7ee23e9cada2ac232eefed57f9508afdcb7c46ffbf2e91b230aaf1",
+      "case": "manifest-tampered",
+      "exit": 1,
+      "read_only": true,
+      "rejection": "清单字节或身份不符"
+    },
+    {
+      "after": "aa4e2e3efef29a20d27fcb36189795832808acf0ba9c01eb1dbd6ab94330faeb",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-c\\entry-20261122-b2-c\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-c-audit-5lh6gffm\\missing-gitattributes",
+        "--preflight"
+      ],
+      "before": "aa4e2e3efef29a20d27fcb36189795832808acf0ba9c01eb1dbd6ab94330faeb",
+      "case": "missing-gitattributes",
+      "exit": 1,
+      "read_only": true,
+      "rejection": "封存缺少文件：.gitattributes"
+    },
+    {
+      "after": "131f8f565819ffb5a8e784de50df89c61a029d827e849dbcc11ecbe19340ea4c",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-c\\entry-20261122-b2-c\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-c-audit-5lh6gffm\\f10-missing",
+        "--preflight"
+      ],
+      "before": "131f8f565819ffb5a8e784de50df89c61a029d827e849dbcc11ecbe19340ea4c",
+      "case": "f10-missing",
+      "exit": 1,
+      "read_only": true,
+      "rejection": "F10 负载、规模、平台或优化级别集合不符"
+    },
+    {
+      "after": "497b535da376fb50b5db1feab3aa73d0088eb1bfd9224f97ae9e7ca2991df431",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-c\\entry-20261122-b2-c\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-c-audit-5lh6gffm\\f10-duplicate",
+        "--preflight"
+      ],
+      "before": "497b535da376fb50b5db1feab3aa73d0088eb1bfd9224f97ae9e7ca2991df431",
+      "case": "f10-duplicate",
+      "exit": 1,
+      "read_only": true,
+      "rejection": "F10 负载、规模、平台或优化级别集合不符"
+    },
+    {
+      "after": "39fbd72bd652dcd2ed65f6bccd49b5814d8e01254b9e1d4252cc136486f579ab",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-c\\entry-20261122-b2-c\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-c-audit-5lh6gffm\\candidate-missing-o3",
+        "--preflight"
+      ],
+      "before": "39fbd72bd652dcd2ed65f6bccd49b5814d8e01254b9e1d4252cc136486f579ab",
+      "case": "candidate-missing-o3",
+      "exit": 1,
+      "read_only": true,
+      "rejection": "候选缺 O0/O3"
+    },
+    {
+      "after": "c3bd4f18737a513b950395fbfbca0a74e54036d3ba85e1e42d9dbeec783346bb",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-c\\entry-20261122-b2-c\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-c-audit-5lh6gffm\\candidate-missing-platform",
+        "--preflight"
+      ],
+      "before": "c3bd4f18737a513b950395fbfbca0a74e54036d3ba85e1e42d9dbeec783346bb",
+      "case": "candidate-missing-platform",
+      "exit": 1,
+      "read_only": true,
+      "rejection": "公开候选缺平台"
+    },
+    {
+      "after": "f8b8d8ac52178b52f9fcb25ea527de33a1ac16a7ddd549342e34d62c49f83856",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-c\\entry-20261122-b2-c\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-c-audit-5lh6gffm\\forged-source",
+        "--preflight"
+      ],
+      "before": "f8b8d8ac52178b52f9fcb25ea527de33a1ac16a7ddd549342e34d62c49f83856",
+      "case": "forged-source",
+      "exit": 1,
+      "read_only": true,
+      "rejection": "测量源码或工具链身份不符"
+    },
+    {
+      "after": "8fad0cd7b4222d62022eccecbe35be96faf21d7a662391e063c94c392bdd06d0",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-c\\entry-20261122-b2-c\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-c-audit-5lh6gffm\\forged-runtime",
+        "--preflight"
+      ],
+      "before": "8fad0cd7b4222d62022eccecbe35be96faf21d7a662391e063c94c392bdd06d0",
+      "case": "forged-runtime",
+      "exit": 1,
+      "read_only": true,
+      "rejection": "测量 Runtime 身份不符"
+    },
+    {
+      "after": "8d945c8f3c10d0ddd20c7eba727a8b8fd2b9ac0235b2e8000c360f70fc7ab929",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-c\\entry-20261122-b2-c\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-c-audit-5lh6gffm\\forged-ci-job",
+        "--preflight"
+      ],
+      "before": "8d945c8f3c10d0ddd20c7eba727a8b8fd2b9ac0235b2e8000c360f70fc7ab929",
+      "case": "forged-ci-job",
+      "exit": 1,
+      "read_only": true,
+      "rejection": "CI 作业或上传原件身份不符：137179416348"
+    },
+    {
+      "after": "e191da3c0ec84437ff2b26ac2a462c6b43464ce1329104582c63374836d1305a",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-c\\entry-20261122-b2-c\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-c-audit-5lh6gffm\\forged-status",
+        "--preflight"
+      ],
+      "before": "e191da3c0ec84437ff2b26ac2a462c6b43464ce1329104582c63374836d1305a",
+      "case": "forged-status",
+      "exit": 1,
+      "read_only": true,
+      "rejection": "收口回执与逐项派生结论不符"
+    }
+  ],
+  "mode": "preflight"
+}

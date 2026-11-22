@@ -312,7 +312,7 @@ intrinsic 数量持续增长，应先检查语言表达能力、优化器和 Run
 | **20O-B1-IMP实现规划** | FIX-A与FIX-B已收口 | 纯库真实导出、资源/性能、归档及教程证据 | 20/20产品及REM证据已交付，41464439400第二次尝试 / 41464421187成功；守卫后完整重跑，七库当前由CLOSE同步verified，新状态门禁另记；见 [实施证据](20o-b1-rem-evidence.md) |
 | **20O-B1-IMP-REM收口规划** | 首批12/20为开工基线；当前20/20 | hex/base64/url/csv、完整契约、F9/F10、释放差异与CLOSE门槛 | REM-A/B/C退出对账完成：固定源码身份工具新721条F10、生成器20六组释放与三平台精确点取证；历史22D失败与债务保留；见 [剩余四库与收口](20o-b1-imp-remainder.md) |
 | **20O-B1-CLOSE 收口规划** | 20/20产品与最终F10证据已交付 | 最终证据复核、七册教程/registry `verified`、完整门禁与收口 | 已收口，七库verified；106b99c7的41498029910/41498029872通过；见[规划](20o-b1-closeout-plan.md) / [收口进度](20o-b1-closeout.md) |
-| **20O-B2 数值基础批** | B1；当前B5内部ABI1.19、生成器21（A7历史基线1.18/20） | lint/lfloat与显式precision接口、cmath；先冻结精确契约 | 30/0，F-D已实际签字，联合冻结已激活；A0～A7及B4-5 Windows内部收口已完成；B5版本/缓存/C ABI和完整串行workspace通过，默认并发URL看门狗失败、B5未封存；B1重建来源与历史原件缺口保留，cmath planned，B6～B7/B2-C未开始；见[规划](20o-b2-numeric-foundation-plan.md) / [冻结草案](20o-b2-freeze-draft.md) / [B5证据](assets/20o-b2-b/entry-20261116-b5-rebuild/README.md) |
+| **20O-B2 数值基础批** | B1；最终 ABI 1.19、生成器 22、接口 1 | lint/lfloat、显式精度接口、cmath 15 包装 | 30 条裁定经 F-D 签字。B2-C 公共收口通过，教程与登记为 verified。B5 的 1.19/21 矩阵、B6 受限交接与 B1 历史原件缺口继续保留。[B2-C 收口证据](assets/20o-b2-c/entry-20261122-b2-c/README.md) |
 | **20P Day-1 库架构** | 20O；架构研究批 | 模块/错误/并发/能力/发布约定、教程/示例、数据库驱动架构；D-13～D-22 方向逐条确认 | 独立数据库能力位、首批有界连接池、教程硬门槛；具体契约仍待对应批次冻结；见 [20P](20p-day1-library-architecture.md) |
 
 20A 的契约设计可以现在开始，但只有当它改变 09R3 的机型、调用 ABI、编码或源码映射

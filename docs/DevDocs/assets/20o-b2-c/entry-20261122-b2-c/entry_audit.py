@@ -44,11 +44,14 @@ def load_module(name, path):
     spec = spec_from_file_location(name, path)
     module = module_from_spec(spec)
     previous = sys.path[:]
+    previous_audit = sys.modules.pop("audit", None)
     sys.path.insert(0, str(path.parent))
     try:
         spec.loader.exec_module(module)
     finally:
         sys.path[:] = previous
+        if previous_audit is not None:
+            sys.modules["audit"] = previous_audit
     return module
 
 
@@ -73,6 +76,7 @@ class Evidence:
         self.unique = len(objects)
 
     def raw(self, name):
+        base.require(name in self.entries, f"归档证据缺失：{name}")
         item = self.entries[name]
         raw = self.archive.read("objects/" + item["sha256"])
         base.require(item == identity(raw), f"证据字节改变：{name}")
@@ -244,7 +248,10 @@ def inspect(root, archive_file):
 
 def audit_candidates(book, source):
     from candidate import frames, output
+    from coff import verify
     observed = {}
+    base.require(all(f"{host}-candidates/environment.json" in book.entries for host in ("linux", "windows")),
+                 "公开候选缺平台")
     archives = {"linux": lambda name: book.raw(f"linux-candidates/{name}"),
                 "windows": lambda name: book.raw(f"windows-candidates/{name}")}
     upload, ci = book.upload(LANGUAGE_RUN, 14751618515)
@@ -252,9 +259,16 @@ def audit_candidates(book, source):
         archives["macos"] = upload.read
         for host, raw in archives.items():
             env = json.loads(raw("environment.json"))
-            runtime = json.loads(raw("runtime.json"))["runtime_after"]
+            build_runtime = json.loads(raw("runtime.json"))
+            build_core = json.loads(raw("core.json"))
+            runtime = build_runtime["runtime_after"]
             base.require(env["host"] == host and env["target"] == TARGETS[host] and env["source"] == source
-                         and json.loads(raw("core.json"))["runtime_after"] == runtime,
+                         and env["rustc_verbose"].startswith("rustc 1.96.0 ")
+                         and f"host: {TARGETS[host]}" in env["rustc_verbose"].splitlines()
+                         and build_runtime["exit"] == build_core["exit"] == 0
+                         and build_runtime["source_before"] == build_runtime["source_after"] == source
+                         and build_core["source_before"] == build_core["source_after"] == source
+                         and build_core["runtime_before"] == build_core["runtime_after"] == runtime,
                          f"公开候选源码或 Runtime 身份不符：{host}")
             rows = {}
             for name in FIXTURES:
@@ -270,44 +284,119 @@ def audit_candidates(book, source):
                              and row["golden"] == identity(golden)
                              and row["xiaoc"] == identity(raw(f"{path}/program.xiaoc"))
                              and row["xar"] == identity(raw(f"{path}/program.xar")), "删源候选身份不符")
-                for label in ("vm", "xiaoc-replay", "archive-replay"):
-                    handshake, reply = frames(raw(f"{path}/{label}.stdout"))
+                for label, operation in (("vm", "run"), ("xiaoc-replay", "run_xiaoc"),
+                                         ("archive-replay", "run_archive")):
+                    handshake, reply = frames(candidate_output(raw, path, label))
                     base.require(handshake["versions"]["runtime_abi"] == 65555 and handshake["versions"]["codegen"] == 22
-                                 and reply["exit_code"] == 0 and output(reply).encode() == golden,
+                                 and reply["operation"] == operation and reply["exit_code"] == 0
+                                 and output(reply).encode() == golden,
                                  f"VM 或归档黄金不符：{host}/{name}/{label}")
+                _, archive_reply = frames(candidate_output(raw, path, "archive"))
+                archived = json.loads(archive_reply["value"]["value"])
+                base.require(archive_reply["operation"] == "build_archive" and archive_reply["exit_code"] == 0
+                             and archived["verified"] is True and archived["digest"] == row["xar"]["sha256"],
+                             f"真实归档构建回执不符：{host}/{name}")
+                if name.startswith("cmath-"):
+                    expected_modules = ["stdlib.cmath"]
+                    if name == "cmath-library":
+                        expected_modules.extend(("stdlib.math", "stdlib.statistics"))
+                    base.require(archived["stdlib_modules"] == expected_modules
+                                 and all(not item["module"].startswith(("std.", "stdlib.")) for item in archived["modules"]),
+                                 f"归档未使用固定 cmath 官方身份：{host}/{name}")
+                base.require([entry["optimization"] for entry in row["native"]] == [0, 3], "候选缺 O0/O3")
                 for entry in row["native"]:
                     level = entry["optimization"]
                     stem = f"native-o{level}"
                     suffix = ".exe" if host == "windows" else ""
                     base.require(entry["executable"] == identity(raw(f"{path}/{stem}{suffix}"))
                                  and entry["llvm"] == identity(raw(f"{path}/{stem}.ll"))
-                                 and raw(f"{path}/{stem}.stdout") == golden
-                                 and not raw(f"{path}/{stem}.stderr")
+                                 and candidate_output(raw, path, stem) == golden
                                  and entry["verification"] == ("unverified-coff-exports" if host == "windows" else "complete"),
                                  f"实际原生候选字节、输出或验证等级不符：{host}/{name}/O{level}")
-                base.require([row["optimization"] for row in row["native"]] == [0, 3], "候选缺 O0/O3")
+                    _, build = frames(candidate_output(raw, path, f"build-o{level}"))
+                    verification = build["artifact"]["artifact_runtime"]
+                    base.require(build["exit_code"] == 0 and build["artifact"]["optimization_level"] == level
+                                 and build["artifact"]["object_digest"] == entry["executable"]["sha256"]
+                                 and verification["verification"] == entry["verification"]
+                                 and (host == "windows" or
+                                      verification["declared_components"] == verification["observed_components"]),
+                                 f"产品实际 Runtime 组件对账不符：{host}/{name}/O{level}")
                 rows[name] = row
             observed[host] = {"target": env["target"], "runtime": runtime, "fixtures": len(rows), "native": 10}
     observed["macos"]["ci"] = ci
     coff = book.read("coff/result.json")["candidate_rows"]
+    base.require(coff.keys() == {f"{name}-o{level}" for name in FIXTURES for level in (0, 3)},
+                 "同链接 PE 候选集合不符")
     for name in FIXTURES:
         attempt = "candidates-tutorial-final" if name == "cmath-tutorial" else "candidates-selection"
         for level in (0, 3):
-            result = coff[f"{name}-o{level}"]
             folder = f"windows-candidates/{attempt}/{name}"
-            base.require(result["same_link_verified"] is True
-                         and result["link_map"] == identity(book.raw(f"{folder}/native-o{level}.exe.map"))
-                         and result["executable"] == identity(book.raw(f"{folder}/native-o{level}.exe"))
-                         and result["components"] and result["exports"], "同链接 PE 核验证据不符")
+            result = verify(book.raw(f"{folder}/native-o{level}.exe"),
+                            book.raw(f"{folder}/native-o{level}.exe.map"), book.read(f"{folder}/coff-o{level}.json"),
+                            book.raw(f"coff/{name}-o{level}.readobj.log"), book.raw(f"{folder}/build-o{level}.stdout"))
+            base.require(result == coff[f"{name}-o{level}"], "同链接 PE 原件与摘要不符")
     observed["windows"]["same_link_coff_rows"] = len(coff)
-    versions = book.read("versions/result.json")
-    base.require(versions["source"] == source and len(versions["validators"]) == 17
-                 and len(versions["cache"]) == 4 and all(
-                     [row["cache_hit"] for row in cache] == [False, False, True]
-                     and cache[1]["sha256"] == cache[2]["sha256"] for cache in versions["cache"].values()
-                 ), "版本拒绝或缓存证据不符")
-    observed["versions"] = {"validator_rows": len(versions["validators"]), "cache_rows": 12}
+    observed["versions"] = audit_versions(book, source)
     return observed
+
+
+def candidate_output(raw, folder, stem):
+    prefix = f"{folder}/{stem}"
+    receipt = json.loads(raw(f"{prefix}.json"))
+    stdout, stderr = (raw(f"{prefix}.{name}") for name in ("stdout", "stderr"))
+    base.require(receipt["exit"] == 0 and receipt["pid"] > 0 and not stderr
+                 and receipt["stdout"] == identity(stdout) and receipt["stderr"] == identity(stderr),
+                 f"候选实际进程输出不符：{prefix}")
+    return stdout
+
+
+def audit_versions(book, source):
+    versions = book.read("versions/result.json")
+    base.require(versions["source"] == source and
+                 versions["runtime"] == book.read("windows-candidates/runtime.json")["runtime_after"],
+                 "版本验证器的源码或 Runtime 不符")
+
+    def command(stem):
+        prefix = f"versions/{stem}"
+        receipt = book.read(f"{prefix}.receipt.json")
+        output = book.raw(f"{prefix}.stdout")
+        base.require(receipt["exit"] == 0 and receipt["pid"] > 0 and
+                     receipt["stdout_sha256"] == base.sha(output) and
+                     receipt["stderr_sha256"] == base.sha(book.raw(f"{prefix}.stderr")),
+                     f"版本命令的真实输出不符：{stem}")
+        return json.loads(output)
+
+    accepted = {}
+    for kind in ("xiaoc", "xar", "meta"):
+        accepted[f"current/{kind}"] = row = command(f"current-{kind}")
+        base.require(row["accepted"] is True and row["input_unchanged"] is True
+                     and row["input_sha256"] == base.sha(book.raw(f"versions/generated/main.{kind}")),
+                     f"当前候选验证身份不符：{kind}")
+        for side in ("b1", "b4"):
+            old = blob(PRODUCT, f"tests/fixtures/compatibility/b5/{side}-main.{kind}")
+            new = book.raw(f"versions/generated/main.{kind}")
+            for direction, raw in ((f"{side}-to-current", old), (f"current-to-{side}", new)):
+                row = command(f"{direction}-{kind}")
+                base.require(row["accepted"] is row["executed"] is False and row["input_unchanged"] is True
+                             and row["input_sha256"] == base.sha(raw), f"跨 ABI 执行前拒绝不符：{direction}/{kind}")
+                accepted[f"{direction}/{kind}"] = row
+    for direction, validator, generator, success in (("21-validates-22", 21, 22, False),
+                                                       ("22-validates-21", 22, 21, True)):
+        accepted[direction] = row = command(direction)
+        base.require(row["accepted"] is success and row["entry_executed"] is False
+                     and (row["actual_validator"], row["artifact_generator"]) == (validator, generator),
+                     f"生成器验证方向不符：{direction}")
+    base.require(accepted == versions["validators"], "版本原始验收记录与汇总不符")
+    for mode in ("static", "dynamic"):
+        for level in (0, 3):
+            key = f"{mode}-o{level}"
+            rows = [command(f"{key}-{phase}") for phase in ("old", "new", "hit")]
+            base.require(rows == versions["cache"][key]
+                         and [row["actual_codegen"] for row in rows] == [21, 22, 22]
+                         and [row["cache_hit"] for row in rows] == [False, False, True]
+                         and rows[0]["request_key"] != rows[1]["request_key"] == rows[2]["request_key"]
+                         and rows[1]["sha256"] == rows[2]["sha256"], f"生成器缓存失配或复用不符：{key}")
+    return {"validator_rows": len(accepted), "cache_rows": 12}
 
 
 def json_bytes(doc):

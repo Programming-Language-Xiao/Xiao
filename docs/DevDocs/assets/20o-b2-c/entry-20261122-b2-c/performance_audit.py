@@ -68,6 +68,8 @@ def audit_commands(raw, source, host, kind, backend, *, accepted=True):
         check_file(value)
     rt = read("runtime.json")["runtime_after"]
     check_file(rt)
+    REQUIRE(read("worker.json")["runtime_before"] == rt == read(f"{kind}-{backend}.json")["runtime_before"],
+            "测量 Runtime 身份不符")
     worker = report["worker"]
     check_file(worker)
     measurement = f"{kind}-{backend}"
@@ -161,10 +163,10 @@ def f10(raw, source, host, backend, *, accepted=True):
             check_file(files[stem + ".ll"])
             check_file(files[stem + (".exe" if host == "windows" else "")])
     REQUIRE(bool(failures) is not accepted, "F10 实测失败集合与报告不符")
-    maximum_url, = [row for row in rows if row["case"] == "url.decode_unicode" and row["scale"] is None
-                     and row["optimization"] == levels[0]] if accepted else [None]
     if accepted:
-        REQUIRE((maximum_url["input_bytes_or_items"], maximum_url["output_bytes_or_items"]) == (196608, 65536),
+        maximum = [(row["input_bytes_or_items"], row["output_bytes_or_items"])
+                   for row in rows if row["case"] == "url.decode_unicode" and row["scale"] is None]
+        REQUIRE(maximum == [(196608, 65536)] * len(levels),
                 "F10 URL 全转义负载不符")
     return {"records": len(rows), "passed": accepted, "runtime": runtime, "failures": failures,
             "max_ratio": max((row["doubling_ratio"] or 0 for row in rows)),

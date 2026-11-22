@@ -1,0 +1,1154 @@
+{
+  "archive": {
+    "bytes": 55797334,
+    "objects": 653,
+    "paths": 916,
+    "sha256": "58f62acf10f0981180a5c1d3c941d076b7887aa073e0b817346e763cdc2786da"
+  },
+  "b2c_entry_ready": true,
+  "b2c_passed": true,
+  "b2c_started": true,
+  "c0_snapshot_frozen": true,
+  "c1_721_passed": true,
+  "c2_language_archive_passed": true,
+  "c3_platform_version_passed": true,
+  "c4_registry_tutorial_passed": true,
+  "c5_closeout_audit_passed": true,
+  "candidates": {
+    "linux": {
+      "fixtures": 5,
+      "native": 10,
+      "runtime": {
+        "bytes": 34143188,
+        "sha256": "08b88569645eb45d7cc6fea793adbe91a459a174392a91d1b57497d22349ad89"
+      },
+      "target": "x86_64-unknown-linux-gnu"
+    },
+    "macos": {
+      "ci": {
+        "artifact": 14751618515,
+        "attempt": 1,
+        "conclusion": "success",
+        "job": 137189023226,
+        "run": 45016234630,
+        "sha256": "8195cb4990347e8d016dec0f4ee76807ceb4fb05fd66e658fded1aefd5179f89"
+      },
+      "fixtures": 5,
+      "native": 10,
+      "runtime": {
+        "bytes": 25667552,
+        "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+      },
+      "target": "aarch64-apple-darwin"
+    },
+    "versions": {
+      "cache_rows": 12,
+      "validator_rows": 17
+    },
+    "windows": {
+      "fixtures": 5,
+      "native": 10,
+      "runtime": {
+        "bytes": 27483016,
+        "sha256": "fa493d79b129cf7fa600993605381830f6abeaab23ec0ea48c0a910554de0fff"
+      },
+      "same_link_coff_rows": 10,
+      "target": "x86_64-pc-windows-msvc"
+    }
+  },
+  "dependencies": {
+    "license_files": 11,
+    "packages": {
+      "autocfg": {
+        "sha256": "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53",
+        "version": "1.5.1"
+      },
+      "bigdecimal": {
+        "sha256": "8fa3f3d8cbf4dffcfe4991de61d012bef509a409ecbe9dd41049bfe32b4d4653",
+        "version": "0.4.11"
+      },
+      "libm": {
+        "sha256": "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981",
+        "version": "0.2.16"
+      },
+      "num-bigint": {
+        "sha256": "c89e69e7e0f03bea5ef08013795c25018e101932225a656383bd384495ecc367",
+        "version": "0.4.8"
+      },
+      "num-integer": {
+        "sha256": "7ce2d95d4b3734dc35aa2f45e1aa22cd416814592a4f9d9205e11affd5b8e10b",
+        "version": "0.1.47"
+      },
+      "num-traits": {
+        "sha256": "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841",
+        "version": "0.2.19"
+      }
+    }
+  },
+  "engineering": {
+    "dependency_features": {
+      "autocfg": [
+        "1.5.1",
+        ""
+      ],
+      "bigdecimal": [
+        "0.4.11",
+        "std"
+      ],
+      "libm": [
+        "0.2.16",
+        "arch,default"
+      ],
+      "num-bigint": [
+        "0.4.8",
+        "std"
+      ],
+      "num-integer": [
+        "0.1.47",
+        "i128,std"
+      ],
+      "num-traits": [
+        "0.2.19",
+        "i128,std"
+      ]
+    },
+    "native": {
+      "linux": {
+        "attempt": 1,
+        "job": 137213504808,
+        "runtime_sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9",
+        "target": "x86_64-unknown-linux-gnu",
+        "tutorial": [
+          "vm",
+          "xiaoc",
+          "xar",
+          "o0",
+          "o3"
+        ]
+      },
+      "macos": {
+        "attempt": 1,
+        "job": 137213504825,
+        "runtime_sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c",
+        "target": "aarch64-apple-darwin",
+        "tutorial": [
+          "vm",
+          "xiaoc",
+          "xar",
+          "o0",
+          "o3"
+        ]
+      },
+      "windows": {
+        "attempt": 1,
+        "job": 137213504877,
+        "runtime_sha256": "f6f82d845940ac8060e77a7a366d68f476e03000df8bbf2e8600eb3503a486e5",
+        "target": "x86_64-pc-windows-msvc",
+        "tutorial": [
+          "vm",
+          "xiaoc",
+          "xar",
+          "o0",
+          "o3"
+        ]
+      }
+    },
+    "repository_job": 137216398134,
+    "runner": "3cf0c8390ef4b1682cb5489ebfd5f1f01f7934a3",
+    "runs": {
+      "45022312950": [
+        {
+          "attempt": 1,
+          "conclusion": "failure",
+          "jobs": {
+            "Deterministic artifact size regression (Windows baseline)": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137207717502,
+              "log": {
+                "bytes": 58774,
+                "sha256": "a8dd5795aed3f7342b4326d6eaba7500de7f58b45492ddd8cb1cbe04b2301852"
+              }
+            },
+            "Deterministic parser and artifact security regression": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137207717475,
+              "log": {
+                "bytes": 66981,
+                "sha256": "36de9cdc085dba94797447c0b2874b084cbf4cd0243578915b91c08217bcf1a1"
+              }
+            },
+            "Native differential regression (Linux)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137207717557,
+              "log": {
+                "bytes": 360688,
+                "sha256": "ccd94ab456abc5f841f35c71ad0a5d5d356b1a5c1f604f4af22e4c84c2f11f73"
+              }
+            },
+            "Native differential regression (Windows)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137207717558,
+              "log": {
+                "bytes": 137426,
+                "sha256": "24240ff3ce757c54371393198a0c941f22ddaf22ab927dd4a889d1bfa00fec25"
+              }
+            },
+            "Native differential regression (macOS)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137207717532,
+              "log": {
+                "bytes": 307902,
+                "sha256": "b3e2e7448aa02eaefd58bf196043d258eb8f75fe576343cd0faf2e1c990a2170"
+              }
+            },
+            "Rust workspace default tests (Linux)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137207717328,
+              "log": {
+                "bytes": 124433,
+                "sha256": "0c84b9e4fc9f76562674c9222581189c3d7fbeedfbea5ae0da27fe19e68b7b2b"
+              }
+            }
+          }
+        }
+      ],
+      "45022312960": [
+        {
+          "attempt": 1,
+          "conclusion": "failure",
+          "jobs": {
+            "Linux workspace gates": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137207717429,
+              "log": {
+                "bytes": 787162,
+                "sha256": "c565164d9f5c5730c38961339a4707bfc09e4e6f4f6b287f4449579a38442598"
+              }
+            }
+          }
+        }
+      ],
+      "45022345634": [
+        {
+          "attempt": 1,
+          "conclusion": "failure",
+          "jobs": {
+            "Deterministic artifact size regression (Windows baseline)": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137207815833,
+              "log": {
+                "bytes": 64219,
+                "sha256": "86c906c29c5de8ec169b0a399c610380b5484e326972a366638f9f385b40dce9"
+              }
+            },
+            "Deterministic parser and artifact security regression": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137207816017,
+              "log": {
+                "bytes": 72744,
+                "sha256": "965b513385140b3f5ce842429964e1bc5c5c5c4699cb9675b3ec0c3ac00ea529"
+              }
+            },
+            "Native differential regression (Linux)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137207816004,
+              "log": {
+                "bytes": 78604,
+                "sha256": "7a5d11634e8570abc7305279a603c6b83b0917b6f91ae96bf5be79d956e766f3"
+              }
+            },
+            "Native differential regression (Windows)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137207815980,
+              "log": {
+                "bytes": 92682,
+                "sha256": "fe9851ac82087ac080b285b8bd5315762f3f3031a8f7682936e9d3c6af1b6c32"
+              }
+            },
+            "Native differential regression (macOS)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137207815989,
+              "log": {
+                "bytes": 76652,
+                "sha256": "e739560c2d10b65bd4efc90e44728dbbd715394fad342dcbfc819ffb70ff9d6f"
+              }
+            },
+            "Rust workspace default tests (Linux)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137207816052,
+              "log": {
+                "bytes": 144405,
+                "sha256": "b35241af7c68b9db2858e49659b9c39d85edbb180ed3e36ad2c0da0dde6c4006"
+              }
+            }
+          }
+        }
+      ],
+      "45022345662": [
+        {
+          "attempt": 1,
+          "conclusion": "failure",
+          "jobs": {
+            "Linux workspace gates": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137207815726,
+              "log": {
+                "bytes": 804700,
+                "sha256": "48a2dd0c29ac069dfd3c7466837748764655e6eb0fefe3b55ba2636ded7c4016"
+              }
+            }
+          }
+        }
+      ],
+      "45022879989": [
+        {
+          "attempt": 1,
+          "conclusion": "failure",
+          "jobs": {
+            "Deterministic artifact size regression (Windows baseline)": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137209432766,
+              "log": {
+                "bytes": 58836,
+                "sha256": "0fc460a7f1a86fc8ea9893b8a0e952a1258dd166441d7c43dbb7f147d9a2348f"
+              }
+            },
+            "Deterministic parser and artifact security regression": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137209432992,
+              "log": {
+                "bytes": 67479,
+                "sha256": "58889e6ffe8faf7da5ba6c498a78e4be0c1e49044289cc7805eb315ce61ec577"
+              }
+            },
+            "Native differential regression (Linux)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137209433142,
+              "log": {
+                "bytes": 358920,
+                "sha256": "1828ad3b3cf4e96082403d23c27c8602823e2cda08cc0c19194fef0bb10c9a41"
+              }
+            },
+            "Native differential regression (Windows)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137209433174,
+              "log": {
+                "bytes": 139849,
+                "sha256": "b8e2d914550e1de6c1c0229094243ffd773d8c3efb05f091d316c3dec14a7c01"
+              }
+            },
+            "Native differential regression (macOS)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137209433027,
+              "log": {
+                "bytes": 305784,
+                "sha256": "f1756f0495ce47517f3bee5e77ee5c02060c5d645c55ad49c20b7798a1764e30"
+              }
+            },
+            "Rust workspace default tests (Linux)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137209433017,
+              "log": {
+                "bytes": 124423,
+                "sha256": "546f7bb24183e31b0e9ac7dd9821436e99286f9c622680a756528debe318c656"
+              }
+            }
+          }
+        }
+      ],
+      "45022888476": [
+        {
+          "attempt": 1,
+          "conclusion": "failure",
+          "jobs": {
+            "Deterministic artifact size regression (Windows baseline)": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137209458115,
+              "log": {
+                "bytes": 64221,
+                "sha256": "5c955805ace6305ae0c31f44022ba9823eb072d3bdbc22e498da5b7a26528e50"
+              }
+            },
+            "Deterministic parser and artifact security regression": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137209458478,
+              "log": {
+                "bytes": 72731,
+                "sha256": "a0385d34e6b9f7163cf0c78224f76de5a7de1b8a62575207684b07f44e97c6bc"
+              }
+            },
+            "Native differential regression (Linux)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137209458376,
+              "log": {
+                "bytes": 371914,
+                "sha256": "60d8187f00a78d600ef2d26878581236bf73593fd2a5b4f810dbb0f1c6f351c0"
+              }
+            },
+            "Native differential regression (Windows)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137209458394,
+              "log": {
+                "bytes": 91035,
+                "sha256": "43fcd024b830db896578ac316ca32b35e70bf44abfe607b291f750decd5ac383"
+              }
+            },
+            "Native differential regression (macOS)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137209458340,
+              "log": {
+                "bytes": 316421,
+                "sha256": "c6c4d397db358058d13b5c9e398eb0a1b61d3909211a851d3a1ca6f6e0933b8e"
+              }
+            },
+            "Rust workspace default tests (Linux)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137209458318,
+              "log": {
+                "bytes": 143912,
+                "sha256": "0975431124e8d617d2ce719fcfe457b020db411066029dfb8e8277eec5df37c8"
+              }
+            }
+          }
+        }
+      ],
+      "45022888537": [
+        {
+          "attempt": 1,
+          "conclusion": "failure",
+          "jobs": {
+            "Linux workspace gates": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137209458272,
+              "log": {
+                "bytes": 803228,
+                "sha256": "4aeab180e98e890ed374c5d3c524649d87e2c831775de2eb481fd367aa1b5b46"
+              }
+            }
+          }
+        }
+      ],
+      "45023049586": [
+        {
+          "attempt": 1,
+          "conclusion": "failure",
+          "jobs": {
+            "Linux workspace gates": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137209957604,
+              "log": {
+                "bytes": 785532,
+                "sha256": "24a668fc4b7deca3543bdb94269c288aed1b9595ee8aa9860247d402d92b3f85"
+              }
+            }
+          }
+        }
+      ],
+      "45024197031": [
+        {
+          "attempt": 1,
+          "conclusion": "failure",
+          "jobs": {
+            "Deterministic artifact size regression (Windows baseline)": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137213493482,
+              "log": {
+                "bytes": 58866,
+                "sha256": "e5ead3ff44a61e039d74e8ada1ef3c1d0b93ee83e829acce6bc1501cc3b7dede"
+              }
+            },
+            "Deterministic parser and artifact security regression": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137213493401,
+              "log": {
+                "bytes": 67315,
+                "sha256": "e2d2e98339b298ddc9eeb57a7fbdd6667ad89739d7374698293b07586c27e9a7"
+              }
+            },
+            "Native differential regression (Linux)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137213493367,
+              "log": {
+                "bytes": 366895,
+                "sha256": "ababe85501e44691a76321f42f00d4307156b987ce19fef3f239b84457664d4d"
+              }
+            },
+            "Native differential regression (Windows)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137213493340,
+              "log": {
+                "bytes": 342710,
+                "sha256": "23509fd22888d01896061d2bd7fc9054d9b05e94e621dcccb061b6f17dd7a9a5"
+              }
+            },
+            "Native differential regression (macOS)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137213493518,
+              "log": {
+                "bytes": 314359,
+                "sha256": "7e2d9469bcc43cd09f30b44512df00b6fb9cf6818802c30974c0931a973ee3c9"
+              }
+            },
+            "Rust workspace default tests (Linux)": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137213493143,
+              "log": {
+                "bytes": 135752,
+                "sha256": "dd5ac6964a9789095937ebd41d691bca81f2d914be35eb048be406d3c8c336f5"
+              }
+            }
+          }
+        }
+      ],
+      "45024198150": [
+        {
+          "attempt": 1,
+          "conclusion": "failure",
+          "jobs": {
+            "Linux workspace gates": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137213499548,
+              "log": {
+                "bytes": 778573,
+                "sha256": "8610b2ca9fec17409ef1c890268fc5cde7a4a65723ebac709d8e2f12d41dbed9"
+              }
+            }
+          }
+        }
+      ],
+      "45024200820": [
+        {
+          "attempt": 1,
+          "conclusion": "failure",
+          "jobs": {
+            "Linux workspace gates": {
+              "attempt": 1,
+              "conclusion": "failure",
+              "job": 137213504459,
+              "log": {
+                "bytes": 797594,
+                "sha256": "9452f185820c7695da18d5e2b111cd11f268d80b67a80022456f4d549e8268e7"
+              }
+            }
+          }
+        },
+        {
+          "attempt": 2,
+          "conclusion": "success",
+          "jobs": {
+            "Linux workspace gates": {
+              "attempt": 2,
+              "conclusion": "success",
+              "job": 137216398134,
+              "log": {
+                "bytes": 842053,
+                "sha256": "14fd801d19cc8b08fe9b6963bc70e2200e30f570c214052bb760a21b3b080f4c"
+              }
+            }
+          }
+        }
+      ],
+      "45024200879": [
+        {
+          "attempt": 1,
+          "conclusion": "success",
+          "jobs": {
+            "Deterministic artifact size regression (Windows baseline)": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137213504879,
+              "log": {
+                "bytes": 64090,
+                "sha256": "5538af88d32aca226256e791fd276c5c07d83f68b1cc2d031257638d2efa8f35"
+              }
+            },
+            "Deterministic parser and artifact security regression": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137213504647,
+              "log": {
+                "bytes": 72539,
+                "sha256": "b86d6a12c8a8d22ee9e7bf71c52dfeef7931dbb7e442b0803db11debcf8af614"
+              }
+            },
+            "Native differential regression (Linux)": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137213504808,
+              "log": {
+                "bytes": 417414,
+                "sha256": "b26e1511e9dee4ad710d9ddabc91b34280a12b5582f745c503ea90a2a6150628"
+              }
+            },
+            "Native differential regression (Windows)": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137213504877,
+              "log": {
+                "bytes": 375293,
+                "sha256": "be3763d04de7b500e6b10e71bb64c0eb2d947aa1676600f61e66007207bf2ec3"
+              }
+            },
+            "Native differential regression (macOS)": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137213504825,
+              "log": {
+                "bytes": 365644,
+                "sha256": "15def3e387f696377020a4fe07c784fb13a860052ceb4c4380b9e7fffe220fac"
+              }
+            },
+            "Rust workspace default tests (Linux)": {
+              "attempt": 1,
+              "conclusion": "success",
+              "job": 137213504960,
+              "log": {
+                "bytes": 599919,
+                "sha256": "5c6aad1bf39f29bb7e11aa0a323b106e541421f2f40b1023f3d708997746de7e"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "workspace": {
+      "attempt": 1,
+      "job": 137213504960,
+      "passed_failed_ignored": [
+        1760,
+        0,
+        56
+      ],
+      "targets": 192
+    }
+  },
+  "f10": {
+    "linux-native": {
+      "ci": {
+        "artifact": 14750741956,
+        "attempt": 1,
+        "conclusion": "success",
+        "job": 137179416348,
+        "run": 45013071077,
+        "sha256": "69e5c91000a6271f625226c182a089ef53a39802178802ac39b489f3428f91d7"
+      },
+      "failures": [],
+      "max_peak_bytes": 5292032,
+      "max_ratio": 2.092612228866584,
+      "max_seconds": 0.292106462,
+      "passed": true,
+      "records": 206,
+      "runtime": {
+        "bytes": 34143086,
+        "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+      }
+    },
+    "linux-vm": {
+      "failures": [],
+      "max_peak_bytes": 8978432,
+      "max_ratio": 2.0631294441535086,
+      "max_seconds": 2.742728832,
+      "passed": true,
+      "records": 103,
+      "runtime": {
+        "bytes": 34143188,
+        "sha256": "08b88569645eb45d7cc6fea793adbe91a459a174392a91d1b57497d22349ad89"
+      }
+    },
+    "macos-native": {
+      "ci": {
+        "artifact": 14751393156,
+        "attempt": 2,
+        "conclusion": "success",
+        "job": 137183764509,
+        "run": 45013071077,
+        "sha256": "48a1b824160aee7f9d2984ff0e03fa41aa577c9bd6e4ad36a484adae1212140d"
+      },
+      "failures": [],
+      "max_peak_bytes": 5357568,
+      "max_ratio": 2.965541453591585,
+      "max_seconds": 0.50339,
+      "passed": true,
+      "records": 206,
+      "runtime": {
+        "bytes": 25667552,
+        "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+      }
+    },
+    "windows-native": {
+      "failures": [],
+      "max_peak_bytes": 5963776,
+      "max_ratio": 2.181502644624399,
+      "max_seconds": 0.9503943,
+      "passed": true,
+      "records": 206,
+      "runtime": {
+        "bytes": 27483016,
+        "sha256": "fa493d79b129cf7fa600993605381830f6abeaab23ec0ea48c0a910554de0fff"
+      }
+    }
+  },
+  "f3": {
+    "linux-o0": {
+      "ci": {
+        "artifact": 14751146606,
+        "attempt": 1,
+        "conclusion": "success",
+        "job": 137179416448,
+        "run": 45013071077,
+        "sha256": "db45d36845214964c687ccea36d36204e4cf0e1c8e1934dbf4591b565b2ca170"
+      },
+      "failures": [],
+      "passed": true,
+      "processes": 915,
+      "records": 183,
+      "runtime": {
+        "bytes": 34143086,
+        "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+      }
+    },
+    "linux-o3": {
+      "ci": {
+        "artifact": 14750658070,
+        "attempt": 1,
+        "conclusion": "success",
+        "job": 137179416358,
+        "run": 45013071077,
+        "sha256": "bc1862b4e3ef182a61cb58acca8df163167275b6ec526b118e1560fcde04e8b1"
+      },
+      "failures": [],
+      "passed": true,
+      "processes": 915,
+      "records": 183,
+      "runtime": {
+        "bytes": 34143086,
+        "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+      }
+    },
+    "linux-vm": {
+      "ci": {
+        "artifact": 14751101943,
+        "attempt": 1,
+        "conclusion": "success",
+        "job": 137179416168,
+        "run": 45013071077,
+        "sha256": "e6daaf1e458afcf58c0919777e92630d8a8a8ab1f8f3d3166e07ce068f26aa50"
+      },
+      "failures": [],
+      "passed": true,
+      "processes": 915,
+      "records": 183,
+      "runtime": {
+        "bytes": 34143086,
+        "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+      }
+    },
+    "macos-o0": {
+      "ci": {
+        "artifact": 14751315992,
+        "attempt": 1,
+        "conclusion": "success",
+        "job": 137179416445,
+        "run": 45013071077,
+        "sha256": "9e12fdffa638cfd61e92f5716f3414f597549d9bb354143c84587bc0d2914f43"
+      },
+      "failures": [],
+      "passed": true,
+      "processes": 915,
+      "records": 183,
+      "runtime": {
+        "bytes": 25667552,
+        "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+      }
+    },
+    "macos-o3": {
+      "ci": {
+        "artifact": 14751695403,
+        "attempt": 2,
+        "conclusion": "success",
+        "job": 137183764528,
+        "run": 45013071077,
+        "sha256": "12367658218b8b1d6b2d6cf7d06a7000420a500c3f7d3304d900d1579232ed70"
+      },
+      "failures": [],
+      "passed": true,
+      "processes": 915,
+      "records": 183,
+      "runtime": {
+        "bytes": 25667552,
+        "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+      }
+    },
+    "macos-vm": {
+      "ci": {
+        "artifact": 14751114706,
+        "attempt": 2,
+        "conclusion": "success",
+        "job": 137183764500,
+        "run": 45013071077,
+        "sha256": "1d0126d33cf126677410a1e9bf49e4c267a0f486e3ae25dc2fdd0f51c87e1db0"
+      },
+      "failures": [],
+      "passed": true,
+      "processes": 915,
+      "records": 183,
+      "runtime": {
+        "bytes": 25667552,
+        "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+      }
+    },
+    "windows-o0": {
+      "ci": {
+        "artifact": 14751067163,
+        "attempt": 1,
+        "conclusion": "success",
+        "job": 137179416571,
+        "run": 45013071077,
+        "sha256": "04d7078bc2bed667d7fdbce847b5d5eecfa81a4479caa086a7cc0fb12c7bdc00"
+      },
+      "failures": [],
+      "passed": true,
+      "processes": 915,
+      "records": 183,
+      "runtime": {
+        "bytes": 27483636,
+        "sha256": "f6f82d845940ac8060e77a7a366d68f476e03000df8bbf2e8600eb3503a486e5"
+      }
+    },
+    "windows-o3": {
+      "ci": {
+        "artifact": 14751271895,
+        "attempt": 1,
+        "conclusion": "success",
+        "job": 137179416432,
+        "run": 45013071077,
+        "sha256": "47af68f52b5ec71002dd50822a0b268ab03189f0b8c6c0963f794bc9c0435b2c"
+      },
+      "failures": [],
+      "passed": true,
+      "processes": 915,
+      "records": 183,
+      "runtime": {
+        "bytes": 27483636,
+        "sha256": "f6f82d845940ac8060e77a7a366d68f476e03000df8bbf2e8600eb3503a486e5"
+      }
+    },
+    "windows-vm": {
+      "ci": {
+        "artifact": 14751231849,
+        "attempt": 1,
+        "conclusion": "success",
+        "job": 137179416306,
+        "run": 45013071077,
+        "sha256": "519bb5ef1ed4c263e6d5990a66dcb012b082043b4bdc13016349d1eb1d401c75"
+      },
+      "failures": [],
+      "passed": true,
+      "processes": 915,
+      "records": 183,
+      "runtime": {
+        "bytes": 27483636,
+        "sha256": "f6f82d845940ac8060e77a7a366d68f476e03000df8bbf2e8600eb3503a486e5"
+      }
+    }
+  },
+  "first_attempt_failures": [
+    {
+      "backend": "native",
+      "ci": {
+        "artifact": 14750202991,
+        "attempt": 1,
+        "conclusion": "failure",
+        "job": 137179416365,
+        "run": 45013071077,
+        "sha256": "dbb931344f7111ffc920b031a3936ce039d42db0e06235896627f139a4ed8062"
+      },
+      "failures": [
+        {
+          "case": "statistics.sum",
+          "limit": 3,
+          "optimization": 0,
+          "ratio": 3.2548667669822335,
+          "scale": 8192
+        }
+      ],
+      "kind": "f10",
+      "max_peak_bytes": 32768,
+      "max_ratio": 3.2548667669822335,
+      "max_seconds": 0.017355000000000002,
+      "passed": false,
+      "records": 15,
+      "runtime": {
+        "bytes": 25667552,
+        "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+      }
+    },
+    {
+      "backend": "vm",
+      "ci": {
+        "artifact": 14750827874,
+        "attempt": 1,
+        "conclusion": "failure",
+        "job": 137179416382,
+        "run": 45013071077,
+        "sha256": "1947d5f8434ef46f78d79ccddf0a824947b641c9d348207bbc3575fd372c040e"
+      },
+      "failures": [
+        {
+          "case": "lfloat.to-integer",
+          "limit": 3,
+          "profile": "2n",
+          "ratio": 3.1218358190945947
+        }
+      ],
+      "kind": "f3",
+      "passed": false,
+      "processes": 915,
+      "records": 183,
+      "runtime": {
+        "bytes": 25667552,
+        "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+      }
+    },
+    {
+      "backend": "o3",
+      "ci": {
+        "artifact": 14750878014,
+        "attempt": 1,
+        "conclusion": "failure",
+        "job": 137179416403,
+        "run": 45013071077,
+        "sha256": "819e19a7c9c0b78eddfa14977f2745f3b3ab80738b7edb67373564b9b12bd2aa"
+      },
+      "failures": [
+        {
+          "case": "lint.power",
+          "limit": 5,
+          "profile": "2n",
+          "ratio": 5.045230570046837
+        }
+      ],
+      "kind": "f3",
+      "passed": false,
+      "processes": 915,
+      "records": 183,
+      "runtime": {
+        "bytes": 25667552,
+        "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+      }
+    }
+  ],
+  "gates_archive": {
+    "bytes": 2075425,
+    "sha256": "b904ce2e0a1d45bb579878e5da65180366963ed79352eb891d5e6c464e7be5a9"
+  },
+  "guards": {
+    "actual": 4,
+    "derived": 24,
+    "passed": 28
+  },
+  "handoff": {
+    "next": "20O-B3",
+    "plan": "docs/DevDocs/20o-b3-host-libraries-plan.md",
+    "started": false
+  },
+  "history": {
+    "a0_closeout_passed": true,
+    "a0_original_passed": false,
+    "b1_721_historical": true,
+    "b1_originals_missing": true,
+    "b5": {
+      "b5_historical_matrix": {
+        "code_commit": "5864cbde627f727483ab676c6f4bc1bf0a7819bb",
+        "codegen_version": 21,
+        "runtime_abi": "1.19",
+        "source": "matrix"
+      },
+      "current_default_workspace": {
+        "receipt": "workspace-final.json",
+        "source": "url",
+        "source_commit": "67319d61c18b2f02a57f974883c57600f70c724d"
+      },
+      "generator_21_to_22": {
+        "cache_rows": 12,
+        "code_commit": "cfab977105273dcfdfc1831332b3a804ccc217d9",
+        "metadata_validation_cases": 4,
+        "source": "fix"
+      },
+      "url_optimization": {
+        "code_commit": "67319d61c18b2f02a57f974883c57600f70c724d",
+        "resource_failed": 0,
+        "resource_passed": 18,
+        "source": "url",
+        "unicode_test_seconds": 5.65
+      }
+    },
+    "independent": [
+      "B1",
+      "22C",
+      "22D",
+      "19",
+      "11",
+      "22"
+    ]
+  },
+  "inherited": {
+    "22d_open": true,
+    "b6_1_stage_passed": false,
+    "b6_3_final_tree_covered": false,
+    "b6_4_passed": false,
+    "b6_accepted": false,
+    "followup_passed": false,
+    "original_passed": false,
+    "windows_coff_verified": false
+  },
+  "language": {
+    "linux": {
+      "ci": {
+        "artifact": 14752137593,
+        "attempt": 1,
+        "conclusion": "success",
+        "job": 137189023197,
+        "run": 45016234630,
+        "sha256": "a1e7a5034027237201587d88a09c97e5e08344a546fb22d75a3e5ef7bbb44a04"
+      },
+      "runtime": {
+        "bytes": 34143086,
+        "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+      }
+    },
+    "macos-b1": {
+      "ci": {
+        "artifact": 14752207360,
+        "attempt": 1,
+        "conclusion": "success",
+        "job": 137189023195,
+        "run": 45016234630,
+        "sha256": "529d6f5407e8a64f7023d4c44a902ff907ab3d8fd2552e753381d92dc1f2d2e3"
+      },
+      "runtime": {
+        "bytes": 25667552,
+        "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+      }
+    },
+    "macos-numeric": {
+      "ci": {
+        "artifact": 14752047523,
+        "attempt": 1,
+        "conclusion": "success",
+        "job": 137189022992,
+        "run": 45016234630,
+        "sha256": "456b0a1b8fc84a6890c4e8cb6bc8328b3e9f509e191b6b117bbeb71b082fc296"
+      },
+      "runtime": {
+        "bytes": 25667552,
+        "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+      }
+    },
+    "windows": {
+      "runtime": {
+        "bytes": 27483016,
+        "sha256": "fa493d79b129cf7fa600993605381830f6abeaab23ec0ea48c0a910554de0fff"
+      }
+    }
+  },
+  "public_scope": {
+    "cmath_wrappers": 15,
+    "generator": 22,
+    "lfloat_divide": true,
+    "public_native_platforms": 3,
+    "runtime_abi": "1.19",
+    "stdlib_interface": 1,
+    "windows_product_coff_verified": false,
+    "windows_same_link_candidates": 10
+  },
+  "source": {
+    "commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+    "files": 1222,
+    "locks": {
+      "core/rust/Cargo.lock": {
+        "bytes": 19599,
+        "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+      },
+      "tests/benchmarks/Cargo.lock": {
+        "bytes": 19203,
+        "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+      }
+    },
+    "tree": "80be41eefc3983001cd3968db0ccceee541f698d",
+    "tree_list_sha256": "2d6494d5d7e27fb000e7f23719ce5bd7d816f147aac7b828d31cb52be7b78e3f"
+  },
+  "status": {
+    "changed_paths": [
+      "core/rust/crates/xiao-driver/tests/20o_b2_a_support/mod.rs",
+      "core/rust/crates/xiao-driver/tests/20o_b2_b3_wrapper.rs",
+      "core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_library.rs",
+      "core/rust/crates/xiao-driver/tests/support/b2_divide.rs",
+      "core/rust/crates/xiao-driver/tests/support/b4_cmath_library_native.rs",
+      "docs/UseDocs/language/basics/p1-expressions/operators.md",
+      "docs/UseDocs/language/basics/types/conversions.md",
+      "docs/UseDocs/library/README.md",
+      "docs/UseDocs/library/cmath.md",
+      "docs/module-registry.json",
+      "stdlib/README.md",
+      "stdlib/cmath.md",
+      "tests/fixtures/docs/numeric/cmath-tutorial.stdout",
+      "tests/fixtures/docs/numeric/cmath-tutorial.xiao"
+    ],
+    "cmath": "verified",
+    "commit": "7753fd69c0158a9a61a76ddc79cd65296df67bbc",
+    "docs_tree_sha256": "ba3c6830b2d918f3f23ed2740243ada87cff4437edcaaa7683baafae33e6744c",
+    "examples": {
+      "tests/fixtures/docs/numeric/cmath-tutorial.stdout": {
+        "bytes": 54,
+        "sha256": "6be8ac2bd1bafd8558d842428929960d39c455efe92e18c094749699d0b03651"
+      },
+      "tests/fixtures/docs/numeric/cmath-tutorial.xiao": {
+        "bytes": 895,
+        "sha256": "591e276d43237b420caa6c558078217f3c64d11ada560e2f824066379ceb8ed4"
+      }
+    },
+    "files": 1224,
+    "locks": {
+      "core/rust/Cargo.lock": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381",
+      "tests/benchmarks/Cargo.lock": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+    },
+    "tree": "c858b72e0619afd8f0f8b167a5ba9b01d89f507c",
+    "tree_list_sha256": "b9df1b20965b197c58a41e19666f3d17aecf76580d9a44feffdca42257265fca"
+  }
+}
