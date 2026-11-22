@@ -1,6 +1,6 @@
 # 20O-B2-B6. cmath/lfloat 资源、错误与三平台性能规划
 
-> **B6 当前状态（2026-11-20）**　B6-5 已完成内部收口，`b6_5_passed=true`、`b6_accepted=false`，B7 已完成内部收口，B2-C 入口就绪、尚未开工。[收口证据](assets/20o-b2-b/entry-20261120-b6-5/README.md)
+> **B6 当前状态（2026-11-20）**　B6-5 已完成内部收口，`b6_5_passed=true`、`b6_accepted=false`，B7 已完成内部收口；B2-C 已完成公共收口，B3-0 待开工。[收口证据](assets/20o-b2-b/entry-20261120-b6-5/README.md)
 > B6-1 为 `restricted/stage_passed=false`，三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 测量固定在 `79ea0375`，B6-3 边界功能固定在 `58176ff5`。B6-4 受限交接，`b6_4_passed=false`、`original_passed=false`、`followup_passed=false`、`windows_coff_verified=false`、`22d_open=true`。[B6-4 交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json)
 
 > B5固定1.19/21矩阵和[21→22增量](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)保持只读历史身份；当前产品1.19/22。B6每轮均绑定自己的源码、Runtime和工具身份。B1原件缺口、22C/22D与19/11/22债务独立保留。
