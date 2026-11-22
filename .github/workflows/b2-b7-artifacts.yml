@@ -1,0 +1,49 @@
+name: Xiao B7 macOS artifact receipts
+
+on:
+  push:
+    branches: [codex/b7-artifacts-runner]
+    paths: [".github/workflows/b2-b7-artifacts.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  artifacts:
+    name: B7 macOS executable identities
+    runs-on: macos-15
+    timeout-minutes: 20
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      B7_PRODUCT: e79fab3cdd3ea9d3a7eff31f529dec2498434114
+    steps:
+      - name: Checkout evidence recipe
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 3
+          persist-credentials: false
+      - name: Install Rust 1.96.0
+        run: rustup toolchain install 1.96.0 --profile minimal --component clippy,rustfmt
+      - name: Install LLVM 21
+        run: brew install llvm@21
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.1
+      - name: Build and observe retained B1 artifacts
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.cargo/bin:$PATH"
+          test "$(git rev-parse HEAD~2)" = "$B7_PRODUCT"
+          task="$RUNNER_TEMP/b7-retained"
+          recipe="docs/DevDocs/assets/20o-b2-b/entry-20261122-b7"
+          python3 -B "$recipe/run.py" "$task" --llvm "$(brew --prefix llvm@21)/bin" --suite b1
+          python3 -B "$recipe/native-artifacts.py" "$task" "$task/evidence/native"
+          python3 -B "$recipe/portable.py" "$task" "$task/evidence/portable"
+      - name: Upload retained artifact receipts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: b7-macos-retained-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/b7-retained/evidence
+          if-no-files-found: error
