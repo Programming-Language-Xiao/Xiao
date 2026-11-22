@@ -1,0 +1,67 @@
+name: Xiao B2-C final language and candidates
+
+on:
+  push:
+    branches: [codex/b2-c-candidate-runner]
+    paths: [".github/workflows/b2-c-candidates.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  language:
+    name: B2-C ${{ matrix.platform }} ${{ matrix.suite }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {platform: linux, runner: ubuntu-24.04, suite: regression}
+          - {platform: macos, runner: macos-15, suite: b1}
+          - {platform: macos, runner: macos-15, suite: numeric}
+          - {platform: macos, runner: macos-15, suite: candidates}
+    env:
+      B2C_SUITE: ${{ matrix.suite }}
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    steps:
+      - name: Checkout evidence recipe
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install Rust 1.96.0
+        run: rustup toolchain install 1.96.0 --profile minimal --component clippy,rustfmt
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.1
+      - name: Install Linux LLVM
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang llvm
+      - name: Install macOS LLVM
+        if: runner.os == 'macOS'
+        run: brew install llvm@21
+      - name: Run fixed language or candidate checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          llvm=/usr/bin
+          if [ "$RUNNER_OS" = macOS ]; then
+            llvm="$(brew --prefix llvm@21)/bin"
+          fi
+          if [ "$B2C_SUITE" = candidates ]; then
+            python3 -B "docs/DevDocs/assets/20o-b2-c/entry-20261122-b2-c/candidate.py" --task "$RUNNER_TEMP/b2-c" --llvm "$llvm"
+          else
+            python3 -B docs/DevDocs/assets/20o-b2-b/entry-20261122-b7/run.py \
+              "$RUNNER_TEMP/b2-c" --llvm "$llvm" --suite "$B2C_SUITE"
+          fi
+      - name: Upload command receipts and tested candidates
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: b2-c-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/b2-c/evidence/
+          if-no-files-found: error
