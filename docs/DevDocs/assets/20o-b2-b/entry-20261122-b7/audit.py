@@ -67,7 +67,8 @@ def product_identity():
         ("xiao-codegen-llvm", b"CODEGEN_VERSION: u32 = 22;"),
         ("xiao-standard-library", b"STDLIB_INTERFACE_VERSION: u32 = 1;"),
     )
-    require(all(marker in blob(PRODUCT, f"{crate}/src/lib.rs") for crate, marker in versions), "ABI 或生成器身份不符")
+    require(all(marker in blob(PRODUCT, f"{crates}/{crate}/src/lib.rs") for crate, marker in versions),
+            "ABI 或生成器身份不符")
     library_sources = [f"stdlib/{name}.xiao" for name in LIBRARIES]
     require(not git("diff", "--name-only", "106b99c7", PRODUCT, "--", *library_sources),
             "B1 七库源码发生变化")
