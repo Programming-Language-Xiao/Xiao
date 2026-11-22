@@ -1,0 +1,17 @@
+#!/usr/bin/python3
+import json
+import os
+from pathlib import Path
+import runpy
+import subprocess
+import sys
+
+recipe = Path.cwd() / "tools/gates/controlled-cargo.py"
+args, env, _, _, _ = runpy.run_path(str(recipe))["prepare"](sys.argv[1:], os.environ)
+argv = [env["XIAO_B7_CARGO"], *args]
+with subprocess.Popen(argv, env=env) as child:
+    row = {"argv": argv, "pid": child.pid, "exit": child.wait(), "cwd": os.getcwd(),
+           "parent_pid": os.getppid(), "step": env["XIAO_B7_DOC_STEP"]}
+with open(env["XIAO_B7_CARGO_LOG"], "a", encoding="utf-8") as output:
+    output.write(json.dumps(row) + "\n")
+raise SystemExit(row["exit"])

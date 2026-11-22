@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "/home/xiaoczx/.bun/bin/bun",
+    "run",
+    "check:lock"
+  ],
+  "cwd": "/tmp/xiao-b7-final-repo",
+  "exit": 0,
+  "finished_utc": "2026-11-22T10:01:37.429600+00:00",
+  "outputs": {
+    "stderr": {
+      "bytes": 7944,
+      "sha256": "a71d71518439399af1c570ddccab7a624dcd05089f8f44120193e3d9315651da"
+    },
+    "stdout": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "pid": 1672,
+  "started_utc": "2026-11-22T10:00:52.258417+00:00"
+}
