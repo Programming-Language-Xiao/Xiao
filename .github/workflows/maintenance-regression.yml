@@ -271,6 +271,7 @@ jobs:
           $env:XIAO_RUNTIME_LIBRARY = Join-Path $pwd 'core/rust/target/release/xiao_runtime.lib'
           $env:XIAO_DIAGNOSTICS_PATH = Join-Path $pwd 'core/rust/target/debug/xiao-diagnostics.exe'
           $env:XIAO_DIAGNOSTICS_HOLD_MS = '0'
+          $env:XIAO_FLOAT_EQUALITY_OUTPUT = Join-Path $env:RUNNER_TEMP "float-equality-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT-$env:RUNNER_OS"
           foreach ($artifact in @($env:XIAO_RUNTIME_LIBRARY, $env:XIAO_DIAGNOSTICS_PATH)) {
             if (-not (Test-Path $artifact)) { throw "Required artifact missing: $artifact" }
           }
@@ -363,6 +364,7 @@ jobs:
           export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
           export XIAO_DIAGNOSTICS_PATH="$PWD/core/rust/target/debug/xiao-diagnostics"
           export XIAO_DIAGNOSTICS_HOLD_MS=0
+          export XIAO_FLOAT_EQUALITY_OUTPUT="$RUNNER_TEMP/float-equality-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${RUNNER_OS}"
           test -f "$XIAO_RUNTIME_LIBRARY"
           test -x "$XIAO_DIAGNOSTICS_PATH"
           if [ "$XIAO_B2_A_PERF" = '1' ]; then
@@ -434,6 +436,7 @@ jobs:
           export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
           export XIAO_DIAGNOSTICS_PATH="$PWD/core/rust/target/debug/xiao-diagnostics"
           export XIAO_DIAGNOSTICS_HOLD_MS=0
+          export XIAO_FLOAT_EQUALITY_OUTPUT="$RUNNER_TEMP/float-equality-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${RUNNER_OS}"
           test -f "$XIAO_RUNTIME_LIBRARY"
           test -x "$XIAO_DIAGNOSTICS_PATH"
           if [ "$XIAO_B2_A_PERF" = '1' ]; then

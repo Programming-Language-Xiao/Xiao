@@ -103,6 +103,7 @@ fn b6_numeric_and_cmath_errors_are_catchable_and_atomic_on_both_aliases() {
 
 #[cfg(target_os = "linux")]
 #[test]
+#[ignore = "需要 XIAO_CLANG、XIAO_LLVM_AS、XIAO_RUNTIME_LIBRARY；诊断入口"]
 /// 诊断产物组件误报时，绕过FrontendNativeDriver二次门禁核对实际语料/符号/执行结果。
 fn b6_diagnoses_linux_native_cmath_runtime_component_observation() {
     use std::path::PathBuf;
