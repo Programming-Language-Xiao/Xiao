@@ -29,7 +29,7 @@ true
 X06-RUNTIME-012
 ```
 
-示例只输出当前 UTC 字符串的长度，并比较两次单调钟读数。后续精确目标使用处于格式域内的时钟输入，逐字核对输出和退出码 0。[源码夹具](../../../../../../tests/fixtures/docs/time/b3-0b-candidate.xiao) · [独立黄金](../../../../../../tests/fixtures/docs/time/b3-0b-candidate.stdout)
+示例只输出当前 UTC 字符串的长度，并比较两次单调钟读数。后续精确目标使用处于格式域内的时钟输入，逐字核对输出和退出码 0。[源码夹具](../candidates/tests/fixtures/docs/time/b3-0b-candidate.xiao) · [独立黄金](../candidates/tests/fixtures/docs/time/b3-0b-candidate.stdout)
 
 ## 选择单位与处理错误
 

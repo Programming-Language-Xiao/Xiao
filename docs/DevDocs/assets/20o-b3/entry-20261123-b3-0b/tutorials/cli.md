@@ -34,7 +34,7 @@ group
 group
 ```
 
-第一组是首个 `--` 前的值，第二组是其后的值。没有分隔符时第二组为空。每次调用产生两个新数组，保留组内顺序和空项。后续精确目标逐字核对输出和退出码 0。[源码夹具](../../../../../../tests/fixtures/docs/cli/b3-0b-candidate.xiao) · [独立黄金](../../../../../../tests/fixtures/docs/cli/b3-0b-candidate.stdout)
+第一组是首个 `--` 前的值，第二组是其后的值。没有分隔符时第二组为空。每次调用产生两个新数组，保留组内顺序和空项。后续精确目标逐字核对输出和退出码 0。[源码夹具](../candidates/tests/fixtures/docs/cli/b3-0b-candidate.xiao) · [独立黄金](../candidates/tests/fixtures/docs/cli/b3-0b-candidate.stdout)
 
 ## 资源与恢复
 

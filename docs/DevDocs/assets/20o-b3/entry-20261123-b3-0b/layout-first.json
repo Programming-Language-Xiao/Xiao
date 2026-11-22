@@ -1,0 +1,193 @@
+{
+  "checks": [
+    {
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "check:docs"
+      ],
+      "exit": 0,
+      "finished_utc": "2026-11-22T18:45:26.720062+00:00",
+      "pid": 57460,
+      "started_utc": "2026-11-22T18:45:20.277258+00:00",
+      "stderr": "$ bun tools/repo-check/src/cli.ts docs\n",
+      "stdout": "通过：未发现 A0 规则问题。\n"
+    },
+    {
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "check:usedocs"
+      ],
+      "exit": 0,
+      "finished_utc": "2026-11-22T18:45:29.096271+00:00",
+      "pid": 40944,
+      "started_utc": "2026-11-22T18:45:26.720062+00:00",
+      "stderr": "$ bun tools/repo-check/src/cli.ts usedocs\n",
+      "stdout": "通过：未发现 A0 规则问题。\n"
+    },
+    {
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "check:layout"
+      ],
+      "exit": 1,
+      "finished_utc": "2026-11-22T18:45:40.543795+00:00",
+      "pid": 72540,
+      "started_utc": "2026-11-22T18:45:29.096271+00:00",
+      "stderr": "$ bun tools/repo-check/src/cli.ts layout\nerror: script \"check:layout\" exited with code 1\n",
+      "stdout": "[error] A0-LAYOUT-001 tests/fixtures/docs/args tests/fixtures/docs/args\n  代码目录缺少 README.md。\n  修复：补齐目录 README、修复路径或同步 repository.manifest.json。\n[error] A0-LAYOUT-001 tests/fixtures/docs/cli tests/fixtures/docs/cli\n  代码目录缺少 README.md。\n  修复：补齐目录 README、修复路径或同步 repository.manifest.json。\n[error] A0-LAYOUT-001 tests/fixtures/docs/time tests/fixtures/docs/time\n  代码目录缺少 README.md。\n  修复：补齐目录 README、修复路径或同步 repository.manifest.json。\n[error] A0-LAYOUT-002 tests/fixtures/docs/args tests/fixtures/docs/args\n  发现的源码目录未在 module-registry.json 的 code/tests 路径中登记。\n  修复：补齐目录 README、修复路径或同步 repository.manifest.json。\n[error] A0-LAYOUT-002 tests/fixtures/docs/cli tests/fixtures/docs/cli\n  发现的源码目录未在 module-registry.json 的 code/tests 路径中登记。\n  修复：补齐目录 README、修复路径或同步 repository.manifest.json。\n[error] A0-LAYOUT-002 tests/fixtures/docs/time tests/fixtures/docs/time\n  发现的源码目录未在 module-registry.json 的 code/tests 路径中登记。\n  修复：补齐目录 README、修复路径或同步 repository.manifest.json。\n"
+    }
+  ],
+  "contract": "06e20efd08fec3c8203112b1adf2945d06f7ea19",
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "markdown_after": {
+    "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": {
+      "blob": "46d25afe36c3d600ee9bf5aecf36b7e0324026da",
+      "text": {
+        "bytes": 15125,
+        "sha256": "57ada4bb339e91acd00617e660a6e6f3962263ebcf51c8170e247b469ace6722"
+      }
+    },
+    "docs/DevDocs/20o-b3-0b-time-args-cli-plan.md": {
+      "blob": "cf9bfd03b2fa7a878a186d02663fa361a31c7950",
+      "text": {
+        "bytes": 14248,
+        "sha256": "4972ace34c5e52ba3a1403b2d690ae779d912d77ff8ec1afa55150d989af8444"
+      }
+    },
+    "docs/DevDocs/20o-b3-host-libraries-plan.md": {
+      "blob": "5b65b1ddc7fcb7b6311610d02c297d6680e17b67",
+      "text": {
+        "bytes": 13753,
+        "sha256": "e420e65f6481480d8633ded5946bb7d5f5dfb3234d6ad53e2f65951e360acb46"
+      }
+    },
+    "docs/DevDocs/20o-official-library-program.md": {
+      "blob": "459f0fac9622375d503c25ee0c0d445d05cedfc1",
+      "text": {
+        "bytes": 33365,
+        "sha256": "fe2fb9b313923cc54ba4c3c40d92aa457ae5ad396117a030534b2c8f35161d18"
+      }
+    },
+    "docs/DevDocs/README.md": {
+      "blob": "d7fac2856e1b5364e367ff0dd8f7989b78293e42",
+      "text": {
+        "bytes": 152907,
+        "sha256": "3ed10ac88c8e20e0db074efa139615fb7cfde1d8cece3a32839cf581b1e3e238"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/README.md": {
+      "blob": "a55a25a84575d7e5626c8395ef0be773bfe0902f",
+      "text": {
+        "bytes": 3357,
+        "sha256": "b8dffa5e40edb0ff82cf8a87e903650c5abaf37f3f75413cd5d71ffcea14f39d"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/contract-draft.md": {
+      "blob": "bcb3d8f748419601b9d7d04050d70287bc5deb4f",
+      "text": {
+        "bytes": 10627,
+        "sha256": "216c765131049aecd235ad2ba47fd014ba52366a1ac94fc29634e85de9f05513"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/args.md": {
+      "blob": "31a0603e75f022d2ecc480cc705093d6fa1a0533",
+      "text": {
+        "bytes": 1921,
+        "sha256": "0983ec186fc1fcf5ec649aac13c0c11f749b822cf6da98d90a98fa223d18456a"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/cli.md": {
+      "blob": "bcf7e555c88b2d4e54642973910e36ac31629a4e",
+      "text": {
+        "bytes": 1595,
+        "sha256": "34297ba95cc667ad6073535eda8b2225fe555c8888eebea1229f8a4dc2ac0724"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/time.md": {
+      "blob": "409d7ae3c97d03d11b0ff6a4f0ee0c08fa9cefa6",
+      "text": {
+        "bytes": 2125,
+        "sha256": "843e88f571b096cd79f34f03ac0fcbf7e14366e04c40a3073498c70c7ef8bb5c"
+      }
+    }
+  },
+  "markdown_before": {
+    "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": {
+      "blob": "46d25afe36c3d600ee9bf5aecf36b7e0324026da",
+      "text": {
+        "bytes": 15125,
+        "sha256": "57ada4bb339e91acd00617e660a6e6f3962263ebcf51c8170e247b469ace6722"
+      }
+    },
+    "docs/DevDocs/20o-b3-0b-time-args-cli-plan.md": {
+      "blob": "cf9bfd03b2fa7a878a186d02663fa361a31c7950",
+      "text": {
+        "bytes": 14248,
+        "sha256": "4972ace34c5e52ba3a1403b2d690ae779d912d77ff8ec1afa55150d989af8444"
+      }
+    },
+    "docs/DevDocs/20o-b3-host-libraries-plan.md": {
+      "blob": "5b65b1ddc7fcb7b6311610d02c297d6680e17b67",
+      "text": {
+        "bytes": 13753,
+        "sha256": "e420e65f6481480d8633ded5946bb7d5f5dfb3234d6ad53e2f65951e360acb46"
+      }
+    },
+    "docs/DevDocs/20o-official-library-program.md": {
+      "blob": "459f0fac9622375d503c25ee0c0d445d05cedfc1",
+      "text": {
+        "bytes": 33365,
+        "sha256": "fe2fb9b313923cc54ba4c3c40d92aa457ae5ad396117a030534b2c8f35161d18"
+      }
+    },
+    "docs/DevDocs/README.md": {
+      "blob": "d7fac2856e1b5364e367ff0dd8f7989b78293e42",
+      "text": {
+        "bytes": 152907,
+        "sha256": "3ed10ac88c8e20e0db074efa139615fb7cfde1d8cece3a32839cf581b1e3e238"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/README.md": {
+      "blob": "a55a25a84575d7e5626c8395ef0be773bfe0902f",
+      "text": {
+        "bytes": 3357,
+        "sha256": "b8dffa5e40edb0ff82cf8a87e903650c5abaf37f3f75413cd5d71ffcea14f39d"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/contract-draft.md": {
+      "blob": "bcb3d8f748419601b9d7d04050d70287bc5deb4f",
+      "text": {
+        "bytes": 10627,
+        "sha256": "216c765131049aecd235ad2ba47fd014ba52366a1ac94fc29634e85de9f05513"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/args.md": {
+      "blob": "31a0603e75f022d2ecc480cc705093d6fa1a0533",
+      "text": {
+        "bytes": 1921,
+        "sha256": "0983ec186fc1fcf5ec649aac13c0c11f749b822cf6da98d90a98fa223d18456a"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/cli.md": {
+      "blob": "bcf7e555c88b2d4e54642973910e36ac31629a4e",
+      "text": {
+        "bytes": 1595,
+        "sha256": "34297ba95cc667ad6073535eda8b2225fe555c8888eebea1229f8a4dc2ac0724"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/time.md": {
+      "blob": "409d7ae3c97d03d11b0ff6a4f0ee0c08fa9cefa6",
+      "text": {
+        "bytes": 2125,
+        "sha256": "843e88f571b096cd79f34f03ac0fcbf7e14366e04c40a3073498c70c7ef8bb5c"
+      }
+    }
+  },
+  "tool": {
+    "bytes": 88825944,
+    "sha256": "627d2e4775c24bdedee2cd7ccc18dcadae061e5345274ab6e3c4c797927bfb8f"
+  }
+}

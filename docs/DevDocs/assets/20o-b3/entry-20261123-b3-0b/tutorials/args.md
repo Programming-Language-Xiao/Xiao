@@ -25,7 +25,7 @@ program=demo.xiao
 [again]
 ```
 
-示例改动第一次返回的数组，再读取快照。第二次读取保留原顺序、空项和重复值。后续在 VM、原生 O0/O3 逐字核对输出和退出码 0。[源码夹具](../../../../../../tests/fixtures/docs/args/b3-0b-candidate.xiao) · [运行输入](../../../../../../tests/fixtures/docs/args/b3-0b-candidate.input.json) · [独立黄金](../../../../../../tests/fixtures/docs/args/b3-0b-candidate.stdout)
+示例改动第一次返回的数组，再读取快照。第二次读取保留原顺序、空项和重复值。后续在 VM、原生 O0/O3 逐字核对输出和退出码 0。[源码夹具](../candidates/tests/fixtures/docs/args/b3-0b-candidate.xiao) · [运行输入](../candidates/tests/fixtures/docs/args/b3-0b-candidate.input.json) · [独立黄金](../candidates/tests/fixtures/docs/args/b3-0b-candidate.stdout)
 
 ## 获取程序名与参数
 
