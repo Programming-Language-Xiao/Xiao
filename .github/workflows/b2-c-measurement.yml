@@ -1,0 +1,115 @@
+name: Xiao B2-C fixed-product measurements
+
+on:
+  push:
+    branches: [codex/b2-c-perf-runner]
+    paths: [".github/workflows/b2-c-measurement.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    name: B2-C ${{ matrix.platform }} ${{ matrix.kind }} ${{ matrix.backend }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: ${{ matrix.kind == 'f10' && 60 || 20 }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {platform: linux, runner: ubuntu-24.04, kind: f10, backend: native}
+          - {platform: macos, runner: macos-15, kind: f10, backend: native}
+          - {platform: windows, runner: windows-2025, kind: f3, backend: vm}
+          - {platform: windows, runner: windows-2025, kind: f3, backend: o0}
+          - {platform: windows, runner: windows-2025, kind: f3, backend: o3}
+          - {platform: linux, runner: ubuntu-24.04, kind: f3, backend: vm}
+          - {platform: linux, runner: ubuntu-24.04, kind: f3, backend: o0}
+          - {platform: linux, runner: ubuntu-24.04, kind: f3, backend: o3}
+          - {platform: macos, runner: macos-15, kind: f3, backend: vm}
+          - {platform: macos, runner: macos-15, kind: f3, backend: o0}
+          - {platform: macos, runner: macos-15, kind: f3, backend: o3}
+    env:
+      B2C_KIND: ${{ matrix.kind }}
+      B2C_BACKEND: ${{ matrix.backend }}
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    steps:
+      - name: Checkout evidence recipe
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install Rust 1.96.0
+        run: rustup toolchain install 1.96.0 --profile minimal --component clippy,rustfmt
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.1
+      - name: Install Linux LLVM
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang llvm
+      - name: Install macOS LLVM
+        if: runner.os == 'macOS'
+        run: brew install llvm@21
+      - name: Install Windows LLVM
+        if: runner.os == 'Windows'
+        id: msys2
+        uses: msys2/setup-msys2@3c51bf698df1e37b2261f53cb67797b97761185c # v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: mingw-w64-ucrt-x86_64-clang mingw-w64-ucrt-x86_64-llvm
+      - name: Measure Unix fixed product
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          llvm="$(dirname "$(command -v clang)")"
+          if [ "$RUNNER_OS" = macOS ]; then
+            llvm="$(brew --prefix llvm@21)/bin"
+          else
+            llvm=/usr/bin
+          fi
+          python3 -B "docs/DevDocs/assets/20o-b2-c/entry-20261122-b2-c/measure.py" \
+            --task "$RUNNER_TEMP/b2-c" --llvm "$llvm" --kind "$B2C_KIND" --backend "$B2C_BACKEND"
+      - name: Measure Windows fixed product
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          XIAO_LLVM_ROOT: ${{ steps.msys2.outputs.msys2-location }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+          $installation = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath | Select-Object -First 1
+          if (-not $installation) { throw 'MSVC installation missing' }
+          $vcvars = Join-Path $installation 'VC/Auxiliary/Build/vcvars64.bat'
+          $batch = '"' + $vcvars + '" >nul && set'
+          $variables = & cmd.exe /d /s /c $batch
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          foreach ($variable in $variables) {
+            $separator = $variable.IndexOf('=')
+            if ($separator -gt 0) {
+              Set-Item -Path ('Env:' + $variable.Substring(0, $separator)) -Value $variable.Substring($separator + 1)
+            }
+          }
+          $linker = Join-Path $env:VCToolsInstallDir 'bin/Hostx64/x64'
+          if (-not (Test-Path "$linker/link.exe")) { throw 'MSVC link.exe missing' }
+          $env:PATH = "$linker;$env:PATH"
+          $llvm = Join-Path $env:XIAO_LLVM_ROOT 'ucrt64/bin'
+          python -B -X utf8 "docs/DevDocs/assets/20o-b2-c/entry-20261122-b2-c/measure.py" `
+            --task "$env:RUNNER_TEMP/b2-c" --llvm "$llvm" --kind $env:B2C_KIND --backend $env:B2C_BACKEND
+          exit $LASTEXITCODE
+      - name: Upload raw measurements and identities
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: b2-c-${{ matrix.platform }}-${{ matrix.kind }}-${{ matrix.backend }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/b2-c/evidence/
+            !${{ runner.temp }}/b2-c/evidence/samples/**/program.xiao
+            !${{ runner.temp }}/b2-c/evidence/samples/**/program.xiaoc
+            !${{ runner.temp }}/b2-c/evidence/samples/**/numeric-o*
+            !${{ runner.temp }}/b2-c/evidence/samples/**/clock-o*.o
+          if-no-files-found: error
