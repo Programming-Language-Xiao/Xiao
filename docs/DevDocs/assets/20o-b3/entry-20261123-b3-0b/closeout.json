@@ -3,12 +3,12 @@
   "b3_0b0_decisions_recorded": true,
   "b3_0b1_time_frozen": true,
   "b3_0b2_args_frozen": true,
-  "b3_0b3_cli_frozen": false,
+  "b3_0b3_cli_frozen": true,
   "b3_0b4_versions_errors_resources_frozen": true,
   "b3_0b5_tutorials_frozen": true,
   "b3_0b6_evidence_audit_passed": true,
-  "b3_0b_passed": false,
-  "b3_0c_entry_ready": false,
+  "b3_0b_passed": true,
+  "b3_0c_entry_ready": true,
   "b3_0c_started": false,
   "b3_1_entry_ready": false,
   "b3_product_started": false,
@@ -57,6 +57,10 @@
       "bytes": 19818,
       "sha256": "96d66dc40552e59389555555413e7499bd4a0272229f9e8d99af955632e732bc"
     },
+    "core": {
+      "bytes": 17204224,
+      "sha256": "c18a6ee931b7d3902e7c6c7bedf817753059f3192ba3877fa672563f2251500b"
+    },
     "explicit_annotation": "X04-PARSE-005",
     "host": "windows",
     "inferred_execution": [
@@ -64,16 +68,42 @@
       "o0",
       "o3"
     ],
-    "product_coff_verified": false
+    "module_import": {
+      "aliases": [
+        "std.text",
+        "stdlib.text"
+      ],
+      "archive": {
+        "bytes": 2375176,
+        "sha256": "43524587e36d4d1c5d1b83fb8143b46c261cbd8c2f39f36ea55871cc4ebb19e6"
+      },
+      "backends": [
+        "vm",
+        "o0",
+        "o3",
+        "xiaoc",
+        "xar"
+      ],
+      "host": "windows",
+      "product_coff_verified": false
+    },
+    "product_coff_verified": false,
+    "runtime": {
+      "bytes": 27483016,
+      "sha256": "fa493d79b129cf7fa600993605381830f6abeaab23ec0ea48c0a910554de0fff"
+    }
   },
   "complete_checks": {
+    "commit": "8c8c5fb19441346c607add19bf1b381160104612",
     "docs": 10,
+    "docs_tree_sha256": "c1a6673f055c85573efd6b1717c08039d63939047f5a64c01a060ac64f60f43a",
     "gates": 3,
-    "negatives": 5
+    "negatives": 6,
+    "receipts_commit": "352446e44605ae62da6d1c7d55256ac42396ca28"
   },
-  "contract_commit": "4a4f7eb8e421d7ea59c470fa89d74d437a5f92ee",
+  "contract_commit": "8c8c5fb19441346c607add19bf1b381160104612",
   "decision_count": 12,
-  "decisions_approved": false,
+  "decisions_approved": true,
   "handoff": {
     "modules": [
       "fs",
@@ -132,8 +162,8 @@
         "sha256": "3d6a0e0424f9ff7c6eb1810667a57f867a103c903a5eacf904e9fbd24df30c80"
       },
       "cli": {
-        "bytes": 1587,
-        "sha256": "80a46b1de6564f26e36dbb51052cd604ce58229ce10a8e0c115f505d20831698"
+        "bytes": 1568,
+        "sha256": "e8e8c99b252feecb8f1502f7b2642906f159ddea801a2d7e8f9c6ae8bcca54cb"
       },
       "time": {
         "bytes": 2117,

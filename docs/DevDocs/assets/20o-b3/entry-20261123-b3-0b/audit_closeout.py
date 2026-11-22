@@ -2,7 +2,8 @@
 
 import argparse
 import json
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
+import re
 import sys
 from zipfile import BadZipFile, ZipFile
 
@@ -10,7 +11,8 @@ sys.dont_write_bytecode = True
 from preflight import (ENTRY_REASON, MANIFEST_REASON, PLAN, PRIOR, PRIOR_SEAL, ROOT,
                        archive_tools, base, inventory)
 
-CONTRACT = "4a4f7eb8e421d7ea59c470fa89d74d437a5f92ee"
+CONTRACT = "8c8c5fb19441346c607add19bf1b381160104612"
+RECEIPTS = "352446e44605ae62da6d1c7d55256ac42396ca28"
 FIRST_CANDIDATES = "2ec112034365bd481387820d4188a64ba297681e"
 WORKSPACE_BASE = "9a8f4285687da5ae2b0401f6c21f984efee03b41"
 PREFIX = ROOT.relative_to(base.REPO).as_posix()
@@ -25,9 +27,9 @@ DOCS = (
     *(f"{PREFIX}/{name}" for name in ("README.md", "contract-draft.md", *TUTORIALS.values())),
 )
 DOCUMENT_CHECKS = ("check:docs", "check:usedocs", "check:layout")
-FROZEN = {".gitattributes", "decisions.json", "contract-draft.md", "preflight.py", "preflight.json", "cli-shape.zip",
+FROZEN = {".gitattributes", "decisions.json", "contract-draft.md", "preflight.py", "preflight.json", "cli-shape.zip", "cli-import.zip",
           "tutorials.json", "layout-first.json", *TUTORIALS.values(), *(f"candidates/{path}" for path in FIXTURES)}
-REQUIRED = FROZEN | {"README.md", "audit_closeout.py", "seal_closeout.py", "self_negative.py", "closeout.json"}
+REQUIRED = FROZEN | {"README.md", "audit_closeout.py", "seal_closeout.py", "self_negative.py", "closeout.json", "doc-gate.json"}
 MANIFEST = "evidence.json"
 REASONS = {
     "manifest-tampered": "清单字节或身份不符",
@@ -35,12 +37,14 @@ REASONS = {
     "forged-status": "收口回执与实际派生结论不符",
     "forged-observation": "探测回执偏离实测字节",
     "direction-as-freeze": "裁定回执偏离实际答复",
+    "replaced-doc-blob": "文档门禁未绑定受检提交的实际 Markdown",
 }
+SEALED_NEGATIVE_REASON = "自反例回执偏离固定原件"
 GATES = {
     "b3_0b0_decisions_recorded": ("B3-0B-TIME", "B3-0B-ARGS", "B3-0B-CLI"),
     "b3_0b1_time_frozen": ("B3-0B1", "B3-0B1a", "B3-0B1b", "B3-0B4b"),
     "b3_0b2_args_frozen": ("B3-0B2", "B3-0B4a", "B3-0B4b"),
-    "b3_0b3_cli_frozen": ("B3-0B3", "B3-0B3a", "B3-0B4a", "B3-0B4b"),
+    "b3_0b3_cli_frozen": ("B3-0B3", "B3-0B4a", "B3-0B4b"),
     "b3_0b4_versions_errors_resources_frozen": ("B3-0B4a", "B3-0B4b", "B3-0B4c", "B3-0B4d"),
 }
 require, git = base.require, base.git
@@ -57,6 +61,8 @@ def verify_boundary():
             "冻结提交的父提交身份不符")
     require(not git("diff", "--name-only", "-z", WORKSPACE_BASE, CONTRACT, "--", *base.PRODUCT_ROOTS),
             "候选提交的产品或正式夹具发生变化")
+    paths = set(git("diff", "--name-only", "--no-renames", "-z", WORKSPACE_BASE, CONTRACT).decode().split("\0")) - {""}
+    require(all(path in DOCS or path.startswith(PREFIX + "/") for path in paths), "受检提交改动超出 B3-0B 证据及状态页")
 
 
 def verify_decisions(root):
@@ -64,7 +70,7 @@ def verify_decisions(root):
     decisions = status["direction_decisions"] | status["interface_decisions"] | status["detail_decisions"]
     expected = set().union(*map(set, GATES.values()))
     items = [json.loads(row["question_item_id"]) for row in decisions.values()]
-    require(status["stage"] == "20O-B3-0B" and expected - {"B3-0B3a"} <= decisions.keys() <= expected
+    require(status["stage"] == "20O-B3-0B" and decisions.keys() == expected
             and all(row["answer"] and row["scope"] for row in decisions.values())
             and all(len(item) == 3 and item[0] == "request_user_input_async"
                     and item[1].startswith("call_") and type(item[2]) is int for item in items)
@@ -179,28 +185,122 @@ def verify_cli_shape(root, product):
                     and book.raw(f"probe/inferred/native-o{level}.stdout").decode().replace("\r\n", "\n") == expected,
                     f"推导形状原生 O{level} 观察不符")
     return {"archive": base.identity(path), "host": "windows", "explicit_annotation": "X04-PARSE-005",
-            "inferred_execution": ["vm", "o0", "o3"], "product_coff_verified": False}
+            "inferred_execution": ["vm", "o0", "o3"], "product_coff_verified": False,
+            "core": report["core"], "runtime": report["runtime"]}
 
 
-def verify_complete(root):
+def probe_stdout(book, folder, label, executable):
+    prefix = f"{folder}/{label}"
+    receipt = book.read(f"{prefix}.json")
+    stdout, stderr = (book.raw(f"{prefix}.{stream}") for stream in ("stdout", "stderr"))
+    require(receipt["argv"] == [executable] and type(receipt["pid"]) is int and receipt["pid"] > 0
+            and receipt["exit"] == 0 and receipt["started_utc"] <= receipt["finished_utc"]
+            and receipt["stdout"] == identity(stdout) and receipt["stderr"] == identity(stderr) and not stderr,
+            f"模块导入探测原始回执不符：{prefix}")
+    return stdout
+
+
+def verify_cli_import(root, product, shape):
+    candidate = archive_tools.load_module("b3_import_wire", archive_tools.ROOT / "candidate.py")
+    stem = root / "candidates/tests/fixtures/docs/cli/b3-0b-candidate"
+    fixture, golden = (stem.with_suffix(suffix).read_bytes() for suffix in (".xiao", ".stdout"))
+    path = root / "cli-import.zip"
+    with ZipFile(path) as archive:
+        book = archive_tools.Evidence(archive)
+        report = book.read("probe/result.json")
+        module = blob(product["commit"], "stdlib/text.xiao")
+        probe = book.raw("probe/probe-library.xiao")
+        require(report["source"] == product and (report["core"], report["runtime"]) == (shape["core"], shape["runtime"])
+                and report["module_base"] == base.sha(module) and report["module_probe"] == identity(module + b"\n" + probe)
+                and probe.startswith(b"def split_terminator([str] values)\n")
+                and report["fixture_sha256"] == base.sha(fixture) and report["cases"].keys() == {"std", "stdlib"},
+                "跨模块推导探测的产品、工具或输入身份不符")
+        for alias, case in report["cases"].items():
+            folder = f"probe/case-{alias}"
+            source = fixture.replace(b"from std.cli ", f"from {alias}.text ".encode(), 1)
+            require(book.raw(f"{folder}/application.xiao") == source and case["source_removed"] is True,
+                    f"跨模块探测样例或删源状态不符：{alias}")
+            vm_receipt = book.read(f"{folder}/vm.json")
+            cwd = PureWindowsPath(vm_receipt["cwd"])
+            core = str(cwd.parent / "xiao-core.exe")
+            commands = {}
+            for label in ("vm", "build-o0", "build-o3", "archive", "run_archive", "run_xiaoc"):
+                _, request = candidate.frames(book.raw(f"{folder}/{label}.stdin"))
+                hello, reply = candidate.frames(probe_stdout(book, folder, label, core))
+                require(hello["accepted"] is True and hello["versions"]["runtime_abi"] == 65555
+                        and hello["versions"]["codegen"] == 22 and reply["request_id"] == request["request_id"]
+                        and reply["exit_code"] == 0, f"跨模块探测协议不符：{alias}/{label}")
+                commands[label] = (request, reply)
+            for label in ("vm", "run_xiaoc", "run_archive"):
+                require(candidate.output(commands[label][1]).encode() == golden, f"跨模块执行输出不符：{alias}/{label}")
+            for label in ("vm", "build-o0", "build-o3"):
+                require(commands[label][0]["source"]["text"].encode() == source, f"跨模块实际编译输入不符：{alias}/{label}")
+            archive_reply = json.loads(commands["archive"][1]["value"]["value"])
+            require(archive_reply["stdlib_modules"] == ["stdlib.text"] and archive_reply["digest"] == case["archive"]["sha256"]
+                    and commands["vm"][1]["cache"]["digest"] == case["xiaoc"]["sha256"], f"跨模块归档身份不符：{alias}")
+            for label, extension in (("run_archive", "xar"), ("run_xiaoc", "xiaoc")):
+                key = "archive" if extension == "xar" else "xiaoc"
+                name = f"app.{extension}"
+                require(commands[label][0]["path"] == str(cwd / name)
+                        and identity(book.raw(f"{folder}/{name}")) == case[key], f"删源回放输入不符：{alias}/{label}")
+            require([row["level"] for row in case["native"]] == [0, 3], f"跨模块原生产物缺少优化级别：{alias}")
+            for row in case["native"]:
+                level = row["level"]
+                name = f"native-o{level}"
+                executable = str(cwd / f"{name}.exe")
+                request, reply = commands[f"build-o{level}"]
+                artifact = reply["artifact"]
+                require(request["target"]["triple"] == "x86_64-pc-windows-msvc"
+                        and request["optimization"]["level"] == artifact["optimization_level"] == level
+                        and request["output"] == artifact["executable"] == executable
+                        and identity(book.raw(f"{folder}/{name}.exe")) == row["exe"]
+                        and artifact["object_digest"] == row["exe"]["sha256"]
+                        and identity(book.raw(f"{folder}/{name}.ll")) == row["llvm"]
+                        and artifact["artifact_runtime"]["verification"] == row["verification"] == "unverified-coff-exports"
+                        and probe_stdout(book, folder, name, executable).replace(b"\r\n", b"\n") == golden,
+                        f"跨模块原生产物、工具回执或黄金不符：{alias}/O{level}")
+    return {"archive": base.identity(path), "host": "windows", "aliases": ["std.text", "stdlib.text"],
+            "backends": ["vm", "o0", "o3", "xiaoc", "xar"], "product_coff_verified": False}
+
+
+def document_snapshot():
+    manifest = git("ls-tree", "-rz", CONTRACT, "--", "docs/DevDocs", "docs/UseDocs")
+    return {"commit": CONTRACT, "docs_tree_sha256": base.sha(manifest),
+            "markdown": {path: identity(blob(CONTRACT, path)) for path in DOCS}}
+
+
+def verify_document_gates(root):
     report = json.loads((root / "doc-gate.json").read_bytes())
+    expected = document_snapshot()
+    require(report["before"] == report["after"] == expected, REASONS["replaced-doc-blob"])
+    for path, recorded in expected["markdown"].items():
+        if path.startswith(PREFIX + "/"):
+            require(base.identity(root / path.removeprefix(PREFIX + "/")) == recorded,
+                    f"封存 Markdown 偏离门禁定稿：{path}")
+    bun = report["tool"]
+    require(PureWindowsPath(bun["path"]).name.lower() in {"bun", "bun.exe"}
+            and bun["bytes"] > 0 and re.fullmatch(r"[a-f0-9]{64}", bun["sha256"]),
+            "门禁 Bun 工具身份不符")
+    require([row["argv"] for row in report["checks"]] == [[bun["path"], "run", name] for name in DOCUMENT_CHECKS]
+            and all(row["exit"] == 0 and type(row["pid"]) is int and row["pid"] > 0
+                    and row["started_utc"] <= row["finished_utc"] and row["stdout"] == "通过：未发现 A0 规则问题。\n"
+                    for row in report["checks"]), "定稿文档门禁未通过或缺少实际执行")
+    return {"commit": CONTRACT, "docs_tree_sha256": expected["docs_tree_sha256"],
+            "docs": len(DOCS), "gates": len(report["checks"])}
+
+
+def verify_complete(root, docs):
     first = json.loads((root / "layout-first.json").read_bytes())
     require([row["exit"] for row in first["checks"]] == [0, 0, 1]
             and all(f"A0-LAYOUT-002 tests/fixtures/docs/{module}" in first["checks"][-1]["stdout"]
                     for module in MODULES), "首轮布局失败回执不符")
-    docs = report["markdown_before"]
-    require(report["contract"] == CONTRACT and docs.keys() == set(DOCS)
-            and docs == report["markdown_after"], "文档门禁前后身份不符")
-    for path, row in docs.items():
-        raw = git("cat-file", "blob", row["blob"])
-        require(identity(raw) == row["text"], f"门禁定稿 Git 字节不符：{path}")
-        if path.startswith(PREFIX + "/"):
-            require(raw == (root / path.removeprefix(PREFIX + "/")).read_bytes(),
-                    f"封存 Markdown 偏离门禁定稿：{path}")
-    require([row["argv"][1:] for row in report["checks"]] == [["run", name] for name in DOCUMENT_CHECKS]
-            and all(row["exit"] == 0 and row["pid"] > 0 and row["started_utc"] <= row["finished_utc"]
-                    and "通过：未发现 A0 规则问题。" in row["stdout"] for row in report["checks"]),
-            "定稿文档门禁未通过或缺少实际执行")
+    require(git("rev-parse", f"{RECEIPTS}~1").strip().decode() == CONTRACT, "实际门禁回执的父提交身份不符")
+    originals = {"doc-gate.json": "文档门禁回执偏离固定原件",
+                 "self-negative-result.json": SEALED_NEGATIVE_REASON}
+    changed = git("diff", "--name-only", "-z", CONTRACT, RECEIPTS).decode().rstrip("\0").split("\0")
+    require(set(changed) == {f"{PREFIX}/{name}" for name in originals}, "回执提交改动超出原件范围")
+    for name, reason in originals.items():
+        require((root / name).read_bytes() == blob(RECEIPTS, f"{PREFIX}/{name}"), reason)
     results = json.loads((root / "self-negative-result.json").read_bytes())
     cases = results["cases"]
     require(results["mode"] == "preflight" and len(cases) == len(REASONS) + 1
@@ -210,8 +310,9 @@ def verify_complete(root):
         require(row["exit"] == int(reason is not None)
                 and row["stderr"] == (f"B3-0B 拒绝：{reason}\n" if reason else "")
                 and row["read_only"] is True and row["before"] == row["after"]
-                and row["argv"][-1] == "--preflight", f"自反例实际理由或只读性不符：{row['case']}")
-    return {"docs": len(docs), "gates": len(report["checks"]), "negatives": len(REASONS)}
+                and re.fullmatch(r"[a-f0-9]{64}", row["before"]) and row["argv"][-1] == "--preflight",
+                f"自反例实际理由或只读性不符：{row['case']}")
+    return docs | {"negatives": len(REASONS), "receipts_commit": RECEIPTS}
 
 
 def derive(root, preflight):
@@ -220,18 +321,23 @@ def derive(root, preflight):
         reason = {"decisions.json": REASONS["direction-as-freeze"],
                   "preflight.json": REASONS["forged-observation"]}.get(name, f"固定契约文件偏离：{name}")
         require((root / name).read_bytes() == blob(CONTRACT, f"{PREFIX}/{name}"), reason)
+    require((root / "decisions.json").read_bytes() == blob(FIRST_CANDIDATES, f"{PREFIX}/decisions.json"),
+            "复核改写了原有实际答复")
     flags, decision_count = verify_decisions(root)
     baseline = verify_baseline(root)
     cli_shape = verify_cli_shape(root, baseline["product"])
+    cli_shape["module_import"] = verify_cli_import(root, baseline["product"], cli_shape)
     tutorials = verify_tutorials(root)
-    complete = None if preflight else verify_complete(root)
+    docs = verify_document_gates(root)
+    complete = None if preflight else verify_complete(root, docs)
     flags.update(b3_0b5_tutorials_frozen=True, b3_0b6_evidence_audit_passed=complete is not None)
     passed = all(flags.values())
+    approved = all(flags[stage] for stage in GATES)
     return flags | {
         "scope": "20O-B3-0B", "contract_commit": CONTRACT, "workspace_base": WORKSPACE_BASE,
         "baseline": baseline, "decision_count": decision_count,
-        "decisions_approved": all(flags[stage] for stage in GATES), "no_product_change": True,
-        "b3_0b_passed": passed, "b3_0c_entry_ready": passed, "b3_0c_started": False,
+        "decisions_approved": approved, "no_product_change": True,
+        "b3_0b_passed": passed, "b3_0c_entry_ready": passed and approved, "b3_0c_started": False,
         "b3_0_passed": False, "b3_1_entry_ready": False, "b3_product_started": False,
         "registry_verified": False, "old_721_executed": False,
         "tutorials": tutorials, "cli_shape": cli_shape, "complete_checks": complete,
