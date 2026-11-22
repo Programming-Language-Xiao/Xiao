@@ -17,16 +17,16 @@
   },
   "cargo_calls": {
     "bytes": 1205,
-    "sha256": "da50923d633f9a7dab08756eef88b1e32a4ee30c752cc0bb914c57dfcaacd32d"
+    "sha256": "b358ce64679222e7d23507d362d6af14b8c6ddd10afb1c588e45d179cc1cf872"
   },
   "cargo_wrapper": {
     "bytes": 633,
     "sha256": "40d88defbbdb8d8fa7845e778affe945ab14f81a91cf236756bd8cf59dcc57ea"
   },
-  "commit": "7cca34740eec0b5f6b3c7bd11d80799eff1fbe11",
+  "commit": "ffab5b88006ad70e82d23fb3b13866bfea9da933",
   "cwd": "/tmp/xiao-b7-final-repo",
   "exit": 0,
-  "finished_utc": "2026-11-22T13:59:24.957961+00:00",
+  "finished_utc": "2026-11-22T14:05:24.677433+00:00",
   "locks_after": {
     "core/rust/Cargo.lock": {
       "bytes": 19599,
@@ -362,13 +362,14 @@
     "docs/DevDocs/20o-b2-freeze-draft.md": "697f6c0519b689df6185b4e65040339b1254e726",
     "docs/DevDocs/20o-b2-numeric-foundation-plan.md": "69f73354a70e8852d175eed41b5c9f776b8c435b",
     "docs/DevDocs/20o-b2-static-float-equality-fix-plan.md": "9a905ca7568cb15c1d61f2fed8250f35dccd6c2e",
-    "docs/DevDocs/20o-b3-host-libraries-plan.md": "031419492f37a208e40193664bdd520f79909517",
+    "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": "76c52c5878a3d6acffcd2d5d050eff6026c34fa0",
+    "docs/DevDocs/20o-b3-host-libraries-plan.md": "ab41c080467a901a1f9d0a1135a88cca6023d3b8",
     "docs/DevDocs/20o-b4-json-toml-plan.md": "0b4cea04518ac7d80a8e92449aff7176cac32dbc",
     "docs/DevDocs/20o-b5-numeric-libraries-plan.md": "9deef3084392841477f8b3d5551c402a3ccc0685",
     "docs/DevDocs/20o-b6-native-tools-plan.md": "d062d29205d67805e8832f744adc51a345e296c2",
     "docs/DevDocs/20o-b7-security-plan.md": "c9157b17ab175eec097949407bc24c44050a91f6",
     "docs/DevDocs/20o-b8-http-plan.md": "fb6936a0493c6925c97a646ae05f67bc30f3712b",
-    "docs/DevDocs/20o-official-library-program.md": "80d877963841c69f55b7c9c9f6f770f4776ab0c0",
+    "docs/DevDocs/20o-official-library-program.md": "5e126f4fcbfcfbf394228a69431aa5cd4cb0f82d",
     "docs/DevDocs/20p-day1-library-architecture.md": "5278e923ddc7ea5580ac4d65a5252442db54454c",
     "docs/DevDocs/21-rc-cycles-and-concurrency.md": "40c64d644514eeedea136e671a822125506eac5b",
     "docs/DevDocs/21a-rc-cycles-and-concurrency-handoff.md": "cbc41352acd7e42119bfff193a260f634aeed04c",
@@ -383,7 +384,7 @@
     "docs/DevDocs/22d-fix1-concurrency-differential-closure.md": "584015f414d3e37321ce72db8adee8162c56ee57",
     "docs/DevDocs/22d-llvm-concurrency-differential.md": "05be6b2b1c04bd64c5188ab5f6e48055c5921f5b",
     "docs/DevDocs/22e-standard-library-and-release.md": "cae2c3b2db816b932eb3d344e73d1751274e7b6b",
-    "docs/DevDocs/README.md": "8049c2234d528c89a38de754fd7b21761dfdfd13",
+    "docs/DevDocs/README.md": "cbde76ed87c569920139fea0876439b13cb81ec4",
     "docs/DevDocs/assets/20c-capability-20261011/README.md": "ca4aca48f61f4b6aa09b139637cbfccd56ccbfbc",
     "docs/DevDocs/assets/20o-b1-close/41498029910/README.md": "65f197fc119081a2730295e743997984380cb241",
     "docs/DevDocs/assets/20o-b1-close/README.md": "d4bbf22e1c44133953309a3df9762fe40631d027",
@@ -927,13 +928,14 @@
     "docs/DevDocs/20o-b2-freeze-draft.md": "697f6c0519b689df6185b4e65040339b1254e726",
     "docs/DevDocs/20o-b2-numeric-foundation-plan.md": "69f73354a70e8852d175eed41b5c9f776b8c435b",
     "docs/DevDocs/20o-b2-static-float-equality-fix-plan.md": "9a905ca7568cb15c1d61f2fed8250f35dccd6c2e",
-    "docs/DevDocs/20o-b3-host-libraries-plan.md": "031419492f37a208e40193664bdd520f79909517",
+    "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": "76c52c5878a3d6acffcd2d5d050eff6026c34fa0",
+    "docs/DevDocs/20o-b3-host-libraries-plan.md": "ab41c080467a901a1f9d0a1135a88cca6023d3b8",
     "docs/DevDocs/20o-b4-json-toml-plan.md": "0b4cea04518ac7d80a8e92449aff7176cac32dbc",
     "docs/DevDocs/20o-b5-numeric-libraries-plan.md": "9deef3084392841477f8b3d5551c402a3ccc0685",
     "docs/DevDocs/20o-b6-native-tools-plan.md": "d062d29205d67805e8832f744adc51a345e296c2",
     "docs/DevDocs/20o-b7-security-plan.md": "c9157b17ab175eec097949407bc24c44050a91f6",
     "docs/DevDocs/20o-b8-http-plan.md": "fb6936a0493c6925c97a646ae05f67bc30f3712b",
-    "docs/DevDocs/20o-official-library-program.md": "80d877963841c69f55b7c9c9f6f770f4776ab0c0",
+    "docs/DevDocs/20o-official-library-program.md": "5e126f4fcbfcfbf394228a69431aa5cd4cb0f82d",
     "docs/DevDocs/20p-day1-library-architecture.md": "5278e923ddc7ea5580ac4d65a5252442db54454c",
     "docs/DevDocs/21-rc-cycles-and-concurrency.md": "40c64d644514eeedea136e671a822125506eac5b",
     "docs/DevDocs/21a-rc-cycles-and-concurrency-handoff.md": "cbc41352acd7e42119bfff193a260f634aeed04c",
@@ -948,7 +950,7 @@
     "docs/DevDocs/22d-fix1-concurrency-differential-closure.md": "584015f414d3e37321ce72db8adee8162c56ee57",
     "docs/DevDocs/22d-llvm-concurrency-differential.md": "05be6b2b1c04bd64c5188ab5f6e48055c5921f5b",
     "docs/DevDocs/22e-standard-library-and-release.md": "cae2c3b2db816b932eb3d344e73d1751274e7b6b",
-    "docs/DevDocs/README.md": "8049c2234d528c89a38de754fd7b21761dfdfd13",
+    "docs/DevDocs/README.md": "cbde76ed87c569920139fea0876439b13cb81ec4",
     "docs/DevDocs/assets/20c-capability-20261011/README.md": "ca4aca48f61f4b6aa09b139637cbfccd56ccbfbc",
     "docs/DevDocs/assets/20o-b1-close/41498029910/README.md": "65f197fc119081a2730295e743997984380cb241",
     "docs/DevDocs/assets/20o-b1-close/README.md": "d4bbf22e1c44133953309a3df9762fe40631d027",
@@ -1187,7 +1189,7 @@
       "sha256": "91dfba73454c0ff50a01ce75ed37b05a0e9efccd538a11875b8a80d5ab374f56"
     }
   },
-  "pid": 4279,
-  "started_utc": "2026-11-22T13:59:12.873062+00:00",
+  "pid": 4350,
+  "started_utc": "2026-11-22T14:05:12.815038+00:00",
   "target": "/tmp/xiao-b7-final-target"
 }
