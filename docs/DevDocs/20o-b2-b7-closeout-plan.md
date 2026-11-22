@@ -1,7 +1,7 @@
 # 20O-B2-B7. B2-B 内部收口与 B2-C 交接规划
 
 > **2026-11-16历史状态：B5版本/缓存/C ABI矩阵及完整串行workspace通过，但默认并发workspace的URL Unicode用例触发60秒看门狗，B5未封存。** 失败记录、B1历史原件缺失/重建来源标记和独立LLVM比较问题见[B5证据](assets/20o-b2-b/entry-20261116-b5-rebuild/README.md)；B6闸门未开，B7/B2-C未开始。
-> **2026-11-18 实施同步**　B5 固定矩阵绑定 ABI 1.19、生成器 21。当前产品为 1.19/22，B5 已联合收口。FIX.2 保持生成器 22。B6-1 为 `restricted`，`stage_passed=false`，三平台功能通过。Windows COFF 导出完整性未验证，Linux Clippy 未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，九组性能结果绑定 `79ea0375`。B6-3 的三平台边界结果绑定 `58176ff5`。B7 等待 B6 整批收口。[B6-1 限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)、[macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)、[B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)、[B6-3 实测](assets/20o-b2-b/entry-20261118-b6-3/README.md)、[21→22 增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md)、[FIX.2 证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)
+> **2026-11-18 历史记录**　B5 固定矩阵绑定 ABI 1.19、生成器 21。产品已升至 1.19/22，B5 已联合收口。B6-1 受限，三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，九组性能结果绑定 `79ea0375`。B6-3 的三平台边界结果绑定 `58176ff5`。[B6-1 限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md) · [macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md) · [B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md) · [B6-3 实测](assets/20o-b2-b/entry-20261118-b6-3/README.md) · [21→22 增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md) · [FIX.2 证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)
 > B7 只做 B2-B 内部收口、B1 回归、B2-A 与 B2-B 前序阶段证据对账和 B2-C 交接。
 > **2026-11-20 开工入口**　`b6_5_passed=true`、`b7_entry_ready=true`、`b6_accepted=false`。B7 尚未开始执行。[B6-5 收口证据](assets/20o-b2-b/entry-20261120-b6-5/README.md)
 > 不运行旧 721、不升级 registry/教程、不关闭历史债务；B2-C 才做最终三平台、721 和公共发布。
@@ -62,7 +62,7 @@ B7 只更新收口文档和本批证据，回归复用前序测试。若发现�
 ### B7-1：B1 功能回归
 
 1. 固定最终B7产品提交与平台Runtime内容，从B1源码在1.19/22下重生成回归产物，执行七库20入口功能矩阵；
-2. 覆盖 std/stdlib 双路径、导出/移除、重新生成的真实 `.xiaoc`/`.xar`、普通包隔离和教程一致性；历史1.18原件只作为B5拒绝矩阵的输入；
+2. 覆盖 std/stdlib 双路径、导出与移除、重新生成的真实 `.xiaoc`/`.xar`、普通包隔离和教程一致性。B5 拒绝矩阵引用从 `106b99c7` 重建的 1.18 基线，B1 历史原件仍缺失。[B5 基线裁定](20o-b2-b5-version-matrix-plan.md#22-b1重建基线裁定执行)
 3. 执行资源18项（包含URL预算边界和连续转义状态复位）；VM/原生精确入口分别要求退出0、恰好1 passed/0 failed/0 ignored，原生需保留七库O0/O3实际标记与黄金验证。URL Driver timeout仍为60秒且预算不变。最终工作区重跑28/28守卫，报告绑定工作流/脚本摘要和产品提交；守卫只验证计数判断，不代替产品测试；
 4. 保持 B1 产品源码/错误表/预算/调度释放断言不变；
 5. 旧 721 条 F10 只作历史，不启用 `b1_f10`；

@@ -30,20 +30,35 @@ def matrix():
     return summary
 
 
-def rewritten_exports(members):
+def replace_outputs(members, replacements):
     contents = dict(members)
     index = json.loads(contents["evidence.json"])
-    names = ("linux/exports.stdout", "linux/exports.json")
-    log, receipt = (contents["objects/" + index[name]["sha256"]] for name in names)
-    require(log.count(b"exports=164") == 1, "对账原始标记不唯一")
-    changed = log.replace(b"exports=164", b"exports=163")
-    row = json.loads(receipt)
-    row["outputs"]["stdout"] = digest(changed)
-    for name, data in zip(names, (changed, json_bytes(row))):
+    for name, data in replacements.items():
         index[name] = digest(data)
         contents["objects/" + index[name]["sha256"]] = data
     return {"evidence.json": json_bytes(index),
             **{key: contents[key] for key in {"objects/" + item["sha256"] for item in index.values()}}}
+
+
+def with_stdout(members, stem, transform):
+    index = json.loads(members["evidence.json"])
+    log, receipt = (f"linux/{stem}.{extension}" for extension in ("stdout", "json"))
+    changed = transform(members["objects/" + index[log]["sha256"]])
+    row = json.loads(members["objects/" + index[receipt]["sha256"]])
+    row["outputs"]["stdout"] = digest(changed)
+    return replace_outputs(members, {log: changed, receipt: json_bytes(row)})
+
+
+def wrong_exports(raw):
+    require(raw.count(b"exports=164") == 1, "对账原始标记不唯一")
+    return raw.replace(b"exports=164", b"exports=163")
+
+
+def conflicting_docs_report(raw):
+    report = json.loads(raw)
+    require(report["passed"] is True, "仓库门禁基线须为通过")
+    report["diagnostics"].append({"severity": "error", "code": "A0-DOCS-004"})
+    return json_bytes(report)
 
 
 def replay(archive, status, reason):
@@ -78,13 +93,28 @@ def main():
         fields = json.loads(status.read_bytes()) | {"b6_accepted": True, "b6_4_passed": True, "22d_open": False}
         forged.write_bytes(json_bytes(fields))
         cases["forged-stage-pass"] = replay(archive, forged, "封存状态与固定证据派生结果不符")
+        numeric = task / "numeric-status.json"
+        numeric.write_bytes(json_bytes(json.loads(status.read_bytes()) | {"b7_entry_ready": 1}))
+        cases["numeric-status"] = replay(archive, numeric, "封存状态与固定证据派生结果不符")
+
+        repacked = task / "repacked.zip"
+        with ZipFile(repacked, "x") as zipped:
+            for name, raw in members.items():
+                zipped.writestr(name, raw)
+        matching = task / "repacked-status.json"
+        summary = json.loads(status.read_bytes())
+        summary["archive"].update(digest(repacked.read_bytes()))
+        matching.write_bytes(json_bytes(summary))
+        cases["repacked-with-matching-status"] = replay(repacked, matching, "归档与固定收口 Git 对象不符")
 
         # 删除对象，保留原清单。
         removed = dict(members)
         removed.pop(next(name for name in removed if name.startswith("objects/")))
         variants = {
             "missing-object": (removed, "证据包清单不符"),
-            "rehashed-exports": (rewritten_exports(members), "Linux 导出对账输出不符"),
+            "rehashed-exports": (with_stdout(members, "exports", wrong_exports), "Linux 导出对账输出不符"),
+            "conflicting-docs-report": (with_stdout(members, "repo-check-final", conflicting_docs_report),
+                                        "仓库门禁原始报告不符"),
         }
         for case, (contents, reason) in variants.items():
             temporary = task / f"{case}.zip"

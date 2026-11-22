@@ -240,4 +240,4 @@ tests/fixtures/docs/cmath/                             cmath 夹具
 docs/DevDocs/assets/20o-b2-b/entry-<date>/            B2-B 证据（待建）
 ```
 
-本页记录 B2-B 执行边界。B5 已联合收口，固定的 1.19/21 矩阵与当前 1.19/22 增量分别归档。B6-1 受限，B6-2 实测绑定 `79ea0375`，B7 等待 B6 收口。B2-C 负责最终公共发布。[B6 性能规划](20o-b2-b6-resource-performance-plan.md)
+本页记录 B2-B 执行边界。B5 已联合收口，固定的 1.19/21 矩阵与当前 1.19/22 增量分别归档。B6-5 已完成受限交接，B7 入口就绪。B2-C 负责最终公共发布。[B6-5 交接记录](assets/20o-b2-b/entry-20261120-b6-5/README.md)

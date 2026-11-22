@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT.with_name("entry-20261119-b6-4")))
 from evidence import blob, collect, digest, git, require
 
 PRODUCT = "e79fab3cdd3ea9d3a7eff31f529dec2498434114"
+CLOSEOUT = "69d009e876531c3b17acc6f2a19a2c3d9c51d929"
 LOCAL_CHECKS = "780398e5b657b698962e22e1959b7de85272b907"
 PERFORMANCE = "79ea0375d7f2d823a5bdde73cb2c9a1c33c3e4c3"
 BOUNDARY = "58176ff5299441f921f3b54fbdc300e2e46b9bb0"

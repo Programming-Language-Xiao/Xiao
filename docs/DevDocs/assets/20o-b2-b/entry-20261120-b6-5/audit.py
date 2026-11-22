@@ -3,15 +3,17 @@
 import argparse
 from collections import Counter
 from datetime import datetime
+from io import BytesIO
 import json
 from pathlib import Path, PurePosixPath, PureWindowsPath
 import re
-from zipfile import ZipFile
+from zipfile import BadZipFile, ZipFile
 import sys
 
 sys.dont_write_bytecode = True
 from record import (
-    BASE, BOUNDARY, COMPONENT_DELTA, DOC_INPUTS, DRIVER, HISTORY, LOCAL_CHECKS, LLVM, PERFORMANCE, PREFIX,
+    BASE, BOUNDARY, CLOSEOUT as CLOSEOUT_COMMIT, COMPONENT_DELTA, DOC_INPUTS, DRIVER, HISTORY, LOCAL_CHECKS,
+    LLVM, PERFORMANCE, PREFIX,
     PRODUCT, ROOT, blob, digest, entries, git, git_blob_id, git_tree, history_identity, json_bytes, product_record,
     recorded_argv, require, text_identity,
 )
@@ -76,7 +78,8 @@ def receipt(bundle, folder, name):
     started = datetime.fromisoformat(row["started_utc"])
     finished = datetime.fromisoformat(row["finished_utc"])
     outputs = {stream: bundle.raw(f"{folder}/{name}.{stream}") for stream in ("stdout", "stderr")}
-    require(row["pid"] > 0 and started.utcoffset() is not None and started <= finished
+    require(type(row["pid"]) is int and row["pid"] > 0 and type(row["exit_code"]) is int
+            and started.utcoffset() is not None and finished.utcoffset() is not None and started <= finished
             and row["outputs"] == {stream: digest(raw) for stream, raw in outputs.items()},
             f"命令回执或原始输出身份不符：{folder}/{name}")
     return row, *(raw.decode("utf-8") for raw in outputs.values())
@@ -275,32 +278,46 @@ def verify_docs(bundle, tools, initial, result):
     row, stdout, stderr = result
     capture = bundle.read("linux/docs-source-final.json")
     selected_tools = {name: tools[name] for name in ("bun", "cargo")}
-    require(capture["before"] == capture["after"] and set(capture["before"]["files"]) == set(DOC_INPUTS)
-            and capture["tools"] == selected_tools
+    require(capture["tools"] == selected_tools
             and capture["path_prefix"] == [str(PurePosixPath(tool["path"]).parent)
                                           for tool in selected_tools.values()]
             and row["argv"] == failed_row["argv"]
             == [tools["bun"]["path"], "tools/repo-check/src/cli.ts", "all", "--format", "json"],
             "定稿 DevDocs 输入、前后摘要或命令不符")
-    markdown = {path: object_id for path, object_id in entries(git_tree(PRODUCT, "docs/DevDocs")).items()
+    markdown = verify_docs_snapshot(capture, CLOSEOUT_COMMIT)
+    return {"markdown": markdown, "diagnostics": verify_docs_report(row, stdout, stderr),
+            "initial_environment_failure": failed_row["exit_code"]}
+
+
+def verify_docs_snapshot(capture, revision):
+    before = capture["before"]
+    require(before == capture["after"] and set(before["files"]) == set(DOC_INPUTS),
+            "定稿 DevDocs 输入或前后摘要不符")
+    committed = entries(git_tree(revision, "docs/DevDocs"))
+    markdown = {path: object_id for path, object_id in committed.items()
                 if path.endswith(".md")}
-    for path, identity in capture["before"]["files"].items():
-        object_id = identity["blob"]
-        require(re.fullmatch("[0-9a-f]{40}", object_id), "定稿 DevDocs Git blob 无效")
-        fixed = git("cat-file", "blob", object_id)
-        # Windows 导出的定稿文件可带 CRLF。整树摘要仍使用门禁实读字节。
+    for path, identity in before["files"].items():
+        require(identity["blob"] == committed[path], f"定稿 DevDocs 路径与固定 Git 对象不符：{path}")
+        fixed = blob(revision, path)
+        # Windows 导出的定稿文件可带 CRLF，整树摘要使用门禁实读字节。
         materialized = fixed if digest(fixed) == identity["raw"] else fixed.replace(b"\n", b"\r\n")
         require(identity == text_identity(materialized), f"定稿 DevDocs 字节未绑定 Git 对象：{path}")
         if path.endswith(".md"):
             markdown[path] = git_blob_id(materialized)
-    require(capture["before"]["markdown"] == {"files": len(markdown), **digest(json_bytes(markdown))},
+    require(before["markdown"] == {"files": len(markdown), **digest(json_bytes(markdown))},
             "定稿 DevDocs Markdown 树清单不符")
+    return before["markdown"]
+
+
+def verify_docs_report(row, stdout, stderr):
     report = json.loads(stdout)
-    warnings = Counter(item["code"] for item in report["diagnostics"] if item["severity"] == "warning")
-    require(report["checker"] == "xiao-repo-check" and report["passed"] == (row["exit_code"] == 0)
-            and not stderr and not (warnings.keys() - {"A0-COVERAGE-002"}), "仓库门禁原始报告不符")
-    return {"markdown": capture["before"]["markdown"], "diagnostics": dict(warnings),
-            "initial_environment_failure": failed_row["exit_code"]}
+    diagnostics = report["diagnostics"]
+    passed = not any(item["severity"] == "error" for item in diagnostics)
+    warnings = Counter(item["code"] for item in diagnostics if item["severity"] == "warning")
+    require(report["checker"] == "xiao-repo-check" and report["schemaVersion"] == 1
+            and report["passed"] is passed and passed == (row["exit_code"] == 0)
+            and not stderr and warnings.keys() <= {"A0-COVERAGE-002"}, "仓库门禁原始报告不符")
+    return dict(warnings)
 
 
 def compat():
@@ -344,7 +361,8 @@ def verify_handoff(bundle, handoff):
 
 def inspect(archive, handoff):
     product = product_record()
-    with ZipFile(archive) as zipped:
+    sealed = archive.read_bytes()
+    with ZipFile(BytesIO(sealed)) as zipped:
         bundle = Evidence(zipped)
         expected = {f"identity/{name}.json" for name in ("history", "product", "recipes")}
         expected.update(f"linux/{name}.json"
@@ -357,7 +375,8 @@ def inspect(archive, handoff):
         reports, flags = verify_history(bundle)
         linux = verify_linux(bundle, product["source"])
         handoff_data = verify_handoff(bundle, handoff)
-        archive_info = digest(archive.read_bytes()) | {"files": len(bundle.entries), "objects": bundle.unique}
+        archive_info = digest(sealed) | {"files": len(bundle.entries), "objects": bundle.unique}
+    require(sealed == blob(CLOSEOUT_COMMIT, f"{PREFIX}/closeout.zip"), "归档与固定收口 Git 对象不符")
     measured, boundary = (product["changes"][rev] for rev in (PERFORMANCE, BOUNDARY))
     require(set(boundary) == COMPONENT_DELTA and set(measured) >= set(boundary),
             "Runtime 组件受影响差异与交接范围不符")
@@ -400,8 +419,9 @@ def main():
     try:
         result = inspect(args.archive, ROOT / "handoff.json")
         if not args.derive:
-            require(result == json.loads(args.status.read_bytes()), "封存状态与固定证据派生结果不符")
-    except (SystemExit, KeyError, ValueError, OSError) as error:
+            require(json_bytes(result) == json_bytes(json.loads(args.status.read_bytes())),
+                    "封存状态与固定证据派生结果不符")
+    except (BadZipFile, KeyError, ValueError, OSError) as error:
         parser.exit(1, f"{error}\n")
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
 

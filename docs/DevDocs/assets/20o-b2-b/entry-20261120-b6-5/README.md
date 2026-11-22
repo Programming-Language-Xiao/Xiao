@@ -25,7 +25,7 @@
 | 默认 workspace `--locked` | 192 个测试结果小结，1,760 通过、0 失败、56 项原有忽略 |
 | workspace Clippy `--all-targets --locked -- -D warnings`、fmt | 均退出 0。此处是当前 Linux 的新 Clippy 回执 |
 | `bun run check:lock` | 退出 0。既有受控 Cargo 入口为两条间接 `cargo check` 带上 `--locked` |
-| `repo-check all` | 首跑缺 Cargo 路径，修正独立进程的工具路径后在定稿上通过。两次回执均入档，定稿记录 DevDocs Markdown 树前后摘要 |
+| `repo-check all` | 原批首跑缺 Cargo 路径，修正后退出 0。这两次回执保存在 `closeout.zip`。自审补验在同一产品树上锁定间接执行的 `cargo metadata` 和 `cargo run`，另存各自的参数、进程标识与退出码 |
 | Linux 定向补验 | release Runtime 的 164 个导出通过；cmath 两别名的 O0/O3 组件为 `Complete`，黄金和 009 通过；显式除法 O0/O3、回调三目标 IR、原生动态字符串通过。浮点比较 62 个 VM、248 次原生、248 次汇编，静态幂 eq/ne 四格组件均为 `{rc, value}` |
 | 功能公开面 | 最终 `xiao-core` 的两种 cmath 别名正常执行。两个 Rust 加载器 API 的六个裸调用和导入样本按既定诊断拒绝 |
 
@@ -43,11 +43,11 @@ B7 从源码重生成 B1 20 入口，运行资源 18 项、双精确入口及 28
 
 ## 只读复核
 
-`closeout.zip` 的 `evidence.json` 按逻辑路径引用 SHA-256 对象，包括本轮 11 个前序只读回放。历史归档身份由固定 Git tree/blob 与 SHA-256 引用，平台 Runtime、工具和当时的日志仍见各自原件。定稿门禁记录完整 DevDocs Markdown 树摘要及本批变更文档和交接清单的逐文件摘要。`status.json` 由归档派生，`review.json` 保存状态组合和反例结果。审计使用固定 Git 对象，当前 HEAD 和本机 Runtime 均可变化。
+`closeout.zip` 绑定收口提交 `69d009e8`。归档的 `evidence.json` 按逻辑路径引用 SHA-256 对象，含 11 个前序只读回放。仓库门禁记录完整 DevDocs Markdown 树摘要，逐条比对本批文档和交接清单在固定 Git 树中的路径与字节。`status.json` 由归档派生，`review.json` 保存状态组合和反例。审计使用固定 Git 对象，当前 HEAD 和本机 Runtime 均可变化。
 
 ```powershell
 python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261120-b6-5/audit.py
 python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261120-b6-5/self_negative.py
 ```
 
-自反例枚举 2,048 组布尔输入，并尝试伪造通过状态、删除对象、重建清单后冒充 164 个导出。审计核对退出码、拒绝原因和原件字节。
+自反例枚举 2,048 组布尔输入，覆盖伪造通过状态、数字代替布尔值、对象缺失、重算清单后的导出计数错误及重打包后同步更新状态中的摘要。审计核对退出码、拒绝原因和原件字节。
