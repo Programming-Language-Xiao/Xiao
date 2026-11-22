@@ -1,0 +1,32 @@
+{
+  "status": "planned",
+  "manifest": "core/rust/Cargo.toml",
+  "package": "xiao-driver",
+  "platforms": ["x86_64-pc-windows-msvc", "x86_64-unknown-linux-gnu", "aarch64-apple-darwin"],
+  "native_optimizations": [0, 3],
+  "expected_exit": 0,
+  "expected_cargo_counts": [1, 0, 0],
+  "windows_verification": "complete",
+  "executed": false,
+  "cases": {
+    "time": {
+      "target": "20o_b3_time_tutorial",
+      "vm": "time_tutorial_matches_vm_golden",
+      "native": "time_tutorial_matches_native_golden",
+      "context": "运行墙钟处于格式域内，验证 UTC 格式、单调关系、零等待及 012。"
+    },
+    "args": {
+      "target": "20o_b3_args_tutorial",
+      "vm": "args_tutorial_matches_vm_golden",
+      "native": "args_tutorial_matches_native_golden",
+      "input": "tests/fixtures/docs/args/b3-0b-candidate.input.json",
+      "context": "提供同一程序名和参数快照，分别核对 VM 与两种优化级别的真实入口。"
+    },
+    "cli": {
+      "target": "20o_b3_cli_tutorial",
+      "vm": "cli_tutorial_matches_vm_golden",
+      "native": "cli_tutorial_matches_native_golden",
+      "context": "每组运行使用固定输入，核对空项、重复值、无分隔符及第二个 --。"
+    }
+  }
+}

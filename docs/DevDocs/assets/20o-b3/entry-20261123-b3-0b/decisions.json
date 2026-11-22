@@ -1,0 +1,81 @@
+{
+  "stage": "20O-B3-0B",
+  "direction_decisions": {
+    "B3-0B-TIME": {
+      "status": "answered",
+      "answer": "预留纳秒方案，后续可开发显式指定",
+      "question_item_id": "[\"request_user_input_async\",\"call_2tZwVLFbd9q6olclMwa5REhr\",0]",
+      "scope": "纳秒和显式单位的后续方向。首批签名、精度和预留方式待精确裁定。"
+    },
+    "B3-0B-ARGS": {
+      "status": "answered",
+      "answer": "采用统一运行快照（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_2tZwVLFbd9q6olclMwa5REhr\",1]",
+      "scope": "程序名和有序参数通过统一运行快照交接，启动器分界，空项和重复项保留，非法 Unicode 整批拒绝。"
+    },
+    "B3-0B-CLI": {
+      "status": "answered",
+      "answer": "采用分隔辅助（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_2tZwVLFbd9q6olclMwa5REhr\",2]",
+      "scope": "首个 -- 分两组并移除该项。其余元素保留，无分隔符时第二组为空。高级解析后置。"
+    }
+  },
+  "detail_decisions": {
+    "B3-0B1a": {
+      "status": "answered",
+      "answer": "确认 ms 与 ns 均首批（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_PSw18pDxQnvRQ5Os681dfsNt\",0]",
+      "scope": "四项签名、必填显式单位、int 表示、3/9 位 UTC 小数、格式域和取钟溢出。"
+    },
+    "B3-0B1b": {
+      "status": "answered",
+      "answer": "确认时长与取消规则（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_PSw18pDxQnvRQ5Os681dfsNt\",1]",
+      "scope": "60 秒上限、零和负值、单调等待、取消与截止优先级、根请求和子任务通道及清理。"
+    },
+    "B3-0B4a": {
+      "status": "answered",
+      "answer": "确认这组限额与输入边界（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_PSw18pDxQnvRQ5Os681dfsNt\",2]",
+      "scope": "args/cli 条目及 UTF-8 字节限额、程序名计量、NUL 和合法 U+FFFD 的处理。"
+    },
+    "B3-0B4b": {
+      "status": "answered",
+      "answer": "确认错误、优先级和时钟细节（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_HL6Gs8x8AA9VNvUAJ3R4oZlT\",0]",
+      "scope": "错误身份、执行前拒绝、调用和输入错误顺序、UTC 与单调钟细节。"
+    },
+    "B3-0B4c": {
+      "status": "answered",
+      "answer": "确认性能协议和阈值（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_HL6Gs8x8AA9VNvUAJ3R4oZlT\",1]",
+      "scope": "三平台 VM/O0/O3、非等待工作量和阈值、sleep 的受控和实际等待验收。"
+    },
+    "B3-0B4d": {
+      "status": "answered",
+      "answer": "确认版本与兼容候选（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_HL6Gs8x8AA9VNvUAJ3R4oZlT\",2]",
+      "scope": "六条原语、加法 C ABI、联合版本候选、arguments 握手、归档拒绝/缓存，以及 B3-0D 待定项。"
+    }
+  },
+  "interface_decisions": {
+    "B3-0B1": {
+      "status": "explicit_unit_requested",
+      "answer": "首批就引入显式单位参数",
+      "question_item_id": "[\"request_user_input_async\",\"call_3UORIUvpagMTCNbv05ngXWX4\",0]",
+      "scope": "取代首批固定毫秒的接口候选。可用单位、参数签名、表示范围和格式规则待确认。"
+    },
+    "B3-0B2": {
+      "status": "answered",
+      "answer": "确认快照来源与 process 位（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_3UORIUvpagMTCNbv05ngXWX4\",1]",
+      "scope": "program_name、argv、process 位、运行快照来源与缺省以及严格 Unicode 校验点。预算和错误身份待确认。"
+    },
+    "B3-0B3": {
+      "status": "answered",
+      "answer": "确认名称和两组数组（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_3UORIUvpagMTCNbv05ngXWX4\",2]",
+      "scope": "split_terminator([str] values) -> [[str]]，两组新数组，位置/命名，首个分隔符移除。预算和错误身份待确认。"
+    }
+  }
+}

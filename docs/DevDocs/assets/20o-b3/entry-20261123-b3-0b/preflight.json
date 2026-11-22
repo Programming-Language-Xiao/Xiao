@@ -1,0 +1,153 @@
+{
+  "bun_argv": {
+    "argv_prefix": [
+      "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+      "-e",
+      "console.log(JSON.stringify(process.argv.slice(-1)[0]))",
+      "--"
+    ],
+    "executed": true,
+    "literal_and_unpaired_same_result": true,
+    "platform": "win32",
+    "samples": {
+      "empty": {
+        "exit": 0,
+        "stderr": "",
+        "stdout": "\"\"\n",
+        "utf16_unit_hex": ""
+      },
+      "literal-replacement": {
+        "exit": 0,
+        "stderr": "",
+        "stdout": "\"�\"\n",
+        "utf16_unit_hex": "FFFD"
+      },
+      "unpaired-utf16": {
+        "exit": 0,
+        "stderr": "",
+        "stdout": "\"�\"\n",
+        "utf16_unit_hex": "D800"
+      }
+    },
+    "tool": {
+      "bytes": 88825944,
+      "sha256": "627d2e4775c24bdedee2cd7ccc18dcadae061e5345274ab6e3c4c797927bfb8f",
+      "version": "1.4.0"
+    }
+  },
+  "guards": {
+    "actual": 4,
+    "derived": 24,
+    "passed": 28
+  },
+  "plan_commit": "7e6754f2e4d467debc9f6b4b79dd9e7b6b780979",
+  "prior_archive": {
+    "bytes": 296821,
+    "objects": 124,
+    "paths": 206,
+    "sha256": "21c4fc059247686001cb2e6204a048ca16ed3a63446c7de5a8bbc6cb87714c95"
+  },
+  "prior_audit": {
+    "argv": [
+      "D:\\Programs\\Python\\Python312\\python.exe",
+      "-B",
+      "-X",
+      "utf8",
+      "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261122-b3-0\\audit_entry.py",
+      "--evidence-root",
+      "D:\\project\\Xiao\\.b3-0b\\20261123-01\\unchanged"
+    ],
+    "case": "unchanged",
+    "exit": 0,
+    "read_only": true,
+    "stderr": "",
+    "stdout": "{\n  \"archive\": {\n    \"bytes\": 296821,\n    \"objects\": 124,\n    \"paths\": 206,\n    \"sha256\": \"21c4fc059247686001cb2e6204a048ca16ed3a63446c7de5a8bbc6cb87714c95\"\n  },\n  \"audit_files\": 11,\n  \"b3_0_passed\": false,\n  \"b3_0a_baseline_frozen\": true,\n  \"b3_1_entry_ready\": false,\n  \"b3_product_started\": false,\n  \"collateral_workspace\": {\n    \"conclusion\": \"failure\",\n    \"run\": 45033610101\n  },\n  \"decisions_approved\": false,\n  \"guards\": {\n    \"actual\": 4,\n    \"derived\": 24,\n    \"passed\": 28\n  },\n  \"inherited\": {\n    \"22d_open\": true,\n    \"b6_1_stage_passed\": false,\n    \"b6_3_final_tree_covered\": false,\n    \"b6_4_passed\": false,\n    \"b6_accepted\": false,\n    \"followup_passed\": false,\n    \"original_passed\": false,\n    \"windows_coff_verified\": false\n  },\n  \"old_721_executed\": false,\n  \"platforms\": {\n    \"linux\": {\n      \"b1\": {\n        \"entries\": 20,\n        \"native_exact\": 1,\n        \"resource_targets\": 18,\n        \"vm_exact\": 1\n      },\n      \"ci\": {\n        \"artifact\": 14759116233,\n        \"attempt\": 1,\n        \"job\": 137242370871,\n        \"run\": 45033610157,\n        \"sha256\": \"709d2d1f516e545043f1f693248d5a3fe990f181c0ffd6afba907b6fd15583bf\"\n      },\n      \"observed\": {\n        \"argv\": [\n          \"argv0_present=true argv_count=10 valid_exact=true malformed_roundtrip=true\"\n        ],\n        \"cli\": [\n          \"{\\\"argv\\\":[\\\"run\\\",\\\"probe.xiao\\\"],\\\"kind\\\":\\\"run\\\",\\\"publicKeys\\\":[\\\"file\\\",\\\"kind\\\",\\\"optimizationExplicit\\\",\\\"optimizationLevel\\\",\\\"options\\\"]}\",\n          \"{\\\"argv\\\":[\\\"run\\\",\\\"probe.xiao\\\",\\\"--\\\",\\\"\\\",\\\"two words\\\"],\\\"code\\\":\\\"X11-CLI-ARG-001\\\"}\",\n          \"{\\\"argv\\\":[\\\"run\\\",\\\"probe.xiao\\\",\\\"--\\\",\\\"--help\\\"],\\\"kind\\\":\\\"help\\\",\\\"publicKeys\\\":[\\\"kind\\\",\\\"options\\\"]}\",\n          \"{\\\"argv\\\":[\\\"-xar\\\",\\\"probe.xar\\\",\\\"--\\\",\\\"--flag\\\"],\\\"code\\\":\\\"X11-CLI-ARG-001\\\"}\"\n        ],\n        \"env\": [\n          \"child_with_values\",\n          \"value_present=true case_folded=false empty_present=true absent=true malformed_roundtrip=true\",\n          \"child_with_value_removed\",\n          \"value_present=false case_folded=false empty_present=true absent=true malformed_roundtrip=true\"\n        ],\n        \"fs\": [\n          \"create_new_existing=AlreadyExists/Some(17) original_intact=true\",\n          \"same_directory_replace=success new_content=true temporary_removed=true\",\n          \"replace_directory=IsADirectory/Some(21) source_retained=true\",\n          \"directory_link=success\",\n          \"link_parent_read=Ok(true)\",\n          \"readonly_open_for_write=PermissionDenied/Some(13)\"\n        ],\n        \"log\": [\n          \"concurrent_stdout_records=48 exact=true stderr_separate=true exit=exit status: 0\",\n          \"closed_stdout_write=BrokenPipe/Some(32)\",\n          \"closed_stream_child=exit status: 0\"\n        ],\n        \"time\": [\n          \"wall_unix_ns=1795358175643624006\",\n          \"monotonic_min_observed_ns=Some(49) regressions=0\",\n          \"sleep_requested_ms=0 observed_ns=[221, 40, 30, 30, 30]\",\n          \"sleep_requested_ms=1 observed_ns=[1070564, 1048031, 1106604, 1069613, 1067969]\",\n          \"sleep_requested_ms=10 observed_ns=[10074545, 10076036, 10079394, 10074885, 10075766]\",\n          \"host_wakeable_wait_received=true observed_ns=67770\",\n          \"host_wait_deadline=true\"\n        ]\n      },\n      \"runtime\": {\n        \"bytes\": 34143086,\n        \"sha256\": \"8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9\"\n      },\n      \"target\": \"x86_64-unknown-linux-gnu\"\n    },\n    \"macos\": {\n      \"b1\": {\n        \"entries\": 20,\n        \"native_exact\": 1,\n        \"resource_targets\": 18,\n        \"vm_exact\": 1\n      },\n      \"ci\": {\n        \"artifact\": 14758976939,\n        \"attempt\": 1,\n        \"job\": 137242370630,\n        \"run\": 45033610157,\n        \"sha256\": \"399167416e037b907c4bb593423d2d70d39dbd45a4a4a9447f4ecdc25d0bf884\"\n      },\n      \"observed\": {\n        \"argv\": [\n          \"argv0_present=true argv_count=10 valid_exact=true malformed_roundtrip=true\"\n        ],\n        \"cli\": [\n          \"{\\\"argv\\\":[\\\"run\\\",\\\"probe.xiao\\\"],\\\"kind\\\":\\\"run\\\",\\\"publicKeys\\\":[\\\"file\\\",\\\"kind\\\",\\\"optimizationExplicit\\\",\\\"optimizationLevel\\\",\\\"options\\\"]}\",\n          \"{\\\"argv\\\":[\\\"run\\\",\\\"probe.xiao\\\",\\\"--\\\",\\\"\\\",\\\"two words\\\"],\\\"code\\\":\\\"X11-CLI-ARG-001\\\"}\",\n          \"{\\\"argv\\\":[\\\"run\\\",\\\"probe.xiao\\\",\\\"--\\\",\\\"--help\\\"],\\\"kind\\\":\\\"help\\\",\\\"publicKeys\\\":[\\\"kind\\\",\\\"options\\\"]}\",\n          \"{\\\"argv\\\":[\\\"-xar\\\",\\\"probe.xar\\\",\\\"--\\\",\\\"--flag\\\"],\\\"code\\\":\\\"X11-CLI-ARG-001\\\"}\"\n        ],\n        \"env\": [\n          \"child_with_values\",\n          \"value_present=true case_folded=false empty_present=true absent=true malformed_roundtrip=true\",\n          \"child_with_value_removed\",\n          \"value_present=false case_folded=false empty_present=true absent=true malformed_roundtrip=true\"\n        ],\n        \"fs\": [\n          \"create_new_existing=AlreadyExists/Some(17) original_intact=true\",\n          \"same_directory_replace=success new_content=true temporary_removed=true\",\n          \"replace_directory=IsADirectory/Some(21) source_retained=true\",\n          \"directory_link=success\",\n          \"link_parent_read=Ok(true)\",\n          \"readonly_open_for_write=PermissionDenied/Some(13)\"\n        ],\n        \"log\": [\n          \"concurrent_stdout_records=48 exact=true stderr_separate=true exit=exit status: 0\",\n          \"closed_stdout_write=BrokenPipe/Some(32)\",\n          \"closed_stream_child=exit status: 0\"\n        ],\n        \"time\": [\n          \"wall_unix_ns=1795358196455855000\",\n          \"monotonic_min_observed_ns=Some(41) regressions=0\",\n          \"sleep_requested_ms=0 observed_ns=[42, 42, 0, 42, 0]\",\n          \"sleep_requested_ms=1 observed_ns=[7533792, 5668000, 5072709, 4761500, 4150667]\",\n          \"sleep_requested_ms=10 observed_ns=[40438417, 10331792, 18882042, 17221875, 17007875]\",\n          \"host_wakeable_wait_received=true observed_ns=90750\",\n          \"host_wait_deadline=true\"\n        ]\n      },\n      \"runtime\": {\n        \"bytes\": 25667552,\n        \"sha256\": \"e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c\"\n      },\n      \"target\": \"aarch64-apple-darwin\"\n    },\n    \"windows\": {\n      \"b1\": {\n        \"entries\": 20,\n        \"native_exact\": 1,\n        \"resource_targets\": 18,\n        \"vm_exact\": 1\n      },\n      \"observed\": {\n        \"argv\": [\n          \"argv0_present=true argv_count=10 valid_exact=true malformed_roundtrip=true\"\n        ],\n        \"cli\": [\n          \"{\\\"argv\\\":[\\\"run\\\",\\\"probe.xiao\\\"],\\\"kind\\\":\\\"run\\\",\\\"publicKeys\\\":[\\\"file\\\",\\\"kind\\\",\\\"optimizationExplicit\\\",\\\"optimizationLevel\\\",\\\"options\\\"]}\",\n          \"{\\\"argv\\\":[\\\"run\\\",\\\"probe.xiao\\\",\\\"--\\\",\\\"\\\",\\\"two words\\\"],\\\"code\\\":\\\"X11-CLI-ARG-001\\\"}\",\n          \"{\\\"argv\\\":[\\\"run\\\",\\\"probe.xiao\\\",\\\"--\\\",\\\"--help\\\"],\\\"kind\\\":\\\"help\\\",\\\"publicKeys\\\":[\\\"kind\\\",\\\"options\\\"]}\",\n          \"{\\\"argv\\\":[\\\"-xar\\\",\\\"probe.xar\\\",\\\"--\\\",\\\"--flag\\\"],\\\"code\\\":\\\"X11-CLI-ARG-001\\\"}\"\n        ],\n        \"env\": [\n          \"child_with_values\",\n          \"value_present=true case_folded=true empty_present=true absent=true malformed_roundtrip=true\",\n          \"child_with_value_removed\",\n          \"value_present=false case_folded=true empty_present=true absent=true malformed_roundtrip=true\"\n        ],\n        \"fs\": [\n          \"create_new_existing=AlreadyExists/Some(80) original_intact=true\",\n          \"same_directory_replace=success new_content=true temporary_removed=true\",\n          \"replace_directory=PermissionDenied/Some(5) source_retained=true\",\n          \"directory_link=success\",\n          \"link_parent_read=Err(Os { code: 2, kind: NotFound, message: \\\"系统找不到指定的文件。\\\" })\",\n          \"readonly_open_for_write=PermissionDenied/Some(5)\"\n        ],\n        \"log\": [\n          \"concurrent_stdout_records=48 exact=true stderr_separate=true exit=exit code: 0\",\n          \"closed_stdout_write=BrokenPipe/Some(232)\",\n          \"closed_stream_child=exit code: 0\"\n        ],\n        \"time\": [\n          \"wall_unix_ns=1795358063470640100\",\n          \"monotonic_min_observed_ns=Some(100) regressions=0\",\n          \"sleep_requested_ms=0 observed_ns=[7400, 500, 300, 400, 400]\",\n          \"sleep_requested_ms=1 observed_ns=[1065100, 1552900, 1545900, 1720400, 1671000]\",\n          \"sleep_requested_ms=10 observed_ns=[10298500, 10510200, 10515900, 10206800, 10516800]\",\n          \"host_wakeable_wait_received=true observed_ns=178200\",\n          \"host_wait_deadline=true\"\n        ]\n      },\n      \"runtime\": {\n        \"bytes\": 27483016,\n        \"sha256\": \"fa493d79b129cf7fa600993605381830f6abeaab23ec0ea48c0a910554de0fff\"\n      },\n      \"target\": \"x86_64-pc-windows-msvc\"\n    }\n  },\n  \"product\": {\n    \"commit\": \"e79fab3cdd3ea9d3a7eff31f529dec2498434114\",\n    \"files\": 1222,\n    \"locks\": {\n      \"core/rust/Cargo.lock\": {\n        \"bytes\": 19599,\n        \"sha256\": \"e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381\"\n      },\n      \"tests/benchmarks/Cargo.lock\": {\n        \"bytes\": 19203,\n        \"sha256\": \"64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd\"\n      }\n    },\n    \"tree\": \"80be41eefc3983001cd3968db0ccceee541f698d\",\n    \"tree_list_sha256\": \"2d6494d5d7e27fb000e7f23719ce5bd7d816f147aac7b828d31cb52be7b78e3f\"\n  },\n  \"registry_verified\": false,\n  \"runner\": \"0aa8540f9ffcb0ba1ed7a4acf85bc88c8a78ce16\"\n}\n"
+  },
+  "prior_manifest": {
+    "bytes": 1519,
+    "sha256": "6149246eb705a796df2f68292408b6d1f0a8bb821c067bdee97a9e3989f33e73"
+  },
+  "prior_negatives": [
+    {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261122-b3-0\\audit_entry.py",
+        "--evidence-root",
+        "D:\\project\\Xiao\\.b3-0b\\20261123-01\\manifest-tampered"
+      ],
+      "case": "manifest-tampered",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0A 拒绝：清单字节或身份不符\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261122-b3-0\\audit_entry.py",
+        "--evidence-root",
+        "D:\\project\\Xiao\\.b3-0b\\20261123-01\\missing-attributes"
+      ],
+      "case": "missing-attributes",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0A 拒绝：清单字节或身份不符\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261122-b3-0\\audit_entry.py",
+        "--evidence-root",
+        "D:\\project\\Xiao\\.b3-0b\\20261123-01\\entry-status-tampered"
+      ],
+      "case": "entry-status-tampered",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0A 拒绝：入口回执与原始观察不符\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261122-b3-0\\audit_entry.py",
+        "--evidence-root",
+        "D:\\project\\Xiao\\.b3-0b\\20261123-01\\false-approval"
+      ],
+      "case": "false-approval",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0A 拒绝：入口回执与原始观察不符\n",
+      "stdout": ""
+    }
+  ],
+  "prior_seal": "ac6865ea029ad116b0087c556e59b0f5ed6d896e",
+  "product": {
+    "commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+    "files": 1222,
+    "locks": {
+      "core/rust/Cargo.lock": {
+        "bytes": 19599,
+        "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+      },
+      "tests/benchmarks/Cargo.lock": {
+        "bytes": 19203,
+        "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+      }
+    },
+    "tree": "80be41eefc3983001cd3968db0ccceee541f698d",
+    "tree_list_sha256": "2d6494d5d7e27fb000e7f23719ce5bd7d816f147aac7b828d31cb52be7b78e3f"
+  }
+}
