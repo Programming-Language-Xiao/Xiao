@@ -1,6 +1,6 @@
 # 20O-B2-B6-4. 三平台与 CI 工程门禁实施规划
 
-> **2026-11-19，B6-4 受限交接，正式结果 `b6_4_passed=false`。** `original_passed=false`，`followup_passed=false`，`windows_coff_verified=false`，`22d_open=true`。修复快照的三平台功能和 Linux 工程门禁功能验证通过，Windows COFF 导出完整性未验证；严格口径下 `followup_passed=false`。Windows 22D 的三处间歇性释放差分待归因。B6-5 规划完成，未开始；[规划](20o-b2-b6-5-closeout-plan.md)。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) · [修复及复跑证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
+> **2026-11-19，B6-4 受限交接，正式结果 `b6_4_passed=false`。** `original_passed=false`，`followup_passed=false`，`windows_coff_verified=false`，`22d_open=true`。修复快照的三平台功能和 Linux 工程门禁功能验证通过，Windows COFF 导出完整性未验证；严格口径下 `followup_passed=false`。Windows 22D 的三处间歇性释放差分待归因。B6-5 内部收口完成，`b6_5_passed=true`、`b7_entry_ready=true`；[收口证据](assets/20o-b2-b/entry-20261120-b6-5/README.md)。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) · [修复及复跑证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
 > 入口：B6-3 固定 `58176ff5` 的三平台边界证据（765 次语言执行、C ABI 11 项、B1 契约 9/9 与资源 18/18、B4 回归、4 条真实输出加 24 条派生负例）；B6-2 性能绑定 `79ea0375` 及其 source-boundary 证明；B6-1 仍为 `restricted/stage_passed=false`。
 > B6-4 只做三平台执行、CI 与工程门禁证据；不重跑 B6-2 性能、不重跑 B6-3 全边界、不跑 721、不改产品/工作流阈值/ABI/registry。
 > B6-1 的 Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-4 的 Linux workspace Clippy 已通过。
@@ -142,7 +142,7 @@ B4 在 `9d75ab1a` 按手工维护的 ABI 依赖表展开可达入口的组件。
 4. 无产品/测试/工作流阈值/ABI/registry/721 变更；
 5. 历史 B6-1/B6-2/B6-3 证据未改写；
 6. 未把 Linux 专属仓库门禁写成三平台门禁；B6-1 的 Windows COFF 未验证与 Linux Clippy 未执行继续按历史事实表述，不混入 B6-4 本批结果；
-7. B6-5 入口明确；B6-5 规划完成、执行未开始；B7/B2-C 未开始。
+7. B6-5 入口明确；B6-5 内部收口完成，B7 入口就绪；B7/B2-C 执行未开始。
 
 `b6_4_passed` 要求原批通过、后续复验通过且 22D 已关闭；`followup_passed` 要求 Linux 工程门禁和三平台完整验证通过。按 §2.1 的平台口径，Windows 回归可登记功能通过及 `UnverifiedCoffExports`，但该等级不满足 `followup_passed` 或 B6-4 通过条件；COFF 完整性以 `windows_coff_verified` 单列，三平台产物完整通过要求各平台实际达到 `Complete`。受限交接的平台缺项纳入 B2-C 补验。[B2-C 开工闸门](20o-b2-c-final-closeout-plan.md#二开工闸门)
 
@@ -176,4 +176,4 @@ tools/gates/                                            维护工作流/守卫�
 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/      B6-4 证据
 ```
 
-本页只做 B6-4；B6-5 规划完成、执行未开始；B7 与 B2-C 仍后置。
+本页只做 B6-4；B6-5 内部收口完成、B7 入口就绪；B7 与 B2-C 执行仍后置。

@@ -18,7 +18,7 @@
 > **2026-11-18 B6-3 边界验收**　固定 `58176ff5`，三平台共 765 次语言执行通过，每平台 11 项 C ABI 观察通过。B1/B4 回归及 28 条计数守卫通过。[B6-3 归档](assets/20o-b2-b/entry-20261118-b6-3/README.md)
 > **2026-11-19 B6-4 门禁实测**　Linux 仓库门禁和默认 workspace 通过。Linux/macOS 原生作业被 `rc` 组件校验拒绝，Windows 原生作业在 22D 释放顺序断言失败。B1 四条精确入口及计数守卫通过，`b6_4_passed=false`，B6-5 尚未开始。[B6-4 执行证据](assets/20o-b2-b/entry-20261119-b6-4/README.md)
 > **2026-11-19 B6-4 后续**　修复快照的三平台原生功能和 Linux 工程门禁验证通过，Windows COFF 导出完整性未验证，`followup_passed=false`。B6-4 受限交接，`b6_4_passed=false`，22D 三处间歇性释放差分未关闭。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) · [修复及复跑证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md)
-> **2026-11-20 B6-5 收口**　B6-5 已完成内部收口，`b6_5_passed=true`、`b6_accepted=false`，B7 入口就绪。[收口证据](assets/20o-b2-b/entry-20261120-b6-5/README.md) 最终产品 `e79fab3c` 的本机 Linux 工程门禁通过。B7、B2-C 执行仍后置，`stdlib.cmath` 为 planned。
+> **2026-11-20 B6-5 收口**　B6-5 已完成内部收口，`b6_5_passed=true`、`b6_accepted=false`，B7 入口就绪。[收口证据](assets/20o-b2-b/entry-20261120-b6-5/README.md) 最终产品 `e79fab3c` 的本机 Linux 工程门禁通过。B7 开工单就绪、执行未开始；B2-C 执行后置，`stdlib.cmath` 为 planned。
 > **已确认（2026-11-01）：D-1 取甲（成熟 Rust 数值库）、B1 首批范围、
 > D-7 取专用 `json_value` 类型、B7→B8→B9 后置**。B0 已逐条询问并记录其余方向裁定，
 > 见 §五及 20P §六；具体 API 不因此自动冻结。基线、探测、教程与待审草案见

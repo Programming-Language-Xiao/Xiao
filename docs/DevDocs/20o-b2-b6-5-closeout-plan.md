@@ -1,6 +1,6 @@
 # 20O-B2-B6-5. B6 整批收口与 B7/B2-C 交接规划
 
-> **状态（2026-11-20）　B6-5 已完成内部收口。** 固定产品 `e79fab3c` 的 Linux 工程门禁通过，`b6_5_passed=true`、`b7_entry_ready=true`、`b6_accepted=false`。B6-1 维持受限，B6-4 五字段按正式回执交接。B7 与 B2-C 未开工。[收口证据与只读审计](assets/20o-b2-b/entry-20261120-b6-5/README.md)
+> **状态（2026-11-20）　B6-5 已完成内部收口。** 固定产品 `e79fab3c` 的 Linux 工程门禁通过，`b6_5_passed=true`、`b7_entry_ready=true`、`b6_accepted=false`。B6-1 维持受限，B6-4 五字段按正式回执交接。B7 开工单就绪、执行未开始；B2-C 未开工。[收口证据与只读审计](assets/20o-b2-b/entry-20261120-b6-5/README.md)
 > 入口：[B6-4 交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json)、[B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md)、[B6-3 实测](assets/20o-b2-b/entry-20261118-b6-3/README.md)、[B6-1 重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)、[B6-1 macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md)。
 > B6-5 不重跑 B6-2 全量性能、不重跑 B6-3 全边界、不跑旧 721、不改产品/ABI/registry/教程/工作流阈值，不关闭 22D 或 Windows COFF 缺项。
 
@@ -56,7 +56,7 @@ b6_accepted =
   and b6_4_passed
 ```
 
-当前 `b6_accepted=false`，因为 B6-1 与 B6-4 都是受限状态。`b6_2_final_tree_covered` 和 `b6_3_final_tree_covered` 只有在 B6-2/B6-3 快照到最终树的受保护差异已证明不触及性能/边界路径，或受影响项已补测后，才能为 true。B6-5 不得把 `b6_accepted` 改成 true，除非各阶段都有正式通过回执且最终树覆盖成立。
+当前 `b6_accepted=false`，因为 B6-1 与 B6-4 仍受限，且 `b6_3_final_tree_covered=false`：B6-3 最终树的 Windows/macOS 原生产物验证归 B2-C。`b6_2_final_tree_covered` 和 `b6_3_final_tree_covered` 只有在 B6-2/B6-3 快照到最终树的受保护差异已证明不触及性能/边界路径，或受影响项已补测后，才能为 true。B6-5 不得把 `b6_accepted` 改成 true，除非各阶段都有正式通过回执且最终树覆盖成立。
 
 ```text
 b6_5_passed =
