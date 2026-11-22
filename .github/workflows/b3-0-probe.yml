@@ -1,0 +1,60 @@
+name: Xiao B3-0 fixed host probes
+
+on:
+  push:
+    branches: [codex/b3-0-probe-runner]
+    paths: [".github/workflows/b3-0-probe.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: B3-0 ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {platform: linux, runner: ubuntu-24.04}
+          - {platform: macos, runner: macos-15}
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    steps:
+      - name: Checkout probe recipe
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Fetch fixed B2-C product
+        run: git fetch --depth=1 origin e79fab3cdd3ea9d3a7eff31f529dec2498434114
+      - name: Install Rust 1.96.0
+        run: rustup toolchain install 1.96.0 --profile minimal --component clippy,rustfmt
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.0
+      - name: Install Linux LLVM
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang llvm
+      - name: Install macOS LLVM
+        if: runner.os == 'macOS'
+        run: brew install llvm@21
+      - name: Collect host observations and inherited B1 points
+        shell: bash
+        run: |
+          set -euo pipefail
+          llvm=/usr/bin
+          if [ "$RUNNER_OS" = macOS ]; then
+            llvm="$(brew --prefix llvm@21)/bin"
+          fi
+          python3 -B docs/DevDocs/assets/20o-b3/entry-20261122-b3-0/collect.py "$RUNNER_TEMP/b3-0" --llvm "$llvm"
+      - name: Upload raw observations and receipts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: b3-0-${{ matrix.platform }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/b3-0/evidence/
+          if-no-files-found: error
