@@ -61,11 +61,11 @@ def conflicting_docs_report(raw):
     return json_bytes(report)
 
 
-def replay(archive, status, reason):
-    inputs = (archive, status)
+def replay(archive, status, reason, *, locked_docs=ROOT / "repo-check-locked.zip"):
+    inputs = (archive, status, locked_docs, ROOT / "handoff.json")
     before = [digest(path.read_bytes()) for path in inputs]
     command = [sys.executable, "-B", "-X", "utf8", str(ROOT / "audit.py"),
-               "--archive", str(archive), "--status", str(status)]
+               "--archive", str(archive), "--status", str(status), "--locked-docs", str(locked_docs)]
     process = subprocess.run(command, cwd=REPO, capture_output=True, encoding="utf-8")
     after = [digest(path.read_bytes()) for path in inputs]
     require(before == after, "审计修改了输入")
@@ -77,6 +77,12 @@ def replay(archive, status, reason):
                 f"反例拒绝原因不符，预期 {reason}，实际 {process.stderr.strip()}")
     return {"expected_reason": reason, "observed_reason": process.stderr.strip() or None,
             "exit": process.returncode, "read_only": before == after}
+
+
+def write_archive(path, members):
+    with ZipFile(path, "x") as zipped:
+        for name, raw in members.items():
+            zipped.writestr(name, raw)
 
 
 def main():
@@ -98,9 +104,7 @@ def main():
         cases["numeric-status"] = replay(archive, numeric, "封存状态与固定证据派生结果不符")
 
         repacked = task / "repacked.zip"
-        with ZipFile(repacked, "x") as zipped:
-            for name, raw in members.items():
-                zipped.writestr(name, raw)
+        write_archive(repacked, members)
         matching = task / "repacked-status.json"
         summary = json.loads(status.read_bytes())
         summary["archive"].update(digest(repacked.read_bytes()))
@@ -118,10 +122,20 @@ def main():
         }
         for case, (contents, reason) in variants.items():
             temporary = task / f"{case}.zip"
-            with ZipFile(temporary, "x") as zipped:
-                for name, raw in contents.items():
-                    zipped.writestr(name, raw)
+            write_archive(temporary, contents)
             cases[case] = replay(temporary, status, reason)
+
+        with ZipFile(ROOT / "repo-check-locked.zip") as zipped:
+            supplement = {name: zipped.read(name) for name in zipped.namelist()}
+        index = json.loads(supplement["evidence.json"])
+        name = "linux/cargo.log"
+        cargo = supplement["objects/" + index[name]["sha256"]]
+        require(b'"metadata", "--locked", ' in cargo, "受控 Cargo 基线参数缺失")
+        unlocked = cargo.replace(b'"metadata", "--locked", ', b'"metadata", ', 1)
+        temporary = task / "unlocked-cargo.zip"
+        write_archive(temporary, replace_outputs(supplement, {name: unlocked}))
+        cases["unlocked-cargo"] = replay(archive, status, "仓库门禁的 Cargo 子进程未按预期锁定",
+                                        locked_docs=temporary)
     print(json.dumps({"passed": True, "state_matrix": verified, "cases": cases}, ensure_ascii=False))
 
 

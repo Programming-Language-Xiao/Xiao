@@ -19,6 +19,18 @@
       "exit": 1,
       "read_only": true
     },
+    "numeric-status": {
+      "expected_reason": "封存状态与固定证据派生结果不符",
+      "observed_reason": "封存状态与固定证据派生结果不符",
+      "exit": 1,
+      "read_only": true
+    },
+    "repacked-with-matching-status": {
+      "expected_reason": "归档与固定收口 Git 对象不符",
+      "observed_reason": "归档与固定收口 Git 对象不符",
+      "exit": 1,
+      "read_only": true
+    },
     "missing-object": {
       "expected_reason": "证据包清单不符",
       "observed_reason": "证据包清单不符",
@@ -28,6 +40,18 @@
     "rehashed-exports": {
       "expected_reason": "Linux 导出对账输出不符",
       "observed_reason": "Linux 导出对账输出不符",
+      "exit": 1,
+      "read_only": true
+    },
+    "conflicting-docs-report": {
+      "expected_reason": "仓库门禁原始报告不符",
+      "observed_reason": "仓库门禁原始报告不符",
+      "exit": 1,
+      "read_only": true
+    },
+    "unlocked-cargo": {
+      "expected_reason": "仓库门禁的 Cargo 子进程未按预期锁定",
+      "observed_reason": "仓库门禁的 Cargo 子进程未按预期锁定",
       "exit": 1,
       "read_only": true
     }

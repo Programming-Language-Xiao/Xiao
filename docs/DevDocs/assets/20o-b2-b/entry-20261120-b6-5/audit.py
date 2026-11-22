@@ -21,6 +21,9 @@ from evidence import Evidence
 
 TARGET = "x86_64-unknown-linux-gnu"
 DOC_GATE = "repo-check-final"
+LOCKED_DOC_GATE = "repo-check-locked"
+DOCS_REVIEW_COMMIT = "eb074f2f4938db11322f9ecbd8cb594ee7fd8305"
+LOCKED_DOCS_SHA256 = "b1e688f1d64bfdf6f0a6052a333d0a0666c330494e500fe6a75ee36f78139b22"
 CARGO = ("cargo", "+1.96.0")
 MANIFEST = ("--manifest-path", "core/rust/Cargo.toml")
 TEST = (*CARGO, "test", *MANIFEST, "--locked")
@@ -75,14 +78,18 @@ def check_identity(identity):
 
 def receipt(bundle, folder, name):
     row = bundle.read(f"{folder}/{name}.json")
+    outputs = {stream: bundle.raw(f"{folder}/{name}.{stream}") for stream in ("stdout", "stderr")}
+    verify_receipt(row, outputs, f"{folder}/{name}")
+    return row, *(raw.decode("utf-8") for raw in outputs.values())
+
+
+def verify_receipt(row, outputs, name):
     started = datetime.fromisoformat(row["started_utc"])
     finished = datetime.fromisoformat(row["finished_utc"])
-    outputs = {stream: bundle.raw(f"{folder}/{name}.{stream}") for stream in ("stdout", "stderr")}
     require(type(row["pid"]) is int and row["pid"] > 0 and type(row["exit_code"]) is int
             and started.utcoffset() is not None and finished.utcoffset() is not None and started <= finished
             and row["outputs"] == {stream: digest(raw) for stream, raw in outputs.items()},
-            f"命令回执或原始输出身份不符：{folder}/{name}")
-    return row, *(raw.decode("utf-8") for raw in outputs.values())
+            f"命令回执或原始输出身份不符：{name}")
 
 
 def verify_history(bundle):
@@ -320,6 +327,53 @@ def verify_docs_report(row, stdout, stderr):
     return dict(warnings)
 
 
+def verify_locked_docs(archive, original):
+    raw = archive.read_bytes()
+    info = digest(raw)
+    with ZipFile(BytesIO(raw)) as zipped:
+        bundle = Evidence(zipped)
+        require(bundle.entries.keys() == {"linux/cargo.log", "linux/docs-source.json", f"linux/{LOCKED_DOC_GATE}.json"},
+                "锁定仓库门禁清单不符")
+        row = bundle.read(f"linux/{LOCKED_DOC_GATE}.json")
+        capture = bundle.read("linux/docs-source.json")
+        cargo_calls = [json.loads(line) for line in bundle.raw("linux/cargo.log").splitlines()]
+    outputs = {stream: original.raw(f"linux/{DOC_GATE}.{stream}") for stream in ("stdout", "stderr")}
+    verify_receipt(row, outputs, LOCKED_DOC_GATE)
+    previous = original.read(f"linux/{DOC_GATE}.json")
+    environment = original.read("linux/environment.json")
+    tools = {name: environment["tools"][name] for name in ("bun", "cargo")}
+    task = PurePosixPath(environment["task"])
+    require(capture["tools"] == tools and capture["path_prefix"] == [
+                str(task / LOCKED_DOC_GATE / "bin"), *(str(PurePosixPath(tool["path"]).parent) for tool in tools.values())
+            ] and row["argv"] == previous["argv"] and row["cwd"] == previous["cwd"]
+            and row["temp"] == str(task / "tmp" / LOCKED_DOC_GATE)
+            and row["source_before"] == row["source_after"] == previous["source_before"]
+            and row["runtime_before"] == row["runtime_after"] == previous["runtime_after"],
+            "锁定仓库门禁工具、产品树或 Runtime 身份不符")
+    check_identity(capture["wrapper"])
+    manifest = str(task / "source" / MANIFEST[1])
+    expected = [
+        [tools["cargo"]["path"], "metadata", "--locked", "--no-deps", "--format-version", "1",
+         "--manifest-path", manifest],
+        [tools["cargo"]["path"], "run", "--locked", "--quiet", "--manifest-path", manifest,
+         "-p", "xiao-doc-coverage-rust", "--bin", "xiao-doc-coverage-rust", "--"],
+    ]
+    require([call["argv"] for call in cargo_calls] == expected
+            and all(call["gate_pid"] == row["pid"] and call["cwd"] == row["cwd"]
+                    and type(call["pid"]) is int and call["pid"] > 0 and call["exit_code"] == 0 for call in cargo_calls)
+            and len({row["pid"], *(call["pid"] for call in cargo_calls)}) == 3,
+            "仓库门禁的 Cargo 子进程未按预期锁定")
+    markdown = verify_docs_snapshot(capture, DOCS_REVIEW_COMMIT)
+    diagnostics = verify_docs_report(row, outputs["stdout"].decode("utf-8"), outputs["stderr"].decode("utf-8"))
+    require(info["sha256"] == LOCKED_DOCS_SHA256, "锁定仓库门禁归档摘要不符")
+    return {
+        "exit_code": row["exit_code"], "pid": row["pid"], "docs_commit": DOCS_REVIEW_COMMIT,
+        "markdown": markdown, "diagnostics": diagnostics,
+        "locked_cargo_commands": [call["argv"][1] for call in cargo_calls],
+        "archive": info, "output_objects_from": f"closeout.zip:linux/{DOC_GATE}",
+    }
+
+
 def compat():
     crates = "core/rust/crates"
     fields = {
@@ -359,7 +413,7 @@ def verify_handoff(bundle, handoff):
     return observed
 
 
-def inspect(archive, handoff):
+def inspect(archive, handoff, locked_docs):
     product = product_record()
     sealed = archive.read_bytes()
     with ZipFile(BytesIO(sealed)) as zipped:
@@ -375,8 +429,10 @@ def inspect(archive, handoff):
         reports, flags = verify_history(bundle)
         linux = verify_linux(bundle, product["source"])
         handoff_data = verify_handoff(bundle, handoff)
+        require(sealed == blob(CLOSEOUT_COMMIT, f"{PREFIX}/closeout.zip"), "归档与固定收口 Git 对象不符")
+        linux["repo_check_locked"] = verify_locked_docs(locked_docs, bundle)
+        linux["gates"]["repo-check"] = linux["repo_check_locked"]["exit_code"]
         archive_info = digest(sealed) | {"files": len(bundle.entries), "objects": bundle.unique}
-    require(sealed == blob(CLOSEOUT_COMMIT, f"{PREFIX}/closeout.zip"), "归档与固定收口 Git 对象不符")
     measured, boundary = (product["changes"][rev] for rev in (PERFORMANCE, BOUNDARY))
     require(set(boundary) == COMPONENT_DELTA and set(measured) >= set(boundary),
             "Runtime 组件受影响差异与交接范围不符")
@@ -413,11 +469,12 @@ def inspect(archive, handoff):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--archive", type=Path, default=ROOT / "closeout.zip")
+    parser.add_argument("--locked-docs", type=Path, default=ROOT / "repo-check-locked.zip")
     parser.add_argument("--status", type=Path, default=ROOT / "status.json")
     parser.add_argument("--derive", action="store_true", help="输出派生状态，供封存时落盘")
     args = parser.parse_args()
     try:
-        result = inspect(args.archive, ROOT / "handoff.json")
+        result = inspect(args.archive, ROOT / "handoff.json", args.locked_docs)
         if not args.derive:
             require(json_bytes(result) == json_bytes(json.loads(args.status.read_bytes())),
                     "封存状态与固定证据派生结果不符")

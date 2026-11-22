@@ -67,6 +67,28 @@
         "sha256": "75a5969c5a7f9066bb1669ca8ece377b868954c9622b091fa5af1f2adedc5aca"
       }
     },
+    "repo_check_locked": {
+      "archive": {
+        "bytes": 3909,
+        "sha256": "b1e688f1d64bfdf6f0a6052a333d0a0666c330494e500fe6a75ee36f78139b22"
+      },
+      "diagnostics": {
+        "A0-COVERAGE-002": 1294
+      },
+      "docs_commit": "eb074f2f4938db11322f9ecbd8cb594ee7fd8305",
+      "exit_code": 0,
+      "locked_cargo_commands": [
+        "metadata",
+        "run"
+      ],
+      "markdown": {
+        "bytes": 44346,
+        "files": 448,
+        "sha256": "e465006255d128aebb28e2c2f938d214f61ad4dfc6a7da5d6bfa734ed037636a"
+      },
+      "output_objects_from": "closeout.zip:linux/repo-check-final",
+      "pid": 1627
+    },
     "runtime": {
       "bytes": 34143188,
       "sha256": "08b88569645eb45d7cc6fea793adbe91a459a174392a91d1b57497d22349ad89"
