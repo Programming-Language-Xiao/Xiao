@@ -240,4 +240,4 @@ tests/fixtures/docs/cmath/                             cmath 夹具
 docs/DevDocs/assets/20o-b2-b/entry-<date>/            B2-B 证据（待建）
 ```
 
-本页记录 B2-B 执行边界。B5 固定 1.19/21 矩阵与 21→22 增量分别归档。B6-5 已完成受限交接，B7 已在固定 1.19/22 快照执行回归。B2-C 根据 B7 的审计结果接收最终公共发布清单。[B7 执行证据](assets/20o-b2-b/entry-20261122-b7/README.md)
+本页记录 B2-B 执行边界。B5 固定 1.19/21 矩阵与 21→22 增量分别归档。B6-5 已完成受限交接，B7 已完成固定 1.19/22 内部收口。B2-C 的最终公共发布入口就绪。[B7 封存状态](assets/20o-b2-b/entry-20261122-b7/closeout.json)

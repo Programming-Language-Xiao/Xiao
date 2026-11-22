@@ -1,0 +1,44 @@
+{
+  "cases": {
+    "baseline": {
+      "exit": 0,
+      "read_only": true
+    },
+    "forged-b6-state": {
+      "exit": 1,
+      "read_only": true,
+      "reason": "封存状态与实际证据派生结果不符"
+    },
+    "forged-source": {
+      "exit": 1,
+      "read_only": true,
+      "reason": "平台或任务目录身份不符：windows"
+    },
+    "manifest-changed": {
+      "exit": 1,
+      "read_only": true,
+      "reason": "B7 封存文件清单或字节不符"
+    },
+    "missing-attributes": {
+      "exit": 1,
+      "read_only": true,
+      "reason": "B7 封存文件清单或字节不符"
+    },
+    "repacked-with-manifest": {
+      "exit": 1,
+      "read_only": true,
+      "reason": "B7 清单与固定 Git 对象不符"
+    },
+    "subset-as-full": {
+      "exit": 1,
+      "read_only": true,
+      "reason": "回归入口集合不符：windows"
+    }
+  },
+  "matrix": {
+    "b2c_entry_ready": 1,
+    "b7_passed": 2,
+    "checked": 32
+  },
+  "passed": true
+}
