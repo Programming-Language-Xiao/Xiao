@@ -2,7 +2,7 @@
 
 状态为 `planned`。`std.cli` 和 `stdlib.cli` 提供 `split_terminator([str] values) -> [[str]]`。分组函数使用调用者给出的值，示例的输出使用 `stdout`。标准库接口目标为 1。[冻结契约](../contract-draft.md)
 
-`[[str]]` 在签名表中描述两组字符串数组的返回形状。源码返回声明方式见 B3-0B3 的补充裁定。[现有编译器探测](../cli-shape.zip)
+`[[str]]` 描述两组字符串数组的返回形状，标准库源码使用前端的返回类型推导。[模块导入探测](../cli-import.zip)
 
 ## 完整示例
 
