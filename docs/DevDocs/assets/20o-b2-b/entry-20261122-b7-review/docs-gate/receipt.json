@@ -17,16 +17,16 @@
   },
   "cargo_calls": {
     "bytes": 1205,
-    "sha256": "2f69edda7fe29c379735aa159711ff373ec620b5a1d0e59eae1461dce16f3169"
+    "sha256": "da50923d633f9a7dab08756eef88b1e32a4ee30c752cc0bb914c57dfcaacd32d"
   },
   "cargo_wrapper": {
     "bytes": 633,
     "sha256": "40d88defbbdb8d8fa7845e778affe945ab14f81a91cf236756bd8cf59dcc57ea"
   },
-  "commit": "f69d0a2a30e2b32e5861019eedfcb1eacc94e691",
+  "commit": "7cca34740eec0b5f6b3c7bd11d80799eff1fbe11",
   "cwd": "/tmp/xiao-b7-final-repo",
   "exit": 0,
-  "finished_utc": "2026-11-22T13:56:40.343667+00:00",
+  "finished_utc": "2026-11-22T13:59:24.957961+00:00",
   "locks_after": {
     "core/rust/Cargo.lock": {
       "bytes": 19599,
@@ -317,7 +317,7 @@
     "docs/DevDocs/20o-b2-a7-b1-regression-b2a-closeout-plan.md": "48e84f8dc7fa3729bb1d09a21aa20e38aae6df09",
     "docs/DevDocs/20o-b2-a7-b2a-closeout.md": "054583290e33ae618932703423835f369b8f2c72",
     "docs/DevDocs/20o-b2-a7-self-review.md": "2faa7c9662e373d33f1782869c2693981dc8d046",
-    "docs/DevDocs/20o-b2-b-implementation-plan.md": "4554bd652244e9d51f54d60f5d1af782a24a2844",
+    "docs/DevDocs/20o-b2-b-implementation-plan.md": "51e624078467756e5ed8cc8a366b07ac5be09f40",
     "docs/DevDocs/20o-b2-b0-b1-closeout.md": "a859a933d120a01fbb3847bba81dfcfa836fe68e",
     "docs/DevDocs/20o-b2-b0-b1-kickoff-plan.md": "225f822663044dc9e37f5ebacabe1cb05fea7f42",
     "docs/DevDocs/20o-b2-b2-lfloat-divide-plan.md": "17fa2ba303abafbd7909b6755354f6811b99ecc6",
@@ -345,10 +345,10 @@
     "docs/DevDocs/20o-b2-b5-version-matrix-plan.md": "172566be2680bafb4b0daeb572e3f526961dfa42",
     "docs/DevDocs/20o-b2-b6-1-rerun-plan.md": "3588464f91a4b6821553e9e09407839c779c99d7",
     "docs/DevDocs/20o-b2-b6-3-boundary-plan.md": "d8db93b91abb8139f9f3cf47c3686853e81ef90f",
-    "docs/DevDocs/20o-b2-b6-4-ci-gates-plan.md": "d0bbe009324baea4e70fd965c3099c3f108596e2",
-    "docs/DevDocs/20o-b2-b6-5-closeout-plan.md": "075f2742ba05c05d272acb9386c29fff0c262796",
-    "docs/DevDocs/20o-b2-b6-resource-performance-plan.md": "ba0285b7266c1384cdb8fc2d51ff12c1adcd8b4f",
-    "docs/DevDocs/20o-b2-b7-closeout-plan.md": "93970b40ffab603779366a36d716f2f2761874da",
+    "docs/DevDocs/20o-b2-b6-4-ci-gates-plan.md": "3d5a184e1623339db80ff3d140c55e96ca5feec3",
+    "docs/DevDocs/20o-b2-b6-5-closeout-plan.md": "319ee2e36582116c758fc1151fe1551788fdc1a9",
+    "docs/DevDocs/20o-b2-b6-resource-performance-plan.md": "38e04b8b46e171a1e96673638393342d855a0b7d",
+    "docs/DevDocs/20o-b2-b7-closeout-plan.md": "35f73a157f8abbf2b5100aa8cda612377a42e0cd",
     "docs/DevDocs/20o-b2-c-final-closeout-plan.md": "4902ef670f33055f6bb6878b5716ccf846dee46c",
     "docs/DevDocs/20o-b2-freeze-a-closeout-plan.md": "2968d65aba338832a8fba3a640fa0bc0000e0d50",
     "docs/DevDocs/20o-b2-freeze-a-numeric-semantics-plan.md": "4d7397004cf5b04bbab6e903aeba22ad1cf7a633",
@@ -882,7 +882,7 @@
     "docs/DevDocs/20o-b2-a7-b1-regression-b2a-closeout-plan.md": "48e84f8dc7fa3729bb1d09a21aa20e38aae6df09",
     "docs/DevDocs/20o-b2-a7-b2a-closeout.md": "054583290e33ae618932703423835f369b8f2c72",
     "docs/DevDocs/20o-b2-a7-self-review.md": "2faa7c9662e373d33f1782869c2693981dc8d046",
-    "docs/DevDocs/20o-b2-b-implementation-plan.md": "4554bd652244e9d51f54d60f5d1af782a24a2844",
+    "docs/DevDocs/20o-b2-b-implementation-plan.md": "51e624078467756e5ed8cc8a366b07ac5be09f40",
     "docs/DevDocs/20o-b2-b0-b1-closeout.md": "a859a933d120a01fbb3847bba81dfcfa836fe68e",
     "docs/DevDocs/20o-b2-b0-b1-kickoff-plan.md": "225f822663044dc9e37f5ebacabe1cb05fea7f42",
     "docs/DevDocs/20o-b2-b2-lfloat-divide-plan.md": "17fa2ba303abafbd7909b6755354f6811b99ecc6",
@@ -910,10 +910,10 @@
     "docs/DevDocs/20o-b2-b5-version-matrix-plan.md": "172566be2680bafb4b0daeb572e3f526961dfa42",
     "docs/DevDocs/20o-b2-b6-1-rerun-plan.md": "3588464f91a4b6821553e9e09407839c779c99d7",
     "docs/DevDocs/20o-b2-b6-3-boundary-plan.md": "d8db93b91abb8139f9f3cf47c3686853e81ef90f",
-    "docs/DevDocs/20o-b2-b6-4-ci-gates-plan.md": "d0bbe009324baea4e70fd965c3099c3f108596e2",
-    "docs/DevDocs/20o-b2-b6-5-closeout-plan.md": "075f2742ba05c05d272acb9386c29fff0c262796",
-    "docs/DevDocs/20o-b2-b6-resource-performance-plan.md": "ba0285b7266c1384cdb8fc2d51ff12c1adcd8b4f",
-    "docs/DevDocs/20o-b2-b7-closeout-plan.md": "93970b40ffab603779366a36d716f2f2761874da",
+    "docs/DevDocs/20o-b2-b6-4-ci-gates-plan.md": "3d5a184e1623339db80ff3d140c55e96ca5feec3",
+    "docs/DevDocs/20o-b2-b6-5-closeout-plan.md": "319ee2e36582116c758fc1151fe1551788fdc1a9",
+    "docs/DevDocs/20o-b2-b6-resource-performance-plan.md": "38e04b8b46e171a1e96673638393342d855a0b7d",
+    "docs/DevDocs/20o-b2-b7-closeout-plan.md": "35f73a157f8abbf2b5100aa8cda612377a42e0cd",
     "docs/DevDocs/20o-b2-c-final-closeout-plan.md": "4902ef670f33055f6bb6878b5716ccf846dee46c",
     "docs/DevDocs/20o-b2-freeze-a-closeout-plan.md": "2968d65aba338832a8fba3a640fa0bc0000e0d50",
     "docs/DevDocs/20o-b2-freeze-a-numeric-semantics-plan.md": "4d7397004cf5b04bbab6e903aeba22ad1cf7a633",
@@ -1187,7 +1187,7 @@
       "sha256": "91dfba73454c0ff50a01ce75ed37b05a0e9efccd538a11875b8a80d5ab374f56"
     }
   },
-  "pid": 4355,
-  "started_utc": "2026-11-22T13:56:28.246903+00:00",
+  "pid": 4279,
+  "started_utc": "2026-11-22T13:59:12.873062+00:00",
   "target": "/tmp/xiao-b7-final-target"
 }
