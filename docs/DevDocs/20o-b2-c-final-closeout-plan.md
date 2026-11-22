@@ -2,7 +2,7 @@
 
 > **2026-11-16历史状态：** B4-5已完成Windows内部收口；B5固定ABI1.19/21矩阵，原URL负载曾在默认workspace触发60秒看门狗。该失败与删失计时保留为历史。2026-11-17按裁定优化后，当前ABI1.19/22完整默认workspace通过；B5随后已联合收口。B1原件缺失和重建来源、静态比较增量保持独立。
 > **2026-11-18 历史门禁**　优化后的 1.19/22 工作区为 1,754 通过、0 失败、55 忽略，B5 已由[四类证据联合收口](assets/20o-b2-b/entry-20261117-b5-closeout/README.md)。
-> **2026-11-22 交接入口**　B7 已完成内部收口，`b2c_entry_ready=true`。B2-C 尚未执行。B6 仍为受限交接，Windows COFF、最终树 Windows/macOS 公共产物及性能补验按本规划验收。[B7 证据](assets/20o-b2-b/entry-20261122-b7/README.md) · [交接清单](assets/20o-b2-b/entry-20261122-b7/handoff.json)
+> **2026-11-22 交接入口**　B7 已完成内部收口，`b2c_entry_ready=true`。B2-C 开工单就绪、执行未开始；B6 仍为受限交接，Windows COFF、最终树 Windows/macOS 公共产物及性能补验按本规划验收。[B7 证据](assets/20o-b2-b/entry-20261122-b7/README.md) · [交接清单](assets/20o-b2-b/entry-20261122-b7/handoff.json)
 > B7 有效内部收口后才有 B2-C 开工入口；受限交接中的未验证项须在本批补齐，不能直接认领最终通过。
 > 入口为B7固定的最终源码/证据与B6资源/性能结论；当前版本预期ABI1.19/生成器22，并同时引用B5固定1.19/21矩阵、21→22增量及URL优化后默认workspace回执。B2-B内部可用不等于公共发布。
 > B2-C 只做最终 721、三平台公共产物、最终教程/registry、发布证据和 B2 收口。
@@ -57,6 +57,35 @@ C0～C3可以采集并记录失败或不可验证结果；只有全部必测功�
 6. 最终教程/registry候选范围与完整示例可供测试；当前保留planned和既有verified边界，不以预定状态冒充验收；
 7. 旧721、22C/22D、19/11/22保持独立；
 8. 唯一发布任务根、独立target/Runtime/缓存已建立。
+9. B7 已完成内部收口，`b7_passed=true`、`b2c_entry_ready=true`；B2-C 开始后先固定入口，不得把 B6/B7 的受限字段改写为通过。
+
+### 2.1 B2-C 开工单（2026-11-22）
+
+1. **固定入口**：B7 最终产品 `e79fab3c`、树 `80be41ee`、两个 Cargo.lock、Runtime、Rust 1.96.0、平台 LLVM/链接器和目标三重；B2-C 的 C0 只固定基线，不改产品。
+2. **继承状态**：`b7_passed=true`、`b2c_entry_ready=true`；B6 仍为 `b6_accepted=false`，`22d_open=true`，`windows_coff_verified=false`，`b6_3_final_tree_covered=false`。B2-C 不得把历史债务或未验证平台写成通过。
+3. **最终公共范围**：ABI 1.19、生成器 22、接口 1、intrinsic 1～48/ID 100；`std.cmath`/`stdlib.cmath` 15 包装、`lfloat_divide` 与 lint/lfloat 新增范围；B1 七库既有公开面。
+4. **完整 721**：C1 在新快照实际重跑 B1 七库 721 条 F10；不读取旧 721 作为本轮成绩，不复用历史可执行文件或报告。
+5. **最终平台**：C3 收齐 Windows/Linux/macOS 实际公共候选产物、版本/缓存/拒绝矩阵和 B6 新增数值负载；Windows COFF 与 B6-3 最终树 Windows/macOS 原生产物验证必须在本批补验。
+6. **教程/registry**：C4 之前 `stdlib.cmath` 及新增范围保持 planned；只有 C1～C3 全部通过后才允许 C4 升级，并保留 B1/error_code 既有 verified。
+7. **任务根**：`entry-20261122-b2-c/` 独立源码/target/Runtime/缓存/输出；每平台、优化级别、721 报告和教程批次独占目录，执行前后复核身份。
+8. **结论字段**：`b2c_passed` 只表示 B2-C 最终公共发布门禁通过；不得用它关闭 22C/22D、19/11/22 或 B1 历史债务。`b2c_started` 在 C0 开工后记录，`b2c_entry_ready` 保持 B7 交接值。
+
+### 2.2 B2-C 结论字段
+
+```text
+b2c_passed =
+  b2c_entry_ready
+  and c0_snapshot_frozen
+  and c1_721_passed
+  and c2_language_archive_passed
+  and c3_platform_version_passed
+  and c4_registry_tutorial_passed
+  and c5_closeout_audit_passed
+
+b2c_started = C0 已实际执行
+```
+
+`b2c_passed=true` 是 B2-C 最终公共发布结论，不表示 22C/22D、19/11/22 或 B1 历史债务已关闭；这些债务仍按原归属独立记录。`b2c_entry_ready` 在 B7 交接时为 true，B2-C 不得回填或改写 B7/B6 的受限字段。
 
 ## 三、分批执行
 
@@ -164,7 +193,8 @@ C0～C3可以采集并记录失败或不可验证结果；只有全部必测功�
 5. 完整教程示例已在三平台CI执行，最终教程/registry只升级已验证范围，B1/error_code既有verified保留；状态更新后的完整工程门禁通过；
 6. 旧721/历史债务/A0失败未改写；
 7. 固定Git对象只读审计与自反例通过；B2最终收口报告、原始来源和后续入口明确；
-8. 没有把内部证据写成未完成的三平台/721发布。
+8. 没有把内部证据写成未完成的三平台/721发布；
+9. B2-C 状态骨架由 C0～C5 证据派生，`b2c_passed`、`b2c_started` 与 B7 交接字段一致；`22d_open`、Windows COFF、B6-3 最终树缺项按原归属保留，不因 B2-C 公共收口被关闭。
 
 ## 六、风险与禁止
 
@@ -173,6 +203,7 @@ C0～C3可以采集并记录失败或不可验证结果；只有全部必测功�
 - 用CI绿色掩盖失败/不可验证；
 - 提前升级registry/教程或扩大verified；
 - 修改F10阈值/工作流超时补绿；
+- 把 `b2c_passed=true` 写成 22C/22D、19/11/22 或 B1 历史债务关闭；
 - 关闭历史债务；
 - 把B2-C扩成后续项目阶段。
 
@@ -192,7 +223,7 @@ B2-C完成后B2数值基础批最终公共收口；后续项目阶段另立入�
 
 ```text
 docs/DevDocs/20o-b2-c-final-closeout-plan.md         本规划
-docs/DevDocs/assets/20o-b2-c/entry-<date>/            B2-C证据
+docs/DevDocs/assets/20o-b2-c/entry-20261122-b2-c/     B2-C证据
 tests/fixtures/                                       B1功能/cmath/数值/归档与教程语料；F10报告另存证据目录
 docs/UseDocs/library/cmath.md                         最终教程
 docs/UseDocs/language/                                lint/lfloat/lfloat_divide最终新增范围

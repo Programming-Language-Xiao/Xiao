@@ -4,7 +4,7 @@
 > **2026-11-18 历史记录**　B5 固定矩阵绑定 ABI 1.19、生成器 21。产品已升至 1.19/22，B5 已联合收口。B6-1 受限，三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 按星崽裁定在 macOS 专项通过后启动，九组性能结果绑定 `79ea0375`。B6-3 的三平台边界结果绑定 `58176ff5`。[B6-1 限定重跑](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md) · [macOS 专项](assets/20o-b2-b/entry-20261118-b6-1-macos/README.md) · [B6-2 实测](assets/20o-b2-b/entry-20261118-b6-2/README.md) · [B6-3 实测](assets/20o-b2-b/entry-20261118-b6-3/README.md) · [21→22 增量证据](assets/20o-b2-static-float-equality/entry-20261117-fix/README.md) · [FIX.2 证据](assets/20o-b2-b/entry-20261118-b4-component-fix/README.md)
 > B7 只做 B2-B 内部收口、B1 回归、B2-A 与 B2-B 前序阶段证据对账和 B2-C 交接。
 > **2026-11-22 收口**　B7 固定使用 `e79fab3c` 的 1.19/22 内部产品。三平台功能、完整默认 workspace、定稿门禁及封存审计通过。`b7_passed=true`、`b2c_entry_ready=true`，B2-C 尚未开工。[B7 证据](assets/20o-b2-b/entry-20261122-b7/README.md) · [封存状态](assets/20o-b2-b/entry-20261122-b7/closeout.json)
-> 定稿门禁绑定 `10886861` 的 562 份 DevDocs/UseDocs Markdown。此处的收口状态和索引同步记录封存后的结论。[提交后审计与反例](assets/20o-b2-b/entry-20261122-b7-review/review.json)
+> B7 封存门禁绑定 `10886861` 的 562 份 DevDocs/UseDocs Markdown；封存后的状态同步和本页索引由最终文档门禁 [docs-gate/receipt.json](assets/20o-b2-b/entry-20261122-b7-review/docs-gate/receipt.json) 覆盖。[提交后审计与反例](assets/20o-b2-b/entry-20261122-b7-review/review.json)
 > 不运行旧 721、不升级 registry/教程、不关闭历史债务；B2-C 才做最终三平台、721 和公共发布。
 
 ## 一、入口与范围
