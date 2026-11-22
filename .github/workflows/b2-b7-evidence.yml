@@ -1,0 +1,55 @@
+name: Xiao B7 fixed-product evidence
+
+on:
+  push:
+    branches: [codex/b7-evidence-runner]
+    paths: [".github/workflows/b2-b7-evidence.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  evidence:
+    name: B7 ${{ matrix.platform }} ${{ matrix.suite }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {platform: macos, runner: macos-15, suite: b1}
+          - {platform: macos, runner: macos-15, suite: numeric}
+          - {platform: macos, runner: macos-15, suite: workspace}
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      B7_SUITE: ${{ matrix.suite }}
+      B7_PRODUCT: e79fab3cdd3ea9d3a7eff31f529dec2498434114
+    steps:
+      - name: Checkout evidence recipe
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Install Rust 1.96.0
+        run: rustup toolchain install 1.96.0 --profile minimal --component clippy,rustfmt
+      - name: Install LLVM 21
+        run: brew install llvm@21
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.1
+      - name: Run fixed product checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.cargo/bin:$PATH"
+          test "$(git rev-parse HEAD~1)" = "$B7_PRODUCT"
+          python3 -B "docs/DevDocs/assets/20o-b2-b/entry-20261122-b7/run.py" \
+            "$RUNNER_TEMP/b7-$B7_SUITE" --llvm "$(brew --prefix llvm@21)/bin" --suite "$B7_SUITE"
+      - name: Upload command receipts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: b7-${{ matrix.platform }}-${{ matrix.suite }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/b7-${{ matrix.suite }}/evidence
+          if-no-files-found: error

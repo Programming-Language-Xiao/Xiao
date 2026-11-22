@@ -72,6 +72,10 @@ jobs:
         with:
           workspaces: core/rust -> core/rust/target
 
+      - name: Record B6-4 checkout before gates
+        continue-on-error: true
+        run: python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py before
+
       - name: Verify B1 exact-count guards
         shell: pwsh
         run: ./tools/gates/b1-probe-guards.ps1
@@ -99,6 +103,14 @@ jobs:
       - name: Verify controlled measurement selection guards
         run: python tools/gates/b2-a6-selection.py --self-test
 
+      - name: Prepare Linux toolchain and Runtime for B6 diagnostics
+        shell: bash
+        run: bash docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/linux_runtime.sh
+
+      - name: Record Linux Runtime for B6 diagnostics
+        continue-on-error: true
+        run: python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py native
+
       - name: Run default workspace tests
         run: cargo test --manifest-path core/rust/Cargo.toml --workspace -- --skip b1_capabilities_have_vm_golden_outputs
 
@@ -106,6 +118,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          printf 'B6-4-B1 begin default\n'
           if ! output="$(cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_probe -- b1_capabilities_have_vm_golden_outputs --exact --nocapture 2>&1)"; then
             printf '%s\n' "$output"
             exit 1
@@ -113,6 +126,7 @@ jobs:
           printf '%s\n' "$output"
           test "$(printf '%s\n' "$output" | grep -c '^test result:')" -eq 1
           printf '%s\n' "$output" | grep -Eq '^test result: ok\. 1 passed; 0 failed; 0 ignored;'
+          printf 'B6-4-B1 end default\n'
 
       - name: Run benchmark workspace tests and driver self-test
         run: |
@@ -133,6 +147,11 @@ jobs:
           name: b1-f10-vm-Linux
           path: b1-f10-vm.json
           if-no-files-found: warn
+
+      - name: Record B6-4 checkout after gates
+        if: always()
+        continue-on-error: true
+        run: python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py after
 
   deterministic-size:
     name: Deterministic artifact size regression (Windows baseline)
@@ -221,6 +240,9 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: core/rust -> core/rust/target
+      - name: Record B6-4 checkout before gates
+        continue-on-error: true
+        run: python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py before
       - name: Install Windows LLVM
         if: runner.os == 'Windows'
         id: msys2
@@ -271,9 +293,14 @@ jobs:
           $env:XIAO_RUNTIME_LIBRARY = Join-Path $pwd 'core/rust/target/release/xiao_runtime.lib'
           $env:XIAO_DIAGNOSTICS_PATH = Join-Path $pwd 'core/rust/target/debug/xiao-diagnostics.exe'
           $env:XIAO_DIAGNOSTICS_HOLD_MS = '0'
+          $env:XIAO_FLOAT_EQUALITY_OUTPUT = Join-Path $env:RUNNER_TEMP ('xiao-float-equality-' + [guid]::NewGuid().ToString('N'))
           foreach ($artifact in @($env:XIAO_RUNTIME_LIBRARY, $env:XIAO_DIAGNOSTICS_PATH)) {
             if (-not (Test-Path $artifact)) { throw "Required artifact missing: $artifact" }
           }
+          try {
+            python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py native
+            if ($LASTEXITCODE -ne 0) { Write-Warning 'B6-4 native identity missing' }
+          } catch { Write-Warning 'B6-4 native identity missing' }
           if ($env:XIAO_B2_A_PERF -eq '1') {
             cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_a_resources --test 20o_b2_a_performance_protocol
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -285,6 +312,7 @@ jobs:
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime -p xiao-runtime-abi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           # B1 在同一作业内先取精确证据；后续既有门禁继续按原断言执行。
+          Write-Output 'B6-4-B1 begin windows'
           $b1Output = cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_probe -- --ignored b1_capabilities_match_native_golden_outputs --exact --nocapture 2>&1
           $b1Exit = $LASTEXITCODE
           $b1Output | ForEach-Object { Write-Output $_ }
@@ -293,6 +321,7 @@ jobs:
           if ($b1Summaries.Count -ne 1 -or $b1Summaries[0] -notmatch '^test result: ok\. 1 passed; 0 failed; 0 ignored;') {
             throw 'B1 native probe must pass exactly one case without ignoring it'
           }
+          Write-Output 'B6-4-B1 end windows'
           # Windows runner 没有交互式终端，窗口握手和调试执行仅在 Linux/Xvfb 作业运行。
           # DNS 依赖和平台异常子进程由父用例驱动，两个平台都排除子测试本身。
           cargo test --manifest-path core/rust/Cargo.toml --workspace --no-fail-fast -- --ignored --nocapture `
@@ -363,8 +392,10 @@ jobs:
           export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
           export XIAO_DIAGNOSTICS_PATH="$PWD/core/rust/target/debug/xiao-diagnostics"
           export XIAO_DIAGNOSTICS_HOLD_MS=0
+          export XIAO_FLOAT_EQUALITY_OUTPUT="$(mktemp -d "$RUNNER_TEMP/xiao-float-equality.XXXXXXXX")/observations"
           test -f "$XIAO_RUNTIME_LIBRARY"
           test -x "$XIAO_DIAGNOSTICS_PATH"
+          python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py native || printf 'B6-4 native identity missing\n'
           if [ "$XIAO_B2_A_PERF" = '1' ]; then
             cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_a_resources --test 20o_b2_a_performance_protocol
             rustc -Vv
@@ -405,7 +436,9 @@ jobs:
           run_exact_native_test public_native_concurrency_metadata_and_release_matrix 22e_release
           run_exact_native_test text_path_candidates_match_native_golden_outputs 20m_text_and_path
           run_exact_native_test text_path_interfaces_match_native_golden_outputs 20m_text_and_path
+          printf 'B6-4-B1 begin linux\n'
           run_exact_native_test b1_capabilities_match_native_golden_outputs 20o_b1_probe
+          printf 'B6-4-B1 end linux\n'
 
           if [ "$XIAO_B1_F10" = '1' ]; then
             rustc -Vv
@@ -434,8 +467,10 @@ jobs:
           export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
           export XIAO_DIAGNOSTICS_PATH="$PWD/core/rust/target/debug/xiao-diagnostics"
           export XIAO_DIAGNOSTICS_HOLD_MS=0
+          export XIAO_FLOAT_EQUALITY_OUTPUT="$(mktemp -d "$RUNNER_TEMP/xiao-float-equality.XXXXXXXX")/observations"
           test -f "$XIAO_RUNTIME_LIBRARY"
           test -x "$XIAO_DIAGNOSTICS_PATH"
+          python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py native || printf 'B6-4 native identity missing\n'
           if [ "$XIAO_B2_A_PERF" = '1' ]; then
             cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_a_resources --test 20o_b2_a_performance_protocol
             rustc -Vv
@@ -477,7 +512,9 @@ jobs:
           run_exact_native_test public_native_concurrency_metadata_and_release_matrix 22e_release
           run_exact_native_test text_path_candidates_match_native_golden_outputs 20m_text_and_path
           run_exact_native_test text_path_interfaces_match_native_golden_outputs 20m_text_and_path
+          printf 'B6-4-B1 begin macos\n'
           run_exact_native_test b1_capabilities_match_native_golden_outputs 20o_b1_probe
+          printf 'B6-4-B1 end macos\n'
 
           if [ "$XIAO_B1_F10" = '1' ]; then
             rustc -Vv
@@ -512,3 +549,8 @@ jobs:
         if: runner.os != 'Windows'
         shell: bash
         run: cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20d_first_api --test 20d_process_api --test 20e_archive_wiring
+
+      - name: Record B6-4 checkout after gates
+        if: always()
+        continue-on-error: true
+        run: python -B -X utf8 docs/DevDocs/assets/20o-b2-b/entry-20261119-b6-4/ci_identity.py after
