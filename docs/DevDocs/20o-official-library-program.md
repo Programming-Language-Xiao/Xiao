@@ -22,7 +22,8 @@
 > **2026-11-20 B6-5 收口**　B6-5 已完成内部收口，`b6_5_passed=true`、`b6_accepted=false`。最终产品 `e79fab3c` 的本机 Linux 工程门禁通过。[B6-5 收口证据](assets/20o-b2-b/entry-20261120-b6-5/README.md)
 > **2026-11-22 B7 收口**　固定 1.19/22 快照的三平台 B1、数值回归及完整默认 workspace 通过。`b7_passed=true`、`b2c_entry_ready=true`。22D 与 Windows COFF 缺项分别交接，`stdlib.cmath` 在该快照为 planned。[B7 封存状态](assets/20o-b2-b/entry-20261122-b7/closeout.json)
 > **2026-11-22 B2-C 收口**　721 条 F10 和 1,647 项 F-3 使用最终产品重跑。三平台公共候选、教程和最终工程门禁通过。Windows 同链接补验 10 份，B6 COFF 历史字段保留。[B2-C 收口证据](assets/20o-b2-c/entry-20261122-b2-c/README.md)
-> **2026-11-22 B3-0A**　固定 B2-C 产品复核三平台宿主探测和 B1 前置。B3-0B 首轮裁定待答。[B3-0 规划](20o-b3-0-probe-freeze-plan.md) · [实测与台账](assets/20o-b3/entry-20261122-b3-0/README.md)
+> **2026-11-22 B3-0A**　固定 B2-C 产品复核三平台宿主探测和 B1 前置。[实测与台账](assets/20o-b3/entry-20261122-b3-0/README.md)
+> **2026-11-23 B3-0B**　time、args 已冻结，cli 的两组返回形状已确认，源码返回声明待补充裁定。实际基线 1.19/22，联合版本候选 1.20/23。[B3-0B 阶段证据](assets/20o-b3/entry-20261123-b3-0b/README.md)
 > **已确认（2026-11-01）：D-1 取甲（成熟 Rust 数值库）、B1 首批范围、
 > D-7 取专用 `json_value` 类型、B7→B8→B9 后置**。B0 已逐条询问并记录其余方向裁定，
 > 见 §五及 20P §六；具体 API 不因此自动冻结。基线、探测、教程与待审草案见

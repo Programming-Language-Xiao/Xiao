@@ -1,0 +1,113 @@
+{
+  "cases": [
+    {
+      "after": "175950aa5c76cc7bb7f36de5cc12186704f54e2a020b80a96c4018552076a03a",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0b\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-h89_53q7\\unchanged",
+        "--preflight"
+      ],
+      "before": "175950aa5c76cc7bb7f36de5cc12186704f54e2a020b80a96c4018552076a03a",
+      "case": "unchanged",
+      "exit": 0,
+      "read_only": true,
+      "stderr": ""
+    },
+    {
+      "after": "7e01f6f562297df4e2eba42dd7bf4e8c2061d9e422d59af3c6a198d9db9e986d",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0b\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-h89_53q7\\manifest-tampered",
+        "--preflight"
+      ],
+      "before": "7e01f6f562297df4e2eba42dd7bf4e8c2061d9e422d59af3c6a198d9db9e986d",
+      "case": "manifest-tampered",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0B 拒绝：清单字节或身份不符\n"
+    },
+    {
+      "after": "eda3eef87fc7dfdbce1afb4734469dfa3a9c83bc34dc45b3b1cbf1afbff3b378",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0b\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-h89_53q7\\missing-attributes",
+        "--preflight"
+      ],
+      "before": "eda3eef87fc7dfdbce1afb4734469dfa3a9c83bc34dc45b3b1cbf1afbff3b378",
+      "case": "missing-attributes",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0B 拒绝：封存缺少文件：.gitattributes\n"
+    },
+    {
+      "after": "2d1e51b8887553965d479871fbf9f9614f6cecfc5ad9894b0e61b055144ed575",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0b\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-h89_53q7\\forged-status",
+        "--preflight"
+      ],
+      "before": "2d1e51b8887553965d479871fbf9f9614f6cecfc5ad9894b0e61b055144ed575",
+      "case": "forged-status",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0B 拒绝：收口回执与实际派生结论不符\n"
+    },
+    {
+      "after": "381e802be90f3de9cc4d37f3bb2a8ef1377419f1e5853447068e4d904707ff6f",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0b\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-h89_53q7\\forged-observation",
+        "--preflight"
+      ],
+      "before": "381e802be90f3de9cc4d37f3bb2a8ef1377419f1e5853447068e4d904707ff6f",
+      "case": "forged-observation",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0B 拒绝：探测回执偏离实测字节\n"
+    },
+    {
+      "after": "ce5606cbb5491c5ee8d6ecb26da8eb9b35117d7b272f10f843a59007a443f28e",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0b\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-h89_53q7\\direction-as-freeze",
+        "--preflight"
+      ],
+      "before": "ce5606cbb5491c5ee8d6ecb26da8eb9b35117d7b272f10f843a59007a443f28e",
+      "case": "direction-as-freeze",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0B 拒绝：裁定回执偏离实际答复\n"
+    }
+  ],
+  "mode": "preflight"
+}

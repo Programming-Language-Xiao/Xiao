@@ -1,6 +1,6 @@
 # 20O-B3-0B. `time` / `args` / `cli` 探测与契约冻结规划
 
-> **状态（2026-11-23）：B3-0B 规划完成，执行未开始。** B3-0A 已通过基线、三平台探测和 B1 前置；B3-0B 只做 `time`/`args`/`cli` 的探测、裁定和冻结，不写产品，不升级 registry/教程，不启动 B3-0C/B3-1。
+> **状态（2026-11-23）**　time、args 契约和版本候选已定，cli 两组返回形状已确认，源码注解方式待补充裁定。十二项答复、探测结果和三份 planned 教程候选已记录。[阶段证据](assets/20o-b3/entry-20261123-b3-0b/README.md)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B2-C 同链接补验是历史例外，不得继承。B3-0B 的探测记录不能替代 B3 产品验收。
 > 入口：[B3-0A 入口与探测](assets/20o-b3/entry-20261122-b3-0/README.md)、[B3-0 实施规划](20o-b3-0-probe-freeze-plan.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)、[B3-0A 裁定台账](assets/20o-b3/entry-20261122-b3-0/decisions.md)。
 > B3-0B 不改 ABI/intrinsic/registry/教程，不跑旧 721，不启动 B3-0C/B3-1/B4。
@@ -14,7 +14,7 @@
 | 目标模块 | `time`、`args`、`cli` |
 | 本批目标 | 回答 B3-0B 首轮问题，冻结三模块精确 API/错误/能力/取消/资源/性能/平台、教程草案和版本候选 |
 | 本批不做 | 产品实现、registry/教程 verified、B3-0C/B3-1、B4-B9、旧 721、历史债务核销 |
-| 状态 | `b3_0_passed=false`、`decisions_approved=false`、`b3_1_entry_ready=false`、`b3_product_started=false` |
+| 状态 | `b3_0b_passed=false`、`b3_0c_entry_ready=false`。整批 `b3_0_passed=false`、`b3_1_entry_ready=false`、`b3_product_started=false` |
 
 B3-0B 是 **契约冻结批**，不是实现批。方向候选和探测结果都不能写成精确冻结；必须由星崽对 B3-0B 首轮问题作出答复，并在冻结表中逐项登记。
 
@@ -76,6 +76,8 @@ b3_0c_entry_ready = b3_0b_passed and decisions_approved and no_product_change
 
 首轮答复只决定范围；精确签名、程序名来源、错误编号和资源/性能表在 B3-0B4 单独确认。
 
+星崽随后确认 time 首批提供显式 `ms` 和 `ns`，args 使用统一运行快照与 `process` 位，cli 提供 `split_terminator`。错误和性能协议已确认。ABI 1.20、生成器 23、标准库接口 1 作为联合候选交 B3-0D。[实际答复](assets/20o-b3/entry-20261123-b3-0b/decisions.json) · [冻结契约](assets/20o-b3/entry-20261123-b3-0b/contract-draft.md)
+
 ## 四、分批执行
 
 ### B3-0B0：裁定登记与冻结表骨架
@@ -132,7 +134,7 @@ b3_0c_entry_ready = b3_0b_passed and decisions_approved and no_product_change
 ### B3-0B5：教程草案、固定示例与测试入口
 
 1. 三模块各一份可执行教程草案：导入、quickstart、边界/错误、能力、资源上限和平台差异；
-2. 固定示例按 `tests/fixtures/docs/<module>/` 组织，包含源码和独立黄金；
+2. 固定示例按 `tests/fixtures/docs/<module>/` 组织，包含源码和独立黄金。B3-0B 将该目录结构存放于证据的 `candidates/`。产品接入与目录登记同步时按相同路径落地；
 3. 设计 VM 和受控原生 O0/O3 精确入口；产品未实现前只登记候选；
 4. 教程/registry 保持 `planned`，不升级 verified；
 5. 记录教程/示例/黄金 SHA-256；变化更新冻结表。
@@ -188,7 +190,7 @@ b3_0c_entry_ready = b3_0b_passed and decisions_approved and no_product_change
 
 ## 八、B3-0C 交接
 
-B3-0C 按 B3-0B 冻结表推进 `fs`/`env`/`log`；B3-0B 不得自行改已冻结 API，发现冲突回 B3-0B 修订并重新冻结。B3-0C 完成后再进入 B3-0D～B3-0F；B3-1/B4 仍后置。
+B3-0B 的 cli 返回声明补充裁定完成后，B3-0C 接收 `fs`、`env`、`log`。发现与三模块契约的冲突时，回 B3-0B 修订并重新冻结。B3-0D 联合确定编号、协议和 COFF 实施身份。[机器可读状态](assets/20o-b3/entry-20261123-b3-0b/closeout.json)
 
 交接必须包含：
 
@@ -205,7 +207,7 @@ B3-0C 按 B3-0B 冻结表推进 `fs`/`env`/`log`；B3-0B 不得自行改已冻�
 docs/DevDocs/20o-b3-0b-time-args-cli-plan.md            本规划
 docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/       B3-0B 证据
 docs/DevDocs/20o-b3-0-probe-freeze-plan.md             B3-0 总规划
-tests/fixtures/docs/                                    三模块教程候选夹具
+证据目录下的 candidates/tests/fixtures/docs/          三模块教程候选夹具
 docs/module-registry.json                               只读核对 planned，不升级
 stdlib/                                                   B3-0B 不改产品
 ```

@@ -1,6 +1,6 @@
 # 20O-B3-0. 简单宿主库探测、冻结与教程草案实施规划
 
-> **状态（2026-11-22）**　B3-0A 的固定基线、三平台探测和 B1 前置已通过只读复核。B3-0B 首轮裁定待答，整批冻结与 B3-1 入口待后续验收。[入口证据](assets/20o-b3/entry-20261122-b3-0/README.md) · [裁定台账](assets/20o-b3/entry-20261122-b3-0/decisions.md)
+> **状态（2026-11-23）**　B3-0A 的固定基线、三平台探测和 B1 前置已复核。B3-0B 的 time、args 已冻结，cli 源码返回声明待补充裁定。B3-0C 继续等待交接。[B3-0A 证据](assets/20o-b3/entry-20261122-b3-0/README.md) · [B3-0B 证据](assets/20o-b3/entry-20261123-b3-0b/README.md)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B2-C 的同链接 10 份候选只是历史例外，不得继承。B3-0 的探测记录不能替代 B3 产品验收。
 > 入口：[B3 宿主库规划](20o-b3-host-libraries-plan.md)、[B2-C 收口证据](assets/20o-b2-c/entry-20261122-b2-c/README.md)、[20P Day-1 架构](20p-day1-library-architecture.md)、[D-8/D-9/D-10 方向](20o-official-library-program.md#五决策清单)。
 > B3-0 不实现六个模块，不改 ABI/intrinsic/registry/教程，不跑旧 721，不启动 B3-1/B4。
@@ -84,7 +84,7 @@ b3_1_entry_ready = b3_0_passed and decisions_approved and no_product_change
 
 ### B3-0B：`time`、`args`、`cli` 探测与冻结
 
-B3-0B 的详细开工单、首轮裁定和冻结证据见 [B3-0B 实施规划](20o-b3-0b-time-args-cli-plan.md)。
+B3-0B 已登记十二项实际答复。显式毫秒和纳秒、argv 快照、错误和性能协议已定，纯分隔辅助的源码返回声明待补充裁定。[B3-0B 实施规划](20o-b3-0b-time-args-cli-plan.md) · [阶段证据](assets/20o-b3/entry-20261123-b3-0b/README.md)
 
 1. `time`：探测 UTC 墙钟/单调钟来源、精度、时区、格式化能力、时钟回退、sleep 单位/零/负/上限/取消/安全点；冻结阻塞期取消、清理和错误传播；
 2. `args`：探测 argv 快照时点、程序名/数组边界、空参数、非 UTF-8/非法 Unicode、Windows 引号规则、`--`/重复项/选项解析边界；

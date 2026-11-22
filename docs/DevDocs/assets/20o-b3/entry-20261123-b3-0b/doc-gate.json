@@ -1,0 +1,193 @@
+{
+  "checks": [
+    {
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "check:docs"
+      ],
+      "exit": 0,
+      "finished_utc": "2026-11-22T18:55:47.965941+00:00",
+      "pid": 46880,
+      "started_utc": "2026-11-22T18:55:41.854700+00:00",
+      "stderr": "$ bun tools/repo-check/src/cli.ts docs\n",
+      "stdout": "通过：未发现 A0 规则问题。\n"
+    },
+    {
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "check:usedocs"
+      ],
+      "exit": 0,
+      "finished_utc": "2026-11-22T18:55:50.030943+00:00",
+      "pid": 62492,
+      "started_utc": "2026-11-22T18:55:47.965941+00:00",
+      "stderr": "$ bun tools/repo-check/src/cli.ts usedocs\n",
+      "stdout": "通过：未发现 A0 规则问题。\n"
+    },
+    {
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "check:layout"
+      ],
+      "exit": 0,
+      "finished_utc": "2026-11-22T18:56:01.251453+00:00",
+      "pid": 71308,
+      "started_utc": "2026-11-22T18:55:50.030943+00:00",
+      "stderr": "$ bun tools/repo-check/src/cli.ts layout\n",
+      "stdout": "通过：未发现 A0 规则问题。\n"
+    }
+  ],
+  "contract": "4a4f7eb8e421d7ea59c470fa89d74d437a5f92ee",
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "markdown_after": {
+    "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": {
+      "blob": "46d25afe36c3d600ee9bf5aecf36b7e0324026da",
+      "text": {
+        "bytes": 15125,
+        "sha256": "57ada4bb339e91acd00617e660a6e6f3962263ebcf51c8170e247b469ace6722"
+      }
+    },
+    "docs/DevDocs/20o-b3-0b-time-args-cli-plan.md": {
+      "blob": "dcf95a0673fe93e9ae27c2dba55c31e0ae29bb5e",
+      "text": {
+        "bytes": 14371,
+        "sha256": "081f2a41c0d876105d7a0ee9c8422d00544c35ac9f5ae7cbb169214694edb480"
+      }
+    },
+    "docs/DevDocs/20o-b3-host-libraries-plan.md": {
+      "blob": "5b65b1ddc7fcb7b6311610d02c297d6680e17b67",
+      "text": {
+        "bytes": 13753,
+        "sha256": "e420e65f6481480d8633ded5946bb7d5f5dfb3234d6ad53e2f65951e360acb46"
+      }
+    },
+    "docs/DevDocs/20o-official-library-program.md": {
+      "blob": "459f0fac9622375d503c25ee0c0d445d05cedfc1",
+      "text": {
+        "bytes": 33365,
+        "sha256": "fe2fb9b313923cc54ba4c3c40d92aa457ae5ad396117a030534b2c8f35161d18"
+      }
+    },
+    "docs/DevDocs/README.md": {
+      "blob": "d7fac2856e1b5364e367ff0dd8f7989b78293e42",
+      "text": {
+        "bytes": 152907,
+        "sha256": "3ed10ac88c8e20e0db074efa139615fb7cfde1d8cece3a32839cf581b1e3e238"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/README.md": {
+      "blob": "17e8997cb2b6feb4cbc5f9a07255f152c77ff705",
+      "text": {
+        "bytes": 3471,
+        "sha256": "6f397dba01b4109a0f9a77cb009b20edbefb04d07680b2b4a5fec192fc10a13b"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/contract-draft.md": {
+      "blob": "bcb3d8f748419601b9d7d04050d70287bc5deb4f",
+      "text": {
+        "bytes": 10627,
+        "sha256": "216c765131049aecd235ad2ba47fd014ba52366a1ac94fc29634e85de9f05513"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/args.md": {
+      "blob": "7caba726827ceebaeba8cbc94403a6b477d547cd",
+      "text": {
+        "bytes": 1909,
+        "sha256": "3d6a0e0424f9ff7c6eb1810667a57f867a103c903a5eacf904e9fbd24df30c80"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/cli.md": {
+      "blob": "15a5a338c5b5dc285dbe3457a100efb7d30acc96",
+      "text": {
+        "bytes": 1587,
+        "sha256": "80a46b1de6564f26e36dbb51052cd604ce58229ce10a8e0c115f505d20831698"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/time.md": {
+      "blob": "3363d5d72ea3808c8854799c6adb18220868ad8b",
+      "text": {
+        "bytes": 2117,
+        "sha256": "d90823da316346ec99c4cbf79b1e33e925dc71af52d8270b971c8944cd41b960"
+      }
+    }
+  },
+  "markdown_before": {
+    "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": {
+      "blob": "46d25afe36c3d600ee9bf5aecf36b7e0324026da",
+      "text": {
+        "bytes": 15125,
+        "sha256": "57ada4bb339e91acd00617e660a6e6f3962263ebcf51c8170e247b469ace6722"
+      }
+    },
+    "docs/DevDocs/20o-b3-0b-time-args-cli-plan.md": {
+      "blob": "dcf95a0673fe93e9ae27c2dba55c31e0ae29bb5e",
+      "text": {
+        "bytes": 14371,
+        "sha256": "081f2a41c0d876105d7a0ee9c8422d00544c35ac9f5ae7cbb169214694edb480"
+      }
+    },
+    "docs/DevDocs/20o-b3-host-libraries-plan.md": {
+      "blob": "5b65b1ddc7fcb7b6311610d02c297d6680e17b67",
+      "text": {
+        "bytes": 13753,
+        "sha256": "e420e65f6481480d8633ded5946bb7d5f5dfb3234d6ad53e2f65951e360acb46"
+      }
+    },
+    "docs/DevDocs/20o-official-library-program.md": {
+      "blob": "459f0fac9622375d503c25ee0c0d445d05cedfc1",
+      "text": {
+        "bytes": 33365,
+        "sha256": "fe2fb9b313923cc54ba4c3c40d92aa457ae5ad396117a030534b2c8f35161d18"
+      }
+    },
+    "docs/DevDocs/README.md": {
+      "blob": "d7fac2856e1b5364e367ff0dd8f7989b78293e42",
+      "text": {
+        "bytes": 152907,
+        "sha256": "3ed10ac88c8e20e0db074efa139615fb7cfde1d8cece3a32839cf581b1e3e238"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/README.md": {
+      "blob": "17e8997cb2b6feb4cbc5f9a07255f152c77ff705",
+      "text": {
+        "bytes": 3471,
+        "sha256": "6f397dba01b4109a0f9a77cb009b20edbefb04d07680b2b4a5fec192fc10a13b"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/contract-draft.md": {
+      "blob": "bcb3d8f748419601b9d7d04050d70287bc5deb4f",
+      "text": {
+        "bytes": 10627,
+        "sha256": "216c765131049aecd235ad2ba47fd014ba52366a1ac94fc29634e85de9f05513"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/args.md": {
+      "blob": "7caba726827ceebaeba8cbc94403a6b477d547cd",
+      "text": {
+        "bytes": 1909,
+        "sha256": "3d6a0e0424f9ff7c6eb1810667a57f867a103c903a5eacf904e9fbd24df30c80"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/cli.md": {
+      "blob": "15a5a338c5b5dc285dbe3457a100efb7d30acc96",
+      "text": {
+        "bytes": 1587,
+        "sha256": "80a46b1de6564f26e36dbb51052cd604ce58229ce10a8e0c115f505d20831698"
+      }
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/tutorials/time.md": {
+      "blob": "3363d5d72ea3808c8854799c6adb18220868ad8b",
+      "text": {
+        "bytes": 2117,
+        "sha256": "d90823da316346ec99c4cbf79b1e33e925dc71af52d8270b971c8944cd41b960"
+      }
+    }
+  },
+  "tool": {
+    "bytes": 88825944,
+    "sha256": "627d2e4775c24bdedee2cd7ccc18dcadae061e5345274ab6e3c4c797927bfb8f"
+  }
+}
