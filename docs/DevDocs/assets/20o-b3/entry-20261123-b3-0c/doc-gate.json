@@ -1,15 +1,15 @@
 {
   "after": {
-    "commit": "aa4baccf7c7cf6cf227636047c6f81942eebc0f5",
-    "docs_tree_sha256": "5eb6481458f85be179a44f626bad243166b26b13a4fdc1e15f311a547a3c3da4",
+    "commit": "20fc409712fbc9ba905d05a460c3883f6de0e2ec",
+    "docs_tree_sha256": "1fd2e62937e3c7b18ad00439cb7bb9bda8574e7fa862a38d5dd6c6976f500098",
     "markdown": {
       "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": {
         "bytes": 15422,
         "sha256": "1eb47388bb320a7da151b6690ed55abd6880dbb577888cc3d3055f58e12334a0"
       },
       "docs/DevDocs/20o-b3-0c-fs-env-log-plan.md": {
-        "bytes": 14762,
-        "sha256": "f6711708019b3479ad9d6ef37f78fd6cb9f5064d3655cb329d8ab92a829efb30"
+        "bytes": 14841,
+        "sha256": "ced5c53e63a0a0c25b0a46d968271eb21a8bc25e03f6088b737bb86223646223"
       },
       "docs/DevDocs/20o-b3-host-libraries-plan.md": {
         "bytes": 13822,
@@ -24,12 +24,12 @@
         "sha256": "97686d95ced522b25c0261db9065b075d0aaf328c43ff31af4970d510c2df69f"
       },
       "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/README.md": {
-        "bytes": 3836,
-        "sha256": "b77d3678e30373b9679c13e3c9aae2e239275e0a0a36422baf70f5e11b969ef4"
+        "bytes": 4309,
+        "sha256": "99421c0e0391a91e21154fdfb82a4c91d6f87c82954b6ee86b6db069f10aa916"
       },
       "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/contract-draft.md": {
-        "bytes": 10834,
-        "sha256": "914022c2b43e44945ba95ff7ca51a6b4800d79fe2ae168bf06ab4becadcb7cf2"
+        "bytes": 10901,
+        "sha256": "c7d7fbe909694dcb134995ac99bb74792632a539e62ce935893b9658d2ed5170"
       },
       "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/tutorials/env.md": {
         "bytes": 1896,
@@ -46,16 +46,16 @@
     }
   },
   "before": {
-    "commit": "aa4baccf7c7cf6cf227636047c6f81942eebc0f5",
-    "docs_tree_sha256": "5eb6481458f85be179a44f626bad243166b26b13a4fdc1e15f311a547a3c3da4",
+    "commit": "20fc409712fbc9ba905d05a460c3883f6de0e2ec",
+    "docs_tree_sha256": "1fd2e62937e3c7b18ad00439cb7bb9bda8574e7fa862a38d5dd6c6976f500098",
     "markdown": {
       "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": {
         "bytes": 15422,
         "sha256": "1eb47388bb320a7da151b6690ed55abd6880dbb577888cc3d3055f58e12334a0"
       },
       "docs/DevDocs/20o-b3-0c-fs-env-log-plan.md": {
-        "bytes": 14762,
-        "sha256": "f6711708019b3479ad9d6ef37f78fd6cb9f5064d3655cb329d8ab92a829efb30"
+        "bytes": 14841,
+        "sha256": "ced5c53e63a0a0c25b0a46d968271eb21a8bc25e03f6088b737bb86223646223"
       },
       "docs/DevDocs/20o-b3-host-libraries-plan.md": {
         "bytes": 13822,
@@ -70,12 +70,12 @@
         "sha256": "97686d95ced522b25c0261db9065b075d0aaf328c43ff31af4970d510c2df69f"
       },
       "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/README.md": {
-        "bytes": 3836,
-        "sha256": "b77d3678e30373b9679c13e3c9aae2e239275e0a0a36422baf70f5e11b969ef4"
+        "bytes": 4309,
+        "sha256": "99421c0e0391a91e21154fdfb82a4c91d6f87c82954b6ee86b6db069f10aa916"
       },
       "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/contract-draft.md": {
-        "bytes": 10834,
-        "sha256": "914022c2b43e44945ba95ff7ca51a6b4800d79fe2ae168bf06ab4becadcb7cf2"
+        "bytes": 10901,
+        "sha256": "c7d7fbe909694dcb134995ac99bb74792632a539e62ce935893b9658d2ed5170"
       },
       "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/tutorials/env.md": {
         "bytes": 1896,
@@ -105,9 +105,9 @@
         "check:docs"
       ],
       "exit": 0,
-      "finished_utc": "2026-11-23T14:54:48.598217+00:00",
-      "pid": 62168,
-      "started_utc": "2026-11-23T14:54:40.235751+00:00",
+      "finished_utc": "2026-11-23T15:41:02.505171+00:00",
+      "pid": 64328,
+      "started_utc": "2026-11-23T15:40:51.425797+00:00",
       "stderr_sha256": "3c0d7a02ef66c8fd45e55269144c131b8c773524f2d1155794924526fe4fcbac",
       "stdout_sha256": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
     },
@@ -118,9 +118,9 @@
         "check:usedocs"
       ],
       "exit": 0,
-      "finished_utc": "2026-11-23T14:54:51.329709+00:00",
-      "pid": 20756,
-      "started_utc": "2026-11-23T14:54:48.598366+00:00",
+      "finished_utc": "2026-11-23T15:41:06.158001+00:00",
+      "pid": 24720,
+      "started_utc": "2026-11-23T15:41:02.505636+00:00",
       "stderr_sha256": "02033b06a17499d938d03b52015dea853d526492a32028e4837999f248f0be68",
       "stdout_sha256": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
     },
@@ -131,14 +131,14 @@
         "check:layout"
       ],
       "exit": 0,
-      "finished_utc": "2026-11-23T14:55:00.496655+00:00",
-      "pid": 52228,
-      "started_utc": "2026-11-23T14:54:51.330047+00:00",
+      "finished_utc": "2026-11-23T15:41:18.244305+00:00",
+      "pid": 60000,
+      "started_utc": "2026-11-23T15:41:06.158189+00:00",
       "stderr_sha256": "b0d71635939588cd258f38802796f4250bc121eb18e6e83ea0f240df5e09af63",
       "stdout_sha256": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
     }
   ],
-  "cwd": "D:\\project\\Xiao\\.b3-0c\\20261123-01\\docs-final",
+  "cwd": "D:\\project\\Xiao\\.b3-0c\\20261123-02\\docs",
   "logs": {
     "02033b06a17499d938d03b52015dea853d526492a32028e4837999f248f0be68": "$ bun tools/repo-check/src/cli.ts usedocs\n",
     "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b": "通过：未发现 A0 规则问题。\n",
