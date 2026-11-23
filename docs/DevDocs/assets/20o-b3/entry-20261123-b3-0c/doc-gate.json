@@ -1,0 +1,148 @@
+{
+  "after": {
+    "commit": "aa4baccf7c7cf6cf227636047c6f81942eebc0f5",
+    "docs_tree_sha256": "5eb6481458f85be179a44f626bad243166b26b13a4fdc1e15f311a547a3c3da4",
+    "markdown": {
+      "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": {
+        "bytes": 15422,
+        "sha256": "1eb47388bb320a7da151b6690ed55abd6880dbb577888cc3d3055f58e12334a0"
+      },
+      "docs/DevDocs/20o-b3-0c-fs-env-log-plan.md": {
+        "bytes": 14762,
+        "sha256": "f6711708019b3479ad9d6ef37f78fd6cb9f5064d3655cb329d8ab92a829efb30"
+      },
+      "docs/DevDocs/20o-b3-host-libraries-plan.md": {
+        "bytes": 13822,
+        "sha256": "cd40317256669e17e0bd4c571a92d4f383b66511ef43b401d5ab91bcfad3b650"
+      },
+      "docs/DevDocs/20o-official-library-program.md": {
+        "bytes": 33582,
+        "sha256": "124f9e675fcdfd14ca7b3eaa8a2a7d5d1e74d8cebcd1a7add49616df4993ddd2"
+      },
+      "docs/DevDocs/README.md": {
+        "bytes": 153203,
+        "sha256": "97686d95ced522b25c0261db9065b075d0aaf328c43ff31af4970d510c2df69f"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/README.md": {
+        "bytes": 3836,
+        "sha256": "b77d3678e30373b9679c13e3c9aae2e239275e0a0a36422baf70f5e11b969ef4"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/contract-draft.md": {
+        "bytes": 10834,
+        "sha256": "914022c2b43e44945ba95ff7ca51a6b4800d79fe2ae168bf06ab4becadcb7cf2"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/tutorials/env.md": {
+        "bytes": 1896,
+        "sha256": "ce7b9bd7a8aeb4e797ae904527f37cc958649ab3fe8ab9311887013c69bb008c"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/tutorials/fs.md": {
+        "bytes": 2058,
+        "sha256": "b6a16afc811b5f76040eecba4727073a19edda5230965a25188e16a552d0c223"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/tutorials/log.md": {
+        "bytes": 1645,
+        "sha256": "48cc7c7c734100667f58d9b66175e5eea7f1909bde4e2a9c3217f36d514ecd44"
+      }
+    }
+  },
+  "before": {
+    "commit": "aa4baccf7c7cf6cf227636047c6f81942eebc0f5",
+    "docs_tree_sha256": "5eb6481458f85be179a44f626bad243166b26b13a4fdc1e15f311a547a3c3da4",
+    "markdown": {
+      "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": {
+        "bytes": 15422,
+        "sha256": "1eb47388bb320a7da151b6690ed55abd6880dbb577888cc3d3055f58e12334a0"
+      },
+      "docs/DevDocs/20o-b3-0c-fs-env-log-plan.md": {
+        "bytes": 14762,
+        "sha256": "f6711708019b3479ad9d6ef37f78fd6cb9f5064d3655cb329d8ab92a829efb30"
+      },
+      "docs/DevDocs/20o-b3-host-libraries-plan.md": {
+        "bytes": 13822,
+        "sha256": "cd40317256669e17e0bd4c571a92d4f383b66511ef43b401d5ab91bcfad3b650"
+      },
+      "docs/DevDocs/20o-official-library-program.md": {
+        "bytes": 33582,
+        "sha256": "124f9e675fcdfd14ca7b3eaa8a2a7d5d1e74d8cebcd1a7add49616df4993ddd2"
+      },
+      "docs/DevDocs/README.md": {
+        "bytes": 153203,
+        "sha256": "97686d95ced522b25c0261db9065b075d0aaf328c43ff31af4970d510c2df69f"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/README.md": {
+        "bytes": 3836,
+        "sha256": "b77d3678e30373b9679c13e3c9aae2e239275e0a0a36422baf70f5e11b969ef4"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/contract-draft.md": {
+        "bytes": 10834,
+        "sha256": "914022c2b43e44945ba95ff7ca51a6b4800d79fe2ae168bf06ab4becadcb7cf2"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/tutorials/env.md": {
+        "bytes": 1896,
+        "sha256": "ce7b9bd7a8aeb4e797ae904527f37cc958649ab3fe8ab9311887013c69bb008c"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/tutorials/fs.md": {
+        "bytes": 2058,
+        "sha256": "b6a16afc811b5f76040eecba4727073a19edda5230965a25188e16a552d0c223"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/tutorials/log.md": {
+        "bytes": 1645,
+        "sha256": "48cc7c7c734100667f58d9b66175e5eea7f1909bde4e2a9c3217f36d514ecd44"
+      }
+    }
+  },
+  "bun": {
+    "bytes": 88825944,
+    "path": "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+    "sha256": "627d2e4775c24bdedee2cd7ccc18dcadae061e5345274ab6e3c4c797927bfb8f",
+    "version": "1.4.0"
+  },
+  "checks": [
+    {
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "check:docs"
+      ],
+      "exit": 0,
+      "finished_utc": "2026-11-23T14:54:48.598217+00:00",
+      "pid": 62168,
+      "started_utc": "2026-11-23T14:54:40.235751+00:00",
+      "stderr_sha256": "3c0d7a02ef66c8fd45e55269144c131b8c773524f2d1155794924526fe4fcbac",
+      "stdout_sha256": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
+    },
+    {
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "check:usedocs"
+      ],
+      "exit": 0,
+      "finished_utc": "2026-11-23T14:54:51.329709+00:00",
+      "pid": 20756,
+      "started_utc": "2026-11-23T14:54:48.598366+00:00",
+      "stderr_sha256": "02033b06a17499d938d03b52015dea853d526492a32028e4837999f248f0be68",
+      "stdout_sha256": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
+    },
+    {
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "check:layout"
+      ],
+      "exit": 0,
+      "finished_utc": "2026-11-23T14:55:00.496655+00:00",
+      "pid": 52228,
+      "started_utc": "2026-11-23T14:54:51.330047+00:00",
+      "stderr_sha256": "b0d71635939588cd258f38802796f4250bc121eb18e6e83ea0f240df5e09af63",
+      "stdout_sha256": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
+    }
+  ],
+  "cwd": "D:\\project\\Xiao\\.b3-0c\\20261123-01\\docs-final",
+  "logs": {
+    "02033b06a17499d938d03b52015dea853d526492a32028e4837999f248f0be68": "$ bun tools/repo-check/src/cli.ts usedocs\n",
+    "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b": "通过：未发现 A0 规则问题。\n",
+    "3c0d7a02ef66c8fd45e55269144c131b8c773524f2d1155794924526fe4fcbac": "$ bun tools/repo-check/src/cli.ts docs\n",
+    "b0d71635939588cd258f38802796f4250bc121eb18e6e83ea0f240df5e09af63": "$ bun tools/repo-check/src/cli.ts layout\n"
+  }
+}
