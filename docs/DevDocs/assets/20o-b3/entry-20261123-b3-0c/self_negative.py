@@ -10,7 +10,7 @@ from tempfile import TemporaryDirectory
 
 sys.dont_write_bytecode = True
 from audit_closeout import (
-    DOC_GATE, MANIFEST, NEGATIVE_REPORT, PREFLIGHT_REPORT, PREFLIGHT_REASONS, REASONS, ROOT, START, STATUS,
+    DOC_GATE, FS_DEFERRED, MANIFEST, NEGATIVE_REPORT, PREFLIGHT_REPORT, PREFLIGHT_REASONS, REASONS, ROOT, START, STATUS,
     add_anchor_arguments, blob, digest, encoded, identity, inventory, require,
 )
 from check_tutorials import data
@@ -23,10 +23,13 @@ def tamper(root, name, sealed):
         return
     if name == "missing-attributes":
         (root / ".gitattributes").unlink()
-    elif name == "forged-status":
+    elif name in {"forged-status", "missing-fs-deferral"}:
         path = root / STATUS
         report = data(path)
-        report["b3_0d_entry_ready"] = not report["b3_0d_entry_ready"]
+        if name == "forged-status":
+            report["b3_0d_entry_ready"] = not report["b3_0d_entry_ready"]
+        else:
+            report["handoff"]["pending"].remove(FS_DEFERRED)
         path.write_bytes(encoded(report))
     elif name == "forged-observation":
         path = root / "baseline.json"

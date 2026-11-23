@@ -13,7 +13,7 @@ from check_tutorials import MODULES, data, verify_report
 
 
 PREFIX = ROOT.relative_to(REPO).as_posix()
-FINAL_RECEIPTS = "bcf6ad0a34a4ccb533ccbbeb2ff2a89fe68a601f"
+FINAL_RECEIPTS = ""
 PLANNING_DOCS = (
     "docs/DevDocs/README.md",
     "docs/DevDocs/20o-official-library-program.md",
@@ -29,12 +29,15 @@ PREFLIGHT_REPORT = "self-negative-preflight.json"
 NEGATIVE_REPORT = "self-negative-result.json"
 STATUS = "closeout.json"
 MANIFEST = "evidence.json"
+GENERATED_FILES = {DOC_GATE, PREFLIGHT_REPORT, NEGATIVE_REPORT, STATUS, MANIFEST}
 DETAILS = ("B3-0C1", "B3-0C2", "B3-0C3", "B3-0C4a", "B3-0C4b", "B3-0C4c")
+FS_DEFERRED = "fs_restricted_mode_deferred_unscheduled"
 REASONS = {
     "unchanged": "",
     "manifest-tampered": "清单字节或文件身份不符",
     "missing-attributes": "封存缺少文件：.gitattributes",
     "forged-status": "收口状态与实际证据不符",
+    "missing-fs-deferral": "收口状态与实际证据不符",
     "forged-observation": "入口观察偏离固定原件",
     "direction-as-freeze": "裁定台账偏离固定实际答复",
     "replaced-doc-blob": "文档门禁偏离定稿 Git 字节",
@@ -62,7 +65,7 @@ def inventory(root):
 
 def frozen_files(commit):
     names = git("ls-tree", "-r", "-z", "--name-only", commit, "--", PREFIX).decode().split("\0")
-    return {name.removeprefix(PREFIX + "/") for name in names if name}
+    return {name.removeprefix(PREFIX + "/") for name in names if name} - GENERATED_FILES
 
 
 def document_snapshot(commit):
@@ -119,6 +122,9 @@ def verify_decisions(root):
     directions, details = record["direction_decisions"], record["detail_decisions"]
     require(record["stage"] == "20O-B3-0C" and directions.keys() == DIRECTIONS and details.keys() == set(DETAILS),
             "首轮或精确裁定缺项")
+    require("受限模式后置" in directions["B3-0C-FS"]["scope"]
+            and "受限/沙箱模式延期未排期" in (root / "contract-draft.md").read_text(encoding="utf-8"),
+            "fs 受限模式延期缺少裁定或冻结正文")
     ids = set()
     for row in (directions | details).values():
         origin = json.loads(row["question_item_id"])
@@ -200,7 +206,7 @@ def derive(root, commit, receipt, final, fixed):
             "version_candidate": {"abi": "1.20", "codegen": 23, "stdlib_interface": 1, "intrinsics": 15},
             "pending": ["intrinsic_ids", "environment_capability_bit_and_legacy_default_mask",
                         "request_protocol_and_native_context", "c_abi_registration_and_artifact_matrix",
-                        "windows_product_coff_verifier"],
+                        "windows_product_coff_verifier", FS_DEFERRED],
             "windows_product_coff_policy": baseline["windows_product_coff_policy"],
             "windows_product_coff_status": baseline["windows_product_coff_status"],
         },
