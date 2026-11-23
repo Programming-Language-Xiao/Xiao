@@ -1,152 +1,171 @@
 {
   "cases": [
     {
-      "after": "989d57f93a18bc6c28db171f71fe4fa23141dea5ae26b1c379c78c6adc37fe8b",
+      "after": "1fd60594fec0b12671b0f5673358edc46cd1de8090707c13f64275888bef8b53",
       "argv": [
         "D:\\msys64\\ucrt64\\bin\\python.exe",
         "-B",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "D:\\project\\Xiao\\.b3-0c\\20261123-02\\docs\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
         "--evidence-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\unchanged",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-gyvddrfx\\unchanged",
         "--receipt-commit",
-        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+        "0fd083a28def365c66401ee7031334619c6d38ce"
       ],
-      "before": "989d57f93a18bc6c28db171f71fe4fa23141dea5ae26b1c379c78c6adc37fe8b",
+      "before": "1fd60594fec0b12671b0f5673358edc46cd1de8090707c13f64275888bef8b53",
       "case": "unchanged",
       "exit": 0,
       "read_only": true,
       "stderr": ""
     },
     {
-      "after": "23ef41db57a9349f8502cd74e9b3595419db41ddf71fc164629ea36f359c5713",
+      "after": "6da7bb19fa71550448d74cad64f1d77586cb001357de089eda90987c5e147760",
       "argv": [
         "D:\\msys64\\ucrt64\\bin\\python.exe",
         "-B",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "D:\\project\\Xiao\\.b3-0c\\20261123-02\\docs\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
         "--evidence-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\manifest-tampered",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-gyvddrfx\\manifest-tampered",
         "--receipt-commit",
-        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+        "0fd083a28def365c66401ee7031334619c6d38ce"
       ],
-      "before": "23ef41db57a9349f8502cd74e9b3595419db41ddf71fc164629ea36f359c5713",
+      "before": "6da7bb19fa71550448d74cad64f1d77586cb001357de089eda90987c5e147760",
       "case": "manifest-tampered",
       "exit": 1,
       "read_only": true,
       "stderr": "B3-0C 拒绝：清单字节或文件身份不符\n"
     },
     {
-      "after": "9b06a0787500a02af8c89470b7f693563ef9de17d9432e16011d05a03769549a",
+      "after": "6057145bed98d56057807e086f19355a4266f0b485df598badbb3508e70e5f9b",
       "argv": [
         "D:\\msys64\\ucrt64\\bin\\python.exe",
         "-B",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "D:\\project\\Xiao\\.b3-0c\\20261123-02\\docs\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
         "--evidence-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\missing-attributes",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-gyvddrfx\\missing-attributes",
         "--receipt-commit",
-        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+        "0fd083a28def365c66401ee7031334619c6d38ce"
       ],
-      "before": "9b06a0787500a02af8c89470b7f693563ef9de17d9432e16011d05a03769549a",
+      "before": "6057145bed98d56057807e086f19355a4266f0b485df598badbb3508e70e5f9b",
       "case": "missing-attributes",
       "exit": 1,
       "read_only": true,
       "stderr": "B3-0C 拒绝：封存缺少文件：.gitattributes\n"
     },
     {
-      "after": "28e7614503a1ac5dda0001167c7c7423e84be8297f8c85e5701f81fb1a9f1685",
+      "after": "8bf97e46090a2c3e2ef4eafe32c8cd9cbe48ca58cdc52470fbf185433243077c",
       "argv": [
         "D:\\msys64\\ucrt64\\bin\\python.exe",
         "-B",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "D:\\project\\Xiao\\.b3-0c\\20261123-02\\docs\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
         "--evidence-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\forged-status",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-gyvddrfx\\forged-status",
         "--receipt-commit",
-        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+        "0fd083a28def365c66401ee7031334619c6d38ce"
       ],
-      "before": "28e7614503a1ac5dda0001167c7c7423e84be8297f8c85e5701f81fb1a9f1685",
+      "before": "8bf97e46090a2c3e2ef4eafe32c8cd9cbe48ca58cdc52470fbf185433243077c",
       "case": "forged-status",
       "exit": 1,
       "read_only": true,
       "stderr": "B3-0C 拒绝：收口状态与实际证据不符\n"
     },
     {
-      "after": "bc6c6303e1c3458fac7de5efd51ebe11a5c37b34cee4aaace8527b52620fa7d4",
+      "after": "51876d9cad846096b50ad7b964307838f5fa8952179cc82c29cb75b98706cda2",
       "argv": [
         "D:\\msys64\\ucrt64\\bin\\python.exe",
         "-B",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "D:\\project\\Xiao\\.b3-0c\\20261123-02\\docs\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
         "--evidence-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\forged-observation",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-gyvddrfx\\missing-fs-deferral",
         "--receipt-commit",
-        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+        "0fd083a28def365c66401ee7031334619c6d38ce"
       ],
-      "before": "bc6c6303e1c3458fac7de5efd51ebe11a5c37b34cee4aaace8527b52620fa7d4",
+      "before": "51876d9cad846096b50ad7b964307838f5fa8952179cc82c29cb75b98706cda2",
+      "case": "missing-fs-deferral",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0C 拒绝：收口状态与实际证据不符\n"
+    },
+    {
+      "after": "d47c00419241d2cc65fa3d9777592625cec15e594d798900e22d28d6e6aef01e",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\.b3-0c\\20261123-02\\docs\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-gyvddrfx\\forged-observation",
+        "--receipt-commit",
+        "0fd083a28def365c66401ee7031334619c6d38ce"
+      ],
+      "before": "d47c00419241d2cc65fa3d9777592625cec15e594d798900e22d28d6e6aef01e",
       "case": "forged-observation",
       "exit": 1,
       "read_only": true,
       "stderr": "B3-0C 拒绝：入口观察偏离固定原件\n"
     },
     {
-      "after": "acc94fffbdb845253ad6d43ea80ed9a5aabb3520fdb709b53f58213c0bbfb0c1",
+      "after": "cdb2e90c905b21560bad703fe756c163d43fdf154e5793c2ab1c19055b7ab06f",
       "argv": [
         "D:\\msys64\\ucrt64\\bin\\python.exe",
         "-B",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "D:\\project\\Xiao\\.b3-0c\\20261123-02\\docs\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
         "--evidence-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\direction-as-freeze",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-gyvddrfx\\direction-as-freeze",
         "--receipt-commit",
-        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+        "0fd083a28def365c66401ee7031334619c6d38ce"
       ],
-      "before": "acc94fffbdb845253ad6d43ea80ed9a5aabb3520fdb709b53f58213c0bbfb0c1",
+      "before": "cdb2e90c905b21560bad703fe756c163d43fdf154e5793c2ab1c19055b7ab06f",
       "case": "direction-as-freeze",
       "exit": 1,
       "read_only": true,
       "stderr": "B3-0C 拒绝：裁定台账偏离固定实际答复\n"
     },
     {
-      "after": "08c979e07f08dcf6fab76968b1038321a70bce936df6b49474bdc4c90b3148d3",
+      "after": "5fd748e24d7425fb62198c5892270a2f95fb0d1c3265f926221f2b5426e95e03",
       "argv": [
         "D:\\msys64\\ucrt64\\bin\\python.exe",
         "-B",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "D:\\project\\Xiao\\.b3-0c\\20261123-02\\docs\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
         "--evidence-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\replaced-doc-blob",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-gyvddrfx\\replaced-doc-blob",
         "--receipt-commit",
-        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+        "0fd083a28def365c66401ee7031334619c6d38ce"
       ],
-      "before": "08c979e07f08dcf6fab76968b1038321a70bce936df6b49474bdc4c90b3148d3",
+      "before": "5fd748e24d7425fb62198c5892270a2f95fb0d1c3265f926221f2b5426e95e03",
       "case": "replaced-doc-blob",
       "exit": 1,
       "read_only": true,
       "stderr": "B3-0C 拒绝：文档门禁偏离定稿 Git 字节\n"
     },
     {
-      "after": "5c7dca827411080712a7018bac9abe5651d2745852bf35d467388b8af7f7427a",
+      "after": "2da110f88029b6e7df7ee593f97f420eaa8b863dda8449b604024a86d825a17b",
       "argv": [
         "D:\\msys64\\ucrt64\\bin\\python.exe",
         "-B",
         "-X",
         "utf8",
-        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "D:\\project\\Xiao\\.b3-0c\\20261123-02\\docs\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
         "--evidence-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\forged-negative-report",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-gyvddrfx\\forged-negative-report",
         "--receipt-commit",
-        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+        "0fd083a28def365c66401ee7031334619c6d38ce"
       ],
-      "before": "5c7dca827411080712a7018bac9abe5651d2745852bf35d467388b8af7f7427a",
+      "before": "2da110f88029b6e7df7ee593f97f420eaa8b863dda8449b604024a86d825a17b",
       "case": "forged-negative-report",
       "exit": 1,
       "read_only": true,
