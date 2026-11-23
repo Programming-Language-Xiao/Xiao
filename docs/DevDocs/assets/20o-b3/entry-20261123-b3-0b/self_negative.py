@@ -10,7 +10,7 @@ import sys
 from tempfile import TemporaryDirectory
 
 sys.dont_write_bytecode = True
-from audit_closeout import (MANIFEST, PLAN, REASONS, ROOT, SEALED_NEGATIVE_REASON, base, blob,
+from audit_closeout import (MANIFEST, PLAN, PREFLIGHT_CASES, ROOT, SEALED_CASES, base, blob,
                             identity, json_bytes, require)
 from preflight import rewrite_manifest, snapshot
 
@@ -92,9 +92,7 @@ if __name__ == "__main__":
     parser.add_argument("--preflight", action="store_true")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    cases = {"unchanged": None} | REASONS
-    if not args.preflight:
-        cases["forged-negative-report"] = SEALED_NEGATIVE_REASON
+    cases = PREFLIGHT_CASES if args.preflight else SEALED_CASES
     with TemporaryDirectory(prefix="xiao-b3-0b-negative-") as temporary, ThreadPoolExecutor(max_workers=3) as pool:
         results = list(pool.map(lambda item: replay(Path(temporary), *item, args.preflight), cases.items()))
     raw = json_bytes({"mode": "preflight" if args.preflight else "sealed", "cases": results})

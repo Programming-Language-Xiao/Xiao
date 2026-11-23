@@ -9,8 +9,8 @@
       "sha256": "6b19931a84fd892e7a6fd5aacad6fde8362d9dfebf262ed14e6cac0484fdb86a"
     },
     "audit_closeout.py": {
-      "bytes": 23554,
-      "sha256": "731b6ef2b36fe55e8965d408042e2117709bc640e652c23e01ea2f147f7917cf"
+      "bytes": 24709,
+      "sha256": "3fafd71e4f11c87b57a28a2e51c4e3cfb9f61cb1f3387fe67449baef35b13744"
     },
     "candidates/tests/fixtures/docs/args/b3-0b-candidate.input.json": {
       "bytes": 87,
@@ -49,8 +49,8 @@
       "sha256": "96d66dc40552e59389555555413e7499bd4a0272229f9e8d99af955632e732bc"
     },
     "closeout.json": {
-      "bytes": 5175,
-      "sha256": "a2074d76a8cfc64fccb9202407e557321614cfc96be15543b34a1916c0e01bb5"
+      "bytes": 5386,
+      "sha256": "32668a6fd1896850ad07eef4c884b14a1934ff0465a1fe109782aea5338745c6"
     },
     "contract-draft.md": {
       "bytes": 10653,
@@ -81,12 +81,12 @@
       "sha256": "3eb2e61ed6f3e6f44656be28668ebf223eb9974412954ee27a378a610feb498a"
     },
     "self-negative-result.json": {
-      "bytes": 4926,
-      "sha256": "e9acde431d149bf8a44c220a293a2cf5d56ca02bdfbdcbe62da995cc3b7ba894"
+      "bytes": 5454,
+      "sha256": "070c204e128787c88c8eecd7cf62960ce22db99deb03a997ff66a9a7e7e7882b"
     },
     "self_negative.py": {
-      "bytes": 4469,
-      "sha256": "5fc8402a6496e15c249b6f7f44024e29ad06599e74203e1c99654f8ece1b4025"
+      "bytes": 4397,
+      "sha256": "29f1155fd0efcbcf0512bca81e4e90e52fc3a6bff15911e3726a571ac14f6c90"
     },
     "tutorials.json": {
       "bytes": 1277,

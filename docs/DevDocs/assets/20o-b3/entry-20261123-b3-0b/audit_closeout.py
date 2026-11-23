@@ -12,7 +12,9 @@ from preflight import (ENTRY_REASON, MANIFEST_REASON, PLAN, PRIOR, PRIOR_SEAL, R
                        archive_tools, base, inventory)
 
 CONTRACT = "8c8c5fb19441346c607add19bf1b381160104612"
-RECEIPTS = "352446e44605ae62da6d1c7d55256ac42396ca28"
+DOC_GATE_RECEIPTS = "352446e44605ae62da6d1c7d55256ac42396ca28"
+NEGATIVE_AUDIT = "44a818177df2a7bce2ef0208d037f95029aa69c9"
+NEGATIVE_RECEIPTS = "7470ab2c33f217d0053b946b2644c7ca98cae2ab"
 FIRST_CANDIDATES = "2ec112034365bd481387820d4188a64ba297681e"
 WORKSPACE_BASE = "9a8f4285687da5ae2b0401f6c21f984efee03b41"
 PREFIX = ROOT.relative_to(base.REPO).as_posix()
@@ -40,6 +42,8 @@ REASONS = {
     "replaced-doc-blob": "文档门禁未绑定受检提交的实际 Markdown",
 }
 SEALED_NEGATIVE_REASON = "自反例回执偏离固定原件"
+PREFLIGHT_CASES = {"unchanged": None} | REASONS
+SEALED_CASES = PREFLIGHT_CASES | {"forged-negative-report": SEALED_NEGATIVE_REASON}
 GATES = {
     "b3_0b0_decisions_recorded": ("B3-0B-TIME", "B3-0B-ARGS", "B3-0B-CLI"),
     "b3_0b1_time_frozen": ("B3-0B1", "B3-0B1a", "B3-0B1b", "B3-0B4b"),
@@ -289,30 +293,45 @@ def verify_document_gates(root):
             "docs": len(DOCS), "gates": len(report["checks"])}
 
 
+def verify_negative_results(raw):
+    results = json.loads(raw)
+    cases = results["cases"]
+    require(results["mode"] == "sealed" and len(cases) == len(SEALED_CASES)
+            and {row["case"] for row in cases} == SEALED_CASES.keys(), "自反例集合不符")
+    for row in cases:
+        reason = SEALED_CASES[row["case"]]
+        argv = row["argv"]
+        require(type(row["exit"]) is int and row["exit"] == int(reason is not None)
+                and row["stderr"] == (f"B3-0B 拒绝：{reason}\n" if reason else "")
+                and row["read_only"] is True and row["before"] == row["after"]
+                and re.fullmatch(r"[a-f0-9]{64}", row["before"])
+                and len(argv) == 7 and argv[1:4] == ["-B", "-X", "utf8"]
+                and PureWindowsPath(argv[4]).name == "audit_closeout.py"
+                and argv[5] == "--evidence-root" and PureWindowsPath(argv[6]).name == row["case"],
+                f"自反例实际理由或只读性不符：{row['case']}")
+    return sum(row["exit"] == 1 for row in cases)
+
+
 def verify_complete(root, docs):
     first = json.loads((root / "layout-first.json").read_bytes())
     require([row["exit"] for row in first["checks"]] == [0, 0, 1]
             and all(f"A0-LAYOUT-002 tests/fixtures/docs/{module}" in first["checks"][-1]["stdout"]
                     for module in MODULES), "首轮布局失败回执不符")
-    require(git("rev-parse", f"{RECEIPTS}~1").strip().decode() == CONTRACT, "实际门禁回执的父提交身份不符")
-    originals = {"doc-gate.json": "文档门禁回执偏离固定原件",
-                 "self-negative-result.json": SEALED_NEGATIVE_REASON}
-    changed = git("diff", "--name-only", "-z", CONTRACT, RECEIPTS).decode().rstrip("\0").split("\0")
-    require(set(changed) == {f"{PREFIX}/{name}" for name in originals}, "回执提交改动超出原件范围")
-    for name, reason in originals.items():
-        require((root / name).read_bytes() == blob(RECEIPTS, f"{PREFIX}/{name}"), reason)
-    results = json.loads((root / "self-negative-result.json").read_bytes())
-    cases = results["cases"]
-    require(results["mode"] == "preflight" and len(cases) == len(REASONS) + 1
-            and {row["case"] for row in cases} == REASONS.keys() | {"unchanged"}, "自反例集合不符")
-    for row in cases:
-        reason = REASONS.get(row["case"])
-        require(row["exit"] == int(reason is not None)
-                and row["stderr"] == (f"B3-0B 拒绝：{reason}\n" if reason else "")
-                and row["read_only"] is True and row["before"] == row["after"]
-                and re.fullmatch(r"[a-f0-9]{64}", row["before"]) and row["argv"][-1] == "--preflight",
-                f"自反例实际理由或只读性不符：{row['case']}")
-    return docs | {"negatives": len(REASONS), "receipts_commit": RECEIPTS}
+    doc_path = f"{PREFIX}/doc-gate.json"
+    negative_path = f"{PREFIX}/self-negative-result.json"
+    doc_changes = git("diff", "--name-only", "-z", CONTRACT, DOC_GATE_RECEIPTS).decode().split("\0")
+    require(git("rev-parse", f"{DOC_GATE_RECEIPTS}~1").strip().decode() == CONTRACT,
+            "文档门禁回执的父提交身份不符")
+    require(set(doc_changes) - {""} == {doc_path, negative_path}, "文档门禁回执提交改动超出原件范围")
+    require(git("rev-parse", f"{NEGATIVE_RECEIPTS}~1").strip().decode() == NEGATIVE_AUDIT
+            and git("diff", "--name-only", "-z", NEGATIVE_AUDIT, NEGATIVE_RECEIPTS).decode() == negative_path + "\0",
+            "封存态负例回执的来源提交不符")
+    require((root / "doc-gate.json").read_bytes() == blob(DOC_GATE_RECEIPTS, doc_path),
+            "文档门禁回执偏离固定原件")
+    raw = (root / "self-negative-result.json").read_bytes()
+    require(raw == blob(NEGATIVE_RECEIPTS, negative_path), SEALED_NEGATIVE_REASON)
+    return docs | {"negatives": verify_negative_results(raw), "receipts_commit": NEGATIVE_RECEIPTS,
+                   "negative_audit_commit": NEGATIVE_AUDIT, "doc_gate_receipts_commit": DOC_GATE_RECEIPTS}
 
 
 def derive(root, preflight):
@@ -342,7 +361,8 @@ def derive(root, preflight):
         "registry_verified": False, "old_721_executed": False,
         "tutorials": tutorials, "cli_shape": cli_shape, "complete_checks": complete,
         "handoff": {
-            "next": "20O-B3-0C", "modules": ["fs", "env", "log"], "windows_product_coff": "complete",
+            "next": "20O-B3-0C", "modules": ["fs", "env", "log"],
+            "windows_product_coff_policy": "complete_required", "windows_product_coff_status": "pending",
             "version_candidate": {"abi": "1.20", "codegen": 23, "stdlib_interface": 1},
             "version_final_stage": "20O-B3-0D",
         },

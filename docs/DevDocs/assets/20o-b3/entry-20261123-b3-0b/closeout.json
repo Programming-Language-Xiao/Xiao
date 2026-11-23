@@ -95,11 +95,13 @@
   },
   "complete_checks": {
     "commit": "8c8c5fb19441346c607add19bf1b381160104612",
+    "doc_gate_receipts_commit": "352446e44605ae62da6d1c7d55256ac42396ca28",
     "docs": 10,
     "docs_tree_sha256": "c1a6673f055c85573efd6b1717c08039d63939047f5a64c01a060ac64f60f43a",
     "gates": 3,
-    "negatives": 6,
-    "receipts_commit": "352446e44605ae62da6d1c7d55256ac42396ca28"
+    "negative_audit_commit": "44a818177df2a7bce2ef0208d037f95029aa69c9",
+    "negatives": 7,
+    "receipts_commit": "7470ab2c33f217d0053b946b2644c7ca98cae2ab"
   },
   "contract_commit": "8c8c5fb19441346c607add19bf1b381160104612",
   "decision_count": 12,
@@ -117,7 +119,8 @@
       "stdlib_interface": 1
     },
     "version_final_stage": "20O-B3-0D",
-    "windows_product_coff": "complete"
+    "windows_product_coff_policy": "complete_required",
+    "windows_product_coff_status": "pending"
   },
   "no_product_change": true,
   "old_721_executed": false,
