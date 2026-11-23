@@ -1,6 +1,6 @@
 # 20O-B3. 简单宿主库实施规划
 
-> **B3-0B 的 time、args、cli 已冻结，B3-0C 入口就绪。** 固定基线为 `e79fab3c`，ABI 1.19、生成器 22、标准库接口 1。[B2-C 交接](assets/20o-b2-c/entry-20261122-b2-c/README.md) · [B3-0B 收口证据](assets/20o-b3/entry-20261123-b3-0b/README.md)
+> **B3-0B 的 time、args、cli 已冻结，B3-0C 规划完成、执行未开始。** 固定基线为 `e79fab3c`，ABI 1.19、生成器 22、标准库接口 1。[B2-C 交接](assets/20o-b2-c/entry-20261122-b2-c/README.md) · [B3-0B 收口证据](assets/20o-b3/entry-20261123-b3-0b/README.md) · [B3-0C 规划](20o-b3-0c-fs-env-log-plan.md)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，且声明组件与观察组件一致；B2-C 的同链接 10 份候选只是历史例外，不得继承。`UnverifiedCoffExports`、同链接映射或仅导出表检查不能替代。
 > B3 涉及六个模块、五个实施工作流：`time`（UTC + sleep）、`args`、`cli`、`fs`、`env`、`log`。
 > B0 只确认了部分方向；精确签名、模块归属、能力/错误、资源/性能及版本要求必须在 B3-0 冻结。
@@ -12,7 +12,7 @@
 | 项 | 当前状态 |
 | --- | --- |
 | B0 | 总纲/D-1～D-22 已确认方向；B1 已交付 |
-| B2 | B2-C 最终公共收口通过。B3-0A 已复核三平台探测与 B1 前置，B3-0B 已冻结三个模块。[B3-0 规划](20o-b3-0-probe-freeze-plan.md) · [B3-0B 证据](assets/20o-b3/entry-20261123-b3-0b/README.md) |
+| B2 | B2-C 最终公共收口通过。B3-0A 已复核三平台探测与 B1 前置，B3-0B 已冻结三个模块。B3-0C 规划完成、执行未开始。[B3-0 规划](20o-b3-0-probe-freeze-plan.md) · [B3-0B 证据](assets/20o-b3/entry-20261123-b3-0b/README.md) · [B3-0C 规划](20o-b3-0c-fs-env-log-plan.md) |
 | B2基线 | 固定产品 `e79fab3c`，ABI 1.19、生成器 22、标准库接口 1。开工时核对 B2-C 对应源码和产物身份 |
 | B3 目标 | 简单宿主库：time/args/cli/fs扩展/env/log时间戳 |
 | 已确认方向 | D-8 time（UTC墙钟/单调钟/格式化/首批sleep）；D-9 fs宿主权限/路径/覆盖/同目录原子写；D-10 argv规则；仅为方向，不等于接口冻结 |
