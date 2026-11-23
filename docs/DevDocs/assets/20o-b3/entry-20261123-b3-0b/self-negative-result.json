@@ -1,7 +1,7 @@
 {
   "cases": [
     {
-      "after": "d6a1e86462e7c9943970ffaefccb5ade25a6593cd080c58488f56756205d5067",
+      "after": "9d35fca873d515ba7fd26463fc114a46cfbdd4dab2deba38064c94335d71deda",
       "argv": [
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-B",
@@ -9,17 +9,16 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0b\\audit_closeout.py",
         "--evidence-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-ul_h63g1\\unchanged",
-        "--preflight"
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-vv7hl0xv\\unchanged"
       ],
-      "before": "d6a1e86462e7c9943970ffaefccb5ade25a6593cd080c58488f56756205d5067",
+      "before": "9d35fca873d515ba7fd26463fc114a46cfbdd4dab2deba38064c94335d71deda",
       "case": "unchanged",
       "exit": 0,
       "read_only": true,
       "stderr": ""
     },
     {
-      "after": "27f4ca5e82fa3e438798f5992621e8a8e4faaba9b961a26d776ae4adec77b057",
+      "after": "8255546727148e70713a48806b9e223af6baa53d677a873252d0b2dfb3e887e2",
       "argv": [
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-B",
@@ -27,17 +26,16 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0b\\audit_closeout.py",
         "--evidence-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-ul_h63g1\\manifest-tampered",
-        "--preflight"
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-vv7hl0xv\\manifest-tampered"
       ],
-      "before": "27f4ca5e82fa3e438798f5992621e8a8e4faaba9b961a26d776ae4adec77b057",
+      "before": "8255546727148e70713a48806b9e223af6baa53d677a873252d0b2dfb3e887e2",
       "case": "manifest-tampered",
       "exit": 1,
       "read_only": true,
       "stderr": "B3-0B 拒绝：清单字节或身份不符\n"
     },
     {
-      "after": "ada6ca40679f07dc8f3f9623e79e6922f9db3960c9d7389ad867a11b82b33667",
+      "after": "d56414fb87d3a6579f9ff06ec2eb06e9bf08c67d33d7b345e5097b8f344e3c92",
       "argv": [
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-B",
@@ -45,17 +43,16 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0b\\audit_closeout.py",
         "--evidence-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-ul_h63g1\\missing-attributes",
-        "--preflight"
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-vv7hl0xv\\missing-attributes"
       ],
-      "before": "ada6ca40679f07dc8f3f9623e79e6922f9db3960c9d7389ad867a11b82b33667",
+      "before": "d56414fb87d3a6579f9ff06ec2eb06e9bf08c67d33d7b345e5097b8f344e3c92",
       "case": "missing-attributes",
       "exit": 1,
       "read_only": true,
       "stderr": "B3-0B 拒绝：封存缺少文件：.gitattributes\n"
     },
     {
-      "after": "d1a1ce99852c1c98ae42de5489bbaf881c3a6c725adae612513cd4b790f34c3b",
+      "after": "c520e2227c8436364666af298de2087888c7c66201ac17771a59eece80cc0e6a",
       "argv": [
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-B",
@@ -63,17 +60,16 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0b\\audit_closeout.py",
         "--evidence-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-ul_h63g1\\forged-status",
-        "--preflight"
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-vv7hl0xv\\forged-status"
       ],
-      "before": "d1a1ce99852c1c98ae42de5489bbaf881c3a6c725adae612513cd4b790f34c3b",
+      "before": "c520e2227c8436364666af298de2087888c7c66201ac17771a59eece80cc0e6a",
       "case": "forged-status",
       "exit": 1,
       "read_only": true,
       "stderr": "B3-0B 拒绝：收口回执与实际派生结论不符\n"
     },
     {
-      "after": "5c9c9c996bae1b5f0812331774540ac976dd2bd95aa71e1d474fc20daf523a97",
+      "after": "f51f5acb181fc834e915f05b63b3560294f775f6c06b25f03ee394c9cb8049a6",
       "argv": [
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-B",
@@ -81,17 +77,16 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0b\\audit_closeout.py",
         "--evidence-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-ul_h63g1\\forged-observation",
-        "--preflight"
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-vv7hl0xv\\forged-observation"
       ],
-      "before": "5c9c9c996bae1b5f0812331774540ac976dd2bd95aa71e1d474fc20daf523a97",
+      "before": "f51f5acb181fc834e915f05b63b3560294f775f6c06b25f03ee394c9cb8049a6",
       "case": "forged-observation",
       "exit": 1,
       "read_only": true,
       "stderr": "B3-0B 拒绝：探测回执偏离实测字节\n"
     },
     {
-      "after": "b4bf3a3fcd9b80f2cdf0baffb6c99f3ea86a0a4df0bfd6db49506a42e143bdb4",
+      "after": "78e97a0cb3401b1ae0af66aa07713bd66c7454874e869fdc7539c808345f6f6e",
       "argv": [
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-B",
@@ -99,17 +94,16 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0b\\audit_closeout.py",
         "--evidence-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-ul_h63g1\\direction-as-freeze",
-        "--preflight"
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-vv7hl0xv\\direction-as-freeze"
       ],
-      "before": "b4bf3a3fcd9b80f2cdf0baffb6c99f3ea86a0a4df0bfd6db49506a42e143bdb4",
+      "before": "78e97a0cb3401b1ae0af66aa07713bd66c7454874e869fdc7539c808345f6f6e",
       "case": "direction-as-freeze",
       "exit": 1,
       "read_only": true,
       "stderr": "B3-0B 拒绝：裁定回执偏离实际答复\n"
     },
     {
-      "after": "e5f9deef2dbf01696fc937a9b72be9f6c5f17f29d8468c94f5d959f7bed70b6b",
+      "after": "cf5af55952202cf7731135997fd16ba7dd9278faf353f027d6d39ae9e2349524",
       "argv": [
         "D:\\Programs\\Python\\Python312\\python.exe",
         "-B",
@@ -117,15 +111,31 @@
         "utf8",
         "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0b\\audit_closeout.py",
         "--evidence-root",
-        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-ul_h63g1\\replaced-doc-blob",
-        "--preflight"
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-vv7hl0xv\\replaced-doc-blob"
       ],
-      "before": "e5f9deef2dbf01696fc937a9b72be9f6c5f17f29d8468c94f5d959f7bed70b6b",
+      "before": "cf5af55952202cf7731135997fd16ba7dd9278faf353f027d6d39ae9e2349524",
       "case": "replaced-doc-blob",
       "exit": 1,
       "read_only": true,
       "stderr": "B3-0B 拒绝：文档门禁未绑定受检提交的实际 Markdown\n"
+    },
+    {
+      "after": "4eef901a7fd5471fd273140c6dbe31b59f686fb6c3869f6b999c2b36aa4a5709",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0b\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0b-negative-vv7hl0xv\\forged-negative-report"
+      ],
+      "before": "4eef901a7fd5471fd273140c6dbe31b59f686fb6c3869f6b999c2b36aa4a5709",
+      "case": "forged-negative-report",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0B 拒绝：自反例回执偏离固定原件\n"
     }
   ],
-  "mode": "preflight"
+  "mode": "sealed"
 }
