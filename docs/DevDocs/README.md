@@ -305,10 +305,10 @@
 | 20O-B2-B6-1-RERUN | [B6-1重跑规划](20o-b2-b6-1-rerun-plan.md) | FIX.2后B6-1自身任务根重跑Linux包装与回归、按平台更新状态 | **限定重跑记录（2026-11-18）**：[回执与审计](assets/20o-b2-b/entry-20261118-b6-1-rerun/README.md)；两平台新任务根/Runtime，Runtime各305/0/1，VM资源归档Windows42/0/3、Linux43/0/3；Windows COFF未验证、Linux ELF Complete。后续macOS补验见B6行 |
 | 20O-B2-B7 | [B7内部收口规划](20o-b2-b7-closeout-plan.md) / [回归与交接](assets/20o-b2-b/entry-20261122-b7/README.md) | B1 七库回归、A0～A7/B0～B6 对账、教程/registry 边界与 B2-C 交接 | **内部收口完成（2026-11-22）**　固定 `e79fab3c`，三平台功能和默认 workspace 通过，`b7_passed=true`。22D 继续追踪，Windows COFF 缺项归 B2-C |
 | 20O-B2-C | [B2-C最终公共收口规划](20o-b2-c-final-closeout-plan.md) | 最终 721、三平台公共产物、教程/registry、发布证据 | **公共收口（2026-11-22）**　[B2-C 收口证据](assets/20o-b2-c/entry-20261122-b2-c/README.md)。b2c_passed=true。本轮 721 条 F10、1,647 项 F-3、三平台候选、教程和定稿工程门禁通过。Windows 同链接补验 10 份候选，产品 COFF 验证仍为未验证；B3 起所有 Windows 产物必须产品级 COFF Complete |
-| 20O-B3 | [B3 简单宿主库规划](20o-b3-host-libraries-plan.md) / [B3-0 探测冻结规划](20o-b3-0-probe-freeze-plan.md) | time/args/cli/fs/env/log、能力、取消、错误、三平台与教程 | **B3-0B 已收口（2026-11-23）**　B3-0C 规划完成、执行未开始。Windows 公共产物必须产品级 COFF `Complete` |
-| 20O-B3-0 | [B3-0 探测、冻结与教程草案实施规划](20o-b3-0-probe-freeze-plan.md) / [B3-0A 入口证据](assets/20o-b3/entry-20261122-b3-0/README.md) | 六模块探测、契约、版本、COFF、教程候选、B3-1 入口 | **B3-0A/B 已通过**　B3-0C 入口就绪 |
+| 20O-B3 | [B3 简单宿主库规划](20o-b3-host-libraries-plan.md) / [B3-0 探测冻结规划](20o-b3-0-probe-freeze-plan.md) | time/args/cli/fs/env/log、能力、取消、错误、三平台与教程 | **B3-0B/C 已收口（2026-11-23）**　B3-0D 入口就绪。Windows 产品级 COFF `Complete` 待产品验收 |
+| 20O-B3-0 | [B3-0 探测、冻结与教程草案实施规划](20o-b3-0-probe-freeze-plan.md) / [B3-0A 入口证据](assets/20o-b3/entry-20261122-b3-0/README.md) | 六模块探测、契约、版本、COFF、教程候选、B3-1 入口 | **B3-0A/B/C 已通过**　B3-0D 待执行 |
 | 20O-B3-0B | [time/args/cli 探测与契约冻结规划](20o-b3-0b-time-args-cli-plan.md) / [收口证据](assets/20o-b3/entry-20261123-b3-0b/README.md) | 精确契约、版本候选、错误、资源、教程候选 | **三模块已冻结**　十二项实际答复、三份 planned 教程候选，cli 返回类型由前端推导 |
-| 20O-B3-0C | [fs/env/log 探测与契约冻结规划](20o-b3-0c-fs-env-log-plan.md) | fs/env/log 首轮裁定、精确契约、版本/错误/资源、教程候选 | **规划完成、执行未开始**　B3-0C 首轮问题待答；不写产品，B3-0D/B3-1 未启动 |
+| 20O-B3-0C | [fs/env/log 探测与契约冻结规划](20o-b3-0c-fs-env-log-plan.md) / [收口证据](assets/20o-b3/entry-20261123-b3-0c/README.md) | 九项裁定、精确契约、版本/错误/资源、教程候选 | **三模块已冻结**　三份 `planned` 教程候选通过语法和黄金核对，B3-0D 入口就绪 |
 | 20O-B4 | [B4 JSON/TOML规划](20o-b4-json-toml-plan.md) | 专用值模型、JSON/TOML解析/序列化、双路径/教程 | **规划稿（2026-11-11）**：B4未开始；与B5数值类型分开，B5-B9后置 |
 | 20O-B5 | [B5数值库规划](20o-b5-numeric-libraries-plan.md) | decimal/fractions/statistics浮点/确定性random、精度/三平台 | **规划稿（2026-11-11）**：B5未开始；复用B2底座，CSPRNG/B6-B9后置 |
 | 20O-B6 | [B6原生工具规划](20o-b6-native-tools-plan.md) | regex线性时间、gzip/zlib整块、fmt扩展与依赖锁定 | **规划稿（2026-11-11）**：B6未开始；B7-B9与流式后置 |

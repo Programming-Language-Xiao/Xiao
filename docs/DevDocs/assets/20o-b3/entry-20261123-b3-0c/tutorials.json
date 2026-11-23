@@ -1,0 +1,36 @@
+{
+  "status": "planned",
+  "candidate_root": "candidates",
+  "manifest": "core/rust/Cargo.toml",
+  "package": "xiao-driver",
+  "platforms": ["x86_64-pc-windows-msvc", "x86_64-unknown-linux-gnu", "aarch64-apple-darwin"],
+  "module_aliases": ["std", "stdlib"],
+  "native_optimizations": [0, 3],
+  "expected_exit": 0,
+  "expected_cargo_counts": [1, 0, 0],
+  "windows_product_coff_policy": "complete_required",
+  "windows_product_coff_status": "pending",
+  "executed": false,
+  "cases": {
+    "fs": {
+      "target": "20o_b3_fs_tutorial",
+      "vm": "fs_tutorial_matches_vm_golden",
+      "native": "fs_tutorial_matches_native_golden",
+      "context": "以只含空 demo 子目录的全新任务根为 cwd，检查黄金和 demo 最终为空。"
+    },
+    "env": {
+      "target": "20o_b3_env_tutorial",
+      "vm": "env_tutorial_matches_vm_golden",
+      "native": "env_tutorial_matches_native_golden",
+      "input": "tests/fixtures/docs/env/b3-0c-candidate.input.json",
+      "context": "授权并注入合成快照，核对局部更新、空值、删除和再次读取。"
+    },
+    "log": {
+      "target": "20o_b3_log_tutorial",
+      "vm": "log_tutorial_matches_vm_golden",
+      "native": "log_tutorial_matches_native_golden",
+      "input": "tests/fixtures/docs/log/b3-0c-candidate.input.json",
+      "context": "以固定时钟及独立输出端核对时间戳、记录顺序、换行拒绝和黄金。"
+    }
+  }
+}

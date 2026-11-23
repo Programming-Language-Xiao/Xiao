@@ -1,0 +1,18 @@
+from std.env import get as get_env, set as set_env, unset as unset_env
+
+name = "XIAO_B3_TUTORIAL_VALUE"
+for value in get_env(name)
+    print("snapshot=[" + value + "]")
+
+set_env(name = name, value = "")
+for value in get_env(name)
+    print("empty=[" + value + "]")
+
+set_env(name, "local")
+for value in get_env(name)
+    print("updated=[" + value + "]")
+
+print(unset_env(name))
+print(unset_env(name))
+for value in get_env(name)
+    print("unexpected=[" + value + "]")

@@ -1,0 +1,122 @@
+{
+  "commands": {
+    "build": {
+      "argv": [
+        "rustc",
+        "+1.96.0",
+        "--edition=2024",
+        "tutorial_parse.rs",
+        "-L",
+        "dependency=D:\\project\\Xiao\\.b3-0\\20261122-01\\windows\\target\\debug\\deps",
+        "--extern",
+        "xiao_source=D:\\project\\Xiao\\.b3-0\\20261122-01\\windows\\target\\debug\\deps\\libxiao_source-7d1fe06ebb54935a.rlib",
+        "--extern",
+        "xiao_syntax=D:\\project\\Xiao\\.b3-0\\20261122-01\\windows\\target\\debug\\deps\\libxiao_syntax-a587470054f15729.rlib",
+        "-o",
+        "D:\\project\\Xiao\\.b3-0c\\20261123-01\\tutorial-syntax-final\\tutorial_parse.exe"
+      ],
+      "exit": 0,
+      "finished_utc": "2026-11-23T14:53:43.373004+00:00",
+      "pid": 51176,
+      "started_utc": "2026-11-23T14:53:42.299277+00:00",
+      "stderr": "",
+      "stdout": ""
+    },
+    "parse": {
+      "argv": [
+        "D:\\project\\Xiao\\.b3-0c\\20261123-01\\tutorial-syntax-final\\tutorial_parse.exe",
+        "candidates/tests/fixtures/docs/fs/b3-0c-candidate.xiao",
+        "candidates/tests/fixtures/docs/env/b3-0c-candidate.xiao",
+        "candidates/tests/fixtures/docs/log/b3-0c-candidate.xiao"
+      ],
+      "exit": 0,
+      "finished_utc": "2026-11-23T14:53:43.411556+00:00",
+      "pid": 61128,
+      "started_utc": "2026-11-23T14:53:43.373238+00:00",
+      "stderr": "",
+      "stdout": "candidates/tests/fixtures/docs/fs/b3-0c-candidate.xiao: diagnostics=0\ncandidates/tests/fixtures/docs/env/b3-0c-candidate.xiao: diagnostics=0\ncandidates/tests/fixtures/docs/log/b3-0c-candidate.xiao: diagnostics=0\n"
+    },
+    "rustc": {
+      "argv": [
+        "rustc",
+        "+1.96.0",
+        "--version",
+        "--verbose"
+      ],
+      "exit": 0,
+      "finished_utc": "2026-11-23T14:53:42.299021+00:00",
+      "pid": 44856,
+      "started_utc": "2026-11-23T14:53:42.120480+00:00",
+      "stderr": "",
+      "stdout": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-pc-windows-msvc\nrelease: 1.96.0\nLLVM version: 22.1.2\n"
+    }
+  },
+  "cwd": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c",
+  "examples": {
+    "candidates/tests/fixtures/docs/env/b3-0c-candidate.input.json": {
+      "bytes": 69,
+      "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+    },
+    "candidates/tests/fixtures/docs/env/b3-0c-candidate.stdout": {
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    },
+    "candidates/tests/fixtures/docs/env/b3-0c-candidate.xiao": {
+      "bytes": 467,
+      "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+    },
+    "candidates/tests/fixtures/docs/fs/b3-0c-candidate.stdout": {
+      "bytes": 32,
+      "sha256": "053479491ffccf00a77d1be6910e693615423a493c10008d780e3d4fb9822bfb"
+    },
+    "candidates/tests/fixtures/docs/fs/b3-0c-candidate.xiao": {
+      "bytes": 679,
+      "sha256": "c3a8f4f86dab34642760cef14797be9995627aa3754381c6d5a014c4ace38c67"
+    },
+    "candidates/tests/fixtures/docs/log/b3-0c-candidate.input.json": {
+      "bytes": 41,
+      "sha256": "30cf24e7a51b3e75a7ccda7f6448818dcbd4acb0b84e939e9e7083eeb019f129"
+    },
+    "candidates/tests/fixtures/docs/log/b3-0c-candidate.stdout": {
+      "bytes": 103,
+      "sha256": "267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146"
+    },
+    "candidates/tests/fixtures/docs/log/b3-0c-candidate.xiao": {
+      "bytes": 264,
+      "sha256": "d7ec578f5f0177355a04f054831a5d1aac1b7ab0c24757e05f494992eedf5a8b"
+    },
+    "tutorials/env.md": {
+      "bytes": 1896,
+      "sha256": "ce7b9bd7a8aeb4e797ae904527f37cc958649ab3fe8ab9311887013c69bb008c"
+    },
+    "tutorials/fs.md": {
+      "bytes": 2058,
+      "sha256": "b6a16afc811b5f76040eecba4727073a19edda5230965a25188e16a552d0c223"
+    },
+    "tutorials/log.md": {
+      "bytes": 1645,
+      "sha256": "48cc7c7c734100667f58d9b66175e5eea7f1909bde4e2a9c3217f36d514ecd44"
+    }
+  },
+  "executable": {
+    "bytes": 590848,
+    "sha256": "469bfc5feae833ffb3165e5c42d9596022fcb311222fdc235c384c3a7d5d9812"
+  },
+  "libraries": {
+    "xiao_source": {
+      "bytes": 230298,
+      "path": "D:\\project\\Xiao\\.b3-0\\20261122-01\\windows\\target\\debug\\deps\\libxiao_source-7d1fe06ebb54935a.rlib",
+      "sha256": "6f46009fd4f6cc33454d85efb47f49a26c918b66a8f96b6a489e69d6b4fc5f95"
+    },
+    "xiao_syntax": {
+      "bytes": 2507764,
+      "path": "D:\\project\\Xiao\\.b3-0\\20261122-01\\windows\\target\\debug\\deps\\libxiao_syntax-a587470054f15729.rlib",
+      "sha256": "5935bb500f0a25100862f7848021e47901fced8ac569ff60a5021d33db1eea54"
+    }
+  },
+  "probe": {
+    "bytes": 469,
+    "sha256": "f3ff084d1d6a1214b5b9f1f6bd1d94e20efccaa28ef221647cc591355a26d7a3"
+  },
+  "product_execution": false
+}

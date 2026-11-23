@@ -1,9 +1,9 @@
 # 20O-B3-0C. `fs` / `env` / `log` 探测与契约冻结规划
 
-> **状态（2026-11-23）：B3-0C 规划完成，执行未开始。** B3-0B 已冻结 `time`/`args`/`cli`，`b3_0c_entry_ready=true`；B3-0C 只做 `fs` 扩展/`env`/`log` 的探测、裁定和冻结，不写产品，不升级 registry/教程，不启动 B3-0D/B3-1。
+> **状态（2026-11-23）**　B3-0C 已收口。九项实际答复已登记，`fs`、`env`、`log` 精确契约与三份教程候选已冻结。B3-0D 入口已就绪。[冻结与收口证据](assets/20o-b3/entry-20261123-b3-0c/README.md)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B2-C 同链接补验是历史例外，不得继承。B3-0C 的探测记录不能替代 B3 产品验收。
 > 入口：[B3-0B 收口](assets/20o-b3/entry-20261123-b3-0b/README.md)、[B3-0B 冻结正文](assets/20o-b3/entry-20261123-b3-0b/contract-draft.md)、[B3-0C 前置台账](assets/20o-b3/entry-20261122-b3-0/decisions.md)、[B3-0 实施规划](20o-b3-0-probe-freeze-plan.md)。
-> B3-0C 不改产品/ABI/intrinsic/registry/教程，不跑旧 721，不启动 B3-0D/B3-1/B4。
+> B3-0C 交付冻结契约、教程候选和收口证据。产品实现与正式验收按后续批次执行。
 
 ## 一、入口与范围
 
@@ -15,9 +15,9 @@
 | 本批目标 | 冻结三模块精确 API/错误/能力/取消/资源/性能/平台、教程草案和版本候选，形成 B3-0D 入口 |
 | 本批不做 | 产品实现、registry/教程 verified、B3-0D/B3-1、B4-B9、旧 721、历史债务核销 |
 | Windows COFF | B3-0C 只记录探测/候选状态；B3 产品阶段必须产品级 COFF `Complete` |
-| 状态 | `b3_0c_started=false`、`b3_0c_passed=false`、`b3_0d_entry_ready=false`、`b3_product_started=false` |
+| 收口状态 | `b3_0c_passed=true`、`b3_0d_entry_ready=true`、`b3_0d_started=false`、`b3_product_started=false` |
 
-B3-0C 是 **契约冻结批**，不是实现批。B3-0B 的方向候选和 B3-0A 的探测结果不能直接写成精确冻结；有歧义的 API、能力、错误和宿主语义必须由星崽裁定。
+B3-0C 以 B3-0A 探测和前批交接为依据。精确契约按星崽确认的接口、能力、错误和宿主语义登记。
 
 ### 1.1 要做
 
@@ -75,7 +75,7 @@ b3_0d_entry_ready = b3_0c_passed and decisions_approved and no_product_change
 | B3-0C-ENV | 读取/写入/删除按显式能力；默认快照还是实时、Windows 名称大小写、编码/非法 Unicode、子进程继承和并发可见性 | 能力位、快照时点、写入范围和删除语义、名称比较、非法编码、错误/限额 |
 | B3-0C-LOG | 级别、时间戳来源/格式/时区、输出目标显式；并发记录有界；写入/刷新失败可报告；禁止隐式全局配置 | 时钟授权、时区、目标流、刷新/失败策略、能力、记录/字节上限 |
 
-首轮答复只决定范围；精确签名、错误编号、资源/性能表和平台边界在 B3-0C4 单独确认。新增能力位、intrinsic 或 ABI/生成器增量必须单独裁定。
+九项实际答复已登记，包含首轮方向和精确签名、错误、预算、测量、平台和联合版本候选。能力位号、intrinsic 编号及联合版本的产品接线由 B3-0D 裁定。[答复台账](assets/20o-b3/entry-20261123-b3-0c/decisions.json) · [契约正文](assets/20o-b3/entry-20261123-b3-0c/contract-draft.md)
 
 ## 四、分批执行
 
@@ -87,7 +87,7 @@ b3_0d_entry_ready = b3_0c_passed and decisions_approved and no_product_change
 4. 建立 `entry-20261123-b3-0c/` 证据目录和唯一任务根；
 5. 未答问题保持“待裁定”，不得标为冻结。
 
-退出：三首轮问题有明确答复或仍为待答；冻结表骨架可复核。
+退出：三项首轮问题的实际答复和冻结表骨架可复核。
 
 ### B3-0C1：`fs` 契约
 
@@ -125,7 +125,7 @@ b3_0d_entry_ready = b3_0c_passed and decisions_approved and no_product_change
 ### B3-0C4：版本、错误、资源和平台表
 
 1. 汇总三模块签名，合并 B3-0B 的 ABI 1.20/生成器 23 候选；
-2. 冻结新增 intrinsic 编号、C 符号、上下文传递、归档/缓存身份和旧产物拒绝；未批准不落产品；
+2. 登记九个 intrinsic 与 C 符号候选、上下文传递和产物的兼容规则，将具体编号、能力位、协议及归档/缓存身份移交 B3-0D 定案；
 3. 冻结稳定错误码、优先级、span/catch/finally/release、取消和安全点；
 4. 冻结输入/输出/条目/字节/时间/内存预算和性能测量协议；
 5. 冻结三平台目标、工具链、CI 入口和 Windows 产品级 COFF `Complete` 证据路径；
@@ -136,7 +136,7 @@ b3_0d_entry_ready = b3_0c_passed and decisions_approved and no_product_change
 ### B3-0C5：教程草案、固定示例与测试入口
 
 1. 三模块各一份可执行教程草案：导入、quickstart、边界/错误、能力、资源上限和平台差异；
-2. 固定示例按 `tests/fixtures/docs/<module>/` 组织，包含源码和独立黄金；
+2. 固定示例保存在证据目录的 `candidates/tests/fixtures/docs/<module>/`，包含源码、独立黄金及适用的合成运行输入；
 3. 设计 VM 和受控原生 O0/O3 精确入口；产品未实现前只登记候选；
 4. 教程/registry 保持 `planned`；
 5. 记录教程/示例/黄金 SHA-256；变化更新冻结表。
@@ -171,9 +171,9 @@ b3_0d_entry_ready = b3_0c_passed and decisions_approved and no_product_change
 
 ## 六、退出条件
 
-1. B3-0C0～C6 完成，三首轮问题有明确答复或逐项标为待答；
+1. B3-0C0～C6 完成，九项首轮和精确裁定有实际答复；
 2. `fs`/`env`/`log` 精确 API/错误/能力/取消/资源/性能/平台冻结；
-3. ABI/生成器/intrinsic/接口/C 符号/归档/缓存候选冻结；未批准不落产品；
+3. ABI、生成器、标准库接口的联合版本候选已确认。新增原语和 C 符号候选、归档及缓存规则已登记，具体编号和兼容矩阵移交 B3-0D；
 4. 三份教程草案、固定示例和精确测试入口候选冻结；registry/教程仍 planned；
 5. Windows 产物政策冻结：B3 起产品级 COFF `Complete`，同链接/`UnverifiedCoffExports`/导出表抽查不得替代；
 6. 证据审计与自反例通过；冻结表、探测日志、示例字节和用户裁定可复核；
@@ -209,12 +209,12 @@ B3-0D 按 B3-0C 冻结表合并六模块版本候选、ABI/生成器/C ABI/归�
 docs/DevDocs/20o-b3-0c-fs-env-log-plan.md              本规划
 docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/       B3-0C 证据
 docs/DevDocs/20o-b3-0-probe-freeze-plan.md             B3-0 总规划
-tests/fixtures/docs/                                    三模块教程候选夹具
+证据目录/candidates/tests/fixtures/docs/                三模块教程候选夹具
 docs/module-registry.json                               只读核对 planned，不升级
 stdlib/                                                   B3-0C 不改产品
 ```
 
-本页只做 B3-0C；B3-0D/B3-1 及后续仍未开始。
+B3-0D 接收六模块冻结正文和联合版本候选。教程进入产品门禁时，再按原相对路径迁入 `tests/fixtures/docs/`。
 
 ## 十、新 Agent 先读
 

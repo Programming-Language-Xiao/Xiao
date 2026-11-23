@@ -1,6 +1,6 @@
 # 20O-B3-0. 简单宿主库探测、冻结与教程草案实施规划
 
-> **状态（2026-11-23）**　B3-0A 的固定基线、三平台探测和 B1 前置已复核。B3-0B 的 time、args、cli 已冻结，B3-0C 入口就绪。[B3-0A 证据](assets/20o-b3/entry-20261122-b3-0/README.md) · [B3-0B 收口](assets/20o-b3/entry-20261123-b3-0b/README.md)
+> **状态（2026-11-23）**　B3-0A 的固定基线、三平台探测和 B1 前置已复核。B3-0B/C 冻结六模块精确契约，B3-0D 入口就绪。[B3-0A 证据](assets/20o-b3/entry-20261122-b3-0/README.md) · [B3-0B 收口](assets/20o-b3/entry-20261123-b3-0b/README.md) · [B3-0C 收口](assets/20o-b3/entry-20261123-b3-0c/README.md)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B2-C 的同链接 10 份候选只是历史例外，不得继承。B3-0 的探测记录不能替代 B3 产品验收。
 > 入口：[B3 宿主库规划](20o-b3-host-libraries-plan.md)、[B2-C 收口证据](assets/20o-b2-c/entry-20261122-b2-c/README.md)、[20P Day-1 架构](20p-day1-library-architecture.md)、[D-8/D-9/D-10 方向](20o-official-library-program.md#五决策清单)。
 > B3-0 不实现六个模块，不改 ABI/intrinsic/registry/教程，不跑旧 721，不启动 B3-1/B4。
@@ -97,7 +97,7 @@ B3-0B 已登记十二项实际答复。显式毫秒和纳秒、argv 快照、两
 
 ### B3-0C：`fs` 扩展、`env`、`log` 探测与冻结
 
-B3-0C 的详细开工单、首轮裁定和冻结证据见 [B3-0C 实施规划](20o-b3-0c-fs-env-log-plan.md)。
+B3-0C 已登记九项实际答复。三模块已冻结接口、能力、宿主行为、错误和预算。与 B3-0B 合并的版本候选为 ABI 1.20、生成器 23、标准库接口 1。[B3-0C 实施规划](20o-b3-0c-fs-env-log-plan.md) · [收口证据](assets/20o-b3/entry-20261123-b3-0c/README.md)
 
 1. `fs`：探测既有 `stdlib.os` 文件/目录句柄与拟议 `stdlib.fs` 扩展的归属；冻结相对路径基准、`..`、绝对路径、符号链接、覆盖、同目录原子替换、失败清理、权限失败和受限模式；
 2. `env`：冻结读取/写入/删除范围、快照或实时语义、名称比较（含 Windows 大小写）、名称/值编码、非法 Unicode、子进程继承、并发可见性和能力；

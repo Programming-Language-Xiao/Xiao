@@ -1,0 +1,8 @@
+from std.log import write as write_log
+
+write_log("info", "task started", "stdout")
+try
+    write_log("warn", "two\nlines", "stdout")
+catch failure as TypeError
+    print(error_code(failure))
+write_log(level = "error", message = "task stopped", target = "stdout")

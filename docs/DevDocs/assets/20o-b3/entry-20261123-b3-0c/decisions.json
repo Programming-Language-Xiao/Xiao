@@ -1,0 +1,62 @@
+{
+  "stage": "20O-B3-0C",
+  "recorded_on": "2026-11-23",
+  "direction_decisions": {
+    "B3-0C-FS": {
+      "status": "answered",
+      "answer": "os 管句柄，fs 管路径操作（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_4b10894c79ad45569890b2767c7f11ff\",0]",
+      "scope": "保留 os 句柄和进程入口。fs 承接写入、枚举、删除、重命名和元数据。普通路径按宿主规则，写入仅提交同目录原子操作，覆盖显式，受限模式后置。"
+    },
+    "B3-0C-ENV": {
+      "status": "answered",
+      "answer": "运行快照加局部写删（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_4b10894c79ad45569890b2767c7f11ff\",1]",
+      "scope": "每次运行使用独立快照，写删仅在该运行及其 Xiao 并发任务可见。按宿主比较名称，环境访问须授权。能力身份和宿主进程继承待裁定。"
+    },
+    "B3-0C-LOG": {
+      "status": "answered",
+      "answer": "首批仅支持 stdout（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_4b10894c79ad45569890b2767c7f11ff\",2]",
+      "scope": "首批目标限 stdout。级别、time 的 UTC 毫秒时间戳、clock 和输出授权、整条交付与失败报告列入精确表。"
+    }
+  },
+  "detail_decisions": {
+    "B3-0C1": {
+      "status": "answered",
+      "answer": "确认这五个入口（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_b2c290b9ef094995b5c447d9786cbe74\",0]",
+      "scope": "五个 fs 入口与 filesystem 授权，直接子项 UTF-8 字节排序，非递归删除，末段元数据，同目录原子写和显式覆盖。"
+    },
+    "B3-0C2": {
+      "status": "answered",
+      "answer": "确认专用授权与快照规则（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_b2c290b9ef094995b5c447d9786cbe74\",1]",
+      "scope": "get/set/unset，专用 environment 授权，授权的 CLI 与直接原生入口各捕获一次，嵌入默认空，本次运行的 Xiao 并发任务共享局部写删，os.spawn 保持宿主继承。"
+    },
+    "B3-0C3": {
+      "status": "answered",
+      "answer": "确认格式和失败边界（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_b2c290b9ef094995b5c447d9786cbe74\",2]",
+      "scope": "四个级别和 stdout，clock 与 stdout 授权，UTC 毫秒和单 LF 格式，拒绝 CR/LF/NUL，运行输出端失败与后续 CLI 转发的归属。"
+    },
+    "B3-0C4a": {
+      "status": "answered",
+      "answer": "确认限额和测量协议（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_a9181a13f29343a9b5f186004a28f269\",0]",
+      "scope": "确认 fs、env、log 的输入、结果和运行配额，以及三平台性能采样、时间、内存和翻倍比。"
+    },
+    "B3-0C4b": {
+      "status": "answered",
+      "answer": "确认错误和安全点（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_a9181a13f29343a9b5f186004a28f269\",1]",
+      "scope": "确认错误身份及优先级、fs 和 log 的单次操作期限、取消及提交边界、暂存清理和已交付日志字节的处理。"
+    },
+    "B3-0C4c": {
+      "status": "answered",
+      "answer": "确认合并版本候选（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_a9181a13f29343a9b5f186004a28f269\",2]",
+      "scope": "确认九个新原语与前批六个原语合并的 ABI 1.20、生成器 23、接口 1 候选，以及 C ABI 所有权、版本拒绝和静态产物身份。编号、位号、协议和 COFF 验证由 B3-0D 定案。"
+    }
+  }
+}
