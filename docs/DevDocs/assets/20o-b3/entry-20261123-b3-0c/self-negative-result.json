@@ -1,0 +1,157 @@
+{
+  "cases": [
+    {
+      "after": "989d57f93a18bc6c28db171f71fe4fa23141dea5ae26b1c379c78c6adc37fe8b",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\unchanged",
+        "--receipt-commit",
+        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+      ],
+      "before": "989d57f93a18bc6c28db171f71fe4fa23141dea5ae26b1c379c78c6adc37fe8b",
+      "case": "unchanged",
+      "exit": 0,
+      "read_only": true,
+      "stderr": ""
+    },
+    {
+      "after": "23ef41db57a9349f8502cd74e9b3595419db41ddf71fc164629ea36f359c5713",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\manifest-tampered",
+        "--receipt-commit",
+        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+      ],
+      "before": "23ef41db57a9349f8502cd74e9b3595419db41ddf71fc164629ea36f359c5713",
+      "case": "manifest-tampered",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0C 拒绝：清单字节或文件身份不符\n"
+    },
+    {
+      "after": "9b06a0787500a02af8c89470b7f693563ef9de17d9432e16011d05a03769549a",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\missing-attributes",
+        "--receipt-commit",
+        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+      ],
+      "before": "9b06a0787500a02af8c89470b7f693563ef9de17d9432e16011d05a03769549a",
+      "case": "missing-attributes",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0C 拒绝：封存缺少文件：.gitattributes\n"
+    },
+    {
+      "after": "28e7614503a1ac5dda0001167c7c7423e84be8297f8c85e5701f81fb1a9f1685",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\forged-status",
+        "--receipt-commit",
+        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+      ],
+      "before": "28e7614503a1ac5dda0001167c7c7423e84be8297f8c85e5701f81fb1a9f1685",
+      "case": "forged-status",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0C 拒绝：收口状态与实际证据不符\n"
+    },
+    {
+      "after": "bc6c6303e1c3458fac7de5efd51ebe11a5c37b34cee4aaace8527b52620fa7d4",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\forged-observation",
+        "--receipt-commit",
+        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+      ],
+      "before": "bc6c6303e1c3458fac7de5efd51ebe11a5c37b34cee4aaace8527b52620fa7d4",
+      "case": "forged-observation",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0C 拒绝：入口观察偏离固定原件\n"
+    },
+    {
+      "after": "acc94fffbdb845253ad6d43ea80ed9a5aabb3520fdb709b53f58213c0bbfb0c1",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\direction-as-freeze",
+        "--receipt-commit",
+        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+      ],
+      "before": "acc94fffbdb845253ad6d43ea80ed9a5aabb3520fdb709b53f58213c0bbfb0c1",
+      "case": "direction-as-freeze",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0C 拒绝：裁定台账偏离固定实际答复\n"
+    },
+    {
+      "after": "08c979e07f08dcf6fab76968b1038321a70bce936df6b49474bdc4c90b3148d3",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\replaced-doc-blob",
+        "--receipt-commit",
+        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+      ],
+      "before": "08c979e07f08dcf6fab76968b1038321a70bce936df6b49474bdc4c90b3148d3",
+      "case": "replaced-doc-blob",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0C 拒绝：文档门禁偏离定稿 Git 字节\n"
+    },
+    {
+      "after": "5c7dca827411080712a7018bac9abe5651d2745852bf35d467388b8af7f7427a",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261123-b3-0c\\audit_closeout.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0c-negative-_19v4vio\\forged-negative-report",
+        "--receipt-commit",
+        "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+      ],
+      "before": "5c7dca827411080712a7018bac9abe5651d2745852bf35d467388b8af7f7427a",
+      "case": "forged-negative-report",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0C 拒绝：负例回执偏离固定原件\n"
+    }
+  ],
+  "mode": "receipt"
+}
