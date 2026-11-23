@@ -1,0 +1,162 @@
+{
+  "b3_0_passed": false,
+  "b3_0c0_decisions_recorded": true,
+  "b3_0c1_fs_frozen": true,
+  "b3_0c2_env_frozen": true,
+  "b3_0c3_log_frozen": true,
+  "b3_0c4_versions_errors_resources_frozen": true,
+  "b3_0c5_tutorials_frozen": true,
+  "b3_0c6_evidence_audit_passed": true,
+  "b3_0c_passed": true,
+  "b3_0c_started": true,
+  "b3_0d_entry_ready": true,
+  "b3_0d_started": false,
+  "b3_1_entry_ready": false,
+  "b3_product_started": false,
+  "baseline": {
+    "b1_guards": {
+      "actual": 4,
+      "derived": 24,
+      "passed": 28
+    },
+    "b3_0b_cases": 7,
+    "platforms": [
+      "linux",
+      "macos",
+      "windows"
+    ],
+    "product": {
+      "commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+      "files": 1222,
+      "locks": {
+        "core/rust/Cargo.lock": {
+          "bytes": 19599,
+          "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+        },
+        "tests/benchmarks/Cargo.lock": {
+          "bytes": 19203,
+          "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+        }
+      },
+      "tree": "80be41eefc3983001cd3968db0ccceee541f698d",
+      "tree_list_sha256": "2d6494d5d7e27fb000e7f23719ce5bd7d816f147aac7b828d31cb52be7b78e3f"
+    }
+  },
+  "contract_commit": "aa4baccf7c7cf6cf227636047c6f81942eebc0f5",
+  "decision_count": 9,
+  "decisions_approved": true,
+  "doc_gates": {
+    "commit": "aa4baccf7c7cf6cf227636047c6f81942eebc0f5",
+    "docs_tree_sha256": "5eb6481458f85be179a44f626bad243166b26b13a4fdc1e15f311a547a3c3da4",
+    "gates": 3,
+    "markdown": 10,
+    "receipt_commit": "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+  },
+  "handoff": {
+    "contracts": {
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/contract-draft.md": {
+        "bytes": 10653,
+        "commit": "b8abebf368ef9180ad05756ae90f5d198580a028",
+        "sha256": "6c7a94dcbc6062b81a6be6d8c42707bb2f221fe6ad1a11f877db15e04773a6e8"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/contract-draft.md": {
+        "bytes": 10834,
+        "commit": "aa4baccf7c7cf6cf227636047c6f81942eebc0f5",
+        "sha256": "914022c2b43e44945ba95ff7ca51a6b4800d79fe2ae168bf06ab4becadcb7cf2"
+      }
+    },
+    "modules": [
+      "time",
+      "args",
+      "cli",
+      "fs",
+      "env",
+      "log"
+    ],
+    "next": "20O-B3-0D",
+    "pending": [
+      "intrinsic_ids",
+      "environment_capability_bit_and_legacy_default_mask",
+      "request_protocol_and_native_context",
+      "c_abi_registration_and_artifact_matrix",
+      "windows_product_coff_verifier"
+    ],
+    "version_candidate": {
+      "abi": "1.20",
+      "codegen": 23,
+      "intrinsics": 15,
+      "stdlib_interface": 1
+    },
+    "windows_product_coff_policy": "complete_required",
+    "windows_product_coff_status": "pending"
+  },
+  "negative_checks": {
+    "commit": "bcf6ad0a34a4ccb533ccbbeb2ff2a89fe68a601f",
+    "mode": "receipt",
+    "passed": 7,
+    "sha256": "2e311c58f06f64aa173273759c9fe8af536491d1cc378043f4dc56e1d5014b91"
+  },
+  "no_product_change": true,
+  "old_721_executed": false,
+  "preflight_negative_checks": {
+    "commit": "148c43b72604b428bab3a529b6c9cd4c04c5d95e",
+    "mode": "preflight",
+    "passed": 6,
+    "sha256": "1ce36f09261272612f4e296d82dcd643aa22002530cac5197c391ed670585814"
+  },
+  "registry_verified": false,
+  "scope": "20O-B3-0C",
+  "tutorials": {
+    "examples": {
+      "candidates/tests/fixtures/docs/env/b3-0c-candidate.input.json": {
+        "bytes": 69,
+        "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+      },
+      "candidates/tests/fixtures/docs/env/b3-0c-candidate.stdout": {
+        "bytes": 55,
+        "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+      },
+      "candidates/tests/fixtures/docs/env/b3-0c-candidate.xiao": {
+        "bytes": 467,
+        "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+      },
+      "candidates/tests/fixtures/docs/fs/b3-0c-candidate.stdout": {
+        "bytes": 32,
+        "sha256": "053479491ffccf00a77d1be6910e693615423a493c10008d780e3d4fb9822bfb"
+      },
+      "candidates/tests/fixtures/docs/fs/b3-0c-candidate.xiao": {
+        "bytes": 679,
+        "sha256": "c3a8f4f86dab34642760cef14797be9995627aa3754381c6d5a014c4ace38c67"
+      },
+      "candidates/tests/fixtures/docs/log/b3-0c-candidate.input.json": {
+        "bytes": 41,
+        "sha256": "30cf24e7a51b3e75a7ccda7f6448818dcbd4acb0b84e939e9e7083eeb019f129"
+      },
+      "candidates/tests/fixtures/docs/log/b3-0c-candidate.stdout": {
+        "bytes": 103,
+        "sha256": "267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146"
+      },
+      "candidates/tests/fixtures/docs/log/b3-0c-candidate.xiao": {
+        "bytes": 264,
+        "sha256": "d7ec578f5f0177355a04f054831a5d1aac1b7ab0c24757e05f494992eedf5a8b"
+      },
+      "tutorials/env.md": {
+        "bytes": 1896,
+        "sha256": "ce7b9bd7a8aeb4e797ae904527f37cc958649ab3fe8ab9311887013c69bb008c"
+      },
+      "tutorials/fs.md": {
+        "bytes": 2058,
+        "sha256": "b6a16afc811b5f76040eecba4727073a19edda5230965a25188e16a552d0c223"
+      },
+      "tutorials/log.md": {
+        "bytes": 1645,
+        "sha256": "48cc7c7c734100667f58d9b66175e5eea7f1909bde4e2a9c3217f36d514ecd44"
+      }
+    },
+    "goldens": 3,
+    "parsed": 3,
+    "product_execution": false,
+    "status": "planned"
+  },
+  "workspace_base": "6d81883be600bb6cc7459e6b63b8282c46fc3e2b"
+}

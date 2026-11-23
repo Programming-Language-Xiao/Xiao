@@ -13,7 +13,7 @@ from check_tutorials import MODULES, data, verify_report
 
 
 PREFIX = ROOT.relative_to(REPO).as_posix()
-FINAL_RECEIPTS = ""
+FINAL_RECEIPTS = "bcf6ad0a34a4ccb533ccbbeb2ff2a89fe68a601f"
 PLANNING_DOCS = (
     "docs/DevDocs/README.md",
     "docs/DevDocs/20o-official-library-program.md",
