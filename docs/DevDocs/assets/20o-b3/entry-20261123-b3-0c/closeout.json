@@ -42,15 +42,15 @@
       "tree_list_sha256": "2d6494d5d7e27fb000e7f23719ce5bd7d816f147aac7b828d31cb52be7b78e3f"
     }
   },
-  "contract_commit": "aa4baccf7c7cf6cf227636047c6f81942eebc0f5",
+  "contract_commit": "20fc409712fbc9ba905d05a460c3883f6de0e2ec",
   "decision_count": 9,
   "decisions_approved": true,
   "doc_gates": {
-    "commit": "aa4baccf7c7cf6cf227636047c6f81942eebc0f5",
-    "docs_tree_sha256": "5eb6481458f85be179a44f626bad243166b26b13a4fdc1e15f311a547a3c3da4",
+    "commit": "20fc409712fbc9ba905d05a460c3883f6de0e2ec",
+    "docs_tree_sha256": "1fd2e62937e3c7b18ad00439cb7bb9bda8574e7fa862a38d5dd6c6976f500098",
     "gates": 3,
     "markdown": 10,
-    "receipt_commit": "148c43b72604b428bab3a529b6c9cd4c04c5d95e"
+    "receipt_commit": "0fd083a28def365c66401ee7031334619c6d38ce"
   },
   "handoff": {
     "contracts": {
@@ -60,9 +60,9 @@
         "sha256": "6c7a94dcbc6062b81a6be6d8c42707bb2f221fe6ad1a11f877db15e04773a6e8"
       },
       "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/contract-draft.md": {
-        "bytes": 10834,
-        "commit": "aa4baccf7c7cf6cf227636047c6f81942eebc0f5",
-        "sha256": "914022c2b43e44945ba95ff7ca51a6b4800d79fe2ae168bf06ab4becadcb7cf2"
+        "bytes": 10901,
+        "commit": "20fc409712fbc9ba905d05a460c3883f6de0e2ec",
+        "sha256": "c7d7fbe909694dcb134995ac99bb74792632a539e62ce935893b9658d2ed5170"
       }
     },
     "modules": [
@@ -79,7 +79,8 @@
       "environment_capability_bit_and_legacy_default_mask",
       "request_protocol_and_native_context",
       "c_abi_registration_and_artifact_matrix",
-      "windows_product_coff_verifier"
+      "windows_product_coff_verifier",
+      "fs_restricted_mode_deferred_unscheduled"
     ],
     "version_candidate": {
       "abi": "1.20",
@@ -91,18 +92,18 @@
     "windows_product_coff_status": "pending"
   },
   "negative_checks": {
-    "commit": "bcf6ad0a34a4ccb533ccbbeb2ff2a89fe68a601f",
+    "commit": "29554eaa3077aee66ed33fb093cce692a948aab7",
     "mode": "receipt",
-    "passed": 7,
-    "sha256": "2e311c58f06f64aa173273759c9fe8af536491d1cc378043f4dc56e1d5014b91"
+    "passed": 8,
+    "sha256": "ff81b832f1409bb58aeb86947121537435e45f12c1e830940d1fc31de410a82b"
   },
   "no_product_change": true,
   "old_721_executed": false,
   "preflight_negative_checks": {
-    "commit": "148c43b72604b428bab3a529b6c9cd4c04c5d95e",
+    "commit": "0fd083a28def365c66401ee7031334619c6d38ce",
     "mode": "preflight",
-    "passed": 6,
-    "sha256": "1ce36f09261272612f4e296d82dcd643aa22002530cac5197c391ed670585814"
+    "passed": 7,
+    "sha256": "05a73d17b3e8fde4e299fbdc345a64d5d41248bce50e26b88079042089a987a5"
   },
   "registry_verified": false,
   "scope": "20O-B3-0C",
