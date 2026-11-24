@@ -229,11 +229,16 @@ def platform(root, name, source, fixed, ci):
         require([row["case"] for row in boundaries] == ["clock", "denied"], "原生授权或时钟探测缺项")
         markers = [f"B3-1-TUTORIAL backend=native alias={alias} opt={opt}" for alias, opt in CASES]
         markers += [f"B3-1-BOUNDARY case={row['case']}" for row in boundaries]
-        native = outputs["native-exact"].splitlines()
+        native = set(outputs["native-exact"].splitlines())
+        if name == "windows":
+            # 比较时统一 Windows 原生标记里的路径分隔符，日志摘要已按原始字节校验。
+            native = {line.replace("\\", "/") for line in native}
         for row, marker in zip(artifacts + boundaries, markers, strict=True):
-            require(PurePosixPath(row["path"]).parts[0] == "temp" and ".." not in PurePosixPath(row["path"]).parts,
+            archive_path = PurePosixPath(row["path"])
+            require(archive_path.parts[:1] == ("temp",) and ".." not in archive_path.parts
+                    and (name != "windows" or "\\" not in row["path"]),
                     "原生产物越出任务根")
-            output_path = str(task / row["path"])
+            output_path = (task / row["path"]).as_posix()
             require(row["verification"] == "complete", "原生产物验证等级不符")
             require(f"{marker} verification=complete exact=true artifact={output_path}" in native,
                     "原生教程或边界执行回执缺项")
@@ -241,9 +246,10 @@ def platform(root, name, source, fixed, ci):
             require(artifact_bytes(bundle, row).startswith(magic), "原生产物格式与目标不符")
             if name == "windows":
                 link = row["linker_map"]
+                map_path = (task / link["path"]).as_posix()
                 require(link["path"] == row["path"] + ".map"
                         and f"B3-1-COFF artifact={output_path} sha256={row['sha256']} "
-                            f"map={task / link['path']} map_sha256={link['sha256']}" in native,
+                            f"map={map_path} map_sha256={link['sha256']}" in native,
                         "COFF 映像或 map 未绑定验证回执")
                 require(b"Publics by Value" in artifact_bytes(bundle, link), "COFF 映射缺少链接器符号表")
         return {"native": len(artifacts), "native_boundaries": len(boundaries), "vm": 2, "runtime_sha256": runtime["sha256"],

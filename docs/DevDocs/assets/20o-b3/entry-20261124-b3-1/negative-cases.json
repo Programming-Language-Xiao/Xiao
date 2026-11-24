@@ -6,5 +6,6 @@
   "missing-clock-check": "原生教程或边界执行回执缺项",
   "replaced-error-identity": "time 错误、能力或 ABI 边界回执缺项",
   "forged-tutorial-execution": "教程执行回执缺少精确通过",
-  "forged-coff-grade": "原生产物验证等级不符"
+  "forged-coff-grade": "原生产物验证等级不符",
+  "forged-coff-map-path": "COFF 映像或 map 未绑定验证回执"
 }

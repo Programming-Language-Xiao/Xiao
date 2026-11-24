@@ -1,6 +1,6 @@
 # 20O-B3-1. `time` 实施规划
 
-> **状态（2026-11-25）**　B3-1 已在产品快照 `8d1c09f0` 完成内部收口。Windows、Linux、macOS 的 time VM/原生 O0/O3、等待/取消样本和平台门禁均通过；Windows 六份产物由同次 MSVC 链接 map 验证为 COFF `Complete`。workspace-gates CI run `45429820367` 通过，文档门禁和 7 条拒绝反例已封存。`b3_1_started=true`、`b3_1_passed=true`、`b3_2_entry_ready=true`。B3-2 尚未开始，教程和 registry 仍为 `planned`。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [time 收口证据](assets/20o-b3/entry-20261124-b3-1/README.md)
+> **状态（2026-11-25）**　B3-1 已在产品快照 `8d1c09f0` 完成内部收口。Windows、Linux、macOS 的 time VM/原生 O0/O3、等待/取消样本和平台门禁均通过。Windows 六份产物由同次 MSVC 链接 map 验证为 COFF `Complete`。workspace-gates CI run `45429820367` 通过，文档门禁和 8 条拒绝反例已封存。`b3_1_started=true`、`b3_1_passed=true`、`b3_2_entry_ready=true`。B3-2 尚未开始，教程和 registry 仍为 `planned`。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [time 收口证据](assets/20o-b3/entry-20261124-b3-1/README.md)
 > **输入契约**　15 个原语为 49～63，time 为 49～52；能力位 `clock` 为 1，`stdout` 为 5；目标为 ABI 1.20、生成器 23、标准库接口 1；C ABI 采用末尾 `capabilities: u64` 的冻结形式。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-1 只实现 time，不得把 B3-0E 候选或 `UnverifiedCoffExports` 写成产品验收。
 > 入口：[B3-0E 收口](assets/20o-b3/entry-20261124-b3-0e/README.md)、[B3-0D 收口](assets/20o-b3/entry-20261124-b3-0d/README.md)、[B3-0 实施规划](20o-b3-0-probe-freeze-plan.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。

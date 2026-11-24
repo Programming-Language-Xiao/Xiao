@@ -30,9 +30,13 @@ def edit_windows(root, case):
                 "replaced-error-identity": ("vm-boundaries", b"time_vm_errors_and_child_clock_follow_the_frozen_contract ... ok",
                                             b"time_vm_errors_and_child_clock_follow_the_frozen_contract ... ignored"),
                 "forged-tutorial-execution": ("vm-exact", b"test result: ok. 1 passed;", b"test result: ok. 0 passed;"),
+                "forged-coff-map-path": ("native-exact", b"/denied.exe.map map_sha256=", b"/wrong.exe.map map_sha256="),
             }[case]
             command = receipt["commands"][label]
             raw = original.read(f"logs/{command['stdout']['sha256']}.log")
+            if case == "forged-coff-map-path":
+                # 先走完正斜杠的教程和边界路径核对，再拒绝明确错绑的 map。
+                raw = raw.replace(b"\\", b"/")
             require(old in raw, f"反例缺少可改动的原始记录：{case}")
             raw = raw.replace(old, new, 1)
             command["stdout"] = identity(raw)
