@@ -136,7 +136,7 @@ b3_0e_entry_ready = b3_0d_passed and decisions_approved and no_product_change
 4. 冻结证据身份：产物 SHA-256、源码/Runtime/工具/目标、三平台任务根、CI run/job/attempt；
 5. 设计负例：`UnverifiedCoffExports`、导出表-only、同链接候选、声明缺失、观察组件多出、未分类符号、哈希/身份失配、旧 sidecar；
 6. 只做可行性探测；`windows_product_coff_status` 保持 `pending`，B3-1/B3-7 才产生产品级 `Complete` 证据；
-7. 如果无法在产品产物上达到 `Complete`，`b3_0d_passed=false`，不得用受限证据交接。
+7. 若验证器机制无法读取冻结的任何允许证据源，或无法把证据身份绑定到待验产物，`b3_0d_passed=false`；产品产物的实际 `Complete` 仍由 B3-1/B3-7 产生。
 
 退出：COFF 政策、验证器落点、证据路径和负例冻结；没有把探测写成产品验收。
 

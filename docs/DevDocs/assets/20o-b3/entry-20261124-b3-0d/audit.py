@@ -20,7 +20,7 @@ PRODUCT_COMMIT = "e79fab3cdd3ea9d3a7eff31f529dec2498434114"
 PRODUCT_TREE = "80be41eefc3983001cd3968db0ccceee541f698d"
 PRIOR_C = "20fc409712fbc9ba905d05a460c3883f6de0e2ec"
 STATIC_FILES = {
-    ".gitattributes", "README.md", "audit.py", "baseline.json", "c-abi.json", "coff-policy.json",
+    ".gitattributes", "README.md", "audit.py", "c-abi.json", "coff-policy.json",
     "contract-draft.md", "decisions.json", "freeze-table.json", "handoff.json", "negative-cases.json",
     "seal.py", "self_negative.py", "version-matrix.json",
 }
@@ -103,6 +103,7 @@ def verify_static_files(root):
 
 def verify_baseline(root):
     baseline = json.loads((root / "baseline.json").read_bytes())
+    require(baseline["entry_commit"] == START_COMMIT, "B3-0D 固定入口提交不符")
     product = baseline["product"]
     require(product["commit"] == PRODUCT_COMMIT and git("show", "-s", "--format=%T", PRODUCT_COMMIT).strip().decode() == PRODUCT_TREE,
             "固定产品树身份不符")
@@ -157,7 +158,7 @@ def verify_versions(root):
             and matrix["b3_target"] == {"runtime_abi": "1.20", "generator": 23, "stdlib_interface": 1}, "版本目标不符")
     require(matrix["formats"] == {"xiaoc": "1.0", "xar": "1.0", "index_schema": "1.0", "ir": "1", "native_metadata": "1", "protocol": "1", "core": "1"},
             "格式版本不符")
-    require(matrix["compatibility"]["old_1_19_22_artifacts"] == "execute_before_reject"
+    require(matrix["compatibility"]["old_1_19_22_artifacts"] == "reject_before_execution"
             and matrix["compatibility"]["regeneration"] == "from_source"
             and matrix["compatibility"]["arguments"] == "execution_input_only_not_artifact_or_cache_identity", "旧产物兼容边界不符")
     return matrix["b3_target"]
@@ -208,10 +209,14 @@ def verify_negative_report(root):
     for row, expected_case in zip(payload["cases"], expected):
         reason = "" if expected_case["expected"] == "pass" else expected_case["expected"]
         expected_stderr = f"B3-0D 拒绝：{reason}\n" if reason else ""
+        argv = row["argv"]
         require(row["read_only"] is True and row["before"] == row["after"]
                 and re.fullmatch(r"[a-f0-9]{64}", row["before"])
                 and row["exit"] == int(bool(reason)) and row["stderr"] == expected_stderr
-                and row["stdout"] == ("" if reason else row["stdout"]), REASONS["forged-negative-report"])
+                and (not row["stdout"] if reason else bool(row["stdout"]))
+                and argv[1:4] == ["-B", "-X", "utf8"] and Path(argv[4]).name == "audit.py"
+                and argv[5] == "--evidence-root" and Path(argv[6]).name == row["case"],
+                REASONS["forged-negative-report"])
     return len(payload["cases"])
 
 
@@ -221,6 +226,19 @@ def verify_doc_gates(root):
     require([row["name"] for row in rows] == ["check:docs", "check:usedocs", "check:layout"]
             and all(row["exit"] == 0 for row in rows)
             and report["passed"] is True, "文档门禁未通过或回执不完整")
+    snapshot = {"commit": FREEZE_COMMIT,
+                "tree_sha256": hashlib.sha256(git("ls-tree", "-rz", FREEZE_COMMIT, "--", "docs/DevDocs", "docs/UseDocs")).hexdigest(),
+                "markdown": {path: identity(blob(FREEZE_COMMIT, path)) for path in sorted(DOCS)}}
+    require(report["source"] == snapshot, "文档门禁未绑定冻结提交中的 DevDocs/UseDocs 字节")
+    for path, expected in snapshot["markdown"].items():
+        require(identity(blob(FREEZE_COMMIT, path)) == expected, "冻结 Markdown 对象不符")
+    used = {row[key] for row in rows for key in ("stdout_sha256", "stderr_sha256")}
+    require(report["logs"].keys() == used
+            and all(identity(text.encode("utf-8"))["sha256"] == digest for digest, text in report["logs"].items()),
+            "文档门禁日志摘要不符")
+    for row in rows:
+        require(row["stdout"] == "通过：未发现 A0 规则问题。\n" and row["argv"][-2:] == ["run", row["name"]],
+                "文档门禁命令或输出不符")
     return {"checks": [{"name": row["name"], "exit": row["exit"], "stdout_sha256": row["stdout_sha256"], "stderr_sha256": row["stderr_sha256"]} for row in rows], "passed": True}
 
 

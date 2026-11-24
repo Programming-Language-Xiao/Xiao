@@ -47,7 +47,7 @@ def tamper(root, case):
         rewrite_manifest(root)
     elif case == "forged-negative-report":
         value = json.loads((root / "self-negative-result.json").read_bytes())
-        value["cases"][1]["before"] = value["cases"][1]["after"] = "0" * 64
+        value["cases"][1]["stderr"] = "伪造的拒绝结果\n"
         (root / "self-negative-result.json").write_bytes(encoded(value))
         rewrite_manifest(root)
     else:
@@ -58,10 +58,13 @@ def replay(parent, case, expected):
     root = parent / case
     shutil.copytree(ROOT, root)
     if case == "forged-negative-report" and not (root / "self-negative-result.json").exists():
+        expected_cases = json.loads((ROOT / "negative-cases.json").read_bytes())["cases"]
         seed = {"mode": "sealed", "cases": [
-            {"case": name, "exit": int(name != "unchanged"), "stderr": "", "read_only": True,
-             "before": "0" * 64, "after": "0" * 64}
-            for name in (row["name"] for row in json.loads((ROOT / "negative-cases.json").read_bytes())["cases"])
+            {"case": item["name"], "exit": int(item["expected"] != "pass"),
+             "stdout": "baseline audit output" if item["expected"] == "pass" else "",
+             "stderr": "" if item["expected"] == "pass" else f"B3-0D 拒绝：{item['expected']}\n",
+             "read_only": True, "before": "0" * 64, "after": "0" * 64}
+            for item in expected_cases
         ]}
         (root / "self-negative-result.json").write_bytes(encoded(seed))
         rewrite_manifest(root)
@@ -80,7 +83,7 @@ def replay(parent, case, expected):
             raise RuntimeError(f"{case}: {result.returncode} {result.stderr!r}")
     if before != after:
         raise RuntimeError(f"{case}: audit wrote the evidence copy")
-    return {"case": case, "exit": result.returncode, "stdout": result.stdout, "stderr": result.stderr,
+    return {"case": case, "argv": command, "exit": result.returncode, "stdout": result.stdout, "stderr": result.stderr,
             "read_only": True, "before": before, "after": after}
 
 
