@@ -85,6 +85,8 @@ b3_2_entry_ready = b3_1_passed and decisions_approved and no_product_scope_creep
 
 ### B3-1A：B3-0F 入口与基线
 
+Windows 本机已从 `e79fab3c` 的独立源码导出构建 release Runtime，两个 Cargo.lock 的 Git 摘要、目标及 LLVM 工具身份已登记。[Windows 基线](assets/20o-b3/entry-20261124-b3-1/README.md)
+
 1. 完成 B3-0F 的固定证据、只读审计、自反例和 B3-1 入口；
 2. 固定 B3-0E 教程/夹具、B3-0D 编号/版本、B3-0A 三平台回执和 B1 28 守卫；
 3. 固定产品 `e79fab3c`、两个 Cargo.lock、Runtime/工具/目标；

@@ -1,0 +1,135 @@
+{
+  "b3_0f_closeout_commit": "7f6cc6a26cf0b1350da7a6eea09203761e1de366",
+  "build": {
+    "argv": [
+      "cargo",
+      "+1.96.0",
+      "build",
+      "--locked",
+      "--offline",
+      "--release",
+      "--manifest-path",
+      "core/rust/Cargo.toml",
+      "--target",
+      "x86_64-pc-windows-msvc",
+      "-p",
+      "xiao-runtime"
+    ],
+    "exit": 0,
+    "stderr": "   Compiling serde_core v1.0.229\n   Compiling proc-macro2 v1.0.107\n   Compiling zmij v1.0.23\n   Compiling quote v1.0.47\n   Compiling unicode-ident v1.0.24\n   Compiling serde_json v1.0.151\n   Compiling version_check v0.9.5\n   Compiling serde v1.0.229\n   Compiling typenum v1.20.1\n   Compiling autocfg v1.5.1\n   Compiling generic-array v0.14.7\n   Compiling syn v3.0.5\n   Compiling block-buffer v0.10.4\n   Compiling crypto-common v0.1.7\n   Compiling digest v0.10.7\n   Compiling itoa v1.0.18\n   Compiling cpufeatures v0.2.17\n   Compiling cfg-if v1.0.5\n   Compiling memchr v2.8.3\n   Compiling sha2 v0.10.9\n   Compiling serde_derive v1.0.229\n   Compiling num-traits v0.2.19\n   Compiling xiao-runtime-abi v0.1.0 (D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae\\source\\core\\rust\\crates\\xiao-runtime-abi)\n   Compiling xiao-source v0.1.0 (D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae\\source\\core\\rust\\crates\\xiao-source)\n   Compiling libm v0.2.16\n   Compiling bigdecimal v0.4.11\n   Compiling num-integer v0.1.47\n   Compiling xiao-i18n v0.1.0 (D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae\\source\\core\\rust\\crates\\xiao-i18n)\n   Compiling xiao-intrinsics v0.1.0 (D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae\\source\\core\\rust\\crates\\xiao-intrinsics)\n   Compiling libc v0.2.189\n   Compiling num-bigint v0.4.8\n   Compiling xiao-diagnostics v0.1.0 (D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae\\source\\core\\rust\\crates\\xiao-diagnostics)\n   Compiling xiao-syntax v0.1.0 (D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae\\source\\core\\rust\\crates\\xiao-syntax)\n   Compiling xiao-types v0.1.0 (D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae\\source\\core\\rust\\crates\\xiao-types)\n   Compiling xiao-lifetime v0.1.0 (D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae\\source\\core\\rust\\crates\\xiao-lifetime)\n   Compiling xiao-runtime v0.1.0 (D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae\\source\\core\\rust\\crates\\xiao-runtime)\n    Finished `release` profile [optimized] target(s) in 44.32s\n",
+    "stdout": ""
+  },
+  "current_versions": {
+    "generator": 22,
+    "runtime_abi": "1.19",
+    "stdlib_interface": 1
+  },
+  "isolated_paths": {
+    "cache": "D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae\\cache",
+    "source": "D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae\\source",
+    "target": "D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae\\target",
+    "temp": "D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae\\temp",
+    "xiao_home": "D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae\\xiao-home"
+  },
+  "locks": {
+    "core/rust/Cargo.lock": {
+      "exported": {
+        "bytes": 20472,
+        "sha256": "d8046478bad7c8b2188cb63968c9f6ea31752ad84dcdd7e23c9dcb95f32c5fb2"
+      },
+      "git_utf8_lf": {
+        "bytes": 19599,
+        "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+      }
+    },
+    "tests/benchmarks/Cargo.lock": {
+      "exported": {
+        "bytes": 20053,
+        "sha256": "3d8ddc71c7c24bd48ac54729aa78b3d742ed2f4045fb4c8cfb43943bf5e677c0"
+      },
+      "git_utf8_lf": {
+        "bytes": 19203,
+        "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+      }
+    }
+  },
+  "product_execution": false,
+  "runtime": {
+    "bytes": 27475582,
+    "path": "D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+    "sha256": "390b030168778309735cfb4bed9ac38167639be9c52791781f85c7e8cb650407"
+  },
+  "rustc": {
+    "argv": [
+      "rustc",
+      "+1.96.0",
+      "-vV"
+    ],
+    "exit": 0,
+    "stderr": "",
+    "stdout": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-pc-windows-msvc\nrelease: 1.96.0\nLLVM version: 22.1.2\n"
+  },
+  "source_archive": {
+    "argv": [
+      "git",
+      "archive",
+      "--format=zip",
+      "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+      "--",
+      "core/rust",
+      "resources",
+      "stdlib",
+      ".cargo",
+      "tests/benchmarks/Cargo.lock"
+    ],
+    "bytes": 2438457,
+    "files_verified": 648,
+    "sha256": "c886769a4e8970a0fa83209372e8befb7e9eedbae4c3c71fb50fd52fd6eb3537"
+  },
+  "source_commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+  "target": "x86_64-pc-windows-msvc",
+  "task_root": "D:\\project\\Xiao\\xiao-b3-1-a-_odp9cae",
+  "tools": {
+    "clang": {
+      "bytes": 157296,
+      "path": "D:\\msys64\\ucrt64\\bin\\clang.EXE",
+      "sha256": "574047f1b98d62bea1da8ae9340fea1ef06d262c3186e1d72d87e5401166c833",
+      "version_first_lines": [
+        "clang version 22.1.2 (https://github.com/msys2/MINGW-packages 4f19d31560faf73257116b7c95f0b322ba83d720)",
+        "Target: x86_64-w64-windows-gnu",
+        "Thread model: posix"
+      ]
+    },
+    "llc": {
+      "bytes": 211961,
+      "path": "D:\\msys64\\ucrt64\\bin\\llc.EXE",
+      "sha256": "df1409fabacdc625b2c2fefe50712de4ba140e07bf2bb4192101189498152869",
+      "version_first_lines": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 22.1.2",
+        "  Optimized build."
+      ]
+    },
+    "llvm-as": {
+      "bytes": 40741,
+      "path": "D:\\msys64\\ucrt64\\bin\\llvm-as.EXE",
+      "sha256": "63f559db3d87798fa4f26923c4cd5839ddc41b40905d884ee341c74a8bd858e9",
+      "version_first_lines": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 22.1.2",
+        "  Optimized build."
+      ]
+    },
+    "llvm-readobj": {
+      "bytes": 2140197,
+      "path": "D:\\msys64\\ucrt64\\bin\\llvm-readobj.EXE",
+      "sha256": "768a76a82fedb79b5305ca6bfffa63c00b5738789c7f47225b247345ab99328e",
+      "version_first_lines": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 22.1.2",
+        "  Optimized build."
+      ]
+    }
+  },
+  "windows_product_coff_status": "pending"
+}
