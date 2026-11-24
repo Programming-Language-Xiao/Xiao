@@ -1,6 +1,6 @@
 # 20O-B3-1. `time` 实施规划
 
-> **状态（2026-11-24）**　B3-0F 已完成联合冻结审计，`b3_0_passed=true`、`b3_1_entry_ready=true`。time 进入开工裁定，`b3_1_started=false`、`b3_1_passed=false`、`b3_2_entry_ready=false`、`b3_product_started=false`。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md)
+> **状态（2026-11-24）**　B3-0F 已完成联合冻结审计，`b3_0_passed=true`、`b3_1_entry_ready=true`；Windows 开工基线已登记在 `5ec50a5e`，time 进入开工裁定，`b3_1_started=false`、`b3_1_passed=false`、`b3_2_entry_ready=false`、`b3_product_started=false`。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [Windows 基线](assets/20o-b3/entry-20261124-b3-1/baseline-windows.json)
 > **输入契约**　15 个原语为 49～63，time 为 49～52；能力位 `clock` 为 1，`stdout` 为 5；目标为 ABI 1.20、生成器 23、标准库接口 1；C ABI 采用末尾 `capabilities: u64` 的冻结形式。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-1 只实现 time，不得把 B3-0E 候选或 `UnverifiedCoffExports` 写成产品验收。
 > 入口：[B3-0E 收口](assets/20o-b3/entry-20261124-b3-0e/README.md)、[B3-0D 收口](assets/20o-b3/entry-20261124-b3-0d/README.md)、[B3-0 实施规划](20o-b3-0-probe-freeze-plan.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
@@ -219,12 +219,26 @@ docs/module-registry.json                            time 夹具路径登记待 
 
 本页只做 B3-1 规划；B3-2 及后续仍未开始。
 
-## 十、新 Agent 先读
+## 十、B3-1A 开工执行清单
+
+Windows 基线已登记为 `5ec50a5e` 的 [baseline-windows.json](assets/20o-b3/entry-20261124-b3-1/baseline-windows.json)：源码 `e79fab3c`、Rust 1.96.0、目标 `x86_64-pc-windows-msvc`、release Runtime 构建退出码 0、两个 Cargo.lock 的规范 LF 摘要一致。该回执只证明本机开工环境，不证明 time 已实现或产品 COFF 已验收。
+
+B3-1A 的执行顺序：
+
+1. 复核 `b3_0_passed=true`、`b3_1_entry_ready=true` 和 `b3_1_started=false` 的交接状态；
+2. 锁定 Windows baseline 的源码、Runtime、锁文件、工具链和任务根；不改产品；
+3. 依次裁定 `B3-1-ID`/`B3-1-RESERVE`、`B3-1-FIXTURES`、`B3-1-EVIDENCE`；`B3-1-CLOCK` 和 `B3-1-SLEEP` 沿用 B3-0B 已冻结答复；
+4. 裁定前只登记 B3-1 证据和任务根，不写 49～52 的 Runtime/VM/LLVM/C ABI；
+5. 第一批产品提交按 `B3-1B1`（intrinsic/ABI 登记）→ `B3-1B2`（Runtime time 核心）→ `B3-1C`（VM/TAC）→ `B3-1D`（LLVM/C ABI）→ `B3-1E`（教程/边界）→ `B3-1F`（证据/收口）推进；
+6. 每次产品提交前重跑 baseline 和 B1 28 守卫，提交后按 `workspace-gates` 和三平台受控入口记录实际运行号；
+7. `B3-1A` 退出条件：裁定已登记、baseline 可复核、产品树仍为 `e79fab3c`、没有 53～63 的可调用暴露。
+
+## 十一、新 Agent 先读
 
 1. [B3-0 探测/冻结规划](20o-b3-0-probe-freeze-plan.md)；
 2. [B3-0E 收口](assets/20o-b3/entry-20261124-b3-0e/README.md)；
 3. [B3-0D 收口](assets/20o-b3/entry-20261124-b3-0d/README.md)；
 4. [B3-0B 契约](assets/20o-b3/entry-20261123-b3-0b/contract-draft.md)；
 5. [B3 宿主库规划](20o-b3-host-libraries-plan.md)；
-6. [20D 能力上下文](20d-capability-context.md)。
+6. [20D 能力上下文](20d-capability-context.md)；
 7. [B3-0F 联合冻结交接](assets/20o-b3/entry-20261124-b3-0f/README.md)。

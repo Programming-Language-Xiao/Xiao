@@ -1,6 +1,6 @@
 # 20O-B3. 简单宿主库实施规划
 
-> **B3-0A～F 已完成联合冻结。** B3-1 time 入口就绪，实施裁定待答。固定基线 `e79fab3c` 为 ABI 1.19、生成器 22、标准库接口 1，B3 联合目标为 ABI 1.20、生成器 23、标准库接口 1。[B2-C 交接](assets/20o-b2-c/entry-20261122-b2-c/README.md) · [B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [B3-1 实施规划](20o-b3-1-time-implementation-plan.md)
+> **B3-0A～F 已完成联合冻结。** B3-1 time 入口已就绪，Windows 开工基线 `5ec50a5e` 已登记，实施裁定待答。固定基线 `e79fab3c` 为 ABI 1.19、生成器 22、标准库接口 1，B3 联合目标为 ABI 1.20、生成器 23、标准库接口 1。[B2-C 交接](assets/20o-b2-c/entry-20261122-b2-c/README.md) · [B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [B3-1 实施规划](20o-b3-1-time-implementation-plan.md)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，且声明组件与观察组件一致；B2-C 的同链接 10 份候选只是历史例外，不得继承。`UnverifiedCoffExports`、同链接映射或仅导出表检查不能替代。
 > B3 涉及六个模块、五个实施工作流：`time`（UTC + sleep）、`args`、`cli`、`fs`、`env`、`log`。
 > B0 只确认了部分方向；精确签名、模块归属、能力/错误、资源/性能及版本要求必须在 B3-0 冻结。
