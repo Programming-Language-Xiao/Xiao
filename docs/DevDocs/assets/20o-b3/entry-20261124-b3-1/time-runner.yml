@@ -59,4 +59,7 @@ jobs:
           path: |
             ${{ runner.temp }}/b3-time/result.json
             ${{ runner.temp }}/b3-time/logs/
+            ${{ runner.temp }}/b3-time/temp/xiao-b3-1-tutorial-*/std*/tutorial
+            ${{ runner.temp }}/b3-time/temp/xiao-b3-1-tutorial-*/clock
+            ${{ runner.temp }}/b3-time/temp/xiao-b3-1-tutorial-*/denied
           if-no-files-found: warn

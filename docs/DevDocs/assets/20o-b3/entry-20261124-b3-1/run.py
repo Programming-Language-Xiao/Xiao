@@ -1,6 +1,7 @@
 """在独立任务根执行 B3-1 的 time 功能与链接验收。"""
 
 import argparse
+from datetime import datetime, timezone
 import hashlib
 import json
 import os
@@ -9,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+from time import monotonic
 
 ROOT = Path(__file__).resolve().parents[5]
 MANIFEST = "core/rust/Cargo.toml"
@@ -20,6 +22,7 @@ TARGETS = {
 }
 EXACT = "test result: ok. 1 passed; 0 failed; 0 ignored;"
 TARGET = "20o_b3_time_tutorial"
+LOCKS = ("core/rust/Cargo.lock", "tests/benchmarks/Cargo.lock")
 
 
 def identity(raw):
@@ -42,41 +45,53 @@ class Task:
         self.logs = output / "logs"
         self.env = os.environ.copy()
         for key in tuple(self.env):
-            if key.startswith(("RUST_BIGDECIMAL_", "XIAO_TEST_TIME_")):
+            if key.startswith(("RUST_BIGDECIMAL_", "XIAO_", "CARGO_PROFILE_")) or key in {
+                "RUSTFLAGS", "CARGO_ENCODED_RUSTFLAGS", "RUSTC", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER",
+            }:
                 del self.env[key]
         for path in ("logs", "temp", "home", "target"):
             (output / path).mkdir(parents=True)
         self.env.update(CARGO_TARGET_DIR=str(output / "target"), XIAO_HOME=str(output / "home"),
                         TEMP=str(output / "temp"), TMP=str(output / "temp"), TMPDIR=str(output / "temp"),
-                        XIAO_STDLIB_ROOT=str(ROOT / "stdlib"), CARGO_TERM_COLOR="never")
+                        XIAO_STDLIB_ROOT=str(ROOT / "stdlib"), CARGO_TERM_COLOR="never",
+                        XIAO_B1_F10="0", XIAO_B2_A_PERF="0")
         self.llvm_bin = llvm_bin
         self.report = {"passed": False, "source_commit": git("rev-parse", "HEAD").decode().strip(),
                        "source_tree": git("show", "-s", "--format=%T", "HEAD").decode().strip(),
-                       "task_root": str(output), "commands": {}, "tools": {},
+                       "task_root": str(output), "source_root": str(ROOT), "commands": {}, "tools": {},
+                       "environment": {key: self.env[key] for key in ("CARGO_TARGET_DIR", "XIAO_HOME", "TEMP", "TMP",
+                                                                     "TMPDIR", "XIAO_STDLIB_ROOT", "XIAO_B1_F10", "XIAO_B2_A_PERF")},
                        "ci": {key: os.environ.get(key) for key in
                               ("GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_JOB", "RUNNER_OS")}}
 
     def run(self, name, argv, timeout=600):
-        process = subprocess.run(argv, cwd=ROOT, env=self.env, capture_output=True, timeout=timeout)
-        row = {"argv": argv, "exit": process.returncode}
-        for stream in ("stdout", "stderr"):
-            raw = getattr(process, stream)
+        start_at = datetime.now(timezone.utc).isoformat()
+        start = monotonic()
+        try:
+            process = subprocess.run(argv, cwd=ROOT, env=self.env, capture_output=True, timeout=timeout)
+            status, stdout, stderr = process.returncode, process.stdout, process.stderr
+        except subprocess.TimeoutExpired as error:
+            status, stdout, stderr = None, error.stdout or b"", error.stderr or b""
+        row = {"argv": argv, "exit": status, "timeout_seconds": timeout, "started_at": start_at,
+               "elapsed_seconds": round(monotonic() - start, 3)}
+        for stream, raw in (("stdout", stdout), ("stderr", stderr)):
             log = identity(raw)
             path = self.logs / (log["sha256"] + ".log")
             if not path.exists():
                 path.write_bytes(raw)
             row[stream] = log
         self.report["commands"][name] = row
-        for raw in (process.stdout, process.stderr):
+        for raw in (stdout, stderr):
             print(raw.decode("utf-8", errors="replace"), end="", flush=True)
-        require(process.returncode == 0, f"{name} 退出 {process.returncode}")
-        return process.stdout.decode("utf-8").replace("\r\n", "\n")
+        require(status is not None, f"{name} 超出 {timeout} 秒采集期限")
+        require(status == 0, f"{name} 退出 {status}")
+        return stdout.decode("utf-8").replace("\r\n", "\n")
 
     def tool(self, name, flags):
         filename = name + (".exe" if os.name == "nt" else "")
         path = (self.llvm_bin / filename).resolve(strict=True) if self.llvm_bin else Path(shutil.which(name)).resolve(strict=True)
         version = self.run(name, [str(path), *flags], timeout=25)
-        self.report["tools"][name] = {"path": str(path), **identity(path.read_bytes()), "version": version.splitlines()[0]}
+        self.report["tools"][name] = {"path": str(path), **identity(path.read_bytes()), "version": version.splitlines()}
         self.env["XIAO_" + name.upper().replace("-", "_")] = str(path)
 
     def verify(self):
@@ -90,8 +105,7 @@ class Task:
         self.env["XIAO_TARGET_TRIPLE"] = target
         for tool in ("clang", "llvm-as", "llc"):
             self.tool(tool, ["--version"])
-        self.report["lockfiles"] = {path: identity(git("show", "HEAD:" + path)) for path in
-                                    ("core/rust/Cargo.lock", "tests/benchmarks/Cargo.lock")}
+        self.report["lockfiles"] = {path: identity(git("show", "HEAD:" + path)) for path in LOCKS}
         cargo = ["cargo", f"+{RUST}"]
         locked = ["--locked", "--manifest-path", MANIFEST, "--target", target]
         self.run("build-release-runtime", [*cargo, "build", *locked, "--release", "-p", "xiao-runtime",
@@ -99,7 +113,8 @@ class Task:
         runtime = self.output / "target" / target / "release" / TARGETS[target]
         self.env["XIAO_RUNTIME_LIBRARY"] = str(runtime)
         self.report["runtime"] = {"path": str(runtime), **identity(runtime.read_bytes()), "test_failpoints": True}
-        self.run("runtime-boundaries", [*cargo, "test", *locked, "-p", "xiao-runtime", "--lib", "time::", "--", "--nocapture"])
+        self.run("runtime-boundaries", [*cargo, "test", *locked, "--release", "-p", "xiao-runtime",
+                                        "--features", "test-failpoints", "--lib", "time::", "--", "--nocapture"])
         common = [*cargo, "test", *locked, "-p", "xiao-driver", "--test", TARGET, "--features", "time-native-test"]
         vm = self.run("vm-exact", [*common, "time_tutorial_matches_vm_golden", "--", "--exact", "--nocapture"])
         require(vm.count(EXACT) == 1 and all(f"backend=vm alias={alias} exact=true" in vm for alias in ("std", "stdlib")),
@@ -116,20 +131,29 @@ class Task:
             for path, sha, map_path, map_sha in re.findall(
                 r"(?m)^B3-1-COFF artifact=(.+?) sha256=([a-f0-9]{64}) map=(.+?) map_sha256=([a-f0-9]{64})$", native)
         }
-        self.report["artifacts"] = []
-        for alias, level, path in rows:
-            path = Path(path).resolve()
+        boundaries = re.findall(r"(?m)^B3-1-BOUNDARY case=(\w+) verification=complete exact=true artifact=(.+)$", native)
+        require([case for case, _ in boundaries] == ["clock", "denied"], "原生时钟或授权探测缺项")
+
+        def artifact(original_path):
+            path = Path(original_path).resolve(strict=True)
             require(path.is_relative_to(self.output / "temp"), "原生产物越出任务根")
-            node = {"alias": alias, "optimization": int(level), "path": path.relative_to(self.output).as_posix(),
-                    **identity(path.read_bytes()), "verification": "complete"}
+            node = {"path": path.relative_to(self.output).as_posix(), **identity(path.read_bytes()), "verification": "complete"}
             if target == "x86_64-pc-windows-msvc":
-                sha, map_path, map_sha = bindings[str(path)]
-                sidecar = Path(map_path).resolve()
+                sha, map_path, map_sha = bindings[original_path]
+                sidecar = Path(map_path).resolve(strict=True)
                 require(sha == node["sha256"] and sidecar.parent == path.parent, "COFF 产物或清单路径不符")
                 node["linker_map"] = {"path": sidecar.relative_to(self.output).as_posix(), **identity(sidecar.read_bytes())}
                 require(node["linker_map"]["sha256"] == map_sha, "COFF 链接清单与产品验证回执不符")
-            self.report["artifacts"].append(node)
-        require(git("status", "--porcelain=v1", "-z") == before, "验收运行改写了源码")
+            return node
+
+        self.report["artifacts"] = [artifact(path) | {"alias": alias, "optimization": int(level)}
+                                    for alias, level, path in rows]
+        self.report["native_boundaries"] = [artifact(path) | {"case": case} for case, path in boundaries]
+        self.report["runtime_after"] = identity(runtime.read_bytes())
+        require(self.report["runtime_after"] == {field: self.report["runtime"][field] for field in ("bytes", "sha256")},
+                "验收期间 Runtime 字节变化")
+        require(git("status", "--porcelain=v1", "-z") == before and self.report["source_commit"] == git("rev-parse", "HEAD").decode().strip(),
+                "验收运行改写了源码")
         self.report["passed"] = True
 
 

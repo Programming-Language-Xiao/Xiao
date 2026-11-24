@@ -129,7 +129,7 @@ fn capability_context_guards_vm_stdout_and_stdin() {
 
     assert!(
         DriverRequest::new(FrontendRequest::from_text("value = 1\n"))
-            .with_capabilities(1 << 7)
+            .with_capabilities(1 << 8)
             .is_err()
     );
 }

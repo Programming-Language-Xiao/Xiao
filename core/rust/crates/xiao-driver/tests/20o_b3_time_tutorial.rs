@@ -5,11 +5,16 @@ use xiao_intrinsics::{CAPABILITY_CLOCK, CAPABILITY_STDOUT};
 use xiao_runtime::time::TimeContext;
 use xiao_vm::VmEvent;
 
+/// 冻结教程的原始文本。
 const SOURCE: &str = include_str!("../../../../../tests/fixtures/docs/time/tutorial.xiao");
+/// 与实现独立维护的 UTF-8/LF 黄金。
 const GOLDEN: &[u8] = include_bytes!("../../../../../tests/fixtures/docs/time/tutorial.stdout");
+/// VM 和原生进程共用的合成时钟。
 const INPUT: &str = include_str!("../../../../../tests/fixtures/docs/time/tutorial.input.json");
+/// 示例只申请取钟及输出所需的位。
 const CAPABILITIES: u64 = CAPABILITY_CLOCK | CAPABILITY_STDOUT;
 
+/// 解码固定墙钟和纳秒级单调起点。
 fn input() -> (i64, u64) {
     let value: serde_json::Value = serde_json::from_str(INPUT).unwrap();
     (
@@ -18,6 +23,7 @@ fn input() -> (i64, u64) {
     )
 }
 
+/// 双导入路径共享同一份正文及期望输出。
 fn sources() -> [(&'static str, String); 2] {
     [
         ("std", SOURCE.to_owned()),
@@ -29,6 +35,7 @@ fn sources() -> [(&'static str, String); 2] {
 }
 
 #[test]
+/// 真实驱动器运行两个导入变体并逐字核对黄金。
 fn time_tutorial_matches_vm_golden() {
     let (wall, monotonic) = input();
     for (prefix, source) in sources() {
@@ -54,6 +61,7 @@ fn time_tutorial_matches_vm_golden() {
 }
 
 #[test]
+/// 子任务等待推进同一个时钟，运行失败保留冻结错误编号。
 fn time_vm_errors_and_child_clock_follow_the_frozen_contract() {
     let source = r#"from std.time import utc_now, monotonic, format_utc, sleep
 from std.concurrent import current_runtime, spawn, join
@@ -100,6 +108,7 @@ print(utc_now("ms"))
 }
 
 #[test]
+/// 生产驱动器的截止能中断 60 秒等待。
 fn time_driver_control_interrupts_a_long_sleep() {
     use std::time::{Duration, Instant};
 
@@ -121,6 +130,7 @@ fn time_driver_control_interrupts_a_long_sleep() {
 }
 
 #[test]
+/// 预登记签名在生产 TAC 与编码准入点拒绝。
 fn reserved_intrinsic_ids_fail_before_execution() {
     let artifact = FrontendCompiler::new()
         .compile(&FrontendRequest::from_text("os_time_monotonic(\"ns\")\n"))
@@ -155,6 +165,7 @@ fn reserved_intrinsic_ids_fail_before_execution() {
     }
 }
 
+/// 从驱动器事件恢复应用输出。
 fn vm_stdout(result: &xiao_driver::DriverOutcome) -> String {
     result
         .as_executed()
@@ -171,6 +182,7 @@ fn vm_stdout(result: &xiao_driver::DriverOutcome) -> String {
 #[test]
 #[cfg(feature = "time-native-test")]
 #[ignore = "需要当前任务 Runtime 和指定 LLVM 工具链"]
+/// 使用受控 Runtime 构建并执行两条导入路径的 O0 和 O3 产物。
 fn time_tutorial_matches_native_golden() {
     use std::path::PathBuf;
     use xiao_codegen_llvm::{ArtifactVerification, CodegenOptions, TargetDescription, Toolchain};
@@ -189,91 +201,126 @@ fn time_tutorial_matches_native_golden() {
     let root = std::env::temp_dir().join(format!("xiao-b3-1-tutorial-{}", std::process::id()));
     std::fs::create_dir(&root).unwrap();
     let (wall, mono) = input();
-    let clock_source = "from std.time import utc_now, monotonic, sleep\nprint(utc_now(\"ms\"))\nsleep(1, \"ns\")\nprint(monotonic(\"ns\"))\n";
-    let clock_request = FrontendRequest::from_text(clock_source);
-    let clock_artifact = FrontendCompiler::new().compile(&clock_request).unwrap();
-    let clock_executable = root.join(format!("clock{}", std::env::consts::EXE_SUFFIX));
-    let clock_build = NativeBuildRequest::new(
-        clock_request,
-        target.clone(),
-        tools.clone(),
-        &clock_executable,
-    )
-    .with_codegen_options(
-        CodegenOptions::for_target(target.clone())
-            .with_capabilities(CAPABILITIES)
-            .unwrap(),
-    );
-    FrontendNativeDriver::new()
-        .build_artifact(&clock_artifact, &clock_build)
-        .unwrap();
-    assert_eq!(
-        run(&clock_executable, &root, wall, mono),
-        format!("{wall}\n{}\n", mono + 1).as_bytes()
-    );
+    let build_and_run = |source, executable: &std::path::Path, level, capabilities| {
+        let request = FrontendRequest::from_text(source);
+        let artifact = FrontendCompiler::new().compile(&request).unwrap();
+        let options = CodegenOptions::for_target(target.clone())
+            .with_optimization_level(level)
+            .unwrap()
+            .with_capabilities(capabilities)
+            .unwrap();
+        let build = NativeBuildRequest::new(request, target.clone(), tools.clone(), executable)
+            .with_codegen_options(options);
+        let result = FrontendNativeDriver::new()
+            .build_artifact(&artifact, &build)
+            .unwrap();
+        let composition = &result.native.artifact_runtime;
+        assert_eq!(composition.verification, ArtifactVerification::Complete);
+        assert_eq!(
+            composition.declared_components,
+            composition.observed_components
+        );
+        assert!(
+            composition.unclassified_runtime_symbols.is_empty(),
+            "未分类 Runtime 符号：{:?}",
+            composition.unclassified_runtime_symbols
+        );
+        let metadata = result.native.native_metadata.as_ref().unwrap();
+        assert_eq!(
+            metadata.runtime_abi_min,
+            xiao_runtime_abi::ABI_ENCODED_VERSION
+        );
+        assert_eq!(
+            metadata.generator_version,
+            xiao_codegen_llvm::CODEGEN_VERSION
+        );
+        if target.object_format == xiao_codegen_llvm::ObjectFormat::Coff {
+            let link = composition
+                .coff_link_identity
+                .as_ref()
+                .expect("MSVC time 构建保留 COFF map");
+            let hash = |path: &std::path::Path| {
+                xiao_artifacts::Digest256::of_bytes(&std::fs::read(path).unwrap()).as_hex()
+            };
+            assert_eq!(hash(executable), link.artifact_sha256);
+            assert_eq!(hash(&link.map_path), link.map_sha256);
+            println!(
+                "B3-1-COFF artifact={} sha256={} map={} map_sha256={}",
+                executable.display(),
+                link.artifact_sha256,
+                link.map_path.display(),
+                link.map_sha256
+            );
+        }
+        run(executable, executable.parent().unwrap(), wall, mono)
+    };
+    let clock_source = r#"from std.time import utc_now, monotonic, sleep, format_utc
+print(utc_now("ms"))
+sleep(1, "ns")
+print(monotonic("ns"))
+try
+    sleep(60000000001, "ns")
+catch err as ResourceError
+    print(error_code(err))
+try
+    format_utc(253402300800000, "ms")
+catch err as TypeError
+    print(error_code(err))
+finally
+    print("cleaned")
+"#;
+    let denied_source = r#"from stdlib.time import utc_now, monotonic, sleep, format_utc
+try
+    utc_now("MS")
+catch err as ResourceError
+    print(error_code(err))
+try
+    monotonic("ms")
+catch err as ResourceError
+    print(error_code(err))
+try
+    sleep(0, "ns")
+catch err as ResourceError
+    print(error_code(err))
+print(format_utc(0, "ms"))
+"#;
+    for (label, source, capabilities, expected) in [
+        (
+            "clock",
+            clock_source,
+            CAPABILITIES,
+            format!(
+                "{wall}\n{}\nTIME_SLEEP_LIMIT_EXCEEDED\nX06-RUNTIME-012\ncleaned\n",
+                mono + 1
+            ),
+        ),
+        (
+            "denied",
+            denied_source,
+            CAPABILITY_STDOUT,
+            "X06-RUNTIME-026\nX06-RUNTIME-026\nX06-RUNTIME-026\n1970-01-01T00:00:00.000Z\n"
+                .to_owned(),
+        ),
+    ] {
+        let executable = root.join(format!("{label}{}", std::env::consts::EXE_SUFFIX));
+        assert_eq!(
+            build_and_run(source.to_owned(), &executable, 0, capabilities),
+            expected.as_bytes()
+        );
+        println!(
+            "B3-1-BOUNDARY case={label} verification=complete exact=true artifact={}",
+            executable.display()
+        );
+    }
     for (prefix, source) in sources() {
         for level in [0, 3] {
             let directory = root.join(format!("{prefix}-o{level}"));
             std::fs::create_dir(&directory).unwrap();
             let executable = directory.join(format!("tutorial{}", std::env::consts::EXE_SUFFIX));
-            let options = CodegenOptions::for_target(target.clone())
-                .with_optimization_level(level)
-                .unwrap()
-                .with_capabilities(CAPABILITIES)
-                .unwrap();
-            let request = FrontendRequest::from_text(source.clone());
-            let artifact = FrontendCompiler::new().compile(&request).unwrap();
-            let build =
-                NativeBuildRequest::new(request, target.clone(), tools.clone(), &executable)
-                    .with_codegen_options(options);
-            let result = FrontendNativeDriver::new()
-                .build_artifact(&artifact, &build)
-                .unwrap();
-            let composition = &result.native.artifact_runtime;
-            assert_eq!(
-                composition.verification,
-                ArtifactVerification::Complete,
-                "{directory:?}"
-            );
-            assert_eq!(
-                composition.declared_components,
-                composition.observed_components
-            );
-            assert!(composition.unclassified_runtime_symbols.is_empty());
-            let metadata = result.native.native_metadata.as_ref().unwrap();
-            assert_eq!(
-                metadata.runtime_abi_min,
-                xiao_runtime_abi::ABI_ENCODED_VERSION
-            );
-            assert_eq!(
-                metadata.generator_version,
-                xiao_codegen_llvm::CODEGEN_VERSION
-            );
-            if target.object_format == xiao_codegen_llvm::ObjectFormat::Coff {
-                let link = composition
-                    .coff_link_identity
-                    .as_ref()
-                    .expect("MSVC time 构建保留 COFF map");
-                assert_eq!(link.map_path, executable.with_file_name("tutorial.exe.map"));
-                assert!(link.map_path.is_file());
-                let hash = |path: &std::path::Path| {
-                    xiao_artifacts::Digest256::of_bytes(&std::fs::read(path).unwrap()).as_hex()
-                };
-                assert_eq!(hash(&executable), link.artifact_sha256);
-                assert_eq!(hash(&link.map_path), link.map_sha256);
-                println!(
-                    "B3-1-COFF artifact={} sha256={} map={} map_sha256={}",
-                    executable.display(),
-                    link.artifact_sha256,
-                    link.map_path.display(),
-                    link.map_sha256
-                );
-            }
-            let output = run(&executable, &directory, wall, mono);
+            let output = build_and_run(source.clone(), &executable, level, CAPABILITIES);
             assert_eq!(output, GOLDEN, "{prefix} O{level}");
             println!(
-                "B3-1-TUTORIAL backend=native alias={prefix} opt={level} verification={} exact=true artifact={}",
-                composition.verification.as_str(),
+                "B3-1-TUTORIAL backend=native alias={prefix} opt={level} verification=complete exact=true artifact={}",
                 executable.display()
             );
         }
@@ -281,6 +328,7 @@ fn time_tutorial_matches_native_golden() {
 }
 
 #[cfg(feature = "time-native-test")]
+/// 注入本轮时钟并有界等待原生产物的结果。
 fn run(
     executable: &std::path::Path,
     directory: &std::path::Path,

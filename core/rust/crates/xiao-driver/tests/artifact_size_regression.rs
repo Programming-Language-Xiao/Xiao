@@ -15,9 +15,9 @@ use xiao_xar::{XarObject, encode_xar};
 const SIZE_REGRESSION_SOURCE: &str = "print(\"19C size baseline\")\n";
 /// 2026-10-06 Windows 基线：固定源码的规范 `.xiaoc` 字节数。
 const XIAOC_BASELINE_BYTES: usize = 1_256;
-/// B5的ABI1.19改变头/指令版本和摘要，实测DEFLATE后归档1,168→1,167字节。
-/// `.xiaoc`仍为1,256字节，容器格式与索引schema未变；历史基线保留在固定提交。
-const XAR_BASELINE_BYTES: usize = 1_167;
+/// ABI 1.20 的头和指令版本使固定归档压缩为 1,166 字节。
+/// `.xiaoc` 仍为 1,256 字节，固定提交保留 ABI 1.19 的 1,167 字节基线。
+const XAR_BASELINE_BYTES: usize = 1_166;
 
 fn artifacts() -> (Vec<u8>, Vec<u8>) {
     let artifact = FrontendCompiler::new()

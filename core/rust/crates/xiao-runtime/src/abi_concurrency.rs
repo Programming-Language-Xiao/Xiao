@@ -1290,6 +1290,7 @@ pub extern "C" fn xiao_runtime_concurrency_cancellation_check(operation: XiaoAbi
     cancellation_status()
 }
 
+/// 在当前任务上交付一次取消，供并发入口与 time 等待共用。
 pub(super) fn cancellation_status() -> i32 {
     if CANCELLATION_DELIVERED.get() {
         return XiaoAbiStatus::Ok.code();

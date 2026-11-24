@@ -249,7 +249,7 @@ fn vm_rejects_invalid_shapes_types_and_unknown_ids() {
         for mutation in 0..6 {
             let mut program = base.clone();
             let unknown =
-                (mutation == 5).then(|| program.signatures.intern(CallSig::intrinsic(49)));
+                (mutation == 5).then(|| program.signatures.intern(CallSig::intrinsic(53)));
             let mut changed = false;
             for instruction in program.functions[0]
                 .blocks

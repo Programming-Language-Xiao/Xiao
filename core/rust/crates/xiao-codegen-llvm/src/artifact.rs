@@ -286,10 +286,12 @@ pub(crate) struct CoffLinkEvidence {
 }
 
 impl CoffLinkEvidence {
+    /// 在完成产物验证后发布原始链接清单。
     pub(crate) fn save_map(&self) -> Result<()> {
         crate::build::write_llvm_artifact_bytes(&self.identity.map_path, &self.map_bytes)
     }
 
+    /// 比对 PE 中的真实地址范围和 MSVC 清单，保存二者的摘要。
     pub(crate) fn read(executable: &Path, map: &Path, output: &Path) -> Result<Self> {
         let artifact = read_artifact_bytes(executable)?;
         let map_bytes = read_artifact_bytes(map)?;
@@ -440,6 +442,7 @@ pub fn inspect_artifact(
     parse_artifact(path, &bytes, target)
 }
 
+/// 按原始字节读取链接产物或清单。
 fn read_artifact_bytes(path: &Path) -> Result<Vec<u8>> {
     fs::read(path).map_err(|error| CodegenError::Io {
         path: path.to_path_buf(),
@@ -463,6 +466,7 @@ pub fn verify_artifact(
     )
 }
 
+/// COFF 的可信链接证据与映像校验使用同一次读取的字节。
 pub(crate) fn verify_artifact_with_link_evidence(
     path: &Path,
     target: &TargetDescription,
@@ -785,6 +789,11 @@ fn parse_elf(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Ar
                 )
                 .ok_or_else(|| artifact_error(path, "ELF 符号表偏移溢出".to_owned()))?;
             let entry = checked_range(bytes, entry_offset, entry_size, path, "ELF 符号表项")?;
+            // STT_FILE 记录编译单元名称，不对应映像中的 Runtime 符号。
+            let info = entry[if is_64 { 4 } else { 12 }];
+            if info & 0x0f == 4 {
+                continue;
+            }
             let name_offset = read_u32(entry, 0, endian, path, "ELF symbol name")? as u64;
             if name_offset == 0 {
                 continue;
@@ -2021,6 +2030,27 @@ entry:
         .expect("ELF 夹具应通过");
         assert_eq!(inspection.object_format, ObjectFormat::Elf);
         assert!(inspection.has_symbol("xiao_runtime_value_int"));
+    }
+
+    /// ELF 文件名记录即使带有 Runtime 前缀，也不参与组件核对。
+    #[test]
+    fn skips_elf_file_records_without_hiding_runtime_functions() {
+        let target = TargetDescription::linux_x86_64();
+        let name = "xiao_runtime_abi.203ccd76a79bd061-cgu.0";
+        let mut bytes = elf_fixture(name);
+        let path = Path::new("elf-file-record");
+        bytes[0x200 + 24 + 4] = 4;
+        assert!(
+            !parse_artifact(path, &bytes, &target)
+                .unwrap()
+                .has_symbol(name)
+        );
+        bytes[0x200 + 24 + 4] = 2;
+        let inspection = parse_artifact(path, &bytes, &target).unwrap();
+        assert_eq!(
+            unclassified_runtime_symbols(&inspection.symbols),
+            vec![name.to_owned()]
+        );
     }
 
     /// 解析受控 Mach-O 夹具并规范化符号前缀。

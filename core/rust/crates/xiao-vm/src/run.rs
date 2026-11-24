@@ -99,12 +99,14 @@ impl CancellationSource {
         self.cancellation_requested() || self.deadline_reached()
     }
 
+    /// 单独读取显式取消，允许等待优先处理该信号。
     pub(crate) fn cancellation_requested(&self) -> bool {
         self.token
             .as_ref()
             .is_some_and(CancellationToken::is_cancelled)
     }
 
+    /// 以宿主单调钟判断驱动器截止。
     pub(crate) fn deadline_reached(&self) -> bool {
         self.deadline
             .is_some_and(|deadline| Instant::now() >= deadline)

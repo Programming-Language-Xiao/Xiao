@@ -12,9 +12,13 @@ use crate::{RuntimeError, RuntimeErrorKind, RuntimeResult, RuntimeValue, StringH
 /// 超过冻结等待上限时的可恢复错误码。
 pub const TIME_SLEEP_LIMIT_EXCEEDED: &str = "TIME_SLEEP_LIMIT_EXCEEDED";
 
+/// UTC 秒和小数部分的纳秒进位。
 const NS_PER_SECOND: i64 = 1_000_000_000;
+/// 毫秒换算单位。
 const NS_PER_MILLISECOND: i64 = 1_000_000;
+/// 一次等待允许接纳的最大时长，含边界。
 const MAX_SLEEP: Duration = Duration::from_secs(60);
+/// 宿主等待每次把控制权交回安全点的间隔。
 const POLL_INTERVAL: Duration = Duration::from_millis(5);
 
 #[cfg(feature = "test-failpoints")]
@@ -41,6 +45,7 @@ impl TimeUnit {
         }
     }
 
+    /// 把运行输入的计量单位换算为纳秒比例。
     fn nanoseconds(self) -> i64 {
         match self {
             Self::Milliseconds => NS_PER_MILLISECOND,
@@ -48,6 +53,7 @@ impl TimeUnit {
         }
     }
 
+    /// 先按整数单位向下取整，再检查输出范围。
     fn convert(self, nanos: i128) -> RuntimeResult<i64> {
         i64::try_from(nanos.div_euclid(i128::from(self.nanoseconds())))
             .map_err(|_| RuntimeError::numeric_overflow("时间读数超出 int 范围"))
@@ -61,6 +67,7 @@ pub struct TimeContext {
     elapsed: Mutex<Duration>,
 }
 
+/// 模拟时钟的墙钟固定，宿主时钟保留实际起点。
 #[derive(Debug)]
 enum ClockSource {
     Host(Instant),
@@ -68,6 +75,7 @@ enum ClockSource {
 }
 
 impl Default for TimeContext {
+    /// 普通应用从当前宿主单调钟建立自己的起点。
     fn default() -> Self {
         Self::host()
     }
@@ -87,8 +95,10 @@ impl TimeContext {
     /// 在当前线程的一次受控 VM 调用中注入时钟。
     #[cfg(feature = "test-failpoints")]
     pub fn with_vm_clock<T>(self, run: impl FnOnce() -> T) -> T {
+        /// 嵌套或 panic 展开时恢复线程已有的测试时钟。
         struct Restore(Option<Arc<TimeContext>>);
         impl Drop for Restore {
+            /// 恢复进入受控调用前的覆盖值。
             fn drop(&mut self) {
                 VM_CLOCK_OVERRIDE.replace(self.0.take());
             }
@@ -134,6 +144,7 @@ impl TimeContext {
         unit.convert(self.elapsed().as_nanos() as i128)
     }
 
+    /// 更新并读取已发布的纳秒级单调下界。
     fn elapsed(&self) -> Duration {
         let mut elapsed = self.elapsed.lock().expect("单调时钟锁未中毒");
         if let ClockSource::Host(start) = self.source {
@@ -261,10 +272,12 @@ fn civil_date(unix_days: i64) -> (i64, i64, i64) {
 }
 
 #[cfg(test)]
+/// 时间算术和受控等待回归。
 mod tests {
     use super::*;
 
     #[test]
+    /// 覆盖年界、闰日、纳秒极值及向下取整。
     fn formats_frozen_bounds_and_negative_fractions() {
         for (unit, input, expected) in [
             (
@@ -319,6 +332,7 @@ mod tests {
     }
 
     #[test]
+    /// 受控等待逐项验证时长边界和安全点的优先顺序。
     fn controlled_sleep_checks_control_before_completion() {
         let clock = TimeContext::fixed(946_684_800_000, 0);
         for (duration, unit) in [
@@ -346,6 +360,15 @@ mod tests {
         );
         assert_eq!(
             clock.sleep(Duration::ZERO, || Some("取消")).unwrap(),
+            Some("取消")
+        );
+        let deadline = clock.elapsed() + Duration::from_nanos(1);
+        assert_eq!(
+            clock
+                .sleep(Duration::from_nanos(1), || {
+                    (clock.elapsed() >= deadline).then_some("取消")
+                })
+                .unwrap(),
             Some("取消")
         );
     }
