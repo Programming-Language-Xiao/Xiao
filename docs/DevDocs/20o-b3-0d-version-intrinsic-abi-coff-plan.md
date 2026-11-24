@@ -60,7 +60,7 @@ b3_0e_entry_ready = b3_0d_passed and decisions_approved and no_product_change
 
 原规划 `95e8bcca` 第 7 条要求产品产物达到 `Complete`。执行提交 `8b60dbb1` 将退出条件改为验证器能读取允许的证据来源并绑定待验产物。最终 B3-0D4 收口核对 COFF 政策、允许来源及产物身份绑定规则的冻结记录。修订记录逐字保存前两版条件和 Git 来源，裁定台账通过独立字段引用该记录；六项批准覆盖原问题卡范围，D4 条件修订已于 2026-11-24 单独获得星崽批准。[COFF 收口条件修订记录](assets/20o-b3/entry-20261124-b3-0d/coff-criteria-revision.json)
 
-`b3_0d4_windows_coff_policy_frozen=true` 表示政策与判据已冻结。四份历史 Windows O0/O3 产物的观察等级为 `UnverifiedCoffExports`。保留符号表和受信 linker map/PDB 两种路径的正向实测均待 B3-1。Windows 产品 COFF 状态为 `pending`，B3-1/B3-7 的产品验收要求仍为 `Complete`。[探测回执](assets/20o-b3/entry-20261124-b3-0d/coff-probe.json)
+`b3_0d4_windows_coff_policy_frozen=true` 表示本批已冻结政策与判据。四份历史 Windows O0/O3 产物当时的观察等级为 `UnverifiedCoffExports`。签收 B3-0D 时，保留符号表和受信 linker map/PDB 两种路径的正向实测待 B3-1；后续 B3-1 已验证同次 MSVC 链接 map，time 产品 COFF 为 `Complete`。B3-1/B3-7 公共和发布验收仍按 `Complete` 判定。[B3-0D 历史探测回执](assets/20o-b3/entry-20261124-b3-0d/coff-probe.json) · [B3-1 实测](assets/20o-b3/entry-20261124-b3-1/README.md)
 
 ## 二、开工闸门
 
