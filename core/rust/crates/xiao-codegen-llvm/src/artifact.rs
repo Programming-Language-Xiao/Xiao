@@ -1458,6 +1458,9 @@ fn runtime_link_dependencies(symbol: &str) -> &'static [&'static str] {
         | "xiao_runtime_table_get"
         | "xiao_runtime_table_get_value"
         | "xiao_runtime_table_new"
+        | "xiao_runtime_time_format_utc"
+        | "xiao_runtime_time_monotonic"
+        | "xiao_runtime_time_utc_now"
         | "xiao_runtime_tuple_get"
         | "xiao_runtime_tuple_new"
         | "xiao_runtime_value_binary"
@@ -1818,6 +1821,10 @@ entry:
                 &["concurrency", "rc", "value", "weak"][..],
             ),
             ("xiao_runtime_error_raise_numeric", &["value"][..]),
+            ("xiao_runtime_time_format_utc", &["rc", "time"][..]),
+            ("xiao_runtime_time_monotonic", &["rc", "time"][..]),
+            ("xiao_runtime_time_utc_now", &["rc", "time"][..]),
+            ("xiao_runtime_time_sleep", &["time"][..]),
             ("no_runtime", &[][..]),
         ] {
             let text = format!(
