@@ -123,7 +123,7 @@ Windows 本机已从 `e79fab3c` 的独立源码导出构建 release Runtime，�
 
 1. 实现 4 个 C ABI 签名和 `xiao_runtime_time_*` 符号；
 2. 保持借读输入、输出槽、末尾 capabilities 和 0/1/2/3/6/8 状态；
-3. LLVM 动态/静态 lowering 调用对应 Runtime 入口，不绕过能力检查；
+3. LLVM 动态/静态 lowering 调用对应 Runtime 入口，不绕过能力检查；Windows 原生必须显式使用 `x86_64-pc-windows-msvc` 目标和 MSVC 兼容链接，不能使用基线 clang 的默认 `x86_64-w64-windows-gnu` 作为通过依据；
 4. 原生 O0/O3 的输出、退出码和错误与 VM 一致；
 5. Windows time 产物使用 B3-0D 允许的来源完成产品验证器正向实测，记录 `Complete`、组件等式和产物身份绑定。B3-7 接收完整公共产物矩阵；
 6. 记录工具链、Runtime 和产物身份。
@@ -182,7 +182,7 @@ Windows 本机已从 `e79fab3c` 的独立源码导出构建 release Runtime，�
 
 - B3-0F 未签收就写产品；
 - 把 49～63 全部暴露为可调用而只实现 time；
-- 只在 VM 实现，原生绕过能力检查；
+- 只在 VM 实现，原生绕过能力检查；或使用基线 clang 的默认 `x86_64-w64-windows-gnu` 目标冒充 MSVC 产物；
 - sleep 无上限、不可取消或吞掉取消/截止；
 - 用真实用户时区、终端或环境实现 time；
 - 把教程解析/黄金检查写成产品执行；
