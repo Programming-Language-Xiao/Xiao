@@ -16,6 +16,7 @@ use crate::target::{Endian, ObjectFormat, TargetDescription};
 mod coff_link;
 
 pub(crate) use coff_link::CoffLinkEvidence;
+/// 公开产物验证报告中的 COFF 映像与链接映射身份。
 pub use coff_link::CoffLinkIdentity;
 
 /// ELF 文件头的魔数。
