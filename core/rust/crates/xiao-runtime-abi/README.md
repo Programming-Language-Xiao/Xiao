@@ -46,9 +46,9 @@ getter 只借读指定错误对象的 UTF-8 code，不分配、不 retain/releas
 
 异常对象与异常展开仍属于 N0-C。
 
-B3内部快照追加15个`xiao_runtime_cmath_*`入口，参数和返回遵守F-5的借读输入、拥有out及状态表。
+B3 cmath 实现阶段曾追加15个`xiao_runtime_cmath_*`入口，参数和返回遵守F-5的借读输入、拥有out及状态表。
 纯float成功路径不分配数值载荷；结构错误1/2/3保留out与挂起槽，类型002或数学009使用状态6。
-当前为内部ABI1.18/生成器21：B4-3的LLVM lowering文本已变化，ABI布局未变；B5只将ABI切至1.19并执行拒绝/重生成矩阵，不再次升级生成器。不能只凭ABI版本号混用Runtime，必须核对生成器和Runtime内容身份。
+该段描述 ABI 1.18/生成器 21 的 cmath 内部实现历史。B4-3 的 LLVM lowering 文本变化时将生成器升至21，ABI布局未变；后续 B5 矩阵只升级ABI。当前 Runtime ABI 版本见本节开头。不能只凭ABI版本号混用Runtime，必须核对生成器和Runtime内容身份。
 类型/IR/VM/LLVM和`std.cmath`的语言调用留B4，教程与registry继续planned。
 
 ## 允许与禁止依赖

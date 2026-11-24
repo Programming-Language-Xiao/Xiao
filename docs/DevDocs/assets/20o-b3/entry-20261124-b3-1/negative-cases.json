@@ -1,0 +1,10 @@
+{
+  "unchanged": "",
+  "manifest-tampered": "证据清单与实际字节不符",
+  "missing-attributes": "封存缺少 .gitattributes",
+  "forged-status": "收口状态与实际结果不符",
+  "missing-clock-check": "原生教程或边界执行回执缺项",
+  "replaced-error-identity": "time 错误、能力或 ABI 边界回执缺项",
+  "forged-tutorial-execution": "教程执行回执缺少精确通过",
+  "forged-coff-grade": "原生产物验证等级不符"
+}
