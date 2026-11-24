@@ -39,6 +39,11 @@
     }
   },
   "coff_criteria_revision": {
+    "approval": {
+      "message": "批准修订，推送吧，然后你规划下一阶段",
+      "recorded_on": "2026-11-24",
+      "source": "星崽会话直批"
+    },
     "current_scope": "policy_freeze_audit",
     "effect": {
       "accepted_path_verified": false,
@@ -63,7 +68,7 @@
     "related_approved_decision": "B3-0D-COFF",
     "revised_requirement": "B3-0D4 审计 COFF 政策、允许证据来源和产物身份绑定规则。允许路径的正向实测留给 B3-1，产品验收留在 B3-1/B3-7。",
     "revision": "b3_0d4_exit_criterion",
-    "separate_user_approval": false,
+    "separate_user_approval": true,
     "stage": "20O-B3-0D4"
   },
   "decisions_approved": true,
@@ -91,7 +96,7 @@
     "passed": true
   },
   "doc_gates_passed": true,
-  "freeze_commit": "81db909fdd46311fdd1f8a2fa63e003e3bff8f1c",
+  "freeze_commit": "5096853d3d0cdf2edfa213db7c129c452f1abe42",
   "handoff": {
     "b3_0d_passed": true,
     "b3_0e_entry_ready": true,

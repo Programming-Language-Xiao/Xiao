@@ -5,28 +5,28 @@
       "sha256": "e09930473e5044d0b174f99b4eac5176dc8710adacfeef609e0ed9b63b67193c"
     },
     "README.md": {
-      "bytes": 4273,
-      "sha256": "896ce43e00dbfe4ece99978c6038a79923fb608079c48724377c42ebc9febcee"
+      "bytes": 4355,
+      "sha256": "53f64f7b3a4fb0ef056d633a7b1029710ee6fdd252574acd3e904dd4c9980743"
     },
     "audit.py": {
-      "bytes": 25372,
-      "sha256": "e21cff5b393ae54272b40543f7fbbf2b61c7e7b8426f87f618c08e4358ef5832"
+      "bytes": 25771,
+      "sha256": "44eaef55faddbd50541752437f160fedb33c0659167fd454a1ed4a6e49a9e199"
     },
     "baseline.json": {
       "bytes": 1386,
-      "sha256": "e3c3605742d3d5a081fb2d70d89f6b3252e3cfa009655c37dad912e407704a1d"
+      "sha256": "d5d3bb22ba09bfefa2b7fcf9c56d6bacaa778ceff2eafd7ce57274c6200979c4"
     },
     "c-abi.json": {
       "bytes": 2780,
       "sha256": "37451085599a9f1d2219baf9ba8dc28edfe0f6f41c4ea31f653ddc4a62b39b63"
     },
     "closeout.json": {
-      "bytes": 5376,
-      "sha256": "4e5b89f8c5ad7aa785fd4952513de71562e01a04e09a22653475a248b4e572fd"
+      "bytes": 5547,
+      "sha256": "66034e2d9d72986bd11b3bb465d246b337352da65458c488b2e38e94ae5be679"
     },
     "coff-criteria-revision.json": {
-      "bytes": 1322,
-      "sha256": "49b648593b1ab8e0f63cd1689adf09bf00efe760feb328fc9d2ad193018d95cf"
+      "bytes": 1483,
+      "sha256": "b73ba1af7cf0e4c6e68a0ee309fe5f9454e457440e2043783c1a42415b1f5d27"
     },
     "coff-policy.json": {
       "bytes": 868,
@@ -45,12 +45,12 @@
       "sha256": "cbb1777b46c3ea5289aba2134a9d21b9ef724d592ab32f52c69cbfaba898de87"
     },
     "decisions.json": {
-      "bytes": 2907,
-      "sha256": "cfc36615c206a124f1f2728f60268e8df2e93f67b33b56d9d2ef0f2d0984d1b9"
+      "bytes": 3027,
+      "sha256": "e8fcfa188f77dadf9a37eae52cec7618ff544d141f743d1e7250553d4dc897d4"
     },
     "doc-gates.json": {
-      "bytes": 3251,
-      "sha256": "54906518bb66b0216e5114a023db8c8f620f16853ab5d06eb9e0cb9e5bd87a95"
+      "bytes": 3248,
+      "sha256": "1e503dc52059834fc7f54b6c518e748369728e56c48df6f50f1f35287c048ab9"
     },
     "freeze-table.json": {
       "bytes": 3976,

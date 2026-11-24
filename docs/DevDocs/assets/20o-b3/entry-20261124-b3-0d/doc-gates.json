@@ -2,7 +2,7 @@
   "checks": [
     {
       "argv": [
-        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin/bun.EXE",
         "run",
         "check:docs"
       ],
@@ -15,7 +15,7 @@
     },
     {
       "argv": [
-        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin/bun.EXE",
         "run",
         "check:usedocs"
       ],
@@ -28,7 +28,7 @@
     },
     {
       "argv": [
-        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin/bun.EXE",
         "run",
         "check:layout"
       ],
@@ -48,15 +48,15 @@
   },
   "passed": true,
   "source": {
-    "commit": "81db909fdd46311fdd1f8a2fa63e003e3bff8f1c",
+    "commit": "5096853d3d0cdf2edfa213db7c129c452f1abe42",
     "markdown": {
       "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": {
         "bytes": 15780,
         "sha256": "c02e99de34a7ce9acabddeaac31cd2aab1a19e666f05e6a3bab16a39f6ab1ea5"
       },
       "docs/DevDocs/20o-b3-0d-version-intrinsic-abi-coff-plan.md": {
-        "bytes": 26168,
-        "sha256": "6949b2f8075bdf8862ebb513c665a71db1a8613438075376619c822cbcdaee12"
+        "bytes": 26244,
+        "sha256": "c5bce8617a0916919a601b3c2fb9096a1fa5e0089422710255ce5df762dd7f45"
       },
       "docs/DevDocs/20o-b3-host-libraries-plan.md": {
         "bytes": 14120,
@@ -71,11 +71,11 @@
         "sha256": "8038c11b9b8417f52468c2c730ffecc9cf492822eeef9bbe9703c92f9f8d9171"
       },
       "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0d/README.md": {
-        "bytes": 4273,
-        "sha256": "896ce43e00dbfe4ece99978c6038a79923fb608079c48724377c42ebc9febcee"
+        "bytes": 4355,
+        "sha256": "53f64f7b3a4fb0ef056d633a7b1029710ee6fdd252574acd3e904dd4c9980743"
       }
     },
-    "tree_sha256": "c5ed37d55c547cf499e595c4d8bc14703da64ca83f837148c0f9e95d4eacc3d1"
+    "tree_sha256": "3bbf74714f3b579129d50e1c5a888f0be6e6602554bc6b2eb250b596b790eddb"
   },
   "worktree_verified_before_after": true
 }
