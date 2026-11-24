@@ -1,58 +1,65 @@
 [
   {
-    "after": "d8698ae5af8af0fc6b2bf8c8410e8548948732aac9ceb9ba98b9053da4fe72e0",
-    "before": "d8698ae5af8af0fc6b2bf8c8410e8548948732aac9ceb9ba98b9053da4fe72e0",
+    "after": "c5b5324ab7be5a65b8dfc329461661ed064101cc3820337eeb98890cdc84cd64",
+    "before": "c5b5324ab7be5a65b8dfc329461661ed064101cc3820337eeb98890cdc84cd64",
     "case": "unchanged",
     "error": "",
     "exit": 0
   },
   {
-    "after": "c734cd47a2ef8cb852df8ed69d87716a210846121da043e18b62047ed1aaee5c",
-    "before": "c734cd47a2ef8cb852df8ed69d87716a210846121da043e18b62047ed1aaee5c",
+    "after": "7e298cf5eaea0b0f141c7a06d2715d94504de6f4deacab01ca25d1cfdcdcb9ba",
+    "before": "7e298cf5eaea0b0f141c7a06d2715d94504de6f4deacab01ca25d1cfdcdcb9ba",
     "case": "manifest-tampered",
     "error": "证据清单与实际字节不符",
     "exit": 1
   },
   {
-    "after": "691302ddbd40c6b914c71c1edf88bc235cf3a706743293dff3eb031ac8a7f11b",
-    "before": "691302ddbd40c6b914c71c1edf88bc235cf3a706743293dff3eb031ac8a7f11b",
+    "after": "f42b39141fe9a7ab26457386c582a869227d0c6222e0c069a19fc0fcd8c7728c",
+    "before": "f42b39141fe9a7ab26457386c582a869227d0c6222e0c069a19fc0fcd8c7728c",
     "case": "missing-attributes",
     "error": "封存缺少 .gitattributes",
     "exit": 1
   },
   {
-    "after": "dbd96c86e38529a3acce0d308f16d2f742785a666cc33eea3f1295ed382042c7",
-    "before": "dbd96c86e38529a3acce0d308f16d2f742785a666cc33eea3f1295ed382042c7",
+    "after": "69fcd558e8aaf9ffe64b58a5d0b163d88d649f669199253cc303e322b3d88fb2",
+    "before": "69fcd558e8aaf9ffe64b58a5d0b163d88d649f669199253cc303e322b3d88fb2",
     "case": "forged-status",
     "error": "收口状态与实际结果不符",
     "exit": 1
   },
   {
-    "after": "ab14e57fb0792aeb282bb426417255917c1af010dd89610e2b9cd3d35cbf13fb",
-    "before": "ab14e57fb0792aeb282bb426417255917c1af010dd89610e2b9cd3d35cbf13fb",
+    "after": "2260ca8e452f04cb8b4079dd7a811662a05cbe48588f3811f2ef9aeaac5f8fd9",
+    "before": "2260ca8e452f04cb8b4079dd7a811662a05cbe48588f3811f2ef9aeaac5f8fd9",
     "case": "missing-clock-check",
     "error": "原生教程或边界执行回执缺项",
     "exit": 1
   },
   {
-    "after": "df97d7a7d386628726526cc79284f3337af14c0300d4b3fa4b9fe6317e937171",
-    "before": "df97d7a7d386628726526cc79284f3337af14c0300d4b3fa4b9fe6317e937171",
+    "after": "e2940d6cea34289aae719767475ce2b87968beb75f7d4131d2811deed46c0b92",
+    "before": "e2940d6cea34289aae719767475ce2b87968beb75f7d4131d2811deed46c0b92",
     "case": "replaced-error-identity",
     "error": "time 错误、能力或 ABI 边界回执缺项",
     "exit": 1
   },
   {
-    "after": "90383d8abb3b6f1c47c77b18f9750d09ee216f041007b634cace615ba5e4cc73",
-    "before": "90383d8abb3b6f1c47c77b18f9750d09ee216f041007b634cace615ba5e4cc73",
+    "after": "4d216701b5648cd99aba0823af8fecd36396ad702d3c36eaaf0cf572afd7eed6",
+    "before": "4d216701b5648cd99aba0823af8fecd36396ad702d3c36eaaf0cf572afd7eed6",
     "case": "forged-tutorial-execution",
     "error": "教程执行回执缺少精确通过",
     "exit": 1
   },
   {
-    "after": "9708fa234c24806b9b7c83f914369586bb77547b0fec52456e3a562bd6caa073",
-    "before": "9708fa234c24806b9b7c83f914369586bb77547b0fec52456e3a562bd6caa073",
+    "after": "fd03f38b838b6fab2ff469c52de354084ae88b63a9b6d19efd89fd78292b90e2",
+    "before": "fd03f38b838b6fab2ff469c52de354084ae88b63a9b6d19efd89fd78292b90e2",
     "case": "forged-coff-grade",
     "error": "原生产物验证等级不符",
+    "exit": 1
+  },
+  {
+    "after": "de416e319e9f31bfddea489ac46b3783dcf3a21857e639947de550fd1a3ea74b",
+    "before": "de416e319e9f31bfddea489ac46b3783dcf3a21857e639947de550fd1a3ea74b",
+    "case": "forged-coff-map-path",
+    "error": "COFF 映像或 map 未绑定验证回执",
     "exit": 1
   }
 ]

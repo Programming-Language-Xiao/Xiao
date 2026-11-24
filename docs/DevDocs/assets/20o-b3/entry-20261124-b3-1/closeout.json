@@ -51,7 +51,7 @@
     "B3-7_public_matrix_and_tutorial_registry",
     "old_721_and_historical_debts"
   ],
-  "document_commit": "45a452553c4bedc259921411e0aeb7580dac7f7b",
+  "document_commit": "721d6bdf2017d8d0f3228e65cb226d775615806c",
   "history": {
     "first-linux": {
       "ci": {
@@ -94,7 +94,7 @@
       "source_commit": "b0f3edbbfe2f6a3b2bea05b3499692a1a7d978f5"
     }
   },
-  "negatives": 7,
+  "negatives": 8,
   "next": "20O-B3-2",
   "no_product_scope_creep": true,
   "old_721_executed": false,
