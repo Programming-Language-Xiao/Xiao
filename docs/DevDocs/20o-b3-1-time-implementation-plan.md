@@ -1,6 +1,6 @@
 # 20O-B3-1. `time` 实施规划
 
-> **状态（2026-11-24）**　产品已在 `8d1c09f0` 接入 time 49～52、ABI 1.20、生成器 23 和标准库接口 1。B3-1 收口尚待固定该提交的最终 Windows/Linux/macOS 运行、workspace 门禁、CI 回执及自反例全部绑定后签收。`b3_1_started=true`、`b3_1_passed=false`、`b3_2_entry_ready=false`。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [time 实施证据](assets/20o-b3/entry-20261124-b3-1/README.md)
+> **状态（2026-11-25）**　B3-1 已在产品快照 `8d1c09f0` 完成内部收口。Windows、Linux、macOS 的 time VM/原生 O0/O3、等待/取消样本和平台门禁均通过；Windows 六份产物由同次 MSVC 链接 map 验证为 COFF `Complete`。workspace-gates CI run `45429820367` 通过，文档门禁和 7 条拒绝反例已封存。`b3_1_started=true`、`b3_1_passed=true`、`b3_2_entry_ready=true`。B3-2 尚未开始，教程和 registry 仍为 `planned`。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [time 收口证据](assets/20o-b3/entry-20261124-b3-1/README.md)
 > **输入契约**　15 个原语为 49～63，time 为 49～52；能力位 `clock` 为 1，`stdout` 为 5；目标为 ABI 1.20、生成器 23、标准库接口 1；C ABI 采用末尾 `capabilities: u64` 的冻结形式。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-1 只实现 time，不得把 B3-0E 候选或 `UnverifiedCoffExports` 写成产品验收。
 > 入口：[B3-0E 收口](assets/20o-b3/entry-20261124-b3-0e/README.md)、[B3-0D 收口](assets/20o-b3/entry-20261124-b3-0d/README.md)、[B3-0 实施规划](20o-b3-0-probe-freeze-plan.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
@@ -18,7 +18,7 @@
 | 目标版本 | ABI 1.20、生成器 23、标准库接口 1；49～52 激活，53～63 的激活策略见首轮裁定 |
 | 本批不做 | args/cli/fs/env/log 实现、教程/registry verified、B3-2、B4-B9、旧 721、历史债务核销 |
 | Windows COFF | B3-1 产品产物必须最终达到 `Complete`；B3-1 只处理 time 产物，完整三平台验收在 B3-7 |
-| 当前状态 | `b3_1_started=true`、`b3_1_passed=false`、`b3_2_entry_ready=false`、`b3_0_passed=true`；三平台收口与最终证据仍待复核 |
+| 当前状态 | `b3_1_started=true`、`b3_1_passed=true`、`b3_2_entry_ready=true`、`b3_0_passed=true`；B3-2 尚未开始 |
 
 B3-1 实施 `time` 的四个入口。B3-0F 提供已冻结的六模块契约与验收入口，B3-1 的产品开工以本页 §3 为准。
 
@@ -86,7 +86,7 @@ b3_2_entry_ready = b3_1_passed and decisions_approved and no_product_scope_creep
 
 ### B3-1A：B3-0F 入口与基线
 
-Windows 本机已从 `e79fab3c` 的独立源码导出构建 release Runtime，两个 Cargo.lock 的 Git 摘要、目标及 LLVM 工具身份已登记。开工裁定已由星崽批准。time 产品实现进入 `8d1c09f0`，初轮及修复轮回执保留在证据目录外的独立任务根，不替换开工基线。[Windows 基线](assets/20o-b3/entry-20261124-b3-1/README.md) · [开工裁定](assets/20o-b3/entry-20261124-b3-1/decisions.json)
+Windows 本机从 `e79fab3c` 独立源码导出的 release Runtime、两个 Cargo.lock Git 摘要、目标和工具身份作为开工基线保留。time 产品实现与三平台收口绑定到 `8d1c09f0`，各轮失败和修复回执均保留。[Windows 基线](assets/20o-b3/entry-20261124-b3-1/README.md) · [开工裁定](assets/20o-b3/entry-20261124-b3-1/decisions.json)
 
 1. 完成 B3-0F 的固定证据、只读审计、自反例和 B3-1 入口；
 2. 固定 B3-0E 教程/夹具、B3-0D 编号/版本、B3-0A 三平台回执和 B1 28 守卫；

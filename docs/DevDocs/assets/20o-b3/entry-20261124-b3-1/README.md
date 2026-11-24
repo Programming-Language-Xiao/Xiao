@@ -10,4 +10,4 @@ Linux/macOS CI run `45428004405` 的两个作业分别通过。Windows 本机 ti
 
 首轮及修复轮日志保留于 `history.zip`，没有用后续通过覆盖失败。首轮 Linux 原生组件观察把 ELF 的 `STT_FILE` 编译单元名当成 Runtime 函数。修正符号类型过滤后继续发现实际输出槽对 `rc` 的静态链接依赖，当前产品组件表及逐导出 Linux 复验已覆盖该依赖。第一轮 Windows 专项还发现 `finally` 在同层 `catch` 前执行，黄金输出已据语言既有展开次序修正。
 
-`audit.py` 只读验证 Git 对象、四份平台结果、工具和 Runtime 摘要、原生文件与 map 原始字节、CI 作业和文档门禁。`self_negative.py` 在临时副本运行八个基线/拒绝用例，逐条比对拒绝原因并核对审计前后摘要。完整收口需 CI 与反例回执齐备后生成 `evidence.json`、`closeout.json` 并再审计。[审计](audit.py) · [负例](self_negative.py) · [收口脚本](seal.py)
+`audit.py` 只读验证 Git 对象、三平台结果、工具和 Runtime 摘要、原生文件与 COFF map 原始字节、CI 作业、workspace-gates、文档门禁与封存清单。`self_negative.py` 在临时副本运行一个基线和 7 个拒绝用例，逐条比对拒绝原因并核对审计前后摘要。最终 `closeout.json` 派生 `b3_1_passed=true`、`b3_2_entry_ready=true`，B3-2 仍未开始。[审计](audit.py) · [负例](self_negative.py) · [收口脚本](seal.py) · [CI 采集](collect_ci.py) · [收口回执](closeout.json)
