@@ -1,0 +1,49 @@
+{
+  "stage": "20O-B3-1",
+  "recorded_on": "2026-11-24",
+  "source": "星崽本轮 B3-1 问题卡答复",
+  "decisions": {
+    "B3-1-ID": {
+      "status": "resolved",
+      "answer": "采用 reserved 方案",
+      "source": "B3-1 编号激活问题卡",
+      "recorded_on": "2026-11-24",
+      "scope": "49～52 激活；53～63 预登记为不可调用的 reserved；保持 ABI 1.20、生成器 23、标准库接口 1。"
+    },
+    "B3-1-RESERVE": {
+      "status": "approved",
+      "answer": "预登记 reserved（推荐）",
+      "source": "B3-1 编号激活问题卡",
+      "recorded_on": "2026-11-24",
+      "scope": "53～63 进入产品 intrinsic 表但不可调用；后续批次只切换为 active，不新增 ID；未激活入口在执行前拒绝。"
+    },
+    "B3-1-CLOCK": {
+      "status": "inherited",
+      "answer": "沿用 B3-0B 冻结答复",
+      "source": "B3-0B 契约",
+      "recorded_on": "2026-11-24",
+      "scope": "宿主实际精度、墙钟回拨、单调钟起点和回退钳制按 B3-0B 冻结表。"
+    },
+    "B3-1-SLEEP": {
+      "status": "inherited",
+      "answer": "沿用 B3-0B 冻结答复",
+      "source": "B3-0B 契约",
+      "recorded_on": "2026-11-24",
+      "scope": "上限 60 秒、零值运行控制、取消/截止/完成安全点顺序及错误身份按 B3-0B 冻结表。"
+    },
+    "B3-1-FIXTURES": {
+      "status": "approved",
+      "answer": "迁入正式路径（推荐）",
+      "source": "B3-1 夹具落点问题卡",
+      "recorded_on": "2026-11-24",
+      "scope": "把 time 的 tutorial.xiao、tutorial.stdout、tutorial.input.json 迁入 tests/fixtures/docs/time/，同步目录 README 和 registry 为 planned，只登记 time。"
+    },
+    "B3-1-EVIDENCE": {
+      "status": "approved",
+      "answer": "time 产品级 COFF（推荐）",
+      "source": "B3-1 证据范围问题卡",
+      "recorded_on": "2026-11-24",
+      "scope": "B3-1 做三平台 time VM/受控原生 O0/O3，并让 Windows time 产物取得产品验证器 Complete；完整公共矩阵留 B3-7。"
+    }
+  }
+}

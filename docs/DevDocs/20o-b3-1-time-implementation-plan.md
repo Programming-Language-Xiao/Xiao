@@ -1,6 +1,6 @@
 # 20O-B3-1. `time` 实施规划
 
-> **状态（2026-11-24）**　B3-0F 已完成联合冻结审计，`b3_0_passed=true`、`b3_1_entry_ready=true`；Windows 开工基线已登记在 `5ec50a5e`，time 进入开工裁定，`b3_1_started=false`、`b3_1_passed=false`、`b3_2_entry_ready=false`、`b3_product_started=false`。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [Windows 基线](assets/20o-b3/entry-20261124-b3-1/baseline-windows.json)
+> **状态（2026-11-24）**　B3-0F 已完成联合冻结审计，`b3_0_passed=true`、`b3_1_entry_ready=true`；Windows 开工基线已登记在 `5ec50a5e`，B3-1 开工裁定已批准，`b3_1_decisions_approved=true`、`b3_1_started=false`、`b3_1_passed=false`、`b3_2_entry_ready=false`、`b3_product_started=false`。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [Windows 基线](assets/20o-b3/entry-20261124-b3-1/baseline-windows.json) · [开工裁定](assets/20o-b3/entry-20261124-b3-1/decisions.json)
 > **输入契约**　15 个原语为 49～63，time 为 49～52；能力位 `clock` 为 1，`stdout` 为 5；目标为 ABI 1.20、生成器 23、标准库接口 1；C ABI 采用末尾 `capabilities: u64` 的冻结形式。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-1 只实现 time，不得把 B3-0E 候选或 `UnverifiedCoffExports` 写成产品验收。
 > 入口：[B3-0E 收口](assets/20o-b3/entry-20261124-b3-0e/README.md)、[B3-0D 收口](assets/20o-b3/entry-20261124-b3-0d/README.md)、[B3-0 实施规划](20o-b3-0-probe-freeze-plan.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
@@ -68,24 +68,24 @@ b3_2_entry_ready = b3_1_passed and decisions_approved and no_product_scope_creep
 7. Windows 产物验证器可执行；B3-1 产物必须按 `complete_required` 评价，未达 `Complete` 只能记失败；
 8. 无产品改动先于 B3-0F 签收；registry/教程仍为 `planned`。
 
-## 三、首轮裁定
+## 三、已批准开工裁定
 
-| 编号 | 候选 | 必须由星崽定夺 |
+| 编号 | 冻结内容 | 来源 |
 | --- | --- | --- |
-| B3-1-ID | 使用 ABI 1.20、生成器 23 和标准库接口 1，激活 49～52。53～63 的编号保存在 B3-0D 冻结表，后续版本按各批新增 ABI 与 lowering 变化再裁定 | 与 B3-1-RESERVE 择一 |
-| B3-1-RESERVE | 激活 49～52，另为 53～63 在产品表增加不可调用的 `reserved` 状态。产品表现有状态是 `active` 与 `tombstone` | 与 B3-1-ID 择一，后续版本仍按实际变化裁定 |
-| B3-1-CLOCK | 宿主实际精度、墙钟回拨、单调钟起点和回退钳制沿 B3-0B1a/B3-0B4b | 已有冻结答复 |
-| B3-1-SLEEP | 上限 60 秒，零值先查运行控制，安全点按取消、截止、完成排序。错误身份和性能阈值沿 B3-0B1b/B3-0B4b/B3-0B4c | 已有冻结答复 |
-| B3-1-EVIDENCE | B3-1 执行三平台 time 用例和受控原生 O0/O3。Windows time 产物逐份取得产品验证器 `Complete`，B3-7 执行完整公共产物矩阵 | 裁定 B3-1 的证据范围 |
-| B3-1-FIXTURES | B3-1E 迁入 `tests/fixtures/docs/time/` 需要同步目录 README 与 registry 路径登记。已有同路径候选的布局失败回执 | 裁定是否在 B3-1 增加 `planned` 状态的最小路径登记，或把正式夹具迁入留给 B3-7 |
+| B3-1-ID | 采用 `reserved` 方案：49～52 激活；53～63 预登记为不可调用的 `reserved`，保持 ABI 1.20/生成器 23/接口 1 的稳定身份 | 星崽批准，B3-1 编号激活问题卡 |
+| B3-1-RESERVE | 53～63 进入产品 intrinsic 表但不可调用；后续批次只切换为 `active`，不新增 ID；未激活入口在执行前拒绝 | 星崽批准，B3-1 编号激活问题卡 |
+| B3-1-CLOCK | 宿主实际精度、墙钟回拨、单调钟起点和回退钳制沿 B3-0B1a/B3-0B4b | 沿用 B3-0B 冻结答复 |
+| B3-1-SLEEP | 上限 60 秒，零值先查运行控制，安全点按取消、截止、完成排序；错误身份和性能阈值沿 B3-0B1b/B3-0B4b/B3-0B4c | 沿用 B3-0B 冻结答复 |
+| B3-1-FIXTURES | B3-1E 将 time 的 `tutorial.xiao`、`tutorial.stdout`、`tutorial.input.json` 迁入 `tests/fixtures/docs/time/`，同步目录 README 和 registry 为 `planned`，只登记 time | 星崽批准，B3-1 夹具落点问题卡 |
+| B3-1-EVIDENCE | B3-1 做三平台 time VM/受控原生 O0/O3，并对 Windows time 产物取得产品验证器 `Complete`；完整公共矩阵留 B3-7 | 星崽批准，B3-1 证据范围问题卡 |
 
-首轮裁定登记来源、时点和适用范围。CLOCK 与 SLEEP 沿用 B3-0B 的时钟和运行控制契约。正式夹具登记取决于布局门禁规则与本批迁入范围。[time 冻结契约](assets/20o-b3/entry-20261123-b3-0b/contract-draft.md) · [布局失败回执](assets/20o-b3/entry-20261123-b3-0b/layout-first.json)
+五项开工裁定（含 CLOCK/SLEEP 的既有冻结答复）已登记来源、时点和适用范围；`B3-1-ID` 由 `B3-1-RESERVE` 方案解决。[time 冻结契约](assets/20o-b3/entry-20261123-b3-0b/contract-draft.md) · [布局失败回执](assets/20o-b3/entry-20261123-b3-0b/layout-first.json) · [开工裁定台账](assets/20o-b3/entry-20261124-b3-1/decisions.json)
 
 ## 四、分批执行
 
 ### B3-1A：B3-0F 入口与基线
 
-Windows 本机已从 `e79fab3c` 的独立源码导出构建 release Runtime，两个 Cargo.lock 的 Git 摘要、目标及 LLVM 工具身份已登记。[Windows 基线](assets/20o-b3/entry-20261124-b3-1/README.md)
+Windows 本机已从 `e79fab3c` 的独立源码导出构建 release Runtime，两个 Cargo.lock 的 Git 摘要、目标及 LLVM 工具身份已登记。开工裁定已由星崽批准，B3-1A 可签收后进入 B3-1B。[Windows 基线](assets/20o-b3/entry-20261124-b3-1/README.md) · [开工裁定](assets/20o-b3/entry-20261124-b3-1/decisions.json)
 
 1. 完成 B3-0F 的固定证据、只读审计、自反例和 B3-1 入口；
 2. 固定 B3-0E 教程/夹具、B3-0D 编号/版本、B3-0A 三平台回执和 B1 28 守卫；
