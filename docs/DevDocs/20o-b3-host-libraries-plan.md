@@ -1,6 +1,6 @@
 # 20O-B3. 简单宿主库实施规划
 
-> **B3-0B/C 的六模块已冻结，B3-0D 已完成版本、能力、协议、C ABI 与 COFF 政策冻结，B3-0E 入口已就绪。** 固定基线为 `e79fab3c`，当前产品 ABI 1.19、生成器 22、标准库接口 1；B3-0D 的实现输入为 ABI 1.20、生成器 23、标准库接口 1。[B2-C 交接](assets/20o-b2-c/entry-20261122-b2-c/README.md) · [B3-0B 收口证据](assets/20o-b3/entry-20261123-b3-0b/README.md) · [B3-0C 收口证据](assets/20o-b3/entry-20261123-b3-0c/README.md) · [B3-0D 收口证据](assets/20o-b3/entry-20261124-b3-0d/README.md)
+> **B3-0B/C 的六模块已冻结，B3-0D 已完成版本、能力、协议、C ABI 与 COFF 政策冻结，B3-0E 入口已就绪；B3-0E 教程/夹具冻结规划已建立，尚未开工。** 固定基线为 `e79fab3c`，当前产品 ABI 1.19、生成器 22、标准库接口 1；B3-0D 的实现输入为 ABI 1.20、生成器 23、标准库接口 1。[B2-C 交接](assets/20o-b2-c/entry-20261122-b2-c/README.md) · [B3-0B 收口证据](assets/20o-b3/entry-20261123-b3-0b/README.md) · [B3-0C 收口证据](assets/20o-b3/entry-20261123-b3-0c/README.md) · [B3-0D 收口证据](assets/20o-b3/entry-20261124-b3-0d/README.md) · [B3-0E 规划](20o-b3-0e-tutorials-fixtures-plan.md)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，且声明组件与观察组件一致；B2-C 的同链接 10 份候选只是历史例外，不得继承。`UnverifiedCoffExports`、同链接映射或仅导出表检查不能替代。
 > B3 涉及六个模块、五个实施工作流：`time`（UTC + sleep）、`args`、`cli`、`fs`、`env`、`log`。
 > B0 只确认了部分方向；精确签名、模块归属、能力/错误、资源/性能及版本要求必须在 B3-0 冻结。

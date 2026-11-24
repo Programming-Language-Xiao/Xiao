@@ -1,6 +1,6 @@
 # 20O-B3-0. 简单宿主库探测、冻结与教程草案实施规划
 
-> **状态（2026-11-24）**　B3-0A 的固定基线、三平台探测和 B1 前置已复核。B3-0B/C 已冻结六模块精确契约，B3-0D 已冻结编号、能力位、版本、协议、C ABI 和 Windows COFF 政策；B3-0E 入口已就绪，产品实现仍未开始。[B3-0A 证据](assets/20o-b3/entry-20261122-b3-0/README.md) · [B3-0B 收口](assets/20o-b3/entry-20261123-b3-0b/README.md) · [B3-0C 收口](assets/20o-b3/entry-20261123-b3-0c/README.md) · [B3-0D 收口](assets/20o-b3/entry-20261124-b3-0d/README.md)
+> **状态（2026-11-24）**　B3-0A 的固定基线、三平台探测和 B1 前置已复核。B3-0B/C 已冻结六模块精确契约，B3-0D 已冻结编号、能力位、版本、协议、C ABI 和 Windows COFF 政策；B3-0E 入口已就绪，教程/夹具冻结规划已建立，尚未开工。[B3-0A 证据](assets/20o-b3/entry-20261122-b3-0/README.md) · [B3-0B 收口](assets/20o-b3/entry-20261123-b3-0b/README.md) · [B3-0C 收口](assets/20o-b3/entry-20261123-b3-0c/README.md) · [B3-0D 收口](assets/20o-b3/entry-20261124-b3-0d/README.md) · [B3-0E 规划](20o-b3-0e-tutorials-fixtures-plan.md)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B2-C 的同链接 10 份候选只是历史例外，不得继承。B3-0 的探测记录不能替代 B3 产品验收。
 > 入口：[B3 宿主库规划](20o-b3-host-libraries-plan.md)、[B2-C 收口证据](assets/20o-b2-c/entry-20261122-b2-c/README.md)、[20P Day-1 架构](20p-day1-library-architecture.md)、[D-8/D-9/D-10 方向](20o-official-library-program.md#五决策清单)。
 > B3-0 不实现六个模块，不改 ABI/intrinsic/registry/教程，不跑旧 721，不启动 B3-1/B4。
@@ -121,6 +121,8 @@ B3-0D 的编号、能力位、版本矩阵、C ABI、协议和 COFF 验收判据
 退出：版本/兼容/Windows COFF 政策冻结表成立，B3-1 可据此实现。
 
 ### B3-0E：教程草案、固定示例与精确测试入口
+
+B3-0E 的六模块教程、固定示例、输入/黄金和 VM/原生入口候选见 [B3-0E 规划](20o-b3-0e-tutorials-fixtures-plan.md)。当前只建立规划，未开工。
 
 1. 六模块各一份可执行教程草案：导入、quickstart、边界/错误、能力、资源上限和平台差异；
 2. 固定示例按 `tests/fixtures/docs/<module>/` 组织，包含源码和独立黄金；教程正文与夹具逐字对应；
