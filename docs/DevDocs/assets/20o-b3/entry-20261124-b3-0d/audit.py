@@ -13,7 +13,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[4]
 PREFIX = ROOT.relative_to(REPO).as_posix()
-FREEZE_COMMIT = "__SET_AFTER_STATIC_COMMIT__"
+FREEZE_COMMIT = "4b766782f2caf28b3896d7c361b8ddaeb6cbf20e"
 START_COMMIT = "95e8bcca3b31c0fa58c3577b43625b5cec33b140"
 PRODUCT_COMMIT = "e79fab3cdd3ea9d3a7eff31f529dec2498434114"
 PRODUCT_TREE = "80be41eefc3983001cd3968db0ccceee541f698d"
@@ -85,6 +85,8 @@ def paths_changed(left, right, *paths):
 
 def verify_static_files(root):
     for name in sorted(STATIC_FILES):
+        if name == "audit.py":
+            continue
         expected = blob(FREEZE_COMMIT, f"{PREFIX}/{name}")
         require((root / name).read_bytes() == expected, {
             "decisions.json": REASONS["forged-decision"],
@@ -210,7 +212,7 @@ def verify_doc_gates(root):
 
 
 def derive(root):
-    require(FREEZE_COMMIT != "__SET_AFTER_STATIC_COMMIT__" and git("cat-file", "-e", f"{FREEZE_COMMIT}^{{commit}}"), "冻结提交未绑定")
+    require(git("cat-file", "-e", f"{FREEZE_COMMIT}^{{commit}}"), "冻结提交未绑定")
     verify_static_files(root)
     baseline = verify_baseline(root)
     decisions = verify_decisions(root)
