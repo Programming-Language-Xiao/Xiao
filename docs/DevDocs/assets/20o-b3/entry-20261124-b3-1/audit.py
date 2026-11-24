@@ -252,7 +252,16 @@ def platform(root, name, source, fixed, ci):
 
 def doc_source(commit):
     paths = ("docs/DevDocs", "docs/UseDocs", "core/rust/crates/xiao-runtime-abi/README.md")
-    return {"commit": commit, "tree_sha256": identity(git("ls-tree", "-rz", commit, "--", *paths))["sha256"]}
+    tree = git("ls-tree", "-rz", commit, "--", *paths)
+    rows = []
+    for record in tree.split(b"\0"):
+        if not record:
+            continue
+        path = record.partition(b"\t")[2].decode("utf-8")
+        if path.startswith(PREFIX + "/") and path[len(PREFIX) + 1:] in GENERATED:
+            continue
+        rows.append(record)
+    return {"commit": commit, "tree_sha256": identity(b"\0".join(rows) + b"\0")["sha256"]}
 
 
 def ci_run(bundle, label, commit, filename):
@@ -327,6 +336,7 @@ def derive(root, prepare):
                 for path in document_paths),
             "定稿提交改动了受检产品")
     expected_files = set(git("ls-tree", "-r", "--name-only", "-z", docs, "--", PREFIX).decode().split("\0")) - {""}
+    expected_files -= {f"{PREFIX}/{name}" for name in GENERATED}
     current = inventory(root)
     require({f"{PREFIX}/{name}" for name in current if name not in GENERATED} == expected_files,
             "封存输入文件集合与受检 Git 对象不符")
