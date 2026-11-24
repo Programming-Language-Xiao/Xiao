@@ -1,0 +1,23 @@
+{
+  "intrinsics": [
+    {"id": 49, "name": "os_time_utc_now", "module": "time", "parameters": ["str unit"], "returns": "int", "capabilities": ["clock"], "effects": ["clock_read"], "c_symbol": "xiao_runtime_time_utc_now"},
+    {"id": 50, "name": "os_time_monotonic", "module": "time", "parameters": ["str unit"], "returns": "int", "capabilities": ["clock"], "effects": ["clock_read"], "c_symbol": "xiao_runtime_time_monotonic"},
+    {"id": 51, "name": "os_time_format_utc", "module": "time", "parameters": ["int unix_time", "str unit"], "returns": "str", "capabilities": [], "effects": ["allocate"], "c_symbol": "xiao_runtime_time_format_utc"},
+    {"id": 52, "name": "os_time_sleep", "module": "time", "parameters": ["int duration", "str unit"], "returns": "none", "capabilities": ["clock"], "effects": ["sleep", "cancellable"], "c_symbol": "xiao_runtime_time_sleep"},
+    {"id": 53, "name": "os_args_program_name", "module": "args", "parameters": [], "returns": "str", "capabilities": ["process"], "effects": ["snapshot_read", "allocate"], "c_symbol": "xiao_runtime_args_program_name"},
+    {"id": 54, "name": "os_args_argv", "module": "args", "parameters": [], "returns": "[str]", "capabilities": ["process"], "effects": ["snapshot_read", "allocate"], "c_symbol": "xiao_runtime_args_argv"},
+    {"id": 55, "name": "os_fs_write_text", "module": "fs", "parameters": ["str path", "str text", "bool overwrite"], "returns": "none", "capabilities": ["filesystem"], "effects": ["filesystem_write"], "c_symbol": "xiao_runtime_fs_write_text"},
+    {"id": 56, "name": "os_fs_list_dir", "module": "fs", "parameters": ["str path"], "returns": "[str]", "capabilities": ["filesystem"], "effects": ["filesystem_read", "allocate"], "c_symbol": "xiao_runtime_fs_list_dir"},
+    {"id": 57, "name": "os_fs_remove", "module": "fs", "parameters": ["str path"], "returns": "none", "capabilities": ["filesystem"], "effects": ["filesystem_write"], "c_symbol": "xiao_runtime_fs_remove"},
+    {"id": 58, "name": "os_fs_rename", "module": "fs", "parameters": ["str source", "str destination", "bool overwrite"], "returns": "none", "capabilities": ["filesystem"], "effects": ["filesystem_write"], "c_symbol": "xiao_runtime_fs_rename"},
+    {"id": 59, "name": "os_fs_metadata", "module": "fs", "parameters": ["str path"], "returns": "dict<str,int>", "capabilities": ["filesystem"], "effects": ["filesystem_read", "allocate"], "c_symbol": "xiao_runtime_fs_metadata"},
+    {"id": 60, "name": "os_env_get", "module": "env", "parameters": ["str name"], "returns": "[str]", "capabilities": ["environment"], "effects": ["environment_read", "allocate"], "c_symbol": "xiao_runtime_env_get"},
+    {"id": 61, "name": "os_env_set", "module": "env", "parameters": ["str name", "str value"], "returns": "none", "capabilities": ["environment"], "effects": ["environment_write"], "c_symbol": "xiao_runtime_env_set"},
+    {"id": 62, "name": "os_env_unset", "module": "env", "parameters": ["str name"], "returns": "bool", "capabilities": ["environment"], "effects": ["environment_write"], "c_symbol": "xiao_runtime_env_unset"},
+    {"id": 63, "name": "os_log_write", "module": "log", "parameters": ["str level", "str message", "str target"], "returns": "none", "capabilities": ["clock", "stdout"], "effects": ["clock_read", "stdout_write"], "c_symbol": "xiao_runtime_log_write"}
+  ],
+  "preserved": {"intrinsic_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48], "tombstone": 100},
+  "capabilities": {"bits": {"filesystem": 0, "clock": 1, "process": 2, "network": 3, "native_extension": 4, "stdout": 5, "stdin": 6, "environment": 7}, "known_mask": "0xFF", "legacy_default_mask": "0x7F", "log_required_mask": "0x22"},
+  "effects_are_additive": true,
+  "product_status": {"implemented": false, "registry_verified": false, "tutorials": "planned", "windows_product_coff": "pending"}
+}

@@ -1,0 +1,25 @@
+{
+  "calling_convention": "extern C",
+  "input_ownership": "const XiaoValue pointers are borrowed for the call and covered by strong references for the call duration",
+  "output_ownership": "out XiaoValue slots are initialized and owned by the caller; success releases and replaces the old value, failure preserves it",
+  "aliasing": "input values, output slots and owned result payloads do not overlap",
+  "status_codes": {"0": "success", "1": "null_or_shape_error", "2": "unknown_tag_or_invalid_argument", "3": "bad_handle", "6": "recoverable_runtime_error", "8": "fatal"},
+  "capabilities_parameter": "last u64 parameter on every new entry",
+  "symbols": [
+    {"name": "xiao_runtime_time_utc_now", "parameters": ["const XiaoValue* unit", "XiaoValue* out", "u64 capabilities"], "out": true},
+    {"name": "xiao_runtime_time_monotonic", "parameters": ["const XiaoValue* unit", "XiaoValue* out", "u64 capabilities"], "out": true},
+    {"name": "xiao_runtime_time_format_utc", "parameters": ["const XiaoValue* unix_time", "const XiaoValue* unit", "XiaoValue* out", "u64 capabilities"], "out": true},
+    {"name": "xiao_runtime_time_sleep", "parameters": ["const XiaoValue* duration", "const XiaoValue* unit", "u64 capabilities"], "out": false},
+    {"name": "xiao_runtime_args_program_name", "parameters": ["XiaoValue* out", "u64 capabilities"], "out": true},
+    {"name": "xiao_runtime_args_argv", "parameters": ["XiaoValue* out", "u64 capabilities"], "out": true},
+    {"name": "xiao_runtime_fs_write_text", "parameters": ["const XiaoValue* path", "const XiaoValue* text", "const XiaoValue* overwrite", "u64 capabilities"], "out": false},
+    {"name": "xiao_runtime_fs_list_dir", "parameters": ["const XiaoValue* path", "XiaoValue* out", "u64 capabilities"], "out": true},
+    {"name": "xiao_runtime_fs_remove", "parameters": ["const XiaoValue* path", "u64 capabilities"], "out": false},
+    {"name": "xiao_runtime_fs_rename", "parameters": ["const XiaoValue* source", "const XiaoValue* destination", "const XiaoValue* overwrite", "u64 capabilities"], "out": false},
+    {"name": "xiao_runtime_fs_metadata", "parameters": ["const XiaoValue* path", "XiaoValue* out", "u64 capabilities"], "out": true},
+    {"name": "xiao_runtime_env_get", "parameters": ["const XiaoValue* name", "XiaoValue* out", "u64 capabilities"], "out": true},
+    {"name": "xiao_runtime_env_set", "parameters": ["const XiaoValue* name", "const XiaoValue* value", "u64 capabilities"], "out": false},
+    {"name": "xiao_runtime_env_unset", "parameters": ["const XiaoValue* name", "XiaoValue* out", "u64 capabilities"], "out": true},
+    {"name": "xiao_runtime_log_write", "parameters": ["const XiaoValue* level", "const XiaoValue* message", "const XiaoValue* target", "u64 capabilities"], "out": false}
+  ]
+}

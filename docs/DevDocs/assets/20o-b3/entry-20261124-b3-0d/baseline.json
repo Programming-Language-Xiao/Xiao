@@ -1,0 +1,19 @@
+{
+  "entry_commit": "95e8bcca3b31c0fa58c3577b43625b5cec33b140",
+  "product": {
+    "commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+    "tree": "80be41eefc3983001cd3968db0ccceee541f698d",
+    "files": 1222,
+    "locks": {
+      "core/rust/Cargo.lock": {"bytes": 19599, "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"},
+      "tests/benchmarks/Cargo.lock": {"bytes": 19203, "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"}
+    }
+  },
+  "prior": {
+    "b3_0b_closeout": {"commit": "b8abebf368ef9180ad05756ae90f5d198580a028", "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b", "passed": true},
+    "b3_0c_closeout": {"commit": "20fc409712fbc9ba905d05a460c3883f6de0e2ec", "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c", "passed": true}
+  },
+  "inherited": {"b1_guards": {"actual": 4, "derived": 24, "passed": 28}, "platforms": ["linux", "macos", "windows"], "old_721_executed": false, "registry_verified": false, "b3_product_started": false},
+  "current_product_identity": {"runtime_abi": "1.19", "generator": 22, "stdlib_interface": 1},
+  "b3_target_identity": {"runtime_abi": "1.20", "generator": 23, "stdlib_interface": 1}
+}

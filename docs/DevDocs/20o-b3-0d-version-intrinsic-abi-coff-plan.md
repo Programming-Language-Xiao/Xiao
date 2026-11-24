@@ -1,9 +1,9 @@
 # 20O-B3-0D. 版本、intrinsic、ABI、C ABI 与 Windows COFF 冻结规划
 
-> **状态（2026-11-24）**　B3-0D 规划稿。B3-0C 已收口，`b3_0d_entry_ready=true`；本批只冻结编号、版本、能力位、协议、C ABI 和 Windows COFF 政策，不写产品。`b3_0d_started=false`、`b3_0e_entry_ready=false`、`b3_0_passed=false`、`b3_product_started=false`。
+> **状态（2026-11-24）**　B3-0D 已完成冻结。B3-0C 已收口，六项 B3-0D 裁定均已批准；本批只冻结编号、版本、能力位、协议、C ABI 和 Windows COFF 政策，不写产品。`b3_0d_started=true`、`b3_0d_passed=true`、`b3_0e_entry_ready=true`、`b3_0_passed=false`、`b3_product_started=false`。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B2-C 的同链接 10 份候选只是历史例外，不得继承。B3-0D 只冻结验收方式，不把探测记录写成 B3 产品验收。
 > 入口：[B3-0C 收口](assets/20o-b3/entry-20261123-b3-0c/README.md)、[B3-0C 契约](assets/20o-b3/entry-20261123-b3-0c/contract-draft.md)、[B3-0B 契约](assets/20o-b3/entry-20261123-b3-0b/contract-draft.md)、[B3-0 实施规划](20o-b3-0-probe-freeze-plan.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)、[20D 能力上下文](20d-capability-context.md)。
-> B3-0D 不修改 ABI 1.19、生成器 22、接口 1、intrinsic 1～48/ID 100；新编号只进入冻结候选，未获星崽批准不落产品。
+> B3-0D 不修改当前产品的 ABI 1.19、生成器 22、接口 1、intrinsic 1～48/ID 100；新增 49～63、ABI 1.20/生成器 23 和协议/C ABI 只进入 B3-0E 交接，产品实现仍未开始。
 
 ## 一、入口与范围
 
@@ -13,9 +13,9 @@
 | 基线 | 固定产品 `e79fab3c`、ABI 1.19、生成器 22、标准库接口 1；两个 Cargo.lock 和 B1 28 守卫可复核 |
 | 本批目标 | 冻结 15 个新原语编号、`environment` 能力位、ABI 1.20/生成器 23、C ABI、运行协议和 Windows COFF 验收方式 |
 | 本批不做 | 产品实现、B3-0E/B3-1、registry/教程 verified、B4-B9、旧 721、历史债务核销 |
-| 版本候选 | ABI 1.20、生成器 23、标准库接口 1；只作候选，批准前不落产品 |
+| 版本冻结 | ABI 1.20、生成器 23、标准库接口 1；只作为 B3-0E 实现输入，当前产品仍为 ABI 1.19/生成器 22 |
 | COFF | 政策 `complete_required`，实际产品状态保持 `pending` |
-| 当前状态 | `b3_0d_started=false`、`b3_0d_passed=false`、`b3_0e_entry_ready=false`、`b3_0_passed=false`、`b3_1_entry_ready=false` |
+| 当前状态 | `b3_0d_started=true`、`b3_0d_passed=true`、`b3_0e_entry_ready=true`、`b3_0_passed=false`、`b3_1_entry_ready=false` |
 
 B3-0D 是 **版本与兼容冻结批**，不是实现批。B3-0C 已冻结“每个模块做什么”；B3-0D 冻结“这些入口以什么编号、版本、能力、ABI 和产物验收身份进入产品”。冻结完成只表示 B3-1 可以按表实现，不表示模块已实现或已验收。
 
@@ -67,18 +67,18 @@ b3_0e_entry_ready = b3_0d_passed and decisions_approved and no_product_change
 8. 唯一任务根、独立 target/Runtime/缓存、每项裁定/平台/产物独占输出目录；
 9. Windows 产物政策已固定：B3 起产品级 COFF `Complete`，同链接/导出表抽查不得替代。
 
-## 三、首轮裁定
+## 三、已批准裁定
 
-| 编号 | 候选 | 必须由星崽定夺 |
+| 编号 | 冻结内容 | 来源 |
 | --- | --- | --- |
-| B3-0D-ID | 15 个原语顺序编号 49～63：time 49～52、args 53～54、fs 55～59、env 60～62、log 63；已发布 ID 不复用，ID 100 保持墓碑 | 是否批准该映射；是否保留连续区间；C 符号名是否按 `xiao_runtime_<module>_<op>` |
-| B3-0D-ENV | 新增 `environment` 位 7；`KNOWN_CAPABILITY_MASK` 扩到 0xFF；旧请求省略能力时默认掩码取 0x7F（不静默获得环境访问）或 0xFF（沿用全开语义） | 旧请求默认掩码；CLI/原生/嵌入请求的授权方式；环境快照读取时点 |
-| B3-0D-VER | ABI 1.20、生成器 23、接口 1；`.xiaoc` 1.0、`.xar` 1.0、索引 1.0、IR 1、原生元数据 1；旧 1.19/22 产物拒绝并由源码重生成 | 是否批准联合增量；是否保持容器格式；旧 B2-C 产物只作历史证据是否足够 |
-| B3-0D-CABI | 新符号使用借读 `const XiaoValue*`、独立初始化的输出槽和末尾 `capabilities: u64`；成功 0，结构错误 1/2/3，运行错误 6，Fatal 8；不提供旧默认包装 | 精确参数顺序；无返回值入口是否省略输出槽；符号名和 C 头导出范围 |
-| B3-0D-PROTO | `RunOptions.arguments` 形状 `{program_name: str, argv: [str]}`，新增 hello 能力 `"arguments"`；旧核心不声明时客户端拒绝，不静默丢弃 | 用能力协商还是升 `CORE_VERSION`；原生入口如何注入；失配错误身份 |
-| B3-0D-COFF | 产品级 `Complete`：声明组件=观察组件、无未分类 Runtime 符号、证据绑定产物哈希/源码/Runtime/工具/运行身份；只读保留 COFF 符号表或受信 linker map/PDB 清单，导出表单独不算 | 验证器机制；`Complete` 判据；是否允许受信 sidecar；不可达时的 B3-0D 失败条件 |
+| B3-0D-ID | 15 个原语顺序编号 49～63：time 49～52、args 53～54、fs 55～59、env 60～62、log 63；已发布 ID 不复用，ID 100 保持墓碑；C 符号按 `xiao_runtime_<module>_<op>` | 星崽批准，问题卡 `call_0280c5f4ad294a44b0e41fb136193307` 第 0 项 |
+| B3-0D-ENV | 新增 `environment` 位 7；`KNOWN_CAPABILITY_MASK=0xFF`；旧请求省略能力时默认 `0x7F`，不静默获得环境访问；授权 CLI/直接原生入口在应用开始前捕获一次宿主环境，嵌入省略时为空快照，运行内写删共享 | 星崽批准，问题卡 `call_0280c5f4ad294a44b0e41fb136193307` 第 1 项 |
+| B3-0D-VER | ABI 1.20、生成器 23、接口 1；`.xiaoc` 1.0、`.xar` 1.0、索引 1.0、IR 1、原生元数据 1；旧 1.19/22 产物执行前拒绝并由源码重生成，缓存按 ABI/生成器/Runtime/目标/能力/标准库身份失配重建 | 星崽批准，问题卡 `call_0280c5f4ad294a44b0e41fb136193307` 第 2 项 |
+| B3-0D-CABI | 15 个符号采用借读 `const XiaoValue*`、结果入口独立初始化的 `out` 槽、无结果入口省略 `out`，末尾 `capabilities: u64`；成功 0，结构错误 1/2/3，运行错误 6，Fatal 8；成功替换 `out`，失败保留 `out`，不提供隐式全开旧包装 | 星崽批准，问题卡 `call_0280c5f4ad294a44b0e41fb136193307` 第 3 项 |
+| B3-0D-PROTO | `RunOptions.arguments` 为 `{program_name: str, argv: [str]}`，新增 hello 能力 `"arguments"`；省略为已确认的空快照，快照只参与执行，不进入产物或缓存身份；旧核心未声明能力时执行前拒绝，原生启动器注入已校验快照 | 星崽批准，问题卡 `call_0280c5f4ad294a44b0e41fb136193307` 第 4 项 |
+| B3-0D-COFF | 产品级 `Complete` 才通过，声明组件=观察组件且无未分类 Runtime 符号；验证器读取保留的真实 COFF 符号表或与产物哈希绑定的受信 linker map/PDB 完整清单；导出表-only、同链接候选、未绑定 sidecar 和 `UnverifiedCoffExports` 均拒绝，当前产品状态仍为 `pending` | 星崽批准，问题卡 `call_0280c5f4ad294a44b0e41fb136193307` 第 5 项 |
 
-六项答复都登记来源、时点和适用范围。未答项保持“待裁定”，不得先写产品再补契约。
+六项答复均已登记来源、时点和适用范围。冻结结果只打开 B3-0E 入口，不启动产品代码、registry、教程 verified 或 Windows 产品 COFF 验收。
 
 ## 四、分批执行
 
@@ -153,7 +153,7 @@ b3_0e_entry_ready = b3_0d_passed and decisions_approved and no_product_change
 
 ## 五、冻结表候选
 
-### 5.1 intrinsic 编号候选
+### 5.1 intrinsic 编号冻结表
 
 | ID | 名称 | 模块 | 参数 → 返回 | 能力 | 效果 | C 符号 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -173,7 +173,7 @@ b3_0e_entry_ready = b3_0d_passed and decisions_approved and no_product_change
 | 62 | `os_env_unset` | env | `str name` → `bool` | `environment` | 写环境 | `xiao_runtime_env_unset` |
 | 63 | `os_log_write` | log | `str level, str message, str target` → `none` | `clock` + `stdout` | 读时钟、写 stdout | `xiao_runtime_log_write` |
 
-编号 1～48 保持原义；100 保持墓碑。是否采用连续 49～63 及上述 C 符号名由 B3-0D-ID 裁定；未批准前不得写入 `intrinsics.json`。
+编号 1～48 保持原义，100 保持墓碑。49～63 及上述 C 符号名已冻结为 B3-0E 的实现输入，B3-0D 不写入 `intrinsics.json`。
 
 ### 5.2 能力位候选
 
@@ -186,22 +186,22 @@ b3_0e_entry_ready = b3_0d_passed and decisions_approved and no_product_change
 | 4 | `native_extension` | 已有 | B3 不使用 |
 | 5 | `stdout` | 已有 | 不变；log 使用 |
 | 6 | `stdin` | 已有 | 不变 |
-| 7 | `environment` | **新增候选** | env 的专用授权；位 8+ 仍拒绝 |
+| 7 | `environment` | **已冻结** | env 的专用授权；位 8+ 仍拒绝 |
 
-候选默认值：
+冻结默认值：
 
 - `KNOWN_CAPABILITY_MASK = 0xFF`；
 - 旧请求省略 `capabilities` 时默认 `0x7F`，不静默获得环境访问；
-- 新 CLI 在允许环境访问时显式设置位 7；嵌入请求默认空快照；
+- 授权 CLI 与直接原生入口在应用开始前捕获一次宿主环境；嵌入请求默认空快照；
 - 原生入口沿用同一掩码，缺位报 `X06-RUNTIME-026`。
 
-如果星崽选择旧请求默认 `0xFF`，必须在决定台账写明这是显式放宽，不能把它说成“没有变化”。
+旧请求默认 `0x7F` 已记录为兼容边界，不能静默获得环境访问。
 
-### 5.3 版本与格式候选
+### 5.3 版本与格式冻结表
 
 | 轴 | 当前 | B3 候选 | 规则 |
 | --- | --- | --- | --- |
-| Runtime ABI | 1.19 | 1.20 | 新原语和能力掩码需要次版本增量 |
+| Runtime ABI | 1.19 | 1.20 | 新原语和能力掩码使用次版本增量 |
 | 生成器 | 22 | 23 | 新 lowering/C ABI 调用改变生成文本 |
 | 标准库接口 | 1 | 1 | 首批兼容扩展 |
 | `.xiaoc` 格式 | 1.0 | 1.0 | 容器字段不变；ABI/生成器写入头部 |
@@ -212,7 +212,7 @@ b3_0e_entry_ready = b3_0d_passed and decisions_approved and no_product_change
 | 协议版本 | 1 | 1 | 新增能力 `"arguments"`，不先升协议 |
 | Core 版本 | 1 | 1 | 旧核心缺能力时客户端拒绝 |
 
-候选产物规则：
+冻结产物规则：
 
 - 新产物写入 ABI 1.20、生成器 23、精确目标、能力要求和标准库身份；
 - 旧 1.19/22 `.xiaoc`/`.xar`/原生产物在 B3 公共路径执行前拒绝，回归从源码重生成；
@@ -220,7 +220,7 @@ b3_0e_entry_ready = b3_0d_passed and decisions_approved and no_product_change
 - 缓存按 ABI、生成器、Runtime 内容、目标、能力和标准库身份失配重建；
 - 只有实际编码字段变化时才提升 `.xiaoc`/`.xar`/索引格式次版本。
 
-### 5.4 C ABI 签名候选
+### 5.4 C ABI 签名冻结表
 
 统一形式为“借读输入 + 可选输出槽 + 末尾 `capabilities`”，`extern "C"`，返回 `i32`：
 
@@ -242,21 +242,21 @@ xiao_runtime_env_unset(name, out, capabilities)
 xiao_runtime_log_write(level, message, target, capabilities)
 ```
 
-其中 `out` 是已初始化的 `XiaoValue*`，成功时替换为拥有值，失败时保留原值；无返回值入口可省略 `out`。具体签名、参数顺序和是否保留无能力旧包装由 B3-0D-CABI 裁定。状态码沿用 0/1/2/3/6/8；语言级错误对象和取消通道不另开一套。
+其中 `out` 是已初始化的 `XiaoValue*`，成功时替换为拥有值，失败时保留原值；无返回值入口省略 `out`。15 个入口的参数顺序、符号名和能力掩码位置按上表冻结。状态码使用 0/1/2/3/6/8；语言级错误对象和取消通道不另开一套。
 
-### 5.5 Windows COFF 验收候选
+### 5.5 Windows COFF 验收冻结表
 
 | 项 | 候选判据 |
 | --- | --- |
 | 适用范围 | Windows x86_64 MSVC 的公共/发布产物；调试、strip 和内部探测分区登记 |
-| 必需等级 | 产品验证器返回 `Complete`；`UnverifiedCoffExports` 直接失败 |
+| 必需等级 | 产品验证器返回 `Complete`；`UnverifiedCoffExports` 直接失败；当前状态仍为 `pending` |
 | 组件 | 声明组件集合与观察组件集合完全一致；未分类 `xiao_runtime_` 符号为空 |
 | 证据 | 产物 SHA-256 + 源码/Runtime/工具/目标 + 任务根 + CI run/job/attempt |
 | 机制 | 保留 COFF 符号表的真实产物，或与产物哈希绑定的受信 linker map/PDB 完整清单 |
 | 不接受 | 单独导出表、同链接候选、未绑定哈希的 sidecar、B2-C 历史同链接例外 |
 | 负例 | 缺声明、额外组件、未分类符号、导出表-only、旧 sidecar、哈希/身份失配、`UnverifiedCoffExports` |
 
-B3-0D 只冻结“什么算产品级 `Complete`”和验证器落点；B3-1/B3-7 才产生实际产品证据。若 B3-0D 的 Windows 探测无法得到可产品化的 `Complete` 路径，则 B3-0D 不通过，不得以受限交接进入 B3-1。
+B3-0D 冻结“什么算产品级 `Complete`”和验证器落点；B3-1/B3-7 才产生实际产品证据。当前没有产品级 COFF 验收结果，不能把 `pending` 改成 `Complete`，也不能以受限交接替代产品验收。
 
 ## 六、证据矩阵
 

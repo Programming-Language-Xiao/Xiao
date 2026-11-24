@@ -1,0 +1,43 @@
+{
+  "stage": "20O-B3-0D",
+  "recorded_on": "2026-11-24",
+  "source": "星崽在本会话逐项批准的六项 B3-0D 裁定",
+  "decisions": {
+    "B3-0D-ID": {
+      "status": "approved",
+      "answer": "批准候选",
+      "question_item_id": ["request_user_input_async", "call_0280c5f4ad294a44b0e41fb136193307", 0],
+      "scope": "49～63 按 time/args/fs/env/log 连续分配，ID 100 保留墓碑，C 符号采用 xiao_runtime_<module>_<op>。"
+    },
+    "B3-0D-ENV": {
+      "status": "approved",
+      "answer": "批准候选",
+      "question_item_id": ["request_user_input_async", "call_0280c5f4ad294a44b0e41fb136193307", 1],
+      "scope": "environment 使用位 7，已知掩码为 0xFF，旧请求省略能力时默认 0x7F。授权 CLI/直接原生入口在应用开始前捕获一次宿主环境，嵌入省略时使用空快照，运行内写删共享。"
+    },
+    "B3-0D-VER": {
+      "status": "approved",
+      "answer": "批准候选",
+      "question_item_id": ["request_user_input_async", "call_0280c5f4ad294a44b0e41fb136193307", 2],
+      "scope": "联合目标为 ABI 1.20、生成器 23、标准库接口 1。容器、索引、IR 和原生元数据格式保持当前版本。旧 1.19/22 产物执行前拒绝并从源码重生成，缓存按 ABI/生成器/Runtime/目标/能力/标准库身份失配重建。"
+    },
+    "B3-0D-CABI": {
+      "status": "approved",
+      "answer": "批准候选",
+      "question_item_id": ["request_user_input_async", "call_0280c5f4ad294a44b0e41fb136193307", 3],
+      "scope": "15 个符号使用 const XiaoValue* 借读输入、独立初始化的 out 槽和末尾 capabilities:u64。无结果入口省略 out。成功 0，结构错误 1/2/3，运行错误 6，Fatal 8。成功替换 out，失败保留 out，不提供隐式全开旧包装。"
+    },
+    "B3-0D-PROTO": {
+      "status": "approved",
+      "answer": "批准候选",
+      "question_item_id": ["request_user_input_async", "call_0280c5f4ad294a44b0e41fb136193307", 4],
+      "scope": "RunOptions.arguments 为 {program_name:str, argv:[str]}，hello 新增 arguments 能力。省略时为空快照，快照只参与执行，不进入产物或缓存身份。旧核心未声明能力时执行前拒绝，原生启动器注入已校验快照。"
+    },
+    "B3-0D-COFF": {
+      "status": "approved",
+      "answer": "批准候选",
+      "question_item_id": ["request_user_input_async", "call_0280c5f4ad294a44b0e41fb136193307", 5],
+      "scope": "Windows 产品级产物必须由验证器报告 Complete，声明组件与观察组件相等且无未分类 Runtime 符号。验证器读取保留的真实 COFF 符号表或与产物哈希绑定的受信 linker map/PDB 完整清单。导出表-only、同链接候选、未绑定 sidecar 和 UnverifiedCoffExports 均拒绝。当前产品状态仍为 pending。"
+    }
+  }
+}

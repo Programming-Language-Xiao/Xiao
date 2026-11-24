@@ -1,0 +1,12 @@
+{
+  "cases": [
+    {"name": "unchanged", "expected": "pass"},
+    {"name": "manifest-tampered", "expected": "evidence.json 字节或文件身份不符"},
+    {"name": "missing-attributes", "expected": "封存缺少文件：.gitattributes"},
+    {"name": "forged-status", "expected": "closeout.json 与实际冻结结论不符"},
+    {"name": "forged-decision", "expected": "冻结台账偏离固定 Git 对象"},
+    {"name": "forged-version", "expected": "版本矩阵偏离固定 Git 对象"},
+    {"name": "forged-coff", "expected": "COFF 政策偏离固定 Git 对象"},
+    {"name": "forged-negative-report", "expected": "自反例回执偏离固定原件"}
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "current_product": {"runtime_abi": "1.19", "generator": 22, "stdlib_interface": 1},
+  "b3_target": {"runtime_abi": "1.20", "generator": 23, "stdlib_interface": 1},
+  "formats": {"xiaoc": "1.0", "xar": "1.0", "index_schema": "1.0", "ir": "1", "native_metadata": "1", "protocol": "1", "core": "1"},
+  "compatibility": {
+    "old_1_19_22_artifacts": "execute_before_reject",
+    "regeneration": "from_source",
+    "cache_identity": ["runtime_abi", "generator", "runtime_content", "target", "capabilities", "stdlib_identity"],
+    "b2c_history": "historical_evidence_only",
+    "arguments": "execution_input_only_not_artifact_or_cache_identity"
+  },
+  "targets": ["x86_64-pc-windows-msvc", "x86_64-unknown-linux-gnu", "aarch64-apple-darwin"]
+}

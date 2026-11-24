@@ -1,0 +1,10 @@
+{
+  "policy": "complete_required",
+  "status": "pending",
+  "scope": "Windows x86_64 MSVC public and release products from B3 onward",
+  "pass": {"verification": "Complete", "declared_equals_observed": true, "unclassified_runtime_symbols": 0, "artifact_hash_bound": true},
+  "accepted_observation": ["retained_coff_symbol_table", "trusted_linker_map_bound_to_artifact_hash", "trusted_pdb_component_manifest_bound_to_artifact_hash"],
+  "rejected_observation": ["UnverifiedCoffExports", "export_table_only", "same_link_candidate", "unbound_sidecar", "missing_declaration", "extra_observed_component", "unclassified_symbol", "identity_mismatch"],
+  "evidence_identity": ["artifact_sha256", "source_commit", "runtime_sha256", "tool_identity", "target", "task_root", "ci_run", "ci_job", "ci_attempt"],
+  "product_evidence": {"available": false, "b3_0d_probe_only": true}
+}
