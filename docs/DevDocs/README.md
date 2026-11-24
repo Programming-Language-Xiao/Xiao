@@ -311,6 +311,7 @@
 | 20O-B3-0C | [fs/env/log 探测与契约冻结规划](20o-b3-0c-fs-env-log-plan.md) / [收口证据](assets/20o-b3/entry-20261123-b3-0c/README.md) | 九项裁定、精确契约、版本/错误/资源、教程候选 | **三模块已冻结**　三份 `planned` 教程候选通过语法和黄金核对，B3-0D 入口就绪 |
 | 20O-B3-0D | [版本、intrinsic、ABI、C ABI 与 Windows COFF 冻结规划](20o-b3-0d-version-intrinsic-abi-coff-plan.md) / [收口证据](assets/20o-b3/entry-20261124-b3-0d/README.md) | 15 个原语编号、能力位、ABI 1.20/生成器 23、C ABI、协议、COFF | **已冻结（2026-11-24）**　49～63、environment 位 7、旧默认掩码 0x7F、15 个 C 符号、arguments 协议及 COFF `Complete` 判据已批准；固定 B3-0B 的四份 Windows 产物探测均无 COFF 符号表，产品状态仍为 pending |
 | 20O-B3-0E | [六模块教程、固定示例与精确测试入口冻结规划](20o-b3-0e-tutorials-fixtures-plan.md) / [收口证据](assets/20o-b3/entry-20261124-b3-0e/README.md) | 六份教程、源码/黄金/输入、std/stdlib 导入、VM/原生 O0/O3 入口 | **已冻结（2026-11-24）**　六份 `planned` 教程、12 份双导入示例和六模块 VM/原生入口候选通过；B3-0F 入口已就绪，registry/教程仍未升级 |
+| 20O-B3-1 | [time 实施规划](20o-b3-1-time-implementation-plan.md) | intrinsic 49～52、Runtime/VM/LLVM/C ABI、sleep、能力、三平台与 time 教程 | **规划稿（2026-11-24）**　B3-0F 尚未执行，B3-1 未开工；版本激活与入口待星崽裁定 |
 | 20O-B4 | [B4 JSON/TOML规划](20o-b4-json-toml-plan.md) | 专用值模型、JSON/TOML解析/序列化、双路径/教程 | **规划稿（2026-11-11）**：B4未开始；与B5数值类型分开，B5-B9后置 |
 | 20O-B5 | [B5数值库规划](20o-b5-numeric-libraries-plan.md) | decimal/fractions/statistics浮点/确定性random、精度/三平台 | **规划稿（2026-11-11）**：B5未开始；复用B2底座，CSPRNG/B6-B9后置 |
 | 20O-B6 | [B6原生工具规划](20o-b6-native-tools-plan.md) | regex线性时间、gzip/zlib整块、fmt扩展与依赖锁定 | **规划稿（2026-11-11）**：B6未开始；B7-B9与流式后置 |
