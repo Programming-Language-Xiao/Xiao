@@ -251,7 +251,8 @@ def platform(root, name, source, fixed, ci):
 
 
 def doc_source(commit):
-    return {"commit": commit, "tree_sha256": identity(git("ls-tree", "-rz", commit, "--", "docs/DevDocs", "docs/UseDocs"))["sha256"]}
+    paths = ("docs/DevDocs", "docs/UseDocs", "core/rust/crates/xiao-runtime-abi/README.md")
+    return {"commit": commit, "tree_sha256": identity(git("ls-tree", "-rz", commit, "--", *paths))["sha256"]}
 
 
 def ci_run(bundle, label, commit, filename):
@@ -321,7 +322,9 @@ def derive(root, prepare):
         for stream in ("stdout", "stderr"):
             digest = row[f"{stream}_sha256"]
             require(identity(gate["logs"][digest].encode())["sha256"] == digest, "文档门禁原始日志摘要不符")
-    require(all(path.startswith("docs/DevDocs/") for path in changed_paths(source, docs)),
+    document_paths = changed_paths(source, docs)
+    require(all(path.startswith("docs/DevDocs/") or path == "core/rust/crates/xiao-runtime-abi/README.md"
+                for path in document_paths),
             "定稿提交改动了受检产品")
     expected_files = set(git("ls-tree", "-r", "--name-only", "-z", docs, "--", PREFIX).decode().split("\0")) - {""}
     current = inventory(root)
