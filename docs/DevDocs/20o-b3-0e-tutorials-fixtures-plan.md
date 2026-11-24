@@ -1,6 +1,6 @@
 # 20O-B3-0E. 六模块教程、固定示例与精确测试入口冻结规划
 
-> **状态（2026-11-24）**　B3-0E 规划稿。B3-0D 已收口，`b3_0e_entry_ready=true`；本批只冻结六份教程草案、固定示例、运行输入和 VM/原生精确测试入口候选，不实现产品。`b3_0e_started=false`、`b3_0e_passed=false`、`b3_0f_entry_ready=false`、`b3_0_passed=false`、`b3_product_started=false`。
+> **状态（2026-11-24）**　B3-0E 已开工。六份教程、夹具、运行输入与精确入口候选已整理，五项裁定待答。`b3_0e_started=true`、`b3_0e_passed=false`、`b3_0f_entry_ready=false`、`b3_0_passed=false`、`b3_product_started=false`。[B3-0E 候选证据](assets/20o-b3/entry-20261124-b3-0e/README.md)
 > **B3-0D 输入（2026-11-24）**　15 个原语为 49～63；`environment` 为位 7；目标版本为 ABI 1.20、生成器 23、标准库接口 1；`RunOptions.arguments` 使用 `{program_name, argv}`；Windows 产品级 COFF 仍为 `complete_required`/`pending`。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-0E 的教程候选和精确入口记录不能替代 B3 产品验收。
 > 入口：[B3-0D 收口](assets/20o-b3/entry-20261124-b3-0d/README.md)、[B3-0B 收口](assets/20o-b3/entry-20261123-b3-0b/README.md)、[B3-0C 收口](assets/20o-b3/entry-20261123-b3-0c/README.md)、[B3-0 实施规划](20o-b3-0-probe-freeze-plan.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
@@ -17,7 +17,7 @@
 | 本批目标 | 冻结六份教程、固定示例/输入/黄金、std/stdlib 导入路径、VM 与原生 O0/O3 精确入口候选及哈希 |
 | 本批不做 | 产品实现、真实教程执行、registry/教程 verified、B3-1/B4、旧 721、历史债务核销 |
 | Windows COFF | 教程候选只记录产品阶段要求；B3-0E 不产生 Windows 产品级 COFF 证据 |
-| 当前状态 | `b3_0e_started=false`、`b3_0e_passed=false`、`b3_0f_entry_ready=false`、`b3_0_passed=false`、`b3_1_entry_ready=false` |
+| 当前状态 | `b3_0e_started=true`、`b3_0e_passed=false`、`b3_0f_entry_ready=false`、`b3_0_passed=false`、`b3_1_entry_ready=false` |
 
 B3-0E 是 **教程与精确入口冻结批**，不是教程执行批。六份教程的内容已在 B3-0B/C 形成候选，本批把它们整理成同一套路径、名称、哈希和测试入口；在产品实现前，教程状态只能是 `planned`，不能把候选解析或黄金检查写成产品执行通过。
 
@@ -71,15 +71,15 @@ b3_0f_entry_ready = b3_0e_passed and decisions_approved and no_product_change
 
 ## 三、首轮裁定
 
-| 编号 | 候选 | 必须由星崽定夺 |
+| 编号 | 提请冻结的候选 | 裁定 |
 | --- | --- | --- |
-| B3-0E-PATH | 证据候选根 `entry-20261124-b3-0e/candidates/tests/fixtures/docs/<module>/`，产品阶段迁入 `tests/fixtures/docs/<module>/`；建议统一命名为 `tutorial.xiao`、`tutorial.stdout`、`tutorial.input.json` | 是否重命名现有 B3-0B/C 候选；是否保留 `b3-0b-candidate`/`b3-0c-candidate` 名称；最终产品路径 |
-| B3-0E-ALIAS | 每模块以 `std.<module>` 为正文主路径，另设一条 `stdlib.<module>` 导入探针；同一语义只保留一套教程正文 | 双路径是否每模块都做；CLI 的导入探针是否沿用 B3-0B `cli-import.zip` |
-| B3-0E-ENTRY | VM 目标名沿用 `20o_b3_<module>_tutorial`，测试名沿用 `<module>_tutorial_matches_vm_golden`/`..._native_golden`；每项恰好 1 passed | 是否合并为单一测试文件；是否按模块/后端拆分；精确名称 |
-| B3-0E-INPUT | time 用固定墙钟；args 用 `program_name`/`argv` 快照；env 用合成环境；log 用固定时钟和独立输出端；fs 用空 `demo` 任务目录 | JSON 形状、输入文件命名、平台归一化和隔离方式 |
-| B3-0E-STATE | 六份教程继续 `planned`；UseDocs/registry 不升级；B3-0E 只做候选、哈希和入口设计 | 是否在 B3-0E 写入 UseDocs 候选页；是否登记 registry 条目（保持 planned） |
+| B3-0E-PATH | 从固定 B3-0B/C 复制源码、黄金和已有输入，B3-0E 候选统一用 `tutorial.xiao`、`tutorial.stdout`、`tutorial.input.json`。产品阶段从 `candidates/` 下按相对路径迁入 `tests/fixtures/docs/<module>/` | 待星崽答复 |
+| B3-0E-ALIAS | 每模块正文采用 `std.<module>`。产品精确入口使用同一源码的 `stdlib.<module>` 导入变体和同一黄金。B3-0B 的 `cli-import.zip` 为等价模块历史探针 | 待星崽答复 |
+| B3-0E-ENTRY | 每模块一个目标 `20o_b3_<module>_tutorial`，内含 VM 和原生两个独立筛选的测试名。VM 覆盖双路径，原生测试在 O0 和 O3 各覆盖双路径。每次 Cargo 精确调用期望 1 通过、0 失败、0 忽略 | 待星崽答复 |
+| B3-0E-INPUT | time 固定墙钟与单调钟，args 保留 `{program_name, argv}` 输入，env 保留 `{environment: [[name, value]]}`，log 固定墙钟及输出端。cli 用源码字面量，fs 独占目录预建空 `demo`。每条导入和优化路径独立运行，UTF-8/LF 黄金直接按字节比较 | 待星崽答复 |
+| B3-0E-STATE | 六份候选和精确入口保存在 DevDocs 证据区，教程为 `planned`。产品阶段迁入 UseDocs 和正式夹具路径并按产品结果登记 | 待星崽答复 |
 
-五项答复登记来源、时点和适用范围。未答项保持“待裁定”，不得把候选解析写成产品执行。
+五项答复登记来源、时点和适用范围。可复核的教程、候选路径、输入值和入口集中在证据目录。[候选证据](assets/20o-b3/entry-20261124-b3-0e/README.md) · [精确入口矩阵](assets/20o-b3/entry-20261124-b3-0e/tutorials.json)
 
 ## 四、分批执行
 
@@ -162,17 +162,17 @@ b3_0f_entry_ready = b3_0e_passed and decisions_approved and no_product_change
 | env | B3-0C `tutorials/env.md` | `.../env/b3-0c-candidate.{xiao,stdout}` + `.input.json` | `20o_b3_env_tutorial` | `env_tutorial_matches_native_golden` |
 | log | B3-0C `tutorials/log.md` | `.../log/b3-0c-candidate.{xiao,stdout}` + `.input.json` | `20o_b3_log_tutorial` | `log_tutorial_matches_native_golden` |
 
-VM 测试名与原生测试名沿用各批 `tutorials.json` 的命名；B3-0E 可统一到一份测试文件，但目标名不变。
+VM 与原生测试名沿用各批 `tutorials.json` 的命名。候选按模块设置一个 Cargo 目标，每个目标登记两个精确测试名。
 
 ### 5.2 输入和隔离
 
 | 模块 | 输入 | 隔离 |
 | --- | --- | --- |
-| time | 固定墙钟毫秒值；格式域内 | 不读取真实系统时钟；单调关系只做上界比较 |
+| time | 固定墙钟 946684800000 ms 和单调钟 0 ns | 运行入口注入合成时钟，期望后一次单调读数大于或等于前一次 |
 | args | 程序名 + argv 快照 | 不读宿主 argv；空项、重复项和 `--` 原样 |
 | cli | 无额外输入 | 纯分组；不读启动器参数 |
 | fs | 无输入；任务入口创建空 `demo` | 每平台独立任务目录；结束检查 `demo` 为空 |
-| env | 合成环境对 `[{name,value}]` | 隔离子进程或注入快照；不读/写用户环境 |
+| env | 合成环境对 `{"environment": [[name, value]]}` | 由运行入口提供独立的合成快照 |
 | log | 固定 `wall_clock_unix_ms`；独立输出端 | 不读真实时钟；捕获 stdout；不写用户终端 |
 
 ### 5.3 导入与路径
@@ -254,7 +254,7 @@ docs/module-registry.json                           只读核对 planned，不�
 stdlib/                                             本批不改产品
 ```
 
-本页只做 B3-0E 规划；B3-0F/B3-1 及后续仍未开始。
+B3-0E 候选已进入裁定准备。B3-0F 的入口状态由本批 `closeout.json` 登记。[B3-0E 候选证据](assets/20o-b3/entry-20261124-b3-0e/README.md)
 
 ## 十一、新 Agent 先读
 

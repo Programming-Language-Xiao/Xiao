@@ -1,0 +1,10 @@
+{
+  "stage": "20O-B3-0E",
+  "decisions": {
+    "B3-0E-PATH": {"status": "pending"},
+    "B3-0E-ALIAS": {"status": "pending"},
+    "B3-0E-ENTRY": {"status": "pending"},
+    "B3-0E-INPUT": {"status": "pending"},
+    "B3-0E-STATE": {"status": "pending"}
+  }
+}

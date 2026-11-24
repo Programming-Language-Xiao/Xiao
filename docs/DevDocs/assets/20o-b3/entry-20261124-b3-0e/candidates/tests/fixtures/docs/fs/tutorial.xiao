@@ -1,0 +1,25 @@
+from std.fs import write_text, list_dir, remove as remove_entry, rename, metadata
+from std.os import open_file, read_text, close
+
+write_text("demo/z.txt", "hello", overwrite = false)
+write_text("demo/a.txt", "other", overwrite = false)
+for name in list_dir("demo")
+    print(name)
+
+try
+    write_text("demo/z.txt", "ignored", overwrite = false)
+catch failure as ResourceError
+    print(error_code(failure))
+
+rename("demo/z.txt", "demo/m.txt", overwrite = false)
+info = metadata("demo/m.txt")
+print(info["kind"])
+print(info["size"])
+handle = open_file("demo/m.txt")
+try
+    print(read_text(handle))
+finally
+    close(handle)
+
+remove_entry("demo/m.txt")
+remove_entry("demo/a.txt")

@@ -1,0 +1,339 @@
+{
+  "alias_rule": "replace_first_module_import_only",
+  "aliases": [
+    "std",
+    "stdlib"
+  ],
+  "cases": {
+    "args": {
+      "alias_source": {
+        "bytes": 168,
+        "sha256": "0a3217c567688dfc03be206f15cedd31a9c40e6ca38ed4a326f193c1a8be67b9"
+      },
+      "assets": {
+        "golden": {
+          "bytes": 54,
+          "path": "candidates/tests/fixtures/docs/args/tutorial.stdout",
+          "sha256": "f2fad87f2ca39515df3e9fe9d9465e01d8952535f8f99932b6cfb4b39bdf0a4e"
+        },
+        "input": {
+          "bytes": 87,
+          "path": "candidates/tests/fixtures/docs/args/tutorial.input.json",
+          "sha256": "e1818dc6cac4b4490715bd2adceea20748feed06c48c99b3ca0b34085dab9c4b"
+        },
+        "source": {
+          "bytes": 165,
+          "path": "candidates/tests/fixtures/docs/args/tutorial.xiao",
+          "sha256": "2f2a011b76b5d7da81e9490ce1fe4c237df8b3fce49558ca83b239cf78cc3c7e"
+        },
+        "tutorial": {
+          "bytes": 2050,
+          "path": "tutorials/args.md",
+          "sha256": "5fbdacd00c1340248a77a0da4f3714745a84c237d0e93670fd6a5126b0ae3fa3"
+        }
+      },
+      "canonical_module": "stdlib.args",
+      "capabilities": {
+        "mask": "0x24",
+        "names": [
+          "process",
+          "stdout"
+        ]
+      },
+      "native": "args_tutorial_matches_native_golden",
+      "origin": {
+        "commit": "b8abebf368ef9180ad05756ae90f5d198580a028",
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/candidates/tests/fixtures/docs/args/b3-0b-candidate"
+      },
+      "product_fixture_prefix": "tests/fixtures/docs/args/tutorial",
+      "target": "20o_b3_args_tutorial",
+      "vm": "args_tutorial_matches_vm_golden"
+    },
+    "cli": {
+      "alias_source": {
+        "bytes": 327,
+        "sha256": "dfada2122347ece49829ca9c845a4f4472ba9e64d3bf83f5d210dac30cab7fce"
+      },
+      "assets": {
+        "golden": {
+          "bytes": 58,
+          "path": "candidates/tests/fixtures/docs/cli/tutorial.stdout",
+          "sha256": "ac22e3177752387df8d20a2947b5578008c24a006a4127b95dcd506ffe890d78"
+        },
+        "source": {
+          "bytes": 324,
+          "path": "candidates/tests/fixtures/docs/cli/tutorial.xiao",
+          "sha256": "9fc32dc59264b05dd4a42f7b37413e883f781ca81e996d48ad9022acb170014b"
+        },
+        "tutorial": {
+          "bytes": 1708,
+          "path": "tutorials/cli.md",
+          "sha256": "bb27866c45df5377e70e34b5ed2ce9fb9a3bb2a1607fd5167b6e73dff14f6aed"
+        }
+      },
+      "canonical_module": "stdlib.cli",
+      "capabilities": {
+        "mask": "0x20",
+        "names": [
+          "stdout"
+        ]
+      },
+      "native": "cli_tutorial_matches_native_golden",
+      "origin": {
+        "commit": "b8abebf368ef9180ad05756ae90f5d198580a028",
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/candidates/tests/fixtures/docs/cli/b3-0b-candidate"
+      },
+      "product_fixture_prefix": "tests/fixtures/docs/cli/tutorial",
+      "target": "20o_b3_cli_tutorial",
+      "vm": "cli_tutorial_matches_vm_golden"
+    },
+    "env": {
+      "alias_source": {
+        "bytes": 470,
+        "sha256": "a8cb3149daec0193db2de4b6d42752c38812965de8e624f4a106c879de5c6e1d"
+      },
+      "assets": {
+        "golden": {
+          "bytes": 55,
+          "path": "candidates/tests/fixtures/docs/env/tutorial.stdout",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        },
+        "input": {
+          "bytes": 69,
+          "path": "candidates/tests/fixtures/docs/env/tutorial.input.json",
+          "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+        },
+        "source": {
+          "bytes": 467,
+          "path": "candidates/tests/fixtures/docs/env/tutorial.xiao",
+          "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+        },
+        "tutorial": {
+          "bytes": 2084,
+          "path": "tutorials/env.md",
+          "sha256": "f9698121ec72b541484eb9e80c4ab528b9e31c877c42ac7e9dcd6145ebbe6703"
+        }
+      },
+      "canonical_module": "stdlib.env",
+      "capabilities": {
+        "mask": "0xA0",
+        "names": [
+          "environment",
+          "stdout"
+        ]
+      },
+      "native": "env_tutorial_matches_native_golden",
+      "origin": {
+        "commit": "7f1017b7ff0b7b0a89d11943d5d33e0b432d0b3f",
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/candidates/tests/fixtures/docs/env/b3-0c-candidate"
+      },
+      "product_fixture_prefix": "tests/fixtures/docs/env/tutorial",
+      "target": "20o_b3_env_tutorial",
+      "vm": "env_tutorial_matches_vm_golden"
+    },
+    "fs": {
+      "alias_source": {
+        "bytes": 682,
+        "sha256": "bff575cb6a59b233b047ad513127c7de9d861013118ece4a94a8b1a694203da1"
+      },
+      "assets": {
+        "golden": {
+          "bytes": 32,
+          "path": "candidates/tests/fixtures/docs/fs/tutorial.stdout",
+          "sha256": "053479491ffccf00a77d1be6910e693615423a493c10008d780e3d4fb9822bfb"
+        },
+        "source": {
+          "bytes": 679,
+          "path": "candidates/tests/fixtures/docs/fs/tutorial.xiao",
+          "sha256": "c3a8f4f86dab34642760cef14797be9995627aa3754381c6d5a014c4ace38c67"
+        },
+        "tutorial": {
+          "bytes": 2274,
+          "path": "tutorials/fs.md",
+          "sha256": "3cc5a599b5b619253a597cb4ee51af1f1f389a11462fd620b059a2a4f19979ec"
+        }
+      },
+      "canonical_module": "stdlib.fs",
+      "capabilities": {
+        "mask": "0x21",
+        "names": [
+          "filesystem",
+          "stdout"
+        ]
+      },
+      "native": "fs_tutorial_matches_native_golden",
+      "origin": {
+        "commit": "7f1017b7ff0b7b0a89d11943d5d33e0b432d0b3f",
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/candidates/tests/fixtures/docs/fs/b3-0c-candidate"
+      },
+      "product_fixture_prefix": "tests/fixtures/docs/fs/tutorial",
+      "target": "20o_b3_fs_tutorial",
+      "vm": "fs_tutorial_matches_vm_golden"
+    },
+    "log": {
+      "alias_source": {
+        "bytes": 267,
+        "sha256": "8e8097c106c0719b7cc568e6afc09c40c3dae0facc539a8f596dae6a02f01195"
+      },
+      "assets": {
+        "golden": {
+          "bytes": 103,
+          "path": "candidates/tests/fixtures/docs/log/tutorial.stdout",
+          "sha256": "267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146"
+        },
+        "input": {
+          "bytes": 41,
+          "path": "candidates/tests/fixtures/docs/log/tutorial.input.json",
+          "sha256": "30cf24e7a51b3e75a7ccda7f6448818dcbd4acb0b84e939e9e7083eeb019f129"
+        },
+        "source": {
+          "bytes": 264,
+          "path": "candidates/tests/fixtures/docs/log/tutorial.xiao",
+          "sha256": "d7ec578f5f0177355a04f054831a5d1aac1b7ab0c24757e05f494992eedf5a8b"
+        },
+        "tutorial": {
+          "bytes": 1814,
+          "path": "tutorials/log.md",
+          "sha256": "31293083c8df2e54a80392a4f4a78c333f41002e02010f84c7d506e4eb91d524"
+        }
+      },
+      "canonical_module": "stdlib.log",
+      "capabilities": {
+        "mask": "0x22",
+        "names": [
+          "clock",
+          "stdout"
+        ]
+      },
+      "native": "log_tutorial_matches_native_golden",
+      "origin": {
+        "commit": "7f1017b7ff0b7b0a89d11943d5d33e0b432d0b3f",
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/candidates/tests/fixtures/docs/log/b3-0c-candidate"
+      },
+      "product_fixture_prefix": "tests/fixtures/docs/log/tutorial",
+      "target": "20o_b3_log_tutorial",
+      "vm": "log_tutorial_matches_vm_golden"
+    },
+    "time": {
+      "alias_source": {
+        "bytes": 420,
+        "sha256": "6de58d4f0af613627dda60d3a629212277f1702ec6bd36039a8c2c684c73ee1a"
+      },
+      "assets": {
+        "golden": {
+          "bytes": 80,
+          "path": "candidates/tests/fixtures/docs/time/tutorial.stdout",
+          "sha256": "04daeb08b0984613c379ddaeb427203830739f08a8789446c2a0989a7f5cdd7a"
+        },
+        "input": {
+          "bytes": 70,
+          "path": "candidates/tests/fixtures/docs/time/tutorial.input.json",
+          "sha256": "a2bd4cfa9a0308d560bd6201498c5587d257d940a6a1c09edce0a62b6fd09e1f"
+        },
+        "source": {
+          "bytes": 417,
+          "path": "candidates/tests/fixtures/docs/time/tutorial.xiao",
+          "sha256": "c6428b1cc52184b94f0d52f6d4f9b8d1b1ee0be32fcab5e9f053a069a9b25bae"
+        },
+        "tutorial": {
+          "bytes": 2416,
+          "path": "tutorials/time.md",
+          "sha256": "5ae581cafa547f83cd162aa63c14a79a8b2f2b509fdc5376fc066214afa43a84"
+        }
+      },
+      "canonical_module": "stdlib.time",
+      "capabilities": {
+        "mask": "0x22",
+        "names": [
+          "clock",
+          "stdout"
+        ]
+      },
+      "native": "time_tutorial_matches_native_golden",
+      "origin": {
+        "commit": "b8abebf368ef9180ad05756ae90f5d198580a028",
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/candidates/tests/fixtures/docs/time/b3-0b-candidate"
+      },
+      "product_fixture_prefix": "tests/fixtures/docs/time/tutorial",
+      "target": "20o_b3_time_tutorial",
+      "vm": "time_tutorial_matches_vm_golden"
+    }
+  },
+  "expected_cargo_counts": [
+    1,
+    0,
+    0
+  ],
+  "expected_exit": 0,
+  "inputs": {
+    "args": {
+      "run_options": "arguments",
+      "shape": "{program_name: str, argv: [str]}"
+    },
+    "cli": {
+      "input": "source_literals"
+    },
+    "env": {
+      "environment": "synthetic_runtime_snapshot"
+    },
+    "fs": {
+      "final_directory": "empty",
+      "initial_directory": "demo"
+    },
+    "log": {
+      "stdout": "isolated_capture",
+      "wall_clock": "fixed"
+    },
+    "time": {
+      "monotonic": "fixed",
+      "wall_clock": "fixed"
+    }
+  },
+  "manifest": "core/rust/Cargo.toml",
+  "modules": [
+    "time",
+    "args",
+    "cli",
+    "fs",
+    "env",
+    "log"
+  ],
+  "native_optimizations": [
+    0,
+    3
+  ],
+  "native_required_environment": [
+    "XIAO_TARGET_TRIPLE",
+    "XIAO_CLANG",
+    "XIAO_LLVM_AS",
+    "XIAO_LLC",
+    "XIAO_RUNTIME_LIBRARY"
+  ],
+  "package": "xiao-driver",
+  "platforms": [
+    "x86_64-pc-windows-msvc",
+    "x86_64-unknown-linux-gnu",
+    "aarch64-apple-darwin"
+  ],
+  "product_execution": false,
+  "product_target": {
+    "generator": 23,
+    "runtime_abi": "1.20",
+    "stdlib_interface": 1
+  },
+  "rust": "1.96.0",
+  "status": "planned",
+  "stdout": {
+    "compare": "bytes",
+    "encoding": "UTF-8",
+    "newline": "LF"
+  },
+  "windows_product_coff": {
+    "accepted_path_verified": false,
+    "criteria_revision": "coff-criteria-revision.json",
+    "policy": "complete_required",
+    "positive_verifier_check": "B3-1",
+    "product_evidence": false,
+    "status": "pending"
+  }
+}

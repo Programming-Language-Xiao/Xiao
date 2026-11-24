@@ -1,0 +1,170 @@
+{
+  "baseline": {
+    "entry_commit": "93d7fc877e8c2d444f385da1dc68727aed4aea72",
+    "guards": {
+      "actual": 4,
+      "derived": 24,
+      "passed": 28
+    },
+    "platform_observations": {
+      "linux": {
+        "b1": {
+          "entries": 20,
+          "native_exact": 1,
+          "resource_targets": 18,
+          "vm_exact": 1
+        },
+        "ci": {
+          "artifact": 14759116233,
+          "attempt": 1,
+          "job": 137242370871,
+          "run": 45033610157,
+          "sha256": "709d2d1f516e545043f1f693248d5a3fe990f181c0ffd6afba907b6fd15583bf"
+        },
+        "runtime": {
+          "bytes": 34143086,
+          "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+        },
+        "target": "x86_64-unknown-linux-gnu"
+      },
+      "macos": {
+        "b1": {
+          "entries": 20,
+          "native_exact": 1,
+          "resource_targets": 18,
+          "vm_exact": 1
+        },
+        "ci": {
+          "artifact": 14758976939,
+          "attempt": 1,
+          "job": 137242370630,
+          "run": 45033610157,
+          "sha256": "399167416e037b907c4bb593423d2d70d39dbd45a4a4a9447f4ecdc25d0bf884"
+        },
+        "runtime": {
+          "bytes": 25667552,
+          "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+        },
+        "target": "aarch64-apple-darwin"
+      },
+      "windows": {
+        "b1": {
+          "entries": 20,
+          "native_exact": 1,
+          "resource_targets": 18,
+          "vm_exact": 1
+        },
+        "runtime": {
+          "bytes": 27483016,
+          "sha256": "fa493d79b129cf7fa600993605381830f6abeaab23ec0ea48c0a910554de0fff"
+        },
+        "target": "x86_64-pc-windows-msvc"
+      }
+    },
+    "prior_commits": {
+      "A": "b91455fe3a323246c916a19e8c7d0db93c2dd561",
+      "B": "b8abebf368ef9180ad05756ae90f5d198580a028",
+      "C": "7f1017b7ff0b7b0a89d11943d5d33e0b432d0b3f",
+      "D": "10c7499f3276ddd3f4ed3524c196e44518ab93c9"
+    },
+    "product": {
+      "commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+      "files": 1222,
+      "locks": {
+        "core/rust/Cargo.lock": {
+          "bytes": 19599,
+          "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+        },
+        "tests/benchmarks/Cargo.lock": {
+          "bytes": 19203,
+          "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+        }
+      },
+      "tree": "80be41eefc3983001cd3968db0ccceee541f698d"
+    }
+  },
+  "checks": {
+    "B3-0B": {
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/audit_closeout.py"
+      ],
+      "exit": 0,
+      "stdout": {
+        "bytes": 5586,
+        "sha256": "5b04239e4140c8d11fcbb807a1794b9c7fea3f9b9598f212afa6a1b3fc5a312e"
+      },
+      "summary": {
+        "audit_files": 26,
+        "b3_0b_passed": true,
+        "tutorial_product_execution": false,
+        "tutorials": "planned"
+      }
+    },
+    "B3-0C": {
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/audit_closeout.py"
+      ],
+      "exit": 0,
+      "stdout": {
+        "bytes": 5670,
+        "sha256": "3c505185f01971804200bac3edf7b1c52ea22c720466f445f422f681201ac72e"
+      },
+      "summary": {
+        "audit_files": 28,
+        "b3_0c_passed": true,
+        "parsed": 3,
+        "tutorial_product_execution": false,
+        "tutorials": "planned"
+      }
+    },
+    "B3-0D": {
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0d/audit.py"
+      ],
+      "exit": 0,
+      "stdout": {
+        "bytes": 5729,
+        "sha256": "c33835d2c7a9f3e2c1f5363e4e3644c62422c48beffcca744702da396db1e4f3"
+      },
+      "summary": {
+        "audit_files": 29,
+        "b3_0d_passed": true,
+        "b3_0e_entry_ready": true,
+        "negative_cases": 10,
+        "windows_product_coff_status": "pending"
+      }
+    },
+    "B3-0D-self-negative": {
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0d/self_negative.py"
+      ],
+      "exit": 0,
+      "stdout": {
+        "bytes": 197,
+        "sha256": "518e3db22e1c0f84ed7903d24566cb07b09af7c6b4281bbcf1b92f4730b1363c"
+      },
+      "summary": {
+        "cases": 10,
+        "evidence_root_written": false,
+        "read_only": true,
+        "rejected_cases": 9
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "unchanged": "",
+  "manifest-tampered": "证据清单与实际字节不符",
+  "missing-attributes": "封存缺少文件：.gitattributes",
+  "forged-tutorial-hash": "教程或夹具摘要不符",
+  "replaced-golden": "独立黄金偏离固定候选：cli",
+  "missing-input": "封存缺少文件：candidates/tests/fixtures/docs/args/tutorial.input.json",
+  "parse-as-execution": "语法回执冒充产品执行",
+  "forged-verified": "教程状态越界",
+  "forged-entry": "精确入口矩阵与候选不符",
+  "forged-approval": "裁定缺少实际答复"
+}

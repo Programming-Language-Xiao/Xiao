@@ -1,0 +1,153 @@
+{
+  "commands": {
+    "cargo": {
+      "argv": [
+        "cargo",
+        "+1.96.0",
+        "build",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\source\\core\\rust\\Cargo.toml",
+        "--target-dir",
+        "D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\target",
+        "-p",
+        "xiao-syntax"
+      ],
+      "cwd": "D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\source",
+      "exit": 0,
+      "stderr": "   Compiling version_check v0.9.5\n   Compiling proc-macro2 v1.0.107\n   Compiling quote v1.0.47\n   Compiling unicode-ident v1.0.24\n   Compiling typenum v1.20.1\n   Compiling serde_core v1.0.229\n   Compiling zmij v1.0.23\n   Compiling serde_json v1.0.151\n   Compiling serde v1.0.229\n   Compiling itoa v1.0.18\n   Compiling cpufeatures v0.2.17\n   Compiling memchr v2.8.3\n   Compiling cfg-if v1.0.5\n   Compiling xiao-runtime-abi v0.1.0 (D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\source\\core\\rust\\crates\\xiao-runtime-abi)\n   Compiling xiao-source v0.1.0 (D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\source\\core\\rust\\crates\\xiao-source)\n   Compiling generic-array v0.14.7\n   Compiling block-buffer v0.10.4\n   Compiling crypto-common v0.1.7\n   Compiling digest v0.10.7\n   Compiling sha2 v0.10.9\n   Compiling syn v3.0.5\n   Compiling serde_derive v1.0.229\n   Compiling xiao-i18n v0.1.0 (D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\source\\core\\rust\\crates\\xiao-i18n)\n   Compiling xiao-diagnostics v0.1.0 (D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\source\\core\\rust\\crates\\xiao-diagnostics)\n   Compiling xiao-syntax v0.1.0 (D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\source\\core\\rust\\crates\\xiao-syntax)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 13.03s\n",
+      "stdout": ""
+    },
+    "parse": {
+      "argv": [
+        "D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\tutorial_parse.exe",
+        "time-std.xiao",
+        "time-stdlib.xiao",
+        "args-std.xiao",
+        "args-stdlib.xiao",
+        "cli-std.xiao",
+        "cli-stdlib.xiao",
+        "fs-std.xiao",
+        "fs-stdlib.xiao",
+        "env-std.xiao",
+        "env-stdlib.xiao",
+        "log-std.xiao",
+        "log-stdlib.xiao"
+      ],
+      "cwd": "D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn",
+      "exit": 0,
+      "stderr": "",
+      "stdout": "time-std.xiao: diagnostics=0\ntime-stdlib.xiao: diagnostics=0\nargs-std.xiao: diagnostics=0\nargs-stdlib.xiao: diagnostics=0\ncli-std.xiao: diagnostics=0\ncli-stdlib.xiao: diagnostics=0\nfs-std.xiao: diagnostics=0\nfs-stdlib.xiao: diagnostics=0\nenv-std.xiao: diagnostics=0\nenv-stdlib.xiao: diagnostics=0\nlog-std.xiao: diagnostics=0\nlog-stdlib.xiao: diagnostics=0\n"
+    },
+    "probe": {
+      "argv": [
+        "rustc",
+        "+1.96.0",
+        "--edition=2024",
+        "D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\tutorial_parse.rs",
+        "-L",
+        "dependency=D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\target\\debug\\deps",
+        "--extern",
+        "xiao_source=D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\target\\debug\\deps\\libxiao_source-a0465c20b152b5c0.rlib",
+        "--extern",
+        "xiao_syntax=D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\target\\debug\\deps\\libxiao_syntax-2a214ec6d518ac3e.rlib",
+        "-o",
+        "D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\tutorial_parse.exe"
+      ],
+      "cwd": "D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn",
+      "exit": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    "rustc": {
+      "argv": [
+        "rustc",
+        "+1.96.0",
+        "-vV"
+      ],
+      "cwd": "D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn",
+      "exit": 0,
+      "stderr": "",
+      "stdout": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-pc-windows-msvc\nrelease: 1.96.0\nLLVM version: 22.1.2\n"
+    }
+  },
+  "examples": {
+    "args-std.xiao": {
+      "bytes": 165,
+      "sha256": "2f2a011b76b5d7da81e9490ce1fe4c237df8b3fce49558ca83b239cf78cc3c7e"
+    },
+    "args-stdlib.xiao": {
+      "bytes": 168,
+      "sha256": "0a3217c567688dfc03be206f15cedd31a9c40e6ca38ed4a326f193c1a8be67b9"
+    },
+    "cli-std.xiao": {
+      "bytes": 324,
+      "sha256": "9fc32dc59264b05dd4a42f7b37413e883f781ca81e996d48ad9022acb170014b"
+    },
+    "cli-stdlib.xiao": {
+      "bytes": 327,
+      "sha256": "dfada2122347ece49829ca9c845a4f4472ba9e64d3bf83f5d210dac30cab7fce"
+    },
+    "env-std.xiao": {
+      "bytes": 467,
+      "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+    },
+    "env-stdlib.xiao": {
+      "bytes": 470,
+      "sha256": "a8cb3149daec0193db2de4b6d42752c38812965de8e624f4a106c879de5c6e1d"
+    },
+    "fs-std.xiao": {
+      "bytes": 679,
+      "sha256": "c3a8f4f86dab34642760cef14797be9995627aa3754381c6d5a014c4ace38c67"
+    },
+    "fs-stdlib.xiao": {
+      "bytes": 682,
+      "sha256": "bff575cb6a59b233b047ad513127c7de9d861013118ece4a94a8b1a694203da1"
+    },
+    "log-std.xiao": {
+      "bytes": 264,
+      "sha256": "d7ec578f5f0177355a04f054831a5d1aac1b7ab0c24757e05f494992eedf5a8b"
+    },
+    "log-stdlib.xiao": {
+      "bytes": 267,
+      "sha256": "8e8097c106c0719b7cc568e6afc09c40c3dae0facc539a8f596dae6a02f01195"
+    },
+    "time-std.xiao": {
+      "bytes": 417,
+      "sha256": "c6428b1cc52184b94f0d52f6d4f9b8d1b1ee0be32fcab5e9f053a069a9b25bae"
+    },
+    "time-stdlib.xiao": {
+      "bytes": 420,
+      "sha256": "6de58d4f0af613627dda60d3a629212277f1702ec6bd36039a8c2c684c73ee1a"
+    }
+  },
+  "executable": {
+    "bytes": 590848,
+    "sha256": "7b3f8194f7f3eb83233f404b539f649ddd2a4e303b9bb28d2a11059b11759584"
+  },
+  "kind": "syntax_parse",
+  "libraries": {
+    "xiao_source": {
+      "bytes": 313002,
+      "file": "D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\target\\debug\\deps\\libxiao_source-a0465c20b152b5c0.rlib",
+      "sha256": "c435eda8a194842eeb1ef83446e7b68b78483241c4c52c2edd3d134eca7dbd53"
+    },
+    "xiao_syntax": {
+      "bytes": 2662394,
+      "file": "D:\\project\\Xiao\\xiao-b3-0e-syntax-2r_z3jxn\\target\\debug\\deps\\libxiao_syntax-2a214ec6d518ac3e.rlib",
+      "sha256": "84dcd7dc03b5843ebb23acb131bdd6058a20e93bacc9fdfcbf5bf04bd5ca8fd4"
+    }
+  },
+  "probe": {
+    "bytes": 469,
+    "commit": "7f1017b7ff0b7b0a89d11943d5d33e0b432d0b3f",
+    "sha256": "f3ff084d1d6a1214b5b9f1f6bd1d94e20efccaa28ef221647cc591355a26d7a3"
+  },
+  "product_execution": false,
+  "source_archive": {
+    "bytes": 2401637,
+    "sha256": "e0d5a6a791f3536bb52240da5439682ce4cf2de3b4334708d44ed844f314b01c"
+  },
+  "source_commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114"
+}

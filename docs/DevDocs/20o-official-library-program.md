@@ -26,7 +26,7 @@
 > **2026-11-23 B3-0B**　time、args、cli 已冻结，B3-0C 入口就绪。实际基线 1.19/22，联合版本候选 1.20/23。[B3-0B 收口证据](assets/20o-b3/entry-20261123-b3-0b/README.md)
 > **2026-11-23 B3-0C**　九项实际答复已登记，fs、env、log 精确契约与三份教程候选已冻结。六模块以 ABI 1.20、生成器 23、标准库接口 1 的候选交接 B3-0D。[B3-0C 收口证据](assets/20o-b3/entry-20261123-b3-0c/README.md)
 > **2026-11-24 B3-0D 收口**　星崽已批准并冻结 15 个原语编号 49～63、`environment` 位 7 与旧请求默认掩码 0x7F、ABI 1.20/生成器 23、C ABI、`arguments` 协议和 Windows COFF `Complete` 判据。B3-0E 入口已就绪，产品实现和 Windows 产品级 COFF 验收仍未开始。[B3-0D 收口证据](assets/20o-b3/entry-20261124-b3-0d/README.md)
-> **2026-11-24 B3-0E 规划**　六份教程、固定示例/输入/黄金、std/stdlib 导入探针和 VM/原生 O0/O3 入口候选已列入冻结规划；B3-0E 尚未开工，教程/registry 保持 planned。[B3-0E 规划](20o-b3-0e-tutorials-fixtures-plan.md)
+> **2026-11-24 B3-0E 候选**　六份 `planned` 教程及对应源码、合成输入、独立黄金与精确入口候选已经核对。十二份双导入示例在 Windows 通过语法解析，五项冻结裁定待答。[B3-0E 规划](20o-b3-0e-tutorials-fixtures-plan.md) · [候选证据](assets/20o-b3/entry-20261124-b3-0e/README.md)
 > **已确认（2026-11-01）：D-1 取甲（成熟 Rust 数值库）、B1 首批范围、
 > D-7 取专用 `json_value` 类型、B7→B8→B9 后置**。B0 已逐条询问并记录其余方向裁定，
 > 见 §五及 20P §六；具体 API 不因此自动冻结。基线、探测、教程与待审草案见

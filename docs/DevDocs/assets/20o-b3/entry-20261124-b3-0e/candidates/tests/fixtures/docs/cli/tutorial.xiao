@@ -1,0 +1,12 @@
+from std.cli import split_terminator
+
+groups = split_terminator(values = ["go", "", "--", "--", "next", "next"])
+for group in groups
+    print("group")
+    for value in group
+        print("[" + value + "]")
+
+for group in split_terminator(["only"])
+    print("group")
+    for value in group
+        print("[" + value + "]")
