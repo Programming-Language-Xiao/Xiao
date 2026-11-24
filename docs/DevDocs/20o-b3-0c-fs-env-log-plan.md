@@ -192,7 +192,7 @@ b3_0d_entry_ready = b3_0c_passed and decisions_approved and no_product_change
 
 ## 八、B3-0D 交接
 
-B3-0D 按 B3-0C 冻结表合并六模块版本候选、ABI/生成器/C ABI/归档/缓存和 COFF 验收方式。B3-0C 不得自行改已冻结 API，发现冲突回 B3-0C 修订并重新冻结。B3-0D 完成后再进入 B3-0E/B3-0F；B3-1/B4 仍后置。
+B3-0D 按 B3-0C 冻结表合并六模块版本候选、ABI/生成器/C ABI/归档/缓存和 COFF 验收方式。[B3-0D 冻结规划](20o-b3-0d-version-intrinsic-abi-coff-plan.md) 已建立，尚未开工。B3-0C 不得自行改已冻结 API，发现冲突回 B3-0C 修订并重新冻结。B3-0D 完成后再进入 B3-0E/B3-0F；B3-1/B4 仍后置。
 
 交接必须包含：
 
