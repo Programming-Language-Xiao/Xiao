@@ -1,5 +1,12 @@
 # `xiao-runtime-abi`
 
+## ABI 1.20
+
+B3-1 使用 ABI 1.20、生成器 23 和标准库接口 1，激活 time 原语 49～52。两种取钟和
+`sleep` 检查 `clock` 位。`format_utc` 只读取输入。四个入口借读 `const XiaoValue*`，有返回值的
+入口在成功时替换独立且已初始化的 `out` 槽，失败保持原值。`sleep` 省略 `out`。末尾参数统一为
+`capabilities: u64`，沿用 0/1/2/3/6/8 状态。环境位 7 已登记，旧请求省略能力掩码时仍使用 `0x7f`。
+
 ## 目录职责
 
 本 crate 保存 Xiao 原生程序与 Rust Runtime 之间的稳定 C ABI 契约。公开层只使用固定宽度
@@ -32,7 +39,7 @@ getter 只借读指定错误对象的 UTF-8 code，不分配、不 retain/releas
 1.18 要求另由 `.xiaoc`/`.xar`/原生校验器检查，不把这两种兼容关系混同。
 
 **旧的两个无掩码入口只供兼容**：`xiao_runtime_print_values` 与 `xiao_runtime_input`
-等价于按 `KNOWN_CAPABILITY_MASK`（当前七个能力位全开）调用——**它们会绕过能力检查**。
+等价于按 `KNOWN_CAPABILITY_MASK` 授权输出和输入，供既有 C 调用兼容。
 **新调用点必须使用带能力掩码的入口**；代码生成器只发射带掩码的符号，
 `xiao-codegen-llvm/tests/n0_b_dynamic.rs` 有断言守着这一点。
 这两个兼容入口的移除或收紧需要升主版本。
