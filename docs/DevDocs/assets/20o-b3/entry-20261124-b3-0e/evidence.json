@@ -5,12 +5,12 @@
       "sha256": "728af4702ba5fa2a5bf4c327f49dfeb5a8f04f55e21432dcad4e2e77c5174029"
     },
     "README.md": {
-      "bytes": 3572,
-      "sha256": "77cb72270d129ea42b3cefcc5179259b728a7ebc4ce8e368a30a0a9ee7e8d6c5"
+      "bytes": 3589,
+      "sha256": "4de934ee519f25be1024bb88d42bcdf6a398731ae3f957cd61487833e400be14"
     },
     "audit.py": {
-      "bytes": 18324,
-      "sha256": "c72b2d35112d4ac86f0e6156bf00119202333023d7ea3c5beeeca4f4ea26a1ab"
+      "bytes": 18318,
+      "sha256": "5ebdc4ecbcaad0c36c91400423976b861fa2a748abd50c15ea4e3b930119a112"
     },
     "candidates/tests/fixtures/docs/args/tutorial.input.json": {
       "bytes": 87,
@@ -77,16 +77,16 @@
       "sha256": "c6428b1cc52184b94f0d52f6d4f9b8d1b1ee0be32fcab5e9f053a069a9b25bae"
     },
     "closeout.json": {
-      "bytes": 1313,
-      "sha256": "b90e5777b556453b99fea7ee6d1463dfa703c7db095369486eeea017981ce891"
+      "bytes": 1780,
+      "sha256": "bc178876e646a41aa05948bf669bb367c73f52f7adc6c1af8113a4816339e77f"
     },
     "decisions.json": {
-      "bytes": 257,
-      "sha256": "bb3739e054ff0ea90e8c65542c6fc9c0f2b2ad9e29575df77b42811bcf0aed4e"
+      "bytes": 2063,
+      "sha256": "a92b9e4a9c9a40191c7c83f51e4b4bd11dda22f7f29094760f72aa38e92967f5"
     },
     "doc-gates.json": {
-      "bytes": 1807,
-      "sha256": "23beb2963e94cf69d9afa4f2a108bfff8f6b2bbc1b578ea2fc69ff85885a03d4"
+      "bytes": 1804,
+      "sha256": "43b5b346391905675dd47b882aa316026f3b685e6ace3d6b1488eae06622571e"
     },
     "negative-cases.json": {
       "bytes": 567,

@@ -2,7 +2,7 @@
   "checks": [
     {
       "argv": [
-        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin/bun.EXE",
         "run",
         "check:docs"
       ],
@@ -13,7 +13,7 @@
     },
     {
       "argv": [
-        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin/bun.EXE",
         "run",
         "check:usedocs"
       ],
@@ -24,7 +24,7 @@
     },
     {
       "argv": [
-        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin/bun.EXE",
         "run",
         "check:layout"
       ],
@@ -41,8 +41,8 @@
     "b0d71635939588cd258f38802796f4250bc121eb18e6e83ea0f240df5e09af63": "$ bun tools/repo-check/src/cli.ts layout\n"
   },
   "source": {
-    "commit": "5c8094ea3be277ceb0d34d106bc58e2b65651250",
-    "docs_tree_sha256": "0bfb9af4fb6672a89da43e2c4ce539de536e245b6179a742e41125a1866ccd14"
+    "commit": "88f7edde28e0d7ec89ee61382ec735d5731bb871",
+    "docs_tree_sha256": "9506955a9c44cd6a0c4548515970328426ef40eacd6b6d4bffef82c80498c016"
   },
   "worktree_matched_before_after": true
 }
