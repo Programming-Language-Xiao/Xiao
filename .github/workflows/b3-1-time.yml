@@ -30,7 +30,7 @@ jobs:
       - name: Checkout the fixed time snapshot
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: b0f3edbbfe2f6a3b2bea05b3499692a1a7d978f5
+          ref: 4d91e36b39a06f52425693423cc96dacd2db2a33
           persist-credentials: false
       - name: Set up Rust
         run: rustup toolchain install 1.96.0 --profile minimal
