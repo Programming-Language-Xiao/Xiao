@@ -1,0 +1,50 @@
+[
+  {
+    "after": "477b8cf5a1bdb640fbd18850150f560024fb6ea1e776e101fa014ab491fd8234",
+    "before": "477b8cf5a1bdb640fbd18850150f560024fb6ea1e776e101fa014ab491fd8234",
+    "case": "unchanged",
+    "exit": 0,
+    "stderr": "",
+    "stdout": "{\n  \"audit_files\": 10,\n  \"b3_0_passed\": false,\n  \"b3_0a_baseline_frozen\": true,\n  \"b3_0b_time_args_cli_frozen\": true,\n  \"b3_0c_fs_env_log_frozen\": true,\n  \"b3_0d_version_coff_frozen\": true,\n  \"b3_0e_tutorials_frozen\": true,\n  \"b3_0f_evidence_audit_passed\": false,\n  \"b3_0f_started\": true,\n  \"b3_1_entry_ready\": false,\n  \"b3_1_started\": false,\n  \"b3_product_started\": false,\n  \"decisions_approved\": true,\n  \"document_commit\": \"578253a377799a8493182e6cfa7aa78c5dc51ed9\",\n  \"freeze_table\": \"freeze-table.json\",\n  \"negative_rejections\": null,\n  \"next\": \"20O-B3-1\",\n  \"no_product_change\": true,\n  \"old_721_executed\": false,\n  \"prior_evidence_files\": 129,\n  \"registry_verified\": false,\n  \"scope\": \"20O-B3-0F\",\n  \"source_commit\": \"277e74c8e94a92db520379f1c32340d26b0c1043\",\n  \"windows_product_coff\": {\n    \"accepted_path_verified\": false,\n    \"criteria_revision\": \"coff-criteria-revision.json\",\n    \"policy\": \"complete_required\",\n    \"positive_verifier_check\": \"B3-1\",\n    \"product_evidence\": false,\n    \"status\": \"pending\"\n  }\n}\n"
+  },
+  {
+    "after": "9b409dda5ceae6e5f13be194cf93b8aebc463f66f04b6bc3ca1f8da7141f6aff",
+    "before": "9b409dda5ceae6e5f13be194cf93b8aebc463f66f04b6bc3ca1f8da7141f6aff",
+    "case": "manifest-tampered",
+    "exit": 1,
+    "stderr": "B3-0F 拒绝：证据清单与实际字节不符\n",
+    "stdout": ""
+  },
+  {
+    "after": "477b0e73d18b734e7da5858f0de028921160275129ad75facff0cf17a58f688b",
+    "before": "477b0e73d18b734e7da5858f0de028921160275129ad75facff0cf17a58f688b",
+    "case": "missing-attributes",
+    "exit": 1,
+    "stderr": "B3-0F 拒绝：封存缺少文件：.gitattributes\n",
+    "stdout": ""
+  },
+  {
+    "after": "ba35e35f11806091c8cd369200b7d448a33f61da357c02990e7bc4d911a85b6f",
+    "before": "ba35e35f11806091c8cd369200b7d448a33f61da357c02990e7bc4d911a85b6f",
+    "case": "forged-status",
+    "exit": 1,
+    "stderr": "B3-0F 拒绝：收口状态与实际审计不符\n",
+    "stdout": ""
+  },
+  {
+    "after": "2e1adf042608a092f2149db5b78d0fe218efb3b7aac9de58907be13032440510",
+    "before": "2e1adf042608a092f2149db5b78d0fe218efb3b7aac9de58907be13032440510",
+    "case": "forged-coff-observation",
+    "exit": 1,
+    "stderr": "B3-0F 拒绝：COFF 观察或验收边界不符\n",
+    "stdout": ""
+  },
+  {
+    "after": "ac3214fc40654d9a61b7686172e428d151c239f2594e9467a7335481c8d205a5",
+    "before": "ac3214fc40654d9a61b7686172e428d151c239f2594e9467a7335481c8d205a5",
+    "case": "direction-as-freeze",
+    "exit": 1,
+    "stderr": "B3-0F 拒绝：方向答复不能代替精确冻结\n",
+    "stdout": ""
+  }
+]

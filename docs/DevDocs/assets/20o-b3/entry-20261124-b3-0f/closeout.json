@@ -1,0 +1,32 @@
+{
+  "b3_0_passed": true,
+  "b3_0a_baseline_frozen": true,
+  "b3_0b_time_args_cli_frozen": true,
+  "b3_0c_fs_env_log_frozen": true,
+  "b3_0d_version_coff_frozen": true,
+  "b3_0e_tutorials_frozen": true,
+  "b3_0f_evidence_audit_passed": true,
+  "b3_0f_started": true,
+  "b3_1_entry_ready": true,
+  "b3_1_started": false,
+  "b3_product_started": false,
+  "decisions_approved": true,
+  "document_commit": "578253a377799a8493182e6cfa7aa78c5dc51ed9",
+  "freeze_table": "freeze-table.json",
+  "negative_rejections": 5,
+  "next": "20O-B3-1",
+  "no_product_change": true,
+  "old_721_executed": false,
+  "prior_evidence_files": 129,
+  "registry_verified": false,
+  "scope": "20O-B3-0F",
+  "source_commit": "277e74c8e94a92db520379f1c32340d26b0c1043",
+  "windows_product_coff": {
+    "accepted_path_verified": false,
+    "criteria_revision": "coff-criteria-revision.json",
+    "policy": "complete_required",
+    "positive_verifier_check": "B3-1",
+    "product_evidence": false,
+    "status": "pending"
+  }
+}
