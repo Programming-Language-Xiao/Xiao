@@ -1,0 +1,8 @@
+{
+  "unchanged": "",
+  "manifest-tampered": "证据清单与实际字节不符",
+  "missing-attributes": "封存缺少文件：.gitattributes",
+  "forged-status": "收口状态与实际审计不符",
+  "forged-coff-observation": "COFF 观察或验收边界不符",
+  "direction-as-freeze": "方向答复不能代替精确冻结"
+}

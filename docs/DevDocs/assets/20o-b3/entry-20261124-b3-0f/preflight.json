@@ -1,0 +1,65 @@
+{
+  "b3_0e_self_negative": {
+    "exit": 0,
+    "script": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/self_negative.py",
+    "stderr": "",
+    "stdout": {
+      "baseline_passed": true,
+      "read_only": true,
+      "rejected_cases": 9
+    }
+  },
+  "source_commit": "277e74c8e94a92db520379f1c32340d26b0c1043",
+  "stages": {
+    "A": {
+      "exit": 0,
+      "files": 11,
+      "script": "docs/DevDocs/assets/20o-b3/entry-20261122-b3-0/audit_entry.py",
+      "stderr": "",
+      "stdout": {
+        "bytes": 9203,
+        "sha256": "7216ead85a9c5e6aa2127474babb5d6e65aa9264d29660d77b7276af7e8a3c5a"
+      }
+    },
+    "B": {
+      "exit": 0,
+      "files": 26,
+      "script": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/audit_closeout.py",
+      "stderr": "",
+      "stdout": {
+        "bytes": 5407,
+        "sha256": "834efd68ba0314f0a1ad11e0b3098d570ac1af4803814c2c81f70c88c2c47aba"
+      }
+    },
+    "C": {
+      "exit": 0,
+      "files": 28,
+      "script": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/audit_closeout.py",
+      "stderr": "",
+      "stdout": {
+        "bytes": 5506,
+        "sha256": "0ad9e27f630373ee42957f410bf6af6b68b7f497c1ebc9ae063809810e39b2fa"
+      }
+    },
+    "D": {
+      "exit": 0,
+      "files": 29,
+      "script": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0d/audit.py",
+      "stderr": "",
+      "stdout": {
+        "bytes": 5568,
+        "sha256": "b93feb566fbb4a06427dfc5274e44eb1157d722b6dd89e40767d0fa93a831ca8"
+      }
+    },
+    "E": {
+      "exit": 0,
+      "files": 35,
+      "script": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/audit.py",
+      "stderr": "",
+      "stdout": {
+        "bytes": 1801,
+        "sha256": "82167eba88cfa8b05c5270aed777840cdcb00a3e5a2d328f7c9b0ddb7c514841"
+      }
+    }
+  }
+}

@@ -1,0 +1,1046 @@
+{
+  "b1_guards": {
+    "actual": 4,
+    "derived": 24,
+    "passed": 28
+  },
+  "capabilities": {
+    "bits": {
+      "clock": 1,
+      "environment": 7,
+      "filesystem": 0,
+      "native_extension": 4,
+      "network": 3,
+      "process": 2,
+      "stdin": 6,
+      "stdout": 5
+    },
+    "known_mask": "0xFF",
+    "legacy_default_mask": "0x7F",
+    "log_required_mask": "0x22"
+  },
+  "decision_counts": {
+    "B": 12,
+    "C": 9,
+    "D": 6,
+    "D_coff_scope_revision": 1,
+    "E": 5
+  },
+  "deferred": [
+    "fs_restricted_mode_deferred_unscheduled",
+    "cli_full_option_parsing",
+    "product_execution",
+    "registry_and_tutorial_verification",
+    "old_721",
+    "historical_debts"
+  ],
+  "direction_sufficient_for_freeze": false,
+  "host_observations": {
+    "linux": {
+      "b1": {
+        "entries": 20,
+        "native_exact": 1,
+        "resource_targets": 18,
+        "vm_exact": 1
+      },
+      "ci": {
+        "artifact": 14759116233,
+        "attempt": 1,
+        "job": 137242370871,
+        "run": 45033610157,
+        "sha256": "709d2d1f516e545043f1f693248d5a3fe990f181c0ffd6afba907b6fd15583bf"
+      },
+      "observed": {
+        "argv": [
+          "argv0_present=true argv_count=10 valid_exact=true malformed_roundtrip=true"
+        ],
+        "cli": [
+          "{\"argv\":[\"run\",\"probe.xiao\"],\"kind\":\"run\",\"publicKeys\":[\"file\",\"kind\",\"optimizationExplicit\",\"optimizationLevel\",\"options\"]}",
+          "{\"argv\":[\"run\",\"probe.xiao\",\"--\",\"\",\"two words\"],\"code\":\"X11-CLI-ARG-001\"}",
+          "{\"argv\":[\"run\",\"probe.xiao\",\"--\",\"--help\"],\"kind\":\"help\",\"publicKeys\":[\"kind\",\"options\"]}",
+          "{\"argv\":[\"-xar\",\"probe.xar\",\"--\",\"--flag\"],\"code\":\"X11-CLI-ARG-001\"}"
+        ],
+        "env": [
+          "child_with_values",
+          "value_present=true case_folded=false empty_present=true absent=true malformed_roundtrip=true",
+          "child_with_value_removed",
+          "value_present=false case_folded=false empty_present=true absent=true malformed_roundtrip=true"
+        ],
+        "fs": [
+          "create_new_existing=AlreadyExists/Some(17) original_intact=true",
+          "same_directory_replace=success new_content=true temporary_removed=true",
+          "replace_directory=IsADirectory/Some(21) source_retained=true",
+          "directory_link=success",
+          "link_parent_read=Ok(true)",
+          "readonly_open_for_write=PermissionDenied/Some(13)"
+        ],
+        "log": [
+          "concurrent_stdout_records=48 exact=true stderr_separate=true exit=exit status: 0",
+          "closed_stdout_write=BrokenPipe/Some(32)",
+          "closed_stream_child=exit status: 0"
+        ],
+        "time": [
+          "wall_unix_ns=1795358175643624006",
+          "monotonic_min_observed_ns=Some(49) regressions=0",
+          "sleep_requested_ms=0 observed_ns=[221, 40, 30, 30, 30]",
+          "sleep_requested_ms=1 observed_ns=[1070564, 1048031, 1106604, 1069613, 1067969]",
+          "sleep_requested_ms=10 observed_ns=[10074545, 10076036, 10079394, 10074885, 10075766]",
+          "host_wakeable_wait_received=true observed_ns=67770",
+          "host_wait_deadline=true"
+        ]
+      },
+      "runtime": {
+        "bytes": 34143086,
+        "sha256": "8bc18edf10cbc90307fb1b6c6ae19e1ea2a3bcc4fd99ab6c373268ba62888ba9"
+      },
+      "target": "x86_64-unknown-linux-gnu"
+    },
+    "macos": {
+      "b1": {
+        "entries": 20,
+        "native_exact": 1,
+        "resource_targets": 18,
+        "vm_exact": 1
+      },
+      "ci": {
+        "artifact": 14758976939,
+        "attempt": 1,
+        "job": 137242370630,
+        "run": 45033610157,
+        "sha256": "399167416e037b907c4bb593423d2d70d39dbd45a4a4a9447f4ecdc25d0bf884"
+      },
+      "observed": {
+        "argv": [
+          "argv0_present=true argv_count=10 valid_exact=true malformed_roundtrip=true"
+        ],
+        "cli": [
+          "{\"argv\":[\"run\",\"probe.xiao\"],\"kind\":\"run\",\"publicKeys\":[\"file\",\"kind\",\"optimizationExplicit\",\"optimizationLevel\",\"options\"]}",
+          "{\"argv\":[\"run\",\"probe.xiao\",\"--\",\"\",\"two words\"],\"code\":\"X11-CLI-ARG-001\"}",
+          "{\"argv\":[\"run\",\"probe.xiao\",\"--\",\"--help\"],\"kind\":\"help\",\"publicKeys\":[\"kind\",\"options\"]}",
+          "{\"argv\":[\"-xar\",\"probe.xar\",\"--\",\"--flag\"],\"code\":\"X11-CLI-ARG-001\"}"
+        ],
+        "env": [
+          "child_with_values",
+          "value_present=true case_folded=false empty_present=true absent=true malformed_roundtrip=true",
+          "child_with_value_removed",
+          "value_present=false case_folded=false empty_present=true absent=true malformed_roundtrip=true"
+        ],
+        "fs": [
+          "create_new_existing=AlreadyExists/Some(17) original_intact=true",
+          "same_directory_replace=success new_content=true temporary_removed=true",
+          "replace_directory=IsADirectory/Some(21) source_retained=true",
+          "directory_link=success",
+          "link_parent_read=Ok(true)",
+          "readonly_open_for_write=PermissionDenied/Some(13)"
+        ],
+        "log": [
+          "concurrent_stdout_records=48 exact=true stderr_separate=true exit=exit status: 0",
+          "closed_stdout_write=BrokenPipe/Some(32)",
+          "closed_stream_child=exit status: 0"
+        ],
+        "time": [
+          "wall_unix_ns=1795358196455855000",
+          "monotonic_min_observed_ns=Some(41) regressions=0",
+          "sleep_requested_ms=0 observed_ns=[42, 42, 0, 42, 0]",
+          "sleep_requested_ms=1 observed_ns=[7533792, 5668000, 5072709, 4761500, 4150667]",
+          "sleep_requested_ms=10 observed_ns=[40438417, 10331792, 18882042, 17221875, 17007875]",
+          "host_wakeable_wait_received=true observed_ns=90750",
+          "host_wait_deadline=true"
+        ]
+      },
+      "runtime": {
+        "bytes": 25667552,
+        "sha256": "e5b95e24abddbcc9de686238e0b89d895a6a7be541bbe4a500710d8b4dfa9f8c"
+      },
+      "target": "aarch64-apple-darwin"
+    },
+    "windows": {
+      "b1": {
+        "entries": 20,
+        "native_exact": 1,
+        "resource_targets": 18,
+        "vm_exact": 1
+      },
+      "observed": {
+        "argv": [
+          "argv0_present=true argv_count=10 valid_exact=true malformed_roundtrip=true"
+        ],
+        "cli": [
+          "{\"argv\":[\"run\",\"probe.xiao\"],\"kind\":\"run\",\"publicKeys\":[\"file\",\"kind\",\"optimizationExplicit\",\"optimizationLevel\",\"options\"]}",
+          "{\"argv\":[\"run\",\"probe.xiao\",\"--\",\"\",\"two words\"],\"code\":\"X11-CLI-ARG-001\"}",
+          "{\"argv\":[\"run\",\"probe.xiao\",\"--\",\"--help\"],\"kind\":\"help\",\"publicKeys\":[\"kind\",\"options\"]}",
+          "{\"argv\":[\"-xar\",\"probe.xar\",\"--\",\"--flag\"],\"code\":\"X11-CLI-ARG-001\"}"
+        ],
+        "env": [
+          "child_with_values",
+          "value_present=true case_folded=true empty_present=true absent=true malformed_roundtrip=true",
+          "child_with_value_removed",
+          "value_present=false case_folded=true empty_present=true absent=true malformed_roundtrip=true"
+        ],
+        "fs": [
+          "create_new_existing=AlreadyExists/Some(80) original_intact=true",
+          "same_directory_replace=success new_content=true temporary_removed=true",
+          "replace_directory=PermissionDenied/Some(5) source_retained=true",
+          "directory_link=success",
+          "link_parent_read=Err(Os { code: 2, kind: NotFound, message: \"系统找不到指定的文件。\" })",
+          "readonly_open_for_write=PermissionDenied/Some(5)"
+        ],
+        "log": [
+          "concurrent_stdout_records=48 exact=true stderr_separate=true exit=exit code: 0",
+          "closed_stdout_write=BrokenPipe/Some(232)",
+          "closed_stream_child=exit code: 0"
+        ],
+        "time": [
+          "wall_unix_ns=1795358063470640100",
+          "monotonic_min_observed_ns=Some(100) regressions=0",
+          "sleep_requested_ms=0 observed_ns=[7400, 500, 300, 400, 400]",
+          "sleep_requested_ms=1 observed_ns=[1065100, 1552900, 1545900, 1720400, 1671000]",
+          "sleep_requested_ms=10 observed_ns=[10298500, 10510200, 10515900, 10206800, 10516800]",
+          "host_wakeable_wait_received=true observed_ns=178200",
+          "host_wait_deadline=true"
+        ]
+      },
+      "runtime": {
+        "bytes": 27483016,
+        "sha256": "fa493d79b129cf7fa600993605381830f6abeaab23ec0ea48c0a910554de0fff"
+      },
+      "target": "x86_64-pc-windows-msvc"
+    }
+  },
+  "module_order": [
+    "time",
+    "args",
+    "cli",
+    "fs",
+    "env",
+    "log"
+  ],
+  "modules": {
+    "args": {
+      "canonical_module": "stdlib.args",
+      "contract": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/contract-draft.md",
+      "contract_sections": [
+        "args",
+        "错误与优先级",
+        "args 与 cli 接纳预算",
+        "性能与三平台"
+      ],
+      "intrinsics": [
+        {
+          "c_symbol": "xiao_runtime_args_program_name",
+          "capabilities": [
+            "process"
+          ],
+          "effects": [
+            "snapshot_read",
+            "allocate"
+          ],
+          "id": 53,
+          "module": "args",
+          "name": "os_args_program_name",
+          "parameters": [],
+          "returns": "str"
+        },
+        {
+          "c_symbol": "xiao_runtime_args_argv",
+          "capabilities": [
+            "process"
+          ],
+          "effects": [
+            "snapshot_read",
+            "allocate"
+          ],
+          "id": 54,
+          "module": "args",
+          "name": "os_args_argv",
+          "parameters": [],
+          "returns": "[str]"
+        }
+      ],
+      "public_signatures": "`program_name() -> str`、`argv() -> [str]`",
+      "tutorial_case": {
+        "alias_source": {
+          "bytes": 168,
+          "sha256": "0a3217c567688dfc03be206f15cedd31a9c40e6ca38ed4a326f193c1a8be67b9"
+        },
+        "assets": {
+          "golden": {
+            "bytes": 54,
+            "path": "candidates/tests/fixtures/docs/args/tutorial.stdout",
+            "sha256": "f2fad87f2ca39515df3e9fe9d9465e01d8952535f8f99932b6cfb4b39bdf0a4e"
+          },
+          "input": {
+            "bytes": 87,
+            "path": "candidates/tests/fixtures/docs/args/tutorial.input.json",
+            "sha256": "e1818dc6cac4b4490715bd2adceea20748feed06c48c99b3ca0b34085dab9c4b"
+          },
+          "source": {
+            "bytes": 165,
+            "path": "candidates/tests/fixtures/docs/args/tutorial.xiao",
+            "sha256": "2f2a011b76b5d7da81e9490ce1fe4c237df8b3fce49558ca83b239cf78cc3c7e"
+          },
+          "tutorial": {
+            "bytes": 2050,
+            "path": "tutorials/args.md",
+            "sha256": "5fbdacd00c1340248a77a0da4f3714745a84c237d0e93670fd6a5126b0ae3fa3"
+          }
+        },
+        "canonical_module": "stdlib.args",
+        "capabilities": {
+          "mask": "0x24",
+          "names": [
+            "process",
+            "stdout"
+          ]
+        },
+        "native": "args_tutorial_matches_native_golden",
+        "origin": {
+          "commit": "b8abebf368ef9180ad05756ae90f5d198580a028",
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/candidates/tests/fixtures/docs/args/b3-0b-candidate"
+        },
+        "product_fixture_prefix": "tests/fixtures/docs/args/tutorial",
+        "target": "20o_b3_args_tutorial",
+        "vm": "args_tutorial_matches_vm_golden"
+      },
+      "tutorial_status": "planned"
+    },
+    "cli": {
+      "canonical_module": "stdlib.cli",
+      "contract": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/contract-draft.md",
+      "contract_sections": [
+        "cli",
+        "错误与优先级",
+        "args 与 cli 接纳预算",
+        "性能与三平台"
+      ],
+      "intrinsics": [],
+      "public_signatures": "`split_terminator([str] values) -> [[str]]`",
+      "tutorial_case": {
+        "alias_source": {
+          "bytes": 327,
+          "sha256": "dfada2122347ece49829ca9c845a4f4472ba9e64d3bf83f5d210dac30cab7fce"
+        },
+        "assets": {
+          "golden": {
+            "bytes": 58,
+            "path": "candidates/tests/fixtures/docs/cli/tutorial.stdout",
+            "sha256": "ac22e3177752387df8d20a2947b5578008c24a006a4127b95dcd506ffe890d78"
+          },
+          "source": {
+            "bytes": 324,
+            "path": "candidates/tests/fixtures/docs/cli/tutorial.xiao",
+            "sha256": "9fc32dc59264b05dd4a42f7b37413e883f781ca81e996d48ad9022acb170014b"
+          },
+          "tutorial": {
+            "bytes": 1708,
+            "path": "tutorials/cli.md",
+            "sha256": "bb27866c45df5377e70e34b5ed2ce9fb9a3bb2a1607fd5167b6e73dff14f6aed"
+          }
+        },
+        "canonical_module": "stdlib.cli",
+        "capabilities": {
+          "mask": "0x20",
+          "names": [
+            "stdout"
+          ]
+        },
+        "native": "cli_tutorial_matches_native_golden",
+        "origin": {
+          "commit": "b8abebf368ef9180ad05756ae90f5d198580a028",
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/candidates/tests/fixtures/docs/cli/b3-0b-candidate"
+        },
+        "product_fixture_prefix": "tests/fixtures/docs/cli/tutorial",
+        "target": "20o_b3_cli_tutorial",
+        "vm": "cli_tutorial_matches_vm_golden"
+      },
+      "tutorial_status": "planned"
+    },
+    "env": {
+      "canonical_module": "stdlib.env",
+      "contract": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/contract-draft.md",
+      "contract_sections": [
+        "env 快照与继承",
+        "错误与取消",
+        "资源与性能"
+      ],
+      "intrinsics": [
+        {
+          "c_symbol": "xiao_runtime_env_get",
+          "capabilities": [
+            "environment"
+          ],
+          "effects": [
+            "environment_read",
+            "allocate"
+          ],
+          "id": 60,
+          "module": "env",
+          "name": "os_env_get",
+          "parameters": [
+            "str name"
+          ],
+          "returns": "[str]"
+        },
+        {
+          "c_symbol": "xiao_runtime_env_set",
+          "capabilities": [
+            "environment"
+          ],
+          "effects": [
+            "environment_write"
+          ],
+          "id": 61,
+          "module": "env",
+          "name": "os_env_set",
+          "parameters": [
+            "str name",
+            "str value"
+          ],
+          "returns": "none"
+        },
+        {
+          "c_symbol": "xiao_runtime_env_unset",
+          "capabilities": [
+            "environment"
+          ],
+          "effects": [
+            "environment_write"
+          ],
+          "id": 62,
+          "module": "env",
+          "name": "os_env_unset",
+          "parameters": [
+            "str name"
+          ],
+          "returns": "bool"
+        }
+      ],
+      "public_signatures": "`get(str name) -> [str]`、`set(str name, str value) -> none`、`unset(str name) -> bool`",
+      "tutorial_case": {
+        "alias_source": {
+          "bytes": 470,
+          "sha256": "a8cb3149daec0193db2de4b6d42752c38812965de8e624f4a106c879de5c6e1d"
+        },
+        "assets": {
+          "golden": {
+            "bytes": 55,
+            "path": "candidates/tests/fixtures/docs/env/tutorial.stdout",
+            "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+          },
+          "input": {
+            "bytes": 69,
+            "path": "candidates/tests/fixtures/docs/env/tutorial.input.json",
+            "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+          },
+          "source": {
+            "bytes": 467,
+            "path": "candidates/tests/fixtures/docs/env/tutorial.xiao",
+            "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+          },
+          "tutorial": {
+            "bytes": 2084,
+            "path": "tutorials/env.md",
+            "sha256": "f9698121ec72b541484eb9e80c4ab528b9e31c877c42ac7e9dcd6145ebbe6703"
+          }
+        },
+        "canonical_module": "stdlib.env",
+        "capabilities": {
+          "mask": "0xA0",
+          "names": [
+            "environment",
+            "stdout"
+          ]
+        },
+        "native": "env_tutorial_matches_native_golden",
+        "origin": {
+          "commit": "7f1017b7ff0b7b0a89d11943d5d33e0b432d0b3f",
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/candidates/tests/fixtures/docs/env/b3-0c-candidate"
+        },
+        "product_fixture_prefix": "tests/fixtures/docs/env/tutorial",
+        "target": "20o_b3_env_tutorial",
+        "vm": "env_tutorial_matches_vm_golden"
+      },
+      "tutorial_status": "planned"
+    },
+    "fs": {
+      "canonical_module": "stdlib.fs",
+      "contract": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/contract-draft.md",
+      "contract_sections": [
+        "fs 路径与提交",
+        "错误与取消",
+        "资源与性能"
+      ],
+      "intrinsics": [
+        {
+          "c_symbol": "xiao_runtime_fs_write_text",
+          "capabilities": [
+            "filesystem"
+          ],
+          "effects": [
+            "filesystem_write"
+          ],
+          "id": 55,
+          "module": "fs",
+          "name": "os_fs_write_text",
+          "parameters": [
+            "str path",
+            "str text",
+            "bool overwrite"
+          ],
+          "returns": "none"
+        },
+        {
+          "c_symbol": "xiao_runtime_fs_list_dir",
+          "capabilities": [
+            "filesystem"
+          ],
+          "effects": [
+            "filesystem_read",
+            "allocate"
+          ],
+          "id": 56,
+          "module": "fs",
+          "name": "os_fs_list_dir",
+          "parameters": [
+            "str path"
+          ],
+          "returns": "[str]"
+        },
+        {
+          "c_symbol": "xiao_runtime_fs_remove",
+          "capabilities": [
+            "filesystem"
+          ],
+          "effects": [
+            "filesystem_write"
+          ],
+          "id": 57,
+          "module": "fs",
+          "name": "os_fs_remove",
+          "parameters": [
+            "str path"
+          ],
+          "returns": "none"
+        },
+        {
+          "c_symbol": "xiao_runtime_fs_rename",
+          "capabilities": [
+            "filesystem"
+          ],
+          "effects": [
+            "filesystem_write"
+          ],
+          "id": 58,
+          "module": "fs",
+          "name": "os_fs_rename",
+          "parameters": [
+            "str source",
+            "str destination",
+            "bool overwrite"
+          ],
+          "returns": "none"
+        },
+        {
+          "c_symbol": "xiao_runtime_fs_metadata",
+          "capabilities": [
+            "filesystem"
+          ],
+          "effects": [
+            "filesystem_read",
+            "allocate"
+          ],
+          "id": 59,
+          "module": "fs",
+          "name": "os_fs_metadata",
+          "parameters": [
+            "str path"
+          ],
+          "returns": "dict<str,int>"
+        }
+      ],
+      "public_signatures": "`write_text(str path, str text, bool overwrite) -> none`、`list_dir(str path) -> [str]`、`remove(str path) -> none`、`rename(str source, str destination, bool overwrite) -> none`、`metadata(str path) -> dict<str, int>`",
+      "tutorial_case": {
+        "alias_source": {
+          "bytes": 682,
+          "sha256": "bff575cb6a59b233b047ad513127c7de9d861013118ece4a94a8b1a694203da1"
+        },
+        "assets": {
+          "golden": {
+            "bytes": 32,
+            "path": "candidates/tests/fixtures/docs/fs/tutorial.stdout",
+            "sha256": "053479491ffccf00a77d1be6910e693615423a493c10008d780e3d4fb9822bfb"
+          },
+          "source": {
+            "bytes": 679,
+            "path": "candidates/tests/fixtures/docs/fs/tutorial.xiao",
+            "sha256": "c3a8f4f86dab34642760cef14797be9995627aa3754381c6d5a014c4ace38c67"
+          },
+          "tutorial": {
+            "bytes": 2274,
+            "path": "tutorials/fs.md",
+            "sha256": "3cc5a599b5b619253a597cb4ee51af1f1f389a11462fd620b059a2a4f19979ec"
+          }
+        },
+        "canonical_module": "stdlib.fs",
+        "capabilities": {
+          "mask": "0x21",
+          "names": [
+            "filesystem",
+            "stdout"
+          ]
+        },
+        "native": "fs_tutorial_matches_native_golden",
+        "origin": {
+          "commit": "7f1017b7ff0b7b0a89d11943d5d33e0b432d0b3f",
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/candidates/tests/fixtures/docs/fs/b3-0c-candidate"
+        },
+        "product_fixture_prefix": "tests/fixtures/docs/fs/tutorial",
+        "target": "20o_b3_fs_tutorial",
+        "vm": "fs_tutorial_matches_vm_golden"
+      },
+      "tutorial_status": "planned"
+    },
+    "log": {
+      "canonical_module": "stdlib.log",
+      "contract": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/contract-draft.md",
+      "contract_sections": [
+        "log 记录与失败归属",
+        "错误与取消",
+        "资源与性能"
+      ],
+      "intrinsics": [
+        {
+          "c_symbol": "xiao_runtime_log_write",
+          "capabilities": [
+            "clock",
+            "stdout"
+          ],
+          "effects": [
+            "clock_read",
+            "stdout_write"
+          ],
+          "id": 63,
+          "module": "log",
+          "name": "os_log_write",
+          "parameters": [
+            "str level",
+            "str message",
+            "str target"
+          ],
+          "returns": "none"
+        }
+      ],
+      "public_signatures": "`write(str level, str message, str target) -> none`",
+      "tutorial_case": {
+        "alias_source": {
+          "bytes": 267,
+          "sha256": "8e8097c106c0719b7cc568e6afc09c40c3dae0facc539a8f596dae6a02f01195"
+        },
+        "assets": {
+          "golden": {
+            "bytes": 103,
+            "path": "candidates/tests/fixtures/docs/log/tutorial.stdout",
+            "sha256": "267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146"
+          },
+          "input": {
+            "bytes": 41,
+            "path": "candidates/tests/fixtures/docs/log/tutorial.input.json",
+            "sha256": "30cf24e7a51b3e75a7ccda7f6448818dcbd4acb0b84e939e9e7083eeb019f129"
+          },
+          "source": {
+            "bytes": 264,
+            "path": "candidates/tests/fixtures/docs/log/tutorial.xiao",
+            "sha256": "d7ec578f5f0177355a04f054831a5d1aac1b7ab0c24757e05f494992eedf5a8b"
+          },
+          "tutorial": {
+            "bytes": 1814,
+            "path": "tutorials/log.md",
+            "sha256": "31293083c8df2e54a80392a4f4a78c333f41002e02010f84c7d506e4eb91d524"
+          }
+        },
+        "canonical_module": "stdlib.log",
+        "capabilities": {
+          "mask": "0x22",
+          "names": [
+            "clock",
+            "stdout"
+          ]
+        },
+        "native": "log_tutorial_matches_native_golden",
+        "origin": {
+          "commit": "7f1017b7ff0b7b0a89d11943d5d33e0b432d0b3f",
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/candidates/tests/fixtures/docs/log/b3-0c-candidate"
+        },
+        "product_fixture_prefix": "tests/fixtures/docs/log/tutorial",
+        "target": "20o_b3_log_tutorial",
+        "vm": "log_tutorial_matches_vm_golden"
+      },
+      "tutorial_status": "planned"
+    },
+    "time": {
+      "canonical_module": "stdlib.time",
+      "contract": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/contract-draft.md",
+      "contract_sections": [
+        "time",
+        "错误与优先级",
+        "性能与三平台"
+      ],
+      "intrinsics": [
+        {
+          "c_symbol": "xiao_runtime_time_utc_now",
+          "capabilities": [
+            "clock"
+          ],
+          "effects": [
+            "clock_read"
+          ],
+          "id": 49,
+          "module": "time",
+          "name": "os_time_utc_now",
+          "parameters": [
+            "str unit"
+          ],
+          "returns": "int"
+        },
+        {
+          "c_symbol": "xiao_runtime_time_monotonic",
+          "capabilities": [
+            "clock"
+          ],
+          "effects": [
+            "clock_read"
+          ],
+          "id": 50,
+          "module": "time",
+          "name": "os_time_monotonic",
+          "parameters": [
+            "str unit"
+          ],
+          "returns": "int"
+        },
+        {
+          "c_symbol": "xiao_runtime_time_format_utc",
+          "capabilities": [],
+          "effects": [
+            "allocate"
+          ],
+          "id": 51,
+          "module": "time",
+          "name": "os_time_format_utc",
+          "parameters": [
+            "int unix_time",
+            "str unit"
+          ],
+          "returns": "str"
+        },
+        {
+          "c_symbol": "xiao_runtime_time_sleep",
+          "capabilities": [
+            "clock"
+          ],
+          "effects": [
+            "sleep",
+            "cancellable"
+          ],
+          "id": 52,
+          "module": "time",
+          "name": "os_time_sleep",
+          "parameters": [
+            "int duration",
+            "str unit"
+          ],
+          "returns": "none"
+        }
+      ],
+      "public_signatures": "`utc_now(str unit) -> int`、`monotonic(str unit) -> int`、`format_utc(int unix_time, str unit) -> str`、`sleep(int duration, str unit) -> none`",
+      "tutorial_case": {
+        "alias_source": {
+          "bytes": 420,
+          "sha256": "6de58d4f0af613627dda60d3a629212277f1702ec6bd36039a8c2c684c73ee1a"
+        },
+        "assets": {
+          "golden": {
+            "bytes": 80,
+            "path": "candidates/tests/fixtures/docs/time/tutorial.stdout",
+            "sha256": "04daeb08b0984613c379ddaeb427203830739f08a8789446c2a0989a7f5cdd7a"
+          },
+          "input": {
+            "bytes": 70,
+            "path": "candidates/tests/fixtures/docs/time/tutorial.input.json",
+            "sha256": "a2bd4cfa9a0308d560bd6201498c5587d257d940a6a1c09edce0a62b6fd09e1f"
+          },
+          "source": {
+            "bytes": 417,
+            "path": "candidates/tests/fixtures/docs/time/tutorial.xiao",
+            "sha256": "c6428b1cc52184b94f0d52f6d4f9b8d1b1ee0be32fcab5e9f053a069a9b25bae"
+          },
+          "tutorial": {
+            "bytes": 2416,
+            "path": "tutorials/time.md",
+            "sha256": "5ae581cafa547f83cd162aa63c14a79a8b2f2b509fdc5376fc066214afa43a84"
+          }
+        },
+        "canonical_module": "stdlib.time",
+        "capabilities": {
+          "mask": "0x22",
+          "names": [
+            "clock",
+            "stdout"
+          ]
+        },
+        "native": "time_tutorial_matches_native_golden",
+        "origin": {
+          "commit": "b8abebf368ef9180ad05756ae90f5d198580a028",
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/candidates/tests/fixtures/docs/time/b3-0b-candidate"
+        },
+        "product_fixture_prefix": "tests/fixtures/docs/time/tutorial",
+        "target": "20o_b3_time_tutorial",
+        "vm": "time_tutorial_matches_vm_golden"
+      },
+      "tutorial_status": "planned"
+    }
+  },
+  "product_baseline": {
+    "commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+    "files": 1222,
+    "locks": {
+      "core/rust/Cargo.lock": {
+        "bytes": 19599,
+        "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+      },
+      "tests/benchmarks/Cargo.lock": {
+        "bytes": 19203,
+        "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+      }
+    },
+    "tree": "80be41eefc3983001cd3968db0ccceee541f698d",
+    "tree_list_sha256": "2d6494d5d7e27fb000e7f23719ce5bd7d816f147aac7b828d31cb52be7b78e3f"
+  },
+  "product_boundary_base": "9a8f4285687da5ae2b0401f6c21f984efee03b41",
+  "source_commit": "277e74c8e94a92db520379f1c32340d26b0c1043",
+  "stages": {
+    "A": {
+      "closeout": {
+        "bytes": 9182,
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261122-b3-0/entry.json",
+        "sha256": "d10af542fd165c1de0ed2c3ec597aaf9cb53cc415bc3562e65a087d9d4eba9d3"
+      },
+      "files": 11,
+      "inputs": [
+        {
+          "bytes": 296821,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261122-b3-0/observations.zip",
+          "sha256": "21c4fc059247686001cb2e6204a048ca16ed3a63446c7de5a8bbc6cb87714c95"
+        },
+        {
+          "bytes": 5420,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261122-b3-0/decisions.md",
+          "sha256": "3579b6259b7a1dd1f067675e97d280b653beafad4fa9ef071d56424254033e94"
+        }
+      ],
+      "manifest": {
+        "bytes": 1519,
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261122-b3-0/evidence.json",
+        "sha256": "6149246eb705a796df2f68292408b6d1f0a8bb821c067bdee97a9e3989f33e73"
+      }
+    },
+    "B": {
+      "closeout": {
+        "bytes": 5386,
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/closeout.json",
+        "sha256": "32668a6fd1896850ad07eef4c884b14a1934ff0465a1fe109782aea5338745c6"
+      },
+      "files": 26,
+      "inputs": [
+        {
+          "bytes": 4157,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/decisions.json",
+          "sha256": "8c3006102cca19a86270626da03262440ddd3712325d484e7379816e2c3bd592"
+        },
+        {
+          "bytes": 10653,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/contract-draft.md",
+          "sha256": "6c7a94dcbc6062b81a6be6d8c42707bb2f221fe6ad1a11f877db15e04773a6e8"
+        },
+        {
+          "bytes": 2375176,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/cli-import.zip",
+          "sha256": "43524587e36d4d1c5d1b83fb8143b46c261cbd8c2f39f36ea55871cc4ebb19e6"
+        },
+        {
+          "bytes": 19818,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/cli-shape.zip",
+          "sha256": "96d66dc40552e59389555555413e7499bd4a0272229f9e8d99af955632e732bc"
+        }
+      ],
+      "manifest": {
+        "bytes": 3866,
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/evidence.json",
+        "sha256": "1a8d03f72bd8db4f87f27df84edc77d2ac73dc78c2d323f68273edb6ef0e274f"
+      }
+    },
+    "C": {
+      "closeout": {
+        "bytes": 5485,
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/closeout.json",
+        "sha256": "e50ac5f7dccf756a85845b459feb178c89cb0477191bb96158d37262028c771c"
+      },
+      "files": 28,
+      "inputs": [
+        {
+          "bytes": 3694,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/decisions.json",
+          "sha256": "a64a5099a623394c5508bad5d1ae6b3e0b1b66b2703fe313d548c62fc42bc19d"
+        },
+        {
+          "bytes": 10901,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/contract-draft.md",
+          "sha256": "c7d7fbe909694dcb134995ac99bb74792632a539e62ce935893b9658d2ed5170"
+        },
+        {
+          "bytes": 4860,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/tutorial-check.json",
+          "sha256": "7f111986931117642b74d80e91889b066920166ace8546b64e08c3ba4f3bf4af"
+        }
+      ],
+      "manifest": {
+        "bytes": 4195,
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/evidence.json",
+        "sha256": "20969a59eb840d833dcd45b6f11e53a680ecb8fdf2681ada16a730cfc50b2db2"
+      }
+    },
+    "D": {
+      "closeout": {
+        "bytes": 5547,
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0d/closeout.json",
+        "sha256": "66034e2d9d72986bd11b3bb465d246b337352da65458c488b2e38e94ae5be679"
+      },
+      "files": 29,
+      "inputs": [
+        {
+          "bytes": 3027,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0d/decisions.json",
+          "sha256": "e8fcfa188f77dadf9a37eae52cec7618ff544d141f743d1e7250553d4dc897d4"
+        },
+        {
+          "bytes": 2948,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0d/contract-draft.md",
+          "sha256": "cbb1777b46c3ea5289aba2134a9d21b9ef724d592ab32f52c69cbfaba898de87"
+        },
+        {
+          "bytes": 3976,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0d/freeze-table.json",
+          "sha256": "4a0b2a609e577bc823bf485a94521640736760973ce87a5d7856e07f1ba29603"
+        },
+        {
+          "bytes": 746,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0d/version-matrix.json",
+          "sha256": "dec5ed6ffa5975d652b6264259e625d437dd48dbac465a9e30616e6003411748"
+        },
+        {
+          "bytes": 2780,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0d/c-abi.json",
+          "sha256": "37451085599a9f1d2219baf9ba8dc28edfe0f6f41c4ea31f653ddc4a62b39b63"
+        },
+        {
+          "bytes": 868,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0d/coff-policy.json",
+          "sha256": "8d230dd4c67a22b5287d991b64abb134f9f1e389b4eef686998f539a90659812"
+        },
+        {
+          "bytes": 10298,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0d/coff-probe.json",
+          "sha256": "da57cba55cfc20abdc2605093a1d36820cd174e5edfd8debaa504c81293a0ba3"
+        },
+        {
+          "bytes": 1483,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0d/coff-criteria-revision.json",
+          "sha256": "b73ba1af7cf0e4c6e68a0ee309fe5f9454e457440e2043783c1a42415b1f5d27"
+        }
+      ],
+      "manifest": {
+        "bytes": 4583,
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0d/evidence.json",
+        "sha256": "66f37d796bf92eb9d1960815ad0e05c532eaded75f9a64cd53cc68917eadd3cc"
+      }
+    },
+    "E": {
+      "closeout": {
+        "bytes": 1780,
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/closeout.json",
+        "sha256": "bc178876e646a41aa05948bf669bb367c73f52f7adc6c1af8113a4816339e77f"
+      },
+      "files": 35,
+      "inputs": [
+        {
+          "bytes": 2063,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/decisions.json",
+          "sha256": "a92b9e4a9c9a40191c7c83f51e4b4bd11dda22f7f29094760f72aa38e92967f5"
+        },
+        {
+          "bytes": 10750,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials.json",
+          "sha256": "25665474f2f3df3783f19e244d6151b46f4c690c5cc4fc3d7ceb050656543f6a"
+        },
+        {
+          "bytes": 6691,
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/syntax.json",
+          "sha256": "2a237b24048c7a3190b6adc9fb0434f58795e7f3cb73e7d14199437ebcceb888"
+        }
+      ],
+      "manifest": {
+        "bytes": 5328,
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/evidence.json",
+        "sha256": "f568b91c6f57b2e0ea4d03813e59319115eb3a4f9d7551ff9e2672caa42db3d4"
+      }
+    }
+  },
+  "versions": {
+    "b3_target": {
+      "generator": 23,
+      "runtime_abi": "1.20",
+      "stdlib_interface": 1
+    },
+    "compatibility": {
+      "arguments": "execution_input_only_not_artifact_or_cache_identity",
+      "b2c_history": "historical_evidence_only",
+      "cache_identity": [
+        "runtime_abi",
+        "generator",
+        "runtime_content",
+        "target",
+        "capabilities",
+        "stdlib_identity"
+      ],
+      "old_1_19_22_artifacts": "reject_before_execution",
+      "regeneration": "from_source"
+    },
+    "current_product": {
+      "generator": 22,
+      "runtime_abi": "1.19",
+      "stdlib_interface": 1
+    },
+    "formats": {
+      "core": "1",
+      "index_schema": "1.0",
+      "ir": "1",
+      "native_metadata": "1",
+      "protocol": "1",
+      "xar": "1.0",
+      "xiaoc": "1.0"
+    },
+    "targets": [
+      "x86_64-pc-windows-msvc",
+      "x86_64-unknown-linux-gnu",
+      "aarch64-apple-darwin"
+    ]
+  },
+  "windows_product_coff": {
+    "accepted_path_verified": false,
+    "criteria_revision": "coff-criteria-revision.json",
+    "policy": "complete_required",
+    "positive_verifier_check": "B3-1",
+    "product_evidence": false,
+    "status": "pending"
+  }
+}

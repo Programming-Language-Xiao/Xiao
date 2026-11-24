@@ -1,6 +1,6 @@
 # 20O-B3-0. 简单宿主库探测、冻结与教程草案实施规划
 
-> **状态（2026-11-24）**　B3-0A 的固定基线、三平台探测和 B1 前置已复核。B3-0B/C 已冻结六模块精确契约，B3-0D 已冻结编号、能力位、版本、协议、C ABI 和 Windows COFF 政策。B3-0E 已冻结六份教程、夹具和精确入口候选，B3-0F 入口已就绪。[B3-0A 证据](assets/20o-b3/entry-20261122-b3-0/README.md) · [B3-0B 收口](assets/20o-b3/entry-20261123-b3-0b/README.md) · [B3-0C 收口](assets/20o-b3/entry-20261123-b3-0c/README.md) · [B3-0D 收口](assets/20o-b3/entry-20261124-b3-0d/README.md) · [B3-0E 收口](assets/20o-b3/entry-20261124-b3-0e/README.md)
+> **状态（2026-11-24）**　B3-0A～F 联合冻结已收口，`b3_0_passed=true`、`b3_1_entry_ready=true`。B3-1 按 time 实施规划的开工裁定推进，Windows 产品 COFF 状态为 `pending`。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [B3-1 实施规划](20o-b3-1-time-implementation-plan.md)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B2-C 的同链接 10 份候选只是历史例外，不得继承。B3-0 的探测记录不能替代 B3 产品验收。
 > 入口：[B3 宿主库规划](20o-b3-host-libraries-plan.md)、[B2-C 收口证据](assets/20o-b2-c/entry-20261122-b2-c/README.md)、[20P Day-1 架构](20p-day1-library-architecture.md)、[D-8/D-9/D-10 方向](20o-official-library-program.md#五决策清单)。
 > B3-0 不实现六个模块，不改 ABI/intrinsic/registry/教程，不跑旧 721，不启动 B3-1/B4。
@@ -134,6 +134,8 @@ B3-0E 的六模块教程、固定示例、输入与黄金以及 VM 和原生入�
 
 ### B3-0F：证据、冻结审计与 B3-1 入口
 
+A～E 五批审计已复跑，联合冻结表绑定 129 项前置证据与三项文档门禁。B3-1 接收 49～52、四个 C ABI 入口、time 夹具与 COFF 正向实测要求。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md)
+
 1. 生成 B3-0 证据清单：基线、探测日志、决定台账、冻结表、教程草案、示例、平台/工具身份、用户裁定；
 2. 冻结表逐项标注 API/错误/能力/取消/资源/性能/版本/平台/教程状态；未裁定项不得写“已冻结”；
 3. 只读审计核对固定 Git 对象、探测日志、冻结表和示例字节；自反例至少覆盖伪造冻结状态、缺文件、改写探测结论和把方向确认写成精确冻结；
@@ -182,7 +184,7 @@ B3-0E 的六模块教程、固定示例、输入与黄金以及 VM 和原生入�
 
 ## 七、B3-1 交接
 
-B3-1 按 B3-0 冻结表实现 `time`，随后按 B3-2～B3-7 推进；[B3-1 time 实施规划](20o-b3-1-time-implementation-plan.md) 已建立，B3-0F 未通过前不写产品。B3-1 不得自行改冻结 API，发现冲突回 B3-0 修订并重新冻结。B3 完成后进入 B4 JSON/TOML；B4-B9 仍后置。
+B3-1 按 B3-0F 的冻结表与实施裁定接入 `time`，随后按 B3-2～B3-7 推进。冻结契约冲突回 B3-0 修订并重新冻结。B3 完成后进入 B4 JSON/TOML。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [B3-1 time 实施规划](20o-b3-1-time-implementation-plan.md)
 
 交接必须包含：
 
