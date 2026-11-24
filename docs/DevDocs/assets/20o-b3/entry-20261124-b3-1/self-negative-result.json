@@ -1,0 +1,58 @@
+[
+  {
+    "after": "5fd88edaa58bf524622980dd0e043312349d785058a5c6d2907c386a3f56f5f1",
+    "before": "5fd88edaa58bf524622980dd0e043312349d785058a5c6d2907c386a3f56f5f1",
+    "case": "unchanged",
+    "error": "",
+    "exit": 0
+  },
+  {
+    "after": "d68b2197b065490290d642e06eb85f2d311ff694ceef4a7d6cb1b314fbdc25ce",
+    "before": "d68b2197b065490290d642e06eb85f2d311ff694ceef4a7d6cb1b314fbdc25ce",
+    "case": "manifest-tampered",
+    "error": "证据清单与实际字节不符",
+    "exit": 1
+  },
+  {
+    "after": "a57c34c85ae1386787060b2deedb89eb61f0d03ed27a27b3bfda1c77dc6731db",
+    "before": "a57c34c85ae1386787060b2deedb89eb61f0d03ed27a27b3bfda1c77dc6731db",
+    "case": "missing-attributes",
+    "error": "封存缺少 .gitattributes",
+    "exit": 1
+  },
+  {
+    "after": "e648cbf45524b88e79c76e662e025f297f1227cd1edc96ef518892f3d92be749",
+    "before": "e648cbf45524b88e79c76e662e025f297f1227cd1edc96ef518892f3d92be749",
+    "case": "forged-status",
+    "error": "收口状态与实际结果不符",
+    "exit": 1
+  },
+  {
+    "after": "9a690c3aa3fb56b10df00db58bda0ebec29dab7756f69e72092f896226875505",
+    "before": "9a690c3aa3fb56b10df00db58bda0ebec29dab7756f69e72092f896226875505",
+    "case": "missing-clock-check",
+    "error": "原生教程或边界执行回执缺项",
+    "exit": 1
+  },
+  {
+    "after": "9f746de41d0aa1ed101d9a2988eac0bbf7d3ac4967d925dab7ba9f61a5da0aa6",
+    "before": "9f746de41d0aa1ed101d9a2988eac0bbf7d3ac4967d925dab7ba9f61a5da0aa6",
+    "case": "replaced-error-identity",
+    "error": "time 错误、能力或 ABI 边界回执缺项",
+    "exit": 1
+  },
+  {
+    "after": "0667790821841320777248d49d7f9c8fbf6bcfeba2ae7a1d0b051189e56421c6",
+    "before": "0667790821841320777248d49d7f9c8fbf6bcfeba2ae7a1d0b051189e56421c6",
+    "case": "forged-tutorial-execution",
+    "error": "教程执行回执缺少精确通过",
+    "exit": 1
+  },
+  {
+    "after": "6060a03e907d0cce1bfd75d2a50f60279f55fb8ce8757c0b98d5e3d57c2df446",
+    "before": "6060a03e907d0cce1bfd75d2a50f60279f55fb8ce8757c0b98d5e3d57c2df446",
+    "case": "forged-coff-grade",
+    "error": "原生产物验证等级不符",
+    "exit": 1
+  }
+]

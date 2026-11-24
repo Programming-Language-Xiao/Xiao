@@ -1,0 +1,207 @@
+{
+  "b3_0_passed": true,
+  "b3_1_passed": true,
+  "b3_1_started": true,
+  "b3_1a_entry_and_baseline_verified": true,
+  "b3_1b_time_intrinsics_implemented": true,
+  "b3_1c_vm_tac_native_consistent": true,
+  "b3_1d_c_abi_verified": true,
+  "b3_1e_time_tutorial_and_boundaries_passed": true,
+  "b3_1f_evidence_audit_passed": true,
+  "b3_2_entry_ready": true,
+  "b3_2_started": false,
+  "b3_product_started": true,
+  "baseline": {
+    "b1_guards": {
+      "actual": 4,
+      "derived": 24,
+      "passed": 28
+    },
+    "baseline": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+    "locks": {
+      "core/rust/Cargo.lock": {
+        "bytes": 19608,
+        "sha256": "19d17bbf8fe496b3da3a41726f6b67ece508ab71526ba51f154971c754b7b439"
+      },
+      "tests/benchmarks/Cargo.lock": {
+        "bytes": 19212,
+        "sha256": "352ac2e54642a9f90db55292b12b20de797bec64b839a8c8b80fc3ee07486159"
+      }
+    },
+    "tree": "1192e88bb5dbee0b65e28d1009cddc95d90d5a5b"
+  },
+  "ci": {
+    "time": {
+      "attempt": 1,
+      "jobs": {
+        "linux": 138565186514,
+        "macos": 138565187232
+      },
+      "run": 45428004405
+    },
+    "workspace_gates": {
+      "attempt": 1,
+      "job": 138571716660,
+      "run": 45429820367
+    }
+  },
+  "decisions_approved": true,
+  "deferred": [
+    "args_cli_fs_env_log",
+    "B3-7_public_matrix_and_tutorial_registry",
+    "old_721_and_historical_debts"
+  ],
+  "document_commit": "84881c154386f6394e633264fb91eeef0bbb3c85",
+  "history": {
+    "first-linux": {
+      "ci": {
+        "GITHUB_JOB": "time",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "45414498449",
+        "RUNNER_OS": "Linux"
+      },
+      "passed": false,
+      "source_commit": "dc1abd4b556c4396bcd817b3dc25d5d940aa7f9a"
+    },
+    "first-macos": {
+      "ci": {
+        "GITHUB_JOB": "time",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "45414498449",
+        "RUNNER_OS": "macOS"
+      },
+      "passed": true,
+      "source_commit": "dc1abd4b556c4396bcd817b3dc25d5d940aa7f9a"
+    },
+    "second-linux": {
+      "ci": {
+        "GITHUB_JOB": "time",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "45422841892",
+        "RUNNER_OS": "Linux"
+      },
+      "passed": false,
+      "source_commit": "b0f3edbbfe2f6a3b2bea05b3499692a1a7d978f5"
+    },
+    "second-windows": {
+      "ci": {
+        "GITHUB_JOB": null,
+        "GITHUB_RUN_ATTEMPT": null,
+        "GITHUB_RUN_ID": null,
+        "RUNNER_OS": null
+      },
+      "passed": false,
+      "source_commit": "b0f3edbbfe2f6a3b2bea05b3499692a1a7d978f5"
+    }
+  },
+  "negatives": 7,
+  "next": "20O-B3-2",
+  "no_product_scope_creep": true,
+  "old_721_executed": false,
+  "platforms": {
+    "linux": {
+      "cancel_max_ns": 5070095,
+      "cancel_median_ns": 5058754,
+      "native": 4,
+      "native_boundaries": 2,
+      "runtime_sha256": "cf8d24a3470741cb3bac684917125d2defcfad50ee43053ef0719532829f9d0f",
+      "sleep_samples_ns": {
+        "1": [
+          1085717,
+          1066952,
+          1064337,
+          1067322,
+          1119671
+        ],
+        "10": [
+          10073526,
+          10071722,
+          10070570,
+          10069979,
+          10071321
+        ],
+        "100": [
+          100073169,
+          100074372,
+          100079110,
+          100075927,
+          100077717
+        ]
+      },
+      "vm": 2
+    },
+    "macos": {
+      "cancel_max_ns": 34837417,
+      "cancel_median_ns": 25030500,
+      "native": 4,
+      "native_boundaries": 2,
+      "runtime_sha256": "22b9f4f645c76fe671628741d7d838f77e67e090227d04ca4dc6b88e15bc9a56",
+      "sleep_samples_ns": {
+        "1": [
+          7984250,
+          6483125,
+          7560417,
+          7235292,
+          5276583
+        ],
+        "10": [
+          21225792,
+          22451417,
+          25053834,
+          20114250,
+          15901291
+        ],
+        "100": [
+          106451667,
+          110644458,
+          109376250,
+          104273459,
+          110213792
+        ]
+      },
+      "vm": 2
+    },
+    "windows": {
+      "cancel_max_ns": 5204600,
+      "cancel_median_ns": 5149000,
+      "native": 4,
+      "native_boundaries": 2,
+      "runtime_sha256": "438b2ec6d39d7767d788d98fee398d29b8d0d581764748d5d45010b9d5fe83ef",
+      "sleep_samples_ns": {
+        "1": [
+          1702000,
+          1565500,
+          1571300,
+          1568600,
+          1806100
+        ],
+        "10": [
+          10436000,
+          10534300,
+          10228700,
+          10373400,
+          10288100
+        ],
+        "100": [
+          100530900,
+          100527300,
+          100225300,
+          100540900,
+          100293300
+        ]
+      },
+      "vm": 2
+    }
+  },
+  "product_commit": "8d1c09f084be172e8b3ce078f131592ac6db94b3",
+  "public_product_acceptance": false,
+  "registry_status": "planned",
+  "scope": "20O-B3-1",
+  "time_windows_coff": "complete",
+  "tutorial_status": "planned",
+  "versions": {
+    "abi": "1.20",
+    "generator": 23,
+    "stdlib_interface": 1
+  }
+}
