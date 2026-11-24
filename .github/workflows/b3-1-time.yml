@@ -1,0 +1,62 @@
+name: Xiao B3-1 time evidence
+
+on:
+  push:
+    branches: [codex/b3-1-time-runner]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: b3-1-time-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  time:
+    name: B3-1 time (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Linux
+            os: ubuntu-24.04
+          - platform: macOS
+            os: macos-15
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    steps:
+      - name: Checkout the fixed time snapshot
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: dc1abd4b556c4396bcd817b3dc25d5d940aa7f9a
+          persist-credentials: false
+      - name: Set up Rust
+        run: rustup toolchain install 1.96.0 --profile minimal
+      - name: Set up LLVM and check time on Linux
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang llvm
+          python3 -B docs/DevDocs/assets/20o-b3/entry-20261124-b3-1/run.py \
+            --output "$RUNNER_TEMP/b3-time"
+      - name: Set up LLVM and check time on macOS
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          brew install llvm@21
+          export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
+          python3 -B docs/DevDocs/assets/20o-b3/entry-20261124-b3-1/run.py \
+            --llvm-bin "$(brew --prefix llvm@21)/bin" \
+            --output "$RUNNER_TEMP/b3-time"
+      - name: Preserve original receipts and logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: b3-time-${{ matrix.platform }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/b3-time/result.json
+            ${{ runner.temp }}/b3-time/logs/
+          if-no-files-found: warn
