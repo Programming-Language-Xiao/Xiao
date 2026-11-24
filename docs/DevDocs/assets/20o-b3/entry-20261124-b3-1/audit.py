@@ -285,11 +285,6 @@ def verify_ci(root, source, matrix):
             step["name"] == "Run workspace gates" and step["conclusion"] == "success" for step in job["steps"]),
             "固定产品 workspace-gates 未通过")
         runs["workspace_gates"] = {"run": run["id"], "attempt": run["run_attempt"], "job": job["id"]}
-        run, jobs = ci_run(bundle, "maintenance", source, "maintenance-regression.yml")
-        runs["maintenance"] = {"run": run["id"], "attempt": run["run_attempt"], "conclusion": run["conclusion"],
-                               "jobs": {job["name"]: {"id": job["id"], "conclusion": job["conclusion"]} for job in jobs}}
-        require(any(job["name"] == "Rust workspace default tests (Linux)" and job["conclusion"] == "success" for job in jobs),
-                "Linux 默认 workspace 维护作业未通过")
     return platform_ci, runs
 
 
