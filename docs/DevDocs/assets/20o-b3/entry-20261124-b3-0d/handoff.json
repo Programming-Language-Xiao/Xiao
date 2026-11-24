@@ -6,7 +6,14 @@
   "registry_verified": false,
   "tutorials": "planned",
   "old_721_executed": false,
-  "windows_product_coff": {"policy": "complete_required", "status": "pending", "product_evidence": false},
+  "windows_product_coff": {
+    "policy": "complete_required",
+    "status": "pending",
+    "product_evidence": false,
+    "criteria_revision": "coff-criteria-revision.json",
+    "accepted_path_verified": false,
+    "positive_verifier_check": "B3-1"
+  },
   "frozen_inputs": ["intrinsic_ids_49_63", "capability_environment_bit_7", "legacy_default_mask_0x7f", "abi_1.20_generator_23", "c_abi_15_symbols", "arguments_protocol", "coff_complete_policy"],
   "deferred": ["product_implementation", "registry_and_tutorial_verification", "restricted_fs_mode", "three_platform_product_coff_evidence", "old_721", "historical_debts"],
   "source": {"entry_commit": "95e8bcca3b31c0fa58c3577b43625b5cec33b140", "product_commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114"}

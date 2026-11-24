@@ -15,9 +15,9 @@
 | 本批不做 | 产品实现、B3-0E/B3-1、registry/教程 verified、B4-B9、旧 721、历史债务核销 |
 | 版本冻结 | ABI 1.20、生成器 23、标准库接口 1；只作为 B3-0E 实现输入，当前产品仍为 ABI 1.19/生成器 22 |
 | COFF | 政策 `complete_required`，实际产品状态保持 `pending` |
-| 当前状态 | `b3_0d_started=true`、`b3_0d_passed=true`、`b3_0e_entry_ready=true`、`b3_0_passed=false`、`b3_1_entry_ready=false` |
+| 当前状态 | `b3_0d_started=true`、`b3_0d_passed=true`、`b3_0e_entry_ready=true`、`b3_0_passed=false`、`b3_1_entry_ready=false`、`decisions_approved=true`、`no_product_change=true` |
 
-B3-0D 是 **版本与兼容冻结批**，不是实现批。B3-0C 已冻结“每个模块做什么”；B3-0D 冻结“这些入口以什么编号、版本、能力、ABI 和产物验收身份进入产品”。冻结完成只表示 B3-1 可以按表实现，不表示模块已实现或已验收。
+B3-0D 冻结运行入口的编号、版本、能力、ABI 和产物验收要求。冻结结果进入 B3-0E，B3-1 在 B3-0 整体收口后按表实施。
 
 ### 1.1 要做
 
@@ -50,10 +50,17 @@ b3_0d_passed =
   and b3_0d4_windows_coff_policy_frozen
   and b3_0d5_evidence_audit_passed
 
+decisions_approved = b3_0d0_decisions_recorded
 b3_0e_entry_ready = b3_0d_passed and decisions_approved and no_product_change
 ```
 
-`b3_0d_passed=true` 只表示编号、版本、能力、ABI、协议和 COFF 政策冻结完成，不表示 15 个原语已实现，也不表示 Windows 产品 COFF 已验收。`windows_product_coff_status=pending` 必须在 B3-1/B3-7 产品验收前保持。
+收口回执从固定入口提交核对 `b3_0d_started`，从六项裁定派生 `decisions_approved`，从入口和冻结提交的受保护产品路径差异派生 `no_product_change`。B3-0E 尚待收口，本批回执的 `b3_0_passed` 和 `b3_1_entry_ready` 均为 `false`。[收口回执](assets/20o-b3/entry-20261124-b3-0d/closeout.json)
+
+### 1.4 B3-0D4 收口条件修订
+
+原规划 `95e8bcca` 第 7 条要求产品产物达到 `Complete`。执行提交 `8b60dbb1` 将退出条件改为验证器能读取允许的证据来源并绑定待验产物。最终 B3-0D4 收口核对 COFF 政策、允许来源及产物身份绑定规则的冻结记录。修订记录逐字保存前两版条件和 Git 来源，裁定台账通过独立字段引用该记录，六项批准只覆盖原问题卡范围。[COFF 收口条件修订记录](assets/20o-b3/entry-20261124-b3-0d/coff-criteria-revision.json)
+
+`b3_0d4_windows_coff_policy_frozen=true` 表示政策与判据已冻结。四份历史 Windows O0/O3 产物的观察等级为 `UnverifiedCoffExports`。保留符号表和受信 linker map/PDB 两种路径的正向实测均待 B3-1。Windows 产品 COFF 状态为 `pending`，B3-1/B3-7 的产品验收要求仍为 `Complete`。[探测回执](assets/20o-b3/entry-20261124-b3-0d/coff-probe.json)
 
 ## 二、开工闸门
 
@@ -128,7 +135,7 @@ b3_0e_entry_ready = b3_0d_passed and decisions_approved and no_product_change
 
 退出：C ABI/VM/LLVM 绑定表和符号矩阵成立，未写产品实现。
 
-### B3-0D4：Windows 产品级 COFF 验收
+### B3-0D4：Windows COFF 政策冻结与机制可行性探测
 
 1. 探测现有 Windows 产物为何返回 `UnverifiedCoffExports`，记录 COFF 符号表、导出表、PDB/linker map 的实际可读性；
 2. 冻结产品级 `Complete` 判据：声明组件=观察组件、无未分类 Runtime 符号、依赖一致、目标/格式一致；
@@ -136,9 +143,9 @@ b3_0e_entry_ready = b3_0d_passed and decisions_approved and no_product_change
 4. 冻结证据身份：产物 SHA-256、源码/Runtime/工具/目标、三平台任务根、CI run/job/attempt；
 5. 设计负例：`UnverifiedCoffExports`、导出表-only、同链接候选、声明缺失、观察组件多出、未分类符号、哈希/身份失配、旧 sidecar；
 6. 只做可行性探测；`windows_product_coff_status` 保持 `pending`，B3-1/B3-7 才产生产品级 `Complete` 证据；
-7. 若验证器机制无法读取冻结的任何允许证据源，或无法把证据身份绑定到待验产物，`b3_0d_passed=false`；产品产物的实际 `Complete` 仍由 B3-1/B3-7 产生。
+7. COFF 政策、允许证据来源及产物身份绑定规则通过只读冻结审计后，`b3_0d4_windows_coff_policy_frozen=true`。B3-1 用实际产物验证至少一条允许路径，包括产物身份绑定，B3-1/B3-7 按产品级 `Complete` 验收。原计划和执行修订见 §1.4。
 
-退出：COFF 政策、验证器落点、证据路径和负例冻结；没有把探测写成产品验收。
+退出时归档冻结判据、历史产物观察及 B3-1 待验证项。
 
 ### B3-0D5：证据、自反例与 B3-0E 入口
 
@@ -309,7 +316,7 @@ B3-0E 接收 15 个原语、六模块契约、版本/格式/缓存矩阵、C ABI
 - 旧 1.19/22 产物行为与三平台产物矩阵；
 - 15 个 C ABI 签名、状态码、所有权和 VM/LLVM 绑定；
 - `RunOptions.arguments`、hello 能力协商和原生注入；
-- Windows COFF `Complete` 判据、验证器落点、证据路径和负例；
+- Windows COFF `Complete` 判据、验证器落点、证据路径、负例及 B3-1 待验证的允许来源；
 - B3-0D 证据归档和只读审计回执。
 
 ## 十、落点

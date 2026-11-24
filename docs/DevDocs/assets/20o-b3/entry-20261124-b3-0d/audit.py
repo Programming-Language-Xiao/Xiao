@@ -24,20 +24,22 @@ PRIOR_C = "20fc409712fbc9ba905d05a460c3883f6de0e2ec"
 COFF_ARCHIVE_COMMIT = "8c8c5fb19441346c607add19bf1b381160104612"
 COFF_ARCHIVE_PATH = "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/cli-import.zip"
 COFF_ARCHIVE_SHA256 = "43524587e36d4d1c5d1b83fb8143b46c261cbd8c2f39f36ea55871cc4ebb19e6"
+COFF_CRITERIA_REVISION = "coff-criteria-revision.json"
+PLAN_PATH = "docs/DevDocs/20o-b3-0d-version-intrinsic-abi-coff-plan.md"
 STATIC_FILES = {
-    ".gitattributes", "README.md", "audit.py", "c-abi.json", "coff-policy.json", "coff-probe.json", "coff_probe.py",
+    ".gitattributes", "README.md", "audit.py", "c-abi.json", "coff-policy.json", "coff-probe.json",
+    "baseline.json", "coff_probe.py", COFF_CRITERIA_REVISION,
     "contract-draft.md", "decisions.json", "freeze-table.json", "handoff.json", "negative-cases.json",
-    "seal.py", "version-matrix.json",
+    "seal.py", "self_negative.py", "version-matrix.json",
 }
 GENERATED_FILES = {"closeout.json", "evidence.json", "doc-gates.json"}
-DERIVED_INPUT_FILES = {"baseline.json", "self_negative.py"}
 OPTIONAL_GENERATED_FILES = {"self-negative-result.json"}
 DOCS = {
     "docs/DevDocs/README.md",
     "docs/DevDocs/20o-official-library-program.md",
     "docs/DevDocs/20o-b3-host-libraries-plan.md",
     "docs/DevDocs/20o-b3-0-probe-freeze-plan.md",
-    "docs/DevDocs/20o-b3-0d-version-intrinsic-abi-coff-plan.md",
+    PLAN_PATH, f"{PREFIX}/README.md",
 }
 PRODUCT_ROOTS = (
     "core", "stdlib", "tests", "cli", "tools", "resources", ".cargo", ".github",
@@ -52,6 +54,7 @@ REASONS = {
     "forged-version": "版本矩阵偏离固定 Git 对象",
     "forged-coff": "COFF 政策偏离固定 Git 对象",
     "forged-probe-observation": "COFF 探测回执偏离固定 Git 对象",
+    "forged-coff-criteria": "COFF 收口条件修订偏离固定 Git 对象",
     "forged-negative-report": "自反例回执偏离固定原件",
 }
 
@@ -106,6 +109,7 @@ def verify_static_files(root):
             "version-matrix.json": REASONS["forged-version"],
             "coff-policy.json": REASONS["forged-coff"],
             "coff-probe.json": REASONS["forged-probe-observation"],
+            COFF_CRITERIA_REVISION: REASONS["forged-coff-criteria"],
         }.get(name, f"固定文件偏离 Git 对象：{name}"))
 
 
@@ -117,7 +121,8 @@ def verify_baseline(root):
             "固定产品树身份不符")
     for path, expected in product["locks"].items():
         require(identity(blob(PRODUCT_COMMIT, path)) == expected, "固定 Cargo.lock 身份不符")
-    require(paths_changed(START_COMMIT, FREEZE_COMMIT, *PRODUCT_ROOTS) == set(), "B3-0D 冻结提交改动了产品树")
+    no_product_change = paths_changed(START_COMMIT, FREEZE_COMMIT, *PRODUCT_ROOTS) == set()
+    require(no_product_change, "B3-0D 冻结提交改动了产品树")
     require(baseline["prior"]["b3_0c_closeout"]["commit"] == PRIOR_C and baseline["inherited"] == {
         "b1_guards": {"actual": 4, "derived": 24, "passed": 28},
         "platforms": ["linux", "macos", "windows"],
@@ -129,13 +134,14 @@ def verify_baseline(root):
             "审计脚本偏离固定源码摘要")
     require(identity((root / "self_negative.py").read_bytes())["sha256"] == baseline["self_negative_sha256"],
             "自反例脚本偏离固定源码摘要")
-    return baseline
+    return baseline | {"no_product_change": no_product_change}
 
 
 def verify_decisions(root):
     record = json.loads((root / "decisions.json").read_bytes())
     rows = record["decisions"]
-    require(record["stage"] == "20O-B3-0D" and set(rows) == {
+    require(record["stage"] == "20O-B3-0D" and record["execution_scope_revision"] == COFF_CRITERIA_REVISION
+            and set(rows) == {
         "B3-0D-ID", "B3-0D-ENV", "B3-0D-VER", "B3-0D-CABI", "B3-0D-PROTO", "B3-0D-COFF"
     }, "B3-0D 裁定台账不完整")
     ids = [tuple(row["question_item_id"]) for row in rows.values()]
@@ -189,8 +195,34 @@ def verify_coff(root):
     policy = json.loads((root / "coff-policy.json").read_bytes())
     require(policy["policy"] == "complete_required" and policy["status"] == "pending"
             and policy["pass"] == {"verification": "Complete", "declared_equals_observed": True, "unclassified_runtime_symbols": 0, "artifact_hash_bound": True}
+            and policy["accepted_observation"] == [
+                "retained_coff_symbol_table", "trusted_linker_map_bound_to_artifact_hash",
+                "trusted_pdb_component_manifest_bound_to_artifact_hash",
+            ]
             and "UnverifiedCoffExports" in policy["rejected_observation"], "Windows COFF 政策不符")
     return {"policy": policy["policy"], "status": policy["status"]}
+
+
+def verify_coff_criteria_revision(root, coff):
+    revision = json.loads((root / COFF_CRITERIA_REVISION).read_bytes())
+    effect = {
+        "historical_probe_products_complete": False,
+        "accepted_path_verified": False,
+        "positive_verifier_check": "B3-1",
+        "product_acceptance": ["B3-1", "B3-7"],
+        "windows_product_coff_status": coff["status"],
+    }
+    require(revision["stage"] == "20O-B3-0D4"
+            and revision["kind"] == "execution_scope_revision"
+            and revision["related_approved_decision"] == "B3-0D-COFF"
+            and revision["separate_user_approval"] is False
+            and revision["original"]["commit"] == START_COMMIT
+            and revision["current_scope"] == "policy_freeze_audit"
+            and revision["effect"] == effect, REASONS["forged-coff-criteria"])
+    for version in (revision["original"], revision["first_revision"]):
+        plan = blob(version["commit"], PLAN_PATH).decode("utf-8")
+        require(f"7. {version['clause']}" in plan.splitlines(), "D4 修订引文与固定规划对象不符")
+    return revision
 
 
 def coff_log_paths(root):
@@ -305,11 +337,18 @@ def verify_coff_probe(root):
             "tool_version": "LLVM 22.1.2"}
 
 
-def verify_handoff(root):
+def verify_handoff(root, coff, revision):
     handoff = json.loads((root / "handoff.json").read_bytes())
+    coff_handoff = {
+        **coff,
+        "product_evidence": False,
+        "criteria_revision": COFF_CRITERIA_REVISION,
+        "accepted_path_verified": revision["effect"]["accepted_path_verified"],
+        "positive_verifier_check": revision["effect"]["positive_verifier_check"],
+    }
     require(handoff["next"] == "20O-B3-0E" and handoff["b3_0d_passed"] is True
             and handoff["b3_0e_entry_ready"] is True and handoff["b3_product_started"] is False
-            and handoff["registry_verified"] is False and handoff["windows_product_coff"]["status"] == "pending"
+            and handoff["registry_verified"] is False and handoff["windows_product_coff"] == coff_handoff
             and "restricted_fs_mode" in handoff["deferred"], "B3-0E 交接边界不符")
     return handoff
 
@@ -344,18 +383,22 @@ def verify_negative_report(root):
     return len(payload["cases"])
 
 
+def doc_snapshot():
+    return {
+        "commit": FREEZE_COMMIT,
+        "tree_sha256": identity(git("ls-tree", "-rz", FREEZE_COMMIT, "--", "docs/DevDocs", "docs/UseDocs"))["sha256"],
+        "markdown": {path: identity(blob(FREEZE_COMMIT, path)) for path in sorted(DOCS)},
+    }
+
+
 def verify_doc_gates(root):
     report = json.loads((root / "doc-gates.json").read_bytes())
     rows = report["checks"]
     require([row["name"] for row in rows] == ["check:docs", "check:usedocs", "check:layout"]
             and all(row["exit"] == 0 for row in rows)
             and report["passed"] is True, "文档门禁未通过或回执不完整")
-    snapshot = {"commit": FREEZE_COMMIT,
-                "tree_sha256": hashlib.sha256(git("ls-tree", "-rz", FREEZE_COMMIT, "--", "docs/DevDocs", "docs/UseDocs")).hexdigest(),
-                "markdown": {path: identity(blob(FREEZE_COMMIT, path)) for path in sorted(DOCS)}}
-    require(report["source"] == snapshot, "文档门禁未绑定冻结提交中的 DevDocs/UseDocs 字节")
-    for path, expected in snapshot["markdown"].items():
-        require(identity(blob(FREEZE_COMMIT, path)) == expected, "冻结 Markdown 对象不符")
+    require(report["source"] == doc_snapshot() and report["worktree_verified_before_after"] is True,
+            "文档门禁未绑定冻结提交中的 DevDocs/UseDocs 字节")
     used = {row[key] for row in rows for key in ("stdout_sha256", "stderr_sha256")}
     require(report["logs"].keys() == used
             and all(identity(text.encode("utf-8"))["sha256"] == digest for digest, text in report["logs"].items()),
@@ -367,8 +410,6 @@ def verify_doc_gates(root):
 
 
 def derive(root):
-    subprocess.run(["cmd", "/c", "git", "cat-file", "-e", FREEZE_COMMIT], cwd=REPO, check=True,
-                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     verify_static_files(root)
     baseline = verify_baseline(root)
     decisions = verify_decisions(root)
@@ -376,40 +417,54 @@ def derive(root):
     target = verify_versions(root)
     cabi = verify_c_abi(root)
     coff = verify_coff(root)
+    coff_criteria_revision = verify_coff_criteria_revision(root, coff)
     coff_probe = verify_coff_probe(root)
-    handoff = verify_handoff(root)
+    handoff = verify_handoff(root, coff, coff_criteria_revision)
     neg = verify_negative_report(root)
     gates = verify_doc_gates(root)
+    decisions_approved = decisions == 6
+    no_product_change = baseline["no_product_change"]
+    checks = {
+        "b3_0d0_decisions_recorded": decisions_approved,
+        "b3_0d1_intrinsics_capabilities_frozen": freeze["intrinsics"] == 15,
+        "b3_0d2_versions_artifacts_frozen": target == {"runtime_abi": "1.20", "generator": 23, "stdlib_interface": 1},
+        "b3_0d3_c_abi_protocol_frozen": cabi == 15,
+        "b3_0d4_windows_coff_policy_frozen": coff["policy"] == "complete_required",
+        "b3_0d5_evidence_audit_passed": neg is not None and gates["passed"],
+    }
+    b3_0d_passed = all(checks.values())
+    b3_0e_entry_ready = b3_0d_passed and decisions_approved and no_product_change
+    b3_0_passed = False  # B3-0E 尚未收口。
     return {
         "scope": "20O-B3-0D",
         "freeze_commit": FREEZE_COMMIT,
         "product_commit": PRODUCT_COMMIT,
         "prior_b3_0c": PRIOR_C,
-        "b3_0d0_decisions_recorded": decisions == 6,
-        "b3_0d1_intrinsics_capabilities_frozen": freeze["intrinsics"] == 15,
-        "b3_0d2_versions_artifacts_frozen": target == {"runtime_abi": "1.20", "generator": 23, "stdlib_interface": 1},
-        "b3_0d3_c_abi_protocol_frozen": cabi == 15,
-        "b3_0d4_windows_coff_policy_frozen": coff == {"policy": "complete_required", "status": "pending"},
-        "b3_0d5_evidence_audit_passed": True,
-        "b3_0d_passed": True,
-        "b3_0e_entry_ready": True,
-        "b3_0_passed": False,
+        "b3_0d_started": baseline["entry_commit"] == START_COMMIT,
+        **checks,
+        "b3_0d_passed": b3_0d_passed,
+        "b3_0e_entry_ready": b3_0e_entry_ready,
+        "b3_1_entry_ready": b3_0_passed and decisions_approved and no_product_change,
+        "decisions_approved": decisions_approved,
+        "no_product_change": no_product_change,
+        "b3_0_passed": b3_0_passed,
         "b3_product_started": False,
         "registry_verified": False,
         "old_721_executed": False,
-        "windows_product_coff_status": "pending",
+        "windows_product_coff_status": coff["status"],
+        "coff_criteria_revision": coff_criteria_revision,
         "windows_coff_probe": coff_probe,
         "doc_gates": gates,
-        "doc_gates_passed": True,
+        "doc_gates_passed": gates["passed"],
         "baseline": {"product": baseline["product"], "b1_guards": baseline["inherited"]["b1_guards"], "platforms": baseline["inherited"]["platforms"]},
-        "handoff": handoff,
+        "handoff": handoff if b3_0e_entry_ready else None,
         "negative_cases": neg,
     }
 
 
 def audit(root):
     files = set(inventory(root))
-    expected = STATIC_FILES | GENERATED_FILES | DERIVED_INPUT_FILES | coff_log_paths(root)
+    expected = STATIC_FILES | GENERATED_FILES | coff_log_paths(root)
     require((root / "evidence.json").is_file(), "封存缺少文件：evidence.json")
     expected_inventory = expected - {"evidence.json"}
     missing = expected_inventory - files

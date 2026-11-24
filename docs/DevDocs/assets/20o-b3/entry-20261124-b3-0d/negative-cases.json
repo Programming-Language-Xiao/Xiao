@@ -8,6 +8,7 @@
     {"name": "forged-version", "expected": "版本矩阵偏离固定 Git 对象"},
     {"name": "forged-coff", "expected": "COFF 政策偏离固定 Git 对象"},
     {"name": "forged-probe-observation", "expected": "COFF 探测回执偏离固定 Git 对象"},
+    {"name": "forged-coff-criteria", "expected": "COFF 收口条件修订偏离固定 Git 对象"},
     {"name": "forged-negative-report", "expected": "自反例回执偏离固定原件"}
   ]
 }

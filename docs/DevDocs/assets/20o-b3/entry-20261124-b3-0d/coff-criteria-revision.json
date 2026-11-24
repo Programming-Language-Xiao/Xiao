@@ -1,0 +1,25 @@
+{
+  "stage": "20O-B3-0D4",
+  "revision": "b3_0d4_exit_criterion",
+  "kind": "execution_scope_revision",
+  "related_approved_decision": "B3-0D-COFF",
+  "separate_user_approval": false,
+  "original": {
+    "commit": "95e8bcca3b31c0fa58c3577b43625b5cec33b140",
+    "clause": "如果无法在产品产物上达到 `Complete`，`b3_0d_passed=false`，不得用受限证据交接。"
+  },
+  "first_revision": {
+    "commit": "8b60dbb182ab87e29f1882e5a929ef22bf5abec4",
+    "clause": "若验证器机制无法读取冻结的任何允许证据源，或无法把证据身份绑定到待验产物，`b3_0d_passed=false`；产品产物的实际 `Complete` 仍由 B3-1/B3-7 产生。"
+  },
+  "current_scope": "policy_freeze_audit",
+  "revised_requirement": "B3-0D4 审计 COFF 政策、允许证据来源和产物身份绑定规则。允许路径的正向实测留给 B3-1，产品验收留在 B3-1/B3-7。",
+  "reason": "B3-0D 是政策与版本冻结批，固定产品保持 ABI 1.19/生成器 22，新增实现后置。B3 起的 Windows 公共和发布产品仍必须达到产品级 Complete。",
+  "effect": {
+    "historical_probe_products_complete": false,
+    "accepted_path_verified": false,
+    "positive_verifier_check": "B3-1",
+    "product_acceptance": ["B3-1", "B3-7"],
+    "windows_product_coff_status": "pending"
+  }
+}

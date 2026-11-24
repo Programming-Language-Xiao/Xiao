@@ -2,6 +2,7 @@
   "stage": "20O-B3-0D",
   "recorded_on": "2026-11-24",
   "source": "星崽在本会话逐项批准的六项 B3-0D 裁定",
+  "execution_scope_revision": "coff-criteria-revision.json",
   "decisions": {
     "B3-0D-ID": {
       "status": "approved",
