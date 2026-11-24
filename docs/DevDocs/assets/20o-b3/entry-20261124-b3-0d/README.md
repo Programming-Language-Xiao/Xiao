@@ -1,8 +1,8 @@
 # B3-0D 版本、intrinsic、ABI、协议与 Windows COFF 冻结收口
 
-B3-0D 已按星崽六项批准完成冻结。固定产品为 `e79fab3c`，当前产品身份为 ABI 1.19、生成器 22、标准库接口 1。B3-0E 的实现输入为 ABI 1.20、生成器 23、标准库接口 1。15 个新增 intrinsic 使用 49～63，`environment` 使用位 7，旧请求省略能力时默认掩码为 `0x7F`。产品实现、registry、教程 verified 和旧 721 均未开始。[冻结契约](contract-draft.md) · [裁定台账](decisions.json) · [冻结表](freeze-table.json)
+B3-0D 已按星崽六项批准和 D4 条件修订批准完成冻结。固定产品为 `e79fab3c`，当前产品身份为 ABI 1.19、生成器 22、标准库接口 1。B3-0E 的实现输入为 ABI 1.20、生成器 23、标准库接口 1。15 个新增 intrinsic 使用 49～63，`environment` 使用位 7，旧请求省略能力时默认掩码为 `0x7F`。产品实现、registry、教程 verified 和旧 721 均未开始。[冻结契约](contract-draft.md) · [裁定台账](decisions.json) · [冻结表](freeze-table.json)
 
-原规划 `95e8bcca` 要求产品产物达到 `Complete`，执行提交 `8b60dbb1` 改查验证器机制。本批收口审核的是 COFF 政策、允许证据来源和产物身份绑定规则的冻结记录。修订记录保存两版条款原文与 Git 来源，归类为执行口径修订。六项批准沿用原问题卡范围。[条件修订记录](coff-criteria-revision.json)
+原规划 `95e8bcca` 要求产品产物达到 `Complete`，执行提交 `8b60dbb1` 改查验证器机制。本批收口审核的是 COFF 政策、允许证据来源和产物身份绑定规则的冻结记录。修订记录保存两版条款原文与 Git 来源，归类为执行口径修订。六项批准覆盖原问题卡范围；D4 条件修订已由星崽于 2026-11-24 单独批准。[条件修订记录](coff-criteria-revision.json)
 
 版本矩阵要求旧 1.19/22 产物在公共执行入口前拒绝并从源码重生成，缓存按 ABI、生成器、Runtime 内容、目标、能力和标准库身份失配重建。`RunOptions.arguments` 使用 `{program_name, argv}` 快照，新增 hello 能力 `arguments`。C ABI 的 15 个符号、借读输入、输出槽、状态码和能力掩码位置已冻结。[版本矩阵](version-matrix.json) · [C ABI](c-abi.json) · [交接](handoff.json)
 

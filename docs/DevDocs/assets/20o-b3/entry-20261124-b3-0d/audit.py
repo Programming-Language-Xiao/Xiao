@@ -141,6 +141,8 @@ def verify_decisions(root):
     record = json.loads((root / "decisions.json").read_bytes())
     rows = record["decisions"]
     require(record["stage"] == "20O-B3-0D" and record["execution_scope_revision"] == COFF_CRITERIA_REVISION
+            and record["execution_scope_revision_approved"] is True
+            and record["execution_scope_revision_source"] == "星崽会话直批（2026-11-24）"
             and set(rows) == {
         "B3-0D-ID", "B3-0D-ENV", "B3-0D-VER", "B3-0D-CABI", "B3-0D-PROTO", "B3-0D-COFF"
     }, "B3-0D 裁定台账不完整")
@@ -215,7 +217,12 @@ def verify_coff_criteria_revision(root, coff):
     require(revision["stage"] == "20O-B3-0D4"
             and revision["kind"] == "execution_scope_revision"
             and revision["related_approved_decision"] == "B3-0D-COFF"
-            and revision["separate_user_approval"] is False
+            and revision["separate_user_approval"] is True
+            and revision["approval"] == {
+                "source": "星崽会话直批",
+                "recorded_on": "2026-11-24",
+                "message": "批准修订，推送吧，然后你规划下一阶段",
+            }
             and revision["original"]["commit"] == START_COMMIT
             and revision["current_scope"] == "policy_freeze_audit"
             and revision["effect"] == effect, REASONS["forged-coff-criteria"])

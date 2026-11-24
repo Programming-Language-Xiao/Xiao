@@ -3,7 +3,12 @@
   "revision": "b3_0d4_exit_criterion",
   "kind": "execution_scope_revision",
   "related_approved_decision": "B3-0D-COFF",
-  "separate_user_approval": false,
+  "separate_user_approval": true,
+  "approval": {
+    "source": "星崽会话直批",
+    "recorded_on": "2026-11-24",
+    "message": "批准修订，推送吧，然后你规划下一阶段"
+  },
   "original": {
     "commit": "95e8bcca3b31c0fa58c3577b43625b5cec33b140",
     "clause": "如果无法在产品产物上达到 `Complete`，`b3_0d_passed=false`，不得用受限证据交接。"
