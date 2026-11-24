@@ -22,7 +22,8 @@ TARGETS = {"windows": "x86_64-pc-windows-msvc", "linux": "x86_64-unknown-linux-g
            "macos": "aarch64-apple-darwin"}
 GATES = ("check:docs", "check:usedocs", "check:layout")
 CASES = [(alias, opt) for alias in ("std", "stdlib") for opt in (0, 3)]
-GENERATED = {"evidence.json", "closeout.json", "doc-gates.json", "self-negative-result.json"}
+GENERATED = {"ci.zip", "closeout.json", "doc-gates.json", "evidence.json", "matrix.json",
+             "self-negative-result.json"}
 CI_NULL = dict.fromkeys(("GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_JOB", "RUNNER_OS"))
 
 

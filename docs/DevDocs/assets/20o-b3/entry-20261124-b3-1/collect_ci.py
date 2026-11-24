@@ -18,7 +18,7 @@ def gh(*arguments):
     return result.stdout
 
 
-def ci_run(run_id, directory, label, name):
+def ci_run(run_id, directory, name):
     run = json.loads(gh("api", f"repos/Programming-Language-Xiao/Xiao/actions/runs/{run_id}"))
     jobs = json.loads(gh("api", f"repos/Programming-Language-Xiao/Xiao/actions/runs/{run_id}/jobs"))
     directory.mkdir(parents=True)
@@ -53,8 +53,8 @@ def main():
     require(workflow == expected, "Runner 工作流与产品工作流模板不符")
     with TemporaryDirectory(prefix="xiao-b3-1-ci-") as temporary:
         work = Path(temporary)
-        time, _ = ci_run(args.time_run, work / "time", "time", None)
-        workspace, _ = ci_run(args.workspace_run, work / "workspace", "workspace", None)
+        time, _ = ci_run(args.time_run, work / "time", None)
+        workspace, _ = ci_run(args.workspace_run, work / "workspace", None)
         run_jobs = json.loads((work / "time/jobs.json").read_bytes())["jobs"]
         require(time["head_sha"] == args.runner_commit and time["conclusion"] == "success"
                 and workspace["head_sha"] == args.source_commit and workspace["conclusion"] == "success",
