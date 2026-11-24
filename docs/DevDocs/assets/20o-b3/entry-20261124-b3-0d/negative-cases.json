@@ -7,6 +7,7 @@
     {"name": "forged-decision", "expected": "冻结台账偏离固定 Git 对象"},
     {"name": "forged-version", "expected": "版本矩阵偏离固定 Git 对象"},
     {"name": "forged-coff", "expected": "COFF 政策偏离固定 Git 对象"},
+    {"name": "forged-probe-observation", "expected": "COFF 探测回执偏离固定 Git 对象"},
     {"name": "forged-negative-report", "expected": "自反例回执偏离固定原件"}
   ]
 }

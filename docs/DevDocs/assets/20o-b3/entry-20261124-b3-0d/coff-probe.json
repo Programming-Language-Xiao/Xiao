@@ -1,0 +1,293 @@
+{
+  "archive": {
+    "bytes": 2375176,
+    "commit": "8c8c5fb19441346c607add19bf1b381160104612",
+    "path": "../entry-20261123-b3-0b/cli-import.zip",
+    "sha256": "43524587e36d4d1c5d1b83fb8143b46c261cbd8c2f39f36ea55871cc4ebb19e6"
+  },
+  "archive_contains_pdb_or_map_sidecars": [],
+  "conclusion": {
+    "all_four_products_have_no_coff_symbol_table": true,
+    "exports_are_readable": true,
+    "product_verification_remains": "UnverifiedCoffExports",
+    "windows_product_coff_status": "pending"
+  },
+  "kind": "feasibility_probe_only",
+  "observations": [
+    {
+      "archive_path": "probe/case-std/native-o0.exe",
+      "artifact": {
+        "bytes": 1349120,
+        "sha256": "ab543b24ae5ec8b01c421b3c8fb005e5f50433e64d9bc0d2dccbfd69a0e1eff3"
+      },
+      "commands": [
+        {
+          "argv": [
+            "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+            "--file-headers",
+            "--coff-exports",
+            "<artifact>"
+          ],
+          "exit": 0,
+          "stderr": {
+            "bytes": 0,
+            "path": "logs/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.log",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 2946,
+            "path": "logs/sha256/07/074b3a4801ef9bb9640ee7a3f178eb5a6ad2b532a3778cb48fd054cd5aeb3b67.log",
+            "sha256": "074b3a4801ef9bb9640ee7a3f178eb5a6ad2b532a3778cb48fd054cd5aeb3b67"
+          }
+        },
+        {
+          "argv": [
+            "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+            "--coff-debug-directory",
+            "<artifact>"
+          ],
+          "exit": 0,
+          "stderr": {
+            "bytes": 0,
+            "path": "logs/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.log",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 4578,
+            "path": "logs/sha256/c2/c254f9df49cedc5ac746f324b8e38d4bf0968057c99a22ec80eb735ef9926e8e.log",
+            "sha256": "c254f9df49cedc5ac746f324b8e38d4bf0968057c99a22ec80eb735ef9926e8e"
+          }
+        }
+      ],
+      "observed": {
+        "codeview_present": false,
+        "debug_directory_types": [
+          "POGO"
+        ],
+        "export_table_rva": 1295040,
+        "export_table_size": 208,
+        "exported_runtime_symbols": [
+          "xiao_runtime_array_new",
+          "xiao_runtime_value_none",
+          "xiao_runtime_value_release_strong",
+          "xiao_runtime_value_release_weak"
+        ],
+        "object_format": "COFF-x86-64",
+        "retained_coff_symbol_table": false,
+        "symbol_count": 0,
+        "symbol_table_pointer": 0
+      },
+      "prior_verification": "unverified-coff-exports",
+      "target": "x86_64-pc-windows-msvc"
+    },
+    {
+      "archive_path": "probe/case-std/native-o3.exe",
+      "artifact": {
+        "bytes": 1328640,
+        "sha256": "04f9c58fb76cee6bf94ead86687fd796209e093f3ff78fe181c70c5d0f98fc22"
+      },
+      "commands": [
+        {
+          "argv": [
+            "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+            "--file-headers",
+            "--coff-exports",
+            "<artifact>"
+          ],
+          "exit": 0,
+          "stderr": {
+            "bytes": 0,
+            "path": "logs/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.log",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 2946,
+            "path": "logs/sha256/14/143de2fa869e07f6e4eb9f6a46d2d28c6da81cfb42b753217f7b465ee881601f.log",
+            "sha256": "143de2fa869e07f6e4eb9f6a46d2d28c6da81cfb42b753217f7b465ee881601f"
+          }
+        },
+        {
+          "argv": [
+            "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+            "--coff-debug-directory",
+            "<artifact>"
+          ],
+          "exit": 0,
+          "stderr": {
+            "bytes": 0,
+            "path": "logs/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.log",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 4578,
+            "path": "logs/sha256/fb/fb41689fd1ca5ab6e1cf598c1f5a9cec94d4eac7cca2423fef4e624f77f84208.log",
+            "sha256": "fb41689fd1ca5ab6e1cf598c1f5a9cec94d4eac7cca2423fef4e624f77f84208"
+          }
+        }
+      ],
+      "observed": {
+        "codeview_present": false,
+        "debug_directory_types": [
+          "POGO"
+        ],
+        "export_table_rva": 1274256,
+        "export_table_size": 208,
+        "exported_runtime_symbols": [
+          "xiao_runtime_array_new",
+          "xiao_runtime_value_none",
+          "xiao_runtime_value_release_strong",
+          "xiao_runtime_value_release_weak"
+        ],
+        "object_format": "COFF-x86-64",
+        "retained_coff_symbol_table": false,
+        "symbol_count": 0,
+        "symbol_table_pointer": 0
+      },
+      "prior_verification": "unverified-coff-exports",
+      "target": "x86_64-pc-windows-msvc"
+    },
+    {
+      "archive_path": "probe/case-stdlib/native-o0.exe",
+      "artifact": {
+        "bytes": 1348096,
+        "sha256": "80e19bf5bf338baaf61299a216b640371fea4b8a08665419b5ca50deb00d9cb9"
+      },
+      "commands": [
+        {
+          "argv": [
+            "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+            "--file-headers",
+            "--coff-exports",
+            "<artifact>"
+          ],
+          "exit": 0,
+          "stderr": {
+            "bytes": 0,
+            "path": "logs/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.log",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 2949,
+            "path": "logs/sha256/e4/e473dd5b27f7de1a28ee11553468caf58774bd452702d22aef4fe122a97e72fe.log",
+            "sha256": "e473dd5b27f7de1a28ee11553468caf58774bd452702d22aef4fe122a97e72fe"
+          }
+        },
+        {
+          "argv": [
+            "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+            "--coff-debug-directory",
+            "<artifact>"
+          ],
+          "exit": 0,
+          "stderr": {
+            "bytes": 0,
+            "path": "logs/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.log",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 4581,
+            "path": "logs/sha256/75/7545d07a15523051b6ebacb072362adf175790762e6146090a78591c31ce461e.log",
+            "sha256": "7545d07a15523051b6ebacb072362adf175790762e6146090a78591c31ce461e"
+          }
+        }
+      ],
+      "observed": {
+        "codeview_present": false,
+        "debug_directory_types": [
+          "POGO"
+        ],
+        "export_table_rva": 1294912,
+        "export_table_size": 208,
+        "exported_runtime_symbols": [
+          "xiao_runtime_array_new",
+          "xiao_runtime_value_none",
+          "xiao_runtime_value_release_strong",
+          "xiao_runtime_value_release_weak"
+        ],
+        "object_format": "COFF-x86-64",
+        "retained_coff_symbol_table": false,
+        "symbol_count": 0,
+        "symbol_table_pointer": 0
+      },
+      "prior_verification": "unverified-coff-exports",
+      "target": "x86_64-pc-windows-msvc"
+    },
+    {
+      "archive_path": "probe/case-stdlib/native-o3.exe",
+      "artifact": {
+        "bytes": 1328128,
+        "sha256": "af38fde8d2afe96b9857b49c448b5b84c76f6ab287748c4315dd524dd76e6c4a"
+      },
+      "commands": [
+        {
+          "argv": [
+            "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+            "--file-headers",
+            "--coff-exports",
+            "<artifact>"
+          ],
+          "exit": 0,
+          "stderr": {
+            "bytes": 0,
+            "path": "logs/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.log",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 2949,
+            "path": "logs/sha256/84/8439a065ae96eba463c2834337e63ef92af11fbbd583c3d548d1a94838d9b72b.log",
+            "sha256": "8439a065ae96eba463c2834337e63ef92af11fbbd583c3d548d1a94838d9b72b"
+          }
+        },
+        {
+          "argv": [
+            "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+            "--coff-debug-directory",
+            "<artifact>"
+          ],
+          "exit": 0,
+          "stderr": {
+            "bytes": 0,
+            "path": "logs/sha256/e3/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.log",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 4581,
+            "path": "logs/sha256/6b/6bf2e23e32442d89db2b8953f322c7d963ecbe8368f710b5747bf0860b8bab66.log",
+            "sha256": "6bf2e23e32442d89db2b8953f322c7d963ecbe8368f710b5747bf0860b8bab66"
+          }
+        }
+      ],
+      "observed": {
+        "codeview_present": false,
+        "debug_directory_types": [
+          "POGO"
+        ],
+        "export_table_rva": 1274256,
+        "export_table_size": 208,
+        "exported_runtime_symbols": [
+          "xiao_runtime_array_new",
+          "xiao_runtime_value_none",
+          "xiao_runtime_value_release_strong",
+          "xiao_runtime_value_release_weak"
+        ],
+        "object_format": "COFF-x86-64",
+        "retained_coff_symbol_table": false,
+        "symbol_count": 0,
+        "symbol_table_pointer": 0
+      },
+      "prior_verification": "unverified-coff-exports",
+      "target": "x86_64-pc-windows-msvc"
+    }
+  ],
+  "product_acceptance": false,
+  "source_commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+  "target": "x86_64-pc-windows-msvc",
+  "tools": {
+    "llvm_readobj": {
+      "bytes": 2140197,
+      "path": "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+      "sha256": "768a76a82fedb79b5305ca6bfffa63c00b5738789c7f47225b247345ab99328e",
+      "version": "LLVM (http://llvm.org/):\n  LLVM version 22.1.2\n  Optimized build."
+    }
+  }
+}

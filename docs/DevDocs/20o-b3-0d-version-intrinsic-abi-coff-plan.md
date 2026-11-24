@@ -256,7 +256,7 @@ xiao_runtime_log_write(level, message, target, capabilities)
 | 不接受 | 单独导出表、同链接候选、未绑定哈希的 sidecar、B2-C 历史同链接例外 |
 | 负例 | 缺声明、额外组件、未分类符号、导出表-only、旧 sidecar、哈希/身份失配、`UnverifiedCoffExports` |
 
-B3-0D 冻结“什么算产品级 `Complete`”和验证器落点；B3-1/B3-7 才产生实际产品证据。当前没有产品级 COFF 验收结果，不能把 `pending` 改成 `Complete`，也不能以受限交接替代产品验收。
+B3-0D 冻结“什么算产品级 `Complete`”和验证器落点；B3-1/B3-7 才产生实际产品证据。2026-11-24 对固定 B3-0B 归档中的四份 Windows O0/O3 产物进行了可行性探测，COFF 符号表指针和符号数均为零，导出表可读，且没有 PDB/map sidecar；因此现有产物仍是 `UnverifiedCoffExports`。探测只确认现有归档不能满足新政策，不是产品级 COFF 验收，状态保持 `pending`。[探测与原始日志](assets/20o-b3/entry-20261124-b3-0d/README.md)
 
 ## 六、证据矩阵
 

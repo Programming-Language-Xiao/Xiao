@@ -1,6 +1,7 @@
 {
   "entry_commit": "95e8bcca3b31c0fa58c3577b43625b5cec33b140",
-  "audit_sha256": "d7c093bd7719810d05b14de9c44e486e40569bc7820ea61bb1f84f4d688dff6a",
+  "audit_sha256": "d03ed1e60f545fc4c6de3fb14c71246a5171d8500739ffbee57ea766163bef3c",
+  "self_negative_sha256": "5c0b8ea34571adea41c6f64b35e766c6cb5e212dac7f897779d2cca73dad5f6e",
   "product": {
     "commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
     "tree": "80be41eefc3983001cd3968db0ccceee541f698d",

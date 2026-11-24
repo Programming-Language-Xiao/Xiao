@@ -20,8 +20,10 @@ def snapshot(root):
 
 def tamper(root, case):
     if case == "manifest-tampered":
-        with (root / "evidence.json").open("ab") as output:
-            output.write(b"x")
+        value = json.loads((root / "evidence.json").read_bytes())
+        name = next(iter(value["files"]))
+        value["files"][name]["sha256"] = "0" * 64
+        (root / "evidence.json").write_bytes(encoded(value))
     elif case == "missing-attributes":
         (root / ".gitattributes").unlink()
         rewrite_manifest(root)
@@ -45,6 +47,11 @@ def tamper(root, case):
         value["status"] = "complete"
         (root / "coff-policy.json").write_bytes(encoded(value))
         rewrite_manifest(root)
+    elif case == "forged-probe-observation":
+        value = json.loads((root / "coff-probe.json").read_bytes())
+        value["observations"][0]["observed"]["retained_coff_symbol_table"] = True
+        (root / "coff-probe.json").write_bytes(encoded(value))
+        rewrite_manifest(root)
     elif case == "forged-negative-report":
         value = json.loads((root / "self-negative-result.json").read_bytes())
         value["cases"][1]["stderr"] = "伪造的拒绝结果\n"
@@ -60,7 +67,9 @@ def replay(parent, case, expected):
     if case == "forged-negative-report" and not (root / "self-negative-result.json").exists():
         expected_cases = json.loads((ROOT / "negative-cases.json").read_bytes())["cases"]
         seed = {"mode": "sealed", "cases": [
-            {"case": item["name"], "exit": int(item["expected"] != "pass"),
+            {"case": item["name"],
+             "argv": [sys.executable, "-B", "-X", "utf8", str(ROOT / "audit.py"), "--evidence-root", str(root)],
+             "exit": int(item["expected"] != "pass"),
              "stdout": "baseline audit output" if item["expected"] == "pass" else "",
              "stderr": "" if item["expected"] == "pass" else f"B3-0D 拒绝：{item['expected']}\n",
              "read_only": True, "before": "0" * 64, "after": "0" * 64}
