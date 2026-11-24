@@ -14,6 +14,10 @@ def rewrite_manifest(root):
     (root / "evidence.json").write_bytes(encoded({"schema": 1, "files": inventory(root)}))
 
 
+def snapshot(root):
+    return {"files": inventory(root), "evidence": identity((root / "evidence.json").read_bytes())}
+
+
 def tamper(root, case):
     if case == "manifest-tampered":
         with (root / "evidence.json").open("ab") as output:
@@ -63,10 +67,10 @@ def replay(parent, case, expected):
         rewrite_manifest(root)
     if case != "unchanged":
         tamper(root, case)
-    before = identity(encoded(inventory(root)))["sha256"]
+    before = identity(encoded(snapshot(root)))["sha256"]
     command = [sys.executable, "-B", "-X", "utf8", str(ROOT / "audit.py"), "--evidence-root", str(root)]
     result = subprocess.run(command, capture_output=True, encoding="utf-8", timeout=60)
-    after = identity(encoded(inventory(root)))["sha256"]
+    after = identity(encoded(snapshot(root)))["sha256"]
     if case == "unchanged":
         if result.returncode != 0:
             raise RuntimeError(result.stderr)
@@ -76,7 +80,8 @@ def replay(parent, case, expected):
             raise RuntimeError(f"{case}: {result.returncode} {result.stderr!r}")
     if before != after:
         raise RuntimeError(f"{case}: audit wrote the evidence copy")
-    return {"case": case, "exit": result.returncode, "stderr": result.stderr, "read_only": True, "before": before, "after": after}
+    return {"case": case, "exit": result.returncode, "stdout": result.stdout, "stderr": result.stderr,
+            "read_only": True, "before": before, "after": after}
 
 
 def main():

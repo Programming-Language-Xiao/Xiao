@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 
@@ -13,7 +14,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[4]
 PREFIX = ROOT.relative_to(REPO).as_posix()
-FREEZE_COMMIT = "4b766782f2caf28b3896d7c361b8ddaeb6cbf20e"
+FREEZE_COMMIT = "4b766788d2b4e503a7bb6a306e99cb3f26884b3f"
 START_COMMIT = "95e8bcca3b31c0fa58c3577b43625b5cec33b140"
 PRODUCT_COMMIT = "e79fab3cdd3ea9d3a7eff31f529dec2498434114"
 PRODUCT_TREE = "80be41eefc3983001cd3968db0ccceee541f698d"
@@ -60,6 +61,11 @@ def git(*args, repo=REPO):
 
 def identity(raw):
     return {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
+
+
+def normalized_audit_sha256(raw):
+    normalized = re.sub(rb'FREEZE_COMMIT = "[a-f0-9_]+"', b'FREEZE_COMMIT = "<fixed-object>"', raw, count=1)
+    return hashlib.sha256(normalized).hexdigest()
 
 
 def encoded(value):
@@ -110,6 +116,8 @@ def verify_baseline(root):
         "registry_verified": False,
         "b3_product_started": False,
     }, "B3-0C 交接基线不符")
+    require(normalized_audit_sha256((root / "audit.py").read_bytes()) == baseline["audit_sha256"],
+            "审计脚本偏离固定源码摘要")
     return baseline
 
 
@@ -198,7 +206,12 @@ def verify_negative_report(root):
     expected = json.loads((root / "negative-cases.json").read_bytes())["cases"]
     require(payload["mode"] == "sealed" and [row["case"] for row in payload["cases"]] == [row["name"] for row in expected], REASONS["forged-negative-report"])
     for row, expected_case in zip(payload["cases"], expected):
-        require(row["read_only"] is True and row["before"] == row["after"] and row["exit"] == int(expected_case["expected"] != "pass"), REASONS["forged-negative-report"])
+        reason = "" if expected_case["expected"] == "pass" else expected_case["expected"]
+        expected_stderr = f"B3-0D 拒绝：{reason}\n" if reason else ""
+        require(row["read_only"] is True and row["before"] == row["after"]
+                and re.fullmatch(r"[a-f0-9]{64}", row["before"])
+                and row["exit"] == int(bool(reason)) and row["stderr"] == expected_stderr
+                and row["stdout"] == ("" if reason else row["stdout"]), REASONS["forged-negative-report"])
     return len(payload["cases"])
 
 
@@ -212,7 +225,8 @@ def verify_doc_gates(root):
 
 
 def derive(root):
-    require(git("cat-file", "-e", f"{FREEZE_COMMIT}^{{commit}}"), "冻结提交未绑定")
+    subprocess.run(["cmd", "/c", "git", "cat-file", "-e", FREEZE_COMMIT], cwd=REPO, check=True,
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     verify_static_files(root)
     baseline = verify_baseline(root)
     decisions = verify_decisions(root)
@@ -252,9 +266,11 @@ def derive(root):
 def audit(root):
     files = set(inventory(root))
     expected = STATIC_FILES | GENERATED_FILES
-    missing = expected - files
+    require((root / "evidence.json").is_file(), "封存缺少文件：evidence.json")
+    expected_inventory = expected - {"evidence.json"}
+    missing = expected_inventory - files
     require(not missing, f"封存缺少文件：{', '.join(sorted(missing))}")
-    require(files == expected or files == expected | OPTIONAL_GENERATED_FILES, "封存目录包含未登记文件")
+    require(files == expected_inventory or files == expected_inventory | OPTIONAL_GENERATED_FILES, "封存目录包含未登记文件")
     verify_manifest(root)
     result = derive(root)
     require((root / "closeout.json").read_bytes() == encoded(result), REASONS["forged-status"])
