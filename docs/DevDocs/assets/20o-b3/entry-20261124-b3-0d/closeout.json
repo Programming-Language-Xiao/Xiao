@@ -1,0 +1,120 @@
+{
+  "b3_0_passed": false,
+  "b3_0d0_decisions_recorded": true,
+  "b3_0d1_intrinsics_capabilities_frozen": true,
+  "b3_0d2_versions_artifacts_frozen": true,
+  "b3_0d3_c_abi_protocol_frozen": true,
+  "b3_0d4_windows_coff_policy_frozen": true,
+  "b3_0d5_evidence_audit_passed": true,
+  "b3_0d_passed": true,
+  "b3_0e_entry_ready": true,
+  "b3_product_started": false,
+  "baseline": {
+    "b1_guards": {
+      "actual": 4,
+      "derived": 24,
+      "passed": 28
+    },
+    "platforms": [
+      "linux",
+      "macos",
+      "windows"
+    ],
+    "product": {
+      "commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+      "files": 1222,
+      "locks": {
+        "core/rust/Cargo.lock": {
+          "bytes": 19599,
+          "sha256": "e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381"
+        },
+        "tests/benchmarks/Cargo.lock": {
+          "bytes": 19203,
+          "sha256": "64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd"
+        }
+      },
+      "tree": "80be41eefc3983001cd3968db0ccceee541f698d"
+    }
+  },
+  "doc_gates": {
+    "checks": [
+      {
+        "exit": 0,
+        "name": "check:docs",
+        "stderr_sha256": "3c0d7a02ef66c8fd45e55269144c131b8c773524f2d1155794924526fe4fcbac",
+        "stdout_sha256": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
+      },
+      {
+        "exit": 0,
+        "name": "check:usedocs",
+        "stderr_sha256": "02033b06a17499d938d03b52015dea853d526492a32028e4837999f248f0be68",
+        "stdout_sha256": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
+      },
+      {
+        "exit": 0,
+        "name": "check:layout",
+        "stderr_sha256": "b0d71635939588cd258f38802796f4250bc121eb18e6e83ea0f240df5e09af63",
+        "stdout_sha256": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
+      }
+    ],
+    "passed": true
+  },
+  "doc_gates_passed": true,
+  "freeze_commit": "8b35b8c70895b30f63b3bb01ad402c246b1cf4ca",
+  "handoff": {
+    "b3_0d_passed": true,
+    "b3_0e_entry_ready": true,
+    "b3_product_started": false,
+    "deferred": [
+      "product_implementation",
+      "registry_and_tutorial_verification",
+      "restricted_fs_mode",
+      "three_platform_product_coff_evidence",
+      "old_721",
+      "historical_debts"
+    ],
+    "frozen_inputs": [
+      "intrinsic_ids_49_63",
+      "capability_environment_bit_7",
+      "legacy_default_mask_0x7f",
+      "abi_1.20_generator_23",
+      "c_abi_15_symbols",
+      "arguments_protocol",
+      "coff_complete_policy"
+    ],
+    "next": "20O-B3-0E",
+    "old_721_executed": false,
+    "registry_verified": false,
+    "source": {
+      "entry_commit": "95e8bcca3b31c0fa58c3577b43625b5cec33b140",
+      "product_commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114"
+    },
+    "tutorials": "planned",
+    "windows_product_coff": {
+      "policy": "complete_required",
+      "product_evidence": false,
+      "status": "pending"
+    }
+  },
+  "negative_cases": 9,
+  "old_721_executed": false,
+  "prior_b3_0c": "20fc409712fbc9ba905d05a460c3883f6de0e2ec",
+  "product_commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+  "registry_verified": false,
+  "scope": "20O-B3-0D",
+  "windows_coff_probe": {
+    "archive_commit": "8c8c5fb19441346c607add19bf1b381160104612",
+    "artifacts": 4,
+    "exported_symbols": [
+      "xiao_runtime_array_new",
+      "xiao_runtime_value_none",
+      "xiao_runtime_value_release_strong",
+      "xiao_runtime_value_release_weak"
+    ],
+    "exports_readable": true,
+    "symbol_table_readable": false,
+    "tool_sha256": "768a76a82fedb79b5305ca6bfffa63c00b5738789c7f47225b247345ab99328e",
+    "tool_version": "LLVM 22.1.2"
+  },
+  "windows_product_coff_status": "pending"
+}

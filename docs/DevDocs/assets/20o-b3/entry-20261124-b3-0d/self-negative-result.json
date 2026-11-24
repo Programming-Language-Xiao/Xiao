@@ -1,0 +1,167 @@
+{
+  "cases": [
+    {
+      "after": "08ccc7b8b607dd4603ac617abba92291f3767f70de036590887ce09bb06285fc",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261124-b3-0d\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0d-negative-sqsior0k\\unchanged"
+      ],
+      "before": "08ccc7b8b607dd4603ac617abba92291f3767f70de036590887ce09bb06285fc",
+      "case": "unchanged",
+      "exit": 0,
+      "read_only": true,
+      "stderr": "",
+      "stdout": "{\n  \"audit_files\": 28,\n  \"b3_0_passed\": false,\n  \"b3_0d0_decisions_recorded\": true,\n  \"b3_0d1_intrinsics_capabilities_frozen\": true,\n  \"b3_0d2_versions_artifacts_frozen\": true,\n  \"b3_0d3_c_abi_protocol_frozen\": true,\n  \"b3_0d4_windows_coff_policy_frozen\": true,\n  \"b3_0d5_evidence_audit_passed\": true,\n  \"b3_0d_passed\": true,\n  \"b3_0e_entry_ready\": true,\n  \"b3_product_started\": false,\n  \"baseline\": {\n    \"b1_guards\": {\n      \"actual\": 4,\n      \"derived\": 24,\n      \"passed\": 28\n    },\n    \"platforms\": [\n      \"linux\",\n      \"macos\",\n      \"windows\"\n    ],\n    \"product\": {\n      \"commit\": \"e79fab3cdd3ea9d3a7eff31f529dec2498434114\",\n      \"files\": 1222,\n      \"locks\": {\n        \"core/rust/Cargo.lock\": {\n          \"bytes\": 19599,\n          \"sha256\": \"e4db0ecf24970764f2ac3e426ca5ba41e4bc4ff16ff45cb67e61a0908358c381\"\n        },\n        \"tests/benchmarks/Cargo.lock\": {\n          \"bytes\": 19203,\n          \"sha256\": \"64daf8d755eba8ded7ac413f1d97eae4b74acea604994367f370faae68cfe7bd\"\n        }\n      },\n      \"tree\": \"80be41eefc3983001cd3968db0ccceee541f698d\"\n    }\n  },\n  \"doc_gates\": {\n    \"checks\": [\n      {\n        \"exit\": 0,\n        \"name\": \"check:docs\",\n        \"stderr_sha256\": \"3c0d7a02ef66c8fd45e55269144c131b8c773524f2d1155794924526fe4fcbac\",\n        \"stdout_sha256\": \"180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b\"\n      },\n      {\n        \"exit\": 0,\n        \"name\": \"check:usedocs\",\n        \"stderr_sha256\": \"02033b06a17499d938d03b52015dea853d526492a32028e4837999f248f0be68\",\n        \"stdout_sha256\": \"180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b\"\n      },\n      {\n        \"exit\": 0,\n        \"name\": \"check:layout\",\n        \"stderr_sha256\": \"b0d71635939588cd258f38802796f4250bc121eb18e6e83ea0f240df5e09af63\",\n        \"stdout_sha256\": \"180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b\"\n      }\n    ],\n    \"passed\": true\n  },\n  \"doc_gates_passed\": true,\n  \"freeze_commit\": \"8b35b8c70895b30f63b3bb01ad402c246b1cf4ca\",\n  \"handoff\": {\n    \"b3_0d_passed\": true,\n    \"b3_0e_entry_ready\": true,\n    \"b3_product_started\": false,\n    \"deferred\": [\n      \"product_implementation\",\n      \"registry_and_tutorial_verification\",\n      \"restricted_fs_mode\",\n      \"three_platform_product_coff_evidence\",\n      \"old_721\",\n      \"historical_debts\"\n    ],\n    \"frozen_inputs\": [\n      \"intrinsic_ids_49_63\",\n      \"capability_environment_bit_7\",\n      \"legacy_default_mask_0x7f\",\n      \"abi_1.20_generator_23\",\n      \"c_abi_15_symbols\",\n      \"arguments_protocol\",\n      \"coff_complete_policy\"\n    ],\n    \"next\": \"20O-B3-0E\",\n    \"old_721_executed\": false,\n    \"registry_verified\": false,\n    \"source\": {\n      \"entry_commit\": \"95e8bcca3b31c0fa58c3577b43625b5cec33b140\",\n      \"product_commit\": \"e79fab3cdd3ea9d3a7eff31f529dec2498434114\"\n    },\n    \"tutorials\": \"planned\",\n    \"windows_product_coff\": {\n      \"policy\": \"complete_required\",\n      \"product_evidence\": false,\n      \"status\": \"pending\"\n    }\n  },\n  \"negative_cases\": 9,\n  \"old_721_executed\": false,\n  \"prior_b3_0c\": \"20fc409712fbc9ba905d05a460c3883f6de0e2ec\",\n  \"product_commit\": \"e79fab3cdd3ea9d3a7eff31f529dec2498434114\",\n  \"registry_verified\": false,\n  \"scope\": \"20O-B3-0D\",\n  \"windows_coff_probe\": {\n    \"archive_commit\": \"8c8c5fb19441346c607add19bf1b381160104612\",\n    \"artifacts\": 4,\n    \"exported_symbols\": [\n      \"xiao_runtime_array_new\",\n      \"xiao_runtime_value_none\",\n      \"xiao_runtime_value_release_strong\",\n      \"xiao_runtime_value_release_weak\"\n    ],\n    \"exports_readable\": true,\n    \"symbol_table_readable\": false,\n    \"tool_sha256\": \"768a76a82fedb79b5305ca6bfffa63c00b5738789c7f47225b247345ab99328e\",\n    \"tool_version\": \"LLVM 22.1.2\"\n  },\n  \"windows_product_coff_status\": \"pending\"\n}\n"
+    },
+    {
+      "after": "e5d0edb63136c6c3596628e103fbeffc8d2f84ce70bb185fcb166f2e7e821e44",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261124-b3-0d\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0d-negative-sqsior0k\\manifest-tampered"
+      ],
+      "before": "e5d0edb63136c6c3596628e103fbeffc8d2f84ce70bb185fcb166f2e7e821e44",
+      "case": "manifest-tampered",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0D 拒绝：evidence.json 字节或文件身份不符\n",
+      "stdout": ""
+    },
+    {
+      "after": "19adab19d8f6cddfba4036f5d6e88560400e9d9e448d261d2dae9b5ded4ba21a",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261124-b3-0d\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0d-negative-sqsior0k\\missing-attributes"
+      ],
+      "before": "19adab19d8f6cddfba4036f5d6e88560400e9d9e448d261d2dae9b5ded4ba21a",
+      "case": "missing-attributes",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0D 拒绝：封存缺少文件：.gitattributes\n",
+      "stdout": ""
+    },
+    {
+      "after": "2b151f0b86a97e4b1aab40acdaf43b69d5a152d2330df335245be39024941911",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261124-b3-0d\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0d-negative-sqsior0k\\forged-status"
+      ],
+      "before": "2b151f0b86a97e4b1aab40acdaf43b69d5a152d2330df335245be39024941911",
+      "case": "forged-status",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0D 拒绝：closeout.json 与实际冻结结论不符\n",
+      "stdout": ""
+    },
+    {
+      "after": "a94b4210b66055d3530d772ffe4bf905630c9d36f349448f9722f5d6975b02b1",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261124-b3-0d\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0d-negative-sqsior0k\\forged-decision"
+      ],
+      "before": "a94b4210b66055d3530d772ffe4bf905630c9d36f349448f9722f5d6975b02b1",
+      "case": "forged-decision",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0D 拒绝：冻结台账偏离固定 Git 对象\n",
+      "stdout": ""
+    },
+    {
+      "after": "2f0e91029c16cd03c7b506fceaee621f8cde93c318e53e2010b3ce3b86c43ee5",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261124-b3-0d\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0d-negative-sqsior0k\\forged-version"
+      ],
+      "before": "2f0e91029c16cd03c7b506fceaee621f8cde93c318e53e2010b3ce3b86c43ee5",
+      "case": "forged-version",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0D 拒绝：版本矩阵偏离固定 Git 对象\n",
+      "stdout": ""
+    },
+    {
+      "after": "206c10c660201ddb1e98db924b6ec019699d856a9a3b51bc6e976bc53fae3a45",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261124-b3-0d\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0d-negative-sqsior0k\\forged-coff"
+      ],
+      "before": "206c10c660201ddb1e98db924b6ec019699d856a9a3b51bc6e976bc53fae3a45",
+      "case": "forged-coff",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0D 拒绝：COFF 政策偏离固定 Git 对象\n",
+      "stdout": ""
+    },
+    {
+      "after": "bf5ca924706e4e63548b3c1c293a9cd498fa07b1babe2d84bc1a30f2fc52214a",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261124-b3-0d\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0d-negative-sqsior0k\\forged-probe-observation"
+      ],
+      "before": "bf5ca924706e4e63548b3c1c293a9cd498fa07b1babe2d84bc1a30f2fc52214a",
+      "case": "forged-probe-observation",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0D 拒绝：COFF 探测回执偏离固定 Git 对象\n",
+      "stdout": ""
+    },
+    {
+      "after": "03211e99d525329fa818b6b057bb5ee97fc76205ddd79b2292a3ea6a84f965f3",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261124-b3-0d\\audit.py",
+        "--evidence-root",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-0d-negative-sqsior0k\\forged-negative-report"
+      ],
+      "before": "03211e99d525329fa818b6b057bb5ee97fc76205ddd79b2292a3ea6a84f965f3",
+      "case": "forged-negative-report",
+      "exit": 1,
+      "read_only": true,
+      "stderr": "B3-0D 拒绝：自反例回执偏离固定原件\n",
+      "stdout": ""
+    }
+  ],
+  "mode": "sealed"
+}

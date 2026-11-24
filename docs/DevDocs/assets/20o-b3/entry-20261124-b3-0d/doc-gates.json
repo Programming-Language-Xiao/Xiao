@@ -1,0 +1,76 @@
+{
+  "checks": [
+    {
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+        "run",
+        "check:docs"
+      ],
+      "exit": 0,
+      "name": "check:docs",
+      "stderr": "$ bun tools/repo-check/src/cli.ts docs\n",
+      "stderr_sha256": "3c0d7a02ef66c8fd45e55269144c131b8c773524f2d1155794924526fe4fcbac",
+      "stdout": "通过：未发现 A0 规则问题。\n",
+      "stdout_sha256": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
+    },
+    {
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+        "run",
+        "check:usedocs"
+      ],
+      "exit": 0,
+      "name": "check:usedocs",
+      "stderr": "$ bun tools/repo-check/src/cli.ts usedocs\n",
+      "stderr_sha256": "02033b06a17499d938d03b52015dea853d526492a32028e4837999f248f0be68",
+      "stdout": "通过：未发现 A0 规则问题。\n",
+      "stdout_sha256": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
+    },
+    {
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+        "run",
+        "check:layout"
+      ],
+      "exit": 0,
+      "name": "check:layout",
+      "stderr": "$ bun tools/repo-check/src/cli.ts layout\n",
+      "stderr_sha256": "b0d71635939588cd258f38802796f4250bc121eb18e6e83ea0f240df5e09af63",
+      "stdout": "通过：未发现 A0 规则问题。\n",
+      "stdout_sha256": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
+    }
+  ],
+  "logs": {
+    "02033b06a17499d938d03b52015dea853d526492a32028e4837999f248f0be68": "$ bun tools/repo-check/src/cli.ts usedocs\n",
+    "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b": "通过：未发现 A0 规则问题。\n",
+    "3c0d7a02ef66c8fd45e55269144c131b8c773524f2d1155794924526fe4fcbac": "$ bun tools/repo-check/src/cli.ts docs\n",
+    "b0d71635939588cd258f38802796f4250bc121eb18e6e83ea0f240df5e09af63": "$ bun tools/repo-check/src/cli.ts layout\n"
+  },
+  "passed": true,
+  "source": {
+    "commit": "8b35b8c70895b30f63b3bb01ad402c246b1cf4ca",
+    "markdown": {
+      "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": {
+        "bytes": 15780,
+        "sha256": "c02e99de34a7ce9acabddeaac31cd2aab1a19e666f05e6a3bab16a39f6ab1ea5"
+      },
+      "docs/DevDocs/20o-b3-0d-version-intrinsic-abi-coff-plan.md": {
+        "bytes": 25066,
+        "sha256": "32a72a75125e09391ce1008f5982f059190aeafe772769ec394dbdf2d1675cc3"
+      },
+      "docs/DevDocs/20o-b3-host-libraries-plan.md": {
+        "bytes": 14120,
+        "sha256": "a4e581520e1a3d9def3d9ad99548190c5efc597ba4bec736aa7533142ae507e7"
+      },
+      "docs/DevDocs/20o-official-library-program.md": {
+        "bytes": 33958,
+        "sha256": "5199ab12c4b44db24812bd95d9de730e8064d31ec73f0eeebddb6910cb77aed6"
+      },
+      "docs/DevDocs/README.md": {
+        "bytes": 153837,
+        "sha256": "8038c11b9b8417f52468c2c730ffecc9cf492822eeef9bbe9703c92f9f8d9171"
+      }
+    },
+    "tree_sha256": "1fb934d6c5e19386fd6cf3442798070efbd3d17a23ad811fa422bc312c8eec33"
+  }
+}
