@@ -54,7 +54,7 @@ def main():
     changed = set(filter(None, git("diff", "--name-only", "-z").decode().split("\0")))
     untracked = set(filter(None, git("ls-files", "--others", "--exclude-standard", "-z").decode().split("\0")))
     allowed_outputs = {f"{PREFIX}/{name}" for name in GENERATED}
-    require(not changed and untracked <= allowed_outputs,
+    require(changed <= allowed_outputs and untracked <= allowed_outputs,
             "CI 采集要求固定源文件；只允许存在证据审计生成物")
     workflow = git("show", f"{args.runner_commit}:.github/workflows/b3-1-time.yml")
     expected = git("show", f"{args.source_commit}:{PREFIX}/time-runner.yml").replace(
