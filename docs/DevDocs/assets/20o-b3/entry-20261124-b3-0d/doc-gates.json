@@ -48,15 +48,15 @@
   },
   "passed": true,
   "source": {
-    "commit": "8b35b8c70895b30f63b3bb01ad402c246b1cf4ca",
+    "commit": "81db909fdd46311fdd1f8a2fa63e003e3bff8f1c",
     "markdown": {
       "docs/DevDocs/20o-b3-0-probe-freeze-plan.md": {
         "bytes": 15780,
         "sha256": "c02e99de34a7ce9acabddeaac31cd2aab1a19e666f05e6a3bab16a39f6ab1ea5"
       },
       "docs/DevDocs/20o-b3-0d-version-intrinsic-abi-coff-plan.md": {
-        "bytes": 25066,
-        "sha256": "32a72a75125e09391ce1008f5982f059190aeafe772769ec394dbdf2d1675cc3"
+        "bytes": 26168,
+        "sha256": "6949b2f8075bdf8862ebb513c665a71db1a8613438075376619c822cbcdaee12"
       },
       "docs/DevDocs/20o-b3-host-libraries-plan.md": {
         "bytes": 14120,
@@ -69,8 +69,13 @@
       "docs/DevDocs/README.md": {
         "bytes": 153837,
         "sha256": "8038c11b9b8417f52468c2c730ffecc9cf492822eeef9bbe9703c92f9f8d9171"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0d/README.md": {
+        "bytes": 4273,
+        "sha256": "896ce43e00dbfe4ece99978c6038a79923fb608079c48724377c42ebc9febcee"
       }
     },
-    "tree_sha256": "1fb934d6c5e19386fd6cf3442798070efbd3d17a23ad811fa422bc312c8eec33"
-  }
+    "tree_sha256": "c5ed37d55c547cf499e595c4d8bc14703da64ca83f837148c0f9e95d4eacc3d1"
+  },
+  "worktree_verified_before_after": true
 }
