@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import time
 from tempfile import TemporaryDirectory
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -13,9 +14,13 @@ from audit import PREFIX, REPO, ROOT, encoded, git, require
 
 
 def gh(*arguments):
-    result = subprocess.run(["gh", *arguments], cwd=REPO, capture_output=True)
-    require(result.returncode == 0, result.stderr.decode("utf-8", errors="replace"))
-    return result.stdout
+    for attempt in range(3):
+        result = subprocess.run(["gh", *arguments], cwd=REPO, capture_output=True)
+        if result.returncode == 0:
+            return result.stdout
+        if attempt < 2:
+            time.sleep(2 ** (attempt + 1))
+    raise RuntimeError(result.stderr.decode("utf-8", errors="replace"))
 
 
 def ci_run(run_id, directory, name):
@@ -46,12 +51,15 @@ def main():
     parser.add_argument("--time-run", required=True, type=int)
     parser.add_argument("--workspace-run", required=True, type=int)
     args = parser.parse_args()
-    require(git("status", "--porcelain=v1", "-z") == b"", "CI 采集要求干净工作树")
+    changed = set(filter(None, git("diff", "--name-only", "-z").decode().split("\0")))
+    untracked = set(filter(None, git("ls-files", "--others", "--exclude-standard", "-z").decode().split("\0")))
+    require(not changed and untracked <= {f"{PREFIX}/ci.zip", f"{PREFIX}/matrix.json"},
+            "CI 采集要求固定源文件；只允许覆盖此前中断的生成回执")
     workflow = git("show", f"{args.runner_commit}:.github/workflows/b3-1-time.yml")
     expected = git("show", f"{args.source_commit}:{PREFIX}/time-runner.yml").replace(
         b"B3_TIME_SOURCE_COMMIT", args.source_commit.encode())
     require(workflow == expected, "Runner 工作流与产品工作流模板不符")
-    with TemporaryDirectory(prefix="xiao-b3-1-ci-") as temporary:
+    with TemporaryDirectory(prefix=".xiao-b3-1-ci-", dir=ROOT) as temporary:
         work = Path(temporary)
         time, _ = ci_run(args.time_run, work / "time", None)
         workspace, _ = ci_run(args.workspace_run, work / "workspace", None)
@@ -59,7 +67,8 @@ def main():
         require(time["head_sha"] == args.runner_commit and time["conclusion"] == "success"
                 and workspace["head_sha"] == args.source_commit and workspace["conclusion"] == "success",
                 "CI 运行未绑定固定提交或未通过")
-        with ZipFile(ROOT / "ci.zip", "x", ZIP_DEFLATED) as bundle:
+        ci_archive = work / "ci.zip"
+        with ZipFile(ci_archive, "w", ZIP_DEFLATED) as bundle:
             bundle.writestr("time/run.json", (work / "time/run.json").read_bytes())
             bundle.writestr("time/jobs.json", (work / "time/jobs.json").read_bytes())
             bundle.writestr("time/workflow.yml", workflow)
@@ -72,6 +81,7 @@ def main():
                 write_tree(bundle, work / runner_os, f"{runner_os.lower()}/")
             bundle.writestr("workspace/run.json", (work / "workspace/run.json").read_bytes())
             bundle.writestr("workspace/jobs.json", (work / "workspace/jobs.json").read_bytes())
+        ci_archive.replace(ROOT / "ci.zip")
     matrix = {
         "source_commit": args.source_commit,
         "runner_commit": args.runner_commit,
