@@ -290,7 +290,7 @@ print(format_utc(0, "ms"))
             clock_source,
             CAPABILITIES,
             format!(
-                "{wall}\n{}\nTIME_SLEEP_LIMIT_EXCEEDED\nX06-RUNTIME-012\ncleaned\n",
+                "{wall}\n{}\nTIME_SLEEP_LIMIT_EXCEEDED\ncleaned\nX06-RUNTIME-012\n",
                 mono + 1
             ),
         ),
