@@ -32,6 +32,7 @@ pub mod resources;
 pub mod tables;
 /// 仅供规格测试使用的释放计划驱动器。
 pub mod testing;
+pub mod time;
 /// 标量、字符串和统一 Runtime 值。
 pub mod value;
 

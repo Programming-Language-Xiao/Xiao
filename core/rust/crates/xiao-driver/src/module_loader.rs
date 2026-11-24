@@ -118,6 +118,7 @@ const EXECUTABLE_STANDARD_MODULES: &[&str] = &[
     "set",
     "statistics",
     "text",
+    "time",
     "url",
 ];
 

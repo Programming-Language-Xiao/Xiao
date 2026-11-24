@@ -10,6 +10,9 @@ description = "Xiao compiler and runtime driver interfaces"
 [lints]
 workspace = true
 
+[features]
+time-native-test = ["xiao-runtime/test-failpoints"]
+
 [lib]
 path = "src/lib.rs"
 

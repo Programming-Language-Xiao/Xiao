@@ -69,17 +69,17 @@ fn real_parameters_preserve_language_equality_and_ordering() {
 }
 
 #[test]
-/// 新校验器仍接纳合法21元数据；模拟旧理解上限时22被明确拒绝，ABI与格式不变。
-fn generator22_keeps_metadata_readability_separate_from_cache_identity() {
-    assert_eq!(CODEGEN_VERSION, 22);
-    assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 19);
+/// 同 ABI 下读取兼容的生成器元数据，同时区分缓存身份。
+fn generator_keeps_metadata_readability_separate_from_cache_identity() {
+    assert_eq!(CODEGEN_VERSION, 23);
+    assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 20);
     let target = TargetDescription::host();
     let ir = FrontendCompiler::new()
         .compile(&FrontendRequest::from_text("value = 1\n"))
         .unwrap()
         .ir;
     let current = NativeMetadata::for_program(&ir, &target).unwrap();
-    assert_eq!(current.generator_version, 22);
+    assert_eq!(current.generator_version, CODEGEN_VERSION);
     assert_eq!(current.stdlib.stdlib_interface_version, 1);
     let mut older = current.clone();
     older.generator_version = 21;
@@ -99,7 +99,7 @@ fn generator22_keeps_metadata_readability_separate_from_cache_identity() {
     let toolchain = Toolchain::new("clang");
     assert_ne!(
         toolchain.fingerprint(&target, 21),
-        toolchain.fingerprint(&target, 22)
+        toolchain.fingerprint(&target, CODEGEN_VERSION)
     );
 }
 

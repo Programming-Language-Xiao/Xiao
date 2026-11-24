@@ -9,7 +9,7 @@ use std::time::Instant;
 
 use xiao_bytecode::{TacProgram, TacVerificationError, verify_for_execution};
 use xiao_diagnostics::{DiagnosticParam, FatalError, ReportRecord, XiaoError};
-use xiao_intrinsics::{CapabilityMaskError, KNOWN_CAPABILITY_MASK, validate_capability_mask};
+use xiao_intrinsics::{CapabilityMaskError, DEFAULT_CAPABILITY_MASK, validate_capability_mask};
 use xiao_ir::{IrEntryMode, IrProgram};
 use xiao_runtime::RuntimeValue;
 
@@ -96,12 +96,18 @@ impl CancellationSource {
     /// 查询共享取消信号或截止时间是否已经触发。
     #[must_use]
     pub fn is_cancelled(&self) -> bool {
+        self.cancellation_requested() || self.deadline_reached()
+    }
+
+    pub(crate) fn cancellation_requested(&self) -> bool {
         self.token
             .as_ref()
             .is_some_and(CancellationToken::is_cancelled)
-            || self
-                .deadline
-                .is_some_and(|deadline| Instant::now() >= deadline)
+    }
+
+    pub(crate) fn deadline_reached(&self) -> bool {
+        self.deadline
+            .is_some_and(|deadline| Instant::now() >= deadline)
     }
 }
 
@@ -296,7 +302,7 @@ impl<'a> RunRequest<'a> {
             event_capacity: DEFAULT_EVENT_CAPACITY,
             cancellation: None,
             module_loader: None,
-            capabilities: KNOWN_CAPABILITY_MASK,
+            capabilities: DEFAULT_CAPABILITY_MASK,
         }
     }
 
@@ -566,7 +572,7 @@ pub fn run_xiaoc_production(
         options,
         event_capacity,
         cancellation,
-        KNOWN_CAPABILITY_MASK,
+        DEFAULT_CAPABILITY_MASK,
     )
 }
 

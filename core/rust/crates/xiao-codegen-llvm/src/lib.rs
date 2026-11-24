@@ -43,9 +43,9 @@ mod toolchain;
 /// 产物层符号、依赖和 Runtime 组成验证接口。
 pub use artifact::{
     ArtifactAcceptanceMode, ArtifactInspection, ArtifactModeReport, ArtifactRuntimeComposition,
-    ArtifactVerification, SymbolTableComparison, SymbolTableReport, SymbolTableStatus,
-    compare_symbol_table_reports, inspect_artifact, inspect_symbol_table, verify_artifact,
-    verify_artifact_mode,
+    ArtifactVerification, CoffLinkIdentity, SymbolTableComparison, SymbolTableReport,
+    SymbolTableStatus, compare_symbol_table_reports, inspect_artifact, inspect_symbol_table,
+    verify_artifact, verify_artifact_mode,
 };
 /// 性能基线模型。
 pub use baseline::{
@@ -101,7 +101,7 @@ pub use xiao_optimizer::OptimizationReport;
 /// 版本 21 接通 B4-3 cmath C ABI 调用及 Float ** 共享pow；Runtime ABI仍为1.18。
 /// 版本 22 使静态 Float/Sfloat 相等与不等在数值提升后按位比较，保留异号零语义。
 /// 当前版本进入工具链/产物指纹。
-pub const CODEGEN_VERSION: u32 = 22;
+pub const CODEGEN_VERSION: u32 = 23;
 
 /// 将同一份类型化 IR 降低为静态标量或 Runtime ABI LLVM 模块。
 pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {
@@ -161,7 +161,12 @@ pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> 
         .map_err(|message| CodegenError::InvalidIr { message })?;
     module.native_optimization_report =
         LlvmOptimizationReport::from_plan(plan, &module.runtime_components);
-    if requires_metadata {
+    if requires_metadata
+        || module
+            .runtime_components
+            .iter()
+            .any(|component| component == "time")
+    {
         let metadata = NativeMetadata::for_program(program, &options.target).map_err(|error| {
             CodegenError::NativeMetadata {
                 code: error.code.to_owned(),

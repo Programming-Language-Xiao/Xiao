@@ -44,6 +44,8 @@ impl fmt::Display for IntrinsicId {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum DeclarationStatus {
     Active,
+    /// 已分配身份，尚未开放调用。
+    Reserved,
     Tombstone,
 }
 /// 内置入口类别。
@@ -59,6 +61,7 @@ pub enum IntrinsicKind {
     ErrorCode,
     LfloatDivide,
     Cmath,
+    Time,
     Print,
     Input,
     ResourceOpenFile,
@@ -100,6 +103,7 @@ pub enum ValueType {
     ArrayElement,
     ErrorParameters,
     LfloatDivideParameters,
+    TimeValueAndUnit,
     Error,
     File,
     Directory,
@@ -119,6 +123,8 @@ pub enum Effects {
     SpawnsProcess,
     WaitsProcess,
     ReleasesProcess,
+    ReadsClock,
+    Sleeps,
     None,
 }
 /// 能力需求。
@@ -129,6 +135,7 @@ pub enum Capability {
     Stdin,
     Filesystem,
     Process,
+    Clock,
 }
 
 /// 文件系统能力位。
@@ -145,14 +152,18 @@ pub const CAPABILITY_NATIVE_EXTENSION: u64 = 1 << 4;
 pub const CAPABILITY_STDOUT: u64 = 1 << 5;
 /// 标准输入能力位。
 pub const CAPABILITY_STDIN: u64 = 1 << 6;
-/// 当前已知能力位的完整掩码；默认请求使用它。
-pub const KNOWN_CAPABILITY_MASK: u64 = CAPABILITY_FILESYSTEM
+/// 环境快照能力位。
+pub const CAPABILITY_ENVIRONMENT: u64 = 1 << 7;
+/// 省略授权时沿用 ABI 1.19 的默认范围。
+pub const DEFAULT_CAPABILITY_MASK: u64 = CAPABILITY_FILESYSTEM
     | CAPABILITY_CLOCK
     | CAPABILITY_PROCESS
     | CAPABILITY_NETWORK
     | CAPABILITY_NATIVE_EXTENSION
     | CAPABILITY_STDOUT
     | CAPABILITY_STDIN;
+/// 当前允许显式请求的能力位掩码。
+pub const KNOWN_CAPABILITY_MASK: u64 = DEFAULT_CAPABILITY_MASK | CAPABILITY_ENVIRONMENT;
 
 /// 能力掩码越界错误。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -184,6 +195,7 @@ impl Capability {
             Self::Stdin => Some(CAPABILITY_STDIN),
             Self::Filesystem => Some(CAPABILITY_FILESYSTEM),
             Self::Process => Some(CAPABILITY_PROCESS),
+            Self::Clock => Some(CAPABILITY_CLOCK),
         }
     }
 
@@ -196,6 +208,7 @@ impl Capability {
             Self::Stdin => "stdin",
             Self::Filesystem => "filesystem",
             Self::Process => "process",
+            Self::Clock => "clock",
         }
     }
 }
@@ -235,6 +248,10 @@ pub enum VmBinding {
     CmathExp,
     CmathLn,
     CmathLog10,
+    TimeUtcNow,
+    TimeMonotonic,
+    TimeFormatUtc,
+    TimeSleep,
     Print,
     Input,
     ResourceOpenFile,
@@ -267,6 +284,10 @@ pub enum AbiBinding {
     CmathExp,
     CmathLn,
     CmathLog10,
+    TimeUtcNow,
+    TimeMonotonic,
+    TimeFormatUtc,
+    TimeSleep,
     SetAdd,
     SetRemove,
     ArrayPush,
@@ -317,6 +338,31 @@ pub const fn cmath_parameters(id: IntrinsicId) -> Option<&'static [(&'static str
         40 | 41 => Some(&CMATH_COMPARISON_PARAMETERS),
         42 => Some(&CMATH_POWER_PARAMETERS),
         _ => None,
+    }
+}
+
+/// time 入口的位置和命名实参共享同一形参顺序。
+#[must_use]
+pub const fn time_parameters(id: IntrinsicId) -> Option<&'static [(&'static str, ValueType)]> {
+    match id.get() {
+        49 | 50 => Some(&[("unit", ValueType::Str)]),
+        51 => Some(&[("unix_time", ValueType::Int), ("unit", ValueType::Str)]),
+        52 => Some(&[("duration", ValueType::Int), ("unit", ValueType::Str)]),
+        _ => None,
+    }
+}
+
+impl AbiBinding {
+    /// time 的链接符号，其他绑定沿各自入口发射。
+    #[must_use]
+    pub const fn time_symbol(self) -> Option<&'static str> {
+        match self {
+            Self::TimeUtcNow => Some("xiao_runtime_time_utc_now"),
+            Self::TimeMonotonic => Some("xiao_runtime_time_monotonic"),
+            Self::TimeFormatUtc => Some("xiao_runtime_time_format_utc"),
+            Self::TimeSleep => Some("xiao_runtime_time_sleep"),
+            _ => None,
+        }
     }
 }
 
@@ -693,7 +739,7 @@ pub fn lfloat_divide_argument_order(arguments: &[(&str, Option<&str>)]) -> Optio
 mod tests {
     use super::*;
     #[test]
-    /// 精确核对48活动ID、15项形参/效果绑定与100墓碑。
+    /// 核对活动 ID 与原有 cmath 的形参、效果及墓碑身份。
     fn cmath_fifteen_declarations_keep_the_frozen_identity_and_parameters() {
         validate_table().unwrap();
         let mut active: Vec<_> = declarations()
@@ -702,7 +748,7 @@ mod tests {
             .map(|d| d.id.get())
             .collect();
         active.sort_unstable();
-        assert_eq!(active, (1..=48).collect::<Vec<_>>());
+        assert_eq!(active, (1..=52).collect::<Vec<_>>());
         for (index, &(name, vm, abi)) in CMATH_DECLARATIONS.iter().enumerate() {
             let id = IntrinsicId::new(34 + index as u32).unwrap();
             let declaration = active_by_id(id).unwrap();
@@ -805,8 +851,7 @@ mod tests {
         assert_eq!(declaration.abi_binding, AbiBinding::ErrorCode);
         assert_eq!(declaration.effects, Effects::Allocates);
         assert_eq!(declaration.capability, Capability::None);
-        // B3新增15条声明：48个活动入口加ID100墓碑，仍要求精确计数。
-        assert_eq!(declarations().len(), 49);
+        assert_eq!(declarations().len(), 64);
         assert_eq!(
             declarations()
                 .iter()
@@ -822,7 +867,23 @@ mod tests {
         assert_eq!(Capability::Stdout.bit(), Some(CAPABILITY_STDOUT));
         assert_eq!(Capability::Stdin.bit(), Some(CAPABILITY_STDIN));
         assert!(validate_capability_mask(KNOWN_CAPABILITY_MASK).is_ok());
-        assert!(validate_capability_mask(1 << 7).is_err());
+        assert_eq!(DEFAULT_CAPABILITY_MASK, 0x7f);
+        assert_eq!(KNOWN_CAPABILITY_MASK, 0xff);
+        assert_eq!(Capability::Clock.bit(), Some(CAPABILITY_CLOCK));
+        assert!(validate_capability_mask(CAPABILITY_ENVIRONMENT).is_ok());
+        assert!(validate_capability_mask(1 << 8).is_err());
+    }
+    #[test]
+    fn b3_reserved_ids_have_identity_without_callable_bindings() {
+        for raw in 53..=63 {
+            let id = IntrinsicId::new(raw).unwrap();
+            let declaration = by_id(id).unwrap();
+            assert_eq!(declaration.status, DeclarationStatus::Reserved);
+            assert_eq!(declaration.vm_binding, VmBinding::None);
+            assert_eq!(declaration.abi_binding, AbiBinding::None);
+            assert!(active_by_id(id).is_none());
+            assert!(by_name(declaration.public_name).is_none());
+        }
     }
     #[test]
     fn removed_ids_remain_tombstones() {

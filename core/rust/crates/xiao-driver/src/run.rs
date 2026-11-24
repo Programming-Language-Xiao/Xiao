@@ -12,7 +12,7 @@ use xiao_bytecode::{
     BytecodeOptimizationReport, TacProgram, XiaocMetadata, encode_xiaoc, lower_program,
 };
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, DiagnosticParams, ReportRecord};
-use xiao_intrinsics::{CapabilityMaskError, KNOWN_CAPABILITY_MASK, validate_capability_mask};
+use xiao_intrinsics::{CapabilityMaskError, DEFAULT_CAPABILITY_MASK, validate_capability_mask};
 use xiao_optimizer::{OptimizationLevel, PassStatus, ValidationStatus};
 use xiao_package::CacheLayout;
 use xiao_vm::{
@@ -151,7 +151,7 @@ impl DriverRequest {
             source_name: None,
             event_capacity: DEFAULT_EVENT_CAPACITY,
             control: RunControl::default(),
-            capabilities: KNOWN_CAPABILITY_MASK,
+            capabilities: DEFAULT_CAPABILITY_MASK,
         }
     }
 

@@ -1,6 +1,6 @@
 # 20O-B3-1. `time` 实施规划
 
-> **状态（2026-11-24）**　B3-0F 已完成联合冻结审计，`b3_0_passed=true`、`b3_1_entry_ready=true`；Windows 开工基线已登记在 `5ec50a5e`，B3-1 开工裁定已批准，`b3_1_decisions_approved=true`、`b3_1_started=false`、`b3_1_passed=false`、`b3_2_entry_ready=false`、`b3_product_started=false`。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [Windows 基线](assets/20o-b3/entry-20261124-b3-1/baseline-windows.json) · [开工裁定](assets/20o-b3/entry-20261124-b3-1/decisions.json)
+> **状态（2026-11-24）**　B3-0F 已收口，B3-1 的四个 time 入口与正式夹具已接入，三平台验收正在执行。`b3_1_started=true`、`b3_1_passed=false`、`b3_2_entry_ready=false`。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [time 实施证据](assets/20o-b3/entry-20261124-b3-1/README.md)
 > **输入契约**　15 个原语为 49～63，time 为 49～52；能力位 `clock` 为 1，`stdout` 为 5；目标为 ABI 1.20、生成器 23、标准库接口 1；C ABI 采用末尾 `capabilities: u64` 的冻结形式。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-1 只实现 time，不得把 B3-0E 候选或 `UnverifiedCoffExports` 写成产品验收。
 > 入口：[B3-0E 收口](assets/20o-b3/entry-20261124-b3-0e/README.md)、[B3-0D 收口](assets/20o-b3/entry-20261124-b3-0d/README.md)、[B3-0 实施规划](20o-b3-0-probe-freeze-plan.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
@@ -17,7 +17,7 @@
 | 目标版本 | ABI 1.20、生成器 23、标准库接口 1；49～52 激活，53～63 的激活策略见首轮裁定 |
 | 本批不做 | args/cli/fs/env/log 实现、教程/registry verified、B3-2、B4-B9、旧 721、历史债务核销 |
 | Windows COFF | B3-1 产品产物必须最终达到 `Complete`；B3-1 只处理 time 产物，完整三平台验收在 B3-7 |
-| 当前状态 | `b3_1_started=false`、`b3_1_passed=false`、`b3_2_entry_ready=false`、`b3_0_passed=true` |
+| 当前状态 | `b3_1_started=true`、`b3_1_passed=false`、`b3_2_entry_ready=false`、`b3_0_passed=true` |
 
 B3-1 实施 `time` 的四个入口。B3-0F 提供已冻结的六模块契约与验收入口，B3-1 的产品开工以本页 §3 为准。
 
@@ -98,7 +98,7 @@ Windows 本机已从 `e79fab3c` 的独立源码导出构建 release Runtime，�
 
 ### B3-1B：intrinsic、能力与 Runtime time 核心
 
-1. 按裁定登记 49～52；如选择 reserved，则登记 53～63 但不可调用；
+1. 按裁定激活 49～52，并预登记不可调用的 53～63；
 2. 在 intrinsic 表登记名称、参数、返回、效果、能力、C 符号和错误；
 3. 实现 `utc_now`、`monotonic`、`format_utc`、`sleep` 的 Runtime 核心；
 4. 实现 `clock` 能力检查和 `stdout` 无关的 time 边界；
@@ -132,7 +132,7 @@ Windows 本机已从 `e79fab3c` 的独立源码导出构建 release Runtime，�
 
 ### B3-1E：教程、边界与三平台
 
-1. 按 B3-1-FIXTURES 裁定确定 time 夹具落点，逐字执行 B3-0E 的冻结示例；
+1. 在 `tests/fixtures/docs/time/` 逐字执行 B3-0E 的冻结示例，正式目录已登记为 `planned`；
 2. VM 与原生 O0/O3 覆盖 `std.time`/`stdlib.time` 两个导入前缀；
 3. 覆盖固定墙钟、单调关系、UTC 格式边界、sleep 0/1 ns/1 ms/60 s/越界、取消与截止；
 4. 记录三平台实际结果；缺平台记 `unverifiable`；
@@ -214,7 +214,7 @@ core/rust/crates/xiao-runtime/src/                   time Runtime/C ABI
 core/rust/crates/xiao-vm/src/semantics/exec.rs       VM 分派
 core/rust/crates/xiao-codegen-llvm/src/              LLVM 原生入口
 tests/fixtures/docs/time/                            time 教程最终夹具
-docs/module-registry.json                            time 夹具路径登记待 B3-1-FIXTURES 裁定
+docs/module-registry.json                            time 源码和夹具路径的 planned 登记
 ```
 
 本页只做 B3-1 规划；B3-2 及后续仍未开始。

@@ -1,0 +1,14 @@
+from std.time import utc_now, monotonic, format_utc, sleep
+from std.text import length as text_length
+
+print(format_utc(0, "ms"))
+print(format_utc(unix_time = -1, unit = "ns"))
+print(text_length(format_utc(utc_now(unit = "ms"), "ms")))
+before = monotonic("ns")
+sleep(duration = 0, unit = "ms")
+print(monotonic(unit = "ns") >= before)
+
+try
+    sleep(-1, "ms")
+catch failure as TypeError
+    print(error_code(failure))

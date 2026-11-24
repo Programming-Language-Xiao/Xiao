@@ -1,0 +1,11 @@
+def utc_now(str unit) -> int
+    return os_time_utc_now(unit)
+
+def monotonic(str unit) -> int
+    return os_time_monotonic(unit)
+
+def format_utc(int unix_time, str unit) -> str
+    return os_time_format_utc(unix_time, unit)
+
+def sleep(int duration, str unit) -> none
+    os_time_sleep(duration, unit)

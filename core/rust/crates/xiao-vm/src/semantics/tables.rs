@@ -120,6 +120,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
             let checkpoint_counter = Rc::clone(&self.checkpoint_counter);
             let concurrency = Rc::clone(&self.concurrency);
             let capabilities = self.capabilities;
+            let clock = self.clock.clone();
             runtime = runtime.with_drop_executor(move |object| {
                 if context.fatal.get() {
                     return Ok(());
@@ -134,6 +135,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 vm.checkpoint_counter = Rc::clone(&checkpoint_counter);
                 vm.concurrency = Rc::clone(&concurrency);
                 vm.capabilities = capabilities;
+                vm.clock = clock.clone();
                 let result = vm.execute(
                     method,
                     &[BoundArgument {

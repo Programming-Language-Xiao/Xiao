@@ -195,6 +195,7 @@ fn malformed_xcon_never_enters_native_trampoline() {
             RuntimeHandle::current().id(),
             RuntimeHandle::current().id(),
             "en-US".to_owned(),
+            None,
         );
         assert!(
             matches!(outcome, NativeEntryOutcome::Error(NativeErrorPacket::Recoverable(error))
@@ -236,6 +237,7 @@ fn native_xcon_maximum_depth_round_trips_through_trampoline() {
         runtime_id,
         runtime_id,
         "en-US".to_owned(),
+        None,
     );
     let NativeEntryOutcome::Value(NativeRawValue {
         transfer: VmTransferValue::Xcon(actual),
@@ -372,6 +374,7 @@ fn native_trampoline_resets_worker_checkpoint_and_inherits_locale() {
                 runtime_id,
                 runtime_id,
                 "en-US".to_owned(),
+                None,
             );
             (
                 matches!(outcome, NativeEntryOutcome::Value(_)),

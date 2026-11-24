@@ -1,13 +1,15 @@
 //! LLVM 文本验证、编译、链接和运行的内部构建驱动器。
 
-use std::fs;
+use std::fs::{self, OpenOptions};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use xiao_ir::IrProgram;
 
 use crate::CODEGEN_VERSION;
-use crate::artifact::{ArtifactRuntimeComposition, verify_artifact};
+use crate::artifact::{ArtifactRuntimeComposition, verify_artifact_with_link_evidence};
 use crate::error::{CodegenError, Result};
 use crate::ir::{CodegenOptions, LlvmModule};
 use crate::lower_program;
@@ -107,7 +109,20 @@ impl NativeBuild {
                     .to_owned(),
             });
         }
-        let executable = if let Some(startup) = &request.options.debug_startup {
+        let require_time_coff = request.options.target.object_format == crate::ObjectFormat::Coff
+            && module
+                .runtime_components
+                .iter()
+                .any(|component| component == "time");
+        let mut link_evidence = None;
+        let executable = if require_time_coff {
+            let (path, evidence) =
+                request
+                    .toolchain
+                    .compile_time_coff(&module, &request.options, &request.output)?;
+            link_evidence = Some(evidence);
+            path
+        } else if let Some(startup) = &request.options.debug_startup {
             if startup.diagnostics_path.trim().is_empty() {
                 return Err(CodegenError::ToolchainUnavailable {
                     tool: "xiao-diagnostics".to_owned(),
@@ -145,11 +160,12 @@ impl NativeBuild {
                 request.options.optimization_level,
             )?
         };
-        let artifact_runtime = match verify_artifact(
+        let artifact_runtime = match verify_artifact_with_link_evidence(
             &executable,
             &request.options.target,
             &module.runtime_components,
             request.options.debug_startup.is_some(),
+            link_evidence.as_ref(),
         ) {
             Ok(evidence) => evidence,
             Err(error) => {
@@ -171,10 +187,16 @@ impl NativeBuild {
                             &crate::NativeRuntimeSupport::default(),
                             required,
                         )?;
-                    } else if required != 0 || !request.program.concurrency_calls.is_empty() {
+                    } else if required != 0
+                        || !request.program.concurrency_calls.is_empty()
+                        || module
+                            .runtime_components
+                            .iter()
+                            .any(|component| component == "time")
+                    {
                         return Err(crate::NativeMetadataError {
                             code: "X17-XAR-007",
-                            message: "并发原生产物缺少元数据节".to_owned(),
+                            message: "原生产物缺少必需的元数据节".to_owned(),
                         });
                     }
                     Ok(metadata)
@@ -191,6 +213,12 @@ impl NativeBuild {
             };
         if let Some(path) = &request.llvm_ir_output
             && let Err(error) = write_llvm_artifact(path, &module.text)
+        {
+            let _ = fs::remove_file(&executable);
+            return Err(error);
+        }
+        if let Some(link) = &link_evidence
+            && let Err(error) = link.save_map()
         {
             let _ = fs::remove_file(&executable);
             return Err(error);
@@ -234,6 +262,10 @@ impl NativeBuild {
 
 /// 在原生链接成功后原子提交可选 LLVM 文本，避免失败构建留下半成品。
 fn write_llvm_artifact(path: &Path, text: &str) -> Result<()> {
+    write_llvm_artifact_bytes(path, text.as_bytes())
+}
+
+pub(crate) fn write_llvm_artifact_bytes(path: &Path, bytes: &[u8]) -> Result<()> {
     if let Some(parent) = path
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
@@ -243,22 +275,25 @@ fn write_llvm_artifact(path: &Path, text: &str) -> Result<()> {
             message: error.to_string(),
         })?;
     }
-    let temporary = PathBuf::from(format!("{}.tmp-{}", path.display(), std::process::id()));
-    fs::write(&temporary, text).map_err(|error| CodegenError::Io {
-        path: temporary.clone(),
-        message: error.to_string(),
-    })?;
-    if cfg!(windows)
-        && let Err(error) = fs::remove_file(path)
-        && error.kind() != std::io::ErrorKind::NotFound
-    {
-        let _ = fs::remove_file(&temporary);
-        return Err(CodegenError::Io {
-            path: path.to_path_buf(),
+    static SEQUENCE: AtomicU64 = AtomicU64::new(0);
+    let mut temporary = path.as_os_str().to_owned();
+    temporary.push(format!(
+        ".tmp-{}-{}",
+        std::process::id(),
+        SEQUENCE.fetch_add(1, Ordering::Relaxed)
+    ));
+    let temporary = PathBuf::from(temporary);
+    let mut output = OpenOptions::new()
+        .create_new(true)
+        .write(true)
+        .open(&temporary)
+        .map_err(|error| CodegenError::Io {
+            path: temporary.clone(),
             message: error.to_string(),
-        });
-    }
-    if let Err(error) = fs::rename(&temporary, path) {
+        })?;
+    let written = output.write_all(bytes);
+    drop(output);
+    if let Err(error) = written.and_then(|()| fs::rename(&temporary, path)) {
         let _ = fs::remove_file(&temporary);
         return Err(CodegenError::Io {
             path: path.to_path_buf(),

@@ -597,6 +597,7 @@ name = "xiao-codegen-llvm"
 version = "0.1.0"
 dependencies = [
  "serde",
+ "sha2",
  "xiao-diagnostics",
  "xiao-intrinsics",
  "xiao-ir",

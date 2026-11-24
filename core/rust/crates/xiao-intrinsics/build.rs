@@ -37,12 +37,12 @@ fn main() {
     for row in &model.intrinsics {
         assert_ne!(row.id, 0, "IntrinsicId 0 保留为无效哨兵");
         assert!(ids.insert(row.id), "重复的 IntrinsicId {}", row.id);
+        assert!(
+            names.insert(&row.name),
+            "重复的 intrinsic 名称 {}",
+            row.name
+        );
         if row.status == "active" {
-            assert!(
-                names.insert(&row.name),
-                "重复的 intrinsic 名称 {}",
-                row.name
-            );
             assert_ne!(
                 row.vm_binding, "none",
                 "活动 intrinsic 缺少 VM 绑定: {}",
@@ -96,6 +96,39 @@ fn main() {
                     );
                     assert_eq!(row.effect, "pure", "字符构造必须是 pure: {}", row.name);
                     assert_eq!(row.capability, "none", "字符构造不应需要能力: {}", row.name);
+                }
+                "time" => {
+                    let time = [
+                        ("utc_now", "one", "str", "int", "reads_clock", "clock"),
+                        ("monotonic", "one", "str", "int", "reads_clock", "clock"),
+                        (
+                            "format_utc",
+                            "two",
+                            "time_value_and_unit",
+                            "str",
+                            "allocates",
+                            "none",
+                        ),
+                        (
+                            "sleep",
+                            "two",
+                            "time_value_and_unit",
+                            "none",
+                            "sleeps",
+                            "clock",
+                        ),
+                    ];
+                    let index = row.id.checked_sub(49).expect("time ID 从 49 开始") as usize;
+                    let &(name, arity, parameter, result, effect, capability) =
+                        time.get(index).expect("time ID 必须为 49～52");
+                    assert_eq!(row.name, format!("os_time_{name}"));
+                    assert_eq!(row.vm_binding, format!("time_{name}"));
+                    assert_eq!(row.abi_binding, row.vm_binding);
+                    assert_eq!(row.arity, arity);
+                    assert_eq!(row.parameter_type, parameter);
+                    assert_eq!(row.return_type, result);
+                    assert_eq!(row.effect, effect);
+                    assert_eq!(row.capability, capability);
                 }
                 "lfloat_divide" => {
                     assert_eq!(row.id, 33);
@@ -294,16 +327,35 @@ fn main() {
                 other => panic!("未知活动 intrinsic 类别 {other}"),
             }
         } else {
-            assert_eq!(
-                row.status, "tombstone",
-                "未知 intrinsic 状态 {}",
-                row.status
-            );
-            assert!(
-                row.name.starts_with("__reserved_"),
-                "墓碑名称必须明确保留: {}",
-                row.name
-            );
+            match row.status.as_str() {
+                "reserved" => {
+                    assert!((53..=63).contains(&row.id), "预登记的 ID 必须为 53～63");
+                    assert!(row.name.starts_with("os_"));
+                    assert_eq!(row.kind, "reserved");
+                    assert!(
+                        [
+                            &row.arity,
+                            &row.parameter_type,
+                            &row.return_type,
+                            &row.vm_binding,
+                            &row.abi_binding,
+                            &row.effect,
+                            &row.capability,
+                            &row.error
+                        ]
+                        .into_iter()
+                        .all(|field| field == "none"),
+                        "预登记 intrinsic 不得带活动签名或后端绑定: {}",
+                        row.name
+                    );
+                }
+                "tombstone" => assert!(
+                    row.name.starts_with("__reserved_"),
+                    "墓碑名称必须明确保留: {}",
+                    row.name
+                ),
+                _ => panic!("未知 intrinsic 状态 {}", row.status),
+            }
         }
     }
     let out = PathBuf::from(env::var_os("OUT_DIR").expect("OUT_DIR 缺失"));

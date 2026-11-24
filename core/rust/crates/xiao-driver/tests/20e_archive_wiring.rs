@@ -467,7 +467,10 @@ fn archive_protocol_passes_capabilities_to_preflight() {
         serde_json::json!({"max_call_depth":1024,"event_capacity":256,"timeout_ms":null}),
     )
     .unwrap();
-    assert_eq!(options.capabilities, KNOWN_CAPABILITY_MASK);
+    assert_eq!(
+        options.capabilities,
+        xiao_intrinsics::DEFAULT_CAPABILITY_MASK
+    );
 }
 
 #[test]

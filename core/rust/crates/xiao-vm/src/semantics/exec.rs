@@ -7,9 +7,13 @@
 //! `order` 逐条释放。动态错误发生时按同一份计划展开当前作用域栈。
 
 use super::constants::constant_value;
+#[path = "call_arguments.rs"]
+mod call_arguments;
+use call_arguments::bind_arguments;
 use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet};
 use std::rc::Rc;
+use std::sync::Arc;
 use xiao_bytecode::{
     BlockId, FuncId, PcMap, TacArgument, TacFunction, TacHandler, TacInstr, TacOp, TacProgram,
     VReg, build_pc_map,
@@ -20,7 +24,7 @@ use xiao_diagnostics::{
     SELECTOR_STEP_CODE, SET_COMPARISON_CODE, SET_MEMBERSHIP_CODE, SET_OPERATION_CODE, StackFrame,
     TYPE_MISMATCH_CODE, XiaoError,
 };
-use xiao_intrinsics::KNOWN_CAPABILITY_MASK;
+use xiao_intrinsics::DEFAULT_CAPABILITY_MASK;
 use xiao_intrinsics::{AbiBinding, IntrinsicId, VmBinding, active_by_id};
 use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue, is_hashable};
 use xiao_source::SourceSpan;
@@ -43,6 +47,8 @@ mod set_intrinsics;
 /// 表生命周期回调和执行上下文适配。
 #[path = "tables.rs"]
 mod tables;
+#[path = "time_intrinsics.rs"]
+mod time_intrinsics;
 
 use crate::carrier::{Carrier, CarrierContext, MapPoint};
 use crate::frame::Frame;
@@ -210,6 +216,7 @@ pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     capabilities: u64,
     /// 当前执行单元的 Runtime、取消与子执行单元事件。
     concurrency: Rc<concurrent::ConcurrentContext>,
+    clock: Arc<xiao_runtime::time::TimeContext>,
 }
 
 struct ModuleInstance {
@@ -228,7 +235,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             sink,
             VmMetadata::legacy(program),
             VmSession::new(),
-            KNOWN_CAPABILITY_MASK,
+            DEFAULT_CAPABILITY_MASK,
         )
     }
 
@@ -260,6 +267,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             checkpoint_counter: Rc::new(Cell::new(0)),
             capabilities,
             concurrency: Rc::new(concurrent::ConcurrentContext::default()),
+            clock: Arc::new(xiao_runtime::time::TimeContext::host()),
         }
     }
 
@@ -352,6 +360,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             });
             return (RunResult::Fatal(fatal), None);
         }
+        self.clock = xiao_runtime::time::TimeContext::for_vm_run();
         self.sink.record(VmEvent::ModuleLoaded {
             module: self.metadata.module_name.clone(),
         });
@@ -1842,6 +1851,9 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         let declaration = active_by_id(id).ok_or_else(|| {
             Fault::Error(XiaoError::invalid_value(format!("未知 intrinsic ID {id}")))
         })?;
+        if declaration.kind == xiao_intrinsics::IntrinsicKind::Time {
+            return self.execute_time(declaration, arguments, span);
+        }
         if let Some(bit) = declaration.capability.bit()
             && self.capabilities & bit == 0
         {
@@ -2418,83 +2430,4 @@ fn integer_value(value: &RuntimeValue) -> Option<i128> {
         RuntimeValue::Lint(value) => value.parse().ok(),
         _ => None,
     }
-}
-
-/// 按调用签名把实参绑定到形参寄存器。
-///
-/// 位置实参按声明顺序填充；关键字实参按形参名重排——这正是 R1 冻结的
-/// 「关键字参数由被调用方按名重排」，调用方只写实际提供的槽位。
-fn bind_arguments<C: Carrier>(
-    function: &TacFunction,
-    program: &TacProgram,
-    frame: &mut Frame<C>,
-    arguments: &[BoundArgument],
-) -> Result<(), Fault> {
-    use xiao_bytecode::sig::ParamKind;
-    use xiao_runtime::{ArrayHandle, DictHandle, DictKind};
-
-    let signature = function.signature.and_then(|id| program.signatures.get(id));
-    let mut next_positional = 0_usize;
-    let mut var_args = Vec::new();
-    let mut keyword_args = Vec::new();
-    for argument in arguments {
-        let slot = match &argument.keyword {
-            None => {
-                if signature
-                    .is_some_and(|signature| signature.var_args_slot == Some(next_positional))
-                {
-                    var_args.push(argument.value.clone());
-                    continue;
-                }
-                let slot = next_positional;
-                next_positional = next_positional.saturating_add(1);
-                slot
-            }
-            Some(name) => {
-                let slot = signature.and_then(|signature| {
-                    signature
-                        .parameter_names
-                        .iter()
-                        .enumerate()
-                        .position(|(index, item)| {
-                            item == name
-                                && !matches!(
-                                    signature.parameter_kinds[index],
-                                    ParamKind::VarArgs | ParamKind::VarKeywords
-                                )
-                        })
-                });
-                if slot.is_none()
-                    && signature.is_some_and(|signature| signature.kw_args_slot.is_some())
-                {
-                    keyword_args.push((name.clone(), argument.value.clone()));
-                    continue;
-                }
-                slot.unwrap_or(usize::MAX)
-            }
-        };
-        if let Some(register) = function.parameters.get(slot) {
-            frame.carrier.write(*register, argument.value.clone());
-        }
-    }
-    if let Some(signature) = signature {
-        if let Some(register) = signature
-            .var_args_slot
-            .and_then(|slot| function.parameters.get(slot))
-        {
-            let array = ArrayHandle::new(var_args).map_err(Fault::Error)?;
-            frame.carrier.write(*register, RuntimeValue::Array(array));
-        }
-        if let Some(register) = signature
-            .kw_args_slot
-            .and_then(|slot| function.parameters.get(slot))
-        {
-            let dictionary =
-                DictHandle::new(DictKind::Table, keyword_args).map_err(Fault::Error)?;
-            frame
-                .carrier
-                .write(*register, RuntimeValue::DictTable(dictionary));
-        }
-    }
-    Ok(())
 }

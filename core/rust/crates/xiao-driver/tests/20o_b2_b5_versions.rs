@@ -1,4 +1,4 @@
-//! B5精确ABI1.19、固定旧基线拒绝与同版本容器字段回归。
+//! B5 固定 ABI 1.18 基线拒绝与当前产物版本字段回归。
 use std::path::Path;
 use xiao_codegen_llvm::{CODEGEN_VERSION, NativeMetadata, NativeRuntimeSupport, TargetDescription};
 use xiao_driver::{ArchiveBuildRequest, CancellationToken, FrontendCompiler, FrontendRequest};
@@ -52,9 +52,9 @@ fn frozen_abi18_baselines_are_rejected_before_entry() {
 
 #[test]
 /// 新头、指令流、归档索引和原生元数据使用同一个精确版本，schema保持既有常量。
-fn current_artifacts_bind_exact_abi19_and_current_codegen() {
-    assert_eq!(ABI_MINOR_VERSION, 19);
-    assert_eq!(CODEGEN_VERSION, 22);
+fn current_artifacts_bind_exact_abi_and_codegen() {
+    assert_eq!(ABI_MINOR_VERSION, 20);
+    assert_eq!(CODEGEN_VERSION, 23);
     let source = "print(\"B5-current\")\n";
     let product = FrontendCompiler::new()
         .compile(&FrontendRequest::from_text(source))
@@ -72,7 +72,7 @@ fn current_artifacts_bind_exact_abi19_and_current_codegen() {
     assert_eq!(metadata.generator_version, CODEGEN_VERSION);
     assert_eq!(metadata.runtime_abi_min, ABI_ENCODED_VERSION);
     assert_eq!(metadata.runtime_abi_max, ABI_ENCODED_VERSION);
-    assert_eq!(metadata.stdlib.runtime_abi_minor, 19);
+    assert_eq!(metadata.stdlib.runtime_abi_minor, ABI_MINOR_VERSION);
     assert_eq!(metadata.stdlib.stdlib_interface_version, 1);
     let path = std::env::temp_dir().join(format!("b5-current-{}", std::process::id()));
     std::fs::create_dir_all(&path).unwrap();

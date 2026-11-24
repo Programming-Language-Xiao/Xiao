@@ -23,7 +23,7 @@
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
-pub const ABI_MINOR_VERSION: u32 = 19;
+pub const ABI_MINOR_VERSION: u32 = 20;
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -1123,6 +1123,31 @@ unsafe extern "C" {
     /// 成功0释放替换out且不清挂起错误；1/2/3保留out及挂起槽；类型002、域/非有限009走6。
     /// B5已切换ABI1.19；生成器沿用21，最终公共发布仍后置。
     pub fn xiao_runtime_cmath_log10(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 读取 UTC 墙钟。unit 借读，out 已初始化且与输入不重叠。
+    pub fn xiao_runtime_time_utc_now(
+        unit: *const XiaoValue,
+        out: *mut XiaoValue,
+        capabilities: u64,
+    ) -> i32;
+    /// 读取当前运行的单调时钟。成功时替换 out。
+    pub fn xiao_runtime_time_monotonic(
+        unit: *const XiaoValue,
+        out: *mut XiaoValue,
+        capabilities: u64,
+    ) -> i32;
+    /// 格式化给定时间。成功时 out 获得一个拥有的 UTF-8 字符串。
+    pub fn xiao_runtime_time_format_utc(
+        unix_time: *const XiaoValue,
+        unit: *const XiaoValue,
+        out: *mut XiaoValue,
+        capabilities: u64,
+    ) -> i32;
+    /// 按运行内单调钟等待，沿现有通道交付取消。
+    pub fn xiao_runtime_time_sleep(
+        duration: *const XiaoValue,
+        unit: *const XiaoValue,
+        capabilities: u64,
+    ) -> i32;
     /// 读取当前线程挂起错误的机器字段。
     pub fn xiao_runtime_error_snapshot(out: *mut XiaoAbiErrorSnapshot) -> i32;
     /// 读取当前线程挂起错误的第 `index` 个结构化参数。
@@ -1413,9 +1438,9 @@ mod tests {
     #[test]
     /// 版本编码能区分主版本并保留次版本比较空间。
     fn version_encoding_is_stable() {
-        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0013);
+        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0014);
         assert_eq!(ABI_MAJOR_VERSION, 1);
-        assert_eq!(ABI_MINOR_VERSION, 19);
+        assert_eq!(ABI_MINOR_VERSION, 20);
     }
 
     #[test]

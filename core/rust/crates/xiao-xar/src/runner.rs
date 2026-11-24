@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
 use xiao_artifacts::{ArtifactError, Digest256};
 use xiao_i18n::LocaleContext;
-use xiao_intrinsics::{KNOWN_CAPABILITY_MASK, validate_capability_mask};
+use xiao_intrinsics::{DEFAULT_CAPABILITY_MASK, validate_capability_mask};
 
 use super::{
     ARCHIVE_DEPENDENCY_UNSATISFIED_CODE, ARCHIVE_INVALID_REQUIREMENTS_CODE,
@@ -45,7 +45,7 @@ impl Default for XarRunOptions {
             vm_options: xiao_vm::VmOptions::default(),
             event_capacity: xiao_vm::DEFAULT_EVENT_CAPACITY,
             debug: false,
-            capabilities: KNOWN_CAPABILITY_MASK,
+            capabilities: DEFAULT_CAPABILITY_MASK,
         }
     }
 }

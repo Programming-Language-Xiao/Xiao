@@ -63,6 +63,10 @@ mod abi_numeric;
 mod abi_resource;
 #[path = "abi_tables.rs"]
 mod abi_tables;
+#[path = "abi_time.rs"]
+mod abi_time;
+#[path = "abi_value_validation.rs"]
+mod abi_value_validation;
 #[path = "abi_version.rs"]
 mod abi_version;
 #[allow(unused_imports)]
@@ -996,6 +1000,7 @@ pub extern "C" fn xiao_runtime_language_context_set(locale: XiaoAbiBytes) -> i32
         }
     };
     CURRENT_LOCALE.with(|current| *current.borrow_mut() = Some(locale));
+    abi_time::begin_entry();
     XiaoAbiStatus::Ok.code()
 }
 

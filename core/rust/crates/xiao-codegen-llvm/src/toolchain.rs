@@ -258,7 +258,7 @@ impl Toolchain {
         target: &TargetDescription,
         output: impl AsRef<Path>,
     ) -> Result<PathBuf> {
-        self.compile_inner(text, target, output, None, None, &[], 0)
+        self.compile_inner(text, target, output, None, None, &[], 0, None)
     }
 
     /// 验证 LLVM IR 后仅链接 IR 自身；即便工具链配置过 Runtime，也不会继承它。
@@ -268,7 +268,7 @@ impl Toolchain {
         target: &TargetDescription,
         output: impl AsRef<Path>,
     ) -> Result<PathBuf> {
-        self.compile_inner(text, target, output, None, None, &[], 0)
+        self.compile_inner(text, target, output, None, None, &[], 0, None)
     }
 
     /// 按指定安全优化级别验证并编译不使用 Runtime 的模块。
@@ -279,7 +279,16 @@ impl Toolchain {
         output: impl AsRef<Path>,
         optimization_level: u8,
     ) -> Result<PathBuf> {
-        self.compile_inner(text, target, output, None, None, &[], optimization_level)
+        self.compile_inner(
+            text,
+            target,
+            output,
+            None,
+            None,
+            &[],
+            optimization_level,
+            None,
+        )
     }
 
     /// 验证 LLVM IR 后调用 clang，并按需链接调用方注入的 Runtime 静态库。
@@ -311,6 +320,7 @@ impl Toolchain {
             None,
             runtime_components,
             0,
+            None,
         )
     }
 
@@ -333,6 +343,7 @@ impl Toolchain {
             None,
             runtime_components,
             optimization_level,
+            None,
         )
     }
 
@@ -378,6 +389,7 @@ impl Toolchain {
             Some(startup),
             runtime_components,
             0,
+            None,
         )
     }
 
@@ -401,7 +413,41 @@ impl Toolchain {
             Some(startup),
             runtime_components,
             optimization_level,
+            None,
         )
+    }
+
+    /// time 的 Windows 构建从同一次受控链接直接获取实际映像的公开符号清单。
+    pub(crate) fn compile_time_coff(
+        &self,
+        module: &crate::LlvmModule,
+        options: &crate::CodegenOptions,
+        output: &Path,
+    ) -> Result<(PathBuf, crate::artifact::CoffLinkEvidence)> {
+        let mut map_path = output.to_path_buf();
+        let file_name = output.file_name().ok_or_else(|| CodegenError::Io {
+            path: output.to_path_buf(),
+            message: "COFF 输出文件名缺失".to_owned(),
+        })?;
+        map_path.set_file_name(format!("{}.map", file_name.to_string_lossy()));
+        let temporary = TempFile::new("xiao-coff-link", "map")?;
+        let executable = self.compile_inner(
+            &module.text,
+            &options.target,
+            output,
+            self.runtime_library.as_deref(),
+            options.debug_startup.as_ref(),
+            &module.runtime_components,
+            options.optimization_level,
+            Some(&temporary.path),
+        )?;
+        match crate::artifact::CoffLinkEvidence::read(&executable, &temporary.path, &map_path) {
+            Ok(evidence) => Ok((executable, evidence)),
+            Err(error) => {
+                let _ = fs::remove_file(&executable);
+                Err(error)
+            }
+        }
     }
 
     /// 按是否继承配置中的 Runtime 库执行一次验证、编译和链接。
@@ -415,6 +461,7 @@ impl Toolchain {
         startup: Option<&NativeStartup>,
         runtime_components: &[String],
         optimization_level: u8,
+        coff_map: Option<&Path>,
     ) -> Result<PathBuf> {
         let output = output.as_ref().to_path_buf();
         if optimization_level > 3 {
@@ -524,11 +571,21 @@ impl Toolchain {
             startup_object = Some(object);
         }
         if matches!(target.object_format, ObjectFormat::Coff) {
-            if startup.is_some() {
-                args.push("-Wl,/export:xiao_native_debug_start".to_owned());
-            }
-            for symbol in runtime_export_symbols(runtime_components) {
-                args.push(format!("-Wl,/export:{symbol}"));
+            if let Some(map) = coff_map {
+                args.extend([
+                    "-ffunction-sections".to_owned(),
+                    "-fdata-sections".to_owned(),
+                    "-Xlinker".to_owned(),
+                    format!("/MAP:{}", path_text(map)),
+                    "-Wl,/INCREMENTAL:NO,/OPT:REF".to_owned(),
+                ]);
+            } else {
+                if startup.is_some() {
+                    args.push("-Wl,/export:xiao_native_debug_start".to_owned());
+                }
+                for symbol in runtime_export_symbols(runtime_components) {
+                    args.push(format!("-Wl,/export:{symbol}"));
+                }
             }
         }
         if let Some(runtime_library) = runtime_library {

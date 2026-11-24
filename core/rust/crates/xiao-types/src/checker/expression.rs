@@ -4,7 +4,9 @@
 //! 容器、函数和表的专门规则仍由各自子模块提供。
 
 use xiao_diagnostics::{DiagnosticParam, error_kind_of};
-use xiao_intrinsics::{CMATH_DECLARATIONS, IntrinsicKind, ValueType, cmath_parameters};
+use xiao_intrinsics::{
+    CMATH_DECLARATIONS, IntrinsicKind, ValueType, cmath_parameters, time_parameters,
+};
 use xiao_source::SourceSpan;
 use xiao_syntax::{
     BinaryOperator, CallArgument, CallArgumentKind, Expression, FunctionParameterKind, LiteralKind,
@@ -21,6 +23,15 @@ use crate::numeric::{
 use crate::types::Type;
 
 use super::{RuntimeCheckKind, TypeChecker, TypedNode};
+
+fn time_intrinsic_type(value: ValueType) -> Type {
+    match value {
+        ValueType::Str => Type::scalar(ScalarType::Str),
+        ValueType::Int => Type::scalar(ScalarType::Int),
+        ValueType::None => Type::None,
+        _ => unreachable!("固定的 time 类型"),
+    }
+}
 
 impl<'source> TypeChecker<'source> {
     /// 显式lfloat声明的直接字面量沿文本接纳，不先窄化为宿主f64。
@@ -650,6 +661,28 @@ impl<'source> TypeChecker<'source> {
         {
             self.record_intrinsic_call(callee, span);
             return self.check_cmath_intrinsic_call(declaration, arguments, span);
+        }
+        if let Some(declaration) = self.intrinsic_decl(callee)
+            && declaration.kind == IntrinsicKind::Time
+        {
+            self.record_intrinsic_call(callee, span);
+            let parameters = time_parameters(declaration.id).expect("time 形参已在契约表校验");
+            let parameters: Vec<_> = parameters
+                .iter()
+                .map(|&(name, ty)| FunctionParameterSignature {
+                    name: format!("ascii:{name}"),
+                    kind: FunctionParameterKind::PositionalOrKeyword,
+                    ty: time_intrinsic_type(ty),
+                    has_default: false,
+                })
+                .collect();
+            let signature = FunctionSignature::new(
+                format!("ascii:{}", declaration.public_name),
+                parameters,
+                time_intrinsic_type(declaration.signature.return_type),
+                span,
+            );
+            return self.check_function_arguments(&signature, arguments, span);
         }
         if self
             .intrinsic_decl(callee)

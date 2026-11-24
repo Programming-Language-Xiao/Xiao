@@ -6,7 +6,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use xiao_intrinsics::{CapabilityMaskError, KNOWN_CAPABILITY_MASK, validate_capability_mask};
+use xiao_intrinsics::{CapabilityMaskError, DEFAULT_CAPABILITY_MASK, validate_capability_mask};
 use xiao_ir::{
     IR_VERSION, IrExpression, IrExpressionKind, IrName, IrProgram, IrSpan, IrStatement,
     IrStatementKind, IrType,
@@ -95,7 +95,7 @@ impl CodegenOptions {
             debug_startup: None,
             locale: "zh-CN".to_owned(),
             optimization_level: BASELINE_OPTIMIZATION_LEVEL,
-            capabilities: KNOWN_CAPABILITY_MASK,
+            capabilities: DEFAULT_CAPABILITY_MASK,
             internal_concurrency: false,
         }
     }

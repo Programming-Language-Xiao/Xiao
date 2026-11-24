@@ -124,8 +124,8 @@ fn cmath_intrinsics_typecheck_and_lower_to_frozen_ir() {
             assert!(arguments.iter().all(|argument| argument.name.is_none()));
         }
     }
-    assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 19);
-    assert_eq!(xiao_codegen_llvm::CODEGEN_VERSION, 22);
+    assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 20);
+    assert_eq!(xiao_codegen_llvm::CODEGEN_VERSION, 23);
     println!("B4-1-CMATH count=15 positional=named=exact ids=34..48 return=float result=success");
 }
 

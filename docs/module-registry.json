@@ -3,6 +3,24 @@
   "schemaVersion": 1,
   "modules": [
     {
+      "id": "stdlib.time",
+      "stage": "20O-B3-1",
+      "status": "planned",
+      "code": [
+        "stdlib/time.xiao",
+        "core/rust/crates/xiao-runtime/src/time.rs",
+        "core/rust/crates/xiao-runtime/src/abi_time.rs"
+      ],
+      "tests": [
+        "core/rust/crates/xiao-driver/tests/20o_b3_time_tutorial.rs",
+        "tests/fixtures/docs/time"
+      ],
+      "usedocs": [
+        "docs/DevDocs/20o-b3-1-time-implementation-plan.md",
+        "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials/time.md"
+      ]
+    },
+    {
       "id": "stdlib.cmath",
       "stage": "20O-B2-C",
       "status": "verified",

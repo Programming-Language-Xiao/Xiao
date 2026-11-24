@@ -8,6 +8,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::Path;
 
+use sha2::{Digest, Sha256};
+
 use crate::error::{CodegenError, Result};
 use crate::target::{Endian, ObjectFormat, TargetDescription};
 
@@ -261,6 +263,151 @@ pub struct ArtifactRuntimeComposition {
     pub diagnostic_symbols: Vec<String>,
     /// 产物组件观察的可信度；没有可读 COFF 表时，导出表由链接参数主动写入，不能证明内部节已裁剪。
     pub verification: ArtifactVerification,
+    /// 本次受控链接的映像与清单摘要。
+    pub coff_link_identity: Option<CoffLinkIdentity>,
+}
+
+/// 受控 MSVC 链接清单与最终映像的字节身份。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct CoffLinkIdentity {
+    /// 本次链接保留的 map 路径。
+    pub map_path: std::path::PathBuf,
+    /// 最终 PE 映像的 SHA-256。
+    pub artifact_sha256: String,
+    /// 链接器生成的完整映射的 SHA-256。
+    pub map_sha256: String,
+}
+
+/// 只由工具链在本次链接结束后构造。
+pub(crate) struct CoffLinkEvidence {
+    identity: CoffLinkIdentity,
+    symbols: Vec<String>,
+    map_bytes: Vec<u8>,
+}
+
+impl CoffLinkEvidence {
+    pub(crate) fn save_map(&self) -> Result<()> {
+        crate::build::write_llvm_artifact_bytes(&self.identity.map_path, &self.map_bytes)
+    }
+
+    pub(crate) fn read(executable: &Path, map: &Path, output: &Path) -> Result<Self> {
+        let artifact = read_artifact_bytes(executable)?;
+        let map_bytes = read_artifact_bytes(map)?;
+        let fail = || artifact_error(executable, "MSVC 链接映射或映像身份无效".to_owned());
+        let text = String::from_utf8_lossy(&map_bytes);
+        let pe_offset = u64::from(read_u32(
+            &artifact,
+            0x3c,
+            Endian::Little,
+            executable,
+            "PE header offset",
+        )?);
+        let pe_timestamp = read_u32(
+            &artifact,
+            pe_offset + 8,
+            Endian::Little,
+            executable,
+            "PE timestamp",
+        )?;
+        let image_base = read_u64(
+            &artifact,
+            pe_offset + 48,
+            Endian::Little,
+            executable,
+            "PE image base",
+        )?;
+        let section_count = u64::from(read_u16(
+            &artifact,
+            pe_offset + 6,
+            Endian::Little,
+            executable,
+            "PE section count",
+        )?);
+        let optional_size = u64::from(read_u16(
+            &artifact,
+            pe_offset + 20,
+            Endian::Little,
+            executable,
+            "PE optional size",
+        )?);
+        let sections = pe_offset + 24 + optional_size;
+        let lines: Vec<_> = text.lines().map(str::trim).collect();
+        let stamp = lines
+            .iter()
+            .find_map(|line| line.strip_prefix("Timestamp is "))
+            .and_then(|line| line.split_whitespace().next())
+            .and_then(|value| u32::from_str_radix(value, 16).ok());
+        let base = lines
+            .iter()
+            .find_map(|line| line.strip_prefix("Preferred load address is "))
+            .and_then(|value| u64::from_str_radix(value, 16).ok());
+        if stamp != Some(pe_timestamp) || base != Some(image_base) {
+            return Err(fail());
+        }
+        let start = lines
+            .iter()
+            .position(|line| line.contains("Publics by Value") && line.contains("Rva+Base"))
+            .ok_or_else(fail)?;
+        let end = lines[start + 1..]
+            .iter()
+            .position(|line| line.starts_with("entry point at"))
+            .ok_or_else(fail)?
+            + start
+            + 1;
+        let mut symbols = BTreeSet::new();
+        for line in lines[start + 1..end].iter().filter(|line| !line.is_empty()) {
+            let mut values = line.split_whitespace();
+            let (segment, offset) = values
+                .next()
+                .and_then(|address| address.split_once(':'))
+                .ok_or_else(fail)?;
+            let name = values.next().ok_or_else(fail)?;
+            let address = values
+                .next()
+                .and_then(|value| u64::from_str_radix(value, 16).ok())
+                .ok_or_else(fail)?;
+            if !name.starts_with(RUNTIME_SYMBOL_PREFIX) && !DEBUG_ACTIVATION_SYMBOLS.contains(&name)
+            {
+                continue;
+            }
+            let segment = u64::from_str_radix(segment, 16).map_err(|_| fail())?;
+            let offset = u64::from_str_radix(offset, 16).map_err(|_| fail())?;
+            if segment == 0 || segment > section_count {
+                return Err(fail());
+            }
+            let section = sections + (segment - 1) * 40;
+            let size = u64::from(read_u32(
+                &artifact,
+                section + 8,
+                Endian::Little,
+                executable,
+                "PE section size",
+            )?);
+            let rva = u64::from(read_u32(
+                &artifact,
+                section + 12,
+                Endian::Little,
+                executable,
+                "PE section RVA",
+            )?);
+            if offset >= size || address.checked_sub(image_base) != rva.checked_add(offset) {
+                return Err(fail());
+            }
+            symbols.insert(normalize_symbol(name));
+        }
+        if symbols.is_empty() {
+            return Err(fail());
+        }
+        Ok(Self {
+            identity: CoffLinkIdentity {
+                map_path: output.to_path_buf(),
+                artifact_sha256: format!("{:x}", Sha256::digest(&artifact)),
+                map_sha256: format!("{:x}", Sha256::digest(&map_bytes)),
+            },
+            symbols: symbols.into_iter().collect(),
+            map_bytes,
+        })
+    }
 }
 
 /// 产物 Runtime 组成观察的可信度。
@@ -289,11 +436,15 @@ pub fn inspect_artifact(
     target: &TargetDescription,
 ) -> Result<ArtifactInspection> {
     let path = path.as_ref();
-    let bytes = fs::read(path).map_err(|error| CodegenError::Io {
+    let bytes = read_artifact_bytes(path)?;
+    parse_artifact(path, &bytes, target)
+}
+
+fn read_artifact_bytes(path: &Path) -> Result<Vec<u8>> {
+    fs::read(path).map_err(|error| CodegenError::Io {
         path: path.to_path_buf(),
         message: error.to_string(),
-    })?;
-    parse_artifact(path, &bytes, target)
+    })
 }
 
 /// 验证 Runtime 组件的链接后证据和调试启动符号。
@@ -303,11 +454,40 @@ pub fn verify_artifact(
     declared_components: &[String],
     debug_enabled: bool,
 ) -> Result<ArtifactRuntimeComposition> {
-    let path = path.as_ref();
-    let inspection = inspect_artifact(path, target)?;
+    verify_artifact_with_link_evidence(
+        path.as_ref(),
+        target,
+        declared_components,
+        debug_enabled,
+        None,
+    )
+}
+
+pub(crate) fn verify_artifact_with_link_evidence(
+    path: &Path,
+    target: &TargetDescription,
+    declared_components: &[String],
+    debug_enabled: bool,
+    evidence: Option<&CoffLinkEvidence>,
+) -> Result<ArtifactRuntimeComposition> {
+    let bytes = read_artifact_bytes(path)?;
+    let inspection = parse_artifact(path, &bytes, target)?;
+    let symbols = match evidence {
+        Some(evidence) => {
+            if inspection.object_format != ObjectFormat::Coff
+                || format!("{:x}", Sha256::digest(&bytes)) != evidence.identity.artifact_sha256
+            {
+                return Err(artifact_error(
+                    path,
+                    "COFF 链接映射与产物摘要不符".to_owned(),
+                ));
+            }
+            &evidence.symbols
+        }
+        None => &inspection.symbols,
+    };
     let declared_components = normalized_components(declared_components);
-    let runtime_symbols = inspection
-        .symbols
+    let runtime_symbols = symbols
         .iter()
         .filter(|symbol| symbol.starts_with(RUNTIME_SYMBOL_PREFIX))
         .cloned()
@@ -320,12 +500,14 @@ pub fn verify_artifact(
         .filter(|dependency| is_runtime_dependency(dependency))
         .cloned()
         .collect::<Vec<_>>();
-    let verification =
-        if inspection.object_format == ObjectFormat::Coff && !inspection.symbol_table_readable {
-            ArtifactVerification::UnverifiedCoffExports
-        } else {
-            ArtifactVerification::Complete
-        };
+    let verification = if inspection.object_format == ObjectFormat::Coff
+        && !inspection.symbol_table_readable
+        && evidence.is_none()
+    {
+        ArtifactVerification::UnverifiedCoffExports
+    } else {
+        ArtifactVerification::Complete
+    };
 
     if declared_components.is_empty() && !runtime_symbols.is_empty() {
         return Err(artifact_error(
@@ -346,6 +528,15 @@ pub fn verify_artifact(
         ));
     }
     if verification == ArtifactVerification::Complete {
+        if evidence.is_some() && !unclassified_symbols.is_empty() {
+            return Err(artifact_error(
+                path,
+                format!(
+                    "COFF 映像包含未分类的 Runtime 符号：{}",
+                    unclassified_symbols.join(", ")
+                ),
+            ));
+        }
         let missing = declared_components
             .iter()
             .filter(|component| !observed_components.iter().any(|item| item == *component))
@@ -369,15 +560,17 @@ pub fn verify_artifact(
             return Err(artifact_error(
                 path,
                 format!(
-                    "产物观察到未由 IR 登记的 Runtime 组件：{}",
-                    unexpected.join(", ")
+                    "产物观察到未由 IR 登记的 Runtime 组件：{}；声明={:?}，观察={:?}，Runtime 符号={:?}",
+                    unexpected.join(", "),
+                    declared_components,
+                    observed_components,
+                    runtime_symbols
                 ),
             ));
         }
     }
 
-    let diagnostic_symbols = inspection
-        .symbols
+    let diagnostic_symbols = symbols
         .iter()
         .filter(|symbol| DEBUG_ACTIVATION_SYMBOLS.contains(&symbol.as_str()))
         .cloned()
@@ -410,6 +603,7 @@ pub fn verify_artifact(
         dependencies: inspection.dependencies,
         diagnostic_symbols,
         verification,
+        coff_link_identity: evidence.map(|entry| entry.identity.clone()),
     })
 }
 
@@ -1446,6 +1640,15 @@ mod link_tests;
 
 /// 将一个 Runtime 符号登记到它所属的组件集合。
 fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
+    if matches!(
+        symbol,
+        "xiao_runtime_time_utc_now"
+            | "xiao_runtime_time_monotonic"
+            | "xiao_runtime_time_format_utc"
+            | "xiao_runtime_time_sleep"
+    ) {
+        components.insert("time".to_owned());
+    }
     if symbol.starts_with("xiao_runtime_value_")
         || symbol.starts_with("xiao_runtime_string_")
         || symbol.starts_with("xiao_runtime_error_")
@@ -1791,6 +1994,7 @@ entry:
     fn composition_keeps_declared_and_observed_components_separate() {
         let composition = ArtifactRuntimeComposition {
             object_format: crate::ObjectFormat::Elf,
+            coff_link_identity: None,
             declared_components: vec!["value".to_owned()],
             observed_components: vec!["value".to_owned()],
             runtime_symbols: vec!["xiao_runtime_value_int".to_owned()],

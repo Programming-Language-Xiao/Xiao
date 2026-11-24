@@ -177,7 +177,7 @@ fn default_checkpoints_enabled() -> bool {
 
 /// 返回运行请求默认的冻结能力集合。
 fn default_capabilities() -> u64 {
-    xiao_intrinsics::KNOWN_CAPABILITY_MASK
+    xiao_intrinsics::DEFAULT_CAPABILITY_MASK
 }
 
 /// 全开默认值不增加旧请求序列化后的字段。

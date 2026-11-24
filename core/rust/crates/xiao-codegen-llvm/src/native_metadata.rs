@@ -29,7 +29,7 @@ pub struct NativeMetadata {
     pub version: u16,
     /// 必需 Runtime ABI 范围下界。
     pub runtime_abi_min: u64,
-    /// 必需Runtime ABI范围上界；B5起精确为1.19，不隐式扩大。
+    /// 必需 Runtime ABI 范围上界，精确绑定生成产物的 ABI。
     pub runtime_abi_max: u64,
     /// 冻结并发能力位，不含 archive_requirements。
     pub required_features: u64,

@@ -370,7 +370,7 @@ pub fn compatibility_matrix() -> Vec<CompatibilityCell> {
     cells
 }
 
-/// 三种当前产物 × ABI 1.16/1.17/1.18/当前版本；旧Runtime在用户入口前拒绝。
+/// 三种当前产物 × ABI 1.16～1.19 与当前版本；旧 Runtime 在用户入口前拒绝。
 #[must_use]
 pub fn concurrency_compatibility_matrix() -> Vec<CompatibilityCell> {
     let mut cells = Vec::new();
@@ -398,11 +398,17 @@ pub fn concurrency_compatibility_matrix() -> Vec<CompatibilityCell> {
                     code: code.to_owned(),
                 },
             ),
-            ("1.19", CompatibilityAction::Direct),
+            (
+                "1.19",
+                CompatibilityAction::Reject {
+                    code: code.to_owned(),
+                },
+            ),
+            ("1.20", CompatibilityAction::Direct),
         ] {
             cells.push(cell(
                 axis,
-                format!("{artifact}/concurrency/abi=1.19"),
+                format!("{artifact}/concurrency/abi=1.20"),
                 abi.to_owned(),
                 action,
                 CompatibilityEvidence::Verified,

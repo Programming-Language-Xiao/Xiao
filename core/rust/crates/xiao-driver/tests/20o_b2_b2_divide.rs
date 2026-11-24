@@ -71,10 +71,10 @@ fn lfloat_divide_requires_the_frozen_public_contract() {
         assert_eq!(internal.capability, xiao_intrinsics::Capability::None);
     }
     assert!(
-        xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(49).unwrap()).is_none()
+        xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(53).unwrap()).is_none()
     );
     assert!(
         xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(100).unwrap()).is_none()
     );
-    assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 19);
+    assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 20);
 }

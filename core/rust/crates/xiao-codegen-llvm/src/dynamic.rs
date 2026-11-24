@@ -727,7 +727,10 @@ impl<'a> DynamicGenerator<'a> {
             generator
                 .declarations
                 .iter()
-                .filter(|declaration| declaration.starts_with("declare i32 @xiao_runtime_cmath_"))
+                .filter(|declaration| {
+                    declaration.starts_with("declare i32 @xiao_runtime_cmath_")
+                        || declaration.starts_with("declare i32 @xiao_runtime_time_")
+                })
                 .cloned(),
         );
         self.next_global = generator.next_global;

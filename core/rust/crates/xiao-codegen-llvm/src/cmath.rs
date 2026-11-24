@@ -5,6 +5,13 @@ use xiao_ir::IrCallArgument;
 /// 按冻结形参返回源码实参排列；求值仍由调用方按源码顺序完成。
 pub(crate) fn argument_order(id: u32, arguments: &[IrCallArgument]) -> Option<Vec<usize>> {
     let parameters = cmath_parameters(IntrinsicId::new(id)?)?;
+    intrinsic_argument_order(parameters, arguments)
+}
+
+pub(crate) fn intrinsic_argument_order(
+    parameters: &[(&str, xiao_intrinsics::ValueType)],
+    arguments: &[IrCallArgument],
+) -> Option<Vec<usize>> {
     if arguments.len() != parameters.len() {
         return None;
     }

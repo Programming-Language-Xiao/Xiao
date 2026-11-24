@@ -582,6 +582,9 @@ impl<'a> DynamicGenerator<'a> {
         if declaration.kind == xiao_intrinsics::IntrinsicKind::Cmath {
             return self.emit_cmath(declaration, arguments, span);
         }
+        if declaration.kind == xiao_intrinsics::IntrinsicKind::Time {
+            return self.emit_time(declaration, arguments, span);
+        }
         match declaration.vm_binding {
             xiao_intrinsics::VmBinding::ScalarCast => {
                 if arguments.len() != 1

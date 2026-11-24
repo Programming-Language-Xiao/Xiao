@@ -186,7 +186,7 @@ fn archive_requirements_fail_before_entry_resolution_or_vm_events() {
     let canonical = index.encode().unwrap();
     let mut unknown = canonical.clone();
     assert_eq!(unknown.pop(), Some(0));
-    unknown.extend_from_slice(&[0x80, 0x01]); // 字段 16 的值为 bit 7。
+    unknown.extend_from_slice(&[0x80, 0x02]); // 字段 16 的值为 bit 8。
     let mut legacy = canonical.clone();
     let fields = legacy
         .windows(2)
