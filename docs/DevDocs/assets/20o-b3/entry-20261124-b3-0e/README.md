@@ -1,6 +1,6 @@
 # B3-0E 教程和精确入口候选
 
-B3-0E 已完成前置复核和六模块候选整理。规划 §3 的五项裁定待答，教程状态为 `planned`，B3-0F 入口待签收。[实施规划](../../../20o-b3-0e-tutorials-fixtures-plan.md) · [裁定台账](decisions.json)
+B3-0E 已完成五项裁定和六模块候选冻结。`b3_0e_passed=true`、`b3_0f_entry_ready=true`；教程状态仍为 `planned`，B3-0F 入口已就绪。[实施规划](../../../20o-b3-0e-tutorials-fixtures-plan.md) · [裁定台账](decisions.json)
 
 | 模块 | 教程 | 运行输入 | 示例能力 |
 | --- | --- | --- | --- |

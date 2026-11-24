@@ -1,10 +1,42 @@
 {
   "stage": "20O-B3-0E",
+  "recorded_on": "2026-11-24",
+  "source": "星崽本轮 B3-0E 问题卡答复",
   "decisions": {
-    "B3-0E-PATH": {"status": "pending"},
-    "B3-0E-ALIAS": {"status": "pending"},
-    "B3-0E-ENTRY": {"status": "pending"},
-    "B3-0E-INPUT": {"status": "pending"},
-    "B3-0E-STATE": {"status": "pending"}
+    "B3-0E-PATH": {
+      "status": "approved",
+      "answer": "统一 tutorial.*（推荐）",
+      "source": "B3-0E 夹具路径问题卡",
+      "recorded_on": "2026-11-24",
+      "scope": "证据候选和产品路径统一使用 tests/fixtures/docs/<module>/tutorial.xiao、tutorial.stdout、tutorial.input.json；不再保留 b3-0b-candidate/b3-0c-candidate 名称。"
+    },
+    "B3-0E-ALIAS": {
+      "status": "approved",
+      "answer": "每模块双路径（推荐）",
+      "source": "B3-0E 双路径问题卡",
+      "recorded_on": "2026-11-24",
+      "scope": "六模块以 std.<module> 为正文主路径，并各设一条 stdlib.<module> 导入探针；共十二份导入示例，同一语义不复制两套正文。"
+    },
+    "B3-0E-ENTRY": {
+      "status": "approved",
+      "answer": "六目标+合成输入（推荐）",
+      "source": "B3-0E 入口与输入问题卡",
+      "recorded_on": "2026-11-24",
+      "scope": "保持 20o_b3_<module>_tutorial、<module>_tutorial_matches_vm_golden 和 native 名称；time/args/env/log 使用 tutorial.input.json，fs 使用空 demo 目录；每项两个导入前缀各恰好 1 passed。"
+    },
+    "B3-0E-INPUT": {
+      "status": "approved",
+      "answer": "合成输入按问题卡候选（推荐）",
+      "source": "B3-0E 入口与输入问题卡",
+      "recorded_on": "2026-11-24",
+      "scope": "time 固定墙钟与单调钟；args 使用 {program_name, argv}；env 使用 {environment: [[name, value]]}；log 固定墙钟和独立 stdout；cli 用源码字面量；fs 使用独立任务目录和空 demo。"
+    },
+    "B3-0E-STATE": {
+      "status": "approved",
+      "answer": "只保留证据候选（推荐）",
+      "source": "B3-0E 教程状态问题卡",
+      "recorded_on": "2026-11-24",
+      "scope": "六份教程继续 planned，只保存在 B3-0E DevDocs 证据；不修改 UseDocs、不登记 registry、不升级 verified。"
+    }
   }
 }

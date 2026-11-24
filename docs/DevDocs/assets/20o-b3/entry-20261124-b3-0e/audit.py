@@ -249,7 +249,7 @@ def decision_status(root):
             pending.append(name)
         else:
             require(row["status"] == "approved" and row["answer"] and row["recorded_on"]
-                    and row["question_item_id"] and row["scope"], "裁定缺少实际答复")
+                    and row.get("source") and row["scope"], "裁定缺少实际答复")
     return pending
 
 
