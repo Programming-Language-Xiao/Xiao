@@ -1,6 +1,6 @@
 # 20O-B3-0. 简单宿主库探测、冻结与教程草案实施规划
 
-> **状态（2026-11-24）**　B3-0A～F 联合冻结已收口，`b3_0_passed=true`、`b3_1_entry_ready=true`。B3-1 按 time 实施规划的开工裁定推进，Windows 产品 COFF 状态为 `pending`。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [B3-1 实施规划](20o-b3-1-time-implementation-plan.md)
+> **状态（2026-11-25）**　B3-0A～F 联合冻结于 2026-11-24 收口，`b3_0_passed=true`、`b3_1_entry_ready=true`。签收时 Windows 产品 COFF 为 `pending`；后续 B3-1 已在 `8d1c09f0` 完成内部 time 收口，Windows time 产品验证为 `Complete`，B3-2 入口已就绪但尚未开工。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [B3-1 收口证据](assets/20o-b3/entry-20261124-b3-1/README.md)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B2-C 的同链接 10 份候选只是历史例外，不得继承。B3-0 的探测记录不能替代 B3 产品验收。
 > 入口：[B3 宿主库规划](20o-b3-host-libraries-plan.md)、[B2-C 收口证据](assets/20o-b2-c/entry-20261122-b2-c/README.md)、[20P Day-1 架构](20p-day1-library-architecture.md)、[D-8/D-9/D-10 方向](20o-official-library-program.md#五决策清单)。
 > B3-0 不实现六个模块，不改 ABI/intrinsic/registry/教程，不跑旧 721，不启动 B3-1/B4。

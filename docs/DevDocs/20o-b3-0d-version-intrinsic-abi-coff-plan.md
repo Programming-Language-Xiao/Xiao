@@ -1,6 +1,6 @@
 # 20O-B3-0D. 版本、intrinsic、ABI、C ABI 与 Windows COFF 冻结规划
 
-> **状态（2026-11-24）**　B3-0D 已完成冻结。B3-0C 已收口，六项 B3-0D 裁定及 D4 条件修订均已批准；本批只冻结编号、版本、能力位、协议、C ABI 和 Windows COFF 政策，不写产品。`b3_0d_started=true`、`b3_0d_passed=true`、`b3_0e_entry_ready=true`、`b3_0_passed=false`、`b3_product_started=false`。
+> **状态快照（2026-11-24 B3-0D 收口）**　B3-0D 已完成冻结。B3-0C 已收口，六项 B3-0D 裁定及 D4 条件修订均已批准；本批只冻结编号、版本、能力位、协议、C ABI 和 Windows COFF 政策，不写产品。下列 `b3_product_started=false`、COFF `pending` 等字段表示本批收口时状态。后续 B3-1 已在 `8d1c09f0` 完成内部收口，Windows time 产物为 `Complete`。[B3-1 收口证据](assets/20o-b3/entry-20261124-b3-1/README.md)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B2-C 的同链接 10 份候选只是历史例外，不得继承。B3-0D 只冻结验收方式，不把探测记录写成 B3 产品验收。
 > 入口：[B3-0C 收口](assets/20o-b3/entry-20261123-b3-0c/README.md)、[B3-0C 契约](assets/20o-b3/entry-20261123-b3-0c/contract-draft.md)、[B3-0B 契约](assets/20o-b3/entry-20261123-b3-0b/contract-draft.md)、[B3-0 实施规划](20o-b3-0-probe-freeze-plan.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)、[20D 能力上下文](20d-capability-context.md)。
 > B3-0D 不修改当前产品的 ABI 1.19、生成器 22、接口 1、intrinsic 1～48/ID 100；新增 49～63、ABI 1.20/生成器 23 和协议/C ABI 只进入 B3-0E 交接，产品实现仍未开始。

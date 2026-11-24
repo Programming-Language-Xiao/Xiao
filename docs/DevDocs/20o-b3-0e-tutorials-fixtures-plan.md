@@ -1,10 +1,10 @@
 # 20O-B3-0E. 六模块教程、固定示例与精确测试入口冻结规划
 
-> **状态（2026-11-24）**　B3-0E 已完成冻结。六份教程、夹具、运行输入与精确入口候选已整理，五项裁定均已批准。`b3_0e_started=true`、`b3_0e_passed=true`、`b3_0f_entry_ready=true`、`b3_0_passed=false`、`b3_product_started=false`。[B3-0E 收口证据](assets/20o-b3/entry-20261124-b3-0e/README.md)
+> **状态快照（2026-11-24 B3-0E 收口）**　B3-0E 已完成冻结。六份教程、夹具、运行输入与精确入口候选已整理，五项裁定均已批准。下列 `b3_product_started=false` 是本批收口时状态；后续 B3-1 已在 `8d1c09f0` 完成 time 内部收口，教程仍为 `planned`。[B3-0E 收口证据](assets/20o-b3/entry-20261124-b3-0e/README.md) · [B3-1 收口证据](assets/20o-b3/entry-20261124-b3-1/README.md)
 > **B3-0D 输入（2026-11-24）**　15 个原语为 49～63；`environment` 为位 7；目标版本为 ABI 1.20、生成器 23、标准库接口 1；`RunOptions.arguments` 使用 `{program_name, argv}`；Windows 产品级 COFF 仍为 `complete_required`/`pending`。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-0E 的教程候选和精确入口记录不能替代 B3 产品验收。
 > 入口：[B3-0D 收口](assets/20o-b3/entry-20261124-b3-0d/README.md)、[B3-0B 收口](assets/20o-b3/entry-20261123-b3-0b/README.md)、[B3-0C 收口](assets/20o-b3/entry-20261123-b3-0c/README.md)、[B3-0 实施规划](20o-b3-0-probe-freeze-plan.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
-> B3-0E 不修改产品、intrinsics 登记、VM/LLVM、registry、教程 verified 或旧 721；B3-1/B4 仍未开始。
+> B3-0E 本批不修改产品、intrinsics 登记、VM/LLVM、registry、教程 verified 或旧 721；在 B3-0E 收口时 B3-1/B4 尚未开始。
 
 ## 一、入口与范围
 
