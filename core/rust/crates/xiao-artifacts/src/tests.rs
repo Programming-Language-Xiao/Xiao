@@ -558,7 +558,7 @@ fn new_archive_feature_rejects_legacy_reader_without_changing_global_index() {
 #[test]
 /// 低位和最高位的未知能力均拒绝；标准库接口版本不能被截断为 u32。
 fn archive_rejects_unknown_capabilities_and_overflowing_interface_version() {
-    for bit in [7, 63] {
+    for bit in [8, 63] {
         let mut index = requirements_index();
         index.required_capabilities = 1 << bit;
         assert!(matches!(

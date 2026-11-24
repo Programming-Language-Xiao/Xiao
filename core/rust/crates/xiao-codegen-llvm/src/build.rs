@@ -265,6 +265,7 @@ fn write_llvm_artifact(path: &Path, text: &str) -> Result<()> {
     write_llvm_artifact_bytes(path, text.as_bytes())
 }
 
+/// 将完整的 LLVM 文本或链接清单通过相邻临时文件提交。
 pub(crate) fn write_llvm_artifact_bytes(path: &Path, bytes: &[u8]) -> Result<()> {
     if let Some(parent) = path
         .parent()

@@ -5,6 +5,7 @@ use xiao_intrinsics::{IntrinsicDecl, VmBinding, time_parameters};
 use xiao_runtime::{RuntimeError, RuntimeValue, time};
 
 impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
+    /// 把 Runtime 或运行控制的故障关联到语言调用区间。
     pub(super) fn execute_time(
         &mut self,
         declaration: &IntrinsicDecl,
@@ -16,6 +17,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
             .map_err(|fault| attach_fault_span(fault, span.start, span.end))
     }
 
+    /// 绑定已求值的实参，并按调用类型、能力、域的顺序执行。
     fn time_value(
         &mut self,
         declaration: &IntrinsicDecl,

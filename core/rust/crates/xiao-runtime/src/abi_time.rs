@@ -9,6 +9,7 @@ thread_local! {
     static ENTRY_CLOCK: RefCell<Option<Arc<TimeContext>>> = const { RefCell::new(None) };
 }
 
+/// 为新开始的原生应用记录起点。
 pub(super) fn begin_entry() {
     #[cfg(feature = "test-failpoints")]
     if let (Ok(wall), Ok(mono)) = (
@@ -22,22 +23,27 @@ pub(super) fn begin_entry() {
     ENTRY_CLOCK.replace(Some(Arc::new(TimeContext::host())));
 }
 
+/// 供原生调度器捕获父运行的时钟。
 pub(super) fn entry_clock() -> Option<Arc<TimeContext>> {
     ENTRY_CLOCK.with_borrow(Clone::clone)
 }
 
+/// 原生任务执行期间持有旧时钟，归还复用线程时恢复。
 pub(super) struct ClockGuard(Option<Arc<TimeContext>>);
 
 impl Drop for ClockGuard {
+    /// 清除任务调用留下的线程局部状态。
     fn drop(&mut self) {
         ENTRY_CLOCK.replace(self.0.take());
     }
 }
 
+/// 将父运行的时钟交给线程或池任务。
 pub(super) fn enter_clock(clock: Option<Arc<TimeContext>>) -> ClockGuard {
     ClockGuard(ENTRY_CLOCK.replace(clock))
 }
 
+/// 直接使用 C ABI 的嵌入调用首次读取时建立起点。
 fn current_clock() -> Arc<TimeContext> {
     ENTRY_CLOCK.with_borrow_mut(|clock| {
         clock
@@ -46,6 +52,7 @@ fn current_clock() -> Arc<TimeContext> {
     })
 }
 
+/// 校验结构和全部语言类型，再检查能力。
 fn validate_inputs<const N: usize>(
     inputs: [&XiaoValue; N],
     tags: [XiaoValueTag; N],
@@ -87,12 +94,14 @@ fn validate_inputs<const N: usize>(
     Ok(())
 }
 
+/// 借读已校验的字符串句柄，仅接受冻结的单位拼写。
 fn parse_unit(value: &XiaoValue) -> Result<TimeUnit, i32> {
     let handle = unsafe { expect_strong(value.payload.handle, RuntimeTypeTag::String) }?;
     let value = status(StringHandle::from_strong_handle(handle))?;
     status(value.with_str(TimeUnit::parse).and_then(|unit| unit))
 }
 
+/// 共用两个取钟入口的参数、授权与输出槽边界。
 fn read_clock(
     unit: *const XiaoValue,
     out: *mut XiaoValue,
@@ -197,10 +206,12 @@ pub extern "C" fn xiao_runtime_time_sleep(
 }
 
 #[cfg(test)]
+/// C ABI 结构、错误与宿主等待证据。
 mod tests {
     use super::*;
     use xiao_intrinsics::CAPABILITY_CLOCK;
 
+    /// 建立独立的拥有字符串槽。
     fn string(value: &str) -> XiaoValue {
         value_from_owned_handle(
             XiaoValueTag::Str,
@@ -208,6 +219,7 @@ mod tests {
         )
     }
 
+    /// 读取当前挂起的主错误编号。
     fn pending_code() -> String {
         PENDING_ERROR.with_borrow(|error| match error.as_ref() {
             Some(PendingError::Recoverable(error)) => error.code().to_owned(),
@@ -216,6 +228,7 @@ mod tests {
     }
 
     #[test]
+    /// 核对结构拒绝、错误优先级和失败保留输出。
     fn validates_borrowed_inputs_and_preserves_owned_output_on_failure() {
         let mut unit = string("ms");
         let mut invalid = string("MS");
@@ -295,6 +308,7 @@ mod tests {
     }
 
     #[test]
+    /// 记录真实等待和子任务取消的五个样本。
     fn host_wait_respects_duration_and_cooperative_cancel() {
         use std::sync::mpsc;
         use std::time::{Duration, Instant};
@@ -353,6 +367,7 @@ mod tests {
         assert!(cancellation_samples[4] <= Duration::from_secs(1));
     }
 
+    /// 与原生子任务一致，恢复错误槽和取消交付状态。
     fn reset_child_error() {
         super::super::abi_concurrency::reset_cancellation_delivery();
         xiao_runtime_error_clear();

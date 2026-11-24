@@ -24,6 +24,7 @@ use crate::types::Type;
 
 use super::{RuntimeCheckKind, TypeChecker, TypedNode};
 
+/// 解析时钟声明中允许的三种语言类型。
 fn time_intrinsic_type(value: ValueType) -> Type {
     match value {
         ValueType::Str => Type::scalar(ScalarType::Str),
