@@ -1,0 +1,84 @@
+{
+  "cases": [
+    {
+      "after": "c827d82f4206fdb14e4876a77094c6f79bc4ec11295dcd4330deb76d3b2e7ab4",
+      "before": "c827d82f4206fdb14e4876a77094c6f79bc4ec11295dcd4330deb76d3b2e7ab4",
+      "case": "unchanged",
+      "exit": 0,
+      "stderr": "",
+      "stdout": "{\n  \"audit_files\": 34,\n  \"b3_0_passed\": false,\n  \"b3_0e0_decisions_recorded\": false,\n  \"b3_0e1_six_tutorials_frozen\": false,\n  \"b3_0e2_fixtures_inputs_goldens_frozen\": false,\n  \"b3_0e3_vm_entries_frozen\": false,\n  \"b3_0e4_native_entries_frozen\": false,\n  \"b3_0e5_evidence_audit_passed\": false,\n  \"b3_0e_passed\": false,\n  \"b3_0e_started\": true,\n  \"b3_0f_entry_ready\": false,\n  \"b3_1_entry_ready\": false,\n  \"b3_product_started\": false,\n  \"decisions_approved\": false,\n  \"doc_gates_passed\": true,\n  \"document_commit\": \"5c8094ea3be277ceb0d34d106bc58e2b65651250\",\n  \"entry_commit\": \"93d7fc877e8c2d444f385da1dc68727aed4aea72\",\n  \"handoff\": null,\n  \"no_product_change\": true,\n  \"old_721_executed\": false,\n  \"parsed_sources\": 12,\n  \"pending_decisions\": [\n    \"B3-0E-PATH\",\n    \"B3-0E-ALIAS\",\n    \"B3-0E-ENTRY\",\n    \"B3-0E-INPUT\",\n    \"B3-0E-STATE\"\n  ],\n  \"product_commit\": \"e79fab3cdd3ea9d3a7eff31f529dec2498434114\",\n  \"product_execution\": false,\n  \"registry_verified\": false,\n  \"rejected_negative_cases\": null,\n  \"scope\": \"20O-B3-0E\",\n  \"tutorial_count\": 6,\n  \"tutorial_status\": \"planned\",\n  \"windows_product_coff\": {\n    \"accepted_path_verified\": false,\n    \"criteria_revision\": \"coff-criteria-revision.json\",\n    \"policy\": \"complete_required\",\n    \"positive_verifier_check\": \"B3-1\",\n    \"product_evidence\": false,\n    \"status\": \"pending\"\n  }\n}\n"
+    },
+    {
+      "after": "79eb565db24d4fdc8de56bdd283d6a967203677130f47194e44d5b266db5904d",
+      "before": "79eb565db24d4fdc8de56bdd283d6a967203677130f47194e44d5b266db5904d",
+      "case": "manifest-tampered",
+      "exit": 1,
+      "stderr": "B3-0E 拒绝：证据清单与实际字节不符\n",
+      "stdout": ""
+    },
+    {
+      "after": "6c5f15547bf4c449c05165af094d7f71238678bdaa5917c982b89f37733e9e41",
+      "before": "6c5f15547bf4c449c05165af094d7f71238678bdaa5917c982b89f37733e9e41",
+      "case": "missing-attributes",
+      "exit": 1,
+      "stderr": "B3-0E 拒绝：封存缺少文件：.gitattributes\n",
+      "stdout": ""
+    },
+    {
+      "after": "48030f46aba8f148e354ce3002cef109d4714343ddac4fa6289921f8f7d9b675",
+      "before": "48030f46aba8f148e354ce3002cef109d4714343ddac4fa6289921f8f7d9b675",
+      "case": "forged-tutorial-hash",
+      "exit": 1,
+      "stderr": "B3-0E 拒绝：教程或夹具摘要不符\n",
+      "stdout": ""
+    },
+    {
+      "after": "8eff21a5deadc18b1e03f35745be0ba95c6d4321ea4038d62e63fd43d34b0ba0",
+      "before": "8eff21a5deadc18b1e03f35745be0ba95c6d4321ea4038d62e63fd43d34b0ba0",
+      "case": "replaced-golden",
+      "exit": 1,
+      "stderr": "B3-0E 拒绝：独立黄金偏离固定候选：cli\n",
+      "stdout": ""
+    },
+    {
+      "after": "600554c2b1e6a62ba126a757e289badf9f0caa18c2a63ea77fd28d090edb3327",
+      "before": "600554c2b1e6a62ba126a757e289badf9f0caa18c2a63ea77fd28d090edb3327",
+      "case": "missing-input",
+      "exit": 1,
+      "stderr": "B3-0E 拒绝：封存缺少文件：candidates/tests/fixtures/docs/args/tutorial.input.json\n",
+      "stdout": ""
+    },
+    {
+      "after": "26a47713eea3a35eb5d742a8302a8fb19236412e9e076406451393040f39b1a8",
+      "before": "26a47713eea3a35eb5d742a8302a8fb19236412e9e076406451393040f39b1a8",
+      "case": "parse-as-execution",
+      "exit": 1,
+      "stderr": "B3-0E 拒绝：语法回执冒充产品执行\n",
+      "stdout": ""
+    },
+    {
+      "after": "ca3b56b3511a7ddc2b1c4501d92c9c82029a0e7c1b208650da63054844fc632f",
+      "before": "ca3b56b3511a7ddc2b1c4501d92c9c82029a0e7c1b208650da63054844fc632f",
+      "case": "forged-verified",
+      "exit": 1,
+      "stderr": "B3-0E 拒绝：教程状态越界\n",
+      "stdout": ""
+    },
+    {
+      "after": "34522e073c86ce29a2f0510ed38aedee4321b8c8933e6ddbd0e0921560322dc3",
+      "before": "34522e073c86ce29a2f0510ed38aedee4321b8c8933e6ddbd0e0921560322dc3",
+      "case": "forged-entry",
+      "exit": 1,
+      "stderr": "B3-0E 拒绝：精确入口矩阵与候选不符\n",
+      "stdout": ""
+    },
+    {
+      "after": "e87c57643db5863418a5ff7b1064c9b21b306a47d8e23b5d37eeb3d700834849",
+      "before": "e87c57643db5863418a5ff7b1064c9b21b306a47d8e23b5d37eeb3d700834849",
+      "case": "forged-approval",
+      "exit": 1,
+      "stderr": "B3-0E 拒绝：裁定缺少实际答复\n",
+      "stdout": ""
+    }
+  ]
+}
