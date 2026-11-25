@@ -1,0 +1,7 @@
+from std.args import program_name, argv
+
+print("program=" + program_name())
+copy = argv()
+array_push(copy, "local")
+for value in argv()
+    print("[" + value + "]")

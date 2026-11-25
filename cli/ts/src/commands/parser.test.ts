@@ -47,6 +47,17 @@ describe("xiao 命令解析", () => {
     }
   });
 
+  test("仅解析首个 -- 前的启动选项", () => {
+    for (const launch of [["run", "./main.xiao"], ["run", "./main.xiaoc"], ["-xar", "./main.xar"]]) {
+      expect(parseArguments([...launch, "--", "", "--help", "--json", "--", "a b", "a b"])).toMatchObject({
+        file: launch[1],
+        applicationArguments: ["", "--help", "--json", "--", "a b", "a b"],
+        options: { json: false, debug: false },
+      });
+    }
+    expect(parseArguments(["run", "./main.xiao", "--"])).toMatchObject({ applicationArguments: [] });
+  });
+
   test("单行 REPL 与多行文件入口互不混淆", () => {
     expect(parseArguments([]).kind).toBe("repl");
     expect(parseArguments(["--inLF"])).toMatchObject({ kind: "repl", multiline: true });

@@ -211,6 +211,33 @@ describe("协议客户端", () => {
     expect(fake.requests.map((request) => request.type)).toEqual(["hello"]);
   });
 
+  test("旧核心缺少 arguments 时拒绝三种携带快照的运行请求", async () => {
+    const options = { arguments: { program_name: "main.xiao", argv: ["", "--"] } };
+    for (const invoke of [
+      (client: ProtocolClient) => client.runSource("print(1)", options),
+      (client: ProtocolClient) => client.runXiaoc("main.xiaoc", options),
+      (client: ProtocolClient) => client.runArchive("main.xar", options),
+    ]) {
+      const fake = new FakeCore(undefined, ["run", "run_xiaoc", "run_archive"]);
+      const client = new ProtocolClient({ overridePath: process.execPath, spawnProcess: () => fake as never });
+      await expect(invoke(client)).rejects.toMatchObject({ code: "X11-CLI-CORE-004", exitCode: 2 });
+      expect(fake.requests.map((request) => request.type)).toEqual(["hello"]);
+    }
+  });
+
+  test("握手支持 arguments 时传输调用时的快照", async () => {
+    const fake = new FakeCore(undefined, ["run", "arguments"]);
+    const client = new ProtocolClient({ overridePath: process.execPath, spawnProcess: () => fake as never });
+    const argv = ["", "two words", "--", "again", "again"];
+    const pending = client.runSource("print(1)", { arguments: { program_name: "./main.xiao", argv } });
+    argv.push("later");
+    const result = await pending;
+    expect(result.response.type).toBe("result");
+    expect(fake.requests[1]?.options).toMatchObject({
+      arguments: { program_name: "./main.xiao", argv: ["", "two words", "--", "again", "again"] },
+    });
+  });
+
   test("旧核心只声明 package 而无 repl_packages 时关闭进程并降级为空视图", async () => {
     let fake: FakeCore | undefined;
     const client = new ProtocolClient({

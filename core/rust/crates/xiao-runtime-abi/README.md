@@ -7,6 +7,8 @@ B3-1 使用 ABI 1.20、生成器 23 和标准库接口 1，激活 time 原语 49
 入口在成功时替换独立且已初始化的 `out` 槽，失败保持原值。`sleep` 省略 `out`。末尾参数统一为
 `capabilities: u64`，沿用 0/1/2/3/6/8 状态。环境位 7 已登记，旧请求省略能力掩码时仍使用 `0x7f`。
 
+B3-2 增加 `xiao_runtime_args_program_name(out, capabilities)` 和 `xiao_runtime_args_argv(out, capabilities)`。两个入口检查 `process` 位，成功替换调用方已初始化的拥有槽，失败保留原值。嵌入入口省略快照时分别交付空字符串和新空数组。[实施进度](../../../../docs/DevDocs/20o-b3-2-args-cli-implementation-plan.md)
+
 ## 目录职责
 
 本 crate 保存 Xiao 原生程序与 Rust Runtime 之间的稳定 C ABI 契约。公开层只使用固定宽度

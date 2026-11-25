@@ -173,6 +173,9 @@ export async function buildPackage(options: PackageBuildOptions = {}): Promise<P
   const target = options.target ? parsePackageTarget(options.target) : hostPackageTarget();
   const outputDirectory = resolve(packageRoot, options.outDir ?? join("dist", target.bunTarget));
   const executablePath = join(outputDirectory, target.executableName);
+  const extension = target.platform === "win32" ? ".exe" : "";
+  const cliName = `xiao-cli${extension}`;
+  const cliDestination = join(outputDirectory, cliName);
   const coreDestination = join(outputDirectory, target.coreName);
   const diagnosticsDestination = join(outputDirectory, target.diagnosticsName);
   const manifestPath = join(outputDirectory, "xiao-package.json");
@@ -189,6 +192,14 @@ export async function buildPackage(options: PackageBuildOptions = {}): Promise<P
     platform: target.platform,
     architecture: target.architecture,
   });
+  const launcherSource = join(dirname(discovery.path), `xiao-launcher${extension}`);
+  if (!await isExecutableFile(launcherSource, target.platform)) {
+    throw new PackagingError(
+      "X11-PACKAGE-LAUNCHER-001",
+      "请在同一目标下构建 xiao-core 和 xiao-launcher",
+      { launcherSource, target: target.rustTarget.triple },
+    );
+  }
   const diagnosticsSource = await discoverDiagnostics({
     cwd: packageRoot,
     corePath: discovery.path,
@@ -200,7 +211,7 @@ export async function buildPackage(options: PackageBuildOptions = {}): Promise<P
     "build",
     "--compile",
     `--target=${target.bunTarget}`,
-    `--outfile=${executablePath}`,
+    `--outfile=${cliDestination}`,
     entrypoint,
   ], {
     cwd: packageRoot,
@@ -215,13 +226,15 @@ export async function buildPackage(options: PackageBuildOptions = {}): Promise<P
       cause: buildResult.error ? String(buildResult.error) : null,
     });
   }
+  await copyFile(launcherSource, executablePath);
   await copyFile(discovery.path, coreDestination);
   await copyFile(diagnosticsSource, diagnosticsDestination);
-  if (target.platform !== "win32") await chmod(coreDestination, 0o755);
-  if (target.platform !== "win32") await chmod(diagnosticsDestination, 0o755);
+  if (target.platform !== "win32") {
+    await Promise.all([executablePath, cliDestination, coreDestination, diagnosticsDestination].map((path) => chmod(path, 0o755)));
+  }
   const manifest = {
     format_version: 1,
-    cli: { file: target.executableName, version: PACKAGE_VERSION, runtime: "bun-compile", requires_node: false },
+    cli: { file: target.executableName, implementation: cliName, version: PACKAGE_VERSION, runtime: "bun-compile", requires_node: false },
     core: { file: target.coreName, source: discovery.source },
     diagnostics: { file: target.diagnosticsName, source: diagnosticsSource },
     target: { bun: target.bunTarget, rust: target.rustTarget },

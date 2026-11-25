@@ -1,6 +1,7 @@
 //! `.xar` 入口校验与统一 VM 运行器。
 
 use std::fmt::{Display, Formatter};
+use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 use xiao_artifacts::{ArtifactError, Digest256};
@@ -32,6 +33,8 @@ pub struct XarRunOptions {
     pub debug: bool,
     /// 本次请求允许的不可变能力上下文。
     pub capabilities: u64,
+    /// 调用方接纳的执行参数，仅传给入口 VM。
+    pub arguments: Option<Arc<xiao_vm::ArgumentsSnapshot>>,
 }
 
 impl Default for XarRunOptions {
@@ -46,6 +49,7 @@ impl Default for XarRunOptions {
             event_capacity: xiao_vm::DEFAULT_EVENT_CAPACITY,
             debug: false,
             capabilities: DEFAULT_CAPABILITY_MASK,
+            arguments: None,
         }
     }
 }
@@ -291,7 +295,7 @@ pub fn run_archive_with_module_loader(
         archive: &archive,
         official,
     };
-    xiao_vm::run_xiaoc_production_with_features(
+    xiao_vm::run_xiaoc_production_with_arguments(
         &entry_bytes,
         options.vm_options,
         options.event_capacity,
@@ -299,6 +303,7 @@ pub fn run_archive_with_module_loader(
         options.capabilities,
         Some(&loader),
         options.runtime_features >> 1,
+        options.arguments,
     )
     .map_err(|error| XarRunError::Validation(format!("入口 `.xiaoc` 执行前校验失败：{error}")))
 }

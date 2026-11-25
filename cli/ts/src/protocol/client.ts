@@ -10,6 +10,7 @@ import {
   type DiagnosticConfig,
   type ProtocolResponse,
   type ProtocolTarget,
+  type RunArguments,
   type RunRequest,
   type RunArchiveRequest,
   type RunXiaocRequest,
@@ -40,6 +41,8 @@ export interface CoreClientOptions extends CoreDiscoveryOptions {
 
 /** 源码运行请求的便捷参数。 */
 export interface SourceRunOptions {
+  /** 由宿主提供的本次运行参数。 */
+  arguments?: RunArguments;
   /** 逻辑模块名，默认使用文件基名。 */
   module?: string;
   /** 源文件路径；用于诊断位置和协议 source.path。 */
@@ -74,6 +77,8 @@ export interface SourceRunOptions {
 
 /** 归档运行请求的便捷参数。 */
 export interface ArchiveRunOptions {
+  /** 由宿主提供的本次运行参数。 */
+  arguments?: RunArguments;
   /** 本次归档运行允许的冻结能力位；省略时全开。 */
   capabilities?: number;
   /** VM 调用深度。 */
@@ -100,6 +105,8 @@ export interface ArchiveRunOptions {
 
 /** 已验证 `.xiaoc` 文件运行参数。 */
 export interface XiaocRunOptions {
+  /** 由宿主提供的本次运行参数。 */
+  arguments?: RunArguments;
   /** VM 调用深度。 */
   maxCallDepth?: number;
   /** 事件容量。 */
@@ -126,6 +133,11 @@ export interface VerifyOptions {
   detail?: boolean;
   /** 取消信号。 */
   signal?: AbortSignal;
+}
+
+/** 在排队和握手之前保存宿主提供的值。 */
+function snapshotArguments(input: RunArguments | undefined): RunArguments | undefined {
+  return input && { program_name: input.program_name, argv: [...input.argv] };
 }
 
 /** 缓存维护选项。 */
@@ -316,6 +328,7 @@ export class ProtocolClient {
       optimization: { level: options.optimizationLevel ?? 0, debug: options.debug ?? false, diagnostics: options.diagnostics ?? null },
       source: { module, path: sourcePath, text: sourceText },
       options: {
+        arguments: snapshotArguments(options.arguments),
         max_call_depth: options.maxCallDepth ?? 1024,
         event_capacity: options.eventCapacity ?? 256,
         timeout_ms: options.timeoutMs ?? null,
@@ -339,6 +352,7 @@ export class ProtocolClient {
       debug: options.debug ?? false,
       options: {
         ...(options.capabilities === undefined ? {} : { capabilities: options.capabilities }),
+        arguments: snapshotArguments(options.arguments),
         max_call_depth: options.maxCallDepth ?? 1024,
         event_capacity: options.eventCapacity ?? 256,
         timeout_ms: options.timeoutMs ?? null,
@@ -361,6 +375,7 @@ export class ProtocolClient {
       diagnostics: options.diagnostics ?? null,
       debug: options.debug ?? false,
       options: {
+        arguments: snapshotArguments(options.arguments),
         max_call_depth: options.maxCallDepth ?? 1024,
         event_capacity: options.eventCapacity ?? 256,
         timeout_ms: options.timeoutMs ?? null,
@@ -544,6 +559,10 @@ export class ProtocolClient {
       void this.sendCancel(child, request.request_id).catch(() => undefined);
     };
     try {
+      if ((request.type === "run" || request.type === "run_archive" || request.type === "run_xiaoc")
+        && request.options.arguments !== undefined && !helloResponse.capabilities.includes("arguments")) {
+        throw new CoreClientError("X11-CLI-CORE-004", "当前核心未提供 arguments 能力，请升级 xiao-core", 2);
+      }
       if (request.type === "package" && !helloResponse.capabilities.includes("package")) {
         throw new CoreClientError("X11-CLI-CORE-004", "当前核心未提供 package 能力，请升级 xiao-core", 2);
       }

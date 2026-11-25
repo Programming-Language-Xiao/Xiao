@@ -59,7 +59,7 @@ class EnvironmentFakeCore extends EventEmitter {
     if (request.type === "hello") {
       this.stdout.write(Buffer.from(encodeFrame({
         type: "hello", request_id: request.request_id, accepted: true, protocol_version: 1,
-       core_version: 1, versions: {}, capabilities: ["run", "environment", "package", "build_archive"], error: null,
+       core_version: 1, versions: {}, capabilities: ["run", "arguments", "environment", "package", "build_archive"], error: null,
       })));
     } else if (request.type === "environment") {
       const logicalName = typeof request.logical_name === "string" ? request.logical_name : "venv";

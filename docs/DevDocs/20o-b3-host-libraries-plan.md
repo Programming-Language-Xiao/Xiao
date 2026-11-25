@@ -1,6 +1,6 @@
 # 20O-B3. 简单宿主库实施规划
 
-> **B3-0A～F 已完成联合冻结。** B3-1 time 在产品快照 `8d1c09f0` 完成三平台和 CI 收口，ABI 1.20、生成器 23、标准库接口 1。`b3_1_passed=true`、`b3_2_entry_ready=true`；B3-2 尚未开始，教程和 registry 仍为 `planned`。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [B3-1 time 收口证据](assets/20o-b3/entry-20261124-b3-1/README.md)
+> **B3-0A～F 已完成联合冻结。** B3-1 time 在产品快照 `8d1c09f0` 完成三平台和 CI 收口，ABI 1.20、生成器 23、标准库接口 1。`b3_1_passed=true`、`b3_2_entry_ready=true`。B3-2 已开始实施，教程和 registry 为 `planned`。[B3-1 time 收口证据](assets/20o-b3/entry-20261124-b3-1/README.md) · [B3-2 进度](20o-b3-2-args-cli-implementation-plan.md)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，且声明组件与观察组件一致；B2-C 的同链接 10 份候选只是历史例外，不得继承。`UnverifiedCoffExports`、同链接映射或仅导出表检查不能替代。
 > B3 涉及六个模块、五个实施工作流：`time`（UTC + sleep）、`args`、`cli`、`fs`、`env`、`log`。
 > B0 只确认了部分方向；精确签名、模块归属、能力/错误、资源/性能及版本要求必须在 B3-0 冻结。
@@ -79,7 +79,7 @@ B3 从简单宿主库的探测、契约冻结和教程草案开始。产品实�
 
 ### B3-1：`time`
 
-B3-1 按已批准的激活、验收范围和夹具登记完成收口。四个 time 入口已接入 `8d1c09f0`，53～63 保留为不可调用的 `reserved`。B3-2 入口已就绪但未开工。[B3-1 time 实施规划](20o-b3-1-time-implementation-plan.md)
+B3-1 按已批准的激活、验收范围和夹具登记完成收口。四个 time 入口已接入 `8d1c09f0`，该快照的 53～63 均为 `reserved`。[B3-1 time 实施规划](20o-b3-1-time-implementation-plan.md)
 
 1. UTC墙钟/单调钟/格式化按冻结契约；
 2. sleep单位/零/负/上限/取消；
@@ -91,7 +91,7 @@ B3-1 按已批准的激活、验收范围和夹具登记完成收口。四个 ti
 
 ### B3-2：`args`/`cli`
 
-B3-2 的 args 激活、`RunOptions.arguments`、纯 Xiao CLI、教程和证据边界见 [B3-2 args/cli 实施规划](20o-b3-2-args-cli-implementation-plan.md)。当前只是规划，B3-2 尚未开工。
+B3-2 的 args 快照、纯 Xiao 分组和运行协议已有 Windows VM 结果。原生降低待生成器裁定。[B3-2 args/cli 实施规划](20o-b3-2-args-cli-implementation-plan.md)
 
 1. argv不含程序名，程序名另取；
 2. 保留空参数；Windows不二次拆引号；

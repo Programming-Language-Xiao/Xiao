@@ -4,6 +4,7 @@ use std::fmt::{self, Display, Formatter};
 
 use serde::{Deserialize, Serialize};
 use xiao_codegen_llvm::{Endian, ObjectFormat, TargetDescription};
+use xiao_runtime::arguments::{ArgumentsError, ArgumentsSnapshot};
 use xiao_vm::VmOptions;
 
 /// 请求字段或 JSON 形状非法。
@@ -147,9 +148,38 @@ pub struct SourceIdentity {
     pub text: String,
 }
 
+/// 输入来自宿主的运行快照。调试输出只记录条目数。
+#[derive(Clone, Deserialize, Eq, PartialEq, Serialize)]
+pub struct RunArguments {
+    /// 程序的调用名称。
+    pub program_name: String,
+    /// 由宿主拆分的有序参数。
+    pub argv: Vec<String>,
+}
+
+impl fmt::Debug for RunArguments {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("RunArguments")
+            .field("argument_count", &self.argv.len())
+            .finish_non_exhaustive()
+    }
+}
+
+impl TryFrom<RunArguments> for ArgumentsSnapshot {
+    type Error = ArgumentsError;
+
+    fn try_from(value: RunArguments) -> Result<Self, Self::Error> {
+        Self::new(value.program_name, value.argv)
+    }
+}
+
 /// VM 请求参数。
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct RunOptions {
+    /// 本次运行的可选参数快照。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub arguments: Option<RunArguments>,
     /// 本次运行允许的能力位；旧请求省略时沿用全开默认值。
     #[serde(
         default = "default_capabilities",
@@ -194,6 +224,7 @@ impl Default for RunOptions {
     /// 返回与生产 VM 一致的默认调用深度和事件容量。
     fn default() -> Self {
         Self {
+            arguments: None,
             max_call_depth: VmOptions::default().max_call_depth,
             capabilities: default_capabilities(),
             event_capacity: xiao_vm::DEFAULT_EVENT_CAPACITY,
@@ -546,6 +577,15 @@ pub struct ProtocolError {
 }
 
 impl ProtocolError {
+    /// 报告快照接纳失败，省略实际参数文本。
+    pub(super) fn arguments(error: ArgumentsError) -> Self {
+        Self {
+            code: error.code(),
+            field: Some("options.arguments".to_owned()),
+            message: error.to_string(),
+        }
+    }
+
     /// 创建请求字段错误。
     pub(super) fn request(field: impl Into<String>, message: impl Into<String>) -> Self {
         Self {

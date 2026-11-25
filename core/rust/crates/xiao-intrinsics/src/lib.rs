@@ -62,6 +62,7 @@ pub enum IntrinsicKind {
     LfloatDivide,
     Cmath,
     Time,
+    Args,
     Print,
     Input,
     ResourceOpenFile,
@@ -97,6 +98,7 @@ pub enum ValueType {
     Sfloat,
     Lfloat,
     Str,
+    StrArray,
     Bool,
     Set,
     SetElement,
@@ -124,6 +126,7 @@ pub enum Effects {
     WaitsProcess,
     ReleasesProcess,
     ReadsClock,
+    ReadsArguments,
     Sleeps,
     None,
 }
@@ -252,6 +255,8 @@ pub enum VmBinding {
     TimeMonotonic,
     TimeFormatUtc,
     TimeSleep,
+    ArgsProgramName,
+    ArgsArgv,
     Print,
     Input,
     ResourceOpenFile,
@@ -288,6 +293,8 @@ pub enum AbiBinding {
     TimeMonotonic,
     TimeFormatUtc,
     TimeSleep,
+    ArgsProgramName,
+    ArgsArgv,
     SetAdd,
     SetRemove,
     ArrayPush,
@@ -361,6 +368,16 @@ impl AbiBinding {
             Self::TimeMonotonic => Some("xiao_runtime_time_monotonic"),
             Self::TimeFormatUtc => Some("xiao_runtime_time_format_utc"),
             Self::TimeSleep => Some("xiao_runtime_time_sleep"),
+            _ => None,
+        }
+    }
+
+    /// 返回 args 的固定 C ABI 符号。
+    #[must_use]
+    pub const fn args_symbol(self) -> Option<&'static str> {
+        match self {
+            Self::ArgsProgramName => Some("xiao_runtime_args_program_name"),
+            Self::ArgsArgv => Some("xiao_runtime_args_argv"),
             _ => None,
         }
     }
@@ -651,6 +668,34 @@ pub fn validate_table() -> Result<(), ContractError> {
                         return Err(ContractError::SignatureMismatch(declaration.id));
                     }
                 }
+                IntrinsicKind::Args => {
+                    let (result, vm, abi) = match declaration.id.get() {
+                        53 => (
+                            ValueType::Str,
+                            VmBinding::ArgsProgramName,
+                            AbiBinding::ArgsProgramName,
+                        ),
+                        54 => (
+                            ValueType::StrArray,
+                            VmBinding::ArgsArgv,
+                            AbiBinding::ArgsArgv,
+                        ),
+                        _ => return Err(ContractError::SignatureMismatch(declaration.id)),
+                    };
+                    if declaration.signature
+                        != (Signature {
+                            arity: Arity::Zero,
+                            parameter: ValueType::None,
+                            return_type: result,
+                        })
+                        || declaration.capability != Capability::Process
+                        || declaration.effects != Effects::ReadsArguments
+                        || declaration.vm_binding != vm
+                        || declaration.abi_binding != abi
+                    {
+                        return Err(ContractError::SignatureMismatch(declaration.id));
+                    }
+                }
                 IntrinsicKind::ErrorConstructor
                     if declaration.signature.arity != Arity::Error
                         || declaration.signature.return_type != ValueType::Dynamic
@@ -748,7 +793,7 @@ mod tests {
             .map(|d| d.id.get())
             .collect();
         active.sort_unstable();
-        assert_eq!(active, (1..=52).collect::<Vec<_>>());
+        assert_eq!(active, (1..=54).collect::<Vec<_>>());
         for (index, &(name, vm, abi)) in CMATH_DECLARATIONS.iter().enumerate() {
             let id = IntrinsicId::new(34 + index as u32).unwrap();
             let declaration = active_by_id(id).unwrap();
@@ -875,7 +920,7 @@ mod tests {
     }
     #[test]
     fn b3_reserved_ids_have_identity_without_callable_bindings() {
-        for raw in 53..=63 {
+        for raw in 55..=63 {
             let id = IntrinsicId::new(raw).unwrap();
             let declaration = by_id(id).unwrap();
             assert_eq!(declaration.status, DeclarationStatus::Reserved);

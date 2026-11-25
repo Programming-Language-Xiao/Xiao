@@ -130,6 +130,22 @@ fn main() {
                     assert_eq!(row.effect, effect);
                     assert_eq!(row.capability, capability);
                 }
+                "args" => {
+                    let (binding, result) = match row.id {
+                        53 => ("args_program_name", "str"),
+                        54 => ("args_argv", "str_array"),
+                        _ => panic!("args ID 必须为 53 或 54"),
+                    };
+                    assert_eq!(row.name, format!("os_{binding}"));
+                    assert_eq!(row.vm_binding, binding);
+                    assert_eq!(row.abi_binding, binding);
+                    assert_eq!(row.arity, "zero");
+                    assert_eq!(row.parameter_type, "none");
+                    assert_eq!(row.return_type, result);
+                    assert_eq!(row.effect, "reads_arguments");
+                    assert_eq!(row.capability, "process");
+                    assert_eq!(row.error, "runtime.type_mismatch");
+                }
                 "lfloat_divide" => {
                     assert_eq!(row.id, 33);
                     assert_eq!(row.arity, "four");
@@ -329,7 +345,7 @@ fn main() {
         } else {
             match row.status.as_str() {
                 "reserved" => {
-                    assert!((53..=63).contains(&row.id), "预登记的 ID 必须为 53～63");
+                    assert!((55..=63).contains(&row.id), "预登记的 ID 必须为 55～63");
                     assert!(row.name.starts_with("os_"));
                     assert_eq!(row.kind, "reserved");
                     assert!(

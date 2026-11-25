@@ -67,7 +67,7 @@ class FakeCore extends EventEmitter {
     if (request.type === "hello") {
       this.stdout.write(Buffer.from(encodeFrame({
         type: "hello", request_id: request.request_id, accepted: true, protocol_version: 1,
-        core_version: 1, versions: {}, capabilities: ["test"], error: null,
+        core_version: 1, versions: {}, capabilities: ["test", "arguments"], error: null,
       })));
     } else if (request.type === "test") {
       const cases = Array.isArray(request.cases) ? request.cases : [];

@@ -1,0 +1,5 @@
+def program_name() -> str
+    return os_args_program_name()
+
+def argv() -> [str]
+    return os_args_argv()

@@ -1,0 +1,43 @@
+def split_terminator([str] values)
+    count = 0
+    for value in values
+        count = count + 1
+        if count > 1024
+            raise ResourceError(code = "CLI_LIMIT_EXCEEDED")
+
+    total = 0
+    for value in values
+        # 比较同时识别空串并拒绝动态实参中的非字符串。
+        empty = false
+        try
+            empty = value <= ""
+        catch failure as TypeError
+            raise TypeError(code = "X06-RUNTIME-002")
+        if empty
+            continue
+        size = 0
+        for character in value
+            point = int(character)
+            if point < 128
+                size = size + 1
+            elif point < 2048
+                size = size + 2
+            elif point < 65536
+                size = size + 3
+            else
+                size = size + 4
+            if size > 4096 or total + size > 65536
+                raise ResourceError(code = "CLI_LIMIT_EXCEEDED")
+        total = total + size
+
+    str before = []
+    str after = []
+    separated = false
+    for value in values
+        if separated
+            array_push(after, value)
+        elif value == "--"
+            separated = true
+        else
+            array_push(before, value)
+    return [before, after]

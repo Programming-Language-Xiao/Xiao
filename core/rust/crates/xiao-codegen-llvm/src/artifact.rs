@@ -1446,6 +1446,8 @@ fn runtime_link_dependencies(symbol: &str) -> &'static [&'static str] {
     match symbol {
         // 拥有输出槽替换和持有句柄的构造路径会链接强引用释放。
         "xiao_runtime_array_get"
+        | "xiao_runtime_args_argv"
+        | "xiao_runtime_args_program_name"
         | "xiao_runtime_array_new"
         | "xiao_runtime_concurrency_detached_error_take"
         | "xiao_runtime_dict_get"
@@ -1513,6 +1515,12 @@ mod link_tests;
 
 /// 将一个 Runtime 符号登记到它所属的组件集合。
 fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
+    if matches!(
+        symbol,
+        "xiao_runtime_args_program_name" | "xiao_runtime_args_argv"
+    ) {
+        components.insert("args".to_owned());
+    }
     if matches!(
         symbol,
         "xiao_runtime_time_utc_now"
@@ -1825,6 +1833,8 @@ entry:
             ("xiao_runtime_time_monotonic", &["rc", "time"][..]),
             ("xiao_runtime_time_utc_now", &["rc", "time"][..]),
             ("xiao_runtime_time_sleep", &["time"][..]),
+            ("xiao_runtime_args_program_name", &["args", "rc"][..]),
+            ("xiao_runtime_args_argv", &["args", "rc"][..]),
             ("no_runtime", &[][..]),
         ] {
             let text = format!(

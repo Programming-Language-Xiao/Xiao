@@ -21,8 +21,9 @@ use xiao_syntax::{
     Program, Statement, TypeTerm, parse,
 };
 use xiao_types::{
-    ExternalNamespaces, FunctionParameterSignature, FunctionSignature, SetType, Type,
-    TypeCheckResult, TypeChecker, TypeVarId, std_concurrent_signatures,
+    ExternalNamespaces, FunctionParameterSignature, FunctionSignature, RuntimeCheck,
+    RuntimeCheckKind, SetType, Type, TypeCheckResult, TypeChecker, TypeVarId,
+    std_concurrent_signatures,
 };
 use xiao_vm::STANDARD_LIBRARY_NAMESPACE;
 
@@ -825,6 +826,15 @@ fn standard_module_function_signatures(
                 .with_type_parameter_ids(generic_ids),
             );
         }
+        if module.segments() == ["cli"] {
+            // 嵌套数组返回形状由 CLI 源码推导。归档和别名调用复用同一接口。
+            let checked = xiao_types::check(source, program);
+            if !checked.has_errors()
+                && let Some(signature) = checked.function_signatures().get("ascii:split_terminator")
+            {
+                signatures.insert(signature.name.clone(), signature.clone());
+            }
+        }
         // 公共别名与规范身份消费同一份源码接口，不能在 std 路径退化成 Dynamic。
         modules.insert(format!("std.{module}"), signatures.clone());
         modules.insert(format!("{STANDARD_LIBRARY_NAMESPACE}.{module}"), signatures);
@@ -1154,6 +1164,15 @@ impl FrontendCompiler {
     /// 所有阶段均只接收不可变输入；只要任意阶段产生错误，函数就返回完整
     /// 诊断而不降低 IR。成功时返回的 IR 已通过 `IrValidator`。
     pub fn compile(&self, request: &FrontendRequest) -> Result<FrontendArtifact, FrontendError> {
+        self.compile_module(request, None)
+    }
+
+    /// 编译按需模块时沿用加载器已解析的规范身份。
+    pub(crate) fn compile_module(
+        &self,
+        request: &FrontendRequest,
+        module_identity: Option<&str>,
+    ) -> Result<FrontendArtifact, FrontendError> {
         let mut diagnostics = Vec::new();
 
         let parsed = parse(&request.source);
@@ -1365,6 +1384,31 @@ impl FrontendCompiler {
                     );
                     type_result = checker.check_program(&effective_program);
                 }
+            }
+        }
+        let linked_cli = standard_link.sources.contains_key("cli");
+        for statement in &effective_program.statements {
+            let Statement::Function {
+                name,
+                parameters,
+                span,
+                ..
+            } = statement
+            else {
+                continue;
+            };
+            let from_cli = module_identity == Some("stdlib.cli")
+                || (linked_cli && span.start() >= request.source.text().len());
+            if from_cli
+                && !name.backticked
+                && name.unquoted_text(&effective_source) == "split_terminator"
+                && let [values] = parameters.as_slice()
+            {
+                type_result.runtime_checks.push(RuntimeCheck {
+                    span: values.name.span,
+                    kind: RuntimeCheckKind::ArrayType,
+                    expected: None,
+                });
             }
         }
         diagnostics.extend(type_result.diagnostics.clone());

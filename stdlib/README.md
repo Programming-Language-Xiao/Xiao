@@ -28,6 +28,7 @@
   兼容身份沿用工具链标准库接口版本 1，当前 Runtime ABI 为 1.19。
 - `dict` 模块提供 `get`、`set`、`remove`、`contains`、`keys`、`values` 六个自由函数，动态缺失键保持
   `X06-RUNTIME-015`，不支持新增键；20L 同时提供八个等价的静态字典方法。
+- [`args`](args.md) 提供程序名和参数快照，[`cli`](cli.md) 提供纯 Xiao 参数分组。两项登记为 `planned`。[实施进度](../docs/DevDocs/20o-b3-2-args-cli-implementation-plan.md)
 
 `stdlib.xiao-standard-library` 的 registry 条目是工具链骨架登记，维持 `draft`；它不适用
 `verified` 状态。20C/20M 可交付模块登记在 `stdlib.xiao-standard-library-first-modules`；

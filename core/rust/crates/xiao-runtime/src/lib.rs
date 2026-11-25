@@ -9,6 +9,8 @@ mod abi;
 /// 仅测试构建启用的线程局部分配失败注入；没有环境变量或 C ABI 入口。
 #[cfg(any(test, feature = "test-failpoints"))]
 pub mod allocation_testing;
+/// 每次运行接纳且只读共享的程序参数。
+pub mod arguments;
 /// 22C 共享句柄、32B 共享头和 Runtime ID 注册表。
 pub mod concurrency;
 /// 平台级未处理异常的最小机器报告入口。

@@ -21,6 +21,12 @@ name = "xiao-core"
 path = "src/protocol_main.rs"
 
 [[bin]]
+name = "xiao-launcher"
+path = "src/bin/xiao_launcher.rs"
+test = false
+bench = false
+
+[[bin]]
 name = "process_child_exit7"
 path = "src/bin/process_child_exit7.rs"
 test = false

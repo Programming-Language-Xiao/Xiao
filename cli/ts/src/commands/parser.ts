@@ -25,8 +25,8 @@ export type ShellName = "bash" | "zsh" | "fish" | "powershell" | "cmd";
 export type ParsedCommand =
   | { kind: "help"; options: GlobalCliOptions }
   | { kind: "version"; options: GlobalCliOptions }
-  | { kind: "run"; file: string; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
-  | { kind: "xar"; file: string; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
+  | { kind: "run"; file: string; applicationArguments?: readonly string[]; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
+  | { kind: "xar"; file: string; applicationArguments?: readonly string[]; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
   | { kind: "config"; key: string; value: string; global: boolean; options: GlobalCliOptions }
   | { kind: "verify"; file: string; detail: boolean; options: GlobalCliOptions }
   | { kind: "cache"; action: "list" | "verify" | "rebuild" | "clean"; apply: boolean; projectPath?: string; archivePaths: string[]; references: string[]; options: GlobalCliOptions }
@@ -61,6 +61,17 @@ export class CliArgumentError extends Error {
 
 /** 解析命令行参数；支持全局选项出现在子命令前后。 */
 export function parseArguments(argv: readonly string[]): ParsedCommand {
+  const separator = argv.indexOf("--");
+  if (separator < 0) return parseCommand(argv);
+  const command = parseCommand(argv.slice(0, separator));
+  if (command.kind !== "run" && command.kind !== "xar") {
+    throw new CliArgumentError("只有运行入口接受 -- 后的应用参数");
+  }
+  return { ...command, applicationArguments: argv.slice(separator + 1) };
+}
+
+/** 解析启动器自身的参数。 */
+function parseCommand(argv: readonly string[]): ParsedCommand {
   const { options, positional } = parseGlobalOptions(argv);
   if (argv.some((argument) => argument === "--help" || argument === "-h")) return { kind: "help", options };
   if (argv.some((argument, index) => (argument === "-v" || argument === "--version") &&

@@ -12,6 +12,7 @@ use xiao_diagnostics::{DiagnosticParam, FatalError, ReportRecord, XiaoError};
 use xiao_intrinsics::{CapabilityMaskError, DEFAULT_CAPABILITY_MASK, validate_capability_mask};
 use xiao_ir::{IrEntryMode, IrProgram};
 use xiao_runtime::RuntimeValue;
+use xiao_runtime::arguments::ArgumentsSnapshot;
 
 use crate::carrier::Carrier;
 use crate::machine::hybrid::HybridCarrier;
@@ -289,6 +290,8 @@ pub struct RunRequest<'a> {
     pub module_loader: Option<&'a dyn crate::modules::ModuleLoader>,
     /// 本次执行允许的能力位；默认开启当前已知能力。
     pub capabilities: u64,
+    /// 已接纳的参数快照，仅在此次执行时传入。
+    pub arguments_snapshot: Option<Arc<ArgumentsSnapshot>>,
 }
 
 impl<'a> RunRequest<'a> {
@@ -305,6 +308,7 @@ impl<'a> RunRequest<'a> {
             cancellation: None,
             module_loader: None,
             capabilities: DEFAULT_CAPABILITY_MASK,
+            arguments_snapshot: None,
         }
     }
 
@@ -355,6 +359,13 @@ impl<'a> RunRequest<'a> {
         validate_capability_mask(capabilities)?;
         self.capabilities = capabilities;
         Ok(self)
+    }
+
+    /// 传入一次运行及其子任务共享的参数快照。
+    #[must_use]
+    pub fn with_arguments_snapshot(mut self, snapshot: Arc<ArgumentsSnapshot>) -> Self {
+        self.arguments_snapshot = Some(snapshot);
+        self
     }
 
     /// 验证请求自身的规范化字段。
@@ -626,6 +637,30 @@ pub fn run_xiaoc_production_with_features(
     loader: Option<&dyn crate::modules::ModuleLoader>,
     runtime_features: u64,
 ) -> Result<RunOutcome, XiaocLoadError> {
+    run_xiaoc_production_with_arguments(
+        bytes,
+        options,
+        event_capacity,
+        cancellation,
+        capabilities,
+        loader,
+        runtime_features,
+        None,
+    )
+}
+
+/// 在字节码验证后为 VM 配置本次执行的参数快照。
+#[allow(clippy::too_many_arguments)]
+pub fn run_xiaoc_production_with_arguments(
+    bytes: &[u8],
+    options: VmOptions,
+    event_capacity: usize,
+    cancellation: Option<CancellationSource>,
+    capabilities: u64,
+    loader: Option<&dyn crate::modules::ModuleLoader>,
+    runtime_features: u64,
+    arguments: Option<Arc<ArgumentsSnapshot>>,
+) -> Result<RunOutcome, XiaocLoadError> {
     validate_capability_mask(capabilities).map_err(|error| XiaocLoadError::InvalidField {
         field: "capabilities".to_owned(),
         message: error.to_string(),
@@ -647,6 +682,7 @@ pub fn run_xiaoc_production_with_features(
     );
     vm.set_cancellation_source(cancellation);
     vm.set_module_loader(loader);
+    vm.set_arguments_snapshot(arguments);
     let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();
     Ok(production_outcome(result, value, metrics, vm.into_sink()))
@@ -792,6 +828,7 @@ pub fn run_request_with_session(
     );
     vm.set_cancellation_source(request.cancellation.clone());
     vm.set_module_loader(request.module_loader);
+    vm.set_arguments_snapshot(request.arguments_snapshot.clone());
     let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();
     let healthy = vm.session_is_healthy();

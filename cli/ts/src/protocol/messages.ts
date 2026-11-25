@@ -56,7 +56,17 @@ export interface DiagnosticFocus {
 }
 
 /** VM 运行参数。 */
+export interface RunArguments {
+  /** 运行目标的调用名称。 */
+  program_name: string;
+  /** 宿主已拆分的有序参数。 */
+  argv: readonly string[];
+}
+
+/** VM 请求的冻结运行选项。 */
 export interface RunOptions {
+  /** 可选运行参数快照。 */
+  arguments?: RunArguments;
   /** 本次运行允许的能力位；省略时采用核心全开默认值。 */
   capabilities?: number;
   max_call_depth: number;

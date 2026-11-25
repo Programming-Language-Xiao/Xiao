@@ -5,6 +5,7 @@
 //! 不重新推断类型或生命周期，也不搬运研究基准的入口重排逻辑。
 
 use std::fmt::{self, Display, Formatter};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use xiao_artifacts::{ArtifactStore, Digest256, ObjectKind};
@@ -15,6 +16,7 @@ use xiao_diagnostics::{Diagnostic, DiagnosticParam, DiagnosticParams, ReportReco
 use xiao_intrinsics::{CapabilityMaskError, DEFAULT_CAPABILITY_MASK, validate_capability_mask};
 use xiao_optimizer::{OptimizationLevel, PassStatus, ValidationStatus};
 use xiao_package::CacheLayout;
+use xiao_runtime::arguments::ArgumentsSnapshot;
 use xiao_vm::{
     CancellationSource, DEFAULT_EVENT_CAPACITY, RunOutcome as VmRunOutcome,
     RunRequest as VmRunRequest, RunResult, VmEvent, VmOptions, VmSession,
@@ -137,6 +139,8 @@ pub struct DriverRequest {
     pub control: RunControl,
     /// 本次执行允许的能力位；默认开启当前已知能力。
     pub capabilities: u64,
+    /// 本次执行接纳的程序名与参数。
+    pub arguments_snapshot: Option<Arc<ArgumentsSnapshot>>,
 }
 
 impl DriverRequest {
@@ -152,6 +156,7 @@ impl DriverRequest {
             event_capacity: DEFAULT_EVENT_CAPACITY,
             control: RunControl::default(),
             capabilities: DEFAULT_CAPABILITY_MASK,
+            arguments_snapshot: None,
         }
     }
 
@@ -202,6 +207,13 @@ impl DriverRequest {
         validate_capability_mask(capabilities)?;
         self.capabilities = capabilities;
         Ok(self)
+    }
+
+    /// 安装本次执行的已验证参数快照。
+    #[must_use]
+    pub fn with_arguments_snapshot(mut self, snapshot: Arc<ArgumentsSnapshot>) -> Self {
+        self.arguments_snapshot = Some(snapshot);
+        self
     }
 
     /// 设置取消信号。
@@ -742,11 +754,14 @@ impl FrontendVmDriver {
                 });
             }
         };
-        let vm_request = if let Some(source) = control.cancellation_source() {
+        let mut vm_request = if let Some(source) = control.cancellation_source() {
             vm_request.with_cancellation(source)
         } else {
             vm_request
         };
+        vm_request
+            .arguments_snapshot
+            .clone_from(&request.arguments_snapshot);
         let module_loader = crate::module_loader::DriverModuleLoader::new(
             request.frontend.context.project_root.as_deref(),
             request.frontend.context.package_registry.as_ref(),

@@ -13,7 +13,14 @@ related:
 
 # xiao 独立打包与核心发现
 
-在 `cli/ts` 目录执行：
+先构建同一目标的 `xiao-core`、`xiao-launcher` 和 `xiao-diagnostics`。从仓库根目录构建本机目标的命令如下。
+
+```text
+cargo build --locked --release --manifest-path core/rust/Cargo.toml -p xiao-driver --bin xiao-core --bin xiao-launcher
+cargo build --locked --release --manifest-path core/rust/Cargo.toml -p xiao-diagnostics --bin xiao-diagnostics
+```
+
+在 `cli/ts` 目录运行打包器。
 
 ```text
 bun run build
@@ -33,14 +40,14 @@ bun run build -- --outdir release/xiao --core C:/xiao/xiao-core.exe
 ```text
 <目录>/
   xiao[.exe]
+  xiao-cli[.exe]
   xiao-core[.exe]
   xiao-diagnostics[.exe]
   xiao-package.json
 ```
 
-`xiao` 是内嵌 Bun 运行时的独立可执行文件；Bun 只在构建机上需要，用户运行时不需要另装
-Bun 或 Node.js。`xiao-core` 与 `xiao-diagnostics` 不嵌入 CLI，而是作为同目录资源分发，
-清单记录目标和发现来源。
+`xiao` 读取原始宿主参数，经编码检查后调用同目录的 `xiao-cli`。后者内嵌 Bun 运行时。
+分发件可直接运行，清单登记入口、CLI 实现、核心、诊断组件以及构建目标。
 
 源码原生构建使用 [`xiao build`](build.md)。它复用本页的相邻目录与 `PATH` 发现规则，并额外
 发现 clang、Runtime 和调试组件；独立 CLI 能启动不代表 Linux/macOS 原生构建已经验收。

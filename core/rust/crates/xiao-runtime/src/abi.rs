@@ -43,6 +43,8 @@ use crate::value::{
     EXTERNAL_RESOURCE_RUNTIME_TAG, ExternalResourceHandle, RuntimeValue, StringHandle,
 };
 
+#[path = "abi_args.rs"]
+mod abi_args;
 /// B3的15个cmath借读输入与拥有输出适配。
 #[path = "abi_cmath.rs"]
 mod abi_cmath;

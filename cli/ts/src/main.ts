@@ -8,6 +8,7 @@ import { runSingleLineRepl } from "./repl/session.ts";
 import { ProtocolClient, type SpawnCoreProcess } from "./protocol/client.ts";
 import type { GitProbeOptions } from "./ui/git.ts";
 import { runMultilineSession, MultilineTerminalError } from "./repl/multiline.ts";
+import { launcherInvocation, requireArgumentEncoding } from "./platform/arguments.ts";
 import cliPackage from "../package.json";
 
 /** CLI 入口依赖的可注入 IO。 */
@@ -59,8 +60,11 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
   const controller = io.signal === undefined ? new AbortController() : undefined;
   const signal = io.signal ?? controller?.signal;
   const onInterrupt = () => controller?.abort();
+  const separator = argv.indexOf("--");
+  const launcherOptions = separator < 0 ? argv : argv.slice(0, separator);
   let listenForInterrupt = false;
   try {
+    launcherOptions.forEach(requireArgumentEncoding);
     const command = parseArguments(argv);
     if (command.kind === "repl" && command.options.nonInteractive) {
       throw new CliArgumentError("非交互模式不能启动交互式 REPL", "X11-CLI-NONINTERACTIVE-001");
@@ -124,8 +128,8 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
     return result.exitCode;
   } catch (error) {
     const result = renderCliError(error instanceof CliArgumentError ? error : error, {
-      json: argv.includes("--json"),
-      color: colorFromArguments(argv),
+      json: launcherOptions.includes("--json"),
+      color: colorFromArguments(launcherOptions),
       isTTY: Boolean(stderr.isTTY),
       noColor: env.NO_COLOR !== undefined,
       colorTerm: env.COLORTERM,
@@ -164,5 +168,6 @@ function isEpipe(error: unknown): boolean {
 }
 
 if (import.meta.main) {
-  process.exitCode = await runCli();
+  const { argv, executablePath } = launcherInvocation();
+  process.exitCode = await runCli(argv, { executablePath });
 }

@@ -3,11 +3,13 @@
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use serde_json::Value;
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, Severity};
 use xiao_optimizer::OptimizationLevel;
+use xiao_runtime::arguments::ArgumentsSnapshot;
 
 use super::mapping::{
     exit_name, protocol_diagnostic, protocol_error_body, protocol_error_from_error, protocol_event,
@@ -19,7 +21,7 @@ use super::message::{
 };
 use super::request::{
     CANCELLED_ERROR_CODE, DiagnosticConfig, OptimizationConfig, ProtocolError, ProtocolTarget,
-    RunOptions, SourceIdentity,
+    RunArguments, RunOptions, SourceIdentity,
 };
 use super::validate::{validate_source, validate_target, validate_versions};
 use crate::diagnostics::{DiagnosticOptions, DiagnosticSession, start_error_details};
@@ -147,6 +149,16 @@ pub(super) fn run_options(
     }
     let timeout = options.timeout_ms.map(Duration::from_millis);
     Ok((vm_options, options.event_capacity, timeout))
+}
+
+/// 只在执行入口接纳参数。编译、归档校验与缓存不读取快照。
+fn admit_arguments(
+    arguments: Option<RunArguments>,
+) -> Result<Option<Arc<ArgumentsSnapshot>>, ProtocolError> {
+    arguments
+        .map(|value| ArgumentsSnapshot::try_from(value).map(Arc::new))
+        .transpose()
+        .map_err(ProtocolError::arguments)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -297,6 +309,10 @@ pub(super) fn run_xiaoc_request_response(
     );
     let diagnostics_options =
         diagnostic_options(diagnostic_config, Some(effective_locale.effective.clone()));
+    let arguments = match admit_arguments(options.arguments) {
+        Ok(arguments) => arguments,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
     let mut diagnostic_session = if debug || file.metadata.debug_active {
         match crate::diagnostics::DiagnosticSession::start(
             file.metadata.module_id.clone(),
@@ -325,13 +341,15 @@ pub(super) fn run_xiaoc_request_response(
     };
     let module_loader = DriverModuleLoader::new(project_root.as_deref(), Some(&package_registry));
     let measurement = xiao_runtime::start_memory_measurement();
-    let result = xiao_vm::run_xiaoc_production_with_loader(
+    let result = xiao_vm::run_xiaoc_production_with_arguments(
         &bytes,
         vm_options,
         event_capacity,
         Some(cancellation_source),
         options.capabilities,
         Some(&module_loader),
+        xiao_bytecode::SUPPORTED_REQUIRED_FEATURES,
+        arguments,
     );
     let peak_live_bytes = measurement.peak_live_bytes();
     drop(measurement);
@@ -466,6 +484,7 @@ fn run_archive_request_response_inner(
         event_capacity,
         debug,
         capabilities: options.capabilities,
+        arguments: None,
     };
     let (index, index_audit) = match inspect_archive_index(&bytes, &xar_options) {
         Ok(inspected) => inspected,
@@ -492,6 +511,10 @@ fn run_archive_request_response_inner(
     let audit = match audit_archive(&bytes, &xar_options) {
         Ok(audit) => audit,
         Err(error) => return xar_run_error_response(request_id, path, error, None),
+    };
+    xar_options.arguments = match admit_arguments(options.arguments) {
+        Ok(arguments) => arguments,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
     };
     let debug_active = debug || index.debug_activation;
     let diagnostic_options =
@@ -709,6 +732,10 @@ pub(super) fn run_request_response_with_driver(
         Ok(value) => value,
         Err(error) => return protocol_error_response(Some(request_id), &error),
     };
+    let arguments = match admit_arguments(options.arguments) {
+        Ok(arguments) => arguments,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
     let debug = optimization.debug;
     let diagnostic_config = optimization.diagnostics.clone();
     let module_name = source.module.clone();
@@ -734,6 +761,7 @@ pub(super) fn run_request_response_with_driver(
         .with_module_name(module_name.clone())
         .with_event_capacity(event_capacity)
         .with_cancellation(cancellation);
+    driver_request.arguments_snapshot = arguments;
     if let Some(path) = source_name.clone() {
         driver_request = driver_request.with_source_name(path);
     }

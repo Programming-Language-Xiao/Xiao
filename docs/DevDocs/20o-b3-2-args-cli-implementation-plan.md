@@ -1,7 +1,7 @@
 # 20O-B3-2. `args` / `cli` 实施规划
 
-> **状态（2026-11-25）**　B3-2A 开工基线已绑定 `8d1c09f0`，五项开工裁定已批准；产品实现尚未开始，`b3_2_started=false`、`b3_2_passed=false`、`b3_3_entry_ready=false`，教程和 registry 为 `planned`。[B3-1 收口](assets/20o-b3/entry-20261124-b3-1/README.md) · [B3-2A 基线](assets/20o-b3/entry-20261125-b3-2/README.md) · [开工裁定](assets/20o-b3/entry-20261125-b3-2/decisions.json)
-> **输入契约**　args 使用 53～54，当前为不可调用的 `reserved`；cli 为纯 Xiao，无新 intrinsic/C 符号；ABI 1.20、生成器 23、标准库接口 1 继续沿用 B3-1 产品身份。
+> **状态（2026-11-25）**　B3-2A 开工基线固定于 `8d1c09f0`。args 53～54、纯 Xiao 分组、运行协议和分发启动器已进入实施。Windows VM、C ABI 空快照及分发入口已有本机结果。args 原生降低和应用启动快照待生成器裁定，三平台验收与收口待执行。教程和 registry 为 `planned`。[B3-1 收口](assets/20o-b3/entry-20261124-b3-1/README.md) · [B3-2A 基线](assets/20o-b3/entry-20261125-b3-2/README.md) · [开工裁定](assets/20o-b3/entry-20261125-b3-2/decisions.json)
+> **版本**　当前为 ABI 1.20、生成器 23、标准库接口 1。args 使用 53～54。cli 为纯 Xiao。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-2 不得用同链接、导出表-only 或 `UnverifiedCoffExports` 代替。
 > 入口：[B3-1 收口](assets/20o-b3/entry-20261124-b3-1/README.md)、[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md)、[B3-0B 契约](assets/20o-b3/entry-20261123-b3-0b/contract-draft.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
 > B3-2 不实现 fs/env/log，不升级教程/registry verified，不启动 B3-3/B4。
@@ -12,12 +12,12 @@
 | --- | --- |
 | B3-1 | `b3_1_passed=true`、`b3_2_entry_ready=true`；产品快照 `8d1c09f0`，ABI 1.20、生成器 23、标准库接口 1 |
 | B3-0B | args 的 `program_name`/`argv`、`process` 位、预算和错误已冻结；cli 的 `split_terminator` 为纯 Xiao |
-| 当前 intrinsic 表 | 53～63 为 `reserved`，本批候选激活 53～54 |
+| 当前 intrinsic 表 | 53～54 活动，55～63 为 `reserved` |
 | 目标模块 | `args`、`cli` |
 | 本批目标 | 激活 args 53～54，接通 `RunOptions.arguments`/原生快照；实现纯 Xiao CLI 分组；完成 VM/原生/C ABI/教程/三平台证据 |
 | 本批不做 | fs/env/log 实现、55～63 激活、registry/教程 verified、B3-3/B4、旧 721、历史债务核销 |
 | Windows COFF | args/cli 的 Windows 产物必须产品级 `Complete`；完整公共矩阵留 B3-7 |
-| 当前状态 | `b3_2_started=false`、`b3_2_passed=false`、`b3_3_entry_ready=false`、`b3_product_started=true` |
+| 当前状态 | `b3_2_started=true`、`b3_2_passed=false`、`b3_3_entry_ready=false`、`b3_product_started=true` |
 
 B3-2 是 **args/cli 实施批**，不是六模块并行批。args 需要同时接通运行协议、VM/TAC、LLVM/C ABI 和原生启动快照；cli 是纯 Xiao 模块，不新增 intrinsic 或 C 符号。B3-2 完成后只声明 args/cli 内部可用，不升级教程或 registry verified。
 
@@ -61,7 +61,7 @@ b3_3_entry_ready = b3_2_passed and decisions_approved and no_product_scope_creep
 
 1. B3-1 收口审计、自反例、time 三平台和 COFF `Complete` 通过；`b3_1_passed=true`、`b3_2_entry_ready=true`；
 2. 固定产品 `8d1c09f0`、两个 Cargo.lock、Runtime、工具链和 B1 28 守卫可复核；
-3. intrinsic 53～54 当前为 `reserved`、55～63 仍 reserved；1～52 和 ID 100 不变；
+3. B3-2A 固定产品中的 53～63 为 `reserved`。本批激活 53～54，沿用 1～52 和 ID 100；
 4. B3-0B 的 args/cli 契约、预算、错误和教程可读；
 5. Rust 1.96.0、三平台目标、VM、受控原生 O0/O3 和 Windows 产品验证器可用；
 6. 独立 target/Runtime/缓存、唯一任务根，CLI/env/log 输出隔离；
@@ -118,6 +118,10 @@ b3_3_entry_ready = b3_2_passed and decisions_approved and no_product_scope_creep
 退出：CLI 纯 Xiao 分组、预算和双路径通过；未执行产品教程。
 
 ### B3-2D：协议、VM/TAC、LLVM 与 C ABI
+
+本机已验证 `RunOptions.arguments`、hello 能力、源码与删源后的 `.xiaoc` / `.xar` 运行，以及两个 C 入口的空快照和输出槽。分发包的 Rust 启动器标记原始参数无法解码的位置，Bun CLI 按冻结顺序接纳整份应用参数。实际目标采用调用时拼写。
+
+应用原生入口需要发射 args C 调用并在用户代码运行前设置快照。这会改变 LLVM 生成文本。按 B3-2-ID，生成器 23 → 24 待单独裁定，裁定范围包含启动接线与版本/缓存复验。当前 B3-2D 仍在实施。
 
 1. 在 `RunOptions` 增加可选 `arguments` 字段，形状 `{program_name, argv}`；省略为空快照；
 2. 在 hello 响应增加 `"arguments"` 能力；旧核心未声明时客户端执行前拒绝；
@@ -217,7 +221,7 @@ tests/fixtures/docs/{args,cli}/                          教程最终夹具
 docs/module-registry.json                                只读核对 planned，不升级
 ```
 
-本页只做 B3-2 规划；B3-3 及后续仍未开始。
+本页登记 B3-2 实施范围和进度。B3-3 入口由本批最终审计产生。
 
 ## 十、新 Agent 先读
 

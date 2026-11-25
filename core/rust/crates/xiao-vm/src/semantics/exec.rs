@@ -26,6 +26,7 @@ use xiao_diagnostics::{
 };
 use xiao_intrinsics::DEFAULT_CAPABILITY_MASK;
 use xiao_intrinsics::{AbiBinding, IntrinsicId, VmBinding, active_by_id};
+use xiao_runtime::arguments::{ArgumentsSnapshot, EMPTY_ARGUMENTS};
 use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue, is_hashable};
 use xiao_source::SourceSpan;
 use xiao_syntax::ScalarType;
@@ -217,6 +218,7 @@ pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     /// 当前执行单元的 Runtime、取消与子执行单元事件。
     concurrency: Rc<concurrent::ConcurrentContext>,
     clock: Arc<xiao_runtime::time::TimeContext>,
+    arguments_snapshot: Option<Arc<ArgumentsSnapshot>>,
 }
 
 struct ModuleInstance {
@@ -268,6 +270,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             capabilities,
             concurrency: Rc::new(concurrent::ConcurrentContext::default()),
             clock: Arc::new(xiao_runtime::time::TimeContext::host()),
+            arguments_snapshot: None,
         }
     }
 
@@ -291,6 +294,11 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
 
     pub(crate) fn set_module_loader(&mut self, loader: Option<&'p dyn ModuleLoader>) {
         self.module_loader = loader;
+    }
+
+    /// 安装本次请求已接纳的参数快照。
+    pub(crate) fn set_arguments_snapshot(&mut self, snapshot: Option<Arc<ArgumentsSnapshot>>) {
+        self.arguments_snapshot = snapshot;
     }
 
     /// 判断当前 VM 是否已经清空所有请求级执行状态，且会话状态可复用。
@@ -1854,6 +1862,35 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         if declaration.kind == xiao_intrinsics::IntrinsicKind::Time {
             return self.execute_time(declaration, arguments, span);
         }
+        if matches!(
+            declaration.vm_binding,
+            VmBinding::ArgsProgramName | VmBinding::ArgsArgv
+        ) {
+            if !arguments.is_empty() {
+                return Err(attach_fault_span(
+                    Fault::Error(XiaoError::type_mismatch(
+                        "零个实参",
+                        format!("{} 个实参", arguments.len()),
+                    )),
+                    span.start,
+                    span.end,
+                ));
+            }
+            let snapshot = self
+                .arguments_snapshot
+                .as_deref()
+                .unwrap_or(&EMPTY_ARGUMENTS);
+            let value = if declaration.vm_binding == VmBinding::ArgsProgramName {
+                snapshot
+                    .program_name(self.capabilities)
+                    .map(RuntimeValue::Str)
+            } else {
+                snapshot.argv(self.capabilities).map(RuntimeValue::Array)
+            };
+            return value
+                .map(Some)
+                .map_err(|error| attach_fault_span(Fault::Error(error), span.start, span.end));
+        }
         if let Some(bit) = declaration.capability.bit()
             && self.capabilities & bit == 0
         {
@@ -2274,6 +2311,7 @@ fn exit_name_for_flow(flow: &Flow, fallback: &str) -> String {
 fn runtime_check_code(kind: &str) -> Option<&'static str> {
     match kind {
         "boolean_condition"
+        | "array_type"
         | "dynamic_conversion"
         | "string_boolean"
         | "resource_type"
@@ -2326,6 +2364,7 @@ fn check_value(kind: &str, value: &RuntimeValue, expected: Option<&xiao_ir::IrTy
             xiao_runtime::resources::resource_type_matches(value, kind, expected)
         }
         "boolean_condition" => value.as_bool().is_some(),
+        "array_type" => matches!(value, RuntimeValue::Array(_)),
         "dynamic_conversion" => matches!(value, RuntimeValue::Error(_)),
         // RuntimeValue::convert_to 是字符串布尔规则的唯一来源；这里仅把
         // 成功/失败映射成检查分支，避免在 VM 复制四个冻结拼写。

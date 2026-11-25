@@ -1148,6 +1148,10 @@ unsafe extern "C" {
         unit: *const XiaoValue,
         capabilities: u64,
     ) -> i32;
+    /// 读取当前运行的程序名，成功时替换已初始化且拥有的输出槽。
+    pub fn xiao_runtime_args_program_name(out: *mut XiaoValue, capabilities: u64) -> i32;
+    /// 读取当前运行的有序参数，成功时替换输出槽并交付拥有的独立数组。
+    pub fn xiao_runtime_args_argv(out: *mut XiaoValue, capabilities: u64) -> i32;
     /// 读取当前线程挂起错误的机器字段。
     pub fn xiao_runtime_error_snapshot(out: *mut XiaoAbiErrorSnapshot) -> i32;
     /// 读取当前线程挂起错误的第 `index` 个结构化参数。

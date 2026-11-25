@@ -339,6 +339,7 @@ fn hello_response(
                 "run".to_owned(),
                 "run_archive".to_owned(),
                 "run_xiaoc".to_owned(),
+                "arguments".to_owned(),
                 "verify".to_owned(),
                 "cache".to_owned(),
                 "test".to_owned(),

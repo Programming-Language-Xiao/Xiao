@@ -13,6 +13,7 @@ import { helpText as parserHelpText, type ParsedCommand } from "./parser.ts";
 import { discoverProjectTests, testModuleName } from "./test-discovery.ts";
 import { executeArchiveBuild } from "./build-archive.ts";
 import { discoverToolchainWithMetadata, ToolchainDiscoveryError } from "../platform/toolchain.ts";
+import { snapshotForRun } from "../platform/arguments.ts";
 import {
   createEnvironment,
   shellInitScript,
@@ -275,6 +276,7 @@ async function executeRun(command: Extract<ParsedCommand, { kind: "run" }>, cont
       spawnProcess: context.spawnProcess,
     });
     const result = await client.runSource(source, {
+      arguments: snapshotForRun(command.file, command.applicationArguments ?? []),
       path,
       module: moduleFromPath(path),
       optimizationLevel: normalizedOptimization.level,
@@ -326,6 +328,7 @@ async function executeXiaoc(command: Extract<ParsedCommand, { kind: "run" }>, co
       spawnProcess: context.spawnProcess,
     });
     const result = await client.runXiaoc(path, {
+      arguments: snapshotForRun(command.file, command.applicationArguments ?? []),
       debug: command.options.debug,
       diagnostics: normalizedOptimization.config.diagnostics,
       locale: locale.tag,
@@ -366,6 +369,7 @@ async function executeArchive(command: Extract<ParsedCommand, { kind: "xar" }>, 
       spawnProcess: context.spawnProcess,
     });
     const result = await client.runArchive(path, {
+      arguments: snapshotForRun(command.file, command.applicationArguments ?? []),
       optimizationLevel: normalizedOptimization.level,
       debug: command.options.debug,
       diagnostics: normalizedOptimization.config.diagnostics,
@@ -376,6 +380,7 @@ async function executeArchive(command: Extract<ParsedCommand, { kind: "xar" }>, 
   } catch (error) {
     if (typeof error === "object" && error !== null && "code" in error
       && typeof (error as { code?: unknown }).code === "string"
+      && (error as { code: string }).code !== "X11-CLI-CORE-004"
       && (error as { code: string }).code.startsWith("X11-CLI-CORE")) {
       return renderCliError(
         new CliCommandError("X11-CLI-XAR-ASSOCIATION-001", noAssociationPrompt(locale.tag), CLI_EXIT_CODES.usage, { archive: path }),

@@ -30,6 +30,8 @@ ABI 1.19、生成器 22 提供 `cmath` 的 15 个浮点包装，以及全局函�
 
 `lint`、`lfloat` 属于语言数值基础。内核、显式除法和转换的证据范围见[转换说明](../language/basics/types/conversions.md)。
 
+程序参数快照 `args` 和纯 Xiao 分组 `cli` 已进入 B3-2 实施。教程登记为 `planned`。[args 教程](../../DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials/args.md) · [cli 教程](../../DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials/cli.md)
+
 ## 首批模块
 
 - [`text`](text.md) —— 字符扫描、码点长度、查找/切片/切分；20M 增加 ASCII 首尾空白剥除、替换、重复与 ASCII 大写转换。

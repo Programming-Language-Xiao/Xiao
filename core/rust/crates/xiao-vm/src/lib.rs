@@ -44,9 +44,9 @@ pub use run::{
     VM_REQUEST_CODE, VmMetrics, VmOptions, VmOptionsError, XiaocLoadError, load_xiaoc, run,
     run_checked, run_hybrid, run_production, run_register, run_request, run_request_with_session,
     run_with, run_with_machine_seed, run_with_seed, run_with_values, run_xiaoc,
-    run_xiaoc_production, run_xiaoc_production_with_capabilities,
-    run_xiaoc_production_with_features, run_xiaoc_production_with_loader,
-    run_xiaoc_with_runtime_features,
+    run_xiaoc_production, run_xiaoc_production_with_arguments,
+    run_xiaoc_production_with_capabilities, run_xiaoc_production_with_features,
+    run_xiaoc_production_with_loader, run_xiaoc_with_runtime_features,
 };
 /// 重导出语义核与终止原因。
 pub use semantics::{Fault, Vm, VmSession};
@@ -55,6 +55,8 @@ pub use sink::{
     BoundedSink, DEFAULT_EVENT_CAPACITY, MAX_EVENT_CAPACITY, NullSink, RecordingSink, VmEvent,
     VmEventSink,
 };
+/// 重导出跨运行入口共享的已接纳参数。
+pub use xiao_runtime::arguments::ArgumentsSnapshot;
 
 /// 09R 冻结产物的兼容重导出层；沿革见 09R2D，冻结依据见 09R3。
 pub mod research;

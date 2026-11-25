@@ -105,7 +105,9 @@ pub(crate) fn standard_library_root() -> PathBuf {
 /// VM和归档共用的可执行官方模块集合；文档registry的planned状态不替代执行接线。
 /// 新增官方模块须在接线与验收齐备时同步登记；未登记源码不能被预载索引意外开放。
 const EXECUTABLE_STANDARD_MODULES: &[&str] = &[
+    "args",
     "base64",
+    "cli",
     "cmath",
     "concurrent",
     "csv",
@@ -164,15 +166,17 @@ impl ModuleLoader for DriverModuleLoader<'_> {
         let request = FrontendRequest::from_file(&path)
             .map_err(|error| error.to_string())?
             .with_context(context);
-        let artifact = FrontendCompiler::new().compile(&request).map_err(|error| {
-            error
-                .diagnostics
-                .iter()
-                .filter(|item| item.is_error())
-                .map(|item| format!("{}: {}", item.code(), item.message()))
-                .collect::<Vec<_>>()
-                .join("; ")
-        })?;
+        let artifact = FrontendCompiler::new()
+            .compile_module(&request, Some(identity))
+            .map_err(|error| {
+                error
+                    .diagnostics
+                    .iter()
+                    .filter(|item| item.is_error())
+                    .map(|item| format!("{}: {}", item.code(), item.message()))
+                    .collect::<Vec<_>>()
+                    .join("; ")
+            })?;
         let program = lower_program(&artifact.ir);
         verify_for_execution(&artifact.ir, &program).map_err(|error| error.to_string())?;
         Ok(Some(CompiledModule {

@@ -685,6 +685,24 @@ impl<'source> TypeChecker<'source> {
             );
             return self.check_function_arguments(&signature, arguments, span);
         }
+        if let Some(declaration) = self.intrinsic_decl(callee)
+            && declaration.kind == IntrinsicKind::Args
+        {
+            self.record_intrinsic_call(callee, span);
+            let string = Type::scalar(ScalarType::Str);
+            let result = match declaration.signature.return_type {
+                ValueType::Str => string,
+                ValueType::StrArray => Type::array(string),
+                _ => unreachable!("固定的 args 返回类型"),
+            };
+            let signature = FunctionSignature::new(
+                format!("ascii:{}", declaration.public_name),
+                vec![],
+                result,
+                span,
+            );
+            return self.check_function_arguments(&signature, arguments, span);
+        }
         if self
             .intrinsic_decl(callee)
             .is_some_and(|decl| decl.kind == IntrinsicKind::Input)
