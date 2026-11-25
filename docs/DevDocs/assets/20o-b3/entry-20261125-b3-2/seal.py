@@ -5,14 +5,15 @@ import subprocess
 import sys
 
 sys.dont_write_bytecode = True
-from audit import GATES, GENERATED, PREFIX, REPO, ROOT, derive, encoded, git, identity, inventory, require
+from audit import GATES, GENERATED_PATHS, REPO, ROOT, derive, doc_source, encoded, git, identity, inventory, require
 
 
 def check_worktree(commit):
+    require(git(REPO, "rev-parse", "HEAD").decode().strip() == commit, "门禁执行期间文档提交发生变化")
     tracked = git(REPO, "diff", "--name-only", "-z", commit)
     untracked = git(REPO, "ls-files", "--others", "--exclude-standard", "-z")
     changed = set(filter(None, (tracked + untracked).decode().split("\0")))
-    require(changed <= {f"{PREFIX}/{name}" for name in GENERATED}, "工作树偏离待核验的文档提交")
+    require(changed <= GENERATED_PATHS, "工作树偏离待核验的文档提交")
 
 
 def main():
@@ -32,7 +33,7 @@ def main():
         require(result.returncode == 0, f"{name} 失败\n{logs[row['stdout']]}{logs[row['stderr']]}")
         checks.append(row)
     check_worktree(commit)
-    gates = {"document_commit": commit, "checks": checks, "logs": logs}
+    gates = {"source": doc_source(commit), "worktree_matched_before_after": True, "checks": checks, "logs": logs}
     status = derive(ROOT, gates, inventory(ROOT))
     (ROOT / "doc-gates.json").write_bytes(encoded(gates))
     (ROOT / "closeout.json").write_bytes(encoded(status))

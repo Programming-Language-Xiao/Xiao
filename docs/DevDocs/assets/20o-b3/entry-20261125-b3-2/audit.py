@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parent
 PREFIX = ROOT.relative_to(REPO).as_posix()
 GATES = ("check:docs", "check:usedocs", "check:layout")
 GENERATED = {"closeout.json", "doc-gates.json", "evidence.json"}
+GENERATED_PATHS = {f"{PREFIX}/{name}" for name in GENERATED}
 
 
 def blob(commit, path):
@@ -25,6 +26,14 @@ def blob(commit, path):
 def inventory(root):
     return {path.relative_to(root).as_posix(): identity(path.read_bytes())
             for path in sorted(root.iterdir()) if path.name != "evidence.json"}
+
+
+def doc_source(commit):
+    paths = ("docs/DevDocs", "docs/UseDocs", "core/rust/crates/xiao-runtime-abi/README.md")
+    tree = git(REPO, "ls-tree", "-rz", commit, "--", *paths)
+    rows = [row for row in tree.split(b"\0") if row
+            and row.partition(b"\t")[2].decode("utf-8") not in GENERATED_PATHS]
+    return {"document_commit": commit, "docs_tree_sha256": identity(b"\0".join(rows) + b"\0")["sha256"]}
 
 
 def fixed_inputs():
@@ -79,9 +88,12 @@ def verify_windows(root, upstream, locks):
             require(lock["git_utf8_lf"] == digest and lock["checkout"] in (digest, identity(raw.replace(b"\n", b"\r\n"))),
                     f"Windows 锁文件字节不符：{name}")
         task = PureWindowsPath(report["task_root"])
+        source_root = PureWindowsPath(report["source_root"])
         env = report["environment"]
         runtime = report["runtime"]
-        require(task.is_absolute() and all(PureWindowsPath(env[key]) == task / folder
+        require(task.is_absolute() and source_root.is_absolute()
+                and PureWindowsPath(env["XIAO_STDLIB_ROOT"]) == source_root / "stdlib"
+                and all(PureWindowsPath(env[key]) == task / folder
                 for key, folder in (("CARGO_TARGET_DIR", "target"), ("XIAO_HOME", "home"),
                                     ("TMP", "temp"), ("TEMP", "temp"), ("TMPDIR", "temp")))
                 and env["XIAO_B1_F10"] == env["XIAO_B2_A_PERF"] == "0"
@@ -110,23 +122,42 @@ def verify_windows(root, upstream, locks):
         guard_bytes = archive.read("b1-guards-report.json")
         guards = json.loads(guard_bytes)
         guard_report = report["b1_guard_report"]
-        workflow_blob = blob(PRODUCT, ".github/workflows/maintenance-regression.yml")
+        workflow_path = ".github/workflows/maintenance-regression.yml"
+        workflow_blob = blob(PRODUCT, workflow_path)
         workflow_git = identity(workflow_blob)
-        require(guards["passed"] == guards["total"] == len(guards["cases"]) == 28
-                and guards["scope"] == "simulated-cargo-output"
-                and all(case["Passed"] is True for case in guards["cases"])
+        script_path = "tools/gates/b1-probe-guards.ps1"
+        script_blob = blob(PRODUCT, script_path)
+        script_hashes = {identity(raw)["sha256"] for raw in (script_blob, script_blob.replace(b"\n", b"\r\n"))}
+        guard_argv = report["commands"]["b1-count-guards"]["argv"]
+        require(guards["workflow"] == workflow_path and guards["scriptSha256"] in script_hashes
+                and guard_argv[1:3] == ["-NoProfile", "-File"]
+                and PureWindowsPath(guard_argv[3]) == source_root / script_path
                 and all(guard_report[key] == value for key, value in identity(guard_bytes).items())
                 and guard_report["workflow_git_utf8_lf"] == workflow_git
                 and guard_report["workflow_checkout"] in (workflow_git, identity(workflow_blob.replace(b"\n", b"\r\n")))
                 and guards["workflowSha256"] == guard_report["workflow_checkout"]["sha256"],
-                "本机 B1 模拟守卫回执不符")
+                "本机 B1 守卫脚本、工作流或回执字节不符")
+        expected_cases = {(path, case)
+                          for path in ("default", "Linux", "macOS", "Windows")
+                          for case in ("one", "zero", "two", "ignored", "failed", "failed-exit", "duplicate")}
+        cases = guards["cases"]
+        require(guards["passed"] == guards["total"] == len(cases) == len(expected_cases)
+                and guard_report["passed"] == guard_report["derived_cases"] == len(cases)
+                and guard_report["actual_cargo_outputs"] == 0
+                and guards["scope"] == "simulated-cargo-output"
+                and {(case["Path"], case["Case"]) for case in cases} == expected_cases
+                and all(case["Passed"] is True and type(case["ExitCode"]) is int
+                        and (case["ExitCode"] == 0) == (case["Case"] == "one") for case in cases),
+                "本机 B1 模拟守卫的用例集合或退出结果不符")
     return {"target": TARGET, "runtime": runtime, "tools": report["tools"], "task_root": report["task_root"],
             "runtime_time_tests": 4, "simulated_guard_cases": 28}
 
 
 def derive(root, gates, files):
-    document_commit = gates["document_commit"]
-    require(re.fullmatch(r"[a-f0-9]{40}", document_commit), "定稿文档提交身份不符")
+    document_commit = gates["source"]["document_commit"]
+    require(re.fullmatch(r"[a-f0-9]{40}", document_commit)
+            and gates["source"] == doc_source(document_commit)
+            and gates["worktree_matched_before_after"] is True, "定稿文档树或工作树回执不符")
     allowed_docs = "core/rust/crates/xiao-runtime-abi/README.md"
     changes = git(REPO, "diff", "--name-only", "-z", PRODUCT, document_commit).decode().split("\0")
     require(all(not path or path.startswith("docs/DevDocs/") or path == allowed_docs for path in changes),
@@ -137,6 +168,7 @@ def derive(root, gates, files):
                 for stream in ("stdout", "stderr")), "文档门禁退出码或日志摘要不符")
     expected = set(git(REPO, "ls-tree", "-r", "--name-only", "-z", document_commit, "--", PREFIX)
                    .decode().split("\0")) - {""}
+    expected -= GENERATED_PATHS
     require({f"{PREFIX}/{name}" for name in files.keys() - GENERATED} == expected, "基线文件集合偏离文档提交")
     for name in files.keys() - GENERATED:
         require(files[name] == identity(blob(document_commit, f"{PREFIX}/{name}")), f"封存文件偏离 Git 对象：{name}")
@@ -154,13 +186,18 @@ def derive(root, gates, files):
             "windows_rebuild": windows}
 
 
+def audit(root):
+    files = inventory(root)
+    require((root / "evidence.json").read_bytes() == encoded({"schema": 1, "files": files}),
+            "证据清单与实际字节不符")
+    status = derive(root, json.loads((root / "doc-gates.json").read_bytes()), files)
+    require((root / "closeout.json").read_bytes() == encoded(status), "开工基线状态与实际结果不符")
+    return status | {"audit_files": len(files)}
+
+
 if __name__ == "__main__":
     try:
-        files = inventory(ROOT)
-        require((ROOT / "evidence.json").read_bytes() == encoded({"schema": 1, "files": files}), "证据清单与实际字节不符")
-        status = derive(ROOT, json.loads((ROOT / "doc-gates.json").read_bytes()), files)
-        require((ROOT / "closeout.json").read_bytes() == encoded(status), "开工基线状态与实际结果不符")
-        print(encoded(status | {"audit_files": len(files)}).decode(), end="")
+        print(encoded(audit(ROOT)).decode(), end="")
     except (OSError, RuntimeError, ValueError, KeyError, BadZipFile, subprocess.SubprocessError) as error:
         print(f"B3-2A 拒绝：{error}", file=sys.stderr)
         raise SystemExit(1) from None
