@@ -134,6 +134,8 @@ b3_3_entry_ready = b3_2_passed and decisions_approved and no_product_scope_creep
 7. 记录协议/Core 版本、入口符号和原生上下文；
 8. 本机基线的 clang 默认目标为 `x86_64-w64-windows-gnu`。Windows args/cli 原生 O0/O3 构建须显式传入 `-target x86_64-pc-windows-msvc`，使用同目标 Runtime，并按产物归档实际目标及完整编译、链接命令。
 
+字节码的解码与 TAC 生产校验用 55 作为预登记负例，另测墓碑 100 与未知编号。53～54 的正例通过三种运行入口与双导入教程执行。
+
 退出：args 的协议、VM/TAC、LLVM/C ABI 和原生快照一致。
 
 ### B3-2E：教程、边界与三平台
