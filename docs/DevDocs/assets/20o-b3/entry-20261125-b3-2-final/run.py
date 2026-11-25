@@ -2,8 +2,8 @@
 
 import argparse
 from io import BytesIO
+from importlib.util import module_from_spec, spec_from_file_location
 import json
-import os
 from pathlib import Path
 import re
 import subprocess
@@ -12,8 +12,12 @@ from zipfile import ZipFile
 
 sys.dont_write_bytecode = True
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent / "entry-20261124-b3-1"))
-from run import LOCKS, MANIFEST, ROOT, RUST, TARGETS, Task, git, identity, require
+spec = spec_from_file_location("b3_1_runner", HERE.parent / "entry-20261124-b3-1" / "run.py")
+b3_1_runner = module_from_spec(spec)
+spec.loader.exec_module(b3_1_runner)
+LOCKS, MANIFEST, ROOT = b3_1_runner.LOCKS, b3_1_runner.MANIFEST, b3_1_runner.ROOT
+RUST, TARGETS, Task = b3_1_runner.RUST, b3_1_runner.TARGETS, b3_1_runner.Task
+git, identity, require = b3_1_runner.git, b3_1_runner.identity, b3_1_runner.require
 
 B3_1 = "84660c11ef1377a6ff5744547c8291f01a8879c1"
 PLATFORMS = dict(zip(TARGETS, ("windows", "linux", "macos"), strict=True))

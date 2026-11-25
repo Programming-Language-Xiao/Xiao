@@ -211,8 +211,8 @@ impl DriverRequest {
 
     /// 安装本次执行的已验证参数快照。
     #[must_use]
-    pub fn with_arguments_snapshot(mut self, snapshot: Arc<ArgumentsSnapshot>) -> Self {
-        self.arguments_snapshot = Some(snapshot);
+    pub fn with_arguments_snapshot(mut self, snapshot: ArgumentsSnapshot) -> Self {
+        self.arguments_snapshot = Some(Arc::new(snapshot));
         self
     }
 

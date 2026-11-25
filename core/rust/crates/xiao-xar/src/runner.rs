@@ -1,7 +1,6 @@
 //! `.xar` 入口校验与统一 VM 运行器。
 
 use std::fmt::{Display, Formatter};
-use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 use xiao_artifacts::{ArtifactError, Digest256};
@@ -34,7 +33,7 @@ pub struct XarRunOptions {
     /// 本次请求允许的不可变能力上下文。
     pub capabilities: u64,
     /// 调用方接纳的执行参数，仅传给入口 VM。
-    pub arguments: Option<Arc<xiao_vm::ArgumentsSnapshot>>,
+    pub arguments: Option<xiao_vm::ArgumentsSnapshot>,
 }
 
 impl Default for XarRunOptions {

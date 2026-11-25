@@ -1,7 +1,6 @@
 //! B3-2 的程序快照、分隔和冻结教程 VM 回归。
 
 use std::fs;
-use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use xiao_driver::{
@@ -91,7 +90,7 @@ fn source_request(options: RunOptions) -> ProtocolRequest {
 /// 两个模块在两个导入别名下均读取正式夹具的独立黄金。
 fn both_import_paths_match_the_vm_tutorials() {
     let input: RunArguments = serde_json::from_str(ARGS_INPUT).unwrap();
-    let snapshot = Arc::new(ArgumentsSnapshot::try_from(input).unwrap());
+    let snapshot = ArgumentsSnapshot::try_from(input).unwrap();
     for (module, source, expected) in [
         ("args", ARGS_SOURCE, ARGS_GOLDEN),
         ("cli", CLI_SOURCE, CLI_GOLDEN),
@@ -109,7 +108,7 @@ fn both_import_paths_match_the_vm_tutorials() {
                 )
                 .unwrap();
             if module == "args" {
-                request = request.with_arguments_snapshot(Arc::clone(&snapshot));
+                request = request.with_arguments_snapshot(snapshot.clone());
             }
             let result = FrontendVmDriver::new().run(&request);
             assert!(result.is_success(), "{prefix}.{module}: {result:?}");
@@ -137,10 +136,10 @@ print("main=" + child())
 "#;
     let mut driver = FrontendVmDriver::new();
     let request = DriverRequest::new(FrontendRequest::from_text(source));
-    let populated = request.clone().with_arguments_snapshot(Arc::new(
+    let populated = request.clone().with_arguments_snapshot(
         ArgumentsSnapshot::new("demo.xiao".into(), vec!["".into(), "�".into(), "--".into()])
             .unwrap(),
-    ));
+    );
     let result = driver.run(&populated);
     assert!(result.is_success(), "{result:?}");
     assert_eq!(

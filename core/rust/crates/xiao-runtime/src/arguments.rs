@@ -9,7 +9,7 @@ use crate::{
 };
 
 /// 程序名和参数通过接纳检查后由一次运行及其子任务共享。
-#[derive(Default, Eq, PartialEq)]
+#[derive(Clone, Default, Eq, PartialEq)]
 pub struct ArgumentsSnapshot {
     program_name: String,
     argv: Vec<String>,

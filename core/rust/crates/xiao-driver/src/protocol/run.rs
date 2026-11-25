@@ -3,7 +3,6 @@
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use serde_json::Value;
@@ -154,9 +153,9 @@ pub(super) fn run_options(
 /// 只在执行入口接纳参数。编译、归档校验与缓存不读取快照。
 fn admit_arguments(
     arguments: Option<RunArguments>,
-) -> Result<Option<Arc<ArgumentsSnapshot>>, ProtocolError> {
+) -> Result<Option<ArgumentsSnapshot>, ProtocolError> {
     arguments
-        .map(|value| ArgumentsSnapshot::try_from(value).map(Arc::new))
+        .map(ArgumentsSnapshot::try_from)
         .transpose()
         .map_err(ProtocolError::arguments)
 }
@@ -761,7 +760,9 @@ pub(super) fn run_request_response_with_driver(
         .with_module_name(module_name.clone())
         .with_event_capacity(event_capacity)
         .with_cancellation(cancellation);
-    driver_request.arguments_snapshot = arguments;
+    if let Some(snapshot) = arguments {
+        driver_request = driver_request.with_arguments_snapshot(snapshot);
+    }
     if let Some(path) = source_name.clone() {
         driver_request = driver_request.with_source_name(path);
     }

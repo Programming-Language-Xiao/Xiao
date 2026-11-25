@@ -659,7 +659,7 @@ pub fn run_xiaoc_production_with_arguments(
     capabilities: u64,
     loader: Option<&dyn crate::modules::ModuleLoader>,
     runtime_features: u64,
-    arguments: Option<Arc<ArgumentsSnapshot>>,
+    arguments: Option<ArgumentsSnapshot>,
 ) -> Result<RunOutcome, XiaocLoadError> {
     validate_capability_mask(capabilities).map_err(|error| XiaocLoadError::InvalidField {
         field: "capabilities".to_owned(),
@@ -682,7 +682,7 @@ pub fn run_xiaoc_production_with_arguments(
     );
     vm.set_cancellation_source(cancellation);
     vm.set_module_loader(loader);
-    vm.set_arguments_snapshot(arguments);
+    vm.set_arguments_snapshot(arguments.map(Arc::new));
     let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();
     Ok(production_outcome(result, value, metrics, vm.into_sink()))
