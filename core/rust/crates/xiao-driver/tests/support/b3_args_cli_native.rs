@@ -133,18 +133,20 @@ fn args_cli_matches_native_goldens_and_boundaries() {
             "X17-XAR-007"
         );
         let coff = composition.coff_link_identity.as_ref();
+        let digest =
+            |path: &Path| xiao_artifacts::Digest256::of_bytes(&fs::read(path).unwrap()).as_hex();
+        let artifact_sha256 = digest(&executable);
         if target.object_format == ObjectFormat::Coff {
             let binding = coff.expect("MSVC 原生构建必需映像绑定的链接 map");
-            let digest = |path: &Path| {
-                xiao_artifacts::Digest256::of_bytes(&fs::read(path).unwrap()).as_hex()
-            };
-            assert_eq!(binding.artifact_sha256, digest(&executable));
+            assert_eq!(binding.artifact_sha256, artifact_sha256);
             assert_eq!(binding.map_sha256, digest(&binding.map_path));
         }
         println!(
             "B3-2-ARTIFACT {}",
             serde_json::json!({"case": case, "target": target.triple, "optimization": level,
-                "path": executable, "coff_map": coff.map(|binding| &binding.map_path),
+                "path": executable, "sha256": artifact_sha256,
+                "coff_map": coff.map(|binding| &binding.map_path),
+                "coff_map_sha256": coff.map(|binding| &binding.map_sha256),
                 "components": composition.declared_components, "observed": composition.observed_components,
                 "unclassified": composition.unclassified_runtime_symbols, "verification": "complete",
                 "generator": metadata.generator_version, "old_verifier": "X17-XAR-007"})

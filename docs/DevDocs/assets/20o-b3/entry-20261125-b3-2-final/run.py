@@ -53,13 +53,16 @@ class ArgsCliTask(Task):
             executable = Path(row.pop("path")).resolve(strict=True)
             require(executable.is_relative_to(self.output / "temp"), "原生产物越出任务根")
             row["file"] = {"path": executable.relative_to(self.output).as_posix(), **identity(executable.read_bytes())}
+            require(row.pop("sha256") == row["file"]["sha256"], "产物与产品验证回执摘要不符")
             map_path = row.pop("coff_map")
+            map_digest = row.pop("coff_map_sha256")
             if target == "x86_64-pc-windows-msvc":
                 sidecar = Path(map_path).resolve(strict=True)
                 require(sidecar.parent == executable.parent, "COFF map 不属于同一构建目录")
                 row["map"] = {"path": sidecar.relative_to(self.output).as_posix(), **identity(sidecar.read_bytes())}
+                require(row["map"]["sha256"] == map_digest, "COFF map 与产品验证回执摘要不符")
             else:
-                require(map_path is None, "非 Windows 产物含 COFF map")
+                require(map_path is None and map_digest is None, "非 Windows 产物含 COFF map")
             if row["case"] in TUTORIALS:
                 module, _, opt = row["case"].split("-")
                 require(row["optimization"] == int(opt[1:]), "优化等级与教程标记不符")
