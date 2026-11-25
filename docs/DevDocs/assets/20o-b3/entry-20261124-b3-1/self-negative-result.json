@@ -1,63 +1,77 @@
 [
   {
-    "after": "c5b5324ab7be5a65b8dfc329461661ed064101cc3820337eeb98890cdc84cd64",
-    "before": "c5b5324ab7be5a65b8dfc329461661ed064101cc3820337eeb98890cdc84cd64",
+    "after": "370d036a3acbe3b0c627477c1c6ee4da7376d3cd412088b4ee31b774c0ae0e51",
+    "before": "370d036a3acbe3b0c627477c1c6ee4da7376d3cd412088b4ee31b774c0ae0e51",
     "case": "unchanged",
     "error": "",
     "exit": 0
   },
   {
-    "after": "7e298cf5eaea0b0f141c7a06d2715d94504de6f4deacab01ca25d1cfdcdcb9ba",
-    "before": "7e298cf5eaea0b0f141c7a06d2715d94504de6f4deacab01ca25d1cfdcdcb9ba",
+    "after": "fa14d9c9335ee593ada6b328016e168f28e88150e5741c10ab6b963af4ae4ade",
+    "before": "fa14d9c9335ee593ada6b328016e168f28e88150e5741c10ab6b963af4ae4ade",
+    "case": "windows-forward-slashes",
+    "error": "",
+    "exit": 0
+  },
+  {
+    "after": "1a323802d86a4fb48f0e737dd8606f7c47cd2380f526ffa41784e3ff80ffeabe",
+    "before": "1a323802d86a4fb48f0e737dd8606f7c47cd2380f526ffa41784e3ff80ffeabe",
+    "case": "windows-mixed-slashes",
+    "error": "",
+    "exit": 0
+  },
+  {
+    "after": "c20280eb34c6ef3ea10078247c67bd0d02f675b39646864ee131b0b72b57520c",
+    "before": "c20280eb34c6ef3ea10078247c67bd0d02f675b39646864ee131b0b72b57520c",
     "case": "manifest-tampered",
     "error": "证据清单与实际字节不符",
     "exit": 1
   },
   {
-    "after": "f42b39141fe9a7ab26457386c582a869227d0c6222e0c069a19fc0fcd8c7728c",
-    "before": "f42b39141fe9a7ab26457386c582a869227d0c6222e0c069a19fc0fcd8c7728c",
+    "after": "7bf4e40d478a3e46db2295e43e109542ce2aae3f8ed329b091d8d31d3717c103",
+    "before": "7bf4e40d478a3e46db2295e43e109542ce2aae3f8ed329b091d8d31d3717c103",
     "case": "missing-attributes",
     "error": "封存缺少 .gitattributes",
     "exit": 1
   },
   {
-    "after": "69fcd558e8aaf9ffe64b58a5d0b163d88d649f669199253cc303e322b3d88fb2",
-    "before": "69fcd558e8aaf9ffe64b58a5d0b163d88d649f669199253cc303e322b3d88fb2",
+    "after": "04f03282be52394754aa1516ca49a02f2d612ff154e28965c7ecd87b64c3cd40",
+    "before": "04f03282be52394754aa1516ca49a02f2d612ff154e28965c7ecd87b64c3cd40",
     "case": "forged-status",
     "error": "收口状态与实际结果不符",
     "exit": 1
   },
   {
-    "after": "2260ca8e452f04cb8b4079dd7a811662a05cbe48588f3811f2ef9aeaac5f8fd9",
-    "before": "2260ca8e452f04cb8b4079dd7a811662a05cbe48588f3811f2ef9aeaac5f8fd9",
+    "after": "3b2c6674e9a2d5185a62d58cb7b112b82f5cec6f98de5d886ec870a3a1020cb4",
+    "before": "3b2c6674e9a2d5185a62d58cb7b112b82f5cec6f98de5d886ec870a3a1020cb4",
     "case": "missing-clock-check",
     "error": "原生教程或边界执行回执缺项",
     "exit": 1
   },
   {
-    "after": "e2940d6cea34289aae719767475ce2b87968beb75f7d4131d2811deed46c0b92",
-    "before": "e2940d6cea34289aae719767475ce2b87968beb75f7d4131d2811deed46c0b92",
+    "after": "1aadcf0394b4b3f213c8e8a21e746d01375ccfaed8741ff2848f01415e4c9897",
+    "before": "1aadcf0394b4b3f213c8e8a21e746d01375ccfaed8741ff2848f01415e4c9897",
     "case": "replaced-error-identity",
     "error": "time 错误、能力或 ABI 边界回执缺项",
     "exit": 1
   },
   {
-    "after": "4d216701b5648cd99aba0823af8fecd36396ad702d3c36eaaf0cf572afd7eed6",
-    "before": "4d216701b5648cd99aba0823af8fecd36396ad702d3c36eaaf0cf572afd7eed6",
+    "after": "3641fc7016924d17af3b5c1edd317a9c643fd3552f817e2f9ef35aca4d695130",
+    "before": "3641fc7016924d17af3b5c1edd317a9c643fd3552f817e2f9ef35aca4d695130",
     "case": "forged-tutorial-execution",
     "error": "教程执行回执缺少精确通过",
     "exit": 1
   },
   {
-    "after": "fd03f38b838b6fab2ff469c52de354084ae88b63a9b6d19efd89fd78292b90e2",
-    "before": "fd03f38b838b6fab2ff469c52de354084ae88b63a9b6d19efd89fd78292b90e2",
+    "after": "93e7c66ad8e114c9ba4786d4f615be2a742b699cbfa70f02c7ca46618dd76a47",
+    "before": "93e7c66ad8e114c9ba4786d4f615be2a742b699cbfa70f02c7ca46618dd76a47",
     "case": "forged-coff-grade",
     "error": "原生产物验证等级不符",
     "exit": 1
   },
   {
-    "after": "de416e319e9f31bfddea489ac46b3783dcf3a21857e639947de550fd1a3ea74b",
-    "before": "de416e319e9f31bfddea489ac46b3783dcf3a21857e639947de550fd1a3ea74b",
+    "after": "870b4c4ef6fab21841703249020898d9047264994bfabcda604b8de91f0fdebc",
+    "before": "870b4c4ef6fab21841703249020898d9047264994bfabcda604b8de91f0fdebc",
     "case": "forged-coff-map-path",
     "error": "COFF 映像或 map 未绑定验证回执",
     "exit": 1
