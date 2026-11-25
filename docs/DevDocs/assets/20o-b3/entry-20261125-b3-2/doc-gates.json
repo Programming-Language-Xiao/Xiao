@@ -41,8 +41,8 @@
     "b0d71635939588cd258f38802796f4250bc121eb18e6e83ea0f240df5e09af63": "$ bun tools/repo-check/src/cli.ts layout\n"
   },
   "source": {
-    "docs_tree_sha256": "8e889734dcc7a6b521064969c5664bcb2df284f590b7fbb9933ca8413525787e",
-    "document_commit": "fc92bed5bf4795a6b2b5fa44e47eea8e0ddb769a"
+    "docs_tree_sha256": "070890f57a72813df6d0afecec7a90a3bd8d35e02e8f3d1cbadada48bec5e1b8",
+    "document_commit": "eeff2a9673ba929115ab46f5950bc4a0e9f56409"
   },
   "worktree_matched_before_after": true
 }

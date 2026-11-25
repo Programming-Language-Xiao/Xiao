@@ -1,8 +1,20 @@
 {
   "b1_guards": {
-    "actual": 4,
-    "derived": 24,
-    "passed": 28
+    "b3_2a_windows_replay": {
+      "actual_cargo_outputs": 0,
+      "archive": "windows-baseline.zip",
+      "passed": 28,
+      "report": "b1-guards-report.json",
+      "scope": "simulated-cargo-output",
+      "simulated_cases": 28
+    },
+    "inherited_b3_1": {
+      "actual_cargo_outputs": 4,
+      "commit": "84660c11ef1377a6ff5744547c8291f01a8879c1",
+      "derived_negatives": 24,
+      "passed": 28,
+      "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-1/closeout.json"
+    }
   },
   "b3_1_ci": {
     "time": {
@@ -316,7 +328,7 @@
   "b3_2a_entry_and_baseline_verified": true,
   "b3_3_entry_ready": false,
   "decisions_approved": false,
-  "document_commit": "fc92bed5bf4795a6b2b5fa44e47eea8e0ddb769a",
+  "document_commit": "eeff2a9673ba929115ab46f5950bc4a0e9f56409",
   "lockfiles": {
     "core/rust/Cargo.lock": {
       "bytes": 19608,
@@ -426,6 +438,7 @@
     "stdlib_interface": 1
   },
   "windows_rebuild": {
+    "clang_default_target": "x86_64-w64-windows-gnu",
     "runtime": {
       "bytes": 27515548,
       "features": [
@@ -435,7 +448,6 @@
       "sha256": "438b2ec6d39d7767d788d98fee398d29b8d0d581764748d5d45010b9d5fe83ef"
     },
     "runtime_time_tests": 4,
-    "simulated_guard_cases": 28,
     "target": "x86_64-pc-windows-msvc",
     "task_root": "D:\\project\\Xiao\\xiao-b3-2-a-baseline-20261125-r2",
     "tools": {
