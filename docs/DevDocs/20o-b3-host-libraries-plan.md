@@ -91,6 +91,8 @@ B3-1 按已批准的激活、验收范围和夹具登记完成收口。四个 ti
 
 ### B3-2：`args`/`cli`
 
+B3-2 的 args 激活、`RunOptions.arguments`、纯 Xiao CLI、教程和证据边界见 [B3-2 args/cli 实施规划](20o-b3-2-args-cli-implementation-plan.md)。当前只是规划，B3-2 尚未开工。
+
 1. argv不含程序名，程序名另取；
 2. 保留空参数；Windows不二次拆引号；
 3. 非法Unicode报错，不有损替换；

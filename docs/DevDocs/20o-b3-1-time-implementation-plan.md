@@ -192,7 +192,7 @@ Windows 本机从 `e79fab3c` 独立源码导出的 release Runtime、两个 Carg
 
 ## 八、B3-2 交接
 
-B3-2 接收 time 已冻结、已验证和未完成项。B3-1 不得修改其他五模块的冻结 API；发现 time 与 B3-0B/C 冲突回 B3-0 修订并重新冻结。
+B3-2 接收 time 已冻结、已验证和未完成项；[B3-2 args/cli 实施规划](20o-b3-2-args-cli-implementation-plan.md) 已建立，B3-2 尚未开工。B3-1 不得修改其他五模块的冻结 API；发现 time 与 B3-0B/C 冲突回 B3-0 修订并重新冻结。
 
 交接必须包含：
 
