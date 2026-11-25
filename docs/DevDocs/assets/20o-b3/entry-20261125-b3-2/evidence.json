@@ -5,28 +5,28 @@
       "sha256": "c86a3776342bf034a6f9261e5341af3ca2fc8c64816f82e559df902ea17c2960"
     },
     "README.md": {
-      "bytes": 2884,
-      "sha256": "52fc41583995714262ab6ce61b72e27c04bb1c30665afe81cc10e6b304c3eb3e"
+      "bytes": 2967,
+      "sha256": "6346bd5683a6dae14c5ac4174e37e2fab6e3a70f0bfdc0b68ab4b0839fb7519d"
     },
     "audit.py": {
-      "bytes": 15215,
-      "sha256": "fe7dbe156c2679f68e2704aec1c314c0091fedc6a7b96bb9ea0523fc0b0d493b"
+      "bytes": 15712,
+      "sha256": "72ad5801479a8f003c90d9128e0e6343be8c4ed41ef5c4ba592dddbef02c8c36"
     },
     "baseline.py": {
       "bytes": 10628,
       "sha256": "074e3daa391a02607b14b7e5fca3046f11e185cdb2174e7ad134751a34720aed"
     },
     "closeout.json": {
-      "bytes": 21685,
-      "sha256": "75c83edc75f32725b294ea75c28eaab9cd678792e7f34728075a7e0b503fb117"
+      "bytes": 21591,
+      "sha256": "3d69837fc0f70d8c5bcc306ac57661e6bfb6fe1a6697ededfa6190734af089aa"
     },
     "decisions.json": {
-      "bytes": 1712,
-      "sha256": "69d2513ac8a752e59168013b3fac4b6a19b5e59ba1d49c05ec18d2310a18643d"
+      "bytes": 2687,
+      "sha256": "1f675f44fd3191b30f0fdbaec87018cbd2458aafb08c89d378f77971585233d3"
     },
     "doc-gates.json": {
-      "bytes": 1774,
-      "sha256": "705830ecc4d60ede089364dddca8c6d9a62921c59732d3c1a7a562ecdbc27897"
+      "bytes": 1771,
+      "sha256": "4541e5f0a3bbd51e70cf037c4efb615d3cde5215410fdef6cc62ac6bf76321d3"
     },
     "seal.py": {
       "bytes": 3026,
@@ -34,7 +34,7 @@
     },
     "self-negative-result.json": {
       "bytes": 1457,
-      "sha256": "c0b9d91bc2d0c98c0ce4f7c27cca8f9f8744ede7394f9761cd3213ba5b97ec31"
+      "sha256": "a367b3fddfad53066b31dbf9aa4f90f74d4634f735485366ddfdab2fb1370ed9"
     },
     "self_negative.py": {
       "bytes": 4188,

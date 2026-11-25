@@ -327,8 +327,8 @@
   "b3_2_started": false,
   "b3_2a_entry_and_baseline_verified": true,
   "b3_3_entry_ready": false,
-  "decisions_approved": false,
-  "document_commit": "eeff2a9673ba929115ab46f5950bc4a0e9f56409",
+  "decisions_approved": true,
+  "document_commit": "d870e17eb22e9aaede76008604879a349c3db2d1",
   "lockfiles": {
     "core/rust/Cargo.lock": {
       "bytes": 19608,
@@ -339,13 +339,7 @@
       "sha256": "352ac2e54642a9f90db55292b12b20de797bec64b839a8c8b80fc3ee07486159"
     }
   },
-  "pending_decisions": [
-    "B3-2-CLI",
-    "B3-2-EVIDENCE",
-    "B3-2-FIXTURES",
-    "B3-2-ID",
-    "B3-2-PROTO"
-  ],
+  "pending_decisions": [],
   "product_commit": "8d1c09f084be172e8b3ce078f131592ac6db94b3",
   "scope": "20O-B3-2A",
   "tutorial_cases": {
