@@ -1704,24 +1704,16 @@ mod tests {
     fn runtime_check_kind_bridge_is_exhaustive() {
         let all = RuntimeCheckKind::all();
 
-        let names = all
-            .into_iter()
-            .map(runtime_check_kind_name)
-            .collect::<Vec<_>>();
-        assert_eq!(names.len(), RuntimeCheckKind::all().len());
-        assert_eq!(
-            names
-                .iter()
-                .collect::<std::collections::BTreeSet<_>>()
-                .len(),
-            17
-        );
-        for name in names {
-            assert!(
-                RuntimeCheckKind::from_name(name).is_some(),
-                "RuntimeCheckKind {name} 未列入共享名称表"
-            );
+        let mut names = std::collections::BTreeSet::new();
+        for kind in all {
+            let name = runtime_check_kind_name(kind);
+            assert!(names.insert(name), "重复的 RuntimeCheckKind 名称 {name}");
+            assert_eq!(RuntimeCheckKind::from_name(name), Some(kind));
         }
+        assert_eq!(
+            runtime_check_kind_name(RuntimeCheckKind::ArrayType),
+            "array_type"
+        );
         assert_eq!(
             runtime_check_kind_name(RuntimeCheckKind::StringBoolean),
             "string_boolean"
