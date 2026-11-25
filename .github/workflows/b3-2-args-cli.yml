@@ -30,7 +30,7 @@ jobs:
       - name: Checkout fixed B3-2 source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: 32d2b5b4b4080f92233ce8a2b305de0d5eeff3ce
+          ref: 879ce625c84965dc4fe4bb11523434635be55826
           fetch-depth: 0
           persist-credentials: false
       - name: Install Rust
