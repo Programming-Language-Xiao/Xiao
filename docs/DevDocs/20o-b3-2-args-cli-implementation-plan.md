@@ -88,7 +88,8 @@ b3_3_entry_ready = b3_2_passed and decisions_approved and no_product_scope_creep
 2. 复核 intrinsic 53～54 reserved、55～63 reserved、1～52 active、ID 100 tombstone；
 3. 固定 args/cli 教程、夹具、输入、黄金和 B3-0E 精确入口；
 4. 建立 `entry-20261125-b3-2/` 证据目录和唯一任务根；
-5. 记录 Windows/Linux/macOS 工具、目标和 Runtime；缺平台记 `unverifiable`。
+5. 记录 Windows/Linux/macOS 工具、目标和 Runtime；缺平台记 `unverifiable`；
+6. B1 守卫的 4 项实际 Cargo 输出和 24 项派生负例引用 B3-1 固定回执。Windows 新任务根的 28 项本机模拟与 0 项实际 Cargo 输出单独登记。
 
 退出：B3-1 基线和 B3-2 入口可复核；未改产品。
 
@@ -124,7 +125,8 @@ b3_3_entry_ready = b3_2_passed and decisions_approved and no_product_scope_creep
 4. C ABI 实现 `xiao_runtime_args_program_name(out, capabilities)` 和 `xiao_runtime_args_argv(out, capabilities)`；
 5. LLVM 动态/静态 lowering 使用同一快照；直接原生入口注入已校验 argv，嵌入/归档省略为空；
 6. 保持 0/1/2/3/6/8 状态、输出槽和借读/拥有规则；
-7. 记录协议/Core 版本、入口符号和原生上下文。
+7. 记录协议/Core 版本、入口符号和原生上下文；
+8. 本机基线的 clang 默认目标为 `x86_64-w64-windows-gnu`。Windows args/cli 原生 O0/O3 构建须显式传入 `-target x86_64-pc-windows-msvc`，使用同目标 Runtime，并按产物归档实际目标及完整编译、链接命令。
 
 退出：args 的协议、VM/TAC、LLVM/C ABI 和原生快照一致。
 
@@ -135,7 +137,7 @@ b3_3_entry_ready = b3_2_passed and decisions_approved and no_product_scope_creep
 3. args 覆盖空项、重复项、程序名、空快照、非法 Unicode/NUL、单项/总预算和能力缺失；
 4. cli 覆盖首项、中部、尾项、无分隔符、开头/末尾分隔符、空输入和预算；
 5. 三平台实跑；缺平台记 `unverifiable`；
-6. Windows args/cli 产物逐份取得产品级 COFF `Complete`，绑定 map 和产物身份；
+6. 按 §B3-2D 的 MSVC 目标回执逐份核对 Windows args/cli 产物，取得产品级 COFF `Complete`，绑定 map 和产物身份；
 7. registry/教程保持 `planned`。
 
 退出：args/cli 教程、边界和三平台通过；产品 COFF 等级如实登记。
@@ -144,7 +146,7 @@ b3_3_entry_ready = b3_2_passed and decisions_approved and no_product_scope_creep
 
 1. 生成 B3-2 证据：intrinsic、Runtime、协议、VM/TAC、LLVM/C ABI、CLI 源码、教程、平台和 CI；
 2. 只读审计核对固定 Git 对象、B3-1 产品、B3-0E 教程、53～54 状态和实际产品源码；
-3. 自反例覆盖伪造 args 激活、错误预算、非法 Unicode 放行、CLI 分组错误、伪造教程执行和伪造 COFF 等级；
+3. 自反例覆盖伪造 args 激活、错误预算、非法 Unicode 放行、CLI 分组错误、伪造教程执行和伪造 COFF 等级。归档逐项执行回执及审计前后摘要，引用 B3-2A 的独立自反例回执；
 4. 生成 B3-3 入口：args/cli 已验证、fs 待实现、COFF 待验证项；
 5. B3-3/B4 未开始；旧 721 和历史债务仍后置；
 6. 定稿后单次 docs 门禁。

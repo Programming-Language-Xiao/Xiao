@@ -15,8 +15,15 @@ from baseline import encoded, git, identity, require
 ROOT = Path(__file__).resolve().parent
 PREFIX = ROOT.relative_to(REPO).as_posix()
 GATES = ("check:docs", "check:usedocs", "check:layout")
-GENERATED = {"closeout.json", "doc-gates.json", "evidence.json"}
+NEGATIVE_RECEIPT = "self-negative-result.json"
+GENERATED = {"closeout.json", "doc-gates.json", "evidence.json", NEGATIVE_RECEIPT}
 GENERATED_PATHS = {f"{PREFIX}/{name}" for name in GENERATED}
+NEGATIVE_CASES = {
+    "unchanged": None,
+    "document-tree-sha256": "定稿文档树或工作树回执不符",
+    "guard-script-sha256": "本机 B1 守卫脚本、工作流或回执字节不符",
+    "duplicate-guard-case": "本机 B1 模拟守卫的用例集合或退出结果不符",
+}
 
 
 def blob(commit, path):
@@ -119,6 +126,10 @@ def verify_windows(root, upstream, locks):
                         for label in ("build-release-runtime", "runtime-time-boundaries"))
                 and "test result: ok. 4 passed; 0 failed; 0 ignored;" in logs["runtime-time-boundaries"],
                 "Windows 构建、版本或边界测试不符")
+        clang_version = logs["clang"].splitlines()
+        clang_targets = [line.removeprefix("Target: ") for line in clang_version if line.startswith("Target: ")]
+        require(report["tools"]["clang"]["version"] == clang_version and len(clang_targets) == 1,
+                "Windows clang 默认目标回执不符")
         guard_bytes = archive.read("b1-guards-report.json")
         guards = json.loads(guard_bytes)
         guard_report = report["b1_guard_report"]
@@ -149,8 +160,12 @@ def verify_windows(root, upstream, locks):
                 and all(case["Passed"] is True and type(case["ExitCode"]) is int
                         and (case["ExitCode"] == 0) == (case["Case"] == "one") for case in cases),
                 "本机 B1 模拟守卫的用例集合或退出结果不符")
-    return {"target": TARGET, "runtime": runtime, "tools": report["tools"], "task_root": report["task_root"],
-            "runtime_time_tests": 4, "simulated_guard_cases": 28}
+    windows = {"target": TARGET, "clang_default_target": clang_targets[0], "runtime": runtime,
+               "tools": report["tools"], "task_root": report["task_root"], "runtime_time_tests": 4}
+    local_guards = {"archive": "windows-baseline.zip", "report": "b1-guards-report.json",
+                    "scope": guards["scope"], "passed": guards["passed"], "simulated_cases": len(cases),
+                    "actual_cargo_outputs": guard_report["actual_cargo_outputs"]}
+    return windows, local_guards
 
 
 def derive(root, gates, files):
@@ -173,7 +188,14 @@ def derive(root, gates, files):
     for name in files.keys() - GENERATED:
         require(files[name] == identity(blob(document_commit, f"{PREFIX}/{name}")), f"封存文件偏离 Git 对象：{name}")
     upstream, locks, cases, platforms = fixed_inputs()
-    windows = verify_windows(root, upstream, locks)
+    windows, local_guards = verify_windows(root, upstream, locks)
+    inherited = upstream["baseline"]["b1_guards"]
+    b1_guards = {
+        "inherited_b3_1": {"commit": B3_1_CLOSEOUT, "path": f"{B3_1}/closeout.json",
+                           "passed": inherited["passed"], "actual_cargo_outputs": inherited["actual"],
+                           "derived_negatives": inherited["derived"]},
+        "b3_2a_windows_replay": local_guards,
+    }
     decisions = json.loads((root / "decisions.json").read_bytes())
     require(set(decisions["pending"]) == {f"B3-2-{name}" for name in ("ID", "PROTO", "CLI", "FIXTURES", "EVIDENCE")},
             "开工裁定台账不符")
@@ -182,22 +204,42 @@ def derive(root, gates, files):
             "b3_2_started": False, "b3_2_passed": False, "b3_3_entry_ready": False,
             "decisions_approved": False, "pending_decisions": sorted(decisions["pending"]),
             "versions": upstream["versions"], "lockfiles": locks, "tutorial_cases": cases,
-            "b3_1_platforms": platforms, "b3_1_ci": upstream["ci"], "b1_guards": upstream["baseline"]["b1_guards"],
+            "b3_1_platforms": platforms, "b3_1_ci": upstream["ci"], "b1_guards": b1_guards,
             "windows_rebuild": windows}
 
 
-def audit(root):
+def verify_negative_receipt(root, source, files):
+    require(NEGATIVE_RECEIPT in files, "缺少 B3-2A 自反例回执")
+    report = json.loads((root / NEGATIVE_RECEIPT).read_bytes())
+    require(report["schema"] == 1 and report["source"] == source, "自反例回执的文档身份不符")
+    rows = report["cases"]
+    require([row["case"] for row in rows] == list(NEGATIVE_CASES)
+            and all(row["accepted"] is (NEGATIVE_CASES[row["case"]] is None)
+                    and row["reason"] == NEGATIVE_CASES[row["case"]]
+                    and re.fullmatch(r"[a-f0-9]{64}", row["before_sha256"])
+                    and row["before_sha256"] == row["after_sha256"] for row in rows),
+            "自反例结果或只读摘要不符")
+    # 原样基线的回执在独立报告写入清单前采集。
+    prepared = {name: item for name, item in files.items() if name != NEGATIVE_RECEIPT}
+    prepared["evidence.json"] = identity(encoded({"schema": 1, "files": prepared}))
+    require(rows[0]["before_sha256"] == identity(encoded(prepared))["sha256"], "自反例未绑定封存输入")
+
+
+def audit(root, *, prepare=False):
     files = inventory(root)
     require((root / "evidence.json").read_bytes() == encoded({"schema": 1, "files": files}),
             "证据清单与实际字节不符")
-    status = derive(root, json.loads((root / "doc-gates.json").read_bytes()), files)
+    gates = json.loads((root / "doc-gates.json").read_bytes())
+    status = derive(root, gates, files)
     require((root / "closeout.json").read_bytes() == encoded(status), "开工基线状态与实际结果不符")
+    if not prepare:
+        verify_negative_receipt(root, gates["source"], files)
     return status | {"audit_files": len(files)}
 
 
 if __name__ == "__main__":
     try:
         print(encoded(audit(ROOT)).decode(), end="")
-    except (OSError, RuntimeError, ValueError, KeyError, BadZipFile, subprocess.SubprocessError) as error:
+    except (OSError, RuntimeError, ValueError, KeyError, TypeError, BadZipFile, subprocess.SubprocessError) as error:
         print(f"B3-2A 拒绝：{error}", file=sys.stderr)
         raise SystemExit(1) from None

@@ -3,9 +3,13 @@
 import shutil
 import subprocess
 import sys
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 sys.dont_write_bytecode = True
-from audit import GATES, GENERATED_PATHS, REPO, ROOT, derive, doc_source, encoded, git, identity, inventory, require
+from audit import GATES, GENERATED, GENERATED_PATHS, NEGATIVE_RECEIPT, REPO, ROOT, audit, derive, doc_source
+from audit import encoded, git, identity, inventory, require
+from self_negative import run_cases
 
 
 def check_worktree(commit):
@@ -34,10 +38,20 @@ def main():
         checks.append(row)
     check_worktree(commit)
     gates = {"source": doc_source(commit), "worktree_matched_before_after": True, "checks": checks, "logs": logs}
-    status = derive(ROOT, gates, inventory(ROOT))
-    (ROOT / "doc-gates.json").write_bytes(encoded(gates))
-    (ROOT / "closeout.json").write_bytes(encoded(status))
-    (ROOT / "evidence.json").write_bytes(encoded({"schema": 1, "files": inventory(ROOT)}))
+    with TemporaryDirectory(prefix="xiao-b3-2a-seal-") as directory:
+        staged = Path(directory) / "evidence"
+        shutil.copytree(ROOT, staged, ignore=shutil.ignore_patterns(*GENERATED))
+        (staged / "doc-gates.json").write_bytes(encoded(gates))
+        status = derive(staged, gates, inventory(staged))
+        (staged / "closeout.json").write_bytes(encoded(status))
+        manifest = staged / "evidence.json"
+        manifest.write_bytes(encoded({"schema": 1, "files": inventory(staged)}))
+        (staged / NEGATIVE_RECEIPT).write_bytes(encoded(run_cases(staged)))
+        manifest.write_bytes(encoded({"schema": 1, "files": inventory(staged)}))
+        audit(staged)
+        check_worktree(commit)
+        for name in ("doc-gates.json", "closeout.json", NEGATIVE_RECEIPT, "evidence.json"):
+            (ROOT / name).write_bytes((staged / name).read_bytes())
     print(encoded({"b3_2a_entry_and_baseline_verified": status["b3_2a_entry_and_baseline_verified"],
                    "b3_2_started": status["b3_2_started"]}).decode(), end="")
 
