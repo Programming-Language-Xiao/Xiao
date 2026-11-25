@@ -1,6 +1,6 @@
 # 20O-B3-1. `time` 实施规划
 
-> **状态（2026-11-25）**　B3-1 已在产品快照 `8d1c09f0` 完成内部收口。Windows、Linux、macOS 的 time VM/原生 O0/O3、等待/取消样本和平台门禁均通过。Windows 六份产物由同次 MSVC 链接 map 验证为 COFF `Complete`。workspace-gates CI run `45429820367` 通过，文档门禁和 8 条拒绝反例已封存。`b3_1_started=true`、`b3_1_passed=true`、`b3_2_entry_ready=true`。B3-2 尚未开始，教程和 registry 仍为 `planned`。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [time 收口证据](assets/20o-b3/entry-20261124-b3-1/README.md)
+> **B3-1 收口快照（2026-11-25）**　B3-1 在产品快照 `8d1c09f0` 完成内部收口。Windows、Linux、macOS 的 time VM/原生 O0/O3、等待/取消样本和平台门禁均通过。Windows 六份产物由同次 MSVC 链接 map 验证为 COFF `Complete`。workspace-gates CI run `45429820367` 通过，文档门禁和 8 条拒绝反例已封存。`b3_1_started=true`、`b3_1_passed=true`、`b3_2_entry_ready=true`。教程和 registry 为 `planned`。[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [time 收口证据](assets/20o-b3/entry-20261124-b3-1/README.md) · [B3-2 进度](20o-b3-2-args-cli-implementation-plan.md)
 > **输入契约**　15 个原语为 49～63，time 为 49～52；能力位 `clock` 为 1，`stdout` 为 5；目标为 ABI 1.20、生成器 23、标准库接口 1；C ABI 采用末尾 `capabilities: u64` 的冻结形式。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-1 只实现 time，不得把 B3-0E 候选或 `UnverifiedCoffExports` 写成产品验收。
 > 入口：[B3-0E 收口](assets/20o-b3/entry-20261124-b3-0e/README.md)、[B3-0D 收口](assets/20o-b3/entry-20261124-b3-0d/README.md)、[B3-0 实施规划](20o-b3-0-probe-freeze-plan.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
@@ -18,7 +18,7 @@
 | 目标版本 | ABI 1.20、生成器 23、标准库接口 1；49～52 激活，53～63 的激活策略见首轮裁定 |
 | 本批不做 | args/cli/fs/env/log 实现、教程/registry verified、B3-2、B4-B9、旧 721、历史债务核销 |
 | Windows COFF | B3-1 产品产物必须最终达到 `Complete`；B3-1 只处理 time 产物，完整三平台验收在 B3-7 |
-| 当前状态 | `b3_1_started=true`、`b3_1_passed=true`、`b3_2_entry_ready=true`、`b3_0_passed=true`；B3-2 尚未开始 |
+| B3-1 收口时 | `b3_1_started=true`、`b3_1_passed=true`、`b3_2_entry_ready=true`、`b3_0_passed=true`；当时 B3-2 尚未开始 |
 
 B3-1 实施 `time` 的四个入口。B3-0F 提供已冻结的六模块契约与验收入口，B3-1 的产品开工以本页 §3 为准。
 
@@ -192,7 +192,7 @@ Windows 本机从 `e79fab3c` 独立源码导出的 release Runtime、两个 Carg
 
 ## 八、B3-2 交接
 
-B3-2 接收 time 已冻结、已验证和未完成项；[B3-2 args/cli 实施规划](20o-b3-2-args-cli-implementation-plan.md) 已建立，B3-2 尚未开工。B3-1 不得修改其他五模块的冻结 API；发现 time 与 B3-0B/C 冲突回 B3-0 修订并重新冻结。
+B3-2 接收 time 冻结输入、已验证项目和后置项目。B3-1 的实施范围为 time。发现 time 与 B3-0B/C 冲突时回 B3-0 修订并重新冻结。[B3-2 args/cli 实施规划](20o-b3-2-args-cli-implementation-plan.md)
 
 交接必须包含：
 
@@ -218,7 +218,7 @@ tests/fixtures/docs/time/                            time 教程最终夹具
 docs/module-registry.json                            time 源码和夹具路径的 planned 登记
 ```
 
-本页只做 B3-1 规划；B3-2 及后续仍未开始。
+本页记录 B3-1 的实施与交接。后续状态见各批实施规划。
 
 ## 十、B3-1A 开工执行清单
 

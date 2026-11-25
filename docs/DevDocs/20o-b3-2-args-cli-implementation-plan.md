@@ -1,6 +1,6 @@
 # 20O-B3-2. `args` / `cli` 实施规划
 
-> **状态（2026-11-25）**　B3-2A 开工基线固定于 `8d1c09f0`。args 53～54、纯 Xiao 分组、运行协议和分发启动器已有本机验证。星崽批准生成器 24 与原生接线，三平台验收与收口在执行。教程和 registry 为 `planned`。[B3-1 收口](assets/20o-b3/entry-20261124-b3-1/README.md) · [B3-2A 基线](assets/20o-b3/entry-20261125-b3-2/README.md) · [补充裁定与验收](assets/20o-b3/entry-20261125-b3-2-final/README.md)
+> **验收（2026-11-26）**　B3-2 在固定产品 `879ce625` 通过三平台 VM、原生 O0/O3、C ABI 和教程逐字核对。Windows 12 份 MSVC 产物获产品级 COFF `Complete`。B3-3 的入口状态由只读审计派生。教程和 registry 为 `planned`。[B3-2A 基线](assets/20o-b3/entry-20261125-b3-2/README.md) · [产品验收与审计](assets/20o-b3/entry-20261125-b3-2-final/README.md)
 > **版本**　当前为 ABI 1.20、生成器 24、标准库接口 1。args 使用 53～54，cli 为纯 Xiao。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-2 不得用同链接、导出表-only 或 `UnverifiedCoffExports` 代替。
 > 入口：[B3-1 收口](assets/20o-b3/entry-20261124-b3-1/README.md)、[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md)、[B3-0B 契约](assets/20o-b3/entry-20261123-b3-0b/contract-draft.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
@@ -17,7 +17,7 @@
 | 本批目标 | 激活 args 53～54，接通 `RunOptions.arguments`/原生快照；实现纯 Xiao CLI 分组；完成 VM/原生/C ABI/教程/三平台证据 |
 | 本批不做 | fs/env/log 实现、55～63 激活、registry/教程 verified、B3-3/B4、旧 721、历史债务核销 |
 | Windows COFF | args/cli 的 Windows 产物必须产品级 `Complete`；完整公共矩阵留 B3-7 |
-| 当前状态 | `b3_2_started=true`、`b3_2_passed=false`、`b3_3_entry_ready=false`、`b3_product_started=true` |
+| 产品验收 | `b3_2_started=true`、`b3_product_started=true`。`b3_2_passed` 与 `b3_3_entry_ready` 取收口回执 |
 
 B3-2 是 **args/cli 实施批**，不是六模块并行批。args 需要同时接通运行协议、VM/TAC、LLVM/C ABI 和原生启动快照；cli 是纯 Xiao 模块，不新增 intrinsic 或 C 符号。B3-2 完成后只声明 args/cli 内部可用，不升级教程或 registry verified。
 
@@ -123,13 +123,13 @@ b3_3_entry_ready = b3_2_passed and decisions_approved and no_product_scope_creep
 
 本机已验证 `RunOptions.arguments`、hello 能力、源码与删源后的 `.xiaoc` / `.xar` 运行，以及两个 C 入口的空快照和输出槽。分发包的 Rust 启动器标记原始参数无法解码的位置，Bun CLI 按冻结顺序接纳整份应用参数。实际目标采用调用时拼写。
 
-生成器 24 为可达的 args/cli 模块经由原生启动适配器建立快照，在可执行文件启动时读取宿主拆分后的 `argv[0]` 与实参。原生 spawn 与池任务继承快照。cli 在规范模块函数入口执行数组检查，形参映射取各自模块的位置。Windows 接线通过本机预检，正式验收使用固定提交。[补充裁定与验收](assets/20o-b3/entry-20261125-b3-2-final/README.md)
+当 args/cli 模块从入口可达时，生成器 24 发射原生启动适配器。适配器用宿主拆分后的 `argv[0]` 和实参建立快照，原生 spawn 与池任务继承快照。cli 在规范模块函数入口检查数组形参。三平台回执绑定固定产品 `879ce625`。[补充裁定与验收](assets/20o-b3/entry-20261125-b3-2-final/README.md)
 
 1. 在 `RunOptions` 增加可选 `arguments` 字段，形状 `{program_name, argv}`；省略为空快照；
 2. 在 hello 响应增加 `"arguments"` 能力；旧核心未声明时客户端执行前拒绝；
 3. VM/TAC 识别 53～54，保留 1～52 原义；`process` 能力检查在触碰快照前完成；
 4. C ABI 实现 `xiao_runtime_args_program_name(out, capabilities)` 和 `xiao_runtime_args_argv(out, capabilities)`；
-5. LLVM 动态/静态 lowering 使用同一快照；直接原生入口注入已校验 argv，嵌入/归档省略为空；
+5. LLVM 动态降低通过 Runtime 调用读取快照。直接原生入口在用户代码运行前注入已校验参数，嵌入和归档省略参数时用空快照。
 6. 保持 0/1/2/3/6/8 状态、输出槽和借读/拥有规则；
 7. 记录协议/Core 版本、入口符号和原生上下文；
 8. 本机基线的 clang 默认目标为 `x86_64-w64-windows-gnu`。Windows args/cli 原生 O0/O3 构建须显式传入 `-target x86_64-pc-windows-msvc`，使用同目标 Runtime，并按产物归档实际目标及完整编译、链接命令。
@@ -155,7 +155,7 @@ b3_3_entry_ready = b3_2_passed and decisions_approved and no_product_scope_creep
 1. 生成 B3-2 证据：intrinsic、Runtime、协议、VM/TAC、LLVM/C ABI、CLI 源码、教程、平台和 CI；
 2. 只读审计核对固定 Git 对象、B3-1 产品、B3-0E 教程、53～54 状态和实际产品源码；
 3. 自反例覆盖伪造 args 激活、错误预算、非法 Unicode 放行、CLI 分组错误、伪造教程执行和伪造 COFF 等级。归档逐项执行回执及审计前后摘要，引用 B3-2A 的独立自反例回执；
-4. 生成 B3-3 入口：args/cli 已验证、fs 待实现、COFF 待验证项；
+4. 在 B3-3 交接中引用 args/cli 的 COFF `Complete` 和版本增量。fs 自身的 COFF 验收随 B3-3 执行。
 5. B3-3/B4 未开始；旧 721 和历史债务仍后置；
 6. 定稿后单次 docs 门禁。
 
@@ -199,7 +199,7 @@ b3_3_entry_ready = b3_2_passed and decisions_approved and no_product_scope_creep
 
 ## 八、B3-3 交接
 
-B3-3 接收 args/cli 已验证、fs 待实现和 COFF 待验证项。B3-2 不得修改 fs/env/log 的冻结 API；发现 args/cli 与 B3-0B 冲突回 B3-0 修订并重新冻结。
+B3-3 的入口为 ABI 1.20、生成器 24、标准库接口 1，引用 args/cli 三平台结果。fs 的 COFF 由其产品产物单独验证。发现 args/cli 与 B3-0B 冲突时回 B3-0 修订并重新冻结。
 
 交接必须包含：
 
