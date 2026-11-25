@@ -9,7 +9,10 @@ from tempfile import TemporaryDirectory
 from zipfile import ZIP_DEFLATED, ZipFile
 
 sys.dont_write_bytecode = True
-from audit import ROOT, encoded, identity, inventory, read, require
+from audit import CI_NULL, ROOT, encoded, identity, inventory, platform, read, require
+
+
+WINDOWS_PATH_CASES = ("windows-forward-slashes", "windows-mixed-slashes")
 
 
 def snapshot(root):
@@ -25,20 +28,29 @@ def edit_windows(root, case):
         if case == "forged-coff-grade":
             receipt["artifacts"][0]["verification"] = "unverified-coff-exports"
         else:
-            label, old, new = {
-                "missing-clock-check": ("native-exact", b"B3-1-BOUNDARY case=denied ", b"B3-1-BOUNDARY case=omitted "),
-                "replaced-error-identity": ("vm-boundaries", b"time_vm_errors_and_child_clock_follow_the_frozen_contract ... ok",
-                                            b"time_vm_errors_and_child_clock_follow_the_frozen_contract ... ignored"),
-                "forged-tutorial-execution": ("vm-exact", b"test result: ok. 1 passed;", b"test result: ok. 0 passed;"),
-                "forged-coff-map-path": ("native-exact", b"/denied.exe.map map_sha256=", b"/wrong.exe.map map_sha256="),
+            label, replacements = {
+                "windows-forward-slashes": ("native-exact", [(b"\\", b"/")]),
+                "windows-mixed-slashes": ("native-exact", [(b"\\temp\\", b"/temp/")]),
+                "missing-clock-check": ("native-exact", [
+                    (b"B3-1-BOUNDARY case=denied ", b"B3-1-BOUNDARY case=omitted "),
+                ]),
+                "replaced-error-identity": ("vm-boundaries", [
+                    (b"time_vm_errors_and_child_clock_follow_the_frozen_contract ... ok",
+                     b"time_vm_errors_and_child_clock_follow_the_frozen_contract ... ignored"),
+                ]),
+                "forged-tutorial-execution": ("vm-exact", [
+                    (b"test result: ok. 1 passed;", b"test result: ok. 0 passed;"),
+                ]),
+                "forged-coff-map-path": ("native-exact", [
+                    (b"\\", b"/"),
+                    (b"/denied.exe.map map_sha256=", b"/wrong.exe.map map_sha256="),
+                ]),
             }[case]
             command = receipt["commands"][label]
             raw = original.read(f"logs/{command['stdout']['sha256']}.log")
-            if case == "forged-coff-map-path":
-                # 先走完正斜杠的教程和边界路径核对，再拒绝明确错绑的 map。
-                raw = raw.replace(b"\\", b"/")
-            require(old in raw, f"反例缺少可改动的原始记录：{case}")
-            raw = raw.replace(old, new, 1)
+            for old, new in replacements:
+                require(old in raw, f"用例缺少可改动的原始记录：{case}")
+                raw = raw.replace(old, new)
             command["stdout"] = identity(raw)
             changed.writestr(f"logs/{command['stdout']['sha256']}.log", raw)
         for name in original.namelist():
@@ -53,7 +65,7 @@ def read_receipt(archive):
     return json.loads(archive.read("result.json"))
 
 
-def tamper(root, case):
+def apply_case(root, case):
     manifest = root / "evidence.json"
     if case == "manifest-tampered":
         value = read(root, "evidence.json")
@@ -74,18 +86,27 @@ def tamper(root, case):
 def replay(parent, case, reason, prepare):
     target = parent / case
     shutil.copytree(ROOT, target)
-    if reason:
-        tamper(target, case)
+    if case != "unchanged":
+        apply_case(target, case)
     before = snapshot(target)
-    argv = [sys.executable, "-B", "-X", "utf8", str(ROOT / "audit.py"), "--evidence-root", str(target)]
-    if prepare:
-        argv.append("--prepare")
-    run = subprocess.run(argv, capture_output=True, encoding="utf-8", timeout=120)
+    if case in WINDOWS_PATH_CASES:
+        # 路径变体会改变 ZIP 字节，直接复用完整审计中的平台校验。
+        baseline = read(ROOT, "closeout.json")
+        observed = platform(target, "windows", baseline["product_commit"], baseline["baseline"], CI_NULL)
+        require(not reason and observed == baseline["platforms"]["windows"], f"{case} 平台结果与原样基线不符")
+        exit_code = 0
+    else:
+        argv = [sys.executable, "-B", "-X", "utf8", str(ROOT / "audit.py"), "--evidence-root", str(target)]
+        if prepare:
+            argv.append("--prepare")
+        run = subprocess.run(argv, capture_output=True, encoding="utf-8", timeout=120)
+        expected = f"B3-1 拒绝：{reason}\n" if reason else ""
+        exit_code = run.returncode
+        require(exit_code == int(bool(reason)) and run.stderr == expected and bool(run.stdout) is (not reason),
+                f"{case} 回执不符，退出 {exit_code}\n{run.stderr}")
     after = snapshot(target)
-    expected = f"B3-1 拒绝：{reason}\n" if reason else ""
-    require(before == after and run.returncode == int(bool(reason)) and run.stderr == expected
-            and bool(run.stdout) is (not reason), f"{case} 回执不符，退出 {run.returncode}\n{run.stderr}")
-    return {"case": case, "before": before, "after": after, "exit": run.returncode, "error": reason}
+    require(before == after, f"{case} 审计改写了临时证据")
+    return {"case": case, "before": before, "after": after, "exit": exit_code, "error": reason}
 
 
 def main():
@@ -103,7 +124,8 @@ def main():
     if args.output:
         with args.output.open("xb") as file:
             file.write(encoded(rows))
-    print(encoded({"baseline_passed": True, "rejected_cases": len(rows) - 1, "read_only": True}).decode(), end="")
+    print(encoded({"baseline_passed": True, "accepted_cases": sum(row["exit"] == 0 for row in rows),
+                   "rejected_cases": sum(row["exit"] == 1 for row in rows), "read_only": True}).decode(), end="")
 
 
 if __name__ == "__main__":

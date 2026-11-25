@@ -369,7 +369,7 @@ def derive(root, prepare):
         "tutorial_status": "planned", "public_product_acceptance": False,
         "next": "20O-B3-2" if passed else None, "b3_2_started": False,
         "deferred": ["args_cli_fs_env_log", "B3-7_public_matrix_and_tutorial_registry", "old_721_and_historical_debts"],
-        "negatives": None if negatives is None else len(negatives) - 1,
+        "negatives": None if negatives is None else sum(row["exit"] == 1 for row in negatives),
     }
 
 

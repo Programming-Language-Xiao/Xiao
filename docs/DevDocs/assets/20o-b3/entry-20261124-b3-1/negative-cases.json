@@ -1,5 +1,7 @@
 {
   "unchanged": "",
+  "windows-forward-slashes": "",
+  "windows-mixed-slashes": "",
   "manifest-tampered": "证据清单与实际字节不符",
   "missing-attributes": "封存缺少 .gitattributes",
   "forged-status": "收口状态与实际结果不符",

@@ -10,4 +10,4 @@ Linux/macOS CI run `45428004405` 的两个作业分别通过。Windows 本机 ti
 
 首轮及修复轮日志保留于 `history.zip`，没有用后续通过覆盖失败。首轮 Linux 原生组件观察把 ELF 的 `STT_FILE` 编译单元名当成 Runtime 函数。修正符号类型过滤后继续发现实际输出槽对 `rc` 的静态链接依赖，当前产品组件表及逐导出 Linux 复验已覆盖该依赖。第一轮 Windows 专项还发现 `finally` 在同层 `catch` 前执行，黄金输出已据语言既有展开次序修正。
 
-`audit.py` 只读验证 Git 对象、三平台结果、工具和 Runtime 摘要、原生文件与 COFF map 原始字节、CI 作业、workspace-gates、文档门禁与封存清单。Windows 的教程、边界和 COFF 标记在核对原始日志摘要后统一用 `/` 比较路径。`self_negative.py` 在临时副本运行一个基线和 8 个拒绝用例，逐条比对拒绝原因及审计前后摘要。路径反例用正斜杠重现日志格式差异，再验证错误的 COFF map 路径会被拒绝。`closeout.json` 派生 `b3_1_passed=true` 和 `b3_2_entry_ready=true`。B3-2 尚未开始。[审计](audit.py) · [负例](self_negative.py) · [收口脚本](seal.py) · [CI 采集](collect_ci.py) · [收口回执](closeout.json)
+`audit.py` 只读验证 Git 对象、三平台结果、工具和 Runtime 摘要、原生文件与 COFF map 原始字节、CI 作业、workspace-gates、文档门禁与封存清单。Windows 的教程、边界和 COFF 标记在核对原始日志摘要后统一用 `/` 比较路径。`self_negative.py` 对原样封存复跑完整审计，对全正斜杠和斜杠混用的临时副本复跑 Windows 平台校验。两种写法都得到和原样相同的结果。8 个拒绝用例逐条比对拒绝原因，包含正斜杠日志错绑 COFF map。全部用例核对审计前后字节摘要。`closeout.json` 派生 `b3_1_passed=true` 和 `b3_2_entry_ready=true`。B3-2 尚未开始。[审计](audit.py) · [正反例](self_negative.py) · [收口脚本](seal.py) · [CI 采集](collect_ci.py) · [收口回执](closeout.json)
