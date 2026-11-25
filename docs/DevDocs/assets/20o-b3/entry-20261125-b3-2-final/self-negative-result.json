@@ -1,0 +1,75 @@
+{
+  "cases": [
+    {
+      "after": "8d2ce8b636732d8bcdd7a450aee5f31dc8aabc9ec2fdd927c45bf3af256de4f6",
+      "before": "8d2ce8b636732d8bcdd7a450aee5f31dc8aabc9ec2fdd927c45bf3af256de4f6",
+      "case": "unchanged",
+      "exit": 0,
+      "reason": null
+    },
+    {
+      "after": "8fab4798ccdf16a8168d0f3ccb2df8cea37e44c73c56b516f6a1dee3c588d1a1",
+      "before": "8fab4798ccdf16a8168d0f3ccb2df8cea37e44c73c56b516f6a1dee3c588d1a1",
+      "case": "rewritten-manifest",
+      "exit": 1,
+      "reason": "清单与实际字节不符"
+    },
+    {
+      "after": "f4ff05e0adb9820416d7589010b476e417757fc408a67a215bdb25a018c7e6cb",
+      "before": "f4ff05e0adb9820416d7589010b476e417757fc408a67a215bdb25a018c7e6cb",
+      "case": "missing-attributes",
+      "exit": 1,
+      "reason": "缺少 .gitattributes"
+    },
+    {
+      "after": "6df2782e83374b50b43de54a6994a4b72e4269f60b6575c4c3d90a628f84f7fc",
+      "before": "6df2782e83374b50b43de54a6994a4b72e4269f60b6575c4c3d90a628f84f7fc",
+      "case": "forged-activation",
+      "exit": 1,
+      "reason": "53～54 未按裁定激活"
+    },
+    {
+      "after": "3c86db2abefaec9b9aa7d1e3629890d09d0a8ecc9b916c0d8191897b51a07b33",
+      "before": "3c86db2abefaec9b9aa7d1e3629890d09d0a8ecc9b916c0d8191897b51a07b33",
+      "case": "missing-budget",
+      "exit": 1,
+      "reason": "VM 边界回执缺项"
+    },
+    {
+      "after": "9dfdfdeb8f39dc88b6d30e07b8c764ef2328931d13e3497744304c12fe6085bb",
+      "before": "9dfdfdeb8f39dc88b6d30e07b8c764ef2328931d13e3497744304c12fe6085bb",
+      "case": "unicode-admitted",
+      "exit": 1,
+      "reason": "原生参数拒绝回执不符"
+    },
+    {
+      "after": "4a0e1466092fa051b7f4bc4c02eddebebf49721809141ab14fce9596ada76b2c",
+      "before": "4a0e1466092fa051b7f4bc4c02eddebebf49721809141ab14fce9596ada76b2c",
+      "case": "wrong-cli-group",
+      "exit": 1,
+      "reason": "原生教程与固定黄金不符"
+    },
+    {
+      "after": "1756d18338d0344b38a6ba48ef4a21f413389238424c0322b50fde6ee76a3acc",
+      "before": "1756d18338d0344b38a6ba48ef4a21f413389238424c0322b50fde6ee76a3acc",
+      "case": "forged-tutorial",
+      "exit": 1,
+      "reason": "VM 教程回执缺项"
+    },
+    {
+      "after": "fd7e7a34000b678069f5a5591cd573ef4dd4b446ba9d8e144ddff91405dd76e6",
+      "before": "fd7e7a34000b678069f5a5591cd573ef4dd4b446ba9d8e144ddff91405dd76e6",
+      "case": "forged-coff",
+      "exit": 1,
+      "reason": "原生产物验证回执不符"
+    },
+    {
+      "after": "95fcee86717a9a6ab695278a1ef1ceb0b77e9d08128831a6f0f22d0a4a963196",
+      "before": "95fcee86717a9a6ab695278a1ef1ceb0b77e9d08128831a6f0f22d0a4a963196",
+      "case": "forged-status",
+      "exit": 1,
+      "reason": "收口状态与实测不符"
+    }
+  ],
+  "document_commit": "b5fc3288a8823f454814beaa16bdd9c8b65231a9"
+}

@@ -1,0 +1,48 @@
+{
+  "checks": [
+    {
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+        "run",
+        "check:docs"
+      ],
+      "exit": 0,
+      "name": "check:docs",
+      "stderr": "3c0d7a02ef66c8fd45e55269144c131b8c773524f2d1155794924526fe4fcbac",
+      "stdout": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
+    },
+    {
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+        "run",
+        "check:usedocs"
+      ],
+      "exit": 0,
+      "name": "check:usedocs",
+      "stderr": "02033b06a17499d938d03b52015dea853d526492a32028e4837999f248f0be68",
+      "stdout": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
+    },
+    {
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.EXE",
+        "run",
+        "check:layout"
+      ],
+      "exit": 0,
+      "name": "check:layout",
+      "stderr": "b0d71635939588cd258f38802796f4250bc121eb18e6e83ea0f240df5e09af63",
+      "stdout": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
+    }
+  ],
+  "logs": {
+    "02033b06a17499d938d03b52015dea853d526492a32028e4837999f248f0be68": "$ bun tools/repo-check/src/cli.ts usedocs\n",
+    "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b": "通过：未发现 A0 规则问题。\n",
+    "3c0d7a02ef66c8fd45e55269144c131b8c773524f2d1155794924526fe4fcbac": "$ bun tools/repo-check/src/cli.ts docs\n",
+    "b0d71635939588cd258f38802796f4250bc121eb18e6e83ea0f240df5e09af63": "$ bun tools/repo-check/src/cli.ts layout\n"
+  },
+  "matched_before_after": true,
+  "source": {
+    "commit": "b5fc3288a8823f454814beaa16bdd9c8b65231a9",
+    "docs_tree_sha256": "dbc59f52821f03b6f4cae591277ddc6bb5c3d32d30b61e5467dbf7ddab21d501"
+  }
+}

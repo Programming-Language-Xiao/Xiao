@@ -1,0 +1,196 @@
+{
+  "b1_guards": {
+    "b3_2a_windows_replay": {
+      "actual_cargo_outputs": 0,
+      "archive": "windows-baseline.zip",
+      "passed": 28,
+      "report": "b1-guards-report.json",
+      "scope": "simulated-cargo-output",
+      "simulated_cases": 28
+    },
+    "inherited_b3_1": {
+      "actual_cargo_outputs": 4,
+      "commit": "84660c11ef1377a6ff5744547c8291f01a8879c1",
+      "derived_negatives": 24,
+      "passed": 28,
+      "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-1/closeout.json"
+    }
+  },
+  "b3_2_passed": true,
+  "b3_2_started": true,
+  "b3_2a_entry_and_baseline_verified": true,
+  "b3_2b_args_intrinsics_implemented": true,
+  "b3_2c_cli_pure_xiao_implemented": true,
+  "b3_2d_protocol_vm_native_consistent": true,
+  "b3_2e_args_cli_tutorials_passed": true,
+  "b3_2f_evidence_audit_passed": true,
+  "b3_3_entry_ready": true,
+  "b3_3_started": false,
+  "ci": {
+    "maintenance": {
+      "attempt": 1,
+      "commit": "2aae3a74b0bb3ac7e057cc1b1661183337f9e1da",
+      "conclusion": "success",
+      "jobs": {
+        "Deterministic artifact size regression (Windows baseline)": 139333083490,
+        "Deterministic parser and artifact security regression": 139333083250,
+        "Native differential regression (Linux)": 139333083191,
+        "Native differential regression (Windows)": 139333083130,
+        "Native differential regression (macOS)": 139333083295,
+        "Rust workspace default tests (Linux)": 139333082860
+      },
+      "run": 45650370637
+    },
+    "runner": {
+      "attempt": 1,
+      "commit": "56546842c9e95f4a093097d8b9a4f3eee991c0c9",
+      "conclusion": "success",
+      "jobs": {
+        "B3-2 args and cli (linux)": 139326467435,
+        "B3-2 args and cli (macos)": 139326467021
+      },
+      "run": 45648610239
+    },
+    "workspace": {
+      "attempt": 1,
+      "commit": "879ce625c84965dc4fe4bb11523434635be55826",
+      "conclusion": "success",
+      "jobs": {
+        "Linux workspace gates": 139326413992
+      },
+      "run": 45648595869
+    }
+  },
+  "decisions_approved": true,
+  "deferred": [
+    "fs_env_log",
+    "B3-7_public_matrix_performance_and_registry",
+    "old_721_and_historical_debts"
+  ],
+  "document_commit": "b5fc3288a8823f454814beaa16bdd9c8b65231a9",
+  "history": {
+    "first-maintenance": {
+      "attempt": 1,
+      "commit": "a684689a10e7f0fda697318ab2b6e846e8f78fcf",
+      "conclusion": "failure",
+      "jobs": {
+        "Deterministic artifact size regression (Windows baseline)": 139302759931,
+        "Deterministic parser and artifact security regression": 139302760377,
+        "Native differential regression (Linux)": 139302760450,
+        "Native differential regression (Windows)": 139302760353,
+        "Native differential regression (macOS)": 139302760636,
+        "Rust workspace default tests (Linux)": 139302761124
+      },
+      "run": 45641972063
+    },
+    "first-workspace": {
+      "attempt": 1,
+      "commit": "a684689a10e7f0fda697318ab2b6e846e8f78fcf",
+      "conclusion": "failure",
+      "jobs": {
+        "Linux workspace gates": 139302758187
+      },
+      "run": 45641972359
+    },
+    "fourth-maintenance": {
+      "attempt": 1,
+      "commit": "879ce625c84965dc4fe4bb11523434635be55826",
+      "conclusion": "cancelled",
+      "jobs": {
+        "Deterministic artifact size regression (Windows baseline)": 139326500715,
+        "Deterministic parser and artifact security regression": 139326499739,
+        "Native differential regression (Linux)": 139326500137,
+        "Native differential regression (Windows)": 139326500259,
+        "Native differential regression (macOS)": 139326500274,
+        "Rust workspace default tests (Linux)": 139326500049
+      },
+      "run": 45648595833
+    },
+    "second-maintenance": {
+      "attempt": 1,
+      "commit": "32d2b5b4b4080f92233ce8a2b305de0d5eeff3ce",
+      "conclusion": "cancelled",
+      "jobs": {
+        "Deterministic artifact size regression (Windows baseline)": 139309612006,
+        "Deterministic parser and artifact security regression": 139309612029,
+        "Native differential regression (Linux)": 139309612198,
+        "Native differential regression (Windows)": 139309611953,
+        "Native differential regression (macOS)": 139309611811,
+        "Rust workspace default tests (Linux)": 139309611452
+      },
+      "run": 45643907563
+    },
+    "third-maintenance": {
+      "attempt": 1,
+      "commit": "a26cba096b2a4d2f2e8f585df2f2e08eb0caa2c8",
+      "conclusion": "cancelled",
+      "jobs": {
+        "Deterministic artifact size regression (Windows baseline)": 139314519542,
+        "Deterministic parser and artifact security regression": 139314519568,
+        "Native differential regression (Linux)": 139314520079,
+        "Native differential regression (Windows)": 139314519710,
+        "Native differential regression (macOS)": 139314519492,
+        "Rust workspace default tests (Linux)": 139314519007
+      },
+      "run": 45645230803
+    },
+    "third-workspace": {
+      "attempt": 1,
+      "commit": "a26cba096b2a4d2f2e8f585df2f2e08eb0caa2c8",
+      "conclusion": "failure",
+      "jobs": {
+        "Linux workspace gates": 139314490715
+      },
+      "run": 45645230778
+    }
+  },
+  "negatives": 9,
+  "next": "20O-B3-3",
+  "no_product_scope_creep": true,
+  "old_721_executed": false,
+  "platforms": {
+    "linux": {
+      "artifact_verification": "complete",
+      "native_boundaries": 4,
+      "native_rejections": 4,
+      "native_tutorials": 8,
+      "runtime": 5,
+      "runtime_sha256": "37c2ecfd56e951b940180720ab6045509086f69aa39b43289bc5a5fa52ecb422",
+      "target": "x86_64-unknown-linux-gnu",
+      "vm": 7
+    },
+    "macos": {
+      "artifact_verification": "complete",
+      "native_boundaries": 4,
+      "native_rejections": 4,
+      "native_tutorials": 8,
+      "runtime": 5,
+      "runtime_sha256": "767aadd840aceae5b1fd600bc8126d9c6d2d9da88c5d4ea29788f4ae6584b2ee",
+      "target": "aarch64-apple-darwin",
+      "vm": 7
+    },
+    "windows": {
+      "artifact_verification": "complete",
+      "native_boundaries": 4,
+      "native_rejections": 4,
+      "native_tutorials": 8,
+      "runtime": 5,
+      "runtime_sha256": "b97c508eaf7961f389a4a4a01d8d006b5529d0e1c2ef9dc8a05671a5f727b3c8",
+      "target": "x86_64-pc-windows-msvc",
+      "vm": 7
+    }
+  },
+  "product_commit": "879ce625c84965dc4fe4bb11523434635be55826",
+  "public_product_acceptance": false,
+  "registry_status": "planned",
+  "stage": "20O-B3-2",
+  "tutorial_status": "planned",
+  "versions": {
+    "abi": "1.20",
+    "core": 1,
+    "generator": 24,
+    "protocol": 1,
+    "stdlib_interface": 1
+  },
+  "windows_args_cli_coff": "complete"
+}
