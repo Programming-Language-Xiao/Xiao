@@ -1,0 +1,547 @@
+{
+  "b1_guards": {
+    "actual": 4,
+    "derived": 24,
+    "passed": 28
+  },
+  "b3_1_ci": {
+    "time": {
+      "attempt": 1,
+      "jobs": {
+        "linux": 138565186514,
+        "macos": 138565187232
+      },
+      "run": 45428004405
+    },
+    "workspace_gates": {
+      "attempt": 1,
+      "job": 138571716660,
+      "run": 45429820367
+    }
+  },
+  "b3_1_closeout_commit": "84660c11ef1377a6ff5744547c8291f01a8879c1",
+  "b3_1_platforms": {
+    "linux": {
+      "ci": {
+        "GITHUB_JOB": "time",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "45428004405",
+        "RUNNER_OS": "Linux"
+      },
+      "runtime": {
+        "bytes": 34248540,
+        "path": "/home/runner/work/_temp/b3-time/target/x86_64-unknown-linux-gnu/release/libxiao_runtime.a",
+        "sha256": "cf8d24a3470741cb3bac684917125d2defcfad50ee43053ef0719532829f9d0f",
+        "test_failpoints": true
+      },
+      "target": "x86_64-unknown-linux-gnu",
+      "tools": {
+        "clang": {
+          "bytes": 140592,
+          "path": "/usr/lib/llvm-18/bin/clang",
+          "sha256": "8ef402d453d1ba4902e4ee0f0f847f6cfa01400c95aa43c24e97818b9c0e3f45",
+          "version": [
+            "Ubuntu clang version 18.1.3 (1ubuntu1)",
+            "Target: x86_64-pc-linux-gnu",
+            "Thread model: posix",
+            "InstalledDir: /usr/lib/llvm-18/bin"
+          ]
+        },
+        "llc": {
+          "bytes": 164560,
+          "path": "/usr/lib/llvm-18/bin/llc",
+          "sha256": "1efd161c597a2c4255987800505303e298eba00dbee1e93468271c1f7f738181",
+          "version": [
+            "Ubuntu LLVM version 18.1.3",
+            "  Optimized build.",
+            "  Default target: x86_64-pc-linux-gnu",
+            "  Host CPU: znver3",
+            "",
+            "  Registered Targets:",
+            "    aarch64     - AArch64 (little endian)",
+            "    aarch64_32  - AArch64 (little endian ILP32)",
+            "    aarch64_be  - AArch64 (big endian)",
+            "    amdgcn      - AMD GCN GPUs",
+            "    arm         - ARM",
+            "    arm64       - ARM64 (little endian)",
+            "    arm64_32    - ARM64 (little endian ILP32)",
+            "    armeb       - ARM (big endian)",
+            "    avr         - Atmel AVR Microcontroller",
+            "    bpf         - BPF (host endian)",
+            "    bpfeb       - BPF (big endian)",
+            "    bpfel       - BPF (little endian)",
+            "    hexagon     - Hexagon",
+            "    lanai       - Lanai",
+            "    loongarch32 - 32-bit LoongArch",
+            "    loongarch64 - 64-bit LoongArch",
+            "    m68k        - Motorola 68000 family",
+            "    mips        - MIPS (32-bit big endian)",
+            "    mips64      - MIPS (64-bit big endian)",
+            "    mips64el    - MIPS (64-bit little endian)",
+            "    mipsel      - MIPS (32-bit little endian)",
+            "    msp430      - MSP430 [experimental]",
+            "    nvptx       - NVIDIA PTX 32-bit",
+            "    nvptx64     - NVIDIA PTX 64-bit",
+            "    ppc32       - PowerPC 32",
+            "    ppc32le     - PowerPC 32 LE",
+            "    ppc64       - PowerPC 64",
+            "    ppc64le     - PowerPC 64 LE",
+            "    r600        - AMD GPUs HD2XXX-HD6XXX",
+            "    riscv32     - 32-bit RISC-V",
+            "    riscv64     - 64-bit RISC-V",
+            "    sparc       - Sparc",
+            "    sparcel     - Sparc LE",
+            "    sparcv9     - Sparc V9",
+            "    systemz     - SystemZ",
+            "    thumb       - Thumb",
+            "    thumbeb     - Thumb (big endian)",
+            "    ve          - VE",
+            "    wasm32      - WebAssembly 32-bit",
+            "    wasm64      - WebAssembly 64-bit",
+            "    x86         - 32-bit X86: Pentium-Pro and above",
+            "    x86-64      - 64-bit X86: EM64T and AMD64",
+            "    xcore       - XCore",
+            "    xtensa      - Xtensa 32"
+          ]
+        },
+        "llvm-as": {
+          "bytes": 31480,
+          "path": "/usr/lib/llvm-18/bin/llvm-as",
+          "sha256": "8e7460eff4ba4e22d8ae881404bb24c5fc346996264e883ba26d41da4188215d",
+          "version": [
+            "Ubuntu LLVM version 18.1.3",
+            "  Optimized build."
+          ]
+        }
+      }
+    },
+    "macos": {
+      "ci": {
+        "GITHUB_JOB": "time",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "45428004405",
+        "RUNNER_OS": "macOS"
+      },
+      "runtime": {
+        "bytes": 25734648,
+        "path": "/Users/runner/work/_temp/b3-time/target/aarch64-apple-darwin/release/libxiao_runtime.a",
+        "sha256": "22b9f4f645c76fe671628741d7d838f77e67e090227d04ca4dc6b88e15bc9a56",
+        "test_failpoints": true
+      },
+      "target": "aarch64-apple-darwin",
+      "tools": {
+        "clang": {
+          "bytes": 167432,
+          "path": "/opt/homebrew/Cellar/llvm@21/21.1.8_1/bin/clang-21",
+          "sha256": "d27637290688dd66dec96b4c2f218c5e061940b325c2b4950e42b5d0020a8718",
+          "version": [
+            "Homebrew clang version 21.1.8",
+            "Target: arm64-apple-darwin24.6.0",
+            "Thread model: posix",
+            "InstalledDir: /opt/homebrew/Cellar/llvm@21/21.1.8_1/bin",
+            "Configuration file: /opt/homebrew/etc/clang/arm64-apple-darwin24.cfg"
+          ]
+        },
+        "llc": {
+          "bytes": 262000,
+          "path": "/opt/homebrew/Cellar/llvm@21/21.1.8_1/bin/llc",
+          "sha256": "c1fe35dbeeb04581a65690de041102f149818f038a06b8c4432ff89ebce862e8",
+          "version": [
+            "Homebrew LLVM version 21.1.8",
+            "  Optimized build.",
+            "  Default target: arm64-apple-darwin24.6.0",
+            "  Host CPU: (unknown)",
+            "",
+            "  Registered Targets:",
+            "    aarch64     - AArch64 (little endian)",
+            "    aarch64_32  - AArch64 (little endian ILP32)",
+            "    aarch64_be  - AArch64 (big endian)",
+            "    amdgcn      - AMD GCN GPUs",
+            "    arm         - ARM",
+            "    arm64       - ARM64 (little endian)",
+            "    arm64_32    - ARM64 (little endian ILP32)",
+            "    armeb       - ARM (big endian)",
+            "    avr         - Atmel AVR Microcontroller",
+            "    bpf         - BPF (host endian)",
+            "    bpfeb       - BPF (big endian)",
+            "    bpfel       - BPF (little endian)",
+            "    hexagon     - Hexagon",
+            "    lanai       - Lanai",
+            "    loongarch32 - 32-bit LoongArch",
+            "    loongarch64 - 64-bit LoongArch",
+            "    mips        - MIPS (32-bit big endian)",
+            "    mips64      - MIPS (64-bit big endian)",
+            "    mips64el    - MIPS (64-bit little endian)",
+            "    mipsel      - MIPS (32-bit little endian)",
+            "    msp430      - MSP430 [experimental]",
+            "    nvptx       - NVIDIA PTX 32-bit",
+            "    nvptx64     - NVIDIA PTX 64-bit",
+            "    ppc32       - PowerPC 32",
+            "    ppc32le     - PowerPC 32 LE",
+            "    ppc64       - PowerPC 64",
+            "    ppc64le     - PowerPC 64 LE",
+            "    r600        - AMD GPUs HD2XXX-HD6XXX",
+            "    riscv32     - 32-bit RISC-V",
+            "    riscv64     - 64-bit RISC-V",
+            "    sparc       - Sparc",
+            "    sparcel     - Sparc LE",
+            "    sparcv9     - Sparc V9",
+            "    spirv       - SPIR-V Logical",
+            "    spirv32     - SPIR-V 32-bit",
+            "    spirv64     - SPIR-V 64-bit",
+            "    systemz     - SystemZ",
+            "    thumb       - Thumb",
+            "    thumbeb     - Thumb (big endian)",
+            "    ve          - VE",
+            "    wasm32      - WebAssembly 32-bit",
+            "    wasm64      - WebAssembly 64-bit",
+            "    x86         - 32-bit X86: Pentium-Pro and above",
+            "    x86-64      - 64-bit X86: EM64T and AMD64",
+            "    xcore       - XCore"
+          ]
+        },
+        "llvm-as": {
+          "bytes": 54936,
+          "path": "/opt/homebrew/Cellar/llvm@21/21.1.8_1/bin/llvm-as",
+          "sha256": "e57b5abf3a2608579e0ccdcb0eb52df461e38b43b721ad2212d14fab7b3929a9",
+          "version": [
+            "Homebrew LLVM version 21.1.8",
+            "  Optimized build."
+          ]
+        }
+      }
+    },
+    "windows": {
+      "ci": {
+        "GITHUB_JOB": null,
+        "GITHUB_RUN_ATTEMPT": null,
+        "GITHUB_RUN_ID": null,
+        "RUNNER_OS": null
+      },
+      "runtime": {
+        "bytes": 27515548,
+        "path": "D:\\project\\Xiao\\xiao-b3-1-proof-win-8d1c09f0\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+        "sha256": "438b2ec6d39d7767d788d98fee398d29b8d0d581764748d5d45010b9d5fe83ef",
+        "test_failpoints": true
+      },
+      "target": "x86_64-pc-windows-msvc",
+      "tools": {
+        "clang": {
+          "bytes": 157296,
+          "path": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+          "sha256": "574047f1b98d62bea1da8ae9340fea1ef06d262c3186e1d72d87e5401166c833",
+          "version": [
+            "clang version 22.1.2 (https://github.com/msys2/MINGW-packages 4f19d31560faf73257116b7c95f0b322ba83d720)",
+            "Target: x86_64-w64-windows-gnu",
+            "Thread model: posix",
+            "InstalledDir: D:/msys64/ucrt64/bin"
+          ]
+        },
+        "llc": {
+          "bytes": 211961,
+          "path": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+          "sha256": "df1409fabacdc625b2c2fefe50712de4ba140e07bf2bb4192101189498152869",
+          "version": [
+            "LLVM (http://llvm.org/):",
+            "  LLVM version 22.1.2",
+            "  Optimized build.",
+            "  Default target: x86_64-w64-windows-gnu",
+            "  Host CPU: znver5",
+            "",
+            "  Registered Targets:",
+            "    aarch64     - AArch64 (little endian)",
+            "    aarch64_32  - AArch64 (little endian ILP32)",
+            "    aarch64_be  - AArch64 (big endian)",
+            "    amdgcn      - AMD GCN GPUs",
+            "    arm         - ARM",
+            "    arm64       - ARM64 (little endian)",
+            "    arm64_32    - ARM64 (little endian ILP32)",
+            "    armeb       - ARM (big endian)",
+            "    avr         - Atmel AVR Microcontroller",
+            "    bpf         - BPF (host endian)",
+            "    bpfeb       - BPF (big endian)",
+            "    bpfel       - BPF (little endian)",
+            "    hexagon     - Hexagon",
+            "    lanai       - Lanai",
+            "    loongarch32 - 32-bit LoongArch",
+            "    loongarch64 - 64-bit LoongArch",
+            "    mips        - MIPS (32-bit big endian)",
+            "    mips64      - MIPS (64-bit big endian)",
+            "    mips64el    - MIPS (64-bit little endian)",
+            "    mipsel      - MIPS (32-bit little endian)",
+            "    msp430      - MSP430 [experimental]",
+            "    nvptx       - NVIDIA PTX 32-bit",
+            "    nvptx64     - NVIDIA PTX 64-bit",
+            "    ppc32       - PowerPC 32",
+            "    ppc32le     - PowerPC 32 LE",
+            "    ppc64       - PowerPC 64",
+            "    ppc64le     - PowerPC 64 LE",
+            "    r600        - AMD GPUs HD2XXX-HD6XXX",
+            "    riscv32     - 32-bit RISC-V",
+            "    riscv32be   - 32-bit big endian RISC-V",
+            "    riscv64     - 64-bit RISC-V",
+            "    riscv64be   - 64-bit big endian RISC-V",
+            "    sparc       - Sparc",
+            "    sparcel     - Sparc LE",
+            "    sparcv9     - Sparc V9",
+            "    spirv       - SPIR-V Logical",
+            "    spirv32     - SPIR-V 32-bit",
+            "    spirv64     - SPIR-V 64-bit",
+            "    systemz     - SystemZ",
+            "    thumb       - Thumb",
+            "    thumbeb     - Thumb (big endian)",
+            "    ve          - VE",
+            "    wasm32      - WebAssembly 32-bit",
+            "    wasm64      - WebAssembly 64-bit",
+            "    x86         - 32-bit X86: Pentium-Pro and above",
+            "    x86-64      - 64-bit X86: EM64T and AMD64",
+            "    xcore       - XCore"
+          ]
+        },
+        "llvm-as": {
+          "bytes": 40741,
+          "path": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+          "sha256": "63f559db3d87798fa4f26923c4cd5839ddc41b40905d884ee341c74a8bd858e9",
+          "version": [
+            "LLVM (http://llvm.org/):",
+            "  LLVM version 22.1.2",
+            "  Optimized build."
+          ]
+        }
+      }
+    }
+  },
+  "b3_2_passed": false,
+  "b3_2_started": false,
+  "b3_2a_entry_and_baseline_verified": true,
+  "b3_3_entry_ready": false,
+  "decisions_approved": false,
+  "document_commit": "a56f22b0c5071186a1cfb0bd5d91c2aeb3d144b6",
+  "lockfiles": {
+    "core/rust/Cargo.lock": {
+      "bytes": 19608,
+      "sha256": "19d17bbf8fe496b3da3a41726f6b67ece508ab71526ba51f154971c754b7b439"
+    },
+    "tests/benchmarks/Cargo.lock": {
+      "bytes": 19212,
+      "sha256": "352ac2e54642a9f90db55292b12b20de797bec64b839a8c8b80fc3ee07486159"
+    }
+  },
+  "pending_decisions": [
+    "B3-2-CLI",
+    "B3-2-EVIDENCE",
+    "B3-2-FIXTURES",
+    "B3-2-ID",
+    "B3-2-PROTO"
+  ],
+  "product_commit": "8d1c09f084be172e8b3ce078f131592ac6db94b3",
+  "scope": "20O-B3-2A",
+  "tutorial_cases": {
+    "args": {
+      "alias_source": {
+        "bytes": 168,
+        "sha256": "0a3217c567688dfc03be206f15cedd31a9c40e6ca38ed4a326f193c1a8be67b9"
+      },
+      "assets": {
+        "golden": {
+          "bytes": 54,
+          "path": "candidates/tests/fixtures/docs/args/tutorial.stdout",
+          "sha256": "f2fad87f2ca39515df3e9fe9d9465e01d8952535f8f99932b6cfb4b39bdf0a4e"
+        },
+        "input": {
+          "bytes": 87,
+          "path": "candidates/tests/fixtures/docs/args/tutorial.input.json",
+          "sha256": "e1818dc6cac4b4490715bd2adceea20748feed06c48c99b3ca0b34085dab9c4b"
+        },
+        "source": {
+          "bytes": 165,
+          "path": "candidates/tests/fixtures/docs/args/tutorial.xiao",
+          "sha256": "2f2a011b76b5d7da81e9490ce1fe4c237df8b3fce49558ca83b239cf78cc3c7e"
+        },
+        "tutorial": {
+          "bytes": 2050,
+          "path": "tutorials/args.md",
+          "sha256": "5fbdacd00c1340248a77a0da4f3714745a84c237d0e93670fd6a5126b0ae3fa3"
+        }
+      },
+      "canonical_module": "stdlib.args",
+      "capabilities": {
+        "mask": "0x24",
+        "names": [
+          "process",
+          "stdout"
+        ]
+      },
+      "native": "args_tutorial_matches_native_golden",
+      "origin": {
+        "commit": "b8abebf368ef9180ad05756ae90f5d198580a028",
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/candidates/tests/fixtures/docs/args/b3-0b-candidate"
+      },
+      "product_fixture_prefix": "tests/fixtures/docs/args/tutorial",
+      "target": "20o_b3_args_tutorial",
+      "vm": "args_tutorial_matches_vm_golden"
+    },
+    "cli": {
+      "alias_source": {
+        "bytes": 327,
+        "sha256": "dfada2122347ece49829ca9c845a4f4472ba9e64d3bf83f5d210dac30cab7fce"
+      },
+      "assets": {
+        "golden": {
+          "bytes": 58,
+          "path": "candidates/tests/fixtures/docs/cli/tutorial.stdout",
+          "sha256": "ac22e3177752387df8d20a2947b5578008c24a006a4127b95dcd506ffe890d78"
+        },
+        "source": {
+          "bytes": 324,
+          "path": "candidates/tests/fixtures/docs/cli/tutorial.xiao",
+          "sha256": "9fc32dc59264b05dd4a42f7b37413e883f781ca81e996d48ad9022acb170014b"
+        },
+        "tutorial": {
+          "bytes": 1708,
+          "path": "tutorials/cli.md",
+          "sha256": "bb27866c45df5377e70e34b5ed2ce9fb9a3bb2a1607fd5167b6e73dff14f6aed"
+        }
+      },
+      "canonical_module": "stdlib.cli",
+      "capabilities": {
+        "mask": "0x20",
+        "names": [
+          "stdout"
+        ]
+      },
+      "native": "cli_tutorial_matches_native_golden",
+      "origin": {
+        "commit": "b8abebf368ef9180ad05756ae90f5d198580a028",
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0b/candidates/tests/fixtures/docs/cli/b3-0b-candidate"
+      },
+      "product_fixture_prefix": "tests/fixtures/docs/cli/tutorial",
+      "target": "20o_b3_cli_tutorial",
+      "vm": "cli_tutorial_matches_vm_golden"
+    }
+  },
+  "versions": {
+    "abi": "1.20",
+    "generator": 23,
+    "stdlib_interface": 1
+  },
+  "windows_rebuild": {
+    "runtime": {
+      "bytes": 27515548,
+      "features": [
+        "test-failpoints"
+      ],
+      "path": "D:\\project\\Xiao\\xiao-b3-2-a-baseline-20261125-r2\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+      "sha256": "438b2ec6d39d7767d788d98fee398d29b8d0d581764748d5d45010b9d5fe83ef"
+    },
+    "runtime_time_tests": 4,
+    "simulated_guard_cases": 28,
+    "target": "x86_64-pc-windows-msvc",
+    "task_root": "D:\\project\\Xiao\\xiao-b3-2-a-baseline-20261125-r2",
+    "tools": {
+      "clang": {
+        "bytes": 157296,
+        "path": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+        "sha256": "574047f1b98d62bea1da8ae9340fea1ef06d262c3186e1d72d87e5401166c833",
+        "version": [
+          "clang version 22.1.2 (https://github.com/msys2/MINGW-packages 4f19d31560faf73257116b7c95f0b322ba83d720)",
+          "Target: x86_64-w64-windows-gnu",
+          "Thread model: posix",
+          "InstalledDir: D:/msys64/ucrt64/bin"
+        ]
+      },
+      "llc": {
+        "bytes": 211961,
+        "path": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+        "sha256": "df1409fabacdc625b2c2fefe50712de4ba140e07bf2bb4192101189498152869",
+        "version": [
+          "LLVM (http://llvm.org/):",
+          "  LLVM version 22.1.2",
+          "  Optimized build.",
+          "  Default target: x86_64-w64-windows-gnu",
+          "  Host CPU: znver5",
+          "",
+          "  Registered Targets:",
+          "    aarch64     - AArch64 (little endian)",
+          "    aarch64_32  - AArch64 (little endian ILP32)",
+          "    aarch64_be  - AArch64 (big endian)",
+          "    amdgcn      - AMD GCN GPUs",
+          "    arm         - ARM",
+          "    arm64       - ARM64 (little endian)",
+          "    arm64_32    - ARM64 (little endian ILP32)",
+          "    armeb       - ARM (big endian)",
+          "    avr         - Atmel AVR Microcontroller",
+          "    bpf         - BPF (host endian)",
+          "    bpfeb       - BPF (big endian)",
+          "    bpfel       - BPF (little endian)",
+          "    hexagon     - Hexagon",
+          "    lanai       - Lanai",
+          "    loongarch32 - 32-bit LoongArch",
+          "    loongarch64 - 64-bit LoongArch",
+          "    mips        - MIPS (32-bit big endian)",
+          "    mips64      - MIPS (64-bit big endian)",
+          "    mips64el    - MIPS (64-bit little endian)",
+          "    mipsel      - MIPS (32-bit little endian)",
+          "    msp430      - MSP430 [experimental]",
+          "    nvptx       - NVIDIA PTX 32-bit",
+          "    nvptx64     - NVIDIA PTX 64-bit",
+          "    ppc32       - PowerPC 32",
+          "    ppc32le     - PowerPC 32 LE",
+          "    ppc64       - PowerPC 64",
+          "    ppc64le     - PowerPC 64 LE",
+          "    r600        - AMD GPUs HD2XXX-HD6XXX",
+          "    riscv32     - 32-bit RISC-V",
+          "    riscv32be   - 32-bit big endian RISC-V",
+          "    riscv64     - 64-bit RISC-V",
+          "    riscv64be   - 64-bit big endian RISC-V",
+          "    sparc       - Sparc",
+          "    sparcel     - Sparc LE",
+          "    sparcv9     - Sparc V9",
+          "    spirv       - SPIR-V Logical",
+          "    spirv32     - SPIR-V 32-bit",
+          "    spirv64     - SPIR-V 64-bit",
+          "    systemz     - SystemZ",
+          "    thumb       - Thumb",
+          "    thumbeb     - Thumb (big endian)",
+          "    ve          - VE",
+          "    wasm32      - WebAssembly 32-bit",
+          "    wasm64      - WebAssembly 64-bit",
+          "    x86         - 32-bit X86: Pentium-Pro and above",
+          "    x86-64      - 64-bit X86: EM64T and AMD64",
+          "    xcore       - XCore"
+        ]
+      },
+      "llvm-as": {
+        "bytes": 40741,
+        "path": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+        "sha256": "63f559db3d87798fa4f26923c4cd5839ddc41b40905d884ee341c74a8bd858e9",
+        "version": [
+          "LLVM (http://llvm.org/):",
+          "  LLVM version 22.1.2",
+          "  Optimized build."
+        ]
+      },
+      "llvm-nm": {
+        "bytes": 187169,
+        "path": "D:\\msys64\\ucrt64\\bin\\llvm-nm.exe",
+        "sha256": "297b4fa9e633e861f6be676f6923e13729c977bab6337d6dd78f47babc0003e3",
+        "version": [
+          "llvm-nm, compatible with GNU nm",
+          "LLVM (http://llvm.org/):",
+          "  LLVM version 22.1.2",
+          "  Optimized build."
+        ]
+      },
+      "llvm-readobj": {
+        "bytes": 2140197,
+        "path": "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+        "sha256": "768a76a82fedb79b5305ca6bfffa63c00b5738789c7f47225b247345ab99328e",
+        "version": [
+          "LLVM (http://llvm.org/):",
+          "  LLVM version 22.1.2",
+          "  Optimized build."
+        ]
+      }
+    }
+  }
+}
