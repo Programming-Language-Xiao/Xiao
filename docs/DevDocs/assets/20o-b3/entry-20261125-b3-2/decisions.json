@@ -1,0 +1,17 @@
+{
+  "stage": "20O-B3-2",
+  "inherited": {
+    "B3-1-RESERVE / B3-0D-ID": "53、54 对应两个 args 原语。55～63 已登记为 reserved。",
+    "B3-0D-VER / B3-0D-PROTO": "ABI 1.20、生成器 23、标准库接口 1，协议与核心版本 1。可选 RunOptions.arguments 由 hello 的 arguments 能力协商。运行快照与产物身份无关。",
+    "B3-0B2 / B3-0B3 / B3-0B4a / B3-0B4b": "args 与纯 Xiao cli 的公开接口、快照来源、授权、限额和错误顺序已冻结。",
+    "B3-0E-PATH / B3-0E-ENTRY / B3-0E-INPUT": "候选夹具已使用 tutorial.* 命名。args 使用合成快照，cli 使用源码字面量。",
+    "B3-0D-COFF": "Windows COFF 由产品验证器报告 Complete，声明组件与观察组件一致。"
+  },
+  "pending": {
+    "B3-2-ID": "批准激活 53～54。沿用生成器 23 的候选方案只新增 args 的 lowering，核对既有源码的生成文本。若确需改变既有 lowering 文本或 trampoline ABI，按后端版本规则另裁。",
+    "B3-2-PROTO": "协议与核心版本沿用 1。候选由 Rust 启动入口在 Bun 转换前校验原生参数。直接原生产物在进入应用前注入经校验的快照。hello 缺少 arguments 时沿用客户端能力失配 X11-CLI-CORE-004，退出码 2。",
+    "B3-2-CLI": "候选放在 stdlib/cli.xiao，以现有返回类型推导交付两组字符串数组。",
+    "B3-2-FIXTURES": "候选按原字节复制 args/cli 的冻结夹具到正式目录，源件继续在 B3-0E 封存。只登记两个模块为 planned。",
+    "B3-2-EVIDENCE": "本批执行 args/cli 的三平台 VM 与原生 O0/O3 验收。Windows 专项产物要求产品验证器 Complete。B3-7 负责完整公共矩阵。"
+  }
+}

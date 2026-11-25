@@ -1,6 +1,6 @@
 # 20O-B3-2. `args` / `cli` 实施规划
 
-> **状态（2026-11-25）**　B3-1 已完成 time 内部收口，产品快照 `8d1c09f0`；B3-2 入口已就绪，尚未开工。`b3_2_started=false`、`b3_2_passed=false`、`b3_3_entry_ready=false`，教程和 registry 仍为 `planned`。[B3-1 收口](assets/20o-b3/entry-20261124-b3-1/README.md)
+> **状态（2026-11-25）**　B3-2A 开工基线已绑定 `8d1c09f0`，产品实施待 §3 裁定。`b3_2_started=false`、`b3_2_passed=false`、`b3_3_entry_ready=false`，教程和 registry 为 `planned`。[B3-1 收口](assets/20o-b3/entry-20261124-b3-1/README.md) · [B3-2A 基线](assets/20o-b3/entry-20261125-b3-2/README.md)
 > **输入契约**　args 使用 53～54，当前为不可调用的 `reserved`；cli 为纯 Xiao，无新 intrinsic/C 符号；ABI 1.20、生成器 23、标准库接口 1 继续沿用 B3-1 产品身份。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-2 不得用同链接、导出表-only 或 `UnverifiedCoffExports` 代替。
 > 入口：[B3-1 收口](assets/20o-b3/entry-20261124-b3-1/README.md)、[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md)、[B3-0B 契约](assets/20o-b3/entry-20261123-b3-0b/contract-draft.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
@@ -12,7 +12,7 @@
 | --- | --- |
 | B3-1 | `b3_1_passed=true`、`b3_2_entry_ready=true`；产品快照 `8d1c09f0`，ABI 1.20、生成器 23、标准库接口 1 |
 | B3-0B | args 的 `program_name`/`argv`、`process` 位、预算和错误已冻结；cli 的 `split_terminator` 为纯 Xiao |
-| 当前 intrinsic 表 | 53～54 为 `reserved`，57～63 仍为 reserved；B3-2 只激活 53～54 |
+| 当前 intrinsic 表 | 53～63 为 `reserved`，本批候选激活 53～54 |
 | 目标模块 | `args`、`cli` |
 | 本批目标 | 激活 args 53～54，接通 `RunOptions.arguments`/原生快照；实现纯 Xiao CLI 分组；完成 VM/原生/C ABI/教程/三平台证据 |
 | 本批不做 | fs/env/log 实现、55～63 激活、registry/教程 verified、B3-3/B4、旧 721、历史债务核销 |
@@ -73,12 +73,12 @@ b3_3_entry_ready = b3_2_passed and decisions_approved and no_product_scope_creep
 | 编号 | 候选 | 必须由星崽定夺 |
 | --- | --- | --- |
 | B3-2-ID | 只激活 53～54；55～63 保持 reserved；不新增 intrinsic、ABI 或生成器编号 | 是否批准；若 native lowering 改变生成文本，是否另行批准生成器增量 |
-| B3-2-PROTO | `RunOptions.arguments` 为 `{program_name:str, argv:[str]}`，hello 增加 `"arguments"`；旧核心未声明时执行前拒绝；协议/Core 仍为 1 | 协议版本是否保持 1；原生启动器注入方式和失配错误 |
+| B3-2-PROTO | `RunOptions.arguments` 与 hello `"arguments"` 沿用 B3-0D，协议和核心版本为 1。缺少该能力沿用客户端 `X11-CLI-CORE-004` | 原生启动器如何在 Bun 转换前校验并移交宿主参数，以及分发入口的改动范围 |
 | B3-2-CLI | `stdlib.cli.split_terminator([str]) -> [[str]]` 为纯 Xiao；`std`/`stdlib` 同一语义；无 intrinsic/C 符号 | 纯 Xiao 文件落点、返回类型推导和 registry planned 登记 |
-| B3-2-FIXTURES | args/cli 从 B3-0E 证据迁入 `tests/fixtures/docs/{args,cli}/tutorial.*`；args 保留 `input.json`，cli 无输入 | 是否复制/迁移；是否只登记 args/cli 而不改其他模块 |
+| B3-2-FIXTURES | args/cli 从 B3-0E 按原字节复制到 `tests/fixtures/docs/{args,cli}/tutorial.*`，args 有 `tutorial.input.json`，cli 使用源内字面量 | 是否批准将两份夹具接入正式测试并登记两个模块为 `planned` |
 | B3-2-EVIDENCE | 三平台 args/cli VM/原生 O0/O3；Windows args/cli 产物取得产品级 COFF `Complete`；完整矩阵留 B3-7 | B3-2 是否只做 args/cli 产品级 COFF；是否接受 B3-7 做完整公共矩阵 |
 
-五项答复登记来源、时点和适用范围。未答项保持“待裁定”，不得先写产品再补契约。
+上游已批准的字段和本批待答项见开工台账。实际开工答复登记来源、时点和适用范围。[开工台账](assets/20o-b3/entry-20261125-b3-2/decisions.json)
 
 ## 四、分批执行
 
