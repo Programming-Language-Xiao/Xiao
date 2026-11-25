@@ -190,6 +190,15 @@ for group in split_terminator(["head", "--"])
 fn cli_checks_static_and_dynamic_argument_types() {
     for prefix in ["std", "stdlib"] {
         let import = format!("from {prefix}.cli import split_terminator");
+        let valid = FrontendRequest::from_text(format!("{import}\nsplit_terminator([])\n"));
+        let artifact = FrontendCompiler::new().compile(&valid).unwrap();
+        let target = xiao_codegen_llvm::TargetDescription::host();
+        let options = xiao_codegen_llvm::CodegenOptions::for_target(target);
+        assert!(matches!(
+            xiao_codegen_llvm::lower_program(&artifact.ir, &options),
+            Err(xiao_codegen_llvm::CodegenError::Unsupported { feature, .. })
+                if feature.contains("stdlib.cli 的原生数组入口检查")
+        ));
         for call in [
             "split_terminator(\"bad\")",
             "split_terminator([[\"bad\"]])",

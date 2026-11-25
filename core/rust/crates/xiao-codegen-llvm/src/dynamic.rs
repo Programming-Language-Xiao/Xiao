@@ -270,6 +270,18 @@ impl<'a> DynamicGenerator<'a> {
         // `from stdlib.x import f` 能降低为直接函数调用；未导入的模块不能提前
         // 进入函数表，否则 planned 模块的未接线原语会污染无关库的原生降低。
         let imported_standard_modules = imports::reachable_modules(self.program);
+        if imported_standard_modules.contains("stdlib.cli")
+            || self
+                .program
+                .runtime_checks
+                .iter()
+                .any(|check| check.kind == "array_type")
+        {
+            return Err(CodegenError::Unsupported {
+                feature: "stdlib.cli 的原生数组入口检查待接通".to_owned(),
+                span: None,
+            });
+        }
         for module in self.program.modules.iter().filter(|module| {
             module.name.starts_with("stdlib.")
                 && module.kind == "file"

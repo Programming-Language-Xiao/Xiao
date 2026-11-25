@@ -121,7 +121,7 @@ b3_3_entry_ready = b3_2_passed and decisions_approved and no_product_scope_creep
 
 本机已验证 `RunOptions.arguments`、hello 能力、源码与删源后的 `.xiaoc` / `.xar` 运行，以及两个 C 入口的空快照和输出槽。分发包的 Rust 启动器标记原始参数无法解码的位置，Bun CLI 按冻结顺序接纳整份应用参数。实际目标采用调用时拼写。
 
-应用原生入口需要发射 args C 调用并在用户代码运行前设置快照。这会改变 LLVM 生成文本。按 B3-2-ID，生成器 23 → 24 待单独裁定，裁定范围包含启动接线与版本/缓存复验。当前 B3-2D 仍在实施。
+应用原生入口需要发射 args C 调用并在用户代码运行前设置快照。cli 的数组入口检查也需要发射对应调用。按 B3-2-ID，这些 LLVM 生成文本变更及生成器 23 → 24 待单独裁定，裁定范围包含启动接线、版本和缓存复验。当前原生后端拒绝 `stdlib.cli` 的构建，VM 入口已执行类型检查。
 
 1. 在 `RunOptions` 增加可选 `arguments` 字段，形状 `{program_name, argv}`；省略为空快照；
 2. 在 hello 响应增加 `"arguments"` 能力；旧核心未声明时客户端执行前拒绝；
