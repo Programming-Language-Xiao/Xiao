@@ -34,11 +34,15 @@
       "stdout": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
     }
   ],
-  "document_commit": "a56f22b0c5071186a1cfb0bd5d91c2aeb3d144b6",
   "logs": {
     "02033b06a17499d938d03b52015dea853d526492a32028e4837999f248f0be68": "$ bun tools/repo-check/src/cli.ts usedocs\n",
     "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b": "通过：未发现 A0 规则问题。\n",
     "3c0d7a02ef66c8fd45e55269144c131b8c773524f2d1155794924526fe4fcbac": "$ bun tools/repo-check/src/cli.ts docs\n",
     "b0d71635939588cd258f38802796f4250bc121eb18e6e83ea0f240df5e09af63": "$ bun tools/repo-check/src/cli.ts layout\n"
-  }
+  },
+  "source": {
+    "docs_tree_sha256": "8e889734dcc7a6b521064969c5664bcb2df284f590b7fbb9933ca8413525787e",
+    "document_commit": "fc92bed5bf4795a6b2b5fa44e47eea8e0ddb769a"
+  },
+  "worktree_matched_before_after": true
 }
