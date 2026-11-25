@@ -197,12 +197,20 @@ def derive(root, gates, files):
         "b3_2a_windows_replay": local_guards,
     }
     decisions = json.loads((root / "decisions.json").read_bytes())
-    require(set(decisions["pending"]) == {f"B3-2-{name}" for name in ("ID", "PROTO", "CLI", "FIXTURES", "EVIDENCE")},
-            "开工裁定台账不符")
+    expected_decisions = {f"B3-2-{name}" for name in ("ID", "PROTO", "CLI", "FIXTURES", "EVIDENCE")}
+    pending = decisions.get("pending", {})
+    approved = decisions.get("approved", {})
+    require(set(pending) | set(approved) == expected_decisions
+            and not (set(pending) & set(approved)), "开工裁定台账不符")
+    for row in approved.values():
+        require(row.get("status") == "approved" and row.get("answer")
+                and row.get("source") and row.get("recorded_on") and row.get("scope"),
+                "开工批准缺少实际答复")
+    decisions_approved = not pending and len(approved) == len(expected_decisions)
     return {"scope": "20O-B3-2A", "b3_1_closeout_commit": B3_1_CLOSEOUT, "product_commit": PRODUCT,
             "document_commit": document_commit, "b3_2a_entry_and_baseline_verified": True,
             "b3_2_started": False, "b3_2_passed": False, "b3_3_entry_ready": False,
-            "decisions_approved": False, "pending_decisions": sorted(decisions["pending"]),
+            "decisions_approved": decisions_approved, "pending_decisions": sorted(pending),
             "versions": upstream["versions"], "lockfiles": locks, "tutorial_cases": cases,
             "b3_1_platforms": platforms, "b3_1_ci": upstream["ci"], "b1_guards": b1_guards,
             "windows_rebuild": windows}

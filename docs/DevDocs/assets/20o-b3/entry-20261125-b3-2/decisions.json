@@ -1,5 +1,7 @@
 {
   "stage": "20O-B3-2",
+  "recorded_on": "2026-11-25",
+  "source": "星崽本轮 B3-2 问题卡答复",
   "inherited": {
     "B3-1-RESERVE / B3-0D-ID": "53、54 对应两个 args 原语。55～63 已登记为 reserved。",
     "B3-0D-VER / B3-0D-PROTO": "ABI 1.20、生成器 23、标准库接口 1，协议与核心版本 1。可选 RunOptions.arguments 由 hello 的 arguments 能力协商。运行快照与产物身份无关。",
@@ -7,11 +9,42 @@
     "B3-0E-PATH / B3-0E-ENTRY / B3-0E-INPUT": "候选夹具已使用 tutorial.* 命名。args 使用合成快照，cli 使用源码字面量。",
     "B3-0D-COFF": "Windows COFF 由产品验证器报告 Complete，声明组件与观察组件一致。"
   },
-  "pending": {
-    "B3-2-ID": "批准激活 53～54。沿用生成器 23 的候选方案只新增 args 的 lowering，核对既有源码的生成文本。若确需改变既有 lowering 文本或 trampoline ABI，按后端版本规则另裁。",
-    "B3-2-PROTO": "协议与核心版本沿用 1。候选由 Rust 启动入口在 Bun 转换前校验原生参数。直接原生产物在进入应用前注入经校验的快照。hello 缺少 arguments 时沿用客户端能力失配 X11-CLI-CORE-004，退出码 2。",
-    "B3-2-CLI": "候选放在 stdlib/cli.xiao，以现有返回类型推导交付两组字符串数组。",
-    "B3-2-FIXTURES": "候选按原字节复制 args/cli 的冻结夹具到正式目录，源件继续在 B3-0E 封存。只登记两个模块为 planned。",
-    "B3-2-EVIDENCE": "本批执行 args/cli 的三平台 VM 与原生 O0/O3 验收。Windows 专项产物要求产品验证器 Complete。B3-7 负责完整公共矩阵。"
-  }
+  "approved": {
+    "B3-2-ID": {
+      "status": "approved",
+      "answer": "只激活 53～54（推荐）",
+      "source": "B3-2 编号激活问题卡",
+      "recorded_on": "2026-11-25",
+      "scope": "53～54 从 reserved 切为 active；55～63 继续 reserved；ABI 1.20、生成器 23、标准库接口 1 保持不变；新 lowering 若改变生成文本另行批准。"
+    },
+    "B3-2-PROTO": {
+      "status": "approved",
+      "answer": "arguments+hello（推荐）",
+      "source": "B3-2 运行协议问题卡",
+      "recorded_on": "2026-11-25",
+      "scope": "RunOptions.arguments 使用 {program_name, argv}；hello 增加 arguments；旧核心未声明时 X11-CLI-CORE-004、退出码 2；协议/Core 仍为 1，原生启动器注入已校验快照。"
+    },
+    "B3-2-CLI": {
+      "status": "approved",
+      "answer": "纯 Xiao+正式夹具（推荐）",
+      "source": "B3-2 CLI 与夹具问题卡",
+      "recorded_on": "2026-11-25",
+      "scope": "stdlib/cli.xiao 实现 split_terminator；不新增 intrinsic/C 符号；args/cli tutorial.* 迁入 tests/fixtures/docs，args 保留 input.json，registry/UseDocs 保持 planned。"
+    },
+    "B3-2-FIXTURES": {
+      "status": "approved",
+      "answer": "纯 Xiao+正式夹具（推荐）",
+      "source": "B3-2 CLI 与夹具问题卡",
+      "recorded_on": "2026-11-25",
+      "scope": "按原字节复制 args/cli 的 B3-0E 候选到正式路径；只登记 args/cli 为 planned，不改其他模块。"
+    },
+    "B3-2-EVIDENCE": {
+      "status": "approved",
+      "answer": "args/cli 产品 COFF（推荐）",
+      "source": "B3-2 验收范围问题卡",
+      "recorded_on": "2026-11-25",
+      "scope": "三平台 args/cli VM/受控原生 O0/O3；Windows args/cli 产物取得产品级 COFF Complete；完整公共矩阵留 B3-7。"
+    }
+  },
+  "pending": {}
 }
