@@ -583,21 +583,38 @@ fn native_arguments(arguments: &[XiaoValue], runtime_id: u64) -> Result<Vec<Nati
     Ok(values)
 }
 
-/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
+/// 从提交者继承的运行状态，随一次原生子任务安装到工作线程。
+struct NativeEntryContext {
+    locale: String,
+    clock: Option<Arc<crate::time::TimeContext>>,
+    arguments: Option<Arc<crate::arguments::ArgumentsSnapshot>>,
+}
+
+impl NativeEntryContext {
+    fn capture(locale: String) -> Self {
+        Self {
+            locale,
+            clock: super::abi_time::entry_clock(),
+            arguments: super::abi_args::entry_arguments(),
+        }
+    }
+}
+
+/// 在工作线程上进入一次原生并发调用。
 fn invoke_entry(
     entry: xiao_runtime_abi::XiaoConcurrencyEntry,
     context: usize,
     arguments: Vec<NativeRawValue>,
     input_runtime_id: u64,
     output_runtime_id: u64,
-    locale: String,
-    clock: Option<Arc<crate::time::TimeContext>>,
+    entry_context: NativeEntryContext,
 ) -> NativeEntryOutcome {
     // Pool worker 会复用线程；每个 trampoline 都拥有独立的错误/checkpoint 生命周期。
     crate::abi::xiao_runtime_error_checkpoint_reset();
     crate::abi::xiao_runtime_error_clear();
-    crate::abi::set_current_locale(locale);
-    let _clock = super::abi_time::enter_clock(clock);
+    crate::abi::set_current_locale(entry_context.locale);
+    let _clock = super::abi_time::enter_clock(entry_context.clock);
+    let _arguments = super::abi_args::enter_arguments(entry_context.arguments);
     let outcome = (|| {
         let mut values = Vec::with_capacity(arguments.len());
         for argument in arguments {
@@ -1052,8 +1069,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
             let values = native_arguments(&arguments[1..], input_runtime_id)?;
             let context = context as usize;
             let locale = super::current_locale();
-            let entry_locale = locale.clone();
-            let clock = super::abi_time::entry_clock();
+            let entry_context = NativeEntryContext::capture(locale.clone());
             let handle = RuntimeHandle::current()
                 .in_context(|| {
                     crate::scheduler::spawn_cooperative(&runtime, move |_| {
@@ -1063,8 +1079,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                             values,
                             input_runtime_id,
                             output_runtime_id,
-                            entry_locale,
-                            clock,
+                            entry_context,
                         )
                     })
                 })
@@ -1166,8 +1181,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
             let values = native_arguments(&arguments[1..], input_runtime_id)?;
             let context = context as usize;
             let locale = super::current_locale();
-            let entry_locale = locale.clone();
-            let clock = super::abi_time::entry_clock();
+            let entry_context = NativeEntryContext::capture(locale.clone());
             let submitting_cancellation = crate::current_cancellation_token();
             let task_cancellation = RuntimeCancellation::default();
             let task_cancellation_hook: Arc<dyn Fn() + Send + Sync> = {
@@ -1191,8 +1205,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                                 values,
                                 input_runtime_id,
                                 output_runtime_id,
-                                entry_locale,
-                                clock,
+                                entry_context,
                             )
                         },
                     )

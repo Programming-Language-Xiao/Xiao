@@ -77,6 +77,20 @@ impl ArgumentsSnapshot {
 
     /// 在有损转换之前接纳宿主已经拆分的程序名和参数。
     pub fn from_os(program_name: OsString, argv: Vec<OsString>) -> Result<Self, ArgumentsError> {
+        Self::from_os_iter(program_name, argv.into_iter())
+    }
+
+    /// 独立原生入口读取宿主拆分结果，Windows 保留原始宽字符。
+    pub(crate) fn from_host() -> Result<Self, ArgumentsError> {
+        let mut argv = std::env::args_os();
+        let program_name = argv.next().unwrap_or_default();
+        Self::from_os_iter(program_name, argv)
+    }
+
+    fn from_os_iter(
+        program_name: OsString,
+        argv: impl ExactSizeIterator<Item = OsString>,
+    ) -> Result<Self, ArgumentsError> {
         check_count(argv.len())?;
         let mut total = 0;
         let mut convert = |value: OsString| {
@@ -87,10 +101,7 @@ impl ArgumentsSnapshot {
             Ok(text)
         };
         let program_name = convert(program_name)?;
-        let argv = argv
-            .into_iter()
-            .map(convert)
-            .collect::<Result<_, ArgumentsError>>()?;
+        let argv = argv.map(convert).collect::<Result<_, ArgumentsError>>()?;
         Ok(Self { program_name, argv })
     }
 

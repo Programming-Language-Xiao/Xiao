@@ -12,6 +12,7 @@ workspace = true
 
 [features]
 time-native-test = ["xiao-runtime/test-failpoints"]
+args-cli-native-test = []
 
 [lib]
 path = "src/lib.rs"

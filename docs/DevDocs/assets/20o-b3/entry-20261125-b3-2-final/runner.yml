@@ -1,0 +1,65 @@
+name: Xiao B3-2 args and cli evidence
+
+on:
+  push:
+    branches: [codex/b3-2-args-cli-runner]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: b3-2-args-cli-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  args-cli:
+    name: B3-2 args and cli (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux
+            os: ubuntu-24.04
+          - platform: macos
+            os: macos-15
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    steps:
+      - name: Checkout fixed B3-2 source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: B3_ARGS_CLI_SOURCE_COMMIT
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install Rust
+        run: rustup toolchain install 1.96.0 --profile minimal
+      - name: Run Linux args and cli
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang llvm
+          python3 -B docs/DevDocs/assets/20o-b3/entry-20261125-b3-2-final/run.py \
+            --output "$RUNNER_TEMP/b3-args-cli"
+      - name: Run macOS args and cli
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          brew install llvm@21
+          export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
+          python3 -B docs/DevDocs/assets/20o-b3/entry-20261125-b3-2-final/run.py \
+            --llvm-bin "$(brew --prefix llvm@21)/bin" \
+            --output "$RUNNER_TEMP/b3-args-cli"
+      - name: Upload receipts and products
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: b3-args-cli-${{ matrix.platform }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/b3-args-cli/result.json
+            ${{ runner.temp }}/b3-args-cli/logs/
+            ${{ runner.temp }}/b3-args-cli/temp/clang-commands.log
+            ${{ runner.temp }}/b3-args-cli/temp/xiao-b3-2-native-*/
+          if-no-files-found: warn

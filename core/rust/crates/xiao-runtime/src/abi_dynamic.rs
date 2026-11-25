@@ -69,6 +69,10 @@ pub extern "C" fn xiao_runtime_dynamic_check(kind: XiaoAbiBytes, value: *const X
     };
     let result = match kind.as_str() {
         "error_value" => Err(RuntimeError::type_mismatch("error", value.type_name())),
+        "array_type" => match value {
+            RuntimeValue::Array(_) => Ok(()),
+            other => Err(RuntimeError::type_mismatch("array", other.type_name())),
+        },
         kind if kind.starts_with("resource_type:")
             || kind.starts_with("resource_array:")
             || kind.starts_with("resource_dictionary:") =>

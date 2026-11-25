@@ -417,8 +417,8 @@ impl Toolchain {
         )
     }
 
-    /// time 的 Windows 构建从同一次受控链接直接获取实际映像的公开符号清单。
-    pub(crate) fn compile_time_coff(
+    /// 受控 Windows 构建从生成当前映像的链接命令取得完整符号清单。
+    pub(crate) fn compile_with_coff_link_evidence(
         &self,
         module: &crate::LlvmModule,
         options: &crate::CodegenOptions,

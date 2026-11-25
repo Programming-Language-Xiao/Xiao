@@ -100,8 +100,17 @@ pub use xiao_optimizer::OptimizationReport;
 /// 版本 17 接通固定参数命名调用，保持源码求值顺序并隔离新绑定指纹。
 /// 版本 21 接通 B4-3 cmath C ABI 调用及 Float ** 共享pow；Runtime ABI仍为1.18。
 /// 版本 22 使静态 Float/Sfloat 相等与不等在数值提升后按位比较，保留异号零语义。
+/// 版本 23 接通 ABI 1.20 的 time。版本 24 接通 args 原生快照和 CLI 数组入口检查。
 /// 当前版本进入工具链/产物指纹。
-pub const CODEGEN_VERSION: u32 = 23;
+pub const CODEGEN_VERSION: u32 = 24;
+
+/// B3 宿主库原生产物需要版本元数据及 Windows COFF 完整性证据。
+fn requires_b3_native_evidence(module: &LlvmModule) -> bool {
+    module
+        .runtime_components
+        .iter()
+        .any(|component| matches!(component.as_str(), "time" | "args"))
+}
 
 /// 将同一份类型化 IR 降低为静态标量或 Runtime ABI LLVM 模块。
 pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {
@@ -161,12 +170,7 @@ pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> 
         .map_err(|message| CodegenError::InvalidIr { message })?;
     module.native_optimization_report =
         LlvmOptimizationReport::from_plan(plan, &module.runtime_components);
-    if requires_metadata
-        || module
-            .runtime_components
-            .iter()
-            .any(|component| component == "time")
-    {
+    if requires_metadata || requires_b3_native_evidence(&module) {
         let metadata = NativeMetadata::for_program(program, &options.target).map_err(|error| {
             CodegenError::NativeMetadata {
                 code: error.code.to_owned(),

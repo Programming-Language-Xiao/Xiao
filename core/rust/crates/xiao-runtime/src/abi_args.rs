@@ -2,7 +2,48 @@
 
 use super::*;
 use crate::arguments::{ArgumentsSnapshot, EMPTY_ARGUMENTS};
+use std::sync::Arc;
 use xiao_intrinsics::validate_capability_mask;
+
+thread_local! {
+    static ENTRY_ARGUMENTS: RefCell<Option<Arc<ArgumentsSnapshot>>> = const { RefCell::new(None) };
+}
+
+/// 捕获当前原生运行的快照，供调度器传递给子任务。
+pub(super) fn entry_arguments() -> Option<Arc<ArgumentsSnapshot>> {
+    ENTRY_ARGUMENTS.with_borrow(Clone::clone)
+}
+
+/// 归还入口或任务占用的线程时恢复上一份快照。
+pub(super) struct ArgumentsGuard(Option<Arc<ArgumentsSnapshot>>);
+
+impl Drop for ArgumentsGuard {
+    fn drop(&mut self) {
+        ENTRY_ARGUMENTS.replace(self.0.take());
+    }
+}
+
+/// 为主入口或原生并发任务安装已接纳的快照。
+pub(super) fn enter_arguments(snapshot: Option<Arc<ArgumentsSnapshot>>) -> ArgumentsGuard {
+    ArgumentsGuard(ENTRY_ARGUMENTS.replace(snapshot))
+}
+
+/// 生成器的独立可执行入口适配器。初始化成功后才调用应用。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_args_run_native(entry: Option<extern "C" fn() -> i32>) -> i32 {
+    let Some(entry) = entry else {
+        return XiaoAbiStatus::InvalidArgument.code();
+    };
+    let snapshot = match ArgumentsSnapshot::from_host() {
+        Ok(snapshot) => snapshot,
+        Err(error) => {
+            let _ = writeln!(std::io::stderr().lock(), "{}: {error}", error.code());
+            return 2;
+        }
+    };
+    let _arguments = enter_arguments(Some(Arc::new(snapshot)));
+    entry()
+}
 
 /// 在已经初始化的输出槽上执行一次 args 读取。
 fn read_arguments(
@@ -16,13 +57,18 @@ fn read_arguments(
             return Err(XiaoAbiStatus::InvalidArgument.code());
         }
         unsafe { super::abi_value_validation::validate_structure(output, true) }?;
-        let value = status(read(&EMPTY_ARGUMENTS, capabilities))?;
+        let value = ENTRY_ARGUMENTS.with_borrow(|snapshot| {
+            status(read(
+                snapshot.as_deref().unwrap_or(&EMPTY_ARGUMENTS),
+                capabilities,
+            ))
+        })?;
         unsafe { write_value(out, value) }
     };
     run().map_or_else(|error| error, |()| XiaoAbiStatus::Ok.code())
 }
 
-/// 读取嵌入入口的程序名。
+/// 读取当前运行的程序名。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_args_program_name(out: *mut XiaoValue, capabilities: u64) -> i32 {
     read_arguments(out, capabilities, |snapshot, capabilities| {
@@ -34,7 +80,7 @@ pub extern "C" fn xiao_runtime_args_program_name(out: *mut XiaoValue, capabiliti
     })
 }
 
-/// 读取嵌入入口的参数，调用方拥有独立数组。
+/// 读取当前运行的参数，调用方拥有独立数组。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_args_argv(out: *mut XiaoValue, capabilities: u64) -> i32 {
     read_arguments(out, capabilities, |snapshot, capabilities| {

@@ -923,6 +923,10 @@ fn plan_standard_link(
             .map(|name| name.unquoted_text(source).to_owned())
             .collect::<Vec<_>>();
         let module_name = ModuleName::new(module_name);
+        // 宿主库的公开函数沿规范模块入口调用，保留入口检查和模块身份。
+        if matches!(module_name.segments(), [name] if name == "args" || name == "cli") {
+            continue;
+        }
         let Some(record) = standard.modules.get(&module_name) else {
             continue;
         };
@@ -1386,29 +1390,21 @@ impl FrontendCompiler {
                 }
             }
         }
-        let linked_cli = standard_link.sources.contains_key("cli");
-        for statement in &effective_program.statements {
-            let Statement::Function {
-                name,
-                parameters,
-                span,
-                ..
-            } = statement
-            else {
-                continue;
-            };
-            let from_cli = module_identity == Some("stdlib.cli")
-                || (linked_cli && span.start() >= request.source.text().len());
-            if from_cli
-                && !name.backticked
-                && name.unquoted_text(&effective_source) == "split_terminator"
-                && let [values] = parameters.as_slice()
-            {
-                type_result.runtime_checks.push(RuntimeCheck {
-                    span: values.name.span,
-                    kind: RuntimeCheckKind::ArrayType,
-                    expected: None,
-                });
+        if module_identity == Some("stdlib.cli") {
+            for statement in &effective_program.statements {
+                if let Statement::Function {
+                    name, parameters, ..
+                } = statement
+                    && !name.backticked
+                    && name.unquoted_text(&effective_source) == "split_terminator"
+                    && let [values] = parameters.as_slice()
+                {
+                    type_result.runtime_checks.push(RuntimeCheck {
+                        span: values.name.span,
+                        kind: RuntimeCheckKind::ArrayType,
+                        expected: None,
+                    });
+                }
             }
         }
         diagnostics.extend(type_result.diagnostics.clone());

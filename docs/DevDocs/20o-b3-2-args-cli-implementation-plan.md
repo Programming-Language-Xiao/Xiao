@@ -1,7 +1,7 @@
 # 20O-B3-2. `args` / `cli` 实施规划
 
-> **状态（2026-11-25）**　B3-2A 开工基线固定于 `8d1c09f0`。args 53～54、纯 Xiao 分组、运行协议和分发启动器已进入实施。Windows VM、C ABI 空快照及分发入口已有本机结果。args 原生降低和应用启动快照待生成器裁定，三平台验收与收口待执行。教程和 registry 为 `planned`。[B3-1 收口](assets/20o-b3/entry-20261124-b3-1/README.md) · [B3-2A 基线](assets/20o-b3/entry-20261125-b3-2/README.md) · [开工裁定](assets/20o-b3/entry-20261125-b3-2/decisions.json)
-> **版本**　当前为 ABI 1.20、生成器 23、标准库接口 1。args 使用 53～54。cli 为纯 Xiao。
+> **状态（2026-11-25）**　B3-2A 开工基线固定于 `8d1c09f0`。args 53～54、纯 Xiao 分组、运行协议和分发启动器已有本机验证。星崽批准生成器 24 与原生接线，三平台验收与收口在执行。教程和 registry 为 `planned`。[B3-1 收口](assets/20o-b3/entry-20261124-b3-1/README.md) · [B3-2A 基线](assets/20o-b3/entry-20261125-b3-2/README.md) · [补充裁定与验收](assets/20o-b3/entry-20261125-b3-2-final/README.md)
+> **版本**　当前为 ABI 1.20、生成器 24、标准库接口 1。args 使用 53～54，cli 为纯 Xiao。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-2 不得用同链接、导出表-only 或 `UnverifiedCoffExports` 代替。
 > 入口：[B3-1 收口](assets/20o-b3/entry-20261124-b3-1/README.md)、[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md)、[B3-0B 契约](assets/20o-b3/entry-20261123-b3-0b/contract-draft.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
 > B3-2 不实现 fs/env/log，不升级教程/registry verified，不启动 B3-3/B4。
@@ -35,7 +35,7 @@ B3-2 是 **args/cli 实施批**，不是六模块并行批。args 需要同时�
 ### 1.2 明确不做
 
 - 不激活 55～63，不实现 fs/env/log；
-- 不修改 ABI 1.20、生成器 23、接口 1 或已冻结的 time/args/cli API；
+- ABI 1.20、标准库接口 1 和 time/args/cli API 沿联合冻结，生成器 24 沿 B3-2-GENERATOR 补充裁定；
 - 不把 CLI 做成 intrinsic、宿主库或第二套参数解析入口；
 - 不升级 registry/教程 verified，不启动 B3-3/B4；
 - 不跑旧 721，不核销 22C/22D、19/11/22 或 B1 历史债务；
@@ -80,6 +80,8 @@ b3_3_entry_ready = b3_2_passed and decisions_approved and no_product_scope_creep
 
 五项答复均已登记来源、时点和适用范围。上游已批准字段和本批开工答案见开工台账。[开工台账](assets/20o-b3/entry-20261125-b3-2/decisions.json)
 
+星崽随后批准 B3-2-GENERATOR，将生成器 23 升到 24，并授权 args 原生调用与启动快照、cli 数组入口校验、旧新产物和缓存复验。两个公共 args 符号沿用冻结表，`xiao_runtime_args_run_native` 是生成器与 Runtime 之间的内部入口适配器。[补充裁定](assets/20o-b3/entry-20261125-b3-2-final/decision.json)
+
 ## 四、分批执行
 
 ### B3-2A：入口与基线
@@ -121,7 +123,7 @@ b3_3_entry_ready = b3_2_passed and decisions_approved and no_product_scope_creep
 
 本机已验证 `RunOptions.arguments`、hello 能力、源码与删源后的 `.xiaoc` / `.xar` 运行，以及两个 C 入口的空快照和输出槽。分发包的 Rust 启动器标记原始参数无法解码的位置，Bun CLI 按冻结顺序接纳整份应用参数。实际目标采用调用时拼写。
 
-应用原生入口需要发射 args C 调用并在用户代码运行前设置快照。cli 的数组入口检查也需要发射对应调用。按 B3-2-ID，这些 LLVM 生成文本变更及生成器 23 → 24 待单独裁定，裁定范围包含启动接线、版本和缓存复验。当前原生后端拒绝 `stdlib.cli` 的构建，VM 入口已执行类型检查。
+生成器 24 为可达的 args/cli 模块经由原生启动适配器建立快照，在可执行文件启动时读取宿主拆分后的 `argv[0]` 与实参。原生 spawn 与池任务继承快照。cli 在规范模块函数入口执行数组检查，形参映射取各自模块的位置。Windows 接线通过本机预检，正式验收使用固定提交。[补充裁定与验收](assets/20o-b3/entry-20261125-b3-2-final/README.md)
 
 1. 在 `RunOptions` 增加可选 `arguments` 字段，形状 `{program_name, argv}`；省略为空快照；
 2. 在 hello 响应增加 `"arguments"` 能力；旧核心未声明时客户端执行前拒绝；
@@ -209,7 +211,8 @@ B3-3 接收 args/cli 已验证、fs 待实现和 COFF 待验证项。B3-2 不得
 
 ```text
 docs/DevDocs/20o-b3-2-args-cli-implementation-plan.md   本规划
-docs/DevDocs/assets/20o-b3/entry-20261125-b3-2/          执行时建立的证据
+docs/DevDocs/assets/20o-b3/entry-20261125-b3-2/          B3-2A 开工基线
+docs/DevDocs/assets/20o-b3/entry-20261125-b3-2-final/    生成器裁定与产品验收
 docs/DevDocs/20o-b3-1-time-implementation-plan.md        前批实施
 core/rust/crates/xiao-intrinsics/intrinsics.json         args 53～54 激活
 core/rust/crates/xiao-runtime/src/                       args Runtime/C ABI

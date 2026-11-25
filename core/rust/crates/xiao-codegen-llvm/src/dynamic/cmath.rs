@@ -53,6 +53,33 @@ impl<'a> DynamicGenerator<'a> {
         )
     }
 
+    /// 读取入口已接纳的快照，沿用拥有输出槽和 Runtime 错误路径。
+    pub(super) fn emit_args(
+        &mut self,
+        declaration: &xiao_intrinsics::IntrinsicDecl,
+        arguments: &[IrCallArgument],
+        span: IrSpan,
+    ) -> Result<String> {
+        if !arguments.is_empty() {
+            return Err(CodegenError::InvalidIr {
+                message: format!("{} 不接受实参", declaration.public_name),
+            });
+        }
+        let symbol = declaration
+            .abi_binding
+            .args_symbol()
+            .expect("args C ABI 绑定");
+        self.emit_borrowed_intrinsic(
+            symbol,
+            "args",
+            arguments,
+            Vec::new(),
+            span,
+            true,
+            Some(self.options.capabilities),
+        )
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn emit_borrowed_intrinsic(
         &mut self,

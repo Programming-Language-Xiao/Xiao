@@ -270,18 +270,8 @@ impl<'a> DynamicGenerator<'a> {
         // `from stdlib.x import f` 能降低为直接函数调用；未导入的模块不能提前
         // 进入函数表，否则 planned 模块的未接线原语会污染无关库的原生降低。
         let imported_standard_modules = imports::reachable_modules(self.program);
-        if imported_standard_modules.contains("stdlib.cli")
-            || self
-                .program
-                .runtime_checks
-                .iter()
-                .any(|check| check.kind == "array_type")
-        {
-            return Err(CodegenError::Unsupported {
-                feature: "stdlib.cli 的原生数组入口检查待接通".to_owned(),
-                span: None,
-            });
-        }
+        let capture_arguments = imported_standard_modules.contains("stdlib.args")
+            || imported_standard_modules.contains("stdlib.cli");
         for module in self.program.modules.iter().filter(|module| {
             module.name.starts_with("stdlib.")
                 && module.kind == "file"
@@ -298,7 +288,7 @@ impl<'a> DynamicGenerator<'a> {
                     .insert((module.name.clone(), name.text.clone()), statement);
             }
         }
-        self.emit_entry()?;
+        self.emit_entry(capture_arguments)?;
         // 导入语句在入口发射期间才会把别名函数登记到
         // `function_definitions`。trampoline 必须在这之后准备，否则函数表的
         // BTreeMap 位置会因别名插入而改变，生成的目标符号会与实际定义脱节。
@@ -633,7 +623,13 @@ impl<'a> DynamicGenerator<'a> {
                 "  {value} = load {VALUE_TYPE}, ptr %slot{}",
                 slot.index
             ));
-            generator.emit_registered_checks_at(parameter.name.span, &value);
+            if frame_module == "stdlib.cli" && matches!(parameter.ty, xiao_ir::IrType::Array { .. })
+            {
+                // 文件模块的参数 span 独立于入口，入口的检查表只属于入口源码。
+                generator.emit_dynamic_check("array_type", &value, parameter.name.span);
+            } else {
+                generator.emit_registered_checks_at(parameter.name.span, &value);
+            }
         }
         generator.emit_statements(body)?;
         if !generator.terminated {
@@ -742,6 +738,7 @@ impl<'a> DynamicGenerator<'a> {
                 .filter(|declaration| {
                     declaration.starts_with("declare i32 @xiao_runtime_cmath_")
                         || declaration.starts_with("declare i32 @xiao_runtime_time_")
+                        || declaration.starts_with("declare i32 @xiao_runtime_args_")
                 })
                 .cloned(),
         );

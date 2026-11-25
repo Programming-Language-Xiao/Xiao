@@ -27,6 +27,10 @@ const CLI_SOURCE: &str = include_str!("../../../../../tests/fixtures/docs/cli/tu
 /// CLI 教程的独立黄金。
 const CLI_GOLDEN: &[u8] = include_bytes!("../../../../../tests/fixtures/docs/cli/tutorial.stdout");
 
+#[cfg(feature = "args-cli-native-test")]
+#[path = "support/b3_args_cli_native.rs"]
+mod native;
+
 /// 从 VM 事件取得程序标准输出。
 fn stdout(result: &DriverOutcome) -> String {
     result
@@ -110,6 +114,7 @@ fn both_import_paths_match_the_vm_tutorials() {
             let result = FrontendVmDriver::new().run(&request);
             assert!(result.is_success(), "{prefix}.{module}: {result:?}");
             assert_eq!(stdout(&result).as_bytes(), expected, "{prefix}.{module}");
+            println!("B3-2-VM module={module} alias={prefix} exact=true");
         }
     }
 }
@@ -194,11 +199,8 @@ fn cli_checks_static_and_dynamic_argument_types() {
         let artifact = FrontendCompiler::new().compile(&valid).unwrap();
         let target = xiao_codegen_llvm::TargetDescription::host();
         let options = xiao_codegen_llvm::CodegenOptions::for_target(target);
-        assert!(matches!(
-            xiao_codegen_llvm::lower_program(&artifact.ir, &options),
-            Err(xiao_codegen_llvm::CodegenError::Unsupported { feature, .. })
-                if feature.contains("stdlib.cli 的原生数组入口检查")
-        ));
+        let module = xiao_codegen_llvm::lower_program(&artifact.ir, &options).unwrap();
+        assert!(module.text.contains("array_type"), "{prefix}");
         for call in [
             "split_terminator(\"bad\")",
             "split_terminator([[\"bad\"]])",
@@ -215,17 +217,7 @@ fn cli_checks_static_and_dynamic_argument_types() {
                 "{prefix} {call}: {error:?}"
             );
         }
-        let source = format!(
-            "{import}\n{}",
-            r#"for item in ["bad", [["bad"]], ["ok"]]
-    try
-        groups = split_terminator(values = item)
-        print(groups[0][0])
-    catch failure as TypeError
-        print(error_code(failure))
-"#,
-        );
-        let request = DriverRequest::new(FrontendRequest::from_text(source));
+        let request = DriverRequest::new(FrontendRequest::from_text(cli_dynamic_types(&import)));
         let result = FrontendVmDriver::new().run(&request);
         assert!(result.is_success(), "{prefix}: {result:?}");
         assert_eq!(
@@ -236,9 +228,35 @@ fn cli_checks_static_and_dynamic_argument_types() {
     }
 }
 
+/// VM 和原生使用同一组动态形状。
+fn cli_dynamic_types(import: &str) -> String {
+    format!(
+        "{import}\n{}",
+        r#"for item in ["bad", [["bad"]], ["ok"]]
+    try
+        groups = split_terminator(values = item)
+        print(groups[0][0])
+    catch failure as TypeError
+        print(error_code(failure))
+"#,
+    )
+}
+
 #[test]
 /// 用 Unicode 字符精确触及单项和总字节上限。
 fn cli_limits_count_and_utf8_bytes_before_grouping() {
+    let result = FrontendVmDriver::new().run(&DriverRequest::new(FrontendRequest::from_text(
+        cli_limits_source(),
+    )));
+    assert!(result.is_success(), "{result:?}");
+    assert_eq!(stdout(&result), CLI_LIMITS_GOLDEN);
+}
+
+const CLI_LIMITS_GOLDEN: &str =
+    "ok\nCLI_LIMIT_EXCEEDED\nok\nCLI_LIMIT_EXCEEDED\nok\nCLI_LIMIT_EXCEEDED\n";
+
+/// 两种后端以同一语料验证三项上限与等于上限的情况。
+fn cli_limits_source() -> String {
     let prefix = r#"from stdlib.cli import split_terminator
 def check([str] values)
     try
@@ -248,16 +266,9 @@ def check([str] values)
         print(error_code(failure))
 "#;
     let full = "🧪".repeat(1024);
-    let source = format!(
+    format!(
         "{prefix}\nstr items = []\ni = 0\nwhile i < 1024\n    array_push(items, \"\")\n    i = i + 1\ncheck(items)\narray_push(items, \"\")\ncheck(items)\ncheck([\"{full}\"])\ncheck([\"{full}a\"])\nstr bytes = []\ni = 0\nwhile i < 16\n    array_push(bytes, \"{full}\")\n    i = i + 1\ncheck(bytes)\narray_push(bytes, \"a\")\ncheck(bytes)\n"
-    );
-    let result =
-        FrontendVmDriver::new().run(&DriverRequest::new(FrontendRequest::from_text(source)));
-    assert!(result.is_success(), "{result:?}");
-    assert_eq!(
-        stdout(&result),
-        "ok\nCLI_LIMIT_EXCEEDED\nok\nCLI_LIMIT_EXCEEDED\nok\nCLI_LIMIT_EXCEEDED\n"
-    );
+    )
 }
 
 #[test]

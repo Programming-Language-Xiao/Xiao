@@ -1152,6 +1152,9 @@ unsafe extern "C" {
     pub fn xiao_runtime_args_program_name(out: *mut XiaoValue, capabilities: u64) -> i32;
     /// 读取当前运行的有序参数，成功时替换输出槽并交付拥有的独立数组。
     pub fn xiao_runtime_args_argv(out: *mut XiaoValue, capabilities: u64) -> i32;
+    /// 生成器内部适配器。校验宿主参数后为独立原生入口安装快照，并在返回时恢复。
+    #[doc(hidden)]
+    pub fn xiao_runtime_args_run_native(entry: Option<extern "C" fn() -> i32>) -> i32;
     /// 读取当前线程挂起错误的机器字段。
     pub fn xiao_runtime_error_snapshot(out: *mut XiaoAbiErrorSnapshot) -> i32;
     /// 读取当前线程挂起错误的第 `index` 个结构化参数。

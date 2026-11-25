@@ -1517,7 +1517,9 @@ mod link_tests;
 fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
     if matches!(
         symbol,
-        "xiao_runtime_args_program_name" | "xiao_runtime_args_argv"
+        "xiao_runtime_args_program_name"
+            | "xiao_runtime_args_argv"
+            | "xiao_runtime_args_run_native"
     ) {
         components.insert("args".to_owned());
     }

@@ -1,0 +1,12 @@
+{
+  "id": "B3-2-GENERATOR",
+  "source": "星崽在 B3-2-ID 原生接线问题卡的实际答复",
+  "question_item_id": "call_aafhD49HVUIEIo56I5MUx96a/0",
+  "answer": "批准生成器 24 与原生接线（推荐）",
+  "baseline_commit": "13161006",
+  "generator_from": 23,
+  "generator_to": 24,
+  "runtime_abi": "1.20",
+  "stdlib_interface": 1,
+  "scope": ["args 原生调用与启动快照", "cli 数组入口校验", "旧新产物和缓存复验"]
+}

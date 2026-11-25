@@ -168,6 +168,7 @@ fn strip_static_standard_imports(program: &mut IrProgram) {
             return false;
         };
         if !item.module.starts_with("stdlib.")
+            || matches!(item.module.as_str(), "stdlib.args" | "stdlib.cli")
             || selected.text != item.binding.text
             || selected.backticked != item.binding.backticked
         {

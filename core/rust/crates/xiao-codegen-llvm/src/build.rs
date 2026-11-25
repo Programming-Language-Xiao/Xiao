@@ -109,17 +109,16 @@ impl NativeBuild {
                     .to_owned(),
             });
         }
-        let require_time_coff = request.options.target.object_format == crate::ObjectFormat::Coff
-            && module
-                .runtime_components
-                .iter()
-                .any(|component| component == "time");
+        let requires_b3_evidence = crate::requires_b3_native_evidence(&module);
+        let require_coff = request.options.target.object_format == crate::ObjectFormat::Coff
+            && requires_b3_evidence;
         let mut link_evidence = None;
-        let executable = if require_time_coff {
-            let (path, evidence) =
-                request
-                    .toolchain
-                    .compile_time_coff(&module, &request.options, &request.output)?;
+        let executable = if require_coff {
+            let (path, evidence) = request.toolchain.compile_with_coff_link_evidence(
+                &module,
+                &request.options,
+                &request.output,
+            )?;
             link_evidence = Some(evidence);
             path
         } else if let Some(startup) = &request.options.debug_startup {
@@ -189,10 +188,7 @@ impl NativeBuild {
                         )?;
                     } else if required != 0
                         || !request.program.concurrency_calls.is_empty()
-                        || module
-                            .runtime_components
-                            .iter()
-                            .any(|component| component == "time")
+                        || requires_b3_evidence
                     {
                         return Err(crate::NativeMetadataError {
                             code: "X17-XAR-007",

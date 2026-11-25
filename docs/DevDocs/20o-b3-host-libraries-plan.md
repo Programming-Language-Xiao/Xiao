@@ -91,7 +91,7 @@ B3-1 按已批准的激活、验收范围和夹具登记完成收口。四个 ti
 
 ### B3-2：`args`/`cli`
 
-B3-2 的 args 快照、纯 Xiao 分组和运行协议已有 Windows VM 结果。原生降低待生成器裁定。[B3-2 args/cli 实施规划](20o-b3-2-args-cli-implementation-plan.md)
+B3-2 已接通 args 快照、纯 Xiao 分组、运行协议和生成器 24 的原生入口。三平台验收在执行。[B3-2 args/cli 实施规划](20o-b3-2-args-cli-implementation-plan.md)
 
 1. argv不含程序名，程序名另取；
 2. 保留空参数；Windows不二次拆引号；

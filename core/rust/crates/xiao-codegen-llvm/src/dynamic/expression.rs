@@ -275,7 +275,7 @@ impl<'a> DynamicGenerator<'a> {
             }
             if matches!(
                 check.kind.as_str(),
-                "string_boolean" | "set_hashability" | "dynamic_conversion"
+                "array_type" | "string_boolean" | "set_hashability" | "dynamic_conversion"
             ) {
                 self.emit_dynamic_check(&check.kind, value, check.span);
             }
@@ -584,6 +584,9 @@ impl<'a> DynamicGenerator<'a> {
         }
         if declaration.kind == xiao_intrinsics::IntrinsicKind::Time {
             return self.emit_time(declaration, arguments, span);
+        }
+        if declaration.kind == xiao_intrinsics::IntrinsicKind::Args {
+            return self.emit_args(declaration, arguments, span);
         }
         match declaration.vm_binding {
             xiao_intrinsics::VmBinding::ScalarCast => {
