@@ -95,9 +95,12 @@ pub fn execute<C>(
                     } else {
                         check_bytes("路径", second.len(), PATH_BYTES)?;
                         let mut control = Control::new(checkpoint);
-                        control.check()?;
-                        host::rename(first.as_ref(), second.as_ref(), *overwrite)
-                            .map_err(|error| rename_error("重命名", error, *overwrite))?;
+                        rename(
+                            Path::new(first),
+                            Path::new(second),
+                            *overwrite,
+                            &mut control,
+                        )?;
                     }
                     Ok(RuntimeValue::None)
                 })?
@@ -211,6 +214,33 @@ fn rename_error(operation: &str, error: io::Error, overwrite: bool) -> RuntimeEr
         }
         _ => io_error(operation, error),
     }
+}
+
+/// 按显式覆盖策略移动目录项，提交前完成可中断的目标检查。
+fn rename<C>(
+    source: &Path,
+    destination: &Path,
+    overwrite: bool,
+    control: &mut Control<impl FnMut() -> std::result::Result<(), C>>,
+) -> Result<(), C> {
+    #[cfg(windows)]
+    if !overwrite {
+        // MoveFileExW 会把同一目录项的移动视为成功。已存在的目标在提交前拒绝，
+        // 其余情况交给原子禁止覆盖的移动入口。暂存写入始终直接使用原子提交。
+        let exists = control.read("检查重命名目标", || {
+            match fs::symlink_metadata(destination) {
+                Ok(_) => Ok(true),
+                Err(error) if source == destination => Err(error),
+                Err(_) => Ok(false),
+            }
+        })?;
+        if exists {
+            return Err(rename_error("重命名", io::ErrorKind::AlreadyExists.into(), false).into());
+        }
+    }
+    control.check()?;
+    host::rename(source, destination, overwrite)
+        .map_err(|error| rename_error("重命名", error, overwrite).into())
 }
 
 /// 单次操作的单调时钟起点和调用方检查器。

@@ -29,7 +29,7 @@
 > **2026-11-24 B3-0E 收口**　六份 `planned` 教程及对应源码、合成输入、独立黄金与 VM/原生精确入口已按五项批准冻结。十二份双导入示例在 Windows 通过语法解析，教程/registry 仍未升级，B3-0F 入口已就绪。[B3-0E 规划](20o-b3-0e-tutorials-fixtures-plan.md) · [收口证据](assets/20o-b3/entry-20261124-b3-0e/README.md)
 > **2026-11-24 B3-0F 收口快照**　A～E 五批 129 项证据完成联合审计，`b3_0_passed=true`、`b3_1_entry_ready=true`。该签收时 B3-1 time 实施裁定待答、Windows 产品 COFF 为 `pending`；后续 B3-1 已于 `8d1c09f0` 完成内部收口，三平台 time 通过、Windows COFF 为 `Complete`，B3-2 入口就绪但尚未开始。[联合冻结交接](assets/20o-b3/entry-20261124-b3-0f/README.md) · [B3-1 收口证据](assets/20o-b3/entry-20261124-b3-1/README.md)
 > **2026-11-26 B3-2 验收**　args 53～54、纯 Xiao 分组、运行协议与生成器 24 的原生入口在 `879ce625` 通过三平台验证，Windows 12 份产物获产品级 COFF `Complete`。B3-3 入口由回执派生，教程和 registry 为 `planned`。[B3-2 args/cli 实施规划](20o-b3-2-args-cli-implementation-plan.md) · [验收回执](assets/20o-b3/entry-20261125-b3-2-final/README.md)
-> **2026-11-26 B3-3 实施**　fs 的 55～59 已激活，Runtime、VM/TAC、五个 C ABI 和生成器 25 原生路径已接入，三平台证据正在采集。[B3-3 fs 实施规划](20o-b3-3-fs-implementation-plan.md)
+> **2026-11-26 B3-3 收口**　产品 `4e480ebe` 已通过 fs 三平台、Windows 产品级 COFF 和 CI 门禁。ABI 1.20、生成器 25、标准库接口 1。B3-4 的 env 实施入口就绪。[B3-3 收口](assets/20o-b3/entry-20261125-b3-3-final/README.md)
 > **已确认（2026-11-01）：D-1 取甲（成熟 Rust 数值库）、B1 首批范围、
 > D-7 取专用 `json_value` 类型、B7→B8→B9 后置**。B0 已逐条询问并记录其余方向裁定，
 > 见 §五及 20P §六；具体 API 不因此自动冻结。基线、探测、教程与待审草案见
