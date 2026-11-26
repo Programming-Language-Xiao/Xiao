@@ -32,7 +32,7 @@ ABI 1.19、生成器 22 提供 `cmath` 的 15 个浮点包装，以及全局函�
 
 程序参数快照 `args` 和纯 Xiao 分组 `cli` 已进入 B3-2 实施。教程登记为 `planned`。[args 教程](../../DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials/args.md) · [cli 教程](../../DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials/cli.md)
 
-文件系统路径操作 `fs` 已接入 Runtime、VM 和 C ABI，教程登记为 `planned`。[fs 教程候选](../../DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials/fs.md)
+文件系统路径操作 `fs` 的普通宿主模式已通过三平台内部验收，教程登记为 `planned`。[fs 教程候选](../../DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials/fs.md) · [验收记录](../../DevDocs/assets/20o-b3/entry-20261125-b3-3-final/README.md)
 
 ## 首批模块
 

@@ -1,6 +1,6 @@
 # 20O-B3-3. `fs` 实施规划
 
-> **状态（2026-11-26）**　fs 的 Runtime、VM/TAC、五个 C ABI 和 LLVM 已接入，三平台证据正在采集。`b3_3_started=true`、`b3_3_passed=false`、`b3_4_entry_ready=false`。[实施记录](assets/20o-b3/entry-20261125-b3-3/README.md)
+> **状态（2026-11-26）**　产品 `4e480ebe` 已完成 B3-3 内部收口。`b3_3_passed=true`、`b3_4_entry_ready=true`、`b3_4_started=false`。三平台专项和 CI 门禁通过，Windows 六份 fs 产物达到产品级 COFF `Complete`。[收口证据](assets/20o-b3/entry-20261125-b3-3-final/README.md)
 > **产品身份**　fs 使用 55～59。原生接线按补充裁定使用 ABI 1.20、生成器 25、标准库接口 1。[生成器裁定](assets/20o-b3/entry-20261125-b3-3/generator-decision.json)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-3 只处理 fs 产物，完整公共矩阵留 B3-7。
 > 入口：[B3-2 收口](assets/20o-b3/entry-20261125-b3-2-final/README.md)、[B3-0C 契约](assets/20o-b3/entry-20261123-b3-0c/contract-draft.md)、[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
@@ -17,7 +17,7 @@
 | 本批目标 | 激活 fs 55～59，实现普通宿主模式、原子写、枚举、删除、重命名、元数据和 C ABI；完成 VM/原生/教程/三平台证据 |
 | 本批不做 | env/log 实现、受限/沙箱模式、60～63 激活、registry/教程 verified、B3-4/B4、旧 721、历史债务 |
 | Windows COFF | fs 的 Windows 产物必须产品级 `Complete`；完整矩阵留 B3-7 |
-| 当前状态 | `b3_3_started=true`、`b3_3_passed=false`、`b3_4_entry_ready=false`、`b3_product_started=true` |
+| 当前状态 | `b3_3_started=true`、`b3_3_passed=true`、`b3_4_entry_ready=true`、`b3_4_started=false` |
 
 B3-3 是 **fs 实施批**，不是六模块并行批。普通宿主模式是首批唯一模式；受限/沙箱模式在 B3-0C 已明确延期，不得在 B3-3 临时扩大能力。B3-3 完成后只声明 fs 内部可用，不升级教程或 registry verified。
 
@@ -61,7 +61,7 @@ b3_4_entry_ready = b3_3_passed and decisions_approved and no_product_scope_creep
 
 1. B3-2 收口审计、自反例、三平台和 COFF `Complete` 通过；`b3_2_passed=true`、`b3_3_entry_ready=true`；
 2. 固定产品 `879ce625`、两个 Cargo.lock、Runtime、工具链和 B1 28 守卫可复核；
-3. intrinsic 55～59 当前为 reserved、60～63 仍 reserved；1～54 和 ID 100 不变；
+3. 开工快照中的 55～63 为 `reserved`。本批核对 1～54 和 ID 100 的固定身份；
 4. B3-0C 的 fs 签名、路径、原子写、错误、预算和平台表可读；
 5. Rust 1.96.0、三平台目标、VM、受控原生 O0/O3 和 Windows 产品验证器可用；
 6. 独立 target/Runtime/缓存、唯一任务根；fs 只操作任务专属临时目录；
@@ -88,7 +88,7 @@ LLVM 接入五个 fs 调用改变生成文本，星崽补充批准生成器 24�
 
 1. 固定 B3-2 产品 `879ce625`、ABI 1.20/生成器 24/接口 1、两个 Cargo.lock、B1 28 守卫；
 2. 复核 intrinsic 55～59 reserved、60～63 reserved、1～54 active、ID 100 tombstone；
-3. 从 B3-0E 固定 fs 教程源码与黄金字节，记录原始摘要；执行身份绑定 B3-2 产品生成器 24。B3-0E 的 `product_target.generator=23` 是早于 B3-2 的候选目标，不得作为本批产品身份；如生成器升至 25，按 B3-3-ID 裁定记录增量；
+3. 从 B3-0E 固定 fs 教程源码与黄金字节，记录原始摘要。入口基线使用生成器 24，最终验收使用获准的生成器 25；
 4. 建立 `entry-20261125-b3-3/` 证据目录和唯一任务根；
 5. 记录三平台工具、目标和 Runtime；缺平台记 `unverifiable`。
 
@@ -125,7 +125,7 @@ LLVM 接入五个 fs 调用改变生成文本，星崽补充批准生成器 24�
 
 1. 迁入 fs 的 `tutorial.xiao`、`tutorial.stdout`；无额外输入；
 2. 任务入口创建空 `demo` 目录，结束检查 `demo` 为空；
-3. VM 与原生 O0/O3 覆盖 `std.fs`/`stdlib.fs` 双路径，源码与黄金字节绑定 B3-0E，运行回执绑定生成器 24 或经批准的 25；
+3. VM 与原生 O0/O3 覆盖 `std.fs`/`stdlib.fs` 双路径，源码与黄金字节绑定 B3-0E，最终运行回执绑定生成器 25；
 4. 覆盖禁止覆盖时的已有文件、目录和悬空链接；并发无覆盖写入由多个独立调用争用同一目标时必须恰有一个成功、其余返回 `FS_EXISTS`；覆盖写入遇符号链接时替换链接目录项而不改写其目标；
 5. 用故障注入验证暂存准备失败时旧目标保持、临时文件清理、清理失败保留附带原因；通过边界测试证明进入原子提交后返回实际提交结果；
 6. 覆盖枚举 UTF-8 字节排序、1,024 项/4,096 字节单项/65,536 字节合计边界、超限整份作废；在允许非 UTF-8 文件名的平台验证严格解码失败且不交付部分数组；
@@ -158,7 +158,7 @@ LLVM 接入五个 fs 调用改变生成文本，星崽补充批准生成器 24�
 | 资源 | 4,096 字节路径、8 MiB 文本、1,024 枚举项、4,096 单项、65,536 总字节、10 秒期限 |
 | VM/TAC | 55～59 分派、冻结错误顺序、能力检查、输出所有权、取消与期限安全点 |
 | LLVM/C ABI | 五个符号、失败保留/成功替换输出槽、状态码、原生入口、无别名 |
-| 教程 | `tests/fixtures/docs/fs/tutorial.*`、B3-0E 源码/黄金摘要、std/stdlib、VM/原生 O0/O3；执行身份为 B3-2 生成器 24 或获准的 25，`demo` 为空 |
+| 教程 | `tests/fixtures/docs/fs/tutorial.*`、B3-0E 源码/黄金摘要、std/stdlib、VM/原生 O0/O3，执行身份为生成器 25，`demo` 为空 |
 | 平台 | Windows x86_64 MSVC、Linux x86_64 GNU、macOS arm64；Windows COFF `Complete` |
 | 状态 | registry/UseDocs/教程 `planned`；无 B3-4/B4 |
 | 证据 | 源码/Runtime/工具/目标/任务根/CI run/job/attempt |
@@ -201,6 +201,7 @@ B3-4 接收 fs 已验证、env 待实现和 COFF 待验证项。B3-3 不得修�
 ```text
 docs/DevDocs/20o-b3-3-fs-implementation-plan.md   本规划
 docs/DevDocs/assets/20o-b3/entry-20261125-b3-3/   执行时建立的证据
+docs/DevDocs/assets/20o-b3/entry-20261125-b3-3-final/  三平台收口证据
 docs/DevDocs/20o-b3-2-args-cli-implementation-plan.md 前批实施
 core/rust/crates/xiao-intrinsics/intrinsics.json  fs 55～59 激活
 core/rust/crates/xiao-runtime/src/                fs Runtime/C ABI
@@ -210,7 +211,7 @@ tests/fixtures/docs/fs/                           fs 教程最终夹具
 docs/module-registry.json                         fs 登记为 planned
 ```
 
-本页只做 B3-3 规划；B3-4 及后续仍未开始。
+B3-3 的派生结论和 B3-4 实施入口见收口回执。[机器可读状态](assets/20o-b3/entry-20261125-b3-3-final/closeout.json)
 
 ## 十、新 Agent 先读
 
