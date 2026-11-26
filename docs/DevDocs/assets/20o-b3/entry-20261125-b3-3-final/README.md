@@ -10,6 +10,8 @@
 
 教程以独立任务目录为 cwd，两个导入别名逐字匹配 B3-0E 黄金，运行后 `demo` 为空。三平台覆盖并发排他写、清理附带原因、非递归删除、末段链接及枚举预算。Linux 专项实测跨卷拒绝，并在维护门禁逐个链接对账 176 个 Runtime 导出。macOS 首轮 APFS 给非法字节文件名返回 `EILSEQ`，修订后由严格解码适配测试补验错误身份。Windows 以不可配对的 UTF-16 代理项测试同一边界。[原始产物与回执](runs.zip) · [整库维护](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/45765203599)
 
+10 秒期限在调用前、写入分块或枚举批次间以及提交或交付前检查。执行中的同步系统调用需要等宿主返回。对可逆操作，返回后复查运行控制。进入原子提交后，调用交付宿主的实际提交结果。[冻结契约](../entry-20261123-b3-0c/contract-draft.md)
+
 三平台用 B3-2 的真实生成器 24 原件验证新校验器的向后兼容。生成器 25 产物在上限为 24 的校验条件下报 `X17-XAR-007`。同一平台使用相同工具链、目标与 Runtime 验证 24→25 的构建指纹差异。[Linux 与 macOS 专项](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/45765203601)
 
 归档保留首轮工作区覆盖率、旧编号负例、APFS 夹具和 Linux 单入口组件检查的失败日志。最终工作区门禁与六项维护作业验证相同产品树。全部原始 CI 回执均带有运行、作业和尝试身份。[工作区门禁](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/45765720394)
