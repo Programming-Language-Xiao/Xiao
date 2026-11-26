@@ -979,6 +979,7 @@ mod tests {
     }
 
     #[test]
+    /// 逐项核对 fs 的形参、能力及链接符号。
     fn fs_parameters_and_symbols_match_the_active_contract() {
         for (id, name, fields) in [
             (55, "write_text", &["path", "text", "overwrite"][..]),

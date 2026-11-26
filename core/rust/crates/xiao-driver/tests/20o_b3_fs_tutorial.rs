@@ -9,19 +9,26 @@ use xiao_driver::{DriverRequest, FrontendRequest, FrontendVmDriver};
 use xiao_intrinsics::{CAPABILITY_FILESYSTEM, CAPABILITY_STDOUT};
 use xiao_vm::VmEvent;
 
+/// 冻结的 fs 教程。
 const SOURCE: &str = include_str!("../../../../../tests/fixtures/docs/fs/tutorial.xiao");
+/// 独立的逐字节黄金输出。
 const GOLDEN: &[u8] = include_bytes!("../../../../../tests/fixtures/docs/fs/tutorial.stdout");
+/// 测试子进程应使用的导入别名。
 const CHILD_ALIAS: &str = "XIAO_B3_3_TEST_FS_ALIAS";
+/// 从子进程单独执行的教程测试名称。
 const TUTORIAL_TEST: &str = "fs_tutorial_matches_vm_golden";
 
 #[cfg(feature = "fs-native-test")]
 #[path = "support/b3_fs_native.rs"]
 mod native;
 
+/// 为教程提供独立的 cwd。
 struct TaskDirectory(PathBuf);
 
 impl TaskDirectory {
+    /// 排他创建一份测试目录。
     fn new() -> Self {
+        /// 在当前进程内区分测试实例。
         static NEXT: AtomicU32 = AtomicU32::new(0);
         loop {
             let id = NEXT.fetch_add(1, Ordering::Relaxed);
@@ -37,11 +44,13 @@ impl TaskDirectory {
 }
 
 impl Drop for TaskDirectory {
+    /// 回收教程夹具目录。
     fn drop(&mut self) {
         fs::remove_dir_all(&self.0).unwrap();
     }
 }
 
+/// 通过生产 VM 执行并读取原始输出事件。
 fn vm_stdout(source: &str, capabilities: u64) -> String {
     let request = DriverRequest::new(FrontendRequest::from_text(source))
         .with_capabilities(capabilities)
@@ -61,6 +70,7 @@ fn vm_stdout(source: &str, capabilities: u64) -> String {
 }
 
 #[test]
+/// 两种导入路径均核对黄金字节和运行后的目录状态。
 fn fs_tutorial_matches_vm_golden() {
     if let Ok(alias) = std::env::var(CHILD_ALIAS) {
         assert!(matches!(alias.as_str(), "std" | "stdlib"));
@@ -97,6 +107,7 @@ fn fs_tutorial_matches_vm_golden() {
 }
 
 #[test]
+/// 无权限时在非法路径校验之前拒绝。
 fn fs_permission_and_validation_precede_host_access() {
     let source = r#"from std.fs import list_dir
 try

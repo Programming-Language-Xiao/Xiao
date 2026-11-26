@@ -4,6 +4,7 @@ use super::{abi_value_validation::validate_structure, *};
 use crate::filesystem::{self, Failure, Operation};
 use xiao_intrinsics::validate_capability_mask;
 
+/// 先校验 ABI 结构，再委托共享入口，成功后才替换输出槽。
 fn execute<const N: usize>(
     operation: Operation,
     inputs: [*const XiaoValue; N],
@@ -153,14 +154,17 @@ pub extern "C" fn xiao_runtime_fs_metadata(
 }
 
 #[cfg(test)]
+/// 验证借读实参、拥有槽和挂起错误。
 mod tests {
     use super::*;
     use xiao_intrinsics::CAPABILITY_FILESYSTEM;
 
+    /// 创建由测试负责释放的 ABI 字符串。
     fn string(text: &str) -> XiaoValue {
         runtime_to_value(&RuntimeValue::new_string(text).unwrap()).unwrap()
     }
 
+    /// 读取当前线程的主错误编号。
     fn pending_code() -> String {
         PENDING_ERROR.with_borrow(|error| match error {
             Some(PendingError::Recoverable(error)) => error.code().to_owned(),
@@ -169,6 +173,7 @@ mod tests {
     }
 
     #[test]
+    /// 核对结构错误不改变挂起状态，并验证输出槽替换规则。
     fn fs_abi_shapes_types_capabilities_and_output_slot() {
         let mut out = string("旧值");
         let previous = unsafe { out.payload.raw };

@@ -20,6 +20,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
             .map_err(|fault| attach_fault_span(fault, span.start, span.end))
     }
 
+    /// 按冻结形参绑定值，并将宿主操作错误还原为 VM 故障。
     fn fs_value(
         &mut self,
         declaration: &IntrinsicDecl,

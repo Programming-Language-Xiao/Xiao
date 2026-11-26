@@ -11,6 +11,7 @@ use xiao_codegen_llvm::{
 };
 use xiao_driver::{FrontendNativeDriver, FrontendRequest, NativeBuildRequest};
 
+/// 每个公开入口都在无 filesystem 授权时拒绝。
 const DENIED: &str = r#"from std.fs import write_text, list_dir, remove, rename, metadata
 try
     write_text("demo/prohibited", "x", false)
@@ -34,12 +35,14 @@ catch failure as Error
     print(error_code(failure))
 "#;
 
+/// 读取原件的 SHA-256，用于对账 MSVC map 绑定。
 fn digest(path: &Path) -> String {
     xiao_artifacts::Digest256::of_bytes(&fs::read(path).unwrap()).as_hex()
 }
 
 #[test]
 #[ignore = "需要固定目标、发布 Runtime、LLVM 和独立任务目录"]
+/// 执行两个优化等级的教程和权限边界，并对账生成器兼容和产物身份。
 fn fs_tutorial_matches_native_golden() {
     let required = |name: &str| PathBuf::from(std::env::var_os(name).expect(name));
     let target = TargetDescription::host();

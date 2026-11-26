@@ -1,10 +1,15 @@
+//! 文件系统共享内核的真实宿主与受控边界回归。
+
 use super::*;
 use xiao_intrinsics::CAPABILITY_FILESYSTEM;
 
+/// 为每个测试创建并回收独占目录。
 struct Scratch(PathBuf);
 
 impl Scratch {
+    /// 排他创建临时目录，重复运行与并发测试互相隔离。
     fn new() -> Self {
+        /// 在同一测试进程内区分各个任务。
         static NEXT: AtomicU32 = AtomicU32::new(0);
         loop {
             let id = NEXT.fetch_add(1, Ordering::Relaxed);
@@ -20,19 +25,23 @@ impl Scratch {
 }
 
 impl Drop for Scratch {
+    /// 回收本夹具创建的目录和其中的文件。
     fn drop(&mut self) {
         fs::remove_dir_all(&self.0).unwrap();
     }
 }
 
+/// 把独占目录中的路径封装为语言字符串。
 fn arg(path: &Path) -> RuntimeValue {
     RuntimeValue::new_string(path.to_str().unwrap()).unwrap()
 }
 
+/// 使用 filesystem 授权执行共享入口。
 fn call(operation: Operation, arguments: &[&RuntimeValue]) -> Result<RuntimeValue, ()> {
     execute(operation, arguments, CAPABILITY_FILESYSTEM, || Ok(()))
 }
 
+/// 读取可捕获错误的稳定身份。
 fn code(error: &Failure<()>) -> &str {
     match error {
         Failure::Runtime(error) => error.code(),
@@ -41,6 +50,7 @@ fn code(error: &Failure<()>) -> &str {
 }
 
 #[test]
+/// 复合错误按类型、能力、参数与预算顺序交付。
 fn fs_error_order_and_budgets_precede_host_calls() {
     let checkpoint = || panic!("拒绝无效实参前不应进入安全点");
     let empty = RuntimeValue::new_string("").unwrap();
@@ -99,6 +109,7 @@ fn fs_error_order_and_budgets_precede_host_calls() {
 }
 
 #[test]
+/// 并发写入同一名称时只保留一个完整结果。
 fn fs_atomic_no_replace_has_one_winner_and_no_staging_files() {
     let directory = Scratch::new();
     let target = directory.0.join("target.txt");
@@ -149,6 +160,7 @@ fn fs_atomic_no_replace_has_one_winner_and_no_staging_files() {
 }
 
 #[test]
+/// 写入中断保留旧目标。超时与运行取消使用各自的通道。
 fn fs_write_precommit_cancel_and_deadline_clean_up() {
     let directory = Scratch::new();
     let target = directory.0.join("old.txt");
@@ -168,6 +180,34 @@ fn fs_write_precommit_cancel_and_deadline_clean_up() {
     ));
     assert_eq!(fs::read_to_string(&target).unwrap(), "old");
     assert_eq!(fs::read_dir(&directory.0).unwrap().count(), 1);
+    let mut checks = 0;
+    let mut control = Control::new(|| {
+        checks += 1;
+        if checks != 5 {
+            return Ok(());
+        }
+        // 提交前用目录模拟清理失败，保留旧目标和根取消原因。
+        let temporary = fs::read_dir(&directory.0)
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .find(|path| path != &target)
+            .unwrap();
+        fs::remove_file(&temporary).unwrap();
+        fs::create_dir(&temporary).unwrap();
+        Err(temporary)
+    });
+    let failure = write_text(target.to_str().unwrap(), "new", true, &mut control).unwrap_err();
+    let Failure::Interrupted {
+        control: temporary,
+        cleanup: Some(cleanup),
+    } = failure
+    else {
+        panic!("应保留取消及其清理原因");
+    };
+    assert_eq!(cleanup.code(), "FS_IO_FAILED");
+    assert!(cleanup.params().contains_key("os_error"));
+    fs::remove_dir(temporary).unwrap();
+    assert_eq!(fs::read_to_string(&target).unwrap(), "old");
     write_text(
         target.to_str().unwrap(),
         &text,
@@ -191,9 +231,19 @@ fn fs_write_precommit_cancel_and_deadline_clean_up() {
         cancelled.check(),
         Err(Failure::Interrupted { .. })
     ));
+    let mut checks = 0;
+    // 进入提交后直接交付实际结果。
+    let mut control = Control::new(|| {
+        checks += 1;
+        if checks > 5 { Err(()) } else { Ok(()) }
+    });
+    write_text(target.to_str().unwrap(), "commit", true, &mut control).unwrap();
+    assert_eq!(checks, 5);
+    assert_eq!(fs::read_to_string(&target).unwrap(), "commit");
 }
 
 #[test]
+/// 核对宿主名称顺序与三项枚举预算。
 fn fs_enumeration_sorts_and_is_all_or_nothing() {
     let directory = Scratch::new();
     let path = arg(&directory.0);
@@ -234,18 +284,55 @@ fn fs_enumeration_sorts_and_is_all_or_nothing() {
         code(&call(Operation::ListDir, &[&budget_path]).unwrap_err()),
         "FS_LIMIT_EXCEEDED"
     );
+    assert_eq!(
+        directory_name(std::ffi::OsString::from("x".repeat(PATH_BYTES)))
+            .unwrap()
+            .len(),
+        PATH_BYTES
+    );
+    assert_eq!(
+        directory_name(std::ffi::OsString::from("x".repeat(PATH_BYTES + 1)))
+            .unwrap_err()
+            .code(),
+        "FS_LIMIT_EXCEEDED"
+    );
+    #[cfg(windows)]
+    {
+        use std::os::windows::ffi::OsStringExt;
+        let invalid = std::ffi::OsString::from_wide(&[0xd800]);
+        assert_eq!(
+            directory_name(invalid).unwrap_err().code(),
+            "X06-RUNTIME-012"
+        );
+        println!("B3-3-FS-UNICODE adapter=rejected encoding=utf16");
+    }
     #[cfg(unix)]
     {
         use std::os::unix::ffi::OsStrExt;
-        File::create(directory.0.join(std::ffi::OsStr::from_bytes(&[0xff]))).unwrap();
+        let invalid = std::ffi::OsStr::from_bytes(&[0xff]);
         assert_eq!(
-            code(&call(Operation::ListDir, &[&path]).unwrap_err()),
+            directory_name(invalid.to_owned()).unwrap_err().code(),
             "X06-RUNTIME-012"
         );
+        match File::create(directory.0.join(invalid)) {
+            Ok(_) => {
+                assert_eq!(
+                    code(&call(Operation::ListDir, &[&path]).unwrap_err()),
+                    "X06-RUNTIME-012"
+                );
+                println!("B3-3-FS-UNICODE adapter=rejected filesystem=accepted");
+            }
+            #[cfg(target_os = "macos")]
+            Err(error) if error.raw_os_error() == Some(libc::EILSEQ) => {
+                println!("B3-3-FS-UNICODE adapter=rejected filesystem=EILSEQ");
+            }
+            Err(error) => panic!("创建非法名称夹具失败：{error}"),
+        }
     }
 }
 
 #[test]
+/// 删除非空目录会失败，重命名保留目录中的文件。
 fn fs_rename_and_remove_preserve_nonempty_directories() {
     let directory = Scratch::new();
     let source = directory.0.join("source");
@@ -285,12 +372,33 @@ fn fs_rename_and_remove_preserve_nonempty_directories() {
     assert!(
         matches!(info.value("modified_ms").unwrap(), Some(RuntimeValue::Int(value)) if value > 0)
     );
+    #[cfg(unix)]
+    {
+        use std::ffi::CString;
+        use std::os::unix::ffi::OsStrExt;
+        let fifo = target.join("fifo");
+        let fifo_path = CString::new(fifo.as_os_str().as_bytes()).unwrap();
+        // SAFETY: 操作只创建任务目录内的 FIFO。
+        assert_eq!(unsafe { libc::mkfifo(fifo_path.as_ptr(), 0o600) }, 0);
+        let RuntimeValue::DictTable(info) = call(Operation::Metadata, &[&arg(&fifo)]).unwrap()
+        else {
+            panic!("特殊目录项的元数据返回字典");
+        };
+        assert_eq!(info.value("kind").unwrap(), Some(RuntimeValue::Int(4)));
+        assert_eq!(info.value("size").unwrap(), Some(RuntimeValue::Int(-1)));
+        assert_eq!(
+            code(&call(Operation::Remove, &[&arg(&fifo)]).unwrap_err()),
+            "FS_UNSUPPORTED"
+        );
+        fs::remove_file(fifo).unwrap();
+    }
     call(Operation::Remove, &[&arg(&child)]).unwrap();
     call(Operation::Remove, &[&target_arg]).unwrap();
     assert_eq!(fs::read_dir(&directory.0).unwrap().count(), 0);
 }
 
 #[test]
+/// 悬空链接占用目录项，覆盖及删除作用于链接本身。
 fn fs_operations_handle_the_link_entry_and_preserve_its_target() {
     let directory = Scratch::new();
     let target = directory.0.join("target");
@@ -337,6 +445,7 @@ fn fs_operations_handle_the_link_entry_and_preserve_its_target() {
 
 #[cfg(windows)]
 #[test]
+/// Windows 超长路径仍可完成原子禁止覆盖的提交。
 fn fs_windows_long_paths_allow_atomic_no_replace() {
     let directory = Scratch::new();
     let parent = directory
@@ -359,6 +468,7 @@ fn fs_windows_long_paths_allow_atomic_no_replace() {
 
 #[cfg(target_os = "linux")]
 #[test]
+/// 两种覆盖策略都拒绝跨卷回退，并保留源文件。
 fn fs_rename_refuses_cross_volume_copy() {
     use std::os::unix::fs::MetadataExt;
     let dir = Scratch::new();

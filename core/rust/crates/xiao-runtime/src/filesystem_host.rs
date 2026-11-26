@@ -4,6 +4,7 @@ use std::fs::{self, FileType};
 use std::io;
 use std::path::Path;
 
+/// 通过宿主目录项操作移动，按覆盖标记选择提交方式。
 pub(super) fn rename(source: &Path, destination: &Path, overwrite: bool) -> io::Result<()> {
     if overwrite {
         fs::rename(source, destination)
@@ -13,6 +14,7 @@ pub(super) fn rename(source: &Path, destination: &Path, overwrite: bool) -> io::
 }
 
 #[cfg(any(target_os = "linux", target_os = "macos"))]
+/// 在一次内核调用中检查目标并移动目录项。
 fn rename_no_replace(source: &Path, destination: &Path) -> io::Result<()> {
     use std::ffi::CString;
     use std::os::unix::ffi::OsStrExt;
@@ -45,15 +47,17 @@ fn rename_no_replace(source: &Path, destination: &Path) -> io::Result<()> {
 }
 
 #[cfg(windows)]
+/// 在 Windows 上使用禁止覆盖与跨卷复制的移动入口。
 fn rename_no_replace(source: &Path, destination: &Path) -> io::Result<()> {
     use std::os::windows::ffi::OsStrExt;
 
     #[link(name = "kernel32")]
     unsafe extern "system" {
+        /// 移动目录项，标记决定覆盖和跨卷规则。
         fn MoveFileExW(source: *const u16, destination: *const u16, flags: u32) -> i32;
     }
 
-    // 用宿主绝对路径规则保留驱动器 cwd 与 UNC 路径。
+    /// 以宿主绝对路径规则保留驱动器 cwd 与 UNC 路径。
     fn wide(path: &Path) -> io::Result<Vec<u16>> {
         let path = std::path::absolute(path)?;
         let raw: Vec<u16> = path.as_os_str().encode_wide().collect();
@@ -88,10 +92,12 @@ fn rename_no_replace(source: &Path, destination: &Path) -> io::Result<()> {
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
+/// 没有对应原子入口的目标返回宿主不支持。
 fn rename_no_replace(_source: &Path, _destination: &Path) -> io::Result<()> {
     Err(io::ErrorKind::Unsupported.into())
 }
 
+/// 识别宿主报告的跨卷或原子提交不支持。
 pub(super) fn cannot_rename_atomically(error: &io::Error, overwrite: bool) -> bool {
     if matches!(
         error.kind(),
@@ -113,6 +119,7 @@ pub(super) fn cannot_rename_atomically(error: &io::Error, overwrite: bool) -> bo
     false
 }
 
+/// 避免把暂存名称选为最终目录项的另一种拼写。
 pub(super) fn matches_target_name(destination: &Path, name: &str) -> bool {
     let Some(target) = destination.file_name().and_then(|name| name.to_str()) else {
         return false;
@@ -126,6 +133,7 @@ pub(super) fn matches_target_name(destination: &Path, name: &str) -> bool {
     target.eq_ignore_ascii_case(name)
 }
 
+/// 按宿主规则删除单个目录项，包括 Windows 的目录链接。
 pub(super) fn remove(path: &Path, file_type: FileType) -> io::Result<()> {
     #[cfg(windows)]
     {
