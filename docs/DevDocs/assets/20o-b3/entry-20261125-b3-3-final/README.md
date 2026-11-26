@@ -14,7 +14,7 @@
 
 归档保留首轮工作区覆盖率、旧编号负例、APFS 夹具和 Linux 单入口组件检查的失败日志。最终工作区门禁与六项维护作业验证相同产品树。全部原始 CI 回执均带有运行、作业和尝试身份。[工作区门禁](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/45765720394)
 
-B3-4 接收 ABI 1.20、生成器 25、标准库接口 1 和已验证的普通宿主 fs。env 是下一个实施批。受限模式延期未排期，完整性能矩阵和公共教程验收归 B3-7。B1 的 4 项实际 Cargo 输出与 24 项派生负例继承自 B3-1，B3-2A 的 28 项模拟记录为历史。此外，仓库登记和教程状态为 `planned`。[开工基线](../entry-20261125-b3-3/README.md) · [收口状态](closeout.json)
+B3-4 接收 ABI 1.20、生成器 25、标准库接口 1 和已验证的普通宿主 fs。env 是下一个实施批。受限模式延期未排期，完整性能矩阵和公共教程验收归 B3-7。B1 的 4 项实际 Cargo 输出与 24 项派生负例继承自 B3-1，B3-2A 的 28 项模拟记录为历史。仓库登记和教程状态为 `planned`，派生状态见 `closeout.json`。[开工基线](../entry-20261125-b3-3/README.md)
 
 ## 只读复核
 
@@ -23,4 +23,6 @@ python -B -X utf8 docs/DevDocs/assets/20o-b3/entry-20261125-b3-3-final/audit.py
 python -B -X utf8 docs/DevDocs/assets/20o-b3/entry-20261125-b3-3-final/self_negative.py --temp-root D:/project/Xiao/.b3-3/20261126-4bea2e43/temp
 ```
 
-审计读取固定 Git 对象，核对冻结输入、三平台日志、黄金输出、二进制、Windows 链接 map 和 CI 回执。自反例在临时副本中核对拒绝文本、退出码和审计前后字节。文档门禁绑定定稿 DevDocs 与 UseDocs 的 Git 树摘要。归档按 SHA-256 复用相同字节。[文档回执](doc-gates.json) · [自反例回执](self-negative-result.json) · [封存清单](evidence.json)
+审计读取固定 Git 对象，核对冻结输入、三平台日志、黄金输出、二进制、Windows 链接 map 和 CI 回执。自反例在临时副本中核对拒绝文本、退出码和审计前后字节。归档按 SHA-256 复用相同字节。
+
+`doc-gates.json` 记录文档门禁与定稿 DevDocs、UseDocs 的 Git 树摘要。`self-negative-result.json` 保存自反例回执，`evidence.json` 绑定封存目录中每个文件的字节摘要。[封存入口](seal.py)

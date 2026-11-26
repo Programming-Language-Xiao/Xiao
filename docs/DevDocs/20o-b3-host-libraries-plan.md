@@ -103,7 +103,7 @@ B3-2 的 args 快照、纯 Xiao 分组、运行协议和生成器 24 原生入�
 
 ### B3-3：`fs`扩展
 
-B3-3 已在 `4e480ebe` 通过三平台 fs 验收。Windows 六份产物均获产品级 COFF `Complete`，B3-4 入口由收口回执派生。[B3-3 fs 实施规划](20o-b3-3-fs-implementation-plan.md) · [收口回执](assets/20o-b3/entry-20261125-b3-3-final/closeout.json)
+B3-3 已在 `4e480ebe` 通过三平台 fs 验收。Windows 六份产物均获产品级 COFF `Complete`，B3-4 入口由收口回执派生。[B3-3 fs 实施规划](20o-b3-3-fs-implementation-plan.md) · [收口证据](assets/20o-b3/entry-20261125-b3-3-final/README.md)
 
 1. 权限/普通操作路径解析`..`/符号链接/覆盖；
 2. 原子写限同目录替换，无法保证则报错；

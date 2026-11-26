@@ -211,7 +211,7 @@ tests/fixtures/docs/fs/                           fs 教程最终夹具
 docs/module-registry.json                         fs 登记为 planned
 ```
 
-B3-3 的派生结论和 B3-4 实施入口见收口回执。[机器可读状态](assets/20o-b3/entry-20261125-b3-3-final/closeout.json)
+B3-3 的派生结论和 B3-4 实施入口见收口证据中的 `closeout.json`。[收口证据](assets/20o-b3/entry-20261125-b3-3-final/README.md)
 
 ## 十、新 Agent 先读
 
