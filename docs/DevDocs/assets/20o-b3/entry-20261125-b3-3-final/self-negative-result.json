@@ -1,0 +1,15 @@
+{
+  "baseline_passed": true,
+  "read_only": true,
+  "rejected": {
+    "attributes_missing": "缺少 .gitattributes",
+    "changed_artifact": "对象字节不符",
+    "changed_capability": "原生报告与原始运行日志不符",
+    "changed_coff": "产物组件或 COFF 完整性不符",
+    "changed_intrinsics": "平台固定源码、锁或目标不符",
+    "changed_tutorial": "原生教程或权限黄金不符",
+    "forged_closeout": "收口状态与回执不符",
+    "manifest_changed": "归档清单与实际文件不符",
+    "missing_race": "排他覆盖竞态验证缺项"
+  }
+}
