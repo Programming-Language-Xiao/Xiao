@@ -1,0 +1,128 @@
+name: Xiao 22D FIX.2 evidence
+
+on:
+  push:
+    branches: [codex/22d-fix2-runner]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: 22d-fix2-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  evidence:
+    name: ${{ matrix.os }} / ${{ matrix.task }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2025, ubuntu-24.04, macos-15]
+        task: [release-trace, fs]
+    env:
+      PRODUCT: '3506455ee5839214082df15af4c760f8d0361e66'
+      EVIDENCE_TOOLS: docs/DevDocs/assets/22d-fix2/entry-20261126
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+    steps:
+      - name: Checkout fixed product
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.PRODUCT }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Rust 1.96.0
+        run: rustup toolchain install 1.96.0 --profile minimal
+
+      - name: Configure locked Cargo and numeric environment
+        run: python tools/gates/controlled-cargo.py --install
+
+      - name: Cache Rust compilation
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: core/rust -> core/rust/target
+          key: 22d-fix2-${{ matrix.task }}
+
+      - name: Install Windows LLVM
+        if: runner.os == 'Windows'
+        id: msys2
+        uses: msys2/setup-msys2@3c51bf698df1e37b2261f53cb67797b97761185c # v2.34.0
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-clang
+            mingw-w64-ucrt-x86_64-llvm
+
+      - name: Install Linux LLVM
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang llvm
+
+      - name: Install macOS LLVM
+        if: runner.os == 'macOS'
+        shell: bash
+        run: brew install llvm@21
+
+      - name: Run fixed-product evidence
+        shell: pwsh
+        env:
+          TASK: ${{ matrix.task }}
+          XIAO_LLVM_ROOT: ${{ steps.msys2.outputs.msys2-location }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($IsWindows) {
+            $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+            $installation = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath | Select-Object -First 1
+            if (-not $installation) { throw 'MSVC installation missing' }
+            $vcvars = Join-Path $installation 'VC/Auxiliary/Build/vcvars64.bat'
+            $batch = '"' + $vcvars + '" >nul && set'
+            $variables = & cmd.exe /d /s /c $batch
+            if ($LASTEXITCODE -ne 0) { throw 'vcvars64 failed' }
+            foreach ($line in $variables) {
+              $separator = $line.IndexOf('=')
+              if ($separator -gt 0) {
+                Set-Item -Path ('Env:' + $line.Substring(0, $separator)) -Value $line.Substring($separator + 1)
+              }
+            }
+            $env:PATH = "$(Join-Path $env:VCToolsInstallDir 'bin/Hostx64/x64');$env:PATH"
+            $llvm = Join-Path $env:XIAO_LLVM_ROOT 'ucrt64/bin'
+            $suffix = '.exe'
+            $runtime = 'xiao_runtime.lib'
+          } elseif ($IsMacOS) {
+            $llvm = Join-Path (& brew --prefix llvm@21) 'bin'
+            $env:SDKROOT = & xcrun --sdk macosx --show-sdk-path
+          } else {
+            $llvm = Split-Path (Get-Command clang).Source
+          }
+          $directory = Join-Path $env:RUNNER_TEMP '22d-fix2'
+          $env:XIAO_CLANG = Join-Path $llvm "clang$suffix"
+          $env:XIAO_LLVM_AS = Join-Path $llvm "llvm-as$suffix"
+          $env:XIAO_LLC = Join-Path $llvm "llc$suffix"
+          $env:XIAO_STDLIB_ROOT = Join-Path $PWD 'stdlib'
+          if ($env:TASK -eq 'fs') {
+            python -B -X utf8 "$env:EVIDENCE_TOOLS/recheck_fs.py" --llvm-bin $llvm --output $directory
+            exit $LASTEXITCODE
+          }
+          if (-not $runtime) { $runtime = 'libxiao_runtime.a' }
+          cargo build --locked --manifest-path core/rust/Cargo.toml --release -p xiao-runtime
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $env:XIAO_RUNTIME_LIBRARY = Join-Path $PWD "core/rust/target/release/$runtime"
+          python -B -X utf8 "$env:EVIDENCE_TOOLS/repeat.py" --workers 2 --output $directory
+          exit $LASTEXITCODE
+
+      - name: Upload logs and receipts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: 22d-fix2-${{ matrix.os }}-${{ matrix.task }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/22d-fix2/**/*.json
+            ${{ runner.temp }}/22d-fix2/**/*.log
+            ${{ runner.temp }}/22d-fix2/**/*.tsv
+            ${{ runner.temp }}/22d-fix2/temp/xiao-b3-3-native-*/
+          if-no-files-found: error
