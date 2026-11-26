@@ -1,0 +1,113 @@
+{
+  "b3_3_passed": true,
+  "b3_4_entry_ready": true,
+  "b3_4_started": false,
+  "ci": {
+    "maintenance": {
+      "attempt": 2,
+      "commit": "97ba4b893049192500f70d5270fef6f1d5e67196",
+      "job_attempts": {
+        "Deterministic artifact size regression (Windows baseline)": 2,
+        "Deterministic parser and artifact security regression": 2,
+        "Native differential regression (Linux)": 2,
+        "Native differential regression (Windows)": 2,
+        "Native differential regression (macOS)": 2,
+        "Rust workspace default tests (Linux)": 2
+      },
+      "jobs": {
+        "Deterministic artifact size regression (Windows baseline)": 139878906576,
+        "Deterministic parser and artifact security regression": 139878968628,
+        "Native differential regression (Linux)": 139878905424,
+        "Native differential regression (Windows)": 139878903980,
+        "Native differential regression (macOS)": 139878906206,
+        "Rust workspace default tests (Linux)": 139878906063
+      },
+      "run": 45807842760
+    },
+    "runner": {
+      "attempt": 1,
+      "commit": "97ba4b893049192500f70d5270fef6f1d5e67196",
+      "job_attempts": {
+        "B3-3 fs (linux)": 1,
+        "B3-3 fs (macos)": 1
+      },
+      "jobs": {
+        "B3-3 fs (linux)": 139867663435,
+        "B3-3 fs (macos)": 139867663007
+      },
+      "run": 45807842820
+    },
+    "workspace": {
+      "attempt": 1,
+      "commit": "97ba4b893049192500f70d5270fef6f1d5e67196",
+      "job_attempts": {
+        "Linux workspace gates": 1
+      },
+      "jobs": {
+        "Linux workspace gates": 139869522251
+      },
+      "run": 45808384106
+    }
+  },
+  "document_source": {
+    "commit": "2e563444b794ad5fb0bfba4a1ccca83dec74adab",
+    "docs_tree_sha256": "3f3c026cd5543cca84a7b8bafece2b1a651c131d3fb8ba79e3de3b58c9fdc16f"
+  },
+  "first_macos_run": {
+    "attempt": 1,
+    "conclusion": "failure",
+    "job": 139862395380,
+    "run": 45806308281
+  },
+  "linux_component_exports_checked": 176,
+  "linux_component_exports_job": 139867799354,
+  "platforms": {
+    "linux": {
+      "native_capability_cases": 2,
+      "native_tutorials": 4,
+      "product_verification": "complete",
+      "runtime_c_abi_cases": 8,
+      "runtime_sha256": "de9381a5a3c4e0c244b17800846dc437acb1fdcf54bd7eae226390ef3f767794",
+      "target": "x86_64-unknown-linux-gnu",
+      "vm_cases": 2
+    },
+    "macos": {
+      "native_capability_cases": 2,
+      "native_tutorials": 4,
+      "product_verification": "complete",
+      "runtime_c_abi_cases": 7,
+      "runtime_sha256": "f88ee93fb681c29f908abd830cff018b51fd9131a184a424000cd6977c79ef1e",
+      "target": "aarch64-apple-darwin",
+      "vm_cases": 2
+    },
+    "windows": {
+      "native_capability_cases": 2,
+      "native_tutorials": 4,
+      "product_verification": "complete",
+      "runtime_c_abi_cases": 8,
+      "runtime_sha256": "bca62d5c93de65730040fc229d55492aa34da5462a59cbdbd32fe97d30e70320",
+      "target": "x86_64-pc-windows-msvc",
+      "vm_cases": 2
+    }
+  },
+  "previous_product_commit": "4e480ebec6809db4a691288d1eb2042a0683a4e0",
+  "product_commit": "2460e75fbdac448b51b7941e937fb3df24e0cb70",
+  "product_tree": "770d75f18c0035ae422a3f12be152d73d9b5c784",
+  "registry_status": "planned",
+  "tutorial_status": "planned",
+  "versions": {
+    "abi": "1.20",
+    "generator": 25,
+    "stdlib_interface": 1
+  },
+  "windows_fs_coff": "complete",
+  "windows_maintenance": {
+    "22d_open": true,
+    "case": "xcon-bounded-string-success",
+    "failed_attempt": 1,
+    "failed_job": 139867799304,
+    "passed_attempt": 2,
+    "passed_job": 139878903980,
+    "run": 45807842760
+  }
+}
