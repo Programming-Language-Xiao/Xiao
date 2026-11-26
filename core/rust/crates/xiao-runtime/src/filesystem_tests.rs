@@ -343,6 +343,17 @@ fn fs_rename_and_remove_preserve_nonempty_directories() {
     let source_arg = arg(&source);
     let target_arg = arg(&target);
     assert_eq!(
+        code(
+            &call(
+                Operation::Rename,
+                &[&source_arg, &source_arg, &RuntimeValue::Bool(false)]
+            )
+            .unwrap_err()
+        ),
+        "FS_EXISTS"
+    );
+    println!("B3-3-FS-RENAME-SAME-PATH passed");
+    assert_eq!(
         code(&call(Operation::Remove, &[&source_arg]).unwrap_err()),
         "FS_IO_FAILED"
     );
@@ -432,6 +443,23 @@ fn fs_operations_handle_the_link_entry_and_preserve_its_target() {
     assert_eq!(metadata.value("size").unwrap(), Some(RuntimeValue::Int(-1)));
     assert!(!target.exists());
     fs::write(&target, "original").unwrap();
+    let rename_source = directory.0.join("rename-source");
+    let dangling = directory.0.join("dangling");
+    fs::write(&rename_source, "source").unwrap();
+    symlink_file(directory.0.join("missing"), &dangling).unwrap();
+    assert_eq!(
+        code(
+            &call(
+                Operation::Rename,
+                &[&arg(&rename_source), &arg(&dangling), &no]
+            )
+            .unwrap_err()
+        ),
+        "FS_EXISTS"
+    );
+    assert_eq!(fs::read_to_string(&rename_source).unwrap(), "source");
+    println!("B3-3-FS-RENAME-DANGLING passed");
+    call(Operation::Remove, &[&arg(&dangling)]).unwrap();
     call(Operation::Rename, &[&link_arg, &arg(&moved_link), &no]).unwrap();
     assert_eq!(fs::read_link(&moved_link).unwrap(), target);
     call(Operation::Remove, &[&arg(&moved_link)]).unwrap();
