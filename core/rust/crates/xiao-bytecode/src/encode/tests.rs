@@ -704,7 +704,7 @@ fn decoded_intrinsic_ids_are_checked_in_both_operand_widths() {
         let valid = signature_bytes(34);
         assert!(table.bytes.ends_with(&valid));
         let end = starts[0] + table.bytes.len();
-        for id in [55, 100, u32::MAX] {
+        for id in [60, 100, u32::MAX] {
             let mut bytes = encoded.bytes.clone();
             bytes.splice(end - valid.len()..end, signature_bytes(id));
             let expected = EncodeError::InvalidFormat(format!("未知或已废弃的 intrinsic ID {id}"));

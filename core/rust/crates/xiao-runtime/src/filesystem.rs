@@ -14,11 +14,17 @@ use crate::{
 #[path = "filesystem_host.rs"]
 mod host;
 
+/// 路径和单个目录项名称的 UTF-8 字节上限。
 const PATH_BYTES: usize = 4_096;
+/// 写入文本的 UTF-8 字节上限。
 const TEXT_BYTES: usize = 8 * 1_024 * 1_024;
+/// 枚举可接纳的直接子项数量。
 const DIR_NAMES: usize = 1_024;
+/// 全部直接子项名称的累计 UTF-8 字节上限。
 const DIR_BYTES: usize = 65_536;
+/// 从首次运行控制安全点开始计算的单次操作期限。
 const OPERATION_LIMIT: Duration = Duration::from_secs(10);
+/// 每个暂存写入批次的最大字节数。
 const WRITE_CHUNK: usize = 64 * 1_024;
 
 /// 冻结的路径操作，由调用方先按形参顺序绑定实参。
@@ -51,11 +57,13 @@ pub enum Failure<C> {
 }
 
 impl<C> From<RuntimeError> for Failure<C> {
+    /// 通过共享内核回传语言可捕获的 Runtime 错误。
     fn from(error: RuntimeError) -> Self {
         Self::Runtime(error)
     }
 }
 
+/// 在两类错误通道中保留调用方的控制类型。
 type Result<T, C> = std::result::Result<T, Failure<C>>;
 
 /// 检查所有语言类型、授权、路径参数及输入预算，再进入可中断宿主操作。
@@ -118,6 +126,7 @@ pub fn execute<C>(
     }
 }
 
+/// 校验语言类型，借读已有字符串载荷。
 fn text_argument(value: &RuntimeValue) -> RuntimeResult<&StringHandle> {
     match value {
         RuntimeValue::Str(text) => Ok(text),
@@ -125,6 +134,7 @@ fn text_argument(value: &RuntimeValue) -> RuntimeResult<&StringHandle> {
     }
 }
 
+/// 拒绝空路径和带 NUL 的路径，其他拼写交给宿主。
 fn check_path_syntax(path: &str) -> RuntimeResult<()> {
     if path.is_empty() || path.contains('\0') {
         return Err(RuntimeError::invalid_value("路径为空或含 NUL"));
@@ -132,6 +142,7 @@ fn check_path_syntax(path: &str) -> RuntimeResult<()> {
     Ok(())
 }
 
+/// 预算包含最大值。超限报告所命中的资源和上限。
 fn check_bytes(label: &str, bytes: usize, max: usize) -> RuntimeResult<()> {
     if bytes > max {
         return Err(limit(label, max));
@@ -139,6 +150,7 @@ fn check_bytes(label: &str, bytes: usize, max: usize) -> RuntimeResult<()> {
     Ok(())
 }
 
+/// 构造可由 Xiao 捕获的文件系统预算错误。
 fn limit(label: &str, max: usize) -> RuntimeError {
     resource_error(
         "FS_LIMIT_EXCEEDED",
@@ -149,6 +161,7 @@ fn limit(label: &str, max: usize) -> RuntimeError {
     .with_param("limit", DiagnosticParam::Integer(max as i128))
 }
 
+/// 用已有的分配错误身份报告受控缓冲区失败。
 fn allocation_error() -> RuntimeError {
     resource_error(
         ALLOCATION_CODE,
@@ -157,10 +170,12 @@ fn allocation_error() -> RuntimeError {
     )
 }
 
+/// 文件系统错误统一进入 ResourceError 类别。
 fn resource_error(code: &str, message_id: &str, message: &str) -> RuntimeError {
     RuntimeError::new(RuntimeErrorKind::Resource, code, message_id, message)
 }
 
+/// 宿主缺少操作要求的目录项语义。
 fn unsupported(operation: &str) -> RuntimeError {
     resource_error(
         "FS_UNSUPPORTED",
@@ -170,6 +185,7 @@ fn unsupported(operation: &str) -> RuntimeError {
     .with_param("operation", DiagnosticParam::Text(operation.to_owned()))
 }
 
+/// 保留宿主错误原因和可用的系统编号。
 fn io_error(operation: &str, error: io::Error) -> RuntimeError {
     let mut report = resource_error(
         "FS_IO_FAILED",
@@ -184,6 +200,7 @@ fn io_error(operation: &str, error: io::Error) -> RuntimeError {
     report
 }
 
+/// 从实际提交结果区分存在冲突、原子语义缺失和其他 IO 错误。
 fn rename_error(operation: &str, error: io::Error, overwrite: bool) -> RuntimeError {
     match error.kind() {
         io::ErrorKind::AlreadyExists if !overwrite => {
@@ -196,12 +213,14 @@ fn rename_error(operation: &str, error: io::Error, overwrite: bool) -> RuntimeEr
     }
 }
 
+/// 单次操作的单调时钟起点和调用方检查器。
 struct Control<F> {
     started: Instant,
     checkpoint: F,
 }
 
 impl<C, F: FnMut() -> std::result::Result<(), C>> Control<F> {
+    /// 开始计时。调用方已经完成输入验证。
     fn new(checkpoint: F) -> Self {
         Self {
             started: Instant::now(),
@@ -209,6 +228,7 @@ impl<C, F: FnMut() -> std::result::Result<(), C>> Control<F> {
         }
     }
 
+    /// 先交付运行控制错误，再检查模块自己的操作期限。
     fn check(&mut self) -> Result<(), C> {
         (self.checkpoint)().map_err(|control| Failure::Interrupted {
             control,
@@ -234,6 +254,7 @@ impl<C, F: FnMut() -> std::result::Result<(), C>> Control<F> {
     }
 }
 
+/// 完整写入相邻临时文件，关闭句柄后进行原子提交。
 fn write_text<C>(
     path: &str,
     text: &str,
@@ -278,12 +299,13 @@ fn write_text<C>(
     }
 }
 
+/// 排他创建暂存文件，碰到重名时在操作期限内重试。
 fn stage_text<C>(
     directory: &Path,
     destination: &Path,
     control: &mut Control<impl FnMut() -> std::result::Result<(), C>>,
 ) -> Result<(PathBuf, File), C> {
-    // 短文件名也适用于启用 8.3 别名的 Windows 文件系统。
+    /// 短文件名也适用于启用 8.3 别名的 Windows 文件系统。
     static SEQUENCE: AtomicU32 = AtomicU32::new(0);
     let mut options = OpenOptions::new();
     options.write(true).create_new(true);
@@ -309,6 +331,7 @@ fn stage_text<C>(
     }
 }
 
+/// 验证所有名称后排序并分配独立的结果数组。
 fn list_dir<C>(
     path: &Path,
     control: &mut Control<impl FnMut() -> std::result::Result<(), C>>,
@@ -320,11 +343,7 @@ fn list_dir<C>(
         if names.len() == DIR_NAMES {
             return Err(limit("枚举项", DIR_NAMES).into());
         }
-        let name = entry
-            .file_name()
-            .into_string()
-            .map_err(|_| RuntimeError::invalid_value("目录项名称含无效 Unicode"))?;
-        check_bytes("枚举名称", name.len(), PATH_BYTES)?;
+        let name = directory_name(entry.file_name())?;
         bytes += name.len();
         check_bytes("枚举名称合计", bytes, DIR_BYTES)?;
         names.try_reserve(1).map_err(|_| allocation_error())?;
@@ -342,6 +361,15 @@ fn list_dir<C>(
     let result = ArrayHandle::new(values)?;
     control.check()?;
     Ok(RuntimeValue::Array(result))
+}
+
+/// 对宿主目录名进行严格解码并校验单项预算。
+fn directory_name(name: std::ffi::OsString) -> RuntimeResult<String> {
+    let name = name
+        .into_string()
+        .map_err(|_| RuntimeError::invalid_value("目录项名称含无效 Unicode"))?;
+    check_bytes("枚举名称", name.len(), PATH_BYTES)?;
+    Ok(name)
 }
 
 /// 末段链接即使附带尾分隔符也按链接处理。其他目录项保留宿主解析规则。
@@ -364,6 +392,7 @@ fn entry_metadata<'a, C>(
         .map(|entry| (path, entry))
 }
 
+/// 读取末段类别，然后选择单项删除操作。
 fn remove<C>(
     path: &Path,
     control: &mut Control<impl FnMut() -> std::result::Result<(), C>>,
@@ -376,6 +405,7 @@ fn remove<C>(
     host::remove(path, entry.file_type()).map_err(|error| io_error("删除目录项", error).into())
 }
 
+/// 构造包含三个定宽整数字段的拥有字典。
 fn metadata<C>(
     path: &Path,
     control: &mut Control<impl FnMut() -> std::result::Result<(), C>>,

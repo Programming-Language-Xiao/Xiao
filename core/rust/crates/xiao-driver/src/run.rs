@@ -1221,6 +1221,7 @@ print(lock_read(guard))
     }
 
     #[test]
+    /// 驱动取消和超时均保留清理错误的结构化原因。
     fn fs_cleanup_report_is_suppressed_under_the_driver_control_identity() {
         let cleanup = XiaoError::new(
             XiaoErrorKind::Resource,
