@@ -1,6 +1,6 @@
 # 20O-B3. 简单宿主库实施规划
 
-> **当前进度（2026-11-26）**　B3-0A～F 已冻结，time、args/cli 与 fs 已完成内部收口。当前固定产品为 `4e480ebe`，ABI 1.20、生成器 25、标准库接口 1。B3-4 入口就绪，教程和 registry 为 `planned`。[B3-3 收口证据](assets/20o-b3/entry-20261125-b3-3-final/README.md)
+> **当前进度（2026-11-26）**　B3-0A～F 已冻结，time、args/cli 与 fs 已完成内部收口。B3-4 入口产品为 `2460e75f`，ABI 1.20、生成器 25、标准库接口 1。教程和 registry 为 `planned`。[B3-3 修复复验](assets/20o-b3/entry-20261126-b3-3-rename-fix/README.md)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，且声明组件与观察组件一致；B2-C 的同链接 10 份候选只是历史例外，不得继承。`UnverifiedCoffExports`、同链接映射或仅导出表检查不能替代。
 > B3 涉及六个模块、五个实施工作流：`time`（UTC + sleep）、`args`、`cli`、`fs`、`env`、`log`。
 > B0 只确认了部分方向；精确签名、模块归属、能力/错误、资源/性能及版本要求必须在 B3-0 冻结。
@@ -103,7 +103,7 @@ B3-2 的 args 快照、纯 Xiao 分组、运行协议和生成器 24 原生入�
 
 ### B3-3：`fs`扩展
 
-B3-3 已在 `4e480ebe` 通过三平台 fs 验收。Windows 六份产物均获产品级 COFF `Complete`，B3-4 入口由收口回执派生。[B3-3 fs 实施规划](20o-b3-3-fs-implementation-plan.md) · [收口证据](assets/20o-b3/entry-20261125-b3-3-final/README.md)
+B3-3 于 `4e480ebe` 完成初次验收，排他重命名修复 `2460e75f` 已复跑三平台。Windows 六份产物获产品级 COFF `Complete`。[B3-3 fs 实施规划](20o-b3-3-fs-implementation-plan.md) · [修复复验](assets/20o-b3/entry-20261126-b3-3-rename-fix/README.md)
 
 1. 权限/普通操作路径解析`..`/符号链接/覆盖；
 2. 原子写限同目录替换，无法保证则报错；
