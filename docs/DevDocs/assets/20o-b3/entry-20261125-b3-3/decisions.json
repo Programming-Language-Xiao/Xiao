@@ -1,0 +1,39 @@
+{
+  "source": {
+    "commit": "c0a98b2a72924b4efce56fb25b4baa60ba1f5ea1",
+    "path": "docs/DevDocs/20o-b3-3-fs-implementation-plan.md",
+    "kind": "recorded_planning_decisions"
+  },
+  "decisions": [
+    {
+      "id": "B3-3-ID",
+      "scope": "只激活 55～59；60～63 保持 reserved；ABI 1.20、标准库接口 1 不变；生成器 25 只在 fs lowering 改变生成文本时申请",
+      "source": "星崽批准，B3-3 编号与版本问题卡",
+      "status": "approved"
+    },
+    {
+      "id": "B3-3-FS",
+      "scope": "首批只做普通宿主模式；相对路径按 cwd、绝对路径/`..`/中间链接交宿主；禁止覆盖时 `FS_EXISTS`；同目录原子写不可保证时 `FS_UNSUPPORTED`；受限模式继续延期",
+      "source": "星崽批准，B3-3 fs 边界问题卡",
+      "status": "approved"
+    },
+    {
+      "id": "B3-3-CABI",
+      "scope": "五个 `xiao_runtime_fs_*` 符号；`write/remove/rename` 无输出槽，`list_dir/metadata` 有 `out`；末尾 `capabilities:u64`；状态 0/1/2/3/6/8",
+      "source": "星崽批准，B3-3 C ABI 问题卡",
+      "status": "approved"
+    },
+    {
+      "id": "B3-3-FIXTURES",
+      "scope": "fs 教程迁入 `tests/fixtures/docs/fs/tutorial.*`；无输入 JSON；任务入口创建空 `demo`，结束检查为空；只登记 fs 为 `planned`",
+      "source": "星崽批准，B3-3 夹具与验收问题卡",
+      "status": "approved"
+    },
+    {
+      "id": "B3-3-EVIDENCE",
+      "scope": "三平台 fs VM/受控原生 O0/O3；Windows fs 产物产品级 COFF `Complete`；完整矩阵留 B3-7",
+      "source": "星崽批准，B3-3 夹具与验收问题卡",
+      "status": "approved"
+    }
+  ]
+}

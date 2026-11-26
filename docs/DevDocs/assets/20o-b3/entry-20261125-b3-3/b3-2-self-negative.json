@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-X",
+    "utf8",
+    "docs\\DevDocs\\assets\\20o-b3\\entry-20261125-b3-2-final\\self_negative.py"
+  ],
+  "exit": 0,
+  "stderr": "",
+  "stdout": "{\r\n  \"baseline_passed\": true,\r\n  \"read_only\": true,\r\n  \"rejected_cases\": 9\r\n}\r\n"
+}
