@@ -1,11 +1,16 @@
+//! 校验释放轨迹的对象生命周期，再比较 VM 与原生的终态动作。
+
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 use xiao_runtime::ReleaseAction::{self, *};
 
+/// 既有锁等待取消黄金夹具。
 pub(super) const LOCK_WAIT: &str = "native-lock-wait-027";
+/// 在同一夹具的 ABI 调用前固定取消时点的独立回归。
 pub(super) const LOCK_WAIT_PRECHECK: &str = "native-lock-wait-027-precheck";
 
+/// 单个对象的生命周期签名，保留全部弱释放次数。
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 enum Lifecycle {
     Heap,
@@ -13,6 +18,7 @@ enum Lifecycle {
     Guard,
 }
 
+/// 对象生命周期多重集合和带签名的文件顺序终态流。
 #[derive(Debug)]
 struct Projection {
     objects: Vec<Lifecycle>,
@@ -20,6 +26,7 @@ struct Projection {
 }
 
 impl Projection {
+    /// 逐行检查 TSV，只归并同一对象连续归还的强引用别名。
     fn parse(text: &str) -> Result<Self, String> {
         let mut by_object = BTreeMap::<u64, Vec<ReleaseAction>>::new();
         let mut terminal = Vec::new();
@@ -83,6 +90,7 @@ impl Projection {
         Ok(Self { objects, terminal })
     }
 
+    /// 每个合法 guard 签名代表一个不同且恰好释放一次的对象。
     fn guard_count(&self) -> usize {
         self.objects
             .iter()
@@ -91,6 +99,7 @@ impl Projection {
     }
 }
 
+/// 对两侧独立核对场景约束，再比较该场景要求稳定的终态。
 fn compare(label: &str, native: &Projection, vm: &Projection) -> Result<(), String> {
     let lock_wait = matches!(label, LOCK_WAIT | LOCK_WAIT_PRECHECK);
     let cancellation = lock_wait
@@ -126,6 +135,7 @@ fn compare(label: &str, native: &Projection, vm: &Projection) -> Result<(), Stri
         }
     }
 
+    /// 从多重集合保留受取消场景约束的握手共享对象。
     fn shared_objects(trace: &Projection) -> Vec<Lifecycle> {
         trace
             .objects
@@ -134,6 +144,7 @@ fn compare(label: &str, native: &Projection, vm: &Projection) -> Result<(), Stri
             .filter(|lifecycle| matches!(lifecycle, Lifecycle::Shared { .. }))
             .collect()
     }
+    /// 保留共享对象的销毁与全部弱释放在文件中的先后顺序。
     fn shared_terminal(trace: &Projection) -> Vec<(Lifecycle, ReleaseAction)> {
         trace
             .terminal
@@ -171,6 +182,7 @@ fn compare(label: &str, native: &Projection, vm: &Projection) -> Result<(), Stri
     Ok(())
 }
 
+/// 加载两侧原始轨迹并在比较前记录可对账的对象和终态数量。
 pub(super) fn assert_case(label: &str, native: &Path, vm: &Path) {
     let read = |path: &Path| {
         let text = fs::read_to_string(path)
@@ -191,6 +203,7 @@ pub(super) fn assert_case(label: &str, native: &Path, vm: &Path) {
 }
 
 #[test]
+/// 用正反例检查别名归并、对象生命周期和终态顺序。
 fn release_projection_v2_regressions() {
     let root = std::env::temp_dir().join(format!("xiao-22d-projection-{}", std::process::id()));
     fs::create_dir(&root).expect("创建投影反例临时目录");

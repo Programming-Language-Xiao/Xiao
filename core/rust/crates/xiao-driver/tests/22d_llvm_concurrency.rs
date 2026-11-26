@@ -14,9 +14,11 @@ use xiao_driver::{
 };
 
 #[path = "concurrency_closure/fixtures.rs"]
+/// 由同一前端馈给 VM 与 LLVM 的并发黄金源码。
 mod closure_fixtures;
 
 #[path = "concurrency_closure/release_trace.rs"]
+/// 黄金夹具共享的 TSV 校验和释放差分口径。
 mod release_trace;
 
 /// 把生成文本交给真实 LLVM 解析器；22D 的这组回归必须具备 `llvm-as`，不能用文本
@@ -56,6 +58,7 @@ fn run_native_with_timeout(artifact: &NativeArtifact, label: &str, trace: &Path)
     output
 }
 
+/// 将轨迹路径随环境传给子进程并排空输出管道。
 fn run_traced_executable(executable: &Path, label: &str, trace: &Path) -> Output {
     let child = Command::new(executable)
         .env("XIAO_RUNTIME_RELEASE_TRACE_PATH", trace)
@@ -94,6 +97,7 @@ fn with_controlled_lock_cancellation(text: &str, source: &str) -> String {
     lines.join("\n") + "\n"
 }
 
+/// 收集退出码和两个输出流，达到既有期限时回收进程。
 fn wait_child_with_timeout(mut child: Child, label: &str, timeout: Duration) -> Output {
     use std::io::Read;
     let read_stream = |mut stream: Box<dyn Read + Send>| {
@@ -149,6 +153,7 @@ fn wait_child_with_timeout(mut child: Child, label: &str, timeout: Duration) -> 
     output
 }
 
+/// 管理 VM 内跨线程追踪所需的进程环境，并在退出时恢复原会话。
 struct ReleaseTraceEnvironment {
     previous: Option<std::ffi::OsString>,
 }
@@ -921,6 +926,7 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
     let _ = fs::remove_dir_all(root);
 }
 
+/// 对照入口收尾阶段的 detached 报告、退出码和释放动作。
 fn assert_detached_failure(
     root: &Path,
     trace_root: &Path,
