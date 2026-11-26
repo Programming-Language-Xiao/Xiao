@@ -7,9 +7,10 @@
 > 最后用三平台重复执行关闭 22D。**本批不改语言 API、ABI、Send/Sync、诊断编号、
 > 标准库函数体或 registry。**
 >
-> 状态：**规划完成，未实施（2026-11-26）**。规划基线 `0dd9c7b7`；产品行为起点
-> `2460e75f`（B3-3 排他重命名修复）。B3-3 的 fs 内部验收保持有效，B3-4 未启动。
-> 只有本页退出条件全部满足后，派生状态才允许写 `22d_open=false`。
+> 状态 **已验收（2026-11-27，`22d_open=false`）**。规划基线 `0dd9c7b7`，入口产品
+> `2460e75f`（ABI 1.20、生成器 25、标准库接口 1）。修复产品 `3506455e` 的生成器版本为 26。
+> B3-3 的 fs 已完成内部验收，B3-4 未启动。
+> 三平台重复差分、专项目标与门禁均已通过。[收口证据](assets/22d-fix2/entry-20261126/README.md)
 
 ## 一、入口事实与当前矛盾
 
@@ -18,7 +19,7 @@
 | 编号 | 夹具 | 首次失败身份 | 断言事实 | 后续观测 |
 | --- | --- | --- | --- | --- |
 | F1 | `native-lock-wait-027` | `97d5f288`，B6-4 Windows 原生维护，run `44464422497` / job `135358661620` | 原生稳定轨迹只有一组 `shared_destroy`/`weak_release`，VM 有两组 | 同提交重跑两次通过；Runner 镜像由 `20261103.298.1` 换为 `20261116.315.1`；本机单夹具 25 轮通过 |
-| F2 | `xcon-bounded-string-success` | `58176ff5` 本机完整入口第 2 轮；B3-3 修复快照 `97ba4b89` 的 Windows 维护 attempt 1，job `139867799304` | 原生多出被其他对象隔开的 `strong_release` 别名；两侧均有三个 `destroy` | attempt 2 同源码通过，job `139878903980`；本机保留原始两侧轨迹 |
+| F2 | `xcon-bounded-string-success` | `58176ff5` 本机完整入口第 2 轮。Windows 维护以产品 `2460e75f`、Runner 提交 `97ba4b89` 执行，attempt 1，job `139867799304` | 原生多出被其他对象隔开的 `strong_release` 别名，两侧均有三个 `destroy` | 同一源码的 attempt 2 通过，job `139878903980`。本机失败轮保留两侧原始轨迹 |
 | F3 | `spawn-join-str-multiargument` | `58176ff5` 本机完整入口第 4 轮 | VM 多出被其他对象隔开的 `strong_release` 别名；两侧均有三个 `destroy` | 仅本机完整入口出现；单夹具未单独复现 |
 
 B3-3 修复归档在 `windows_maintenance.22d_open=true` 仍明确记录 F2；B6-4、
@@ -35,9 +36,9 @@ B6-5、B7 和 B2-C 的交接也继续使用 `22d_open=true`。因此不能把 22
 2. 新建本页，承接三处失败；
 3. 在本批关闭后新建派生收口记录，不改写 B3-3 `status.json` 中当时的快照字段。
 
-### 1.3 既有判据
+### 1.3 修复前的判据
 
-当前投影位于 `core/rust/crates/xiao-driver/tests/22d_llvm_concurrency.rs`：
+入口快照的投影位于 `core/rust/crates/xiao-driver/tests/22d_llvm_concurrency.rs`：
 
 - `release_trace_sequence` 过滤 `concurrency_release`，按首次出现归一化对象 ID，
   只压缩**相邻且完全相同**的事件；
@@ -58,6 +59,12 @@ F3 原生：strong(0), destroy(0), strong(1), destroy(1), strong(2), destroy(2)
 这与 §5.2 的声明不一致，属于**投影实现缺陷候选**，不是可以靠重跑消除的噪声。
 F1 不同：它缺少一个稳定的 `shared_destroy`/`weak_release` 对，不能只靠改投影解释。
 
+开工核对使用 Windows 的 `2460e75f` Runtime 和 Rust 1.96.0。隔离工作树的临时测试入口
+保留现有断言和原始轨迹，完整执行通过 29 个夹具，保留 58 份 TSV。F1 单独运行 100 轮，
+每轮 VM 和原生各保留两组共享对象终态。历史失败只有断言输出，F1 仍待归因。
+对 F2/F3 的本机历史失败轨迹按对象压缩强引用释放，两侧均有三个销毁且终态动作流一致。
+[历史轨迹来源](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md#windows-22d)
+
 ## 二、范围与不负责
 
 ### 2.1 本批要做
@@ -72,7 +79,7 @@ F1 不同：它缺少一个稳定的 `shared_destroy`/`weak_release` 对，不�
 ### 2.2 明确不做
 
 - 不启动 B3-4 `env`，不实现 B3-5/B3-6/B3-7；
-- 不修改 `std.concurrent` 签名、ABI 1.17、32B/16B 布局、标签 18、错误 027–032；
+- 沿用 ABI 1.20、标准库接口 1，以及 `std.concurrent` 的既有签名、32B/16B 布局、标签 18 和错误 027–032。F1 的修复会改变原生指令，生成器由 25 升到 26，以区分同源旧缓存。
 - 不修改 `stdlib/concurrent.xiao` 函数体、原生产物元数据、required-feature 或 registry；
 - 不跑旧 721，不核销 19/11/22 的其他历史债务；
 - 不修改 B6-4/B6-5/B7/B3-3 的历史日志、原始作业身份或已封存轨迹；
@@ -107,12 +114,12 @@ right: [(0, "shared_destroy"), (0, "weak_release"), (1, "shared_destroy"), (1, "
 
 | 假设 | 判别证据 | 处置 |
 | --- | --- | --- |
-| H1 真实清理缺失：`join`/取消清理在 worker 帧完全释放前返回，进程退出 | 失败轮原生日志中 `join` 返回后立即出现进程退出；Runtime 层在 join 后检查共享对象强/弱计数，偶发未归零 | 修 Runtime 清理/等待顺序，新增 join 返回后对象已释放的 Runtime 回归 |
+| H1 真实清理缺失 | `join` 完成时 worker 持有的部分对象仍未释放，包括取消展开漏归还临时值或等待提前返回 | 修实际持有引用的清理路径，增设受控原生取消与 Runtime join 不变量回归 |
 | H2 轨迹丢失：事件已发生，但文件未写入或进程退出前未落盘 | 同一失败轮内存事件计数完整，文件缺少事件；或 `flush` 与 worker 追加并发时丢行 | 修轨迹会话/落盘/同步；不改语言语义 |
 | H3 投影误合并：`shared_destroy` 与 `weak_release` 被错误归到同一对象或过滤 | 原始 TSV 中存在第二个对象的两个事件，投影后消失 | 修投影；必须用原始轨迹证明 |
 | H4 夹具本身少持有一个对象 | 源码参数或对象计数与预期不符 | 只修夹具/黄金，说明原失败不可归因于产品 |
 
-H1 与 H2 的区分不能靠猜。必须在失败轮保留：完整原生 TSV、VM TSV、进程退出码、
+H1 与 H2 的区分须在失败轮保留完整原生 TSV、VM TSV、进程退出码、
 Runner 镜像、Runtime/工具 SHA、对象分配/销毁计数、以及 `22D-CASE` 前后日志。
 如果只能拿到断言投影，必须重跑到能保留原始轨迹为止，不能直接写“已定位”。
 
@@ -166,11 +173,12 @@ F1 的本地 25 轮通过只覆盖一个夹具，不能证明 Rare H1 不存在�
 | --- | --- |
 | 普通成功/错误 | 投影 v2 全量生命周期多重集合 + 终态动作流 |
 | `detach-success` | 保留“独立打印对象可交换”的声明；每个对象的生命周期形状仍按 v2 校验 |
-| 四个取消夹具 | 只对含 `shared_destroy` 的稳定共享对象做 v2；仍要求两侧 `lock_guard_release` 存在；轮询临时 guard 数量和交错不作相等 |
+| 四个取消夹具 | 先校验生命周期形状，再比较稳定共享对象。由 `shared_release` 或 `shared_destroy` 识别共享对象，缺少共享对象销毁或弱引用释放即失败。两侧各须有 `lock_guard_release`，轮询临时 guard 的数量及交错随调度变化 |
+| `native-running-cancellation-finally` | 继续核对 027、退出码、finally 的精确输出及两侧各有释放记录 |
 | `lock-guard-scope-release` | 额外要求恰好两个不同 guard 对象，各一次 `lock_guard_release` |
 
-F1 属于取消夹具，因此 v2 下仍会比较两个共享对象的完整 `shared_destroy`/`weak_release`
-生命周期；缺一组仍然失败。不能用“取消夹具只看存在性”把 F1 放过去。
+F1 属于取消夹具。两侧各须观察到 `gate` 和 `ready` 对应的两组完整
+`shared_destroy`/`weak_release` 终态，再比较投影。任一侧缺一组即失败。
 
 ### 4.3 正反例
 
@@ -194,11 +202,11 @@ P-1 和 P-2 必须同时存在；只有 P-1 会退化成“删断言”，只有
 
 ### 5.1 调查入口
 
-1. 固定 `0dd9c7b7` 的源码树、Runtime、LLVM、Clang、Runner 镜像和任务根；
+1. 固定工作入口 `0dd9c7b7`、产品 `2460e75f` 及实际测试所用的 Runtime、LLVM、Clang、Runner 镜像和任务根。
 2. 用只选择 `native-lock-wait-027` 的临时测试入口运行至少 100 轮，不修改源码夹具；
 3. 每轮保留原生/VM TSV 和进程回执；失败轮立即复制原始文件，不重跑覆盖；
-4. 在 Runtime 层增加一个仅测试可见的 join 后不变量检查：取消并 join 一个持有
-   shared 句柄的 worker，返回后该对象的强/弱计数必须已归零，或明确记录尚未归零；
+4. 在 Runtime 层增加 join 后不变量测试。夹具归还自己的强引用，仅保留观测用弱句柄。
+   取消并 join 持有共享对象的 worker 后，确认弱句柄无法升级，再归还观测句柄并核对最后的弱释放事件。
 5. 对照 `xiao-runtime/src/scheduler.rs` 的 `join_interruptible*`、
    `xiao-runtime/src/abi_concurrency.rs` 的 `join`/`finish` 与
    `xiao-runtime/src/concurrency.rs` 的 `SharedHandle` 释放路径，定位返回时点。
@@ -222,6 +230,10 @@ P-1 和 P-2 必须同时存在；只有 P-1 会退化成“删断言”，只有
 2. 不得继续用 `2460e75f` 作为 B3-4 的唯一入口产品；
 3. 如果只是测试/投影/观察代码变更，不改 Runtime 行为，则 B3-3 产品身份可保持
    `2460e75f`，但仍需重跑受影响的 22D 与 fs 精确用例。
+
+本次改动在 LLVM 并发调用的失败清理边，实际 Runtime 实现沿用入口版本。生成器升到 26
+会改变 B3-3 产物指纹，因此按产品变更要求回验 fs 专项、三平台教程与 Windows COFF `Complete`。
+验收还读取生成器 24 和 25 的封存产物，核对旧元数据仍可验证。
 
 ## 六、执行批次
 
@@ -251,7 +263,8 @@ P-1 和 P-2 必须同时存在；只有 P-1 会退化成“删断言”，只有
 2. Linux、macOS 完整 22D 差分各至少 10 轮，单夹具各至少 30 轮；
 3. 每轮记录实际退出码、`22D-CASE` 行、对象数/终态事件数；失败轮保留两侧 TSV；
 4. 三平台原生 maintenance 和 workspace gates 使用实际 run/job/attempt；
-5. Windows 产物仍按 B3 政策检查 `Complete`，但本批不新增发布产物。
+5. 记录 22D 内部回归产物的实际验证等级。B3-3 复验的 Windows fs 产物沿用产品级
+   COFF `Complete` 验收。
 
 退出：无失败、无跳过的重复执行矩阵；失败/重试不计作通过。
 
@@ -270,7 +283,7 @@ P-1 和 P-2 必须同时存在；只有 P-1 会退化成“删断言”，只有
 | 投影 | F2/F3 原始轨迹离线回放；P-1～P-9 正反例；对象数/终态事件数摘要 |
 | F1 | 100 轮单夹具；失败轮原始 TSV；Runtime join 后不变量 |
 | 差分 | 22D 12/16/1 全量、`native_concurrency_llvm_assembly_fixtures`、C 布局探针 |
-| Runtime | 现有 175 项、`native_cleanup_checkpoint_defers_repeated_cancellation`、取消四位置 |
+| Runtime | 入口产品的全量 Runtime 测试、`native_cleanup_checkpoint_defers_repeated_cancellation`、取消四位置。以实跑回执登记当前总数 |
 | 22C | 26/26 VM 回归不退化 |
 | B3 | fs 受控原生/VM 教程和排他重命名专项；B1 七库精确入口不退化 |
 | 平台 | Windows/Linux/macOS 完整与单夹具重复执行；实际 run/job/attempt |
@@ -281,7 +294,7 @@ P-1 和 P-2 必须同时存在；只有 P-1 会退化成“删断言”，只有
 
 1. F2/F3 的失败已用原始轨迹证明为别名投影，或已修真实对象缺失；
 2. F1 的根因有原始证据，H1/H2/H3/H4 中恰有一个结论，且修复/归因可复核；
-3. 投影 v2 的 P-1 通过、P-2～P-6 与 P-9 全部失败；没有删除终态断言；
+3. 投影 v2 的 P-1、P-7、P-8 通过，P-2～P-6 和 P-9 均按预期拒绝。终态的数量、形状和顺序均通过正反例核对。
 4. Windows 单夹具 50 轮、Linux/macOS 各 30 轮无失败；完整 22D 三平台各 10 轮无失败；
 5. 22C 26/26、Runtime 现有回归、B3 fs 受影响入口和完整门禁无退化；
 6. 三平台实际 CI 证据齐全，失败/重试保留，不以单平台或本地日志代替远端；
@@ -315,26 +328,44 @@ core/rust/crates/xiao-runtime/src/abi_concurrency.rs            join/finish 与�
 core/rust/crates/xiao-runtime/src/memory/mod.rs                  F1 若为 H2 的轨迹会话
 ```
 
-### 10.2 待星崽批准
+### 10.2 实施口径
 
-| 编号 | 事项 | 建议 |
+| 编号 | 事项 | 本批执行 |
 | --- | --- | --- |
-| P-1 | 是否采用投影 v2（按对象压缩别名、比较生命周期多重集合 + 终态动作流） | 批准；它是 §5.2 已有声明的实现，不是新放宽 |
-| P-2 | 重复轮次：Windows 单夹具 50、Linux/macOS 30、完整各 10 | 批准；F1 此前 25 轮不足 |
-| P-3 | 若 F1 为 Runtime 缺陷，是否在同一批修产品并回验 B3-3 | 批准同一批，避免 22D 与 B3-4 入口悬空 |
-| P-4 | 若 F1 仍无法稳定复现，是否允许受限交接 | 不建议；没有失败样本不能写 `22d_open=false` |
-
-未获批准的项不得在实现中自行采用；尤其不能在 P-1 未批准时直接改判据，也不能在
-P-3 未批准时把 Runtime 修复留在 B3-3 产品之外。
+| P-1 | 按对象压缩别名 | 采用 §四的投影 v2，核对生命周期多重集合和终态动作流 |
+| P-2 | 三平台重复轮次 | Windows 单夹具 50 轮，Linux/macOS 单夹具 30 轮，完整入口各 10 轮 |
+| P-3 | F1 产品修复与 B3-3 回验 | 同一批修复实际丢失实参的路径，使用修复产品回验 B3-3 |
+| P-4 | 关闭条件 | 按 §八检查受控失败证据和实际三平台回执 |
 
 ## 十一、新 Agent 先读
 
 1. [22D. LLVM 并发执行、差分与跨平台](22d-llvm-concurrency-differential.md) §5.2、§9.3、§11；
 2. [22D-FIX.1. 并发差分矩阵收尾](22d-fix1-concurrency-differential-closure.md)；
 3. 本页 §三、§四、§五；
-4. `core/rust/crates/xiao-driver/tests/22d_llvm_concurrency.rs` 的
-   `release_trace_sequence`、`stable_shared_trace`、`assert_case_release_trace`；
+4. `core/rust/crates/xiao-driver/tests/concurrency_closure/release_trace.rs` 的生命周期校验和
+   `22d_llvm_concurrency.rs` 的同源差分入口；
 5. [B6-4 后续证据](assets/20o-b2-b/entry-20261119-b6-4-followup/README.md) 的
    Windows 22D 段和原始失败日志；
 6. [B3-3 修复复验](assets/20o-b3/entry-20261126-b3-3-rename-fix/README.md) 的
    `windows_maintenance`。
+
+## 十二、实施记录
+
+F2/F3 的两对历史 TSV 已离线通过投影 v2。VM 和原生各销毁三个对象，归并各对象的强引用
+别名后，终态动作流逐项一致。P-1～P-9 分别命中预期的接受与拒绝结果。
+
+F1 归入 H1。受控回归在 worker 写入 `ready` 并复制 `lock(gate)` 的实参之后，固定在
+原生锁入口的取消预检查处消费取消。旧版错误边直接进入外层展开，跳过了实参释放。
+原生以退出码 3 回报 027 和清理输出，但 `gate` 的轨迹只有 `shared_release`，另一个
+共享对象有完整的 `shared_destroy` 和 `weak_release`。VM 保留两组。修复让实参求值、
+取消检查和 ABI 调用的错误边共用清理块，按逆序归还已经求值的实参。受控运行再次观察到
+两组终态，Runtime 的弱句柄检查同时确认真实锁阻塞取消后，`join` 返回时对象已经销毁。
+
+Windows 历史的 25 轮和当前修复前的 100 轮都未命中取消预检查窗口。取消若由锁 ABI 返回，
+旧代码已经有实参归还路径。原始远端失败只有投影断言，本批使用同一夹具的受控回归记录
+缺失的原始事件。修复后 Windows 单跑 100 轮均观察到两组终态。
+
+三平台完整差分各 10 轮，Windows 三个单夹具各 50 轮，Linux 和 macOS 各 30 轮，均通过。
+汇编和 C 布局探针、Runtime 取消回归、22C 既有 26 项和后续新增 3 项、B1 七库精确入口、
+三平台原生维护与工作区门禁均已对账。B3-3 已在 `3506455e` 回验，B3-4 从该产品接续，
+当前尚未启动。B6-4 按该批自身门禁仍为 `b6_4_passed=false`。[机器可读回执](assets/22d-fix2/entry-20261126/status.json)

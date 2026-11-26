@@ -31,6 +31,7 @@
 > **2026-11-26 B3-2 验收**　args 53～54、纯 Xiao 分组、运行协议与生成器 24 的原生入口在 `879ce625` 通过三平台验证，Windows 12 份产物获产品级 COFF `Complete`。B3-3 入口由回执派生，教程和 registry 为 `planned`。[B3-2 args/cli 实施规划](20o-b3-2-args-cli-implementation-plan.md) · [验收回执](assets/20o-b3/entry-20261125-b3-2-final/README.md)
 > **2026-11-26 B3-3 收口**　产品 `4e480ebe` 已通过 fs 三平台、Windows 产品级 COFF 和 CI 门禁。ABI 1.20、生成器 25、标准库接口 1。B3-4 的 env 实施入口就绪。[B3-3 收口](assets/20o-b3/entry-20261125-b3-3-final/README.md)
 > **2026-11-26 B3-3 自审修复**　`2460e75f` 修复 Windows 和 macOS 同目录项无覆盖重命名的结果。三平台复验及 CI 门禁通过，B3-4 从该产品接续。[排他重命名复验](assets/20o-b3/entry-20261126-b3-3-rename-fix/README.md)
+> **2026-11-27 B3-3 产品复验**　并发释放修复 `3506455e` 使用生成器 26 并通过三平台 fs 复验。B3-4 入口更新为该产品。[新产品复验](assets/22d-fix2/entry-20261126/README.md)
 > **已确认（2026-11-01）：D-1 取甲（成熟 Rust 数值库）、B1 首批范围、
 > D-7 取专用 `json_value` 类型、B7→B8→B9 后置**。B0 已逐条询问并记录其余方向裁定，
 > 见 §五及 20P §六；具体 API 不因此自动冻结。基线、探测、教程与待审草案见

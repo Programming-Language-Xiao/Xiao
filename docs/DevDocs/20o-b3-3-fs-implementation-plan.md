@@ -1,6 +1,6 @@
 # 20O-B3-3. `fs` 实施规划
 
-> **状态（2026-11-26）**　当前产品 `2460e75f` 已通过排他重命名修复的三平台专项及 CI 门禁。Windows 六份 fs 产物达到产品级 COFF `Complete`。`b3_3_passed=true`、`b3_4_entry_ready=true`、`b3_4_started=false`。[原收口](assets/20o-b3/entry-20261125-b3-3-final/README.md) · [修复复验](assets/20o-b3/entry-20261126-b3-3-rename-fix/README.md)
+> **状态（2026-11-27）**　排他重命名修复 `2460e75f` 通过三平台专项。并发释放修复后的产品 `3506455e` 也通过 fs 排他重命名与三平台教程复验，Windows 六份产物达到产品级 COFF `Complete`。`b3_3_passed=true`、`b3_4_entry_ready=true`、`b3_4_started=false`。[原收口](assets/20o-b3/entry-20261125-b3-3-final/README.md) · [修复复验](assets/20o-b3/entry-20261126-b3-3-rename-fix/README.md) · [新产品复验](assets/22d-fix2/entry-20261126/README.md)
 > **产品身份**　fs 使用 55～59。原生接线按补充裁定使用 ABI 1.20、生成器 25、标准库接口 1。[生成器裁定](assets/20o-b3/entry-20261125-b3-3/generator-decision.json)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-3 只处理 fs 产物，完整公共矩阵留 B3-7。
 > 入口：[B3-2 收口](assets/20o-b3/entry-20261125-b3-2-final/README.md)、[B3-0C 契约](assets/20o-b3/entry-20261123-b3-0c/contract-draft.md)、[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
@@ -211,7 +211,7 @@ tests/fixtures/docs/fs/                           fs 教程最终夹具
 docs/module-registry.json                         fs 登记为 planned
 ```
 
-B3-4 从 `2460e75f` 接续，当前派生状态见排他重命名修复证据中的 `status.json`。[修复复验](assets/20o-b3/entry-20261126-b3-3-rename-fix/README.md)
+B3-4 从通过三平台回验的 `3506455e` 接续，使用 ABI 1.20、生成器 26、标准库接口 1。[新产品复验](assets/22d-fix2/entry-20261126/README.md)
 
 ## 十、新 Agent 先读
 

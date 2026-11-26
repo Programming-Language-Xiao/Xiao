@@ -1,0 +1,179 @@
+{
+  "schema": 1,
+  "date": "2026-11-27",
+  "22d_open": false,
+  "baseline": "0dd9c7b760ef6babce073dbfa13adb8dbea43b61",
+  "entry_product": "2460e75fbdac448b51b7941e937fb3df24e0cb70",
+  "product": "3506455ee5839214082df15af4c760f8d0361e66",
+  "codegen": 26,
+  "runtime_abi": "1.20",
+  "stdlib_interface": 1,
+  "f1": {
+    "classification": "H1",
+    "release_site": "llvm_native_concurrency_argument",
+    "baseline_rounds": 100,
+    "postfix_rounds": 100,
+    "historical_run": 44464422497,
+    "historical_job": 135358661620,
+    "controlled_shared_terminals": {
+      "before": 1,
+      "after": 2,
+      "vm": 2
+    }
+  },
+  "f2_f3": {
+    "classification": "alias_projection",
+    "replayed_raw_pairs": 2,
+    "destructions_per_backend": 3
+  },
+  "projection": {
+    "version": 2,
+    "accepted": [
+      "P-1",
+      "P-7",
+      "P-8"
+    ],
+    "rejected": [
+      "P-2",
+      "P-3",
+      "P-4",
+      "P-5",
+      "P-6",
+      "P-9"
+    ]
+  },
+  "local": {
+    "workspace": {
+      "groups": 195,
+      "passed": 1793,
+      "ignored": 55
+    },
+    "runtime_unit_passed": 289,
+    "vm_22c_passed": 29,
+    "vm_22c_baseline_retained": 26,
+    "clippy": true,
+    "fmt": true,
+    "docs_usedocs_layout": true
+  },
+  "platforms": {
+    "windows": {
+      "runner_image": "20261116.315.1",
+      "target": "x86_64-pc-windows-msvc",
+      "trace_job": 140062176193,
+      "native_maintenance_job": 140062175712,
+      "fs_job": 140062176088,
+      "fs_complete": 6,
+      "rounds": {
+        "full": 10,
+        "native-lock-wait-027": 50,
+        "xcon-bounded-string-success": 50,
+        "spawn-join-str-multiargument": 50
+      },
+      "verification": [
+        "unverified-coff-exports"
+      ]
+    },
+    "linux": {
+      "runner_image": "20261122.23.1",
+      "target": "x86_64-unknown-linux-gnu",
+      "trace_job": 140062175703,
+      "native_maintenance_job": 140062175579,
+      "fs_job": 140062176596,
+      "fs_complete": 6,
+      "rounds": {
+        "full": 10,
+        "native-lock-wait-027": 30,
+        "xcon-bounded-string-success": 30,
+        "spawn-join-str-multiargument": 30
+      },
+      "verification": [
+        "complete"
+      ]
+    },
+    "macos": {
+      "runner_image": "20261123.0558.1",
+      "target": "aarch64-apple-darwin",
+      "trace_job": 140062176401,
+      "native_maintenance_job": 140062175774,
+      "fs_job": 140062176216,
+      "fs_complete": 6,
+      "rounds": {
+        "full": 10,
+        "native-lock-wait-027": 30,
+        "xcon-bounded-string-success": 30,
+        "spawn-join-str-multiargument": 30
+      },
+      "verification": [
+        "complete"
+      ]
+    }
+  },
+  "ci": {
+    "evidence": {
+      "run": 45864052545,
+      "attempt": 1,
+      "sha": "57b953c3a2c7f07acda814a118a76f88112a3410",
+      "conclusion": "success",
+      "jobs": {
+        "ubuntu-24.04 / release-trace": 140062175703,
+        "windows-2025 / fs": 140062176088,
+        "windows-2025 / release-trace": 140062176193,
+        "macos-15 / fs": 140062176216,
+        "macos-15 / release-trace": 140062176401,
+        "ubuntu-24.04 / fs": 140062176596
+      }
+    },
+    "maintenance": {
+      "run": 45864052346,
+      "attempt": 1,
+      "sha": "57b953c3a2c7f07acda814a118a76f88112a3410",
+      "conclusion": "success",
+      "jobs": {
+        "Rust workspace default tests (Linux)": 140062174857,
+        "Deterministic artifact size regression (Windows baseline)": 140062175226,
+        "Deterministic parser and artifact security regression": 140062175407,
+        "Native differential regression (Linux)": 140062175579,
+        "Native differential regression (Windows)": 140062175712,
+        "Native differential regression (macOS)": 140062175774
+      }
+    },
+    "workspace": {
+      "run": 45864694853,
+      "attempt": 1,
+      "sha": "b302084aa9b3e485656aeb597a91a0a8950d2f61",
+      "conclusion": "success",
+      "jobs": {
+        "Linux workspace gates": 140064391789
+      }
+    },
+    "workspace_initial": {
+      "run": 45864052411,
+      "attempt": 1,
+      "sha": "57b953c3a2c7f07acda814a118a76f88112a3410",
+      "conclusion": "failure",
+      "jobs": {}
+    },
+    "maintenance_documented": {
+      "run": 45864692430,
+      "attempt": 1,
+      "sha": "b302084aa9b3e485656aeb597a91a0a8950d2f61",
+      "conclusion": "success",
+      "jobs": {
+        "Deterministic parser and artifact security regression": 140064376715,
+        "Rust workspace default tests (Linux)": 140064377052,
+        "Native differential regression (Windows)": 140064377198,
+        "Deterministic artifact size regression (Windows baseline)": 140064377202,
+        "Native differential regression (macOS)": 140064377370,
+        "Native differential regression (Linux)": 140064377388
+      }
+    }
+  },
+  "b3_3_passed": true,
+  "b3_4_entry_ready": true,
+  "b3_4_entry_product": "3506455ee5839214082df15af4c760f8d0361e66",
+  "b3_4_started": false,
+  "b6_4_passed": false,
+  "followup_passed": false,
+  "windows_coff_verified": false,
+  "evidence_sha256": "f3069cc2c3533a4081037e213c455c3d551cba24508ed22d1c516f592e98f81e"
+}

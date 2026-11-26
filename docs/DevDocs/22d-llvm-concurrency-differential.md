@@ -5,12 +5,12 @@
 > 22A/22A-FIX 的 API、ABI、Send/Sync 和诊断已冻结；22B 的静态字段和 22C-FIX.1 的 VM 行为是
 > 本批的输入，本批不重新决定语言语义。
 >
-> 状态：**22D-FIX.1 验收点已完成（2026-10-31），阶段因后续维护回归重开**。代码提交
+> 状态 **22D-FIX.2 已验收（2026-11-27，`22d_open=false`）**。早期代码提交
 > `ab92df1` 的 Windows/Linux/macOS 原生门禁、Linux workspace 默认测试及完整 workspace
 > gates 全部通过。当前同 IR 差分为 12 个成功、16 个运行时错误和一个嵌套 detached 场景；
 > C-1～C-11 按规定验证层次关闭，九条退出条件与最终证据见 §9.3；§9.2 保留前一轮基线。
-> 2026-11-19 起 B6-4、B7 和 B3-3 维护记录持续出现三处间歇释放差分，
-> `22d_open=true`；修复计划见 [22D-FIX.2](22d-fix2-release-order-stability-plan.md)。
+> 2026-11-19 起 B6-4、B7 和 B3-3 维护出现三处间歇释放差分，阶段重开。修复产品
+> `3506455e` 已通过三平台重复差分和受影响的 fs 回验。[22D-FIX.2 收口证据](assets/22d-fix2/entry-20261126/README.md)
 > D-2/D-5 沿用标签 18、ABI 1.17 和不透明锁守卫；`stdlib/concurrent.xiao`、原生元数据
 > 与发布兼容已由 22E 接续验收，不修改 32B 共享头、冻结 API、Send/Sync 表或诊断编号。
 
@@ -236,15 +236,18 @@ VM（未优化/优化字节码）和 NativeBuild，比较：
 调度时序只允许在夹具声明的可交换集合中差异；不得用“结果碰巧相同”代替事件/释放记录
 比较。
 
-当前释放投影按首次释放归一化对象 ID，过滤 native `ConcurrencyRelease` 包装盒子事件，
-压缩同一对象同一动作的相邻重复；保留不同对象和动作之间的顺序，以及 shared 析构、
-弱引用和 guard 释放。运行中取消夹具以锁轮询握手，轮询次数和临时 guard 数量取决于
-调度；该夹具比较 027、退出码及 finally 的精确输出，分别确认两侧产生释放记录，
-不对其逐事件序列作相等断言。其余五个成功、八个错误和一个 detached 场景逐事件比较
-上述释放投影。这验证的是投影后的完整顺序，临时别名引用计数不属于差分相等条件。
-2026-11-26 复核发现当前实现只压缩相邻重复，别名被其他对象隔开时仍会误报；投影 v2
-的按对象压缩、生命周期多重集合和终态动作流尚待批准，见
-[22D-FIX.2](22d-fix2-release-order-stability-plan.md)。
+投影 v2 先校验 TSV 行号与字段，过滤原生包装盒的 `concurrency_release`。各对象分别
+归并连续的 `strong_release` 或 `shared_release`，所以被其他对象隔开的别名也能归并。
+每个 `destroy`、`shared_destroy`、`weak_release` 和 `lock_guard_release` 都逐条校验。
+比较两侧的生命周期多重集合，以及用生命周期签名标记的终态动作流。同签名的对象可以
+互换，动作与出现次数仍须相等。每个夹具输出 `22D-TRACE` 的对象数、终态数与投影版本。
+
+`detach-success` 允许两个独立打印对象交换，仍校验两侧生命周期及对象数。四个握手取消
+夹具先验证各对象生命周期，再比较稳定共享对象的终态，且两侧都须归还 guard。
+`native-lock-wait-027` 每侧须有 `gate`、`ready` 两组完整终态，同时有受控取消预检查的回归。
+`native-running-cancellation-finally` 校验 027、退出码和 finally 的精确输出，分别核对两侧产生
+合法释放记录。`lock-guard-scope-release` 每侧须有两个各归还一次的 guard。
+[22D-FIX.2 投影 v2](22d-fix2-release-order-stability-plan.md#四投影-v2-设计)
 
 ### 5.3 反向与门禁
 
@@ -475,8 +478,8 @@ C-1～C-11 及 §六九条退出条件按上述层次完成验收，22D 与 22D-
 ## 十、状态
 
 - 阶段代号：22D；
-- 当前状态：**阶段重开（2026-11-26，`22d_open=true`）**；`ab92df1` 的 12/16/1 差分、三平台 C 布局对象及完整门禁保留为 22D-FIX.1 验收点；后续维护出现三处间歇释放差分，见 §11 与 [22D-FIX.2](22d-fix2-release-order-stability-plan.md)；
-- 当前工作批：22D-FIX.2 规划完成、未实施；B3-3 产品 `2460e75f` 的 fs 内部验收保持有效，B3-4 未启动；
+- 当前状态为 **阶段关闭（2026-11-27，`22d_open=false`）**。`ab92df1` 的 12/16/1 差分、三平台 C 布局对象和完整门禁是 22D-FIX.1 的历史验收点。后续维护回归的修复产品为 `3506455e`。[22D-FIX.2](22d-fix2-release-order-stability-plan.md)
+- 三平台完整差分各 10 轮，Windows 单夹具各 50 轮，Linux 和 macOS 单夹具各 30 轮。Windows 本机另单跑 F1 100 轮。每轮保存实际退出码和原始 TSV。[重复矩阵](assets/22d-fix2/entry-20261126/README.md#重复执行)
 - 22D 关闭后，22E 只消费本批稳定的并发行为和已有 ABI，不反向修改 22D 的冻结结论。
 
 ## 十一、后续维护回归
@@ -497,3 +500,9 @@ attempt 1 再次失败，断言显示原生多出被其他对象隔开的 `stron
 条件”不一致，先归投影实现问题；`native-lock-wait-027` 缺一组稳定共享对象，不能按同一
 路径放行。三例的判别、投影 v2、F1 的 Runtime 调查和三平台复跑门槛见
 [22D-FIX.2](22d-fix2-release-order-stability-plan.md)。
+
+FIX.2 回放了 F2/F3 的原始 TSV，两侧对象销毁数和终态动作流一致。F1 在受控的
+锁调用取消预检查中复现了实际清理缺失，原生 worker 展开时漏还了已经复制的实参。
+修复产品让取消预检查和其余失败边共同归还实参，并将生成器由 25 升到 26 以区分旧产物。
+受控回归、100 轮 F1 复跑、三平台矩阵及门禁通过后于 2026-11-27 关闭 22D。
+[实施记录](22d-fix2-release-order-stability-plan.md#十二实施记录) · [验收回执](assets/22d-fix2/entry-20261126/status.json)
