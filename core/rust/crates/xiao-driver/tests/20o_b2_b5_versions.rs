@@ -54,7 +54,7 @@ fn frozen_abi18_baselines_are_rejected_before_entry() {
 /// 新头、指令流、归档索引和原生元数据使用同一个精确版本，schema保持既有常量。
 fn current_artifacts_bind_exact_abi_and_codegen() {
     assert_eq!(ABI_MINOR_VERSION, 20);
-    assert_eq!(CODEGEN_VERSION, 25);
+    assert_eq!(CODEGEN_VERSION, 26);
     let source = "print(\"B5-current\")\n";
     let product = FrontendCompiler::new()
         .compile(&FrontendRequest::from_text(source))

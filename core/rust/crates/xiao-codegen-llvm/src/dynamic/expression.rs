@@ -1238,13 +1238,33 @@ impl<'a> DynamicGenerator<'a> {
             None
         };
 
-        let skipped_count = if skipped_function.is_some() { 1 } else { 0 };
-        let mut values = Vec::with_capacity(arguments.len().saturating_sub(skipped_count));
-        for (index, argument) in arguments.iter().enumerate() {
-            if skipped_function == Some(index) {
-                continue;
-            }
-            values.push(self.emit_expression(&argument.value)?);
+        let arguments = arguments
+            .iter()
+            .enumerate()
+            .filter_map(|(index, argument)| (skipped_function != Some(index)).then_some(argument))
+            .collect::<Vec<_>>();
+        let argument_count = arguments.len();
+        let array = self.next_temp();
+        self.emit(format!(
+            "  {array} = alloca {VALUE_TYPE}, i64 {argument_count}"
+        ));
+        let mut argument_slots = Vec::with_capacity(argument_count);
+        for index in 0..argument_count {
+            let slot = self.next_temp();
+            self.emit(format!(
+                "  {slot} = getelementptr inbounds {VALUE_TYPE}, ptr {array}, i64 {index}"
+            ));
+            self.emit(format!("  store {VALUE_TYPE} zeroinitializer, ptr {slot}"));
+            argument_slots.push(slot);
+        }
+
+        // 先初始化所有拥有槽。后续实参求值、取消检查和 ABI 调用的失败边
+        // 共用清理块，已求值的实参由该块归还，未求值的槽仍为空。
+        let failed = self.next_label("dynamic.concurrency.fail");
+        self.push_error_context(failed.clone());
+        for (argument, slot) in arguments.into_iter().zip(&argument_slots) {
+            let value = self.emit_expression(&argument.value)?;
+            self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
         }
         // VM 在绑定并求值并发调用实参后才消费取消检查；原生保持相同顺序，
         // 避免取消与实参求值错误同时发生时改变可观察的错误优先级。
@@ -1255,18 +1275,6 @@ impl<'a> DynamicGenerator<'a> {
                 check.span,
             );
         }
-        let array = self.next_temp();
-        self.emit(format!(
-            "  {array} = alloca {VALUE_TYPE}, i64 {}",
-            values.len()
-        ));
-        for (index, value) in values.iter().enumerate() {
-            let slot = self.next_temp();
-            self.emit(format!(
-                "  {slot} = getelementptr inbounds {VALUE_TYPE}, ptr {array}, i64 {index}"
-            ));
-            self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
-        }
         let output = self.next_temp();
         self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
         self.emit(format!(
@@ -1276,38 +1284,29 @@ impl<'a> DynamicGenerator<'a> {
         let status = self.next_temp();
         if let Some(entry) = entry_symbol {
             self.emit(format!(
-                "  {status} = call i32 @xiao_runtime_concurrency_call_with_entry({operation}, ptr @{entry}, ptr null, ptr {array}, i64 {}, ptr {output})",
-                values.len()
+                "  {status} = call i32 @xiao_runtime_concurrency_call_with_entry({operation}, ptr @{entry}, ptr null, ptr {array}, i64 {argument_count}, ptr {output})"
             ));
         } else {
             self.emit(format!(
-                "  {status} = call i32 @xiao_runtime_concurrency_call({operation}, ptr {array}, i64 {}, ptr {output})",
-                values.len()
+                "  {status} = call i32 @xiao_runtime_concurrency_call({operation}, ptr {array}, i64 {argument_count}, ptr {output})"
             ));
         }
-        let ok = self.next_temp();
-        let ok_label = self.next_label("dynamic.concurrency.ok");
-        let fail_label = self.next_label("dynamic.concurrency.fail");
-        self.emit(format!("  {ok} = icmp eq i32 {status}, 0"));
-        self.emit(format!(
-            "  br i1 {ok}, label %{ok_label}, label %{fail_label}"
-        ));
+        self.check_status_at(&status, span);
+        self.pop_error_context();
+        let ready = self.next_label("dynamic.concurrency.ready");
+        self.emit(format!("  br label %{ready}"));
         self.terminated = true;
-        self.emit_label(&fail_label);
-        // IR verifier 已校验 transfer.cleanup_order 是参数顺序的逆序；本地临时槽
-        // 与源码参数逐一对应，因此边界失败也按同一逆序归还，不启动子执行单元。
-        for value in values.iter().rev() {
-            self.release_value(value.clone());
+        self.emit_label(&failed);
+        let release = self.value_release_symbol();
+        // IR verifier 已校验 transfer.cleanup_order 是参数顺序的逆序。
+        for slot in argument_slots.iter().rev() {
+            self.emit(format!("  call void @{release}(ptr {slot})"));
         }
-        self.emit(format!(
-            "  call i32 @xiao_runtime_error_attach_span(i64 {}, i64 {})",
-            span.start, span.end
-        ));
         self.emit(format!("  br label %{}", self.error_target()));
         self.terminated = true;
-        self.emit_label(&ok_label);
-        for value in values {
-            self.release_value(value);
+        self.emit_label(&ready);
+        for slot in &argument_slots {
+            self.emit(format!("  call void @{release}(ptr {slot})"));
         }
         let result = self.next_temp();
         self.emit(format!("  {result} = load {VALUE_TYPE}, ptr {output}"));

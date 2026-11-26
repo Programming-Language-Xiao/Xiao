@@ -518,7 +518,7 @@ fn native_external_cancellation_checks_safe_point_wait_and_lock_wait() {
 }
 
 #[test]
-/// C-7/C-8 观察真实等待位后取消宿主令牌，验证原生 lock C ABI 从阻塞中返回 027。
+/// C-7/C-8 等到真实锁阻塞后取消，并核对 join 时 worker 已归还共享引用。
 fn native_blocked_lock_wait_is_cancelled_by_host_token() {
     let runtime = RuntimeHandle::create();
     let shared = SharedHandle::new(
@@ -526,6 +526,7 @@ fn native_blocked_lock_wait_is_cancelled_by_host_token() {
         runtime.id(),
         SharedTag::Mut,
     );
+    let observed = shared.downgrade();
     let held = shared
         .lock_owned(&RuntimeCancellation::default(), || false)
         .unwrap();
@@ -552,9 +553,17 @@ fn native_blocked_lock_wait_is_cancelled_by_host_token() {
         );
         std::thread::yield_now();
     }
+    drop(shared);
     child.cancel();
-    child.join().unwrap();
     drop(held);
+    child.join_interruptible(|| false).unwrap();
+    assert!(observed.upgrade().is_none(), "join 返回时共享对象已经销毁");
+
+    let _trace = crate::memory::start_release_trace();
+    drop(observed);
+    let events = crate::memory::take_release_events();
+    assert_eq!(events.len(), 1, "最后的观察弱句柄只归还一次");
+    assert_eq!(events[0].action, crate::memory::ReleaseAction::WeakRelease);
     runtime.try_close().unwrap();
 }
 

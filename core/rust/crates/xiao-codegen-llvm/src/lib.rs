@@ -102,8 +102,9 @@ pub use xiao_optimizer::OptimizationReport;
 /// 版本 22 使静态 Float/Sfloat 相等与不等在数值提升后按位比较，保留异号零语义。
 /// 版本 23 接通 ABI 1.20 的 time。版本 24 接通 args 原生快照和 CLI 数组入口检查。
 /// 版本 25 接通 fs，并为其 Windows 产物验证完整 COFF 组件。
+/// 版本 26 让原生并发调用的取消和求值错误归还已经拥有的实参。
 /// 当前版本进入工具链/产物指纹。
-pub const CODEGEN_VERSION: u32 = 25;
+pub const CODEGEN_VERSION: u32 = 26;
 
 /// B3 宿主库原生产物需要版本元数据及 Windows COFF 完整性证据。
 fn requires_b3_native_evidence(module: &LlvmModule) -> bool {

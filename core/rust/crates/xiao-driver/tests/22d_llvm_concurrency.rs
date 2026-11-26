@@ -1,12 +1,12 @@
 //! 22D 原生并发 lowering 的同源 IR 与 fail-closed 回归。
 
-use std::collections::BTreeMap;
 use std::fs;
+use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Output, Stdio};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
-use xiao_codegen_llvm::{CodegenOptions, lower_program, native_concurrency_plan};
+use xiao_codegen_llvm::{CodegenOptions, NativeArtifact, lower_program, native_concurrency_plan};
 use xiao_codegen_llvm::{TargetDescription, Toolchain};
 use xiao_driver::{
     DriverRequest, FrontendCompiler, FrontendContext, FrontendNativeDriver, FrontendRequest,
@@ -15,6 +15,9 @@ use xiao_driver::{
 
 #[path = "concurrency_closure/fixtures.rs"]
 mod closure_fixtures;
+
+#[path = "concurrency_closure/release_trace.rs"]
+mod release_trace;
 
 /// 把生成文本交给真实 LLVM 解析器；22D 的这组回归必须具备 `llvm-as`，不能用文本
 /// 包含关系替代汇编器验证。
@@ -43,13 +46,52 @@ fn validate_with_llvm_as(text: &str, label: &str) {
 }
 
 /// 对 VM/native 场景统一施加超时，防止并发回归挂死 CI worker。
-fn run_native_with_timeout(executable: &std::path::Path, label: &str) -> Output {
+fn run_native_with_timeout(artifact: &NativeArtifact, label: &str, trace: &Path) -> Output {
+    let output = run_traced_executable(&artifact.executable, label, trace);
+    println!(
+        "22D-NATIVE {label} exit={:?} verification={}",
+        output.status.code(),
+        artifact.artifact_runtime.verification.as_str(),
+    );
+    output
+}
+
+fn run_traced_executable(executable: &Path, label: &str, trace: &Path) -> Output {
     let child = Command::new(executable)
+        .env("XIAO_RUNTIME_RELEASE_TRACE_PATH", trace)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
         .unwrap_or_else(|error| panic!("{label}: 启动 native 程序失败：{error}"));
     wait_child_with_timeout(child, label, Duration::from_secs(10))
+}
+
+/// 将 F1 的取消固定在 worker 已复制 lock 实参、尚未进 Runtime 锁入口的时点。
+fn with_controlled_lock_cancellation(text: &str, source: &str) -> String {
+    let expression = "lock(gate)";
+    let start = source.find(expression).expect("F1 worker 的锁表达式");
+    let end = start + expression.len();
+    let span = format!("xiao_runtime_error_attach_span(i64 {start}, i64 {end})");
+    let check = " = call i32 @xiao_runtime_concurrency_cancellation_check(";
+    let mut lines = text.lines().map(str::to_owned).collect::<Vec<_>>();
+    let sites = lines
+        .windows(5)
+        .enumerate()
+        .filter(|(_, window)| window[0].contains(check) && window[4].contains(&span))
+        .map(|(index, _)| index)
+        .collect::<Vec<_>>();
+    let &[site] = sites.as_slice() else {
+        panic!("F1 worker 的 lock 取消检查应有唯一调用点：{sites:?}");
+    };
+    let call = &lines[site];
+    let (status, _) = call.trim_start().split_once(check).expect("F1 取消调用");
+    lines[site] = format!(
+        "  br label %test.lock.cancel\n\
+         test.lock.cancel:\n{call}\n  %test.lock.cancelled = icmp ne i32 {status}, 0\n  \
+         br i1 %test.lock.cancelled, label %test.lock.cancel.done, label %test.lock.cancel\n\
+         test.lock.cancel.done:"
+    );
+    lines.join("\n") + "\n"
 }
 
 fn wait_child_with_timeout(mut child: Child, label: &str, timeout: Duration) -> Output {
@@ -139,43 +181,6 @@ impl Drop for ReleaseTraceEnvironment {
     }
 }
 
-fn release_trace_sequence(path: &std::path::Path) -> Vec<(usize, String)> {
-    let text = std::fs::read_to_string(path)
-        .unwrap_or_else(|error| panic!("读取释放追踪 {} 失败：{error}", path.display()));
-    let mut identities = BTreeMap::<u64, usize>::new();
-    let mut events = Vec::new();
-    for (expected_sequence, line) in text.lines().enumerate() {
-        let mut fields = line.split('\t');
-        let line_sequence = fields
-            .next()
-            .and_then(|value| value.parse::<usize>().ok())
-            .unwrap_or_else(|| panic!("无效释放追踪序号：{line:?}"));
-        assert_eq!(line_sequence, expected_sequence, "释放追踪序号必须连续");
-        let object_id = fields
-            .next()
-            .and_then(|value| value.parse::<u64>().ok())
-            .unwrap_or_else(|| panic!("无效释放追踪对象身份：{line:?}"));
-        let action = fields
-            .next()
-            .unwrap_or_else(|| panic!("释放追踪缺少动作：{line:?}"));
-        assert!(fields.next().is_none(), "释放追踪多出字段：{line:?}");
-        // VM 值不经过 C ABI 的不透明盒子；ConcurrencyRelease 是 native 包装层
-        // 自身的引用归还，不对应语言值/共享对象的语义释放动作。
-        if action == "concurrency_release" {
-            continue;
-        }
-        let next_identity = identities.len();
-        let normalized_identity = *identities.entry(object_id).or_insert(next_identity);
-        let event = (normalized_identity, action.to_owned());
-        // ABI value copies may add adjacent temporary aliases on one backend. Keep
-        // transitions between actions and objects, while avoiding alias-count skew.
-        if events.last() != Some(&event) {
-            events.push(event);
-        }
-    }
-    events
-}
-
 fn detached_message_projection(text: &str) -> String {
     text.lines()
         .filter(|line| {
@@ -218,83 +223,6 @@ fn error_identity_projection(text: &str) -> Vec<(usize, String)> {
             Some((line.len() - trimmed.len(), format!("{class}:{code}")))
         })
         .collect()
-}
-
-/// 取消握手只剔除轮询临时对象，仍按顺序核对共享对象的最终销毁和弱引用释放。
-fn stable_shared_trace(events: &[(usize, String)]) -> Vec<(usize, String)> {
-    let mut identities = BTreeMap::new();
-    events
-        .iter()
-        .filter_map(|(id, action)| {
-            if !matches!(action.as_str(), "shared_destroy" | "weak_release") {
-                return None;
-            }
-            let next = identities.len();
-            Some((*identities.entry(*id).or_insert(next), action.clone()))
-        })
-        .collect()
-}
-
-/// 每个夹具显式声明释放顺序的比较口径，保留同一对象的动作顺序与次数。
-fn assert_case_release_trace(label: &str, native: &std::path::Path, vm: &std::path::Path) {
-    let native = release_trace_sequence(native);
-    let vm = release_trace_sequence(vm);
-    if matches!(
-        label,
-        "native-queued-cancellation"
-            | "native-waiting-cancellation"
-            | "native-wait-027"
-            | "native-lock-wait-027"
-    ) {
-        let native_stable = stable_shared_trace(&native);
-        let vm_stable = stable_shared_trace(&vm);
-        assert!(
-            !native_stable.is_empty(),
-            "{label}: native 必须销毁握手共享对象"
-        );
-        assert!(!vm_stable.is_empty(), "{label}: VM 必须销毁握手共享对象");
-        assert_eq!(native_stable, vm_stable, "{label}: 稳定共享对象释放顺序");
-        for events in [&native, &vm] {
-            assert!(
-                events
-                    .iter()
-                    .any(|(_, action)| action == "lock_guard_release"),
-                "{label}: 必须释放握手守卫"
-            );
-        }
-    } else if label == "detach-success" {
-        // 两条独立 print 的临时对象允许交换先后；各自的动作序列和总对象数必须一致。
-        let per_object = |events: &[(usize, String)]| {
-            let mut objects = BTreeMap::<usize, Vec<String>>::new();
-            for (id, action) in events {
-                objects.entry(*id).or_default().push(action.clone());
-            }
-            let mut sequences = objects.into_values().collect::<Vec<_>>();
-            // 可交换的打印对象先分离线程交错，再应用同一相邻临时引用压缩规则。
-            for sequence in &mut sequences {
-                sequence.dedup();
-            }
-            sequences.sort();
-            sequences
-        };
-        assert_eq!(
-            per_object(&native),
-            per_object(&vm),
-            "{label}: 独立打印对象的释放序列"
-        );
-    } else {
-        assert_eq!(native, vm, "{label}: VM/native 完整释放对象顺序");
-    }
-    if label == "lock-guard-scope-release" {
-        for events in [&native, &vm] {
-            let guards = events
-                .iter()
-                .filter(|(_, action)| action == "lock_guard_release")
-                .collect::<Vec<_>>();
-            assert_eq!(guards.len(), 2, "{label}: 两个函数各释放一个 guard");
-            assert_ne!(guards[0].0, guards[1].0, "{label}: 每个 guard 恰好释放一次");
-        }
-    }
 }
 
 #[test]
@@ -589,6 +517,24 @@ fn native_concurrency_llvm_assembly_fixtures() {
 #[ignore = "需要 XIAO_CLANG、XIAO_LLVM_AS、XIAO_LLC、XIAO_RUNTIME_LIBRARY 和 XIAO_TARGET_TRIPLE"]
 /// 在目标原生工具链下比较线程/共享黄金输出和 Runtime 031 负例。
 fn native_concurrency_vm_native_differential_matches_from_same_ir() {
+    let trace_parent = std::env::var_os("XIAO_22D_TRACE_DIR").map(PathBuf::from);
+    let selected_case = std::env::var_os("XIAO_22D_CASE")
+        .map(|case| case.into_string().expect("XIAO_22D_CASE 必须是 UTF-8"));
+    if let Some(label) = &selected_case {
+        assert!(
+            trace_parent.is_some(),
+            "单夹具执行必须指定 XIAO_22D_TRACE_DIR"
+        );
+        assert!(
+            matches!(
+                label.as_str(),
+                "native-lock-wait-027"
+                    | "xcon-bounded-string-success"
+                    | "spawn-join-str-multiargument"
+            ),
+            "无法选择 22D 单夹具 {label}"
+        );
+    }
     let target = TargetDescription::host();
     let configured_target = std::env::var("XIAO_TARGET_TRIPLE").expect("XIAO_TARGET_TRIPLE");
     assert_eq!(configured_target, target.triple);
@@ -604,8 +550,23 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
         )
         .expect("Runtime 的目标系统库清单应能读取");
     let suffix = if cfg!(windows) { "exe" } else { "bin" };
-    let root = std::env::temp_dir().join(format!("xiao-22d-native-{}", std::process::id()));
-    std::fs::create_dir_all(&root).expect("创建原生并发临时目录");
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("系统时间")
+        .as_nanos();
+    let root = std::env::temp_dir().join(format!(
+        "xiao-22d-native-{}-{timestamp}",
+        std::process::id()
+    ));
+    fs::create_dir(&root).expect("创建原生并发临时目录");
+    let trace_root = if let Some(parent) = trace_parent {
+        let directory = parent.join(root.file_name().expect("22D 临时目录名"));
+        fs::create_dir(&directory).expect("创建独立的 22D 轨迹目录");
+        directory
+    } else {
+        root.clone()
+    };
+    println!("22D-TRACE-DIR {}", trace_root.display());
     let release_trace_environment = ReleaseTraceEnvironment::new();
     let cases = [
         (
@@ -640,11 +601,15 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             .iter()
             .map(|(label, source, stdout)| (*label, source.as_str(), stdout.as_str())),
     ) {
+        if selected_case.as_deref().is_some_and(|case| case != label) {
+            continue;
+        }
+        println!("22D-CASE {label}: start");
         let frontend_request = FrontendRequest::from_text(source);
         let artifact = FrontendCompiler::new()
             .compile(&frontend_request)
             .unwrap_or_else(|error| panic!("{label}: 差分源码应通过统一前端：{error:?}"));
-        let vm_trace = root.join(format!("{label}.vm-release-trace.tsv"));
+        let vm_trace = trace_root.join(format!("{label}.vm-release-trace.tsv"));
         release_trace_environment.set_path(&vm_trace);
         xiao_runtime::start_release_trace_from_env();
         let vm = FrontendVmDriver::new().run_artifact(
@@ -700,9 +665,8 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
         let native = FrontendNativeDriver::new()
             .build_artifact(&artifact, &request)
             .unwrap_or_else(|error| panic!("{label}: 原生构建失败：{error}"));
-        let native_trace = root.join(format!("{label}.native-release-trace.tsv"));
-        release_trace_environment.set_path(&native_trace);
-        let execution = run_native_with_timeout(&native.native.executable, label);
+        let native_trace = trace_root.join(format!("{label}.native-release-trace.tsv"));
+        let execution = run_native_with_timeout(&native.native, label, &native_trace);
         assert_eq!(execution.status.code(), Some(0), "{label}");
         assert!(
             execution.stderr.is_empty(),
@@ -714,7 +678,7 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             .replace("\r\n", "\n");
         assert_case_stdout(label, &native_output, &vm_output);
         assert_case_stdout(label, &native_output, expected_output);
-        assert_case_release_trace(label, &native_trace, &vm_trace);
+        release_trace::assert_case(label, &native_trace, &vm_trace);
         println!("22D-CASE {label}: ok");
     }
 
@@ -791,11 +755,15 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             },
         ))
     {
+        if selected_case.as_deref().is_some_and(|case| case != label) {
+            continue;
+        }
+        println!("22D-CASE {label}: start");
         let frontend_request = FrontendRequest::from_text(source);
         let artifact = FrontendCompiler::new()
             .compile(&frontend_request)
             .unwrap_or_else(|error| panic!("{label}: 负例源码应通过前端：{error:?}"));
-        let vm_trace = root.join(format!("{label}.vm-release-trace.tsv"));
+        let vm_trace = trace_root.join(format!("{label}.vm-release-trace.tsv"));
         release_trace_environment.set_path(&vm_trace);
         xiao_runtime::start_release_trace_from_env();
         let vm = FrontendVmDriver::new().run_artifact(
@@ -857,9 +825,8 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
         let native = FrontendNativeDriver::new()
             .build_artifact(&artifact, &request)
             .unwrap_or_else(|error| panic!("{label}: 原生构建失败：{error}"));
-        let native_trace = root.join(format!("{label}.native-release-trace.tsv"));
-        release_trace_environment.set_path(&native_trace);
-        let execution = run_native_with_timeout(&native.native.executable, label);
+        let native_trace = trace_root.join(format!("{label}.native-release-trace.tsv"));
+        let execution = run_native_with_timeout(&native.native, label, &native_trace);
         assert_eq!(
             execution.status.code(),
             Some(3),
@@ -900,18 +867,35 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
                 "{label}: suppressed 未投影：{stderr}"
             );
         }
-        if label == "native-running-cancellation-finally" {
-            // 锁轮询握手次数取决于调度时机，临时守卫的释放序列不适合作为差分基准。
-            assert!(
-                !release_trace_sequence(&native_trace).is_empty(),
-                "{label}: native 应记录握手对象释放"
+        release_trace::assert_case(label, &native_trace, &vm_trace);
+        if label == release_trace::LOCK_WAIT && selected_case.is_none() {
+            let label = release_trace::LOCK_WAIT_PRECHECK;
+            let controlled_ir =
+                with_controlled_lock_cancellation(&native.native.module.text, source);
+            let executable = toolchain
+                .compile_with_runtime_components(
+                    &controlled_ir,
+                    &target,
+                    root.join(format!("{label}.{suffix}")),
+                    None,
+                    &native.native.module.runtime_components,
+                )
+                .unwrap_or_else(|error| panic!("{label}: 原生构建失败：{error}"));
+            let trace = trace_root.join(format!("{label}.native-release-trace.tsv"));
+            let execution = run_traced_executable(&executable, label, &trace);
+            println!("22D-PRECHECK {label} exit={:?}", execution.status.code());
+            assert_eq!(execution.status.code(), Some(3), "{label}: native 退出码");
+            let stdout = String::from_utf8(execution.stdout).expect("native stdout 为 UTF-8");
+            assert_eq!(stdout.replace("\r\n", "\n"), expected_output, "{label}");
+            let controlled_error =
+                String::from_utf8(execution.stderr).expect("native stderr 为 UTF-8");
+            assert_eq!(
+                error_identity_projection(&controlled_error),
+                error_identity_projection(&stderr),
+                "{label}"
             );
-            assert!(
-                !release_trace_sequence(&vm_trace).is_empty(),
-                "{label}: VM 应记录握手对象释放"
-            );
-        } else {
-            assert_case_release_trace(label, &native_trace, &vm_trace);
+            release_trace::assert_case(label, &trace, &vm_trace);
+            println!("22D-REGRESSION {label}: ok");
         }
         if matches!(
             label,
@@ -924,13 +908,35 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
         println!("22D-CASE {label}: ok");
     }
 
+    if selected_case.is_none() {
+        assert_detached_failure(
+            &root,
+            &trace_root,
+            &release_trace_environment,
+            target,
+            toolchain,
+            suffix,
+        );
+    }
+    let _ = fs::remove_dir_all(root);
+}
+
+fn assert_detached_failure(
+    root: &Path,
+    trace_root: &Path,
+    release_trace_environment: &ReleaseTraceEnvironment,
+    target: TargetDescription,
+    toolchain: Toolchain,
+    suffix: &str,
+) {
+    println!("22D-CASE detached-failure: start");
     let detached_source = "from std.concurrent import current_runtime, spawn, join, detach\ndef grandchild() -> int\n    raise ArithmeticError(code = \"detached-child\")\n    return 0\ndef child() -> int\n    rt = current_runtime()\n    nested = spawn(rt, grandchild)\n    detach(nested)\n    return 1\nrt = current_runtime()\nthread = spawn(rt, child)\njoin(thread)\nprint(\"main\")\n";
     let detached_request = FrontendRequest::from_text(detached_source)
         .with_context(FrontendContext::host().with_locale("en-US"));
     let detached_artifact = FrontendCompiler::new()
         .compile(&detached_request)
         .expect("detached 负例应通过前端");
-    let detached_vm_trace = root.join("detached-failure.vm-release-trace.tsv");
+    let detached_vm_trace = trace_root.join("detached-failure.vm-release-trace.tsv");
     release_trace_environment.set_path(&detached_vm_trace);
     xiao_runtime::start_release_trace_from_env();
     let vm_detached = FrontendVmDriver::new().run_artifact(
@@ -974,10 +980,12 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             ),
         )
         .expect("detached native 负例应构建");
-    let detached_native_trace = root.join("detached-failure.native-release-trace.tsv");
-    release_trace_environment.set_path(&detached_native_trace);
-    let detached_output =
-        run_native_with_timeout(&detached_native.native.executable, "detached-failure");
+    let detached_native_trace = trace_root.join("detached-failure.native-release-trace.tsv");
+    let detached_output = run_native_with_timeout(
+        &detached_native.native,
+        "detached-failure",
+        &detached_native_trace,
+    );
     assert_eq!(detached_output.status.code(), Some(0));
     assert_eq!(String::from_utf8(detached_output.stdout).unwrap(), "main\n");
     let detached_stderr = String::from_utf8(detached_output.stderr).unwrap();
@@ -988,11 +996,10 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             .contains(&detached_message_projection(&vm_detached_projection)),
         "native detached 报告应匹配 VM 的错误身份、cause 与 locale 投影：expected={vm_detached_projection:?}, stderr={detached_stderr:?}"
     );
-    assert_eq!(
-        release_trace_sequence(&detached_native_trace),
-        release_trace_sequence(&detached_vm_trace),
-        "detached-failure: VM/native 完整释放对象顺序"
+    release_trace::assert_case(
+        "detached-failure",
+        &detached_native_trace,
+        &detached_vm_trace,
     );
     println!("22D-CASE detached-failure: ok");
-    let _ = std::fs::remove_dir_all(root);
 }

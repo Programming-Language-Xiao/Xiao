@@ -55,22 +55,26 @@ fn fs_tutorial_matches_native_golden() {
         .unwrap()
         .probe_versions()
         .unwrap();
-    assert_eq!(CODEGEN_VERSION, 25);
-    let previous = required("XIAO_B3_2_NATIVE_ARTIFACT");
-    let metadata = read_native_metadata(&previous, &target).unwrap().unwrap();
-    assert_eq!(metadata.generator_version, 24);
-    metadata.validate(&target, &Default::default(), 0).unwrap();
-    let old_fingerprint = toolchain.fingerprint(&target, 24);
-    let new_fingerprint = toolchain.fingerprint(&target, 25);
-    assert_ne!(old_fingerprint, new_fingerprint);
-    println!(
-        "B3-3-VERSION {}",
-        serde_json::json!({
-            "baseline": 24, "current": 25, "older_metadata": "accepted",
-            "baseline_fingerprint": old_fingerprint.to_string(),
-            "current_fingerprint": new_fingerprint.to_string()
-        })
-    );
+    let current_fingerprint = toolchain.fingerprint(&target, CODEGEN_VERSION);
+    let mut baselines = vec![(24, required("XIAO_B3_2_NATIVE_ARTIFACT"))];
+    if let Some(previous) = std::env::var_os("XIAO_B3_3_NATIVE_ARTIFACT") {
+        baselines.push((25, PathBuf::from(previous)));
+    }
+    for (generator, previous) in baselines {
+        let metadata = read_native_metadata(&previous, &target).unwrap().unwrap();
+        assert_eq!(metadata.generator_version, generator);
+        metadata.validate(&target, &Default::default(), 0).unwrap();
+        let previous_fingerprint = toolchain.fingerprint(&target, generator);
+        assert_ne!(previous_fingerprint, current_fingerprint);
+        println!(
+            "B3-3-VERSION {}",
+            serde_json::json!({
+                "baseline": generator, "current": CODEGEN_VERSION, "older_metadata": "accepted",
+                "baseline_fingerprint": previous_fingerprint.to_string(),
+                "current_fingerprint": current_fingerprint.to_string()
+            })
+        );
+    }
 
     let root = std::env::temp_dir().join(format!("xiao-b3-3-native-{}", std::process::id()));
     fs::create_dir(&root).unwrap();
@@ -116,14 +120,16 @@ fn fs_tutorial_matches_native_golden() {
         );
         assert_eq!(metadata.runtime_abi_max, metadata.runtime_abi_min);
         assert_eq!(metadata.stdlib.stdlib_interface_version, 1);
-        let older = NativeRuntimeSupport {
-            generator_version: 24,
-            ..Default::default()
-        };
-        assert_eq!(
-            metadata.validate(&target, &older, 0).unwrap_err().code,
-            "X17-XAR-007"
-        );
+        for generator_version in [24, CODEGEN_VERSION - 1] {
+            let older = NativeRuntimeSupport {
+                generator_version,
+                ..Default::default()
+            };
+            assert_eq!(
+                metadata.validate(&target, &older, 0).unwrap_err().code,
+                "X17-XAR-007"
+            );
+        }
         let artifact_sha256 = digest(&executable);
         let coff = composition.coff_link_identity.as_ref();
         if target.object_format == ObjectFormat::Coff {
@@ -150,7 +156,8 @@ fn fs_tutorial_matches_native_golden() {
                 "demo_empty": true, "verification": "complete", "components": composition.declared_components,
                 "observed": composition.observed_components, "unclassified": composition.unclassified_runtime_symbols,
                 "coff_map": coff.map(|binding| &binding.map_path), "coff_map_sha256": coff.map(|binding| &binding.map_sha256),
-                "generator": metadata.generator_version, "old_verifier": "X17-XAR-007"
+                "generator": metadata.generator_version, "old_verifier": "X17-XAR-007",
+                "previous_verifier_max": CODEGEN_VERSION - 1
             })
         );
     };
