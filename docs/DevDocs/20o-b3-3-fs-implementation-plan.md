@@ -1,7 +1,7 @@
 # 20O-B3-3. `fs` 实施规划
 
-> **状态（2026-11-25）**　B3-2 已完成 args/cli 内部收口，产品快照 `879ce625`，B3-3 入口已就绪；五项 fs 开工裁定已批准，B3-3 尚未开工。`b3_3_decisions_approved=true`、`b3_3_started=false`、`b3_3_passed=false`、`b3_4_entry_ready=false`，教程和 registry 仍为 `planned`。[B3-2 收口](assets/20o-b3/entry-20261125-b3-2-final/README.md)
-> **输入契约**　fs 使用 55～59，当前为 `reserved`；ABI 1.20、生成器 24、标准库接口 1 沿用 B3-2 产品身份；受限/沙箱模式在 B3-0C 已明确延期。
+> **状态（2026-11-26）**　B3-3 已开工。固定基线 `879ce625` 已通过入口复核，fs 的 Runtime、VM/TAC 和五个 C ABI 已接入。原生 lowering 将新增五个调用，生成器 25 等待 B3-3-ID 补充裁定。`b3_3_decisions_approved=true`、`b3_3_started=true`、`b3_3_passed=false`、`b3_4_entry_ready=false`。教程和 registry 为 `planned`。[实施记录](assets/20o-b3/entry-20261125-b3-3/README.md)
+> **输入契约**　fs 使用 55～59，基线为 `reserved`，本批已激活。当前产品身份为 ABI 1.20、生成器 24、标准库接口 1。受限/沙箱模式在 B3-0C 已明确延期。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-3 只处理 fs 产物，完整公共矩阵留 B3-7。
 > 入口：[B3-2 收口](assets/20o-b3/entry-20261125-b3-2-final/README.md)、[B3-0C 契约](assets/20o-b3/entry-20261123-b3-0c/contract-draft.md)、[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
 > B3-3 不实现 env/log，不升级教程/registry verified，不启动 B3-4/B4。
@@ -12,12 +12,12 @@
 | --- | --- |
 | B3-2 | `b3_2_passed=true`、`b3_3_entry_ready=true`；产品快照 `879ce625`，ABI 1.20、生成器 24、标准库接口 1 |
 | B3-0C | fs 的五个公开入口、路径、原子写、删除、重命名、元数据、错误、预算和平台差异已冻结 |
-| 当前 intrinsic 表 | 55～59 为 `reserved`，60～63 仍为 reserved；B3-3 只激活 55～59 |
+| 入口 intrinsic 表 | 55～63 为 `reserved`。B3-3 的激活范围为 55～59 |
 | 目标模块 | `fs` 扩展 |
 | 本批目标 | 激活 fs 55～59，实现普通宿主模式、原子写、枚举、删除、重命名、元数据和 C ABI；完成 VM/原生/教程/三平台证据 |
 | 本批不做 | env/log 实现、受限/沙箱模式、60～63 激活、registry/教程 verified、B3-4/B4、旧 721、历史债务 |
 | Windows COFF | fs 的 Windows 产物必须产品级 `Complete`；完整矩阵留 B3-7 |
-| 当前状态 | `b3_3_started=false`、`b3_3_passed=false`、`b3_4_entry_ready=false`、`b3_product_started=true` |
+| 当前状态 | `b3_3_started=true`、`b3_3_passed=false`、`b3_4_entry_ready=false`、`b3_product_started=true` |
 
 B3-3 是 **fs 实施批**，不是六模块并行批。普通宿主模式是首批唯一模式；受限/沙箱模式在 B3-0C 已明确延期，不得在 B3-3 临时扩大能力。B3-3 完成后只声明 fs 内部可用，不升级教程或 registry verified。
 
@@ -65,7 +65,7 @@ b3_4_entry_ready = b3_3_passed and decisions_approved and no_product_scope_creep
 4. B3-0C 的 fs 签名、路径、原子写、错误、预算和平台表可读；
 5. Rust 1.96.0、三平台目标、VM、受控原生 O0/O3 和 Windows 产品验证器可用；
 6. 独立 target/Runtime/缓存、唯一任务根；fs 只操作任务专属临时目录；
-7. Windows args/cli 的 generator 24 记录和 fs 生成器增量裁定已登记；
+7. Windows args/cli 的生成器 24 记录已登记。改变生成文本的 fs 原生接线依 B3-3-ID 申请生成器 25；
 8. 教程/registry 仍为 `planned`，B3-3 不升级 verified。
 
 ## 三、已批准开工裁定
@@ -176,7 +176,7 @@ b3_4_entry_ready = b3_3_passed and decisions_approved and no_product_scope_creep
 
 - 把受限/沙箱模式塞进 B3-3 或默认扩大宿主权限；
 - `write_text` 非原子、覆盖语义不清或失败后遗留临时文件；
-- `list_dir` 递归、跟随末段链接或超限部分交付；
+- `list_dir` 递归或超限部分交付。目录路径按宿主规则解析链接；
 - `remove` 递归删除或跟随末段链接；
 - `rename` 跨卷/覆盖语义不明确却返回成功；
 - 只做 VM 或只做原生，导致能力和错误不一致；
@@ -205,7 +205,7 @@ core/rust/crates/xiao-runtime/src/                fs Runtime/C ABI
 core/rust/crates/xiao-vm/src/semantics/           fs VM/TAC
 core/rust/crates/xiao-codegen-llvm/src/           fs 原生 lowering
 tests/fixtures/docs/fs/                           fs 教程最终夹具
-docs/module-registry.json                         只读核对 planned，不升级
+docs/module-registry.json                         fs 登记为 planned
 ```
 
 本页只做 B3-3 规划；B3-4 及后续仍未开始。

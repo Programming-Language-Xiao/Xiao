@@ -1152,6 +1152,34 @@ unsafe extern "C" {
     pub fn xiao_runtime_args_program_name(out: *mut XiaoValue, capabilities: u64) -> i32;
     /// 读取当前运行的有序参数，成功时替换输出槽并交付拥有的独立数组。
     pub fn xiao_runtime_args_argv(out: *mut XiaoValue, capabilities: u64) -> i32;
+    /// 读取借用实参，在同目录原子提交完整 UTF-8 文本。
+    pub fn xiao_runtime_fs_write_text(
+        path: *const XiaoValue,
+        text: *const XiaoValue,
+        overwrite: *const XiaoValue,
+        capabilities: u64,
+    ) -> i32;
+    /// 枚举直接子项。成功替换初始化的拥有槽，失败保留原值。
+    pub fn xiao_runtime_fs_list_dir(
+        path: *const XiaoValue,
+        out: *mut XiaoValue,
+        capabilities: u64,
+    ) -> i32;
+    /// 非递归删除借用路径指定的目录项。
+    pub fn xiao_runtime_fs_remove(path: *const XiaoValue, capabilities: u64) -> i32;
+    /// 同卷移动目录项，覆盖由借用的 bool 值指定。
+    pub fn xiao_runtime_fs_rename(
+        source: *const XiaoValue,
+        destination: *const XiaoValue,
+        overwrite: *const XiaoValue,
+        capabilities: u64,
+    ) -> i32;
+    /// 读取末段目录项的元数据。成功替换初始化的拥有槽，失败保留原值。
+    pub fn xiao_runtime_fs_metadata(
+        path: *const XiaoValue,
+        out: *mut XiaoValue,
+        capabilities: u64,
+    ) -> i32;
     /// 生成器内部适配器。校验宿主参数后为独立原生入口安装快照，并在返回时恢复。
     #[doc(hidden)]
     pub fn xiao_runtime_args_run_native(entry: Option<extern "C" fn() -> i32>) -> i32;

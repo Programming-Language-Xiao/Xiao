@@ -1,0 +1,14 @@
+def write_text(str path, str text, bool overwrite) -> none
+    os_fs_write_text(path, text, overwrite)
+
+def list_dir(str path) -> [str]
+    return os_fs_list_dir(path)
+
+def remove(str path) -> none
+    os_fs_remove(path)
+
+def rename(str source, str destination, bool overwrite) -> none
+    os_fs_rename(source, destination, overwrite)
+
+def metadata(str path) -> dict<str, int>
+    return os_fs_metadata(path)

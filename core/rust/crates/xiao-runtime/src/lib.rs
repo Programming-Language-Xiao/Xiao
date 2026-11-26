@@ -26,6 +26,8 @@ mod vm_concurrency;
 pub mod containers;
 /// 稳定 Runtime 错误、原因链和结构化参数。
 pub mod errors;
+/// 由 VM 和 C ABI 共用的文件系统路径操作。
+pub mod filesystem;
 /// 不透明对象头、强/弱句柄和引用计数策略。
 pub mod memory;
 /// VM 与 Runtime ABI 共用的资源操作与能力检查。

@@ -113,6 +113,7 @@ const EXECUTABLE_STANDARD_MODULES: &[&str] = &[
     "csv",
     "dict",
     "fmt",
+    "fs",
     "hex",
     "math",
     "os",

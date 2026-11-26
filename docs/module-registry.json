@@ -3,6 +3,24 @@
   "schemaVersion": 1,
   "modules": [
     {
+      "id": "stdlib.fs",
+      "stage": "20O-B3-3",
+      "status": "planned",
+      "code": [
+        "stdlib/fs.xiao",
+        "core/rust/crates/xiao-runtime/src/filesystem.rs",
+        "core/rust/crates/xiao-runtime/src/abi_fs.rs"
+      ],
+      "tests": [
+        "core/rust/crates/xiao-driver/tests/20o_b3_fs_tutorial.rs",
+        "core/rust/crates/xiao-runtime/src/filesystem_tests.rs",
+        "tests/fixtures/docs/fs"
+      ],
+      "usedocs": [
+        "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials/fs.md"
+      ]
+    },
+    {
       "id": "stdlib.args",
       "stage": "20O-B3-2",
       "status": "planned",

@@ -54,7 +54,7 @@ impl TimeUnit {
     }
 
     /// 先按整数单位向下取整，再检查输出范围。
-    fn convert(self, nanos: i128) -> RuntimeResult<i64> {
+    pub(crate) fn convert(self, nanos: i128) -> RuntimeResult<i64> {
         i64::try_from(nanos.div_euclid(i128::from(self.nanoseconds())))
             .map_err(|_| RuntimeError::numeric_overflow("时间读数超出 int 范围"))
     }

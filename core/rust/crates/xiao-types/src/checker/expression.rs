@@ -5,7 +5,7 @@
 
 use xiao_diagnostics::{DiagnosticParam, error_kind_of};
 use xiao_intrinsics::{
-    CMATH_DECLARATIONS, IntrinsicKind, ValueType, cmath_parameters, time_parameters,
+    CMATH_DECLARATIONS, IntrinsicKind, ValueType, cmath_parameters, fs_parameters, time_parameters,
 };
 use xiao_source::SourceSpan;
 use xiao_syntax::{
@@ -13,7 +13,7 @@ use xiao_syntax::{
     ScalarType, UnaryOperator,
 };
 
-use crate::containers::ArrayType;
+use crate::containers::{ArrayType, DictType};
 use crate::conversion::{ConversionKind, can_assign, classify_conversion, is_numeric};
 use crate::diagnostics::*;
 use crate::functions::{FunctionParameterSignature, FunctionSignature};
@@ -24,13 +24,16 @@ use crate::types::Type;
 
 use super::{RuntimeCheckKind, TypeChecker, TypedNode};
 
-/// 解析时钟声明中允许的三种语言类型。
-fn time_intrinsic_type(value: ValueType) -> Type {
+/// 将宿主库声明中的语言类型映射到已有类型。
+fn host_intrinsic_type(value: ValueType) -> Type {
     match value {
         ValueType::Str => Type::scalar(ScalarType::Str),
         ValueType::Int => Type::scalar(ScalarType::Int),
+        ValueType::Bool => Type::scalar(ScalarType::Bool),
+        ValueType::StrArray => Type::array(Type::scalar(ScalarType::Str)),
+        ValueType::StrIntDict => Type::DictTable(DictType::open(Type::scalar(ScalarType::Int))),
         ValueType::None => Type::None,
-        _ => unreachable!("固定的 time 类型"),
+        _ => unreachable!("固定的宿主库类型"),
     }
 }
 
@@ -664,23 +667,25 @@ impl<'source> TypeChecker<'source> {
             return self.check_cmath_intrinsic_call(declaration, arguments, span);
         }
         if let Some(declaration) = self.intrinsic_decl(callee)
-            && declaration.kind == IntrinsicKind::Time
+            && matches!(declaration.kind, IntrinsicKind::Time | IntrinsicKind::Fs)
         {
             self.record_intrinsic_call(callee, span);
-            let parameters = time_parameters(declaration.id).expect("time 形参已在契约表校验");
+            let parameters = time_parameters(declaration.id)
+                .or_else(|| fs_parameters(declaration.id))
+                .expect("宿主库形参已在契约表校验");
             let parameters: Vec<_> = parameters
                 .iter()
                 .map(|&(name, ty)| FunctionParameterSignature {
                     name: format!("ascii:{name}"),
                     kind: FunctionParameterKind::PositionalOrKeyword,
-                    ty: time_intrinsic_type(ty),
+                    ty: host_intrinsic_type(ty),
                     has_default: false,
                 })
                 .collect();
             let signature = FunctionSignature::new(
                 format!("ascii:{}", declaration.public_name),
                 parameters,
-                time_intrinsic_type(declaration.signature.return_type),
+                host_intrinsic_type(declaration.signature.return_type),
                 span,
             );
             return self.check_function_arguments(&signature, arguments, span);

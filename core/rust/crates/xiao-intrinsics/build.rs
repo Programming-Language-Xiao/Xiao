@@ -146,6 +146,49 @@ fn main() {
                     assert_eq!(row.capability, "process");
                     assert_eq!(row.error, "runtime.type_mismatch");
                 }
+                "fs" => {
+                    let (binding, arity, parameter, result, effect) = match row.id {
+                        55 => (
+                            "fs_write_text",
+                            "three",
+                            "two_strings_and_bool",
+                            "none",
+                            "writes_filesystem",
+                        ),
+                        56 => (
+                            "fs_list_dir",
+                            "one",
+                            "str",
+                            "str_array",
+                            "reads_filesystem_and_allocates",
+                        ),
+                        57 => ("fs_remove", "one", "str", "none", "writes_filesystem"),
+                        58 => (
+                            "fs_rename",
+                            "three",
+                            "two_strings_and_bool",
+                            "none",
+                            "writes_filesystem",
+                        ),
+                        59 => (
+                            "fs_metadata",
+                            "one",
+                            "str",
+                            "str_int_dict",
+                            "reads_filesystem_and_allocates",
+                        ),
+                        _ => panic!("fs ID 必须为 55～59"),
+                    };
+                    assert_eq!(row.name, format!("os_{binding}"));
+                    assert_eq!(row.vm_binding, binding);
+                    assert_eq!(row.abi_binding, binding);
+                    assert_eq!(row.arity, arity);
+                    assert_eq!(row.parameter_type, parameter);
+                    assert_eq!(row.return_type, result);
+                    assert_eq!(row.effect, effect);
+                    assert_eq!(row.capability, "filesystem");
+                    assert_eq!(row.error, "runtime.type_mismatch");
+                }
                 "lfloat_divide" => {
                     assert_eq!(row.id, 33);
                     assert_eq!(row.arity, "four");
@@ -345,7 +388,7 @@ fn main() {
         } else {
             match row.status.as_str() {
                 "reserved" => {
-                    assert!((55..=63).contains(&row.id), "预登记的 ID 必须为 55～63");
+                    assert!((60..=63).contains(&row.id), "预登记的 ID 必须为 60～63");
                     assert!(row.name.starts_with("os_"));
                     assert_eq!(row.kind, "reserved");
                     assert!(

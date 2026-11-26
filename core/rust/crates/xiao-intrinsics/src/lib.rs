@@ -63,6 +63,7 @@ pub enum IntrinsicKind {
     Cmath,
     Time,
     Args,
+    Fs,
     Print,
     Input,
     ResourceOpenFile,
@@ -81,6 +82,7 @@ pub enum Arity {
     One,
     OptionalOne,
     Two,
+    Three,
     Four,
     Variadic,
     Error,
@@ -99,6 +101,7 @@ pub enum ValueType {
     Lfloat,
     Str,
     StrArray,
+    StrIntDict,
     Bool,
     Set,
     SetElement,
@@ -106,6 +109,7 @@ pub enum ValueType {
     ErrorParameters,
     LfloatDivideParameters,
     TimeValueAndUnit,
+    TwoStringsAndBool,
     Error,
     File,
     Directory,
@@ -121,6 +125,7 @@ pub enum Effects {
     WritesStdout,
     ReadsStdin,
     ReadsFilesystem,
+    ReadsFilesystemAndAllocates,
     WritesFilesystem,
     SpawnsProcess,
     WaitsProcess,
@@ -257,6 +262,11 @@ pub enum VmBinding {
     TimeSleep,
     ArgsProgramName,
     ArgsArgv,
+    FsWriteText,
+    FsListDir,
+    FsRemove,
+    FsRename,
+    FsMetadata,
     Print,
     Input,
     ResourceOpenFile,
@@ -295,6 +305,11 @@ pub enum AbiBinding {
     TimeSleep,
     ArgsProgramName,
     ArgsArgv,
+    FsWriteText,
+    FsListDir,
+    FsRemove,
+    FsRename,
+    FsMetadata,
     SetAdd,
     SetRemove,
     ArrayPush,
@@ -359,6 +374,25 @@ pub const fn time_parameters(id: IntrinsicId) -> Option<&'static [(&'static str,
     }
 }
 
+/// fs 位置与命名参数共同使用的冻结形参表。
+#[must_use]
+pub const fn fs_parameters(id: IntrinsicId) -> Option<&'static [(&'static str, ValueType)]> {
+    match id.get() {
+        55 => Some(&[
+            ("path", ValueType::Str),
+            ("text", ValueType::Str),
+            ("overwrite", ValueType::Bool),
+        ]),
+        56 | 57 | 59 => Some(&[("path", ValueType::Str)]),
+        58 => Some(&[
+            ("source", ValueType::Str),
+            ("destination", ValueType::Str),
+            ("overwrite", ValueType::Bool),
+        ]),
+        _ => None,
+    }
+}
+
 impl AbiBinding {
     /// time 的链接符号，其他绑定沿各自入口发射。
     #[must_use]
@@ -378,6 +412,19 @@ impl AbiBinding {
         match self {
             Self::ArgsProgramName => Some("xiao_runtime_args_program_name"),
             Self::ArgsArgv => Some("xiao_runtime_args_argv"),
+            _ => None,
+        }
+    }
+
+    /// 返回 fs 的固定 C ABI 符号。
+    #[must_use]
+    pub const fn fs_symbol(self) -> Option<&'static str> {
+        match self {
+            Self::FsWriteText => Some("xiao_runtime_fs_write_text"),
+            Self::FsListDir => Some("xiao_runtime_fs_list_dir"),
+            Self::FsRemove => Some("xiao_runtime_fs_remove"),
+            Self::FsRename => Some("xiao_runtime_fs_rename"),
+            Self::FsMetadata => Some("xiao_runtime_fs_metadata"),
             _ => None,
         }
     }
@@ -793,7 +840,7 @@ mod tests {
             .map(|d| d.id.get())
             .collect();
         active.sort_unstable();
-        assert_eq!(active, (1..=54).collect::<Vec<_>>());
+        assert_eq!(active, (1..=59).collect::<Vec<_>>());
         for (index, &(name, vm, abi)) in CMATH_DECLARATIONS.iter().enumerate() {
             let id = IntrinsicId::new(34 + index as u32).unwrap();
             let declaration = active_by_id(id).unwrap();
@@ -920,7 +967,7 @@ mod tests {
     }
     #[test]
     fn b3_reserved_ids_have_identity_without_callable_bindings() {
-        for raw in 55..=63 {
+        for raw in 60..=63 {
             let id = IntrinsicId::new(raw).unwrap();
             let declaration = by_id(id).unwrap();
             assert_eq!(declaration.status, DeclarationStatus::Reserved);
@@ -928,6 +975,34 @@ mod tests {
             assert_eq!(declaration.abi_binding, AbiBinding::None);
             assert!(active_by_id(id).is_none());
             assert!(by_name(declaration.public_name).is_none());
+        }
+    }
+
+    #[test]
+    fn fs_parameters_and_symbols_match_the_active_contract() {
+        for (id, name, fields) in [
+            (55, "write_text", &["path", "text", "overwrite"][..]),
+            (56, "list_dir", &["path"][..]),
+            (57, "remove", &["path"][..]),
+            (58, "rename", &["source", "destination", "overwrite"][..]),
+            (59, "metadata", &["path"][..]),
+        ] {
+            let id = IntrinsicId::new(id).unwrap();
+            let declared = active_by_id(id).unwrap();
+            let parameters = fs_parameters(id).unwrap();
+            assert_eq!(declared.kind, IntrinsicKind::Fs);
+            assert_eq!(declared.capability, Capability::Filesystem);
+            assert_eq!(declared.public_name, format!("os_fs_{name}"));
+            assert_eq!(
+                declared.abi_binding.fs_symbol().unwrap(),
+                format!("xiao_runtime_fs_{name}")
+            );
+            assert!(
+                parameters
+                    .iter()
+                    .map(|&(name, _)| name)
+                    .eq(fields.iter().copied())
+            );
         }
     }
     #[test]

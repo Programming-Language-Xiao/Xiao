@@ -79,30 +79,31 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                     .map_err(Fault::Error)?;
                 let clock = self.clock.clone();
                 let stopped = clock
-                    .sleep(duration, || {
-                        if self
-                            .cancellation
-                            .as_ref()
-                            .is_some_and(|source| source.cancellation_requested())
-                        {
-                            return Some(Fault::Cancelled);
-                        }
-                        if let Err(fault) = self.concurrent_checkpoint() {
-                            return Some(fault);
-                        }
-                        if self
-                            .cancellation
-                            .as_ref()
-                            .is_some_and(|source| source.deadline_reached())
-                        {
-                            return Some(Fault::Cancelled);
-                        }
-                        None
-                    })
+                    .sleep(duration, || self.host_checkpoint().err())
                     .map_err(Fault::Error)?;
                 stopped.map_or(Ok(RuntimeValue::None), Err)
             }
             _ => Err(mismatch()),
         }
+    }
+
+    /// 宿主操作按显式取消、子任务取消、驱动截止顺序检查。
+    pub(super) fn host_checkpoint(&mut self) -> Result<(), Fault> {
+        if self
+            .cancellation
+            .as_ref()
+            .is_some_and(|source| source.cancellation_requested())
+        {
+            return Err(Fault::Cancelled);
+        }
+        self.concurrent_checkpoint()?;
+        if self
+            .cancellation
+            .as_ref()
+            .is_some_and(|source| source.deadline_reached())
+        {
+            return Err(Fault::Cancelled);
+        }
+        Ok(())
     }
 }

@@ -36,6 +36,8 @@ mod array_intrinsics;
 /// 并发计划、隔离子 VM 和边界错误。
 #[path = "concurrent.rs"]
 mod concurrent;
+#[path = "fs_intrinsics.rs"]
+mod fs_intrinsics;
 /// 模块初始化与上下文切换。
 #[path = "module_exec.rs"]
 mod module_exec;
@@ -1861,6 +1863,9 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         })?;
         if declaration.kind == xiao_intrinsics::IntrinsicKind::Time {
             return self.execute_time(declaration, arguments, span);
+        }
+        if declaration.kind == xiao_intrinsics::IntrinsicKind::Fs {
+            return self.execute_fs(declaration, arguments, span);
         }
         if matches!(
             declaration.vm_binding,

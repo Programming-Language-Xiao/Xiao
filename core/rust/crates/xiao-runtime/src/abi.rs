@@ -54,6 +54,8 @@ mod abi_concurrency;
 mod abi_diagnostics;
 #[path = "abi_dynamic.rs"]
 mod abi_dynamic;
+#[path = "abi_fs.rs"]
+mod abi_fs;
 #[path = "abi_io.rs"]
 mod abi_io;
 /// B2 四参除法只读输入与拥有输出边界。

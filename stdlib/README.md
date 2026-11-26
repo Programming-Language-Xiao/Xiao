@@ -30,6 +30,8 @@
   `X06-RUNTIME-015`，不支持新增键；20L 同时提供八个等价的静态字典方法。
 - [`args`](args.md) 提供程序名和参数快照，[`cli`](cli.md) 提供纯 Xiao 参数分组。两项登记为 `planned`。[实施进度](../docs/DevDocs/20o-b3-2-args-cli-implementation-plan.md)
 
+- [`fs`](fs.md) 提供普通宿主模式下的路径操作，登记为 `planned`。[实施进度](../docs/DevDocs/20o-b3-3-fs-implementation-plan.md)
+
 `stdlib.xiao-standard-library` 的 registry 条目是工具链骨架登记，维持 `draft`；它不适用
 `verified` 状态。20C/20M 可交付模块登记在 `stdlib.xiao-standard-library-first-modules`；
 B1七库分别使用`stdlib.<module>`条目，CLOSE阶段为verified；code/tests/usedocs指向实际产品、执行夹具和教程。
