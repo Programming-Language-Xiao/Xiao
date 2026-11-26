@@ -324,6 +324,10 @@ def derive(root, repo, prepared=False):
             require(file == "objects/" + identity(data)["sha256"] and len(data) == receipt["bytes"],
                     "CI 作业日志字节不符")
             logs[int(job)] = data
+        old_workspace = read_json(archive, "ci/first-workspace/jobs.json")["jobs"]
+        require(len(old_workspace) == 1 and old_workspace[0]["conclusion"] == "failure"
+                and b"A0-COVERAGE-001" in logs[old_workspace[0]["id"]],
+                "首轮工作区覆盖率失败日志缺失")
         link_job = ci["maintenance"]["jobs"]["Native differential regression (Linux)"]
         match = re.search(rb"RUNTIME-COMPONENTS exports=(\d+) target=x86_64-unknown-linux-gnu result=passed",
                           logs[link_job])

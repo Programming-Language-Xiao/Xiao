@@ -79,7 +79,7 @@ def main():
             if run_id != args.workspace:
                 run_receipt(archive, label, run_id)
         logs = {}
-        for job_id in (139717611487, 139717611437, 139717611881, 139721595232, 139724477677):
+        for job_id in (139717611540, 139717611487, 139717611437, 139717611881, 139721595232, 139724477677):
             data = gh("api", f"repos/{REPOSITORY}/actions/jobs/{job_id}/logs")
             logs[str(job_id)] = keep(archive, f"job-{job_id}.log", data)
         archive.writestr("ci/job-logs.json", json.dumps(logs, indent=2) + "\n")
