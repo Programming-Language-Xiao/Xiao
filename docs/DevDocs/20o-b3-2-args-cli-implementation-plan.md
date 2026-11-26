@@ -199,7 +199,7 @@ b3_3_entry_ready = b3_2_passed and decisions_approved and no_product_scope_creep
 
 ## 八、B3-3 交接
 
-B3-3 的入口为 ABI 1.20、生成器 24、标准库接口 1，引用 args/cli 三平台结果。fs 的 COFF 由其产品产物单独验证。发现 args/cli 与 B3-0B 冲突时回 B3-0 修订并重新冻结。
+B3-3 的入口为 ABI 1.20、生成器 24、标准库接口 1，引用 args/cli 三平台结果。fs 的 COFF 由其产品产物单独验证。[B3-3 fs 实施规划](20o-b3-3-fs-implementation-plan.md) 已建立，B3-3 尚未开工。发现 args/cli 与 B3-0B 冲突时回 B3-0 修订并重新冻结。
 
 交接必须包含：
 
