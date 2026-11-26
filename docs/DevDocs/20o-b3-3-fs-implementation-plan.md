@@ -1,6 +1,6 @@
 # 20O-B3-3. `fs` 实施规划
 
-> **状态（2026-11-25）**　B3-2 已完成 args/cli 内部收口，产品快照 `879ce625`，B3-3 入口已就绪；B3-3 尚未开工。`b3_3_started=false`、`b3_3_passed=false`、`b3_4_entry_ready=false`，教程和 registry 仍为 `planned`。[B3-2 收口](assets/20o-b3/entry-20261125-b3-2-final/README.md)
+> **状态（2026-11-25）**　B3-2 已完成 args/cli 内部收口，产品快照 `879ce625`，B3-3 入口已就绪；五项 fs 开工裁定已批准，B3-3 尚未开工。`b3_3_decisions_approved=true`、`b3_3_started=false`、`b3_3_passed=false`、`b3_4_entry_ready=false`，教程和 registry 仍为 `planned`。[B3-2 收口](assets/20o-b3/entry-20261125-b3-2-final/README.md)
 > **输入契约**　fs 使用 55～59，当前为 `reserved`；ABI 1.20、生成器 24、标准库接口 1 沿用 B3-2 产品身份；受限/沙箱模式在 B3-0C 已明确延期。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-3 只处理 fs 产物，完整公共矩阵留 B3-7。
 > 入口：[B3-2 收口](assets/20o-b3/entry-20261125-b3-2-final/README.md)、[B3-0C 契约](assets/20o-b3/entry-20261123-b3-0c/contract-draft.md)、[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
@@ -69,17 +69,17 @@ b3_4_entry_ready = b3_3_passed and decisions_approved and no_product_scope_creep
 7. Windows args/cli 的 generator 24 记录和 fs 生成器增量裁定已登记；
 8. 教程/registry 仍为 `planned`，B3-3 不升级 verified。
 
-## 三、首轮裁定
+## 三、已批准开工裁定
 
-| 编号 | 候选 | 必须由星崽定夺 |
+| 编号 | 冻结内容 | 来源 |
 | --- | --- | --- |
-| B3-3-ID | 只激活 55～59；60～63 保持 reserved；ABI 1.20、标准库接口 1 不变；生成器 25 只在 fs lowering 改变生成文本时申请 | 是否批准生成器增量；是否保持 55～63 的 reserved 边界 |
-| B3-3-FS | 首批只做普通宿主模式；相对路径按 cwd、绝对路径/`..`/中间链接交宿主；禁止覆盖时 `FS_EXISTS`；同目录原子写不可保证时 `FS_UNSUPPORTED` | 是否接受受限模式继续延期；失败清理和权限失败口径 |
-| B3-3-CABI | 五个 `xiao_runtime_fs_*` 符号；`write/remove/rename` 无输出槽，`list_dir/metadata` 有 `out`；末尾 `capabilities:u64`；状态 0/1/2/3/6/8 | 精确参数顺序、输出槽和所有权 |
-| B3-3-FIXTURES | fs 教程迁入 `tests/fixtures/docs/fs/tutorial.*`；无输入 JSON；任务入口创建空 `demo`，结束检查为空；只登记 fs 为 `planned` | 是否迁入正式夹具；registry planned 登记范围 |
-| B3-3-EVIDENCE | 三平台 fs VM/受控原生 O0/O3；Windows fs 产物产品级 COFF `Complete`；完整矩阵留 B3-7 | B3-3 是否只做 fs 产品级 COFF；是否接受 B3-7 做完整矩阵 |
+| B3-3-ID | 只激活 55～59；60～63 保持 reserved；ABI 1.20、标准库接口 1 不变；生成器 25 只在 fs lowering 改变生成文本时申请 | 星崽批准，B3-3 编号与版本问题卡 |
+| B3-3-FS | 首批只做普通宿主模式；相对路径按 cwd、绝对路径/`..`/中间链接交宿主；禁止覆盖时 `FS_EXISTS`；同目录原子写不可保证时 `FS_UNSUPPORTED`；受限模式继续延期 | 星崽批准，B3-3 fs 边界问题卡 |
+| B3-3-CABI | 五个 `xiao_runtime_fs_*` 符号；`write/remove/rename` 无输出槽，`list_dir/metadata` 有 `out`；末尾 `capabilities:u64`；状态 0/1/2/3/6/8 | 星崽批准，B3-3 C ABI 问题卡 |
+| B3-3-FIXTURES | fs 教程迁入 `tests/fixtures/docs/fs/tutorial.*`；无输入 JSON；任务入口创建空 `demo`，结束检查为空；只登记 fs 为 `planned` | 星崽批准，B3-3 夹具与验收问题卡 |
+| B3-3-EVIDENCE | 三平台 fs VM/受控原生 O0/O3；Windows fs 产物产品级 COFF `Complete`；完整矩阵留 B3-7 | 星崽批准，B3-3 夹具与验收问题卡 |
 
-五项答复登记来源、时点和适用范围。未答项保持“待裁定”，不得先写产品再补契约。
+五项答复均已登记来源、时点和适用范围；B3-3A 建立证据目录时归档为机器可读台账。未答项不得写成已冻结。
 
 ## 四、分批执行
 
