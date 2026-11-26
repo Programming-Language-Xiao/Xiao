@@ -48,10 +48,9 @@ B3-3 是 **fs 实施批**，不是六模块并行批。普通宿主模式是首�
 b3_3_passed =
   b3_3a_entry_and_baseline_verified
   and b3_3b_fs_intrinsics_implemented
-  and b3_3c_vm_tac_native_consistent
-  and b3_3d_c_abi_verified
-  and b3_3e_fs_tutorial_and_boundaries_passed
-  and b3_3f_evidence_audit_passed
+  and b3_3c_vm_tac_llvm_c_abi_native_consistent
+  and b3_3d_fs_tutorial_and_boundaries_passed
+  and b3_3e_evidence_audit_passed
 
 b3_4_entry_ready = b3_3_passed and decisions_approved and no_product_scope_creep
 ```
@@ -87,7 +86,7 @@ b3_4_entry_ready = b3_3_passed and decisions_approved and no_product_scope_creep
 
 1. 固定 B3-2 产品 `879ce625`、ABI 1.20/生成器 24/接口 1、两个 Cargo.lock、B1 28 守卫；
 2. 复核 intrinsic 55～59 reserved、60～63 reserved、1～54 active、ID 100 tombstone；
-3. 固定 fs 教程、源码、黄金、任务目录和 B3-0E 精确入口；
+3. 从 B3-0E 固定 fs 教程源码与黄金字节，记录原始摘要；执行身份绑定 B3-2 产品生成器 24。B3-0E 的 `product_target.generator=23` 是早于 B3-2 的候选目标，不得作为本批产品身份；如生成器升至 25，按 B3-3-ID 裁定记录增量；
 4. 建立 `entry-20261125-b3-3/` 证据目录和唯一任务根；
 5. 记录三平台工具、目标和 Runtime；缺平台记 `unverifiable`。
 
@@ -103,6 +102,7 @@ b3_4_entry_ready = b3_3_passed and decisions_approved and no_product_scope_creep
 6. 实现 `metadata`：`kind` 1/2/3/4、`size`、`modified_ms`；
 7. 实现 `filesystem` 能力检查、路径/文本/枚举预算、10 秒操作期限和取消安全点；
 8. 保持 `FS_EXISTS`、`FS_UNSUPPORTED`、`FS_IO_FAILED`、`FS_LIMIT_EXCEEDED`、`FS_TIMEOUT` 身份。
+9. 严格遵循冻结错误顺序：类型 `002`、能力 `026`、参数 `012`、预算、运行控制安全点、宿主操作；能力检查必须先于任何宿主文件系统访问，不能提前于类型检查。
 
 退出：fs Runtime 核心、能力、错误和边界通过；未接 VM/原生/C ABI。
 
@@ -113,8 +113,9 @@ b3_4_entry_ready = b3_3_passed and decisions_approved and no_product_scope_creep
 3. LLVM 动态/静态 lowering 使用同一 Runtime 入口，不绕过能力检查；
 4. 实现五个 C ABI 符号、借读输入、输出槽和末尾 `capabilities:u64`；
 5. 保持 0/1/2/3/6/8 状态、所有权和无别名规则；
-6. 原生 O0/O3 与 VM 的路径/错误/取消一致；
-7. Windows 原生必须显式使用 `x86_64-pc-windows-msvc` 和同目标 Runtime；COFF 以产品验证器 `Complete` 为准。
+6. C ABI 失败时保留已初始化输出槽，成功时替换；`ResourceError` 映射到状态 6，类型、形状和句柄错误按冻结状态映射；
+7. 原生 O0/O3 与 VM 的路径/错误/取消一致；
+8. Windows 原生必须显式使用 `x86_64-pc-windows-msvc` 和同目标 Runtime；COFF 以产品验证器 `Complete` 为准。
 
 退出：fs 的 VM/TAC、LLVM/C ABI 和原生入口一致。
 
@@ -122,11 +123,15 @@ b3_4_entry_ready = b3_3_passed and decisions_approved and no_product_scope_creep
 
 1. 迁入 fs 的 `tutorial.xiao`、`tutorial.stdout`；无额外输入；
 2. 任务入口创建空 `demo` 目录，结束检查 `demo` 为空；
-3. VM 与原生 O0/O3 覆盖 `std.fs`/`stdlib.fs` 双路径；
-4. 覆盖文件/目录/悬空链接、禁止覆盖、显式覆盖、原子提交、清理、枚举排序/超限、删除非递归、重命名、元数据；
-5. 三平台实跑；缺平台记 `unverifiable`；
-6. Windows fs 产物取得产品级 COFF `Complete`，绑定 map 和产物身份；
-7. registry/教程保持 `planned`。
+3. VM 与原生 O0/O3 覆盖 `std.fs`/`stdlib.fs` 双路径，源码与黄金字节绑定 B3-0E，运行回执绑定生成器 24 或经批准的 25；
+4. 覆盖禁止覆盖时的已有文件、目录和悬空链接；并发无覆盖写入由多个独立调用争用同一目标时必须恰有一个成功、其余返回 `FS_EXISTS`；覆盖写入遇符号链接时替换链接目录项而不改写其目标；
+5. 用故障注入验证暂存准备失败时旧目标保持、临时文件清理、清理失败保留附带原因；通过边界测试证明进入原子提交后返回实际提交结果；
+6. 覆盖枚举 UTF-8 字节排序、1,024 项/4,096 字节单项/65,536 字节合计边界、超限整份作废；在允许非 UTF-8 文件名的平台验证严格解码失败且不交付部分数组；
+7. 覆盖删除非递归和末段链接本身、重命名末段链接本身与显式覆盖、跨卷拒绝、元数据四类 kind 和尺寸/时间转换溢出；
+8. 用受控宿主适配验证调用前、分块/批次间、提交/交付前的取消与期限安全点；阻塞宿主调用不能被中途打断时，验证调用返回后的错误身份和提交结果遵循冻结契约，不把 10 秒安全点描述为可中断系统调用的硬实时保证；
+9. 三平台实跑；缺平台记 `unverifiable`；
+10. Windows fs 产物取得产品级 COFF `Complete`，绑定 map 和产物身份；
+11. registry/教程保持 `planned`。
 
 退出：fs 教程、边界和三平台通过；产品 COFF 等级如实登记。
 
@@ -149,9 +154,9 @@ b3_4_entry_ready = b3_3_passed and decisions_approved and no_product_scope_creep
 | fs | os/fs 分工、路径、`..`、绝对路径、符号链接、覆盖、原子写、清理、非递归删除、重命名、元数据 |
 | 错误 | 002/026/012/009、`FS_EXISTS`、`FS_UNSUPPORTED`、`FS_IO_FAILED`、`FS_LIMIT_EXCEEDED`、`FS_TIMEOUT` |
 | 资源 | 4,096 字节路径、8 MiB 文本、1,024 枚举项、4,096 单项、65,536 总字节、10 秒期限 |
-| VM/TAC | 55～59 分派、能力检查、输出所有权、取消安全点 |
-| LLVM/C ABI | 五个符号、输出槽、状态码、原生入口、无别名 |
-| 教程 | `tests/fixtures/docs/fs/tutorial.*`、std/stdlib、VM/原生黄金、`demo` 为空 |
+| VM/TAC | 55～59 分派、冻结错误顺序、能力检查、输出所有权、取消与期限安全点 |
+| LLVM/C ABI | 五个符号、失败保留/成功替换输出槽、状态码、原生入口、无别名 |
+| 教程 | `tests/fixtures/docs/fs/tutorial.*`、B3-0E 源码/黄金摘要、std/stdlib、VM/原生 O0/O3；执行身份为 B3-2 生成器 24 或获准的 25，`demo` 为空 |
 | 平台 | Windows x86_64 MSVC、Linux x86_64 GNU、macOS arm64；Windows COFF `Complete` |
 | 状态 | registry/UseDocs/教程 `planned`；无 B3-4/B4 |
 | 证据 | 源码/Runtime/工具/目标/任务根/CI run/job/attempt |
