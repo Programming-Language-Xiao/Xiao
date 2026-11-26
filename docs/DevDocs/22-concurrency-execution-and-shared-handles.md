@@ -1,6 +1,6 @@
 # 22. 并发执行与共享句柄
 
-> **这是 07-D 之后的正式并发实现阶段；22A～22E 及各修补批已完成。**
+> **这是 07-D 之后的正式并发实现阶段；22A～22E 及各修补批已完成历史验收，22D 因后续维护回归重开。**
 > 07-D 已完成 8 项裁定、隔离原型、Linux workspace gates 和四平台测试；22A 已补齐
 > 四平台 32B 布局测量并写出语言表面、取消边界、IR 事实、ABI、诊断和发布门禁；22A-FIX
 > 已补齐这些契约与既有 `.xar`/`.xiaoc` 格式的冲突。
@@ -9,7 +9,7 @@
 > 显式共享句柄”落成 VM 与 LLVM 一致的产品能力；不引入 Actor/async/await，也不把原型
 > 结构直接当产品 ABI。**
 >
-> 状态：**22 阶段已完成（2026-10-31）**。代码 `57b5d24` 的三平台公开构建、元数据/strip/verify、五个权威教程、22D 12/16/1 及完整门禁通过；发布矩阵与验证层次见 22E §9.4。
+> 状态：**22 阶段历史批次已验收（2026-10-31），22D 于 2026-11-26 因后续维护回归重开**。代码 `57b5d24` 的三平台公开构建、元数据/strip/verify、五个权威教程、22D-FIX.1 的 12/16/1 及完整门禁通过；发布矩阵与验证层次见 22E §9.4。当前 `22d_open=true`，三处间歇释放差分见 [22D-FIX.2](22d-fix2-release-order-stability-plan.md)。
 > workspace、26 条 VM/源码/产物并发回归、benchmark、research concurrency、Bun、coverage、docs/usedocs、
 > 本地安全/产物回归，以及远端多平台 maintenance/CI 均通过；三平台 maintenance 各自执行了 26/26 VM 并发回归。
 > 内部差分基线见 [22D §9.3](22d-llvm-concurrency-differential.md#93-22d-fix1-收尾矩阵与证据)，公共标准库与产物最终验收见 [22E §9.4](22e-standard-library-and-release.md#94-最终证据发布矩阵与退出条件)。`std.concurrent` 保持虚拟原生模块。
@@ -157,7 +157,8 @@
 - 完整黄金矩阵的收尾差分、夹具层次和证据格式见
   [22D-FIX.1. 并发差分矩阵收尾](22d-fix1-concurrency-differential-closure.md)；
   C-1～C-11 已按该计划的层次登记关闭；代码 `ab92df1` 的三平台原生及完整 gates 通过，
-  22D 与 FIX.1 已完成，22E 尚未开工。
+  22E 已接续完成公开面。22D 的后续维护回归和当前修复计划见
+  [22D-FIX.2](22d-fix2-release-order-stability-plan.md)。
 
 ### 22E：标准库、UseDocs 与发布收口
 
@@ -239,8 +240,8 @@ tests/research/concurrency/                                 07-D 原型（只作
 ## 八、状态
 
 - 阶段代号：22；
-- 当前状态：**22A～22E 已完成（2026-10-31）**；代码 `57b5d24` 的 22E 三平台公开元数据/教程/verify、22D 12/16/1 和完整门禁均通过，证据及 E-0 差异层次见 22E §9.4；
-- 当前工作批：22E 发布收尾已关闭；
+- 当前状态：**22A～22E 历史批次已验收（2026-10-31），22D 阶段重开（2026-11-26，`22d_open=true`）**；代码 `57b5d24` 的 22E 三平台公开元数据/教程/verify、22D-FIX.1 的 12/16/1 和完整门禁均通过，证据及 E-0 差异层次见 22E §9.4；三处后续维护回归见 [22D-FIX.2](22d-fix2-release-order-stability-plan.md)；
+- 当前工作批：22E 发布收尾已关闭；22D-FIX.2 规划完成、未实施；
 - 22C-FIX.1 可以只消费 22B 的类型、事实、动作、verifier 和 22C 已落地的 Runtime API；
   22D/22E 仍不得把 07-D 原型结构写成 ABI 或绕过冻结记录。
 - 22D 的详细入口、D-1～D-9、测试矩阵、退出条件和落点见

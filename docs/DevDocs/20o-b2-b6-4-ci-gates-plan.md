@@ -157,7 +157,7 @@ B4 在 `9d75ab1a` 按手工维护的 ABI 依赖表展开可达入口的组件。
 
 ## 七、交接
 
-B6-5 按 `b6_4_passed=false`、`original_passed=false`、`followup_passed=false`、`windows_coff_verified=false`、`22d_open=true` 接收 B6-4，并将 22D 间歇性释放差分未关闭的状态交接 B7。B6-1 按 `restricted` 引用，B6-2 性能绑定 `79ea0375`，B6-3 边界绑定 `58176ff5`。原 B6-4 门禁绑定 `97d5f288`，B1 补验绑定 `907c4cb3`，组件修复后 CI 复验绑定 `e1191445`。Linux 164 个导出的对账与 Windows 定向 Clippy 补验绑定 `780398e5`。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) · [本机补验归档](assets/20o-b2-b/entry-20261119-b6-4-followup/local-checks.zip) · [B6-5 收口规划](20o-b2-b6-5-closeout-plan.md)
+B6-5 按 `b6_4_passed=false`、`original_passed=false`、`followup_passed=false`、`windows_coff_verified=false`、`22d_open=true` 接收 B6-4，并将 22D 间歇性释放差分未关闭的状态交接 B7。B6-1 按 `restricted` 引用，B6-2 性能绑定 `79ea0375`，B6-3 边界绑定 `58176ff5`。原 B6-4 门禁绑定 `97d5f288`，B1 补验绑定 `907c4cb3`，组件修复后 CI 复验绑定 `e1191445`。Linux 164 个导出的对账与 Windows 定向 Clippy 补验绑定 `780398e5`。22D 当前修复计划见 [22D-FIX.2](22d-fix2-release-order-stability-plan.md)，关闭 22D 不会自动把 `b6_4_passed` 改为 true。[交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) · [本机补验归档](assets/20o-b2-b/entry-20261119-b6-4-followup/local-checks.zip) · [B6-5 收口规划](20o-b2-b6-5-closeout-plan.md)
 
 新 Agent 先读：
 
