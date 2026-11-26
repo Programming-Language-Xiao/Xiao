@@ -583,7 +583,10 @@ impl<'a> DynamicGenerator<'a> {
             return self.emit_cmath(declaration, arguments, span);
         }
         if declaration.kind == xiao_intrinsics::IntrinsicKind::Time {
-            return self.emit_time(declaration, arguments, span);
+            return self.emit_host_intrinsic(declaration, arguments, span, "time");
+        }
+        if declaration.kind == xiao_intrinsics::IntrinsicKind::Fs {
+            return self.emit_host_intrinsic(declaration, arguments, span, "fs");
         }
         if declaration.kind == xiao_intrinsics::IntrinsicKind::Args {
             return self.emit_args(declaration, arguments, span);

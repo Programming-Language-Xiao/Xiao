@@ -71,7 +71,7 @@ fn real_parameters_preserve_language_equality_and_ordering() {
 #[test]
 /// 同 ABI 下读取兼容的生成器元数据，同时区分缓存身份。
 fn generator_keeps_metadata_readability_separate_from_cache_identity() {
-    assert_eq!(CODEGEN_VERSION, 24);
+    assert_eq!(CODEGEN_VERSION, 25);
     assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 20);
     let target = TargetDescription::host();
     let ir = FrontendCompiler::new()

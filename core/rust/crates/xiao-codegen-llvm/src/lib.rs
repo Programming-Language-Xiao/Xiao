@@ -101,15 +101,16 @@ pub use xiao_optimizer::OptimizationReport;
 /// 版本 21 接通 B4-3 cmath C ABI 调用及 Float ** 共享pow；Runtime ABI仍为1.18。
 /// 版本 22 使静态 Float/Sfloat 相等与不等在数值提升后按位比较，保留异号零语义。
 /// 版本 23 接通 ABI 1.20 的 time。版本 24 接通 args 原生快照和 CLI 数组入口检查。
+/// 版本 25 接通 fs，并为其 Windows 产物验证完整 COFF 组件。
 /// 当前版本进入工具链/产物指纹。
-pub const CODEGEN_VERSION: u32 = 24;
+pub const CODEGEN_VERSION: u32 = 25;
 
 /// B3 宿主库原生产物需要版本元数据及 Windows COFF 完整性证据。
 fn requires_b3_native_evidence(module: &LlvmModule) -> bool {
     module
         .runtime_components
         .iter()
-        .any(|component| matches!(component.as_str(), "time" | "args"))
+        .any(|component| matches!(component.as_str(), "time" | "args" | "fs"))
 }
 
 /// 将同一份类型化 IR 降低为静态标量或 Runtime ABI LLVM 模块。

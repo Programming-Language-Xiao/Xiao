@@ -213,6 +213,8 @@ pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     metadata: VmMetadata,
     /// 可注入的取消与截止时间来源。
     cancellation: Option<CancellationSource>,
+    /// 根运行取消时，保留宿主操作失败的清理原因。
+    cancelled_fs_cleanup: Option<XiaoError>,
     /// 跨普通调用帧和析构帧共享的检查点计数器。
     checkpoint_counter: Rc<Cell<u64>>,
     /// 当前请求的不可变能力位。
@@ -268,6 +270,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             pending_base: 0,
             metadata,
             cancellation: None,
+            cancelled_fs_cleanup: None,
             checkpoint_counter: Rc::new(Cell::new(0)),
             capabilities,
             concurrency: Rc::new(concurrent::ConcurrentContext::default()),
@@ -292,6 +295,11 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     /// 设置当前执行共享的取消与截止时间来源。
     pub(crate) fn set_cancellation_source(&mut self, cancellation: Option<CancellationSource>) {
         self.cancellation = cancellation;
+    }
+
+    /// 取出宿主操作在根取消时保存的清理报告。
+    pub(crate) fn take_cancelled_fs_cleanup(&mut self) -> Option<xiao_diagnostics::ReportRecord> {
+        self.cancelled_fs_cleanup.take().map(|error| error.report())
     }
 
     pub(crate) fn set_module_loader(&mut self, loader: Option<&'p dyn ModuleLoader>) {
@@ -362,6 +370,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         &mut self,
         arguments: &[BoundArgument],
     ) -> (RunResult, Option<RuntimeValue>) {
+        self.cancelled_fs_cleanup = None;
         if let Err(error) = self.options.validate() {
             let fatal = FatalError::runtime_invariant(format!("运行参数无效：{error}"));
             self.session.tables.fatal.set(true);

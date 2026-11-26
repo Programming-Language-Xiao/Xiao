@@ -739,6 +739,7 @@ impl<'a> DynamicGenerator<'a> {
                     declaration.starts_with("declare i32 @xiao_runtime_cmath_")
                         || declaration.starts_with("declare i32 @xiao_runtime_time_")
                         || declaration.starts_with("declare i32 @xiao_runtime_args_")
+                        || declaration.starts_with("declare i32 @xiao_runtime_fs_")
                 })
                 .cloned(),
         );

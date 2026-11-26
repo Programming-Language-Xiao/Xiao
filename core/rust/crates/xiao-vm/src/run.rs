@@ -459,7 +459,7 @@ pub struct RunOutcome {
     pub events: Vec<VmEvent>,
     /// 未能放入有界生产接收器的事件数量；研究入口恒为零。
     pub dropped_events: usize,
-    /// 未捕获错误或致命故障的统一报告；成功时为空。
+    /// 未捕获错误、致命故障或根运行取消时的附带清理报告。
     pub report: Option<ReportRecord>,
 }
 
@@ -685,7 +685,14 @@ pub fn run_xiaoc_production_with_arguments(
     vm.set_arguments_snapshot(arguments.map(Arc::new));
     let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();
-    Ok(production_outcome(result, value, metrics, vm.into_sink()))
+    let cleanup = vm.take_cancelled_fs_cleanup();
+    Ok(production_outcome(
+        result,
+        value,
+        metrics,
+        vm.into_sink(),
+        cleanup,
+    ))
 }
 
 /// 只加载并返回已经通过验证的 `.xiaoc`。
@@ -798,7 +805,13 @@ pub fn run_request_with_session(
             code: fatal.code().to_owned(),
         });
         return (
-            production_outcome(RunResult::Fatal(fatal), None, VmMetrics::default(), sink),
+            production_outcome(
+                RunResult::Fatal(fatal),
+                None,
+                VmMetrics::default(),
+                sink,
+                None,
+            ),
             VmSession::new(),
         );
     }
@@ -808,7 +821,13 @@ pub fn run_request_with_session(
             code: fatal.code().to_owned(),
         });
         return (
-            production_outcome(RunResult::Fatal(fatal), None, VmMetrics::default(), sink),
+            production_outcome(
+                RunResult::Fatal(fatal),
+                None,
+                VmMetrics::default(),
+                sink,
+                None,
+            ),
             VmSession::new(),
         );
     }
@@ -831,6 +850,7 @@ pub fn run_request_with_session(
     vm.set_arguments_snapshot(request.arguments_snapshot.clone());
     let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();
+    let cleanup = vm.take_cancelled_fs_cleanup();
     let healthy = vm.session_is_healthy();
     let (vm_sink, session) = vm.into_parts();
     sink = vm_sink;
@@ -839,7 +859,10 @@ pub fn run_request_with_session(
     } else {
         VmSession::new()
     };
-    (production_outcome(result, value, metrics, sink), session)
+    (
+        production_outcome(result, value, metrics, sink, cleanup),
+        session,
+    )
 }
 
 /// `run_request` 的生产入口别名，供驱动器按动作命名调用。
@@ -860,12 +883,17 @@ fn production_outcome(
     value: Option<RuntimeValue>,
     metrics: VmMetrics,
     sink: BoundedSink,
+    cancelled_cleanup: Option<ReportRecord>,
 ) -> RunOutcome {
     let mut sink = sink;
     sink.record_metrics(metrics);
     let dropped_events = sink.dropped_events();
     RunOutcome {
-        report: report_for_result(&result),
+        report: if matches!(result, RunResult::Cancelled) {
+            cancelled_cleanup
+        } else {
+            report_for_result(&result)
+        },
         result,
         value,
         metrics,

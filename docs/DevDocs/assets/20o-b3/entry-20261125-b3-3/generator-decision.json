@@ -1,0 +1,16 @@
+{
+  "id": "B3-3-ID-GENERATOR",
+  "approval": "批准生成器 25 与 fs 原生接线（推荐）",
+  "source": "本会话 B3-3-ID 问题卡",
+  "baseline": {
+    "abi": "1.20",
+    "generator": 24,
+    "stdlib_interface": 1
+  },
+  "approved": {
+    "abi": "1.20",
+    "generator": 25,
+    "stdlib_interface": 1
+  },
+  "scope": "接入五个冻结的 fs C ABI lowering，复验旧新产物及缓存指纹"
+}

@@ -12,7 +12,9 @@ use xiao_artifacts::{ArtifactStore, Digest256, ObjectKind};
 use xiao_bytecode::{
     BytecodeOptimizationReport, TacProgram, XiaocMetadata, encode_xiaoc, lower_program,
 };
-use xiao_diagnostics::{Diagnostic, DiagnosticParam, DiagnosticParams, ReportRecord};
+use xiao_diagnostics::{
+    Diagnostic, DiagnosticParam, DiagnosticParams, ReportRecord, XiaoError, XiaoErrorKind,
+};
 use xiao_intrinsics::{CapabilityMaskError, DEFAULT_CAPABILITY_MASK, validate_capability_mask};
 use xiao_optimizer::{OptimizationLevel, PassStatus, ValidationStatus};
 use xiao_package::CacheLayout;
@@ -301,7 +303,7 @@ impl DriverError {
         &self.message
     }
 
-    /// 返回 VM 产生的统一报告（控制边界错误没有 VM 报告）。
+    /// 返回 VM 报告或包含附带清理原因的控制报告。
     #[must_use]
     pub fn report(&self) -> Option<&ReportRecord> {
         self.report.as_ref()
@@ -350,6 +352,20 @@ impl DriverError {
             message: message.to_owned(),
             report: None,
         }
+    }
+
+    /// 保留根控制错误身份并附带 VM 的清理原因。
+    fn with_cancelled_cleanup(mut self, cleanup: ReportRecord) -> Self {
+        let mut report = XiaoError::new(
+            XiaoErrorKind::Other,
+            &self.code,
+            "x11.driver.rejected",
+            &self.message,
+        )
+        .report();
+        report.suppressed.push(cleanup);
+        self.report = Some(report);
+        self
     }
 }
 
@@ -774,6 +790,11 @@ impl FrontendVmDriver {
         // 优先于已完成的 VM 结果，避免把超时/取消伪装成成功。
         if let Some(error) = control.check() {
             self.reset_session();
+            if matches!(outcome.result, RunResult::Cancelled)
+                && let Some(cleanup) = outcome.report
+            {
+                return DriverOutcome::Rejected(error.with_cancelled_cleanup(cleanup));
+            }
             return DriverOutcome::Rejected(error);
         }
         if let Some(error) = DriverError::from_vm_outcome(&outcome) {
@@ -1197,5 +1218,25 @@ print(lock_read(guard))
         let timed_out = run(&request("value = 1\n").with_timeout(Duration::ZERO));
         assert_eq!(timed_out.code(), Some(DRIVER_TIMEOUT_CODE));
         assert!(matches!(timed_out, DriverOutcome::Rejected(_)));
+    }
+
+    #[test]
+    fn fs_cleanup_report_is_suppressed_under_the_driver_control_identity() {
+        let cleanup = XiaoError::new(
+            XiaoErrorKind::Resource,
+            "FS_IO_FAILED",
+            "runtime.fs_io_failed",
+            "清理暂存文件失败",
+        )
+        .with_param("os_error", DiagnosticParam::Integer(13))
+        .report();
+        for code in [DRIVER_CANCELLED_CODE, DRIVER_TIMEOUT_CODE] {
+            let error =
+                DriverError::control(code, "运行中断").with_cancelled_cleanup(cleanup.clone());
+            let report = error.report().unwrap();
+            assert_eq!(error.phase(), DriverPhase::Control);
+            assert_eq!(report.code, code);
+            assert_eq!(report.suppressed, vec![cleanup.clone()]);
+        }
     }
 }

@@ -1,0 +1,40 @@
+{
+  "b3_3_passed": false,
+  "b3_3_started": true,
+  "b3_3a_entry_and_baseline_verified": true,
+  "b3_3b_fs_intrinsics_implemented": true,
+  "b3_3c_vm_tac_llvm_c_abi_native_consistent": false,
+  "b3_3d_fs_tutorial_and_boundaries_passed": false,
+  "b3_3e_evidence_audit_passed": false,
+  "b3_4_entry_ready": false,
+  "generator": 24,
+  "generator_25_decision": "pending",
+  "macos": "unverifiable",
+  "platforms": {
+    "linux-wsl": {
+      "c_abi_exports": 5,
+      "fs_and_c_abi_tests": 8,
+      "intrinsic_tests": 10,
+      "native_product": "pending",
+      "runtime_sha256": "a425245f78aa8042e65a2373904ce3c6043e3238ca2752a8c6ff790831caf682",
+      "runtime_tests": 289,
+      "symlinks": "passed",
+      "vm_tests": 13
+    },
+    "windows": {
+      "c_abi_exports": 5,
+      "fs_and_c_abi_tests": 8,
+      "intrinsic_tests": 10,
+      "native_product": "pending",
+      "runtime_sha256": "eb39809d22f95e08482e3fe980745da5a7ac0bdbefdcf7af3492d6016e4846bb",
+      "runtime_tests": 289,
+      "symlinks": "passed",
+      "vm_tests": 13
+    }
+  },
+  "product_commit": "5cb5a2c3e21734c86087a793296eccbb3dfb7768",
+  "registry_status": "planned",
+  "stage": "20O-B3-3",
+  "tutorial_status": "planned",
+  "windows_product_coff": "pending"
+}

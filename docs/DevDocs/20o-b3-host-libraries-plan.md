@@ -103,7 +103,7 @@ B3-2 的 args 快照、纯 Xiao 分组、运行协议和生成器 24 原生入�
 
 ### B3-3：`fs`扩展
 
-B3-3 已接入 fs 的 Runtime、VM/TAC 和 C ABI，原生接线等待生成器增量裁定。[B3-3 fs 实施规划](20o-b3-3-fs-implementation-plan.md)
+B3-3 已接入 fs 的 Runtime、VM/TAC、C ABI 和生成器 25 的原生路径，三平台证据正在采集。[B3-3 fs 实施规划](20o-b3-3-fs-implementation-plan.md)
 
 1. 权限/普通操作路径解析`..`/符号链接/覆盖；
 2. 原子写限同目录替换，无法保证则报错；

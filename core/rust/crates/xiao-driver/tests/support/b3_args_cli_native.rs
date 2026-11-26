@@ -87,7 +87,7 @@ fn args_cli_matches_native_goldens_and_boundaries() {
     assert_ne!(previous_fingerprint, current_fingerprint);
     println!(
         "B3-2-GENERATOR {}",
-        serde_json::json!({"baseline": 23, "current": 24, "older_metadata": "accepted",
+        serde_json::json!({"baseline": 23, "current": xiao_codegen_llvm::CODEGEN_VERSION, "older_metadata": "accepted",
             "baseline_fingerprint": previous_fingerprint.to_string(),
             "current_fingerprint": current_fingerprint.to_string()})
     );
@@ -117,7 +117,10 @@ fn args_cli_matches_native_goldens_and_boundaries() {
         );
         assert!(composition.unclassified_runtime_symbols.is_empty());
         let metadata = result.native.native_metadata.unwrap();
-        assert_eq!(metadata.generator_version, 24);
+        assert_eq!(
+            metadata.generator_version,
+            xiao_codegen_llvm::CODEGEN_VERSION
+        );
         assert_eq!(
             metadata.runtime_abi_min,
             xiao_runtime_abi::ABI_ENCODED_VERSION

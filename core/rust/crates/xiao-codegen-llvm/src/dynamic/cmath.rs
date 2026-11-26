@@ -1,4 +1,4 @@
-//! cmath 动态 C ABI 接线；借读输入保持强引用，先释放临时输入再传播状态。
+//! 借读 C ABI 接线。强引用覆盖调用，临时输入在传播状态前释放。
 use super::{DynamicGenerator, VALUE_TYPE};
 use crate::error::{CodegenError, Result};
 use xiao_ir::{IrCallArgument, IrSpan};
@@ -22,14 +22,16 @@ impl<'a> DynamicGenerator<'a> {
         self.emit_borrowed_intrinsic(&symbol, "cmath", arguments, order, span, true, None)
     }
 
-    pub(super) fn emit_time(
+    pub(super) fn emit_host_intrinsic(
         &mut self,
         declaration: &xiao_intrinsics::IntrinsicDecl,
         arguments: &[IrCallArgument],
         span: IrSpan,
+        label: &str,
     ) -> Result<String> {
         let parameters = xiao_intrinsics::time_parameters(declaration.id)
-            .expect("活动 time intrinsic 具有固定形参");
+            .or_else(|| xiao_intrinsics::fs_parameters(declaration.id))
+            .expect("活动宿主库 intrinsic 具有固定形参");
         let order =
             crate::cmath::intrinsic_argument_order(parameters, arguments).ok_or_else(|| {
                 CodegenError::Unsupported {
@@ -40,11 +42,12 @@ impl<'a> DynamicGenerator<'a> {
         let symbol = declaration
             .abi_binding
             .time_symbol()
-            .expect("time C ABI 绑定");
+            .or_else(|| declaration.abi_binding.fs_symbol())
+            .expect("宿主库 C ABI 绑定");
         let has_out = declaration.signature.return_type != xiao_intrinsics::ValueType::None;
         self.emit_borrowed_intrinsic(
             symbol,
-            "time",
+            label,
             arguments,
             order,
             span,

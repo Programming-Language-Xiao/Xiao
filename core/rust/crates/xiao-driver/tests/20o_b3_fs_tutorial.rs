@@ -14,6 +14,10 @@ const GOLDEN: &[u8] = include_bytes!("../../../../../tests/fixtures/docs/fs/tuto
 const CHILD_ALIAS: &str = "XIAO_B3_3_TEST_FS_ALIAS";
 const TUTORIAL_TEST: &str = "fs_tutorial_matches_vm_golden";
 
+#[cfg(feature = "fs-native-test")]
+#[path = "support/b3_fs_native.rs"]
+mod native;
+
 struct TaskDirectory(PathBuf);
 
 impl TaskDirectory {

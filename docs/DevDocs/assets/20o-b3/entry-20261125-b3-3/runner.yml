@@ -1,0 +1,66 @@
+name: Xiao B3-3 fs evidence
+
+on:
+  push:
+    branches: [codex/b3-3-fs-runner]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: b3-3-fs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fs:
+    name: B3-3 fs (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux
+            os: ubuntu-24.04
+          - platform: macos
+            os: macos-15
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    steps:
+      - name: Checkout fixed product
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: B3_FS_PRODUCT_COMMIT
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install fixed Rust toolchain
+        run: rustup toolchain install 1.96.0 --profile minimal
+      - name: Run Linux fs gates
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang llvm
+          python3 -B docs/DevDocs/assets/20o-b3/entry-20261125-b3-3/run_native.py \
+            --product-commit B3_FS_PRODUCT_COMMIT --output "$RUNNER_TEMP/b3-fs"
+      - name: Run macOS fs gates
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          brew install llvm@21
+          export SDKROOT
+          SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
+          python3 -B docs/DevDocs/assets/20o-b3/entry-20261125-b3-3/run_native.py \
+            --product-commit B3_FS_PRODUCT_COMMIT --llvm-bin "$(brew --prefix llvm@21)/bin" \
+            --output "$RUNNER_TEMP/b3-fs"
+      - name: Upload original receipts and products
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: b3-fs-${{ matrix.platform }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/b3-fs/result.json
+            ${{ runner.temp }}/b3-fs/logs/
+            ${{ runner.temp }}/b3-fs/temp/clang-commands.log
+            ${{ runner.temp }}/b3-fs/temp/xiao-b3-3-native-*/
+          if-no-files-found: warn

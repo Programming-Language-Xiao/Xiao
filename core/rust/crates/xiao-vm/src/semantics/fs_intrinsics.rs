@@ -1,6 +1,6 @@
 //! fs 的 TAC 参数绑定、宿主安全点及 Runtime 调用。
 
-use super::{BoundArgument, Carrier, Fault, Vm, VmEvent, VmEventSink, attach_fault_span};
+use super::{BoundArgument, Carrier, Fault, Vm, VmEventSink, attach_fault_span};
 use xiao_intrinsics::{IntrinsicDecl, VmBinding, fs_parameters};
 use xiao_runtime::{
     RuntimeError, RuntimeValue,
@@ -71,11 +71,11 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
             } => {
                 if let Some(cleanup) = cleanup {
                     match &mut control {
-                        Fault::ConcurrencyCancelled(primary) => primary.push_suppressed(cleanup),
-                        _ => self.sink.record(VmEvent::ErrorRaised {
-                            code: cleanup.code().to_owned(),
-                            message_id: cleanup.message_id().to_owned(),
-                        }),
+                        Fault::Cancelled => self.cancelled_fs_cleanup = Some(cleanup),
+                        Fault::ConcurrencyCancelled(primary) | Fault::Error(primary) => {
+                            primary.push_suppressed(cleanup);
+                        }
+                        Fault::Fatal(_) => unreachable!("宿主安全点只交付运行控制错误"),
                     }
                 }
                 control

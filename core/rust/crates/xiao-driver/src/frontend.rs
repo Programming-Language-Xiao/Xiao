@@ -924,7 +924,8 @@ fn plan_standard_link(
             .collect::<Vec<_>>();
         let module_name = ModuleName::new(module_name);
         // 宿主库的公开函数沿规范模块入口调用，保留入口检查和模块身份。
-        if matches!(module_name.segments(), [name] if name == "args" || name == "cli") {
+        if matches!(module_name.segments(), [name] if matches!(name.as_str(), "args" | "cli" | "fs"))
+        {
             continue;
         }
         let Some(record) = standard.modules.get(&module_name) else {

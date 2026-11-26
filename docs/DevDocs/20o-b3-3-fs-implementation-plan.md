@@ -1,7 +1,7 @@
 # 20O-B3-3. `fs` 实施规划
 
-> **状态（2026-11-26）**　B3-3 已开工。固定基线 `879ce625` 已通过入口复核，fs 的 Runtime、VM/TAC 和五个 C ABI 已接入。原生 lowering 将新增五个调用，生成器 25 等待 B3-3-ID 补充裁定。`b3_3_decisions_approved=true`、`b3_3_started=true`、`b3_3_passed=false`、`b3_4_entry_ready=false`。教程和 registry 为 `planned`。[实施记录](assets/20o-b3/entry-20261125-b3-3/README.md)
-> **输入契约**　fs 使用 55～59，基线为 `reserved`，本批已激活。当前产品身份为 ABI 1.20、生成器 24、标准库接口 1。受限/沙箱模式在 B3-0C 已明确延期。
+> **状态（2026-11-26）**　fs 的 Runtime、VM/TAC、五个 C ABI 和 LLVM 已接入，三平台证据正在采集。`b3_3_started=true`、`b3_3_passed=false`、`b3_4_entry_ready=false`。[实施记录](assets/20o-b3/entry-20261125-b3-3/README.md)
+> **产品身份**　fs 使用 55～59。原生接线按补充裁定使用 ABI 1.20、生成器 25、标准库接口 1。[生成器裁定](assets/20o-b3/entry-20261125-b3-3/generator-decision.json)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-3 只处理 fs 产物，完整公共矩阵留 B3-7。
 > 入口：[B3-2 收口](assets/20o-b3/entry-20261125-b3-2-final/README.md)、[B3-0C 契约](assets/20o-b3/entry-20261123-b3-0c/contract-draft.md)、[B3-0F 交接](assets/20o-b3/entry-20261124-b3-0f/README.md)、[B3 宿主库规划](20o-b3-host-libraries-plan.md)。
 > B3-3 不实现 env/log，不升级教程/registry verified，不启动 B3-4/B4。
@@ -79,6 +79,8 @@ b3_4_entry_ready = b3_3_passed and decisions_approved and no_product_scope_creep
 | B3-3-EVIDENCE | 三平台 fs VM/受控原生 O0/O3；Windows fs 产物产品级 COFF `Complete`；完整矩阵留 B3-7 | 星崽批准，B3-3 夹具与验收问题卡 |
 
 五项答复均已登记来源、时点和适用范围；B3-3A 建立证据目录时归档为机器可读台账。未答项不得写成已冻结。
+
+LLVM 接入五个 fs 调用改变生成文本，星崽补充批准生成器 24→25。24 产物依据既有兼容规则可由 25 校验器读入，25 产物由上限为 24 的校验器拒绝。以同一 Runtime 和 LLVM 工具核对缓存指纹。[补充裁定](assets/20o-b3/entry-20261125-b3-3/generator-decision.json)
 
 ## 四、分批执行
 
