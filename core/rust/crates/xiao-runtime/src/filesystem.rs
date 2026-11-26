@@ -223,15 +223,17 @@ fn rename<C>(
     overwrite: bool,
     control: &mut Control<impl FnMut() -> std::result::Result<(), C>>,
 ) -> Result<(), C> {
-    #[cfg(windows)]
+    #[cfg(any(windows, target_os = "macos"))]
     if !overwrite {
-        // MoveFileExW 会把同一目录项的移动视为成功。已存在的目标在提交前拒绝，
-        // 其余情况交给原子禁止覆盖的移动入口。暂存写入始终直接使用原子提交。
+        // MoveFileExW 和 APFS 的 renamex_np 会把同一目录项的移动视为成功。
+        // 先检查末段自身，再由原子移动处理检查后出现的目标。
         let exists = control.read("检查重命名目标", || {
             match fs::symlink_metadata(destination) {
                 Ok(_) => Ok(true),
-                Err(error) if source == destination => Err(error),
-                Err(_) => Ok(false),
+                Err(error) if error.kind() == io::ErrorKind::NotFound && source != destination => {
+                    Ok(false)
+                }
+                Err(error) => Err(error),
             }
         })?;
         if exists {
