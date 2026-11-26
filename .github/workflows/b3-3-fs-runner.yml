@@ -30,7 +30,7 @@ jobs:
       - name: Checkout fixed product
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: 26674a641e22ab45f1fd9cb6a230be7f7b617d56
+          ref: 70b784e0b3f8babe3ee0bf437adc3f0d82673ae8
           fetch-depth: 0
           persist-credentials: false
       - name: Install fixed Rust toolchain
@@ -42,7 +42,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang llvm
           python3 -B docs/DevDocs/assets/20o-b3/entry-20261125-b3-3/run_native.py \
-            --product-commit 26674a641e22ab45f1fd9cb6a230be7f7b617d56 --output "$RUNNER_TEMP/b3-fs"
+            --product-commit 70b784e0b3f8babe3ee0bf437adc3f0d82673ae8 --output "$RUNNER_TEMP/b3-fs"
       - name: Run macOS fs gates
         if: runner.os == 'macOS'
         shell: bash
@@ -51,7 +51,7 @@ jobs:
           export SDKROOT
           SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
           python3 -B docs/DevDocs/assets/20o-b3/entry-20261125-b3-3/run_native.py \
-            --product-commit 26674a641e22ab45f1fd9cb6a230be7f7b617d56 --llvm-bin "$(brew --prefix llvm@21)/bin" \
+            --product-commit 70b784e0b3f8babe3ee0bf437adc3f0d82673ae8 --llvm-bin "$(brew --prefix llvm@21)/bin" \
             --output "$RUNNER_TEMP/b3-fs"
       - name: Upload original receipts and products
         if: always()
