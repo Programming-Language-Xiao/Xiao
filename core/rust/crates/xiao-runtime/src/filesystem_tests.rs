@@ -342,16 +342,20 @@ fn fs_rename_and_remove_preserve_nonempty_directories() {
     fs::create_dir(&target).unwrap();
     let source_arg = arg(&source);
     let target_arg = arg(&target);
-    assert_eq!(
-        code(
-            &call(
-                Operation::Rename,
-                &[&source_arg, &source_arg, &RuntimeValue::Bool(false)]
-            )
-            .unwrap_err()
-        ),
-        "FS_EXISTS"
-    );
+    let no_overwrite = RuntimeValue::Bool(false);
+    let same_entry = arg(&directory.0.join(".").join("source"));
+    for destination in [&source_arg, &same_entry] {
+        let error = call(
+            Operation::Rename,
+            &[&source_arg, destination, &no_overwrite],
+        )
+        .unwrap_err();
+        assert_eq!(code(&error), "FS_EXISTS");
+        assert_eq!(fs::read(source.join("child")).unwrap(), b"abc");
+    }
+    let missing = arg(&directory.0.join("missing"));
+    let error = call(Operation::Rename, &[&missing, &missing, &no_overwrite]).unwrap_err();
+    assert_eq!(code(&error), "FS_IO_FAILED");
     println!("B3-3-FS-RENAME-SAME-PATH passed");
     assert_eq!(
         code(&call(Operation::Remove, &[&source_arg]).unwrap_err()),
