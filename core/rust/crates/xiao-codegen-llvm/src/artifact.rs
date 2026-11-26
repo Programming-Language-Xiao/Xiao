@@ -1456,6 +1456,7 @@ fn runtime_link_dependencies(symbol: &str) -> &'static [&'static str] {
         | "xiao_runtime_error_take"
         | "xiao_runtime_fs_list_dir"
         | "xiao_runtime_fs_metadata"
+        | "xiao_runtime_fs_remove"
         | "xiao_runtime_lfloat_divide"
         | "xiao_runtime_set_new"
         | "xiao_runtime_string_new"
@@ -1845,6 +1846,7 @@ entry:
             ("xiao_runtime_time_sleep", &["time"][..]),
             ("xiao_runtime_args_program_name", &["args", "rc"][..]),
             ("xiao_runtime_args_argv", &["args", "rc"][..]),
+            ("xiao_runtime_fs_remove", &["fs", "rc"][..]),
             ("no_runtime", &[][..]),
         ] {
             let text = format!(
