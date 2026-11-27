@@ -242,8 +242,9 @@ VM（未优化/优化字节码）和 NativeBuild，比较：
 比较两侧的生命周期多重集合，以及用生命周期签名标记的终态动作流。同签名的对象可以
 互换，动作与出现次数仍须相等。每个夹具输出 `22D-TRACE` 的对象数、终态数与投影版本。
 
-`detach-success` 允许两个独立打印对象交换，仍校验两侧生命周期及对象数。四个握手取消
+`detach-success` 允许两个独立打印对象交换，两侧各须销毁两个对象。四个握手取消
 夹具先验证各对象生命周期，再比较稳定共享对象的终态，且两侧都须归还 guard。
+`native-wait-027` 须见一组共享对象终态，其余三个握手取消夹具各须见两组。
 `native-lock-wait-027` 每侧须有 `gate`、`ready` 两组完整终态，同时有受控取消预检查的回归。
 `native-running-cancellation-finally` 校验 027、退出码和 finally 的精确输出，分别核对两侧产生
 合法释放记录。`lock-guard-scope-release` 每侧须有两个各归还一次的 guard。

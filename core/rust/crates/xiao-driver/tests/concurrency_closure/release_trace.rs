@@ -101,35 +101,39 @@ impl Projection {
 
 /// 对两侧独立核对场景约束，再比较该场景要求稳定的终态。
 fn compare(label: &str, native: &Projection, vm: &Projection) -> Result<(), String> {
-    let lock_wait = matches!(label, LOCK_WAIT | LOCK_WAIT_PRECHECK);
-    let cancellation = lock_wait
-        || matches!(
-            label,
-            "native-queued-cancellation" | "native-waiting-cancellation" | "native-wait-027"
-        );
+    let shared_count = match label {
+        "native-queued-cancellation"
+        | "native-waiting-cancellation"
+        | LOCK_WAIT
+        | LOCK_WAIT_PRECHECK => Some(2),
+        "native-wait-027" => Some(1),
+        _ => None,
+    };
     for (backend, trace) in [("native", native), ("VM", vm)] {
-        match label {
-            _ if cancellation => {
+        match (shared_count, label) {
+            (Some(expected), _) => {
                 let shared = trace
                     .objects
                     .iter()
                     .filter(|lifecycle| matches!(lifecycle, Lifecycle::Shared { .. }))
                     .count();
-                if shared == 0 || (lock_wait && shared != 2) {
-                    return Err(format!("{backend} 握手共享对象终态组数无效：{shared}"));
+                if shared != expected {
+                    return Err(format!(
+                        "{backend} 握手共享对象终态组数无效：实际 {shared}，预期 {expected}"
+                    ));
                 }
                 if trace.guard_count() == 0 {
                     return Err(format!("{backend} 必须释放握手守卫"));
                 }
             }
-            "native-running-cancellation-finally" if trace.objects.is_empty() => {
+            (None, "native-running-cancellation-finally") if trace.objects.is_empty() => {
                 return Err(format!("{backend} 应记录握手对象释放"));
             }
-            "lock-guard-scope-release" if trace.guard_count() != 2 => {
+            (None, "lock-guard-scope-release") if trace.guard_count() != 2 => {
                 return Err(format!("{backend} 两个函数各释放一个不同的 guard"));
             }
-            "detach-success" if trace.objects.iter().any(|item| *item != Lifecycle::Heap) => {
-                return Err(format!("{backend} 独立打印场景出现其他释放对象"));
+            (None, "detach-success") if trace.objects != [Lifecycle::Heap, Lifecycle::Heap] => {
+                return Err(format!("{backend} 必须释放两个独立打印对象"));
             }
             _ => {}
         }
@@ -155,7 +159,7 @@ fn compare(label: &str, native: &Projection, vm: &Projection) -> Result<(), Stri
     }
 
     // 保留取消夹具的握手口径，轮询临时对象随调度变化。
-    if cancellation {
+    if shared_count.is_some() {
         if shared_objects(native) != shared_objects(vm)
             || shared_terminal(native) != shared_terminal(vm)
         {
@@ -172,7 +176,7 @@ fn compare(label: &str, native: &Projection, vm: &Projection) -> Result<(), Stri
                 native.objects, vm.objects
             ));
         }
-        if label != "detach-success" && native.terminal != vm.terminal {
+        if native.terminal != vm.terminal {
             return Err(format!(
                 "终态动作流不同：native={:?} VM={:?}",
                 native.terminal, vm.terminal
@@ -275,16 +279,35 @@ fn release_projection_v2_regressions() {
         println!("22D-PROJECTION {id}: ok");
     }
 
-    // 直接删掉两个后端中的同一组也会被 F1 自身的终态计数拒绝。
+    // 两侧同时漏掉同一个对象时也要对照夹具的实际数量。
     let one_shared = project(
         "missing-shared-object",
         &[shared.as_slice(), &guard].concat(),
     )
     .unwrap();
+    for label in [
+        LOCK_WAIT,
+        LOCK_WAIT_PRECHECK,
+        "native-queued-cancellation",
+        "native-waiting-cancellation",
+    ] {
+        assert!(
+            compare(label, &one_shared, &one_shared)
+                .unwrap_err()
+                .contains("握手共享对象终态组数无效")
+        );
+    }
+    let no_shared = project("missing-only-shared-object", &guard).unwrap();
     assert!(
-        compare(LOCK_WAIT, &one_shared, &one_shared)
+        compare("native-wait-027", &no_shared, &no_shared)
             .unwrap_err()
             .contains("握手共享对象终态组数无效")
+    );
+    let one_print = project("missing-print-object", &heap[..2]).unwrap();
+    assert!(
+        compare("detach-success", &one_print, &one_print)
+            .unwrap_err()
+            .contains("必须释放两个独立打印对象")
     );
     assert!(Projection::parse("1\t1\tlock_guard_release\n").is_err());
     assert!(Projection::parse("0\t1\tlock_guard_release\textra\n").is_err());

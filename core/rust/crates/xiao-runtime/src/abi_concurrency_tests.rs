@@ -530,6 +530,7 @@ fn native_blocked_lock_wait_is_cancelled_by_host_token() {
     let held = shared
         .lock_owned(&RuntimeCancellation::default(), || false)
         .unwrap();
+    let (cancelled_tx, cancelled_rx) = std::sync::mpsc::channel();
     let child_shared = shared.clone();
     let child = crate::scheduler::spawn_cooperative(&runtime, move |_| {
         let mut value = value_from_handle(box_object(ConcurrencyObject::SharedMut(child_shared)));
@@ -542,6 +543,7 @@ fn native_blocked_lock_wait_is_cancelled_by_host_token() {
             matches!(take_native_error_packet(), Some(NativeErrorPacket::Recoverable(error))
             if error.code() == crate::CONCURRENCY_CANCELLED_CODE)
         );
+        cancelled_tx.send(()).unwrap();
         crate::abi::xiao_runtime_value_release(&mut value);
     })
     .unwrap();
@@ -555,6 +557,10 @@ fn native_blocked_lock_wait_is_cancelled_by_host_token() {
     }
     drop(shared);
     child.cancel();
+    // 锁入口确认返回 027 之前仍由主线程持锁，保证回归确实验证阻塞取消。
+    cancelled_rx
+        .recv_timeout(std::time::Duration::from_secs(2))
+        .expect("持锁期间 worker 必须完成阻塞取消");
     drop(held);
     child.join_interruptible(|| false).unwrap();
     assert!(observed.upgrade().is_none(), "join 返回时共享对象已经销毁");

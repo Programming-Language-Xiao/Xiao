@@ -54,4 +54,13 @@ DevDocs、UseDocs、仓库布局与 `git diff --check` 均通过。[三平台原
 
 ```powershell
 python -B -X utf8 docs/DevDocs/assets/22d-fix2/entry-20261126/audit.py
+python -B -X utf8 docs/DevDocs/assets/22d-fix2/entry-20261126/self_negative.py
 ```
+
+审计逐轮从原始 TSV 重算生命周期和终态数量，对照差分进程日志、轮次回执和 Runner 镜像。
+fs 的六个用例逐项对照原生验证日志、产物摘要、黄金输出和 Windows 链接图。
+反例在临时副本中删除销毁动作、清空一轮 F1 基线的轨迹清单、跨轮引用原始文件、重复
+记录 fs 产物或调换 O0/O3 产物及链接图，重算摘要后仍须被拒绝。
+
+Rust 回归分别核对两个打印对象和取消夹具所需的共享对象数量。阻塞锁回归在持锁方收到
+worker 的 027 确认后才归还主线程守卫，随后核对 join 后的共享对象状态。
