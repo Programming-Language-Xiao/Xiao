@@ -94,8 +94,8 @@ fn main() {
             _ => panic!("未知参数 {argument:?}"),
         }
     }
-    const {
-        assert!(!cfg!(debug_assertions), "采样必须使用 release");
+    if cfg!(debug_assertions) {
+        panic!("采样必须使用 release");
     }
     assert!(
         !options.output.as_os_str().is_empty()
