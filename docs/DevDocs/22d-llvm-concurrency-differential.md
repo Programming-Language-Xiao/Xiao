@@ -481,6 +481,7 @@ C-1～C-11 及 §六九条退出条件按上述层次完成验收，22D 与 22D-
 - 阶段代号：22D；
 - 当前状态为 **阶段关闭（2026-11-27，`22d_open=false`）**。`ab92df1` 的 12/16/1 差分、三平台 C 布局对象和完整门禁是 22D-FIX.1 的历史验收点。后续维护回归的修复产品为 `3506455e`。[22D-FIX.2](22d-fix2-release-order-stability-plan.md)
 - 三平台完整差分各 10 轮，Windows 单夹具各 50 轮，Linux 和 macOS 单夹具各 30 轮。Windows 本机另单跑 F1 100 轮。每轮保存实际退出码和原始 TSV。[重复矩阵](assets/22d-fix2/entry-20261126/README.md#重复执行)
+- 2026-11-27 另在固定产品 `3506455e` 的干净 worktree 重跑 local F1 100 轮和 Windows 完整/单夹具矩阵；两份 local 矩阵记录 `source_unchanged=true`，严格 `audit.py` 通过，`source_validation.mode=strict`。
 - 22D 关闭后，22E 只消费本批稳定的并发行为和已有 ABI，不反向修改 22D 的冻结结论。
 
 ## 十一、后续维护回归

@@ -5,9 +5,9 @@
 `b302084a` 只增加了测试代码的文档注释。FIX.1 的 `ab92df1` 和 B3-3 的 `2460e75f`
 是各自的历史验收点。[实施记录](../../../22d-fix2-release-order-stability-plan.md#十二实施记录)
 
-> **审计口径（2026-11-27 补记）**　本次收口的 local 矩阵在升级前的 `repeat.py` 下生成，
-> 未记录 `source_unchanged`。新版 `audit.py` 的严格模式会拒绝该缺项；当前历史归档使用
-> `--legacy-source` 复核。严格模式转绿需要重跑 local 矩阵或补充干净树回执，见下节。
+> **审计口径（2026-11-27 补记）**　2026-11-27 已在固定产品 `3506455e` 的干净 worktree
+> 重跑 local F1 100 轮和 Windows 完整/单夹具矩阵，两份矩阵均记录 `source_unchanged=true`。
+> 严格 `audit.py` 现已通过；`--legacy-source` 只用于替换前的旧归档。重跑和封存记录见下节。
 
 ## 三处失败
 
@@ -57,15 +57,14 @@ DevDocs、UseDocs、仓库布局与 `git diff --check` 均通过。[三平台原
 状态回执记录固定提交、轮数、实际作业 ID、镜像版本及归档摘要。[原始归档](evidence.zip) · [状态回执](status.json)
 
 ```powershell
-python -B -X utf8 docs/DevDocs/assets/22d-fix2/entry-20261126/audit.py --legacy-source
 python -B -X utf8 docs/DevDocs/assets/22d-fix2/entry-20261126/audit.py
+python -B -X utf8 docs/DevDocs/assets/22d-fix2/entry-20261126/audit.py --legacy-source
 python -B -X utf8 docs/DevDocs/assets/22d-fix2/entry-20261126/self_negative.py
 ```
 
-严格审计要求每个矩阵记录 `source_unchanged=true`，并把矩阵 `tree` 与固定产品提交对账。
-2026-11-26 这批 local 矩阵由升级前的 `repeat.py` 生成，没有该字段；因此
-`--legacy-source` 只用于复核历史归档，严格模式会明确拒绝。下一批必须用当前
-`repeat.py` 重跑 local 矩阵，或补充可验证的干净树回执后，才能把严格模式转绿。
+严格审计要求每个 local 矩阵记录 `source_unchanged=true`，并把矩阵 `tree` 与固定产品提交对账。
+当前 `local/f1` 和 `local/matrix` 已由固定产品 `3506455e` 的干净 worktree 重跑，严格模式通过；
+`--legacy-source` 只用于替换前的历史归档。
 
 审计逐轮从原始 TSV 重算生命周期和终态数量，对照差分进程日志、轮次回执和 Runner 镜像。
 fs 的六个用例逐项对照原生验证日志、产物摘要、黄金输出和 Windows 链接图；黄金从

@@ -77,7 +77,10 @@ def check_matrix(archive, prefix, expected, product, ci=None, platform=None, str
     else:
         require(source_unchanged is not False, f"{prefix}: source_unchanged=false")
         if source_unchanged is None:
-            print(f"LEGACY {prefix}: 未记录 source_unchanged，按历史口径复核")
+            if ci:
+                print(f"CI-CHECKOUT {prefix}: source_unchanged 由固定产品 checkout 保证")
+            else:
+                print(f"LEGACY {prefix}: 未记录 source_unchanged，按历史口径复核")
     if ci:
         require(data["target"] == platform["target"] and data["ci"]["ImageVersion"] == platform["runner_image"]
                 and data["ci"]["GITHUB_SHA"] == ci["sha"]
@@ -249,6 +252,9 @@ def check_status_fields(status, product):
             and status["f2_f3"]["destructions_per_backend"] == 3, "F2/F3 回放")
     require(status["codegen"] == 26 and status["runtime_abi"] == "1.20"
             and status["stdlib_interface"] == 1, "版本身份")
+    source = status.get("source_validation")
+    require(isinstance(source, dict) and source.get("mode") == "strict"
+            and source.get("local_source_unchanged") is True, "源码验证状态")
 
 
 def check_ci_workflow(archive, product):

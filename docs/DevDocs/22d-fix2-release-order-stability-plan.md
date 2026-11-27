@@ -367,6 +367,9 @@ Windows 历史的 25 轮和当前修复前的 100 轮都未命中取消预检查
 
 三平台完整差分各 10 轮，Windows 三个单夹具各 50 轮，Linux 和 macOS 各 30 轮，均通过。
 每个完整轮中，29 个差分夹具共保留 58 份 TSV，另有 1 份受控预检查 TSV，合计 59 份。
+2026-11-27 另在固定产品 `3506455e` 的干净 worktree 重跑 local F1 100 轮和 Windows
+完整/单夹具矩阵；两份 local 矩阵记录 `source_unchanged=true`，严格 `audit.py` 通过。
+`status.json` 的 `source_validation` 登记为 strict。
 汇编和 C 布局探针、Runtime 取消回归、22C 既有 26 项和后续新增 3 项、B1 七库精确入口、
 三平台原生维护与工作区门禁均已对账。B3-3 已在 `3506455e` 回验，B3-4 从该产品接续，
 当前尚未启动。B6-4 按该批自身门禁仍为 `b6_4_passed=false`。[机器可读回执](assets/22d-fix2/entry-20261126/status.json)

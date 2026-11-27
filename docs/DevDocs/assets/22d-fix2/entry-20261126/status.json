@@ -175,5 +175,15 @@
   "b6_4_passed": false,
   "followup_passed": false,
   "windows_coff_verified": false,
-  "evidence_sha256": "f3069cc2c3533a4081037e213c455c3d551cba24508ed22d1c516f592e98f81e"
+  "evidence_sha256": "c97778fd8a87e4f8474440963ac14dd9544f8b3cfdc863f5ea2b34f947cc0abb",
+  "source_validation": {
+    "mode": "strict",
+    "local_source_unchanged": true,
+    "worktree": "D:/project/Xiao/.xiao-orchestrator/worktrees/22d-source-3506455e",
+    "rerun_at": "2026-11-27T11:28:02+08:00",
+    "replaced": [
+      "local/f1/",
+      "local/matrix/"
+    ]
+  }
 }
