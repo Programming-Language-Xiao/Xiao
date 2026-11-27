@@ -45,7 +45,7 @@ Windows 启动层排除 `=C:` 形式的驱动器伪变量，再严格解码并�
 对照 stdout、错误身份、退出码和释放轨迹，原生 O0、O3 的成功用例各销毁 22 个被追踪
 对象。C 探针直接链接本批发布 Runtime，Rust 侧另有可控内部故障与取消测试。
 [C 符号](logs/1b/c-abi-symbols-final.log) · [C 探针](logs/1b/c-abi-probe.c) ·
-[探针执行](logs/1b/c-abi-probe-final.log) · [原生运行原文与释放轨迹](logs/1b/native-output-final) ·
+[探针执行](logs/1b/c-abi-probe-final.log) · [原生运行原文与释放轨迹](logs/1b/native-output-final/denied-o0.stderr) ·
 [原生文件摘要](logs/1b/native-artifact-hashes.log)
 
 ## LLVM IR、符号与生成器裁定
@@ -119,7 +119,7 @@ Linux/macOS 精确比较分支有对应的条件编译测试，实际执行回�
 | C 探针首次链接把 MSVC 库视作输入路径，退出 1。随后探针以机器字读取布尔载荷，断言失败。尝试动态 CRT 时出现未解析符号，退出 1120。 | 按 ABI 用 `uint8_t` 检查布尔成员，经 `-Xlinker` 传原生库并指定 `/NODEFAULTLIB:msvcrt`，编译和执行退出 0。[首次链接](logs/1b/c-abi-clang.log) · [首次执行](logs/1b/c-abi-probe.log) · [动态 CRT](logs/1b/c-abi-clang-final.log) |
 | 升版后的首次驱动和工作区回归遇到固定值 26 的 cmath 断言，退出 101。 | 五处当前版本断言更新为 27，保留历史兼容输入。[驱动首次](logs/1b/driver-attempt-1.log) · [工作区首次](logs/1b/workspace-attempt-1.log) |
 | 两后端的析构夹具都在读取后析构临时值，首次断言退出 101。 | 让析构钩子直接读取当前快照，验证主程序提交的值。VM 与原生均通过。[VM 首次](logs/1b/vm-env-verified.log) · [原生首次](logs/1b/native-verified.log) · [VM 重试](logs/1b/vm-env-drop-retry.log) · [原生重试](logs/1b/native-env-entry-retry.log) |
-| 核心过程探针首次漏填目标字段，进程拒绝协议帧。 | 补齐指针宽度、字节序与对象格式，六个真实源码用例有逐案结果、退出码和原始输出。[首次](logs/1b/vm-entry-receipt.log) · [重试](logs/1b/vm-entry-receipt-final.log) · [原始响应](logs/1b/vm-output) |
+| 核心过程探针首次漏填目标字段，进程拒绝协议帧。 | 补齐指针宽度、字节序与对象格式，六个真实源码用例有逐案结果、退出码和原始输出。[首次](logs/1b/vm-entry-receipt.log) · [重试](logs/1b/vm-entry-receipt-final.log) · [原始响应](logs/1b/vm-output/denied.json) |
 
 ## 后续批次
 

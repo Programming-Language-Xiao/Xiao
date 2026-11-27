@@ -1,13 +1,18 @@
 //! B3-4E env 性能入口。使用固定的合成快照与 release VM、原生 O0/O3。
 
+/// 复用数值性能的冻结校准规则。
 #[path = "../../examples/numeric_perf/calibration.rs"]
 mod calibration;
+/// 复用 OS 驻留内存读数。
 #[path = "../../examples/numeric_perf/memory.rs"]
 mod memory;
+/// 原生工具链与测量程序构建。
 #[path = "env_perf/native.rs"]
 mod native;
+/// 独立子进程校准与原始记录。
 #[path = "env_perf/process.rs"]
 mod process;
+/// 固定合成输入和 Xiao 负载。
 #[path = "env_perf/workload.rs"]
 mod workload;
 
@@ -28,10 +33,15 @@ use xiao_vm::{
     VmOptions,
 };
 
+/// 采样请求的环境、标准输出和时钟能力。
 const CAPABILITIES: u64 = CAPABILITY_ENVIRONMENT | CAPABILITY_STDOUT | CAPABILITY_CLOCK;
+/// 每个组合的正式批次数。
 const BATCHES: usize = 5;
+/// 驻留增量上限。
 const MEMORY_LIMIT: u64 = 64 * 1024 * 1024;
+/// 相邻规模中位数比上限。
 const RATIO_LIMIT: f64 = 3.0;
+/// 命令行帮助文本。
 const HELP: &str =
     "cargo +1.96.0 run --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --release \
 --bin b3_env_performance -- --output-dir DIR --artifact-dir DIR --identity JSON [--probe]
@@ -40,6 +50,7 @@ VM、原生 O0/O3 各五批，两个输出目录均须新建。--probe 只预热
 身份文件须含 baseline_commit、product_commit、target、runtime.sha256 和 toolchain。
 原生工具取 XIAO_TARGET_TRIPLE、XIAO_CLANG、XIAO_LLVM_AS、XIAO_LLC、XIAO_RUNTIME_LIBRARY。";
 
+/// 命令行解析后的输出、产物、身份和探针选项。
 #[derive(Default)]
 struct Options {
     output: PathBuf,
@@ -48,6 +59,7 @@ struct Options {
     probe: bool,
 }
 
+/// 一个负载的源码、字节码、可移植产物和两个原生优化档。
 struct Program {
     source: Value,
     bytecode: Value,
@@ -55,6 +67,7 @@ struct Program {
     native: [PathBuf; 2],
 }
 
+/// 校验发布 Runtime 身份并执行性能采样。
 fn main() {
     assert!(
         !xiao_runtime::test_failpoints_enabled(),
@@ -81,7 +94,9 @@ fn main() {
             _ => panic!("未知参数 {argument:?}"),
         }
     }
-    assert!(!cfg!(debug_assertions), "采样必须使用 release");
+    const {
+        assert!(!cfg!(debug_assertions), "采样必须使用 release");
+    }
     assert!(
         !options.output.as_os_str().is_empty()
             && !options.artifacts.as_os_str().is_empty()
@@ -93,22 +108,26 @@ fn main() {
     }
 }
 
+/// 创建独占目录并返回绝对路径。
 fn create_directory(path: &Path) -> PathBuf {
     fs::create_dir(path).unwrap_or_else(|error| panic!("{} {error}", path.display()));
     std::path::absolute(path).unwrap()
 }
 
+/// 读取文件并生成路径、字节数和 SHA-256 回执。
 fn file_info(path: &Path) -> Value {
     let bytes = fs::read(path).unwrap_or_else(|error| panic!("{} {error}", path.display()));
     json!({"path": path, "bytes": bytes.len(), "sha256": Digest256::of_bytes(&bytes).as_hex()})
 }
 
+/// 以独占方式写入规范化 JSON 文件。
 fn write_json(path: &Path, value: &Value) {
     let mut file = fs::File::create_new(path).unwrap();
     serde_json::to_writer_pretty(&mut file, value).unwrap();
     writeln!(file).unwrap();
 }
 
+/// 为所有非快照负载生成字节码和两个原生优化档。
 fn programs(
     artifacts: &Path,
     output: &Path,
@@ -152,6 +171,7 @@ fn programs(
         .collect()
 }
 
+/// 执行所有后端的五批采样并写出汇总。
 fn run(options: &Options) -> bool {
     let target = TargetDescription::host();
     let identity: Value = serde_json::from_slice(&fs::read(&options.identity).unwrap()).unwrap();
@@ -328,10 +348,12 @@ fn run(options: &Options) -> bool {
     }
 }
 
+/// 为 VM 采样预编译的标准库模块集合。
 #[derive(Debug)]
 struct VmModules(BTreeMap<&'static str, ExecutableModule>);
 
 impl VmModules {
+    /// 加载 env 与 time 标准库模块。
     fn prepare() -> Self {
         let loader = xiao_driver::standard_library_module_loader();
         Self(
@@ -344,14 +366,17 @@ impl VmModules {
 }
 
 impl ModuleLoader for VmModules {
+    /// 判断模块是否为标准库或已预编译模块。
     fn contains(&self, identity: &str) -> bool {
         identity == "stdlib" || self.0.contains_key(identity)
     }
 
+    /// 拒绝动态编译；采样只使用预编译模块。
     fn compile(&self, identity: &str) -> Result<Option<CompiledModule>, String> {
         Err(format!("样例使用已编译的模块 {identity}"))
     }
 
+    /// 返回预编译模块的克隆。
     fn load(&self, identity: &str) -> Result<Option<ExecutableModule>, String> {
         Ok(self.0.get(identity).map(|module| ExecutableModule {
             program: module.program.clone(),
@@ -360,11 +385,13 @@ impl ModuleLoader for VmModules {
         }))
     }
 
+    /// 采样负载没有模块级环境扩展。
     fn environment(&self, _: &str) -> Option<&str> {
         None
     }
 }
 
+/// 作为 VM 子进程执行测量，按 stdin 指令返回原始样本。
 fn vm_worker(bytecode: &Path, measure_snapshot: bool) {
     let mut stdout = io::stdout().lock();
     let baseline =

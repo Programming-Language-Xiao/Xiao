@@ -1,18 +1,24 @@
+//! env 原生入口、注入边界和运行控制安全点测试。
+
 use super::*;
 use std::sync::mpsc;
 use xiao_intrinsics::CAPABILITY_ENVIRONMENT as ENV;
 
+/// 拥有一个 ABI 值并在析构时释放的测试包装。
 struct Value(XiaoValue);
 
 impl Value {
+    /// 创建拥有文本值的测试包装。
     fn text(text: &str) -> Self {
         Self(runtime_to_value(&RuntimeValue::new_string(text).unwrap()).unwrap())
     }
 
+    /// 转换回可检查的 Runtime 值。
     fn runtime(&self) -> RuntimeValue {
         unsafe { value_to_runtime(&self.0) }.unwrap()
     }
 
+    /// 断言当前值为数组并返回句柄。
     fn array(&self) -> crate::ArrayHandle {
         let RuntimeValue::Array(array) = self.runtime() else {
             panic!("预期环境数组");
@@ -22,11 +28,13 @@ impl Value {
 }
 
 impl Drop for Value {
+    /// 释放包装持有的强引用。
     fn drop(&mut self) {
         xiao_runtime_value_release_strong(&mut self.0);
     }
 }
 
+/// 为快照安装本次测试的原生环境上下文。
 fn environment(snapshot: EnvironmentSnapshot) -> Arc<NativeEnvironment> {
     Arc::new(NativeEnvironment {
         snapshot,
@@ -35,6 +43,7 @@ fn environment(snapshot: EnvironmentSnapshot) -> Arc<NativeEnvironment> {
     })
 }
 
+/// 读取当前挂起的可恢复错误身份。
 fn pending_code() -> String {
     PENDING_ERROR.with_borrow(|pending| match pending {
         Some(PendingError::Recoverable(error)) => error.code().to_owned(),
@@ -43,6 +52,7 @@ fn pending_code() -> String {
 }
 
 #[test]
+/// 验证状态码、输出槽所有权和借读契约。
 fn env_abi_status_output_and_ownership() {
     let _entry = enter_environment(Some(environment(EnvironmentSnapshot::default())));
     let name = Value::text("Name");
@@ -120,6 +130,7 @@ fn env_abi_status_output_and_ownership() {
 }
 
 #[test]
+/// 验证 fatal 不展开且不替换既有输出槽。
 fn env_abi_fatal_does_not_unwind_or_replace_the_output() {
     let environment = environment(EnvironmentSnapshot::default());
     let name = Value::text("Name");
@@ -145,6 +156,7 @@ fn env_abi_fatal_does_not_unwind_or_replace_the_output() {
 }
 
 #[test]
+/// 验证任务取消时写删不改变共享视图。
 fn env_abi_cancelled_writes_and_removals_preserve_the_shared_view() {
     let snapshot = environment(
         EnvironmentSnapshot::from_pairs(&[("Name".to_owned(), "original".to_owned())]).unwrap(),
@@ -194,6 +206,7 @@ fn env_abi_cancelled_writes_and_removals_preserve_the_shared_view() {
 }
 
 #[test]
+/// 验证省略、空数组和显式字节三种注入来源。
 fn env_native_injection_distinguishes_omission_empty_and_explicit_bytes() {
     extern "C" fn inspect() -> i32 {
         let name = Value::text("Name");
@@ -227,6 +240,7 @@ fn env_native_injection_distinguishes_omission_empty_and_explicit_bytes() {
     assert_eq!(inspect(), 11);
 }
 
+/// 验证原始载荷上限在解码前生效，边界值仍可接纳。
 #[test]
 fn env_injection_bounds_raw_bytes_before_decoding() {
     extern "C" fn entered() -> i32 {
@@ -275,6 +289,7 @@ fn env_injection_bounds_raw_bytes_before_decoding() {
     assert_eq!(invoke(&over), 2);
 }
 
+/// 验证运行截止在 env 操作前生效并保留旧视图。
 #[test]
 fn env_abi_runtime_deadline_preserves_value_entries_and_bytes() {
     let environment = Arc::new(NativeEnvironment {

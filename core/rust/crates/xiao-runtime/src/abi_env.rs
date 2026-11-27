@@ -25,6 +25,7 @@ pub(super) struct NativeEnvironment {
     control: NativeControl,
 }
 
+/// 从私有启动握手读取的运行级截止和取消通知。
 #[derive(Default)]
 struct NativeControl {
     deadline_ns: Option<u128>,
@@ -32,6 +33,7 @@ struct NativeControl {
 }
 
 impl NativeControl {
+    /// 从子进程私有环境变量读取截止和取消文件。
     fn from_launch() -> Result<Self, std::num::ParseIntError> {
         Ok(Self {
             deadline_ns: std::env::var_os(DEADLINE_ENV)
@@ -41,6 +43,7 @@ impl NativeControl {
         })
     }
 
+    /// 返回取消优先于截止的中断原因。
     fn interruption(&self) -> Option<Interruption> {
         if self
             .cancellation
@@ -60,6 +63,7 @@ impl NativeControl {
 }
 
 impl NativeEnvironment {
+    /// 在 env 提交前检查运行中断和独立任务取消。
     fn checkpoint(&self) -> Result<(), i32> {
         if let Some(interruption) = self.control.interruption() {
             // 运行级中断沿已冻结的不可捕获错误通道传播，退出码仍为 2。
@@ -89,6 +93,7 @@ pub(super) fn entry_environment() -> Option<Arc<NativeEnvironment>> {
 pub(super) struct EnvironmentGuard(Option<Arc<NativeEnvironment>>);
 
 impl Drop for EnvironmentGuard {
+    /// 恢复进入前保存的线程上下文。
     fn drop(&mut self) {
         ENTRY_ENVIRONMENT.replace(self.0.take());
     }
@@ -99,6 +104,7 @@ pub(super) fn enter_environment(environment: Option<Arc<NativeEnvironment>>) -> 
     EnvironmentGuard(ENTRY_ENVIRONMENT.replace(environment))
 }
 
+/// 安装已接纳快照和运行控制后进入用户代码。
 fn run_entry(
     entry: impl FnOnce(&NativeControl) -> i32,
     snapshot: Result<EnvironmentSnapshot, SnapshotError>,
@@ -201,6 +207,7 @@ pub extern "C" fn xiao_runtime_env_run_native(
     )
 }
 
+/// 在执行用户代码前拒绝已取消或已到期的启动。
 fn reject_interrupted_entry(control: &NativeControl) -> Option<i32> {
     control.interruption().map(|interruption| {
         let _ = writeln!(
@@ -213,8 +220,11 @@ fn reject_interrupted_entry(control: &NativeControl) -> Option<i32> {
     })
 }
 
+/// 原生启动握手的快照来源。
 enum LaunchEnvironment {
+    /// 从标准输入读取显式 JSON 快照。
     Stdin,
+    /// 从宿主环境捕获一次快照。
     Host,
 }
 
@@ -402,6 +412,7 @@ pub extern "C" fn xiao_runtime_env_unset(
     execute(Operation::Unset, [name], Some(out), capabilities)
 }
 
+/// env ABI 单元测试。
 #[cfg(test)]
 #[path = "abi_env_tests.rs"]
 mod tests;

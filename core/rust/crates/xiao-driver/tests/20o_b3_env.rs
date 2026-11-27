@@ -11,9 +11,12 @@ use xiao_driver::{
 };
 use xiao_intrinsics::{CAPABILITY_ENVIRONMENT as ENV, CAPABILITY_STDOUT as STDOUT};
 
+/// 合成环境变量名。
 const NAME: &str = "XIAO_B3_TEST_ENV";
+/// 只读取并打印环境值的源码。
 const LOOKUP: &str =
     "from std.env import get\nfor value in get(\"XIAO_B3_TEST_ENV\")\n    print(value)\n";
+/// 覆盖读、写、删和位置/命名参数的源码。
 const READ_WRITE: &str = r#"from std.env import get, set, unset
 for value in get("XIAO_B3_TEST_ENV")
     print("unexpected<" + value + ">")
@@ -31,7 +34,9 @@ for value in get("XIAO_B3_TEST_ENV")
     print("unexpected<" + value + ">")
 print("missing")
 "#;
+/// 读写删除回归的冻结输出。
 const GOLDEN: &str = "missing\nupdated\ntrue\nfalse\nempty<>\nmissing\n";
+/// 验证表释放钩子仍看到当前运行环境的源码。
 const DROP_ENV: &str = r#"from std.env import set
 [[Item]]
     def drop(self) -> none
@@ -40,6 +45,7 @@ const DROP_ENV: &str = r#"from std.env import set
 set("XIAO_B3_TEST_ENV", "seen-by-drop")
 item = new Item()
 "#;
+/// 验证同运行共享视图和任务取消的源码。
 const CANCEL: &str = r#"from std.concurrent import current_runtime, shared_mut, spawn, join, cancel, lock, lock_read, lock_write
 from std.env import get, set
 def read_flag(shared_mut<int> flag) -> int
@@ -68,12 +74,15 @@ cancel(thread)
 join(thread)
 "#;
 
+/// 原生专项辅助模块。
 #[path = "support/b3_env_native.rs"]
 mod native;
+/// 原生产物与工具链辅助模块。
 #[path = "support/b3_env_artifact.rs"]
 mod native_artifact;
 use native_artifact::test_dir;
 
+/// 构造指定环境快照和能力掩码的运行选项。
 fn options(environment: Option<Vec<(String, String)>>, capabilities: u64) -> RunOptions {
     RunOptions {
         environment: environment.map(RunEnvironment),
@@ -82,6 +91,7 @@ fn options(environment: Option<Vec<(String, String)>>, capabilities: u64) -> Run
     }
 }
 
+/// 构造使用宿主目标的运行协议请求。
 fn request(source: &str, options: RunOptions) -> ProtocolRequest {
     ProtocolRequest::Run {
         request_id: "b3-env-source".to_owned(),
@@ -101,6 +111,7 @@ fn request(source: &str, options: RunOptions) -> ProtocolRequest {
     }
 }
 
+/// 断言成功响应并拼接全部输出事件。
 fn stdout(response: ProtocolResponse) -> String {
     let ProtocolResponse::Result {
         exit_code, events, ..
@@ -116,6 +127,7 @@ fn stdout(response: ProtocolResponse) -> String {
         .collect()
 }
 
+/// 断言执行前拒绝的错误身份和退出码。
 fn rejected(response: ProtocolResponse, code: &str) {
     let ProtocolResponse::Error {
         exit_code,
@@ -131,6 +143,7 @@ fn rejected(response: ProtocolResponse, code: &str) {
     assert!(report.is_none());
 }
 
+/// 验证位置/命名参数和返回数组所有权。
 #[test]
 fn vm_position_keyword_and_owned_environment_results() {
     for alias in ["std", "stdlib"] {
@@ -163,6 +176,7 @@ for value in long.get("XIAO_B3_TEST_ENV")
     );
 }
 
+/// 验证错误身份、名称/值字节上限和畸形快照。
 #[test]
 fn vm_environment_errors_and_byte_limits() {
     let source = format!(
@@ -211,6 +225,7 @@ check("name=bad", "")
     println!("环境 VM 校验 256/257 字节名称、65,536/65,537 字节值和默认权限");
 }
 
+/// 验证快照隔离和执行前拒绝。
 #[test]
 fn vm_snapshots_are_distinct_and_invalid_input_is_rejected_before_execution() {
     assert_eq!(
@@ -253,6 +268,7 @@ fn vm_snapshots_are_distinct_and_invalid_input_is_rejected_before_execution() {
     );
 }
 
+/// 验证同运行共享、027、001 和 002。
 #[test]
 fn vm_environment_is_shared_with_workers_and_uses_run_control() {
     let response = dispatch(request(CANCEL, options(None, ENV | STDOUT)));
@@ -288,12 +304,14 @@ fn vm_environment_is_shared_with_workers_and_uses_run_control() {
     println!("环境 VM 验证并发任务共享、任务取消 027、运行取消 001、运行截止 002");
 }
 
+/// 验证表释放钩子继承运行环境。
 #[test]
 fn vm_table_drop_inherits_the_running_environment() {
     let output = stdout(dispatch(request(DROP_ENV, options(None, ENV | STDOUT))));
     assert_eq!(output, "seen-by-drop\n");
 }
 
+/// 验证源码和归档都把环境视为运行输入。
 #[test]
 fn vm_and_archive_keep_environment_as_a_run_input() {
     let root = test_dir();
@@ -365,17 +383,20 @@ fn vm_and_archive_keep_environment_as_a_run_input() {
 }
 
 #[cfg(windows)]
+/// 构造平台相关的非法宿主值。
 fn invalid_os_value() -> std::ffi::OsString {
     use std::os::windows::ffi::OsStringExt;
     std::ffi::OsString::from_wide(&[0xd800])
 }
 
 #[cfg(unix)]
+/// 构造平台相关的非法宿主值。
 fn invalid_os_value() -> std::ffi::OsString {
     use std::os::unix::ffi::OsStringExt;
     std::ffi::OsString::from_vec(vec![0xff])
 }
 
+/// 通过 CLI 进程入口执行一次请求。
 fn cli_run(source: &str, options: RunOptions, invalid_host: bool) -> ProtocolResponse {
     let mut command = Command::new(env!("CARGO_BIN_EXE_xiao-core"));
     let profile_key = if cfg!(windows) { "USERPROFILE" } else { "HOME" };
@@ -413,6 +434,7 @@ fn cli_run(source: &str, options: RunOptions, invalid_host: bool) -> ProtocolRes
     serde_json::from_slice(&read_frame(&mut reader).unwrap().unwrap()).unwrap()
 }
 
+/// 验证 CLI 只在授权且省略时捕获一次宿主环境。
 #[test]
 fn cli_process_captures_only_authorized_omitted_environment() {
     assert_eq!(

@@ -96,6 +96,7 @@ struct View {
 }
 
 impl View {
+    /// 校验并插入一条名值对，失败时不改变视图。
     fn admit_pair(&mut self, name: &str, value: &str) -> Result<(), SnapshotError> {
         check_name(name)?;
         check_value(value)?;
@@ -333,15 +334,18 @@ impl EnvironmentSnapshot {
     }
 }
 
+/// 逐对接纳注入 JSON 并保留首个拒绝原因。
 struct InjectedPairs<'a>(&'a mut SnapshotError);
 
 impl<'de> Visitor<'de> for InjectedPairs<'_> {
     type Value = View;
 
+    /// 描述注入载荷必须满足的 JSON 结构。
     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str("环境名值对数组")
     }
 
+    /// 逐对读取并校验，首处失败即停止。
     fn visit_seq<A: SeqAccess<'de>>(self, mut pairs: A) -> Result<View, A::Error> {
         let mut view = View::default();
         while let Some((name, value)) = pairs.next_element::<(String, String)>()? {

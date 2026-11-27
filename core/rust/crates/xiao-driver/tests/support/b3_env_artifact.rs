@@ -33,6 +33,7 @@ pub(super) fn run_injected(command: &mut Command, data: &[u8]) -> Output {
     output
 }
 
+/// 读取固定工具链环境变量并探测版本。
 pub(super) fn toolchain(target: &TargetDescription) -> Toolchain {
     let required = |name: &str| PathBuf::from(std::env::var_os(name).expect(name));
     assert_eq!(std::env::var("XIAO_TARGET_TRIPLE").unwrap(), target.triple);
@@ -46,7 +47,9 @@ pub(super) fn toolchain(target: &TargetDescription) -> Toolchain {
         .unwrap()
 }
 
+/// 创建本次进程唯一的测试任务目录。
 pub(super) fn test_dir() -> PathBuf {
+    /// 进程内测试目录序号。
     static NEXT: AtomicU32 = AtomicU32::new(0);
     let base =
         std::env::var_os("XIAO_B3_ENV_TEST_ROOT").map_or_else(std::env::temp_dir, PathBuf::from);
@@ -61,6 +64,7 @@ pub(super) fn test_dir() -> PathBuf {
     }
 }
 
+/// 计算文件内容的 SHA-256 十六进制摘要。
 fn digest(path: &Path) -> String {
     Digest256::of_bytes(&fs::read(path).unwrap()).as_hex()
 }

@@ -2,8 +2,11 @@
 
 use std::fmt::Write;
 
+/// 每个操作负载固定执行的调用次数。
 pub const FIXED_CALLS: usize = 64;
+/// 普通负载覆盖的名值对数量。
 pub const SIZES: [usize; 3] = [256, 512, 1_024];
+/// 快照、读、写、删、满额替换和超限失败六类负载。
 pub const OPERATIONS: [&str; 6] = [
     "snapshot",
     "get",
@@ -13,14 +16,18 @@ pub const OPERATIONS: [&str; 6] = [
     "overflow",
 ];
 
+/// 生成固定序号的环境名称。
+/// 生成固定序号的环境名称。
 fn key(index: usize) -> String {
     format!("XIAO_B3_PERF_{index:04}")
 }
 
+/// 返回普通或满额负载中每条值使用的字节数。
 pub fn value_bytes(full: bool) -> usize {
     if full { 1_024 - key(0).len() } else { 32 }
 }
 
+/// 生成固定顺序和固定内容的合成名值对。
 pub fn input(pairs: usize, full: bool) -> Vec<(String, String)> {
     let value = "o".repeat(value_bytes(full));
     (0..pairs)
@@ -28,6 +35,7 @@ pub fn input(pairs: usize, full: bool) -> Vec<(String, String)> {
         .collect()
 }
 
+/// 为指定负载生成同时适用于 VM 与原生后端的 Xiao 源码。
 pub fn source(case: &str) -> String {
     let full = matches!(case, "full-replace" | "overflow");
     let old = "o".repeat(value_bytes(full));

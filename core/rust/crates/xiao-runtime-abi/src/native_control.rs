@@ -63,6 +63,7 @@ pub fn monotonic_ns() -> io::Result<u128> {
         fn QueryPerformanceCounter(value: *mut i64) -> i32;
         fn QueryPerformanceFrequency(value: *mut i64) -> i32;
     }
+    /// 进程内缓存的 QPC 频率。
     static FREQUENCY: std::sync::OnceLock<i64> = std::sync::OnceLock::new();
     let frequency = *FREQUENCY.get_or_init(|| {
         let mut value = 0;

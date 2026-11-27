@@ -1,3 +1,5 @@
+//! env 原生专项共用的工具链、构建入口和运行控制辅助。
+
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
@@ -23,9 +25,12 @@ use super::{
     test_dir,
 };
 
+/// 旧版原生环境注入的固定首参标记。
 const LEGACY_MARKER: &str = "--__xiao-run-environment-stdin";
+/// 打印全部应用参数的源码。
 const PRINT_ARGV: &str = "from std.args import argv\nfor value in argv()\n    print(value)\n";
 
+/// 构造固定目标、优化档和能力掩码的原生构建请求。
 fn build_request(
     root: &Path,
     case: &str,
@@ -52,6 +57,7 @@ fn build_request(
     .with_llvm_ir_output(root.join(format!("{case}.ll")))
 }
 
+/// 运行原生产物并保存 stdout、stderr 和可选释放轨迹。
 fn run_artifact(
     artifact: &NativeArtifact,
     case: &str,
@@ -89,6 +95,7 @@ fn run_artifact(
     output
 }
 
+/// 断言释放轨迹中每个对象只销毁一次。
 fn assert_released(path: &Path) {
     let trace = fs::read_to_string(path).unwrap();
     let mut objects = BTreeMap::<u64, usize>::new();
@@ -118,6 +125,7 @@ fn assert_released(path: &Path) {
 
 #[test]
 #[ignore = "需要本批 release Runtime 和固定 LLVM 工具"]
+/// 验证原生 O0/O3 与 VM 一致并正确释放输出。
 fn native_env_o0_o3_matches_vm_and_owns_outputs() {
     let target = TargetDescription::host();
     let tools = toolchain(&target);
@@ -226,6 +234,7 @@ fn native_env_o0_o3_matches_vm_and_owns_outputs() {
 
 #[test]
 #[ignore = "需要本批 release Runtime 和固定 LLVM 工具"]
+/// 验证宿主捕获、显式注入和边界输入。
 fn native_env_entry_resolves_host_and_explicit_inputs() {
     let target = TargetDescription::host();
     let tools = toolchain(&target);
@@ -319,6 +328,7 @@ fn native_env_entry_resolves_host_and_explicit_inputs() {
 
 #[test]
 #[ignore = "需要本批 release Runtime 和固定 LLVM 工具"]
+/// 验证旧注入标记作为普通首参不被吞掉。
 fn native_env_preserves_legacy_marker_as_first_argument() {
     let target = TargetDescription::host();
     let tools = toolchain(&target);
@@ -352,6 +362,7 @@ fn native_env_preserves_legacy_marker_as_first_argument() {
 
 #[test]
 #[ignore = "需要本批 release Runtime 和固定 LLVM 工具"]
+/// 验证驱动随机 nonce 注入显式快照。
 fn native_env_driver_injects_snapshot_with_random_nonce() {
     let target = TargetDescription::host();
     let tools = toolchain(&target);
@@ -374,6 +385,7 @@ fn native_env_driver_injects_snapshot_with_random_nonce() {
 
 #[test]
 #[ignore = "需要本批 release Runtime 和固定 LLVM 工具"]
+/// 验证原生任务共享快照且取消行为与 VM 一致。
 fn native_env_worker_shares_snapshot_and_cancels_like_vm() {
     let target = TargetDescription::host();
     let tools = toolchain(&target);
@@ -413,6 +425,7 @@ fn native_env_worker_shares_snapshot_and_cancels_like_vm() {
     }
 }
 
+/// 断言驱动中断回执的退出码、诊断和标准输出。
 fn assert_driver_interruption(
     root: &Path,
     case: &str,
@@ -435,6 +448,7 @@ fn assert_driver_interruption(
     assert!(!output.stderr.contains("X06-RUNTIME-027"), "{output:?}");
 }
 
+/// 验证构建前和 spawn 前的取消/截止拒绝路径。
 #[test]
 #[ignore = "需要本批 release Runtime 和固定 LLVM 工具"]
 fn native_env_run_control_before_build_and_spawn() {
@@ -512,6 +526,7 @@ fn native_env_run_control_before_build_and_spawn() {
     }
 }
 
+/// 验证运行中的截止/取消在生成代码 env 安全点生效。
 #[test]
 #[ignore = "需要本批 release Runtime 和固定 LLVM 工具"]
 fn native_env_running_control_reaches_generated_code() {
@@ -584,6 +599,7 @@ while true
     }
 }
 
+/// 验证 set/unset 提交前中断和配额失败都保留旧视图。
 #[test]
 #[ignore = "需要本批 release Runtime 和固定 LLVM 工具"]
 fn native_env_run_control_preserves_set_and_unset_budgets() {

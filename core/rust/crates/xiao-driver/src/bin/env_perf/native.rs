@@ -8,12 +8,14 @@ use xiao_driver::FrontendArtifact;
 
 use super::{CAPABILITIES, file_info, write_json};
 
+/// 读取必需的原生工具链环境变量并转换为路径。
 pub fn required(name: &str) -> PathBuf {
     std::env::var_os(name)
         .unwrap_or_else(|| panic!("缺少 {name}"))
         .into()
 }
 
+/// 从固定环境变量装配发布 LLVM 工具链并探测静态库。
 pub fn toolchain(target: &TargetDescription) -> Toolchain {
     assert_eq!(
         std::env::var("XIAO_TARGET_TRIPLE").expect("缺少 XIAO_TARGET_TRIPLE"),
@@ -27,6 +29,7 @@ pub fn toolchain(target: &TargetDescription) -> Toolchain {
         .unwrap()
 }
 
+/// 编译 C 启动 shim，并把编译轨迹写入任务日志目录。
 pub fn build_shim(
     directory: &Path,
     logs: &Path,
@@ -47,6 +50,7 @@ pub fn build_shim(
     object
 }
 
+/// 将前端产物 lowering 为指定优化档并链接带 shim 的原生测量程序。
 pub fn build(
     directory: &Path,
     logs: &Path,
@@ -110,6 +114,7 @@ pub fn build(
     executable
 }
 
+/// 运行构建命令并把 stdout/stderr 与退出码写入任务日志。
 fn run(mut command: Command, label: &str, cwd: &Path, directory: &Path) {
     let output = command.current_dir(cwd).output().unwrap();
     let stdout = directory.join(format!("{label}.stdout.log"));

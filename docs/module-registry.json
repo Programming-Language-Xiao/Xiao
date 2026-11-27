@@ -3,6 +3,27 @@
   "schemaVersion": 1,
   "modules": [
     {
+      "id": "stdlib.env",
+      "stage": "20O-B3-4",
+      "status": "planned",
+      "code": [
+        "stdlib/env.xiao",
+        "core/rust/crates/xiao-runtime/src/environment.rs",
+        "core/rust/crates/xiao-runtime/src/abi_env.rs",
+        "core/rust/crates/xiao-driver/src/bin/b3_env_performance.rs"
+      ],
+      "tests": [
+        "core/rust/crates/xiao-driver/tests/20o_b3_env.rs",
+        "core/rust/crates/xiao-driver/tests/20o_b3_env_tutorial.rs",
+        "core/rust/crates/xiao-runtime/src/abi_env_tests.rs",
+        "tests/fixtures/docs/env"
+      ],
+      "usedocs": [
+        "docs/DevDocs/20o-b3-4-env-implementation-plan.md",
+        "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials/env.md"
+      ]
+    },
+    {
       "id": "stdlib.fs",
       "stage": "20O-B3-3",
       "status": "planned",

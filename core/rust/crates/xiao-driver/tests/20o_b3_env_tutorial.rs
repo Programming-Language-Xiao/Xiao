@@ -11,25 +11,33 @@ use xiao_driver::{
 use xiao_intrinsics::{CAPABILITY_ENVIRONMENT, CAPABILITY_STDOUT};
 use xiao_vm::VmEvent;
 
+/// 原生产物与工具链辅助模块。
 #[path = "support/b3_env_artifact.rs"]
 mod native_artifact;
 
+/// 冻结教程源码。
 const SOURCE: &str = include_str!("../../../../../tests/fixtures/docs/env/tutorial.xiao");
+/// 冻结的 55 字节黄金输出。
 const GOLDEN: &[u8] = include_bytes!("../../../../../tests/fixtures/docs/env/tutorial.stdout");
+/// 冻结的合成环境输入。
 const INPUT: &str = include_str!("../../../../../tests/fixtures/docs/env/tutorial.input.json");
+/// 教程运行请求的能力位。
 const CAPABILITIES: u64 = CAPABILITY_ENVIRONMENT | CAPABILITY_STDOUT;
 
+/// 教程输入文件的反序列化结构。
 #[derive(serde::Deserialize)]
 struct TutorialInput {
     environment: RunEnvironment,
 }
 
+/// 读取并反序列化冻结的合成快照。
 fn input() -> RunEnvironment {
     serde_json::from_str::<TutorialInput>(INPUT)
         .unwrap()
         .environment
 }
 
+/// 返回 std 与 stdlib 两种导入别名下的教程源码。
 fn sources() -> [(&'static str, String); 2] {
     [
         ("std", SOURCE.to_owned()),
@@ -40,6 +48,7 @@ fn sources() -> [(&'static str, String); 2] {
     ]
 }
 
+/// 验证 VM 双导入教程逐字匹配黄金。
 #[test]
 fn env_tutorial_matches_vm_golden() {
     let options = RunOptions {
@@ -73,6 +82,7 @@ fn env_tutorial_matches_vm_golden() {
     }
 }
 
+/// 验证原生 O0/O3 双导入教程逐字匹配黄金。
 #[test]
 #[ignore = "需要固定目标、发布 Runtime 和 LLVM 工具链"]
 fn env_tutorial_matches_native_golden() {

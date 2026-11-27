@@ -944,6 +944,7 @@ fn diagnostic_start_response(
 }
 
 /// 在用户代码开始前建立诊断会话，执行后投递所有 VM 事件。
+#[allow(clippy::too_many_arguments)]
 pub(super) fn run_with_diagnostics(
     request_id: String,
     debug: bool,

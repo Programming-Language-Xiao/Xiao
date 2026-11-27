@@ -13,31 +13,46 @@ use serde_json::Value;
 
 use super::{calibration, memory::Memory};
 
+/// 单个采样进程的总体看门狗期限。
 const TIMEOUT: Duration = Duration::from_secs(120);
 
+/// 一次校准轮次的重复次数、总时长和驻留内存读数。
 #[derive(Serialize, Deserialize)]
 pub struct Sample {
+    /// 本轮实际重复次数。
     pub repeats: usize,
+    /// 本轮所有重复的总秒数。
     pub seconds: f64,
+    /// 本轮结束时的 OS 驻留内存。
     pub memory: Option<Memory>,
 }
 
+/// 一个子进程从预热到退出保留的全部原始测量状态。
 #[derive(Default, Serialize)]
 pub struct Trial {
+    /// 采样子进程 PID。
     pub pid: Option<u32>,
+    /// 子进程启动时的 Unix 纳秒时间戳。
     pub started_unix_ns: Option<String>,
+    /// 子进程进入用户代码前的内存基线。
     pub baseline: Option<Memory>,
+    /// 预热轮次。
     pub warmup: Option<Sample>,
+    /// 按顺序执行的所有校准轮次。
     pub calibration: Vec<Sample>,
+    /// 子进程退出码。
     pub exit: Option<i32>,
+    /// 启动、校准或退出阶段的失败原因。
     pub error: Option<String>,
 }
 
 impl Trial {
+    /// 返回最后一个校准轮次作为本批正式样本。
     pub fn sample(&self) -> Option<&Sample> {
         self.calibration.last()
     }
 
+    /// 返回相对基线的驻留内存增量上界。
     pub fn peak_increment(&self) -> Option<u64> {
         let baseline = self.baseline.as_ref()?;
         let warmup = self.warmup.as_ref()?.memory.as_ref()?;
@@ -49,6 +64,7 @@ impl Trial {
     }
 }
 
+/// 启动独立采样子进程，完成预热、校准并收集原始日志。
 pub fn measure(
     executable: &Path,
     args: &[OsString],
@@ -116,6 +132,7 @@ pub fn measure(
     trial
 }
 
+/// 等待并校验子进程发出的指定 JSON 事件。
 fn event(receive: &Receiver<Vec<u8>>, expected: &str) -> Result<Value, String> {
     let bytes = receive
         .recv_timeout(TIMEOUT)
@@ -127,6 +144,7 @@ fn event(receive: &Receiver<Vec<u8>>, expected: &str) -> Result<Value, String> {
     Ok(event)
 }
 
+/// 执行预热和冻结的重复次数校准，并保存每轮原始样本。
 fn calibrate(
     child: &mut Child,
     receive: &Receiver<Vec<u8>>,
@@ -151,18 +169,21 @@ fn calibrate(
     };
     trial.warmup = Some(collect(1)?);
     let mut repeats = 1;
-    while !probe {
-        let sample = collect(repeats)?;
-        let seconds = sample.seconds;
-        trial.calibration.push(sample);
-        if calibration::finished(repeats, seconds) {
-            break;
+    if !probe {
+        loop {
+            let sample = collect(repeats)?;
+            let seconds = sample.seconds;
+            trial.calibration.push(sample);
+            if calibration::finished(repeats, seconds) {
+                break;
+            }
+            repeats = calibration::next_repeat(repeats, seconds);
         }
-        repeats = calibration::next_repeat(repeats, seconds);
     }
     writeln!(input, "0").map_err(|error| error.to_string())
 }
 
+/// 在总体期限内等待子进程退出，超时则终止它。
 fn finish(child: &mut Child) -> Result<std::process::ExitStatus, String> {
     let start = Instant::now();
     loop {

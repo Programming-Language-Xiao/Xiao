@@ -31,7 +31,7 @@ VM 使用 Cargo 为 release example 链入的 Runtime `rlib`，该构建带示�
 - 每个子进程先记录同 PID 的当前和峰值驻留，再准备输入并预热一次。校准从重复 1 次开始，单次至少 50 ms 时直接取该轮，其余按实际时长向 100 ms 增长。单轮增长至多 16 倍，重复上限为 `2^24`。保留预热与每轮原始总时长、次数、RSS 和末轮正式样本。归一化以末轮总时间除以实际重复次数，取五批中位数。末轮须至少 50 ms。
 - 驻留增量取同 PID 的 OS 高水位减去子进程的当前驻留基线，再取五批最大值。Windows 记录当前和峰值工作集，Ubuntu WSL 记录 `/proc/self/status` 的 `VmRSS` 与 `VmHWM`。基线后产生的 VM 模块准备、快照输入、预热与校验内存也计入保守峰值。
 - 阈值为 VM 中位数 ≤10 s，原生各档中位数 ≤2 s，峰值驻留增量 ≤64 MiB，同一平台、同一后端的适用相邻规模中位数比 ≤3。翻倍仅用于快照构建和固定次数读、替换、删除。完整负载的两项满额用例只有 1,024 对。校准、子进程退出、黄金或证据失败均进入判定。
-[示例入口](../../../../../core/rust/crates/xiao-driver/examples/b3_env_performance.rs) · [实施规划 §五、§六](../../../20o-b3-4-env-implementation-plan.md) · [冻结契约](../entry-20261123-b3-0c/contract-draft.md)
+[示例入口](../../../../../core/rust/crates/xiao-driver/src/bin/b3_env_performance.rs) · [实施规划 §五、§六](../../../20o-b3-4-env-implementation-plan.md) · [冻结契约](../entry-20261123-b3-0c/contract-draft.md)
 
 ## 命令与退出码
 

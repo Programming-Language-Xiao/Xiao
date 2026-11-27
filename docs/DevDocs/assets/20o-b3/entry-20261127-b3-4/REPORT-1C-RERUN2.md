@@ -1,6 +1,6 @@
 # B3-4D FIX-B 本地复跑
 
-Windows 与 Ubuntu WSL 的 VM 双导入和原生双导入 O0/O3 均逐字匹配 55 字节黄金，Windows 六份新构建的 PE/COFF 产物均获产品级 `Complete`。受测提交为 `1e42f501af20890157a4ce28d96d451a70fc3e39`，Git tree 为 `7631e0692c5734b34f8b2f0b31a1bca7f971c223`。macOS 标为 `unverifiable`。[Windows 复核](logs/1c-rerun2/windows/audit.json) · [Ubuntu WSL 复核](logs/1c-rerun2/ubuntu-wsl/audit.json)
+Windows 与 Ubuntu WSL 的 VM 双导入和原生双导入 O0/O3 均逐字匹配 55 字节黄金，Windows 六份新构建的 PE/COFF 产物均获产品级 `Complete`。受测提交为 `1e42f501af20890157a4ce28d96d451a70fc3e39`，Git tree 为 `7631e0692c5734b34f8b2f0b31a1bca7f971c223`。macOS 标为 `unverifiable`。修复前对照见 [REPORT-1C.md](REPORT-1C.md)。[Windows 复核](logs/1c-rerun2/windows/audit.json) · [Ubuntu WSL 复核](logs/1c-rerun2/ubuntu-wsl/audit.json)
 
 ## 源码、Runtime 与工具链
 
