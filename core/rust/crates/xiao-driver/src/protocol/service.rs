@@ -22,7 +22,7 @@ use super::request::{
     SourceIdentity, ToolchainSpec,
 };
 use super::run::{
-    RunSessionFingerprint, protocol_error_response, run_request_response,
+    EnvironmentSource, RunSessionFingerprint, protocol_error_response, run_request_response,
     run_request_response_with_driver, run_xiaoc_request_response,
 };
 use super::test::test_request_response;
@@ -118,6 +118,7 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
                 diagnostics,
                 debug,
                 CancellationToken::new(),
+                EnvironmentSource::Embedded,
             )
         }),
         ProtocolRequest::RunXiaoc {
@@ -140,6 +141,7 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
                 diagnostics,
                 debug,
                 CancellationToken::new(),
+                EnvironmentSource::Embedded,
             )
         }),
         ProtocolRequest::Verify {
@@ -678,6 +680,7 @@ fn session_worker_response(
     token: CancellationToken,
     driver: &mut FrontendVmDriver,
     fingerprint: &mut Option<RunSessionFingerprint>,
+    environment_source: EnvironmentSource,
 ) -> ProtocolResponse {
     match request {
         ProtocolRequest::Run {
@@ -703,6 +706,7 @@ fn session_worker_response(
                 source,
                 options,
                 token,
+                environment_source,
                 driver,
                 fingerprint,
             )
@@ -727,6 +731,7 @@ fn session_worker_response(
                 diagnostics,
                 debug,
                 token,
+                environment_source,
             )
         }),
         ProtocolRequest::RunXiaoc {
@@ -749,6 +754,7 @@ fn session_worker_response(
                 diagnostics,
                 debug,
                 token,
+                environment_source,
             )
         }),
         _ => unreachable!("会话线程只接收 run 请求"),
@@ -826,6 +832,7 @@ pub(super) fn worker_response(
                 diagnostics,
                 debug,
                 token,
+                EnvironmentSource::Embedded,
             )
         }),
         ProtocolRequest::RunXiaoc {
@@ -848,6 +855,7 @@ pub(super) fn worker_response(
                 diagnostics,
                 debug,
                 token,
+                EnvironmentSource::Embedded,
             )
         }),
         ProtocolRequest::Verify {
@@ -946,6 +954,7 @@ fn spawn_session_worker<W: Write + Send + 'static>(
     receiver: mpsc::Receiver<SessionRunJob>,
     writer: SharedWriter<W>,
     cancellations: CancellationMap,
+    environment_source: EnvironmentSource,
 ) -> JoinHandle<()> {
     thread::spawn(move || {
         let mut driver = FrontendVmDriver::new();
@@ -954,7 +963,13 @@ fn spawn_session_worker<W: Write + Send + 'static>(
             let request_id = request_id_for(&request).expect("会话请求必须是 run");
             let locale = request_locale(&request);
             let response = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                session_worker_response(request, token, &mut driver, &mut fingerprint)
+                session_worker_response(
+                    request,
+                    token,
+                    &mut driver,
+                    &mut fingerprint,
+                    environment_source,
+                )
             }))
             .unwrap_or_else(|_| {
                 driver.reset_session();
@@ -998,6 +1013,18 @@ where
     R: Read,
     W: Write + Send + 'static,
 {
+    serve_with_environment(reader, writer, EnvironmentSource::Embedded)
+}
+
+fn serve_with_environment<R, W>(
+    reader: R,
+    writer: W,
+    environment_source: EnvironmentSource,
+) -> Result<(), FrameError>
+where
+    R: Read,
+    W: Write + Send + 'static,
+{
     let mut reader = BufReader::new(reader);
     let writer = Arc::new(Mutex::new(BufWriter::new(writer)));
     let cancellations: CancellationMap = Arc::new(Mutex::new(BTreeMap::new()));
@@ -1007,6 +1034,7 @@ where
         session_receiver,
         Arc::clone(&writer),
         Arc::clone(&cancellations),
+        environment_source,
     );
     let mut first_frame = true;
     let mut negotiated = false;
@@ -1223,7 +1251,7 @@ fn spawn_worker<W: Write + Send + 'static>(
 pub fn serve_stdio() -> Result<(), FrameError> {
     let stdin = io::stdin();
     let stdout = io::stdout();
-    serve(stdin, stdout)
+    serve_with_environment(stdin, stdout, EnvironmentSource::Cli)
 }
 
 /// 将任意 panic 统一包装为核心崩溃响应。

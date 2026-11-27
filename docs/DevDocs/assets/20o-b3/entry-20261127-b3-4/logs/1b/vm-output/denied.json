@@ -1,0 +1,301 @@
+{
+  "type": "result",
+  "request_id": "denied",
+  "operation": "run",
+  "exit_code": 3,
+  "exit_name": "runtime_error",
+  "diagnostics": [],
+  "report": {
+    "class": "recoverable",
+    "code": "X06-RUNTIME-026",
+    "error_id": 1,
+    "message_id": "runtime.capability_unavailable",
+    "params": {},
+    "message": "当前能力上下文不允许此外部操作",
+    "text": "the current capability context does not allow this external operation",
+    "location": {
+      "start": 38,
+      "end": 54
+    },
+    "context": {
+      "capability": {
+        "type": "text",
+        "value": "environment"
+      }
+    },
+    "stack": [
+      {
+        "module": "stdlib.env",
+        "function": "get",
+        "source": "\\\\?\\D:\\project\\Xiao\\Xiao\\stdlib\\env.xiao",
+        "span": {
+          "start": 38,
+          "end": 54
+        },
+        "backend": {
+          "bytecode_offset": 6,
+          "native_address": null,
+          "inline_depth": null
+        },
+        "kind": "user"
+      },
+      {
+        "module": "main",
+        "function": "",
+        "source": "<memory>",
+        "span": {
+          "start": 48,
+          "end": 78
+        },
+        "backend": {
+          "bytecode_offset": 108,
+          "native_address": null,
+          "inline_depth": null
+        },
+        "kind": "user"
+      }
+    ],
+    "cause": null,
+    "suppressed": []
+  },
+  "events": [
+    {
+      "kind": "module_loaded",
+      "data": {
+        "module": "main"
+      }
+    },
+    {
+      "kind": "function_entered",
+      "data": {
+        "depth": 1,
+        "function": ""
+      }
+    },
+    {
+      "kind": "stack_frame",
+      "data": {
+        "depth": 1,
+        "function": "",
+        "return_to": null
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 0
+      }
+    },
+    {
+      "kind": "function_entered",
+      "data": {
+        "depth": 2,
+        "function": ""
+      }
+    },
+    {
+      "kind": "stack_frame",
+      "data": {
+        "depth": 2,
+        "function": "",
+        "return_to": null
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 0
+      }
+    },
+    {
+      "kind": "scope_exited",
+      "data": {
+        "exit": "normal",
+        "scope": 0
+      }
+    },
+    {
+      "kind": "function_returned",
+      "data": {
+        "depth": 2,
+        "function": ""
+      }
+    },
+    {
+      "kind": "module_loaded",
+      "data": {
+        "module": "stdlib.env"
+      }
+    },
+    {
+      "kind": "function_entered",
+      "data": {
+        "depth": 2,
+        "function": "get"
+      }
+    },
+    {
+      "kind": "stack_frame",
+      "data": {
+        "depth": 2,
+        "function": "get",
+        "return_to": 7
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 0
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 1
+      }
+    },
+    {
+      "kind": "value_released",
+      "data": {
+        "exit": "unmatched_error",
+        "kind": "strong",
+        "scope": 1,
+        "value": 1
+      }
+    },
+    {
+      "kind": "handler_unmatched",
+      "data": {
+        "scope": 1
+      }
+    },
+    {
+      "kind": "handler_unmatched",
+      "data": {
+        "scope": 0
+      }
+    },
+    {
+      "kind": "function_returned",
+      "data": {
+        "depth": 2,
+        "function": "get"
+      }
+    },
+    {
+      "kind": "handler_unmatched",
+      "data": {
+        "scope": 0
+      }
+    },
+    {
+      "kind": "function_returned",
+      "data": {
+        "depth": 1,
+        "function": ""
+      }
+    },
+    {
+      "kind": "error_raised",
+      "data": {
+        "code": "X06-RUNTIME-026",
+        "message_id": "runtime.capability_unavailable"
+      }
+    },
+    {
+      "kind": "metrics",
+      "data": {
+        "call_save_count": 0,
+        "dropped_events": 0,
+        "instructions": 22,
+        "max_call_depth": 2,
+        "max_stack_depth": 7,
+        "releases": 1,
+        "spill_count": 0,
+        "stack_map_entries": 0
+      }
+    }
+  ],
+  "metrics": {
+    "instructions": 22,
+    "peak_live_bytes": 184,
+    "max_call_depth": 2,
+    "max_stack_depth": 7,
+    "releases": 1,
+    "spill_count": 0,
+    "stack_map_entries": 0,
+    "call_save_count": 0,
+    "dropped_events": 0
+  },
+  "value": null,
+  "artifact": null,
+  "cache": {
+    "status": "session",
+    "object_kind": "xiaoc",
+    "digest": null,
+    "verified": false,
+    "recompiled": true,
+    "recompile_reason": "session_state",
+    "reason": "session_state",
+    "optimization": {
+      "level": 0,
+      "optimizer_version": 1,
+      "config_fingerprint": "xiao-opt-fnv1a64-3e56d73059306232",
+      "input_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+      "output_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+      "validation": "passed",
+      "passes": [
+        {
+          "name": "bytecode.constant-pool",
+          "version": 1,
+          "status": "skipped",
+          "skip_reason": "optimization-disabled",
+          "changed": false,
+          "input_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "output_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "validation": "passed"
+        },
+        {
+          "name": "bytecode.redundant-move",
+          "version": 1,
+          "status": "skipped",
+          "skip_reason": "optimization-disabled",
+          "changed": false,
+          "input_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "output_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "validation": "passed"
+        },
+        {
+          "name": "bytecode.jump-simplify",
+          "version": 1,
+          "status": "skipped",
+          "skip_reason": "optimization-disabled",
+          "changed": false,
+          "input_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "output_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "validation": "passed"
+        },
+        {
+          "name": "bytecode.unreachable-block",
+          "version": 1,
+          "status": "skipped",
+          "skip_reason": "optimization-disabled",
+          "changed": false,
+          "input_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "output_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "validation": "passed"
+        },
+        {
+          "name": "bytecode.slot-layout",
+          "version": 1,
+          "status": "skipped",
+          "skip_reason": "optimization-disabled",
+          "changed": false,
+          "input_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "output_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "validation": "passed"
+        }
+      ]
+    }
+  }
+}

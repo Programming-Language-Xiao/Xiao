@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/vm-receipt.py", line 64, in <module>
+    execute("host", source, {"capabilities": 160}, 0, "entry<synthetic-host>\nlocal<>\ntrue\nfalse\n")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/vm-receipt.py", line 47, in execute
+    result = subprocess.run([binary], input=frame(hello) + frame(request), capture_output=True,
+                            env=host, check=True, timeout=30)
+  File "D:\msys64\ucrt64\lib\python3.14\subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '[WindowsPath('D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target/debug/xiao-core.exe')]' returned non-zero exit status 2.
+exit=1

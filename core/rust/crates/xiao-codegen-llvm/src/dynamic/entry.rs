@@ -105,7 +105,10 @@ impl<'a> DynamicGenerator<'a> {
         self.emit("  unreachable".to_owned());
         self.emit("}".to_owned());
         self.emit(String::new());
-        if capture_arguments {
+        if self.options.capabilities & xiao_intrinsics::CAPABILITY_ENVIRONMENT != 0 {
+            self.declarations
+                .insert(crate::NATIVE_ENV_ENTRY_DECLARATION.to_owned());
+        } else if capture_arguments {
             self.declarations
                 .insert("declare i32 @xiao_runtime_args_run_native(ptr)".to_owned());
         }
@@ -121,7 +124,9 @@ impl<'a> DynamicGenerator<'a> {
         } else {
             "  call void @xiao_entry()\n  %xiao_exit_code = call i32 @xiao_runtime_error_exit_code()\n"
         };
-        let signature = if capture_arguments {
+        let capture_environment =
+            self.options.capabilities & xiao_intrinsics::CAPABILITY_ENVIRONMENT != 0;
+        let signature = if capture_arguments || capture_environment {
             "define internal i32 @xiao_application_main()"
         } else {
             "define i32 @main()"
@@ -133,7 +138,12 @@ impl<'a> DynamicGenerator<'a> {
                 "{signature} {{\nentry:\n  %xiao_debug_prepare = call i32 @xiao_runtime_diagnostic_prepare()\n  %xiao_debug_prepare_ok = icmp eq i32 %xiao_debug_prepare, 0\n  br i1 %xiao_debug_prepare_ok, label %xiao.debug.start, label %xiao.debug.prepare.fail\nxiao.debug.prepare.fail:\n  ret i32 %xiao_debug_prepare\nxiao.debug.start:\n  %xiao_debug_status = call i32 @xiao_native_debug_start()\n  %xiao_debug_ok = icmp eq i32 %xiao_debug_status, 0\n  br i1 %xiao_debug_ok, label %xiao.debug.ready, label %xiao.debug.fail\nxiao.debug.fail:\n  call void @xiao_runtime_diagnostic_finish()\n  ret i32 %xiao_debug_status\nxiao.debug.ready:\n  %xiao_debug_ready = call i32 @xiao_runtime_diagnostic_ready()\n  %xiao_debug_ready_ok = icmp eq i32 %xiao_debug_ready, 0\n  br i1 %xiao_debug_ready_ok, label %xiao.user, label %xiao.debug.ready.fail\nxiao.debug.ready.fail:\n  call void @xiao_runtime_diagnostic_finish()\n  ret i32 %xiao_debug_ready\nxiao.user:\n{entry}  call void @xiao_runtime_diagnostic_finish()\n  ret i32 %xiao_exit_code\n}}\n"
             )
         };
-        if capture_arguments {
+        if capture_environment {
+            adapter.push_str(&crate::native_env_main(
+                self.options.capabilities,
+                capture_arguments,
+            ));
+        } else if capture_arguments {
             adapter.push_str(
                 "\ndefine i32 @main() {\nentry:\n  %status = call i32 @xiao_runtime_args_run_native(ptr @xiao_application_main)\n  ret i32 %status\n}\n",
             );

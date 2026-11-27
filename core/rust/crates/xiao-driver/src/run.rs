@@ -19,10 +19,11 @@ use xiao_intrinsics::{CapabilityMaskError, DEFAULT_CAPABILITY_MASK, validate_cap
 use xiao_optimizer::{OptimizationLevel, PassStatus, ValidationStatus};
 use xiao_package::CacheLayout;
 use xiao_runtime::arguments::ArgumentsSnapshot;
+use xiao_runtime::environment::EnvironmentSnapshot;
 use xiao_vm::{
     CancellationSource, DEFAULT_EVENT_CAPACITY, RunOutcome as VmRunOutcome,
     RunRequest as VmRunRequest, RunResult, VmEvent, VmOptions, VmSession,
-    run_request_with_session as run_vm_request_with_session,
+    run_request_with_environment as run_vm_request_with_environment,
 };
 
 /// 可跨线程共享的 VM 取消令牌。
@@ -630,6 +631,16 @@ impl FrontendVmDriver {
     /// 编译并执行一次内部运行请求。
     #[must_use]
     pub fn run(&mut self, request: &DriverRequest) -> DriverOutcome {
+        self.run_with_environment(request, EnvironmentSnapshot::default())
+    }
+
+    /// 编译并使用一次执行独占的环境快照运行。
+    #[must_use]
+    pub fn run_with_environment(
+        &mut self,
+        request: &DriverRequest,
+        environment: EnvironmentSnapshot,
+    ) -> DriverOutcome {
         let control = match ControlWindow::start(&request.control) {
             Ok(control) => control,
             Err(error) => {
@@ -649,7 +660,7 @@ impl FrontendVmDriver {
             self.reset_session();
             return DriverOutcome::Rejected(error);
         }
-        self.run_artifact_with_control(&artifact, request, &control)
+        self.run_artifact_with_control(&artifact, request, &control, environment)
     }
 
     /// 执行一份已经由前端产出的 IR，不重新解析或重新推断语义。
@@ -670,7 +681,7 @@ impl FrontendVmDriver {
             self.reset_session();
             return DriverOutcome::Rejected(error);
         }
-        self.run_artifact_with_control(artifact, request, &control)
+        self.run_artifact_with_control(artifact, request, &control, EnvironmentSnapshot::default())
     }
 
     /// 在同一控制窗口内降低并执行产物。
@@ -679,6 +690,7 @@ impl FrontendVmDriver {
         artifact: &FrontendArtifact,
         request: &DriverRequest,
         control: &ControlWindow,
+        environment: EnvironmentSnapshot,
     ) -> DriverOutcome {
         let ir = artifact.ir();
         let program = lower_program(ir);
@@ -692,6 +704,7 @@ impl FrontendVmDriver {
             program,
             request,
             control,
+            environment,
         )
     }
 
@@ -703,6 +716,7 @@ impl FrontendVmDriver {
         program: TacProgram,
         request: &DriverRequest,
         control: &ControlWindow,
+        environment: EnvironmentSnapshot,
     ) -> DriverOutcome {
         if let Some(error) = control.check() {
             self.reset_session();
@@ -784,7 +798,7 @@ impl FrontendVmDriver {
         );
         let vm_request = vm_request.with_module_loader(&module_loader);
         let session = std::mem::take(&mut self.session);
-        let (outcome, session) = run_vm_request_with_session(&vm_request, session);
+        let (outcome, session) = run_vm_request_with_environment(&vm_request, session, environment);
         self.session = session;
         // 方案 A 仍需在 VM 返回边界采样；VM 已经结束后发现控制信号时，控制结果
         // 优先于已完成的 VM 结果，避免把超时/取消伪装成成功。
@@ -1166,6 +1180,7 @@ print(lock_read(guard))
             program,
             &request,
             &control,
+            EnvironmentSnapshot::default(),
         );
         let DriverOutcome::Rejected(error) = outcome else {
             panic!("损坏 TAC 必须被拒绝");
@@ -1194,6 +1209,7 @@ print(lock_read(guard))
             program,
             &request,
             &control,
+            EnvironmentSnapshot::default(),
         );
         let DriverOutcome::Rejected(error) = outcome else {
             panic!("结构损坏 TAC 必须被拒绝");

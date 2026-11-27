@@ -36,6 +36,8 @@ mod array_intrinsics;
 /// 并发计划、隔离子 VM 和边界错误。
 #[path = "concurrent.rs"]
 mod concurrent;
+#[path = "env_intrinsics.rs"]
+mod env_intrinsics;
 #[path = "fs_intrinsics.rs"]
 mod fs_intrinsics;
 /// 模块初始化与上下文切换。
@@ -223,6 +225,7 @@ pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     concurrency: Rc<concurrent::ConcurrentContext>,
     clock: Arc<xiao_runtime::time::TimeContext>,
     arguments_snapshot: Option<Arc<ArgumentsSnapshot>>,
+    environment_snapshot: Arc<xiao_runtime::environment::EnvironmentSnapshot>,
 }
 
 struct ModuleInstance {
@@ -276,6 +279,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             concurrency: Rc::new(concurrent::ConcurrentContext::default()),
             clock: Arc::new(xiao_runtime::time::TimeContext::host()),
             arguments_snapshot: None,
+            environment_snapshot: Arc::default(),
         }
     }
 
@@ -309,6 +313,13 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     /// 安装本次请求已接纳的参数快照。
     pub(crate) fn set_arguments_snapshot(&mut self, snapshot: Option<Arc<ArgumentsSnapshot>>) {
         self.arguments_snapshot = snapshot;
+    }
+
+    pub(crate) fn set_environment_snapshot(
+        &mut self,
+        snapshot: xiao_runtime::environment::EnvironmentSnapshot,
+    ) {
+        self.environment_snapshot = Arc::new(snapshot);
     }
 
     /// 判断当前 VM 是否已经清空所有请求级执行状态，且会话状态可复用。
@@ -1875,6 +1886,9 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         }
         if declaration.kind == xiao_intrinsics::IntrinsicKind::Fs {
             return self.execute_fs(declaration, arguments, span);
+        }
+        if declaration.kind == xiao_intrinsics::IntrinsicKind::Env {
+            return self.execute_env(declaration, arguments, span);
         }
         if matches!(
             declaration.vm_binding,

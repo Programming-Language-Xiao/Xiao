@@ -1,0 +1,153 @@
+Runtime SHA256
+6606A78F1003D09322F8DF2CC61C584E418F3BE183F63BAE6B5CF91F19407BE1  D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\generator-compare\fixed-runtime\xiao_runtime.lib
+O0 无 env 对照 IR SHA256 接线前 CBBD54DBE5646BFE70D055FEEE22B4508E2E0F5A609D13A58D7D2EDDAB88A2DE 接线后 CBBD54DBE5646BFE70D055FEEE22B4508E2E0F5A609D13A58D7D2EDDAB88A2DE
+O0 接线前 env 无 IR，详见 lowering-before-26.log
+O0 接线后 env IR 26 5F5D806294F1B35A92CF8E280122CD8314DE3BD28B0A9ADF3C6D6B0DE88213E5
+O0 接线后 env IR 27 1C91694D7EB990071AD284BAA109105CB61EC62B3B5A31F0CD52BC0A8D5E4AC8
+O0 IR 声明和调用
+declare i32 @xiao_runtime_env_get(ptr, ptr, i64)
+declare i32 @xiao_runtime_env_run_native(ptr, i64, i32)
+declare i32 @xiao_runtime_env_set(ptr, ptr, i64)
+declare i32 @xiao_runtime_env_unset(ptr, ptr, i64)
+%t22 = call i32 @xiao_runtime_env_get(ptr %t8, ptr %t21, i64 160)
+%t52 = call i32 @xiao_runtime_env_set(ptr %t26, ptr %t27, i64 160)
+%t70 = call i32 @xiao_runtime_env_unset(ptr %t56, ptr %t69, i64 160)
+%status = call i32 @xiao_runtime_env_run_native(ptr @xiao_application_main, i64 160, i32 0)
+O0 MSVC map 符号
+0001:00010f40       xiao_runtime_env_get       0000000140011f40 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00010f90       xiao_runtime_env_run_native 0000000140011f90 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011a50       xiao_runtime_env_set       0000000140012a50 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:000122f0       xiao_runtime_env_unset     00000001400132f0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00010f70       ?catch$2@?0?xiao_runtime_env_get@4HA 0000000140011f70 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011700       ?dtor$106@?0?xiao_runtime_env_run_native@4HA 0000000140012700 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011750       ?dtor$110@?0?xiao_runtime_env_run_native@4HA 0000000140012750 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011790       ?dtor$111@?0?xiao_runtime_env_run_native@4HA 0000000140012790 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:000117e0       ?dtor$115@?0?xiao_runtime_env_run_native@4HA 00000001400127e0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011830       ?catch$118@?0?xiao_runtime_env_run_native@4HA 0000000140012830 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011860       ?dtor$119@?0?xiao_runtime_env_run_native@4HA 0000000140012860 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:000118a0       ?dtor$122@?0?xiao_runtime_env_run_native@4HA 00000001400128a0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:000118e0       ?dtor$123@?0?xiao_runtime_env_run_native@4HA 00000001400128e0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011920       ?dtor$124@?0?xiao_runtime_env_run_native@4HA 0000000140012920 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011960       ?dtor$125@?0?xiao_runtime_env_run_native@4HA 0000000140012960 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:000119a0       ?dtor$128@?0?xiao_runtime_env_run_native@4HA 00000001400129a0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:000119e0       ?dtor$129@?0?xiao_runtime_env_run_native@4HA 00000001400129e0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011a20       ?dtor$130@?0?xiao_runtime_env_run_native@4HA 0000000140012a20 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011f20       ?dtor$48@?0?xiao_runtime_env_set@4HA 0000000140012f20 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011f60       ?dtor$49@?0?xiao_runtime_env_set@4HA 0000000140012f60 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011fb0       ?dtor$52@?0?xiao_runtime_env_set@4HA 0000000140012fb0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00012000       ?dtor$55@?0?xiao_runtime_env_set@4HA 0000000140013000 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00012080       ?dtor$56@?0?xiao_runtime_env_set@4HA 0000000140013080 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:000120d0       ?dtor$59@?0?xiao_runtime_env_set@4HA 00000001400130d0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00012110       ?catch$60@?0?xiao_runtime_env_set@4HA 0000000140013110 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00012160       ?catch$62@?0?xiao_runtime_env_set@4HA 0000000140013160 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00012190       ?catch$63@?0?xiao_runtime_env_set@4HA 0000000140013190 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:000121e0       ?catch$71@?0?xiao_runtime_env_set@4HA 00000001400131e0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00012210       ?dtor$72@?0?xiao_runtime_env_set@4HA 0000000140013210 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00012270       ?dtor$75@?0?xiao_runtime_env_set@4HA 0000000140013270 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:000122c0       ?catch$76@?0?xiao_runtime_env_set@4HA 00000001400132c0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00012320       ?catch$2@?0?xiao_runtime_env_unset@4HA 0000000140013320 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00001880       switch.table.xiao_runtime_env_run_native 000000014009d880     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:000018b8       switch.table.xiao_runtime_env_run_native.405 000000014009d8b8     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025674       $cppxdata$xiao_runtime_env_get 00000001400c1674     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:0002569c       $stateUnwindMap$xiao_runtime_env_get 00000001400c169c     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:000256ac       $tryMap$xiao_runtime_env_get 00000001400c16ac     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:000256c0       $handlerMap$0$xiao_runtime_env_get 00000001400c16c0     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:000256d4       $ip2state$xiao_runtime_env_get 00000001400c16d4     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025858       $cppxdata$xiao_runtime_env_run_native 00000001400c1858     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025880       $stateUnwindMap$xiao_runtime_env_run_native 00000001400c1880     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:000258f0       $tryMap$xiao_runtime_env_run_native 00000001400c18f0     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025904       $handlerMap$0$xiao_runtime_env_run_native 00000001400c1904     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025918       $ip2state$xiao_runtime_env_run_native 00000001400c1918     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025ba4       $cppxdata$xiao_runtime_env_set 00000001400c1ba4     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025bcc       $stateUnwindMap$xiao_runtime_env_set 00000001400c1bcc     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025c4c       $tryMap$xiao_runtime_env_set 00000001400c1c4c     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025c9c       $handlerMap$0$xiao_runtime_env_set 00000001400c1c9c     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025cc4       $handlerMap$1$xiao_runtime_env_set 00000001400c1cc4     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025cd8       $handlerMap$2$xiao_runtime_env_set 00000001400c1cd8     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025cec       $handlerMap$3$xiao_runtime_env_set 00000001400c1cec     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025d00       $ip2state$xiao_runtime_env_set 00000001400c1d00     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025dec       $cppxdata$xiao_runtime_env_unset 00000001400c1dec     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025e14       $stateUnwindMap$xiao_runtime_env_unset 00000001400c1e14     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025e24       $tryMap$xiao_runtime_env_unset 00000001400c1e24     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025e38       $handlerMap$0$xiao_runtime_env_unset 00000001400c1e38     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025e4c       $ip2state$xiao_runtime_env_unset 00000001400c1e4c     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+CFD25DDD8A47AF2675AE4A6BDBF9BCBAF7ECCB2C7609A9D4A03DD4C7CA621385  D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\generator-compare\before-26\control-o0.exe
+E4FD366E1A2CF72C58C1F21EC7B30635A8C26F20534425A6BF097AFDB7B2A501  D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\generator-compare\before-26\control-o0.exe.map
+B353E28707A7B4665E21F15E6E3565B8DF855F3EF9D25A4DA1C028F45DB26DEE  D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\generator-compare\after-27\env-o0.exe
+984DBD634A43561B541722D8CB8B77B7A8831EEB6F40C60FBEEB062D89ABC3D1  D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\generator-compare\after-27\env-o0.exe.map
+O3 无 env 对照 IR SHA256 接线前 CBBD54DBE5646BFE70D055FEEE22B4508E2E0F5A609D13A58D7D2EDDAB88A2DE 接线后 CBBD54DBE5646BFE70D055FEEE22B4508E2E0F5A609D13A58D7D2EDDAB88A2DE
+O3 接线前 env 无 IR，详见 lowering-before-26.log
+O3 接线后 env IR 26 5F5D806294F1B35A92CF8E280122CD8314DE3BD28B0A9ADF3C6D6B0DE88213E5
+O3 接线后 env IR 27 1C91694D7EB990071AD284BAA109105CB61EC62B3B5A31F0CD52BC0A8D5E4AC8
+O3 IR 声明和调用
+declare i32 @xiao_runtime_env_get(ptr, ptr, i64)
+declare i32 @xiao_runtime_env_run_native(ptr, i64, i32)
+declare i32 @xiao_runtime_env_set(ptr, ptr, i64)
+declare i32 @xiao_runtime_env_unset(ptr, ptr, i64)
+%t22 = call i32 @xiao_runtime_env_get(ptr %t8, ptr %t21, i64 160)
+%t52 = call i32 @xiao_runtime_env_set(ptr %t26, ptr %t27, i64 160)
+%t70 = call i32 @xiao_runtime_env_unset(ptr %t56, ptr %t69, i64 160)
+%status = call i32 @xiao_runtime_env_run_native(ptr @xiao_application_main, i64 160, i32 0)
+O3 MSVC map 符号
+0001:00010d30       xiao_runtime_env_get       0000000140011d30 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00010d80       xiao_runtime_env_run_native 0000000140011d80 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011840       xiao_runtime_env_set       0000000140012840 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:000120e0       xiao_runtime_env_unset     00000001400130e0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00010d60       ?catch$2@?0?xiao_runtime_env_get@4HA 0000000140011d60 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:000114f0       ?dtor$106@?0?xiao_runtime_env_run_native@4HA 00000001400124f0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011540       ?dtor$110@?0?xiao_runtime_env_run_native@4HA 0000000140012540 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011580       ?dtor$111@?0?xiao_runtime_env_run_native@4HA 0000000140012580 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:000115d0       ?dtor$115@?0?xiao_runtime_env_run_native@4HA 00000001400125d0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011620       ?catch$118@?0?xiao_runtime_env_run_native@4HA 0000000140012620 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011650       ?dtor$119@?0?xiao_runtime_env_run_native@4HA 0000000140012650 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011690       ?dtor$122@?0?xiao_runtime_env_run_native@4HA 0000000140012690 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:000116d0       ?dtor$123@?0?xiao_runtime_env_run_native@4HA 00000001400126d0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011710       ?dtor$124@?0?xiao_runtime_env_run_native@4HA 0000000140012710 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011750       ?dtor$125@?0?xiao_runtime_env_run_native@4HA 0000000140012750 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011790       ?dtor$128@?0?xiao_runtime_env_run_native@4HA 0000000140012790 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:000117d0       ?dtor$129@?0?xiao_runtime_env_run_native@4HA 00000001400127d0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011810       ?dtor$130@?0?xiao_runtime_env_run_native@4HA 0000000140012810 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011d10       ?dtor$48@?0?xiao_runtime_env_set@4HA 0000000140012d10 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011d50       ?dtor$49@?0?xiao_runtime_env_set@4HA 0000000140012d50 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011da0       ?dtor$52@?0?xiao_runtime_env_set@4HA 0000000140012da0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011df0       ?dtor$55@?0?xiao_runtime_env_set@4HA 0000000140012df0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011e70       ?dtor$56@?0?xiao_runtime_env_set@4HA 0000000140012e70 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011ec0       ?dtor$59@?0?xiao_runtime_env_set@4HA 0000000140012ec0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011f00       ?catch$60@?0?xiao_runtime_env_set@4HA 0000000140012f00 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011f50       ?catch$62@?0?xiao_runtime_env_set@4HA 0000000140012f50 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011f80       ?catch$63@?0?xiao_runtime_env_set@4HA 0000000140012f80 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00011fd0       ?catch$71@?0?xiao_runtime_env_set@4HA 0000000140012fd0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00012000       ?dtor$72@?0?xiao_runtime_env_set@4HA 0000000140013000 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00012060       ?dtor$75@?0?xiao_runtime_env_set@4HA 0000000140013060 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:000120b0       ?catch$76@?0?xiao_runtime_env_set@4HA 00000001400130b0 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0001:00012110       ?catch$2@?0?xiao_runtime_env_unset@4HA 0000000140013110 f   xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00001840       switch.table.xiao_runtime_env_run_native 000000014009d840     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00001878       switch.table.xiao_runtime_env_run_native.405 000000014009d878     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:0002567c       $cppxdata$xiao_runtime_env_get 00000001400c167c     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:000256a4       $stateUnwindMap$xiao_runtime_env_get 00000001400c16a4     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:000256b4       $tryMap$xiao_runtime_env_get 00000001400c16b4     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:000256c8       $handlerMap$0$xiao_runtime_env_get 00000001400c16c8     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:000256dc       $ip2state$xiao_runtime_env_get 00000001400c16dc     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025860       $cppxdata$xiao_runtime_env_run_native 00000001400c1860     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025888       $stateUnwindMap$xiao_runtime_env_run_native 00000001400c1888     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:000258f8       $tryMap$xiao_runtime_env_run_native 00000001400c18f8     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:0002590c       $handlerMap$0$xiao_runtime_env_run_native 00000001400c190c     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025920       $ip2state$xiao_runtime_env_run_native 00000001400c1920     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025bac       $cppxdata$xiao_runtime_env_set 00000001400c1bac     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025bd4       $stateUnwindMap$xiao_runtime_env_set 00000001400c1bd4     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025c54       $tryMap$xiao_runtime_env_set 00000001400c1c54     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025ca4       $handlerMap$0$xiao_runtime_env_set 00000001400c1ca4     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025ccc       $handlerMap$1$xiao_runtime_env_set 00000001400c1ccc     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025ce0       $handlerMap$2$xiao_runtime_env_set 00000001400c1ce0     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025cf4       $handlerMap$3$xiao_runtime_env_set 00000001400c1cf4     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025d08       $ip2state$xiao_runtime_env_set 00000001400c1d08     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025df4       $cppxdata$xiao_runtime_env_unset 00000001400c1df4     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025e1c       $stateUnwindMap$xiao_runtime_env_unset 00000001400c1e1c     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025e2c       $tryMap$xiao_runtime_env_unset 00000001400c1e2c     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025e40       $handlerMap$0$xiao_runtime_env_unset 00000001400c1e40     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+0002:00025e54       $ip2state$xiao_runtime_env_unset 00000001400c1e54     xiao_runtime:xiao_runtime-96cadb7ae7fabcd6.xiao_runtime.e17c5e7bf29422d3-cgu.10.rcgu.o
+3E0255D158DEB7B69DF5F9C2DE49556A007119E35FB02A201AC1CB9104DBFF39  D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\generator-compare\before-26\control-o3.exe
+30F0EEDB17866BB3102FCECBC292A3E097CAB15E58EAFFDEB070D78A48554358  D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\generator-compare\before-26\control-o3.exe.map
+A8C8DD7277DA8446CE9986E9CB8343D24F6BE518D3F2510CD2869EE9A7E1C8E9  D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\generator-compare\after-27\env-o3.exe
+B15F8CCBE578F05D406684B9AD90E3F057AC7BE860A09D89D53E97D04433912E  D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\generator-compare\after-27\env-o3.exe.map
+exit=0

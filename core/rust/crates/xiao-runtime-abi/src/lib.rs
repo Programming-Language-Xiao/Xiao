@@ -24,6 +24,10 @@
 pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
 pub const ABI_MINOR_VERSION: u32 = 20;
+
+/// 原生驱动与启动适配器之间的私有 stdin 注入标记。
+#[doc(hidden)]
+pub const NATIVE_ENVIRONMENT_STDIN: &str = "--__xiao-run-environment-stdin";
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -1183,6 +1187,39 @@ unsafe extern "C" {
     /// 生成器内部适配器。校验宿主参数后为独立原生入口安装快照，并在返回时恢复。
     #[doc(hidden)]
     pub fn xiao_runtime_args_run_native(entry: Option<extern "C" fn() -> i32>) -> i32;
+
+    /// 原生嵌入入口。在独立的运行上下文中接纳 UTF-8 JSON 名值对并执行回调。
+    ///
+    /// # Safety
+    ///
+    /// `(NULL, 0)` 代表省略。其余情况需要在本次调用内提供长度为 `len` 的可读缓冲区。
+    pub fn xiao_runtime_env_run_injected(
+        entry: Option<extern "C" fn() -> i32>,
+        data: *const u8,
+        len: usize,
+        capabilities: u64,
+    ) -> i32;
+
+    /// 借读名称，成功后用拥有的数组替换独立初始化的输出槽。
+    pub fn xiao_runtime_env_get(
+        name: *const XiaoValue,
+        out: *mut XiaoValue,
+        capabilities: u64,
+    ) -> i32;
+
+    /// 借读名称和值，更新运行环境视图。
+    pub fn xiao_runtime_env_set(
+        name: *const XiaoValue,
+        value: *const XiaoValue,
+        capabilities: u64,
+    ) -> i32;
+
+    /// 借读名称，成功后用布尔值替换独立初始化的输出槽。
+    pub fn xiao_runtime_env_unset(
+        name: *const XiaoValue,
+        out: *mut XiaoValue,
+        capabilities: u64,
+    ) -> i32;
     /// 读取当前线程挂起错误的机器字段。
     pub fn xiao_runtime_error_snapshot(out: *mut XiaoAbiErrorSnapshot) -> i32;
     /// 读取当前线程挂起错误的第 `index` 个结构化参数。

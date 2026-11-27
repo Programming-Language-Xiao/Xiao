@@ -1,0 +1,202 @@
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.00s
+     Running unittests src\lib.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\xiao_vm-91ab14a724084d6f.exe)
+
+running 35 tests
+test machine::hybrid::tests::spills_named_values_after_window_is_full ... ok
+test machine::hybrid::tests::separates_named_window_and_anonymous_eval_stack ... ok
+test machine::register::tests::gives_poly_and_none_dedicated_paths ... ok
+test machine::register::tests::pins_release_plan_values_in_frame_slots ... ok
+test machine::register::tests::reuses_non_overlapping_registers_deterministically ... ok
+test ops::tests::array_index_supports_negative_positions ... ok
+test ops::tests::array_index_out_of_bounds_is_stable ... ok
+test ops::tests::dict_column_supports_key_and_position ... ok
+test ops::tests::broadcast_is_transactional_and_supports_nested_paths ... ok
+test ops::tests::dict_key_lookup_is_stable ... ok
+test ops::tests::dynamic_random_boundaries_are_stable ... ok
+test ops::tests::dynamic_nested_range_preserves_boundary_shape ... ok
+test ops::tests::dynamic_range_applies_static_step ... ok
+test ops::tests::dynamic_step_boundaries_are_stable ... ok
+test ops::tests::nested_path_rejects_non_container_leaf ... ok
+test ops::tests::len_and_dynamic_index_cover_iterables ... ok
+test ops::tests::selector_keeps_dictionary_duplicate_order ... ok
+test ops::tests::selector_projects_dictionary_key_path ... ok
+test ops::tests::selector_projects_nested_arrays ... ok
+test ops::tests::set_hashability_error_identity ... ok
+test ops::tests::set_membership_uses_left_member_and_right_set_direction ... ok
+test ops::tests::set_operation_and_comparison_error_identities_are_stable ... ok
+test ops::tests::static_random_is_reproducible ... ok
+test ops::tests::string_index_returns_single_character ... ok
+test ops::tests::tuple_and_set_index_and_unsupported_source ... ok
+test semantics::constants::numeric_identity_tests::numeric_constants_restore_checked_runtime_values ... ok
+test semantics::exec::concurrent::tests::bounded_sink_does_not_replace_boundary_cleanup_with_detached_failure ... ok
+test semantics::constants::numeric_identity_tests::numeric_constants_reject_invalid_payloads_with_frozen_codes ... ok
+test semantics::exec::concurrent::tests::child_event_buffer_counts_drop_when_all_slots_are_priority ... ok
+test semantics::exec::concurrent::tests::detached_child_event_is_preserved_when_buffer_is_full ... ok
+test semantics::exec::concurrent::tests::dropped_queued_boundary_copies_follow_cleanup_order ... ok
+test semantics::exec::concurrent::tests::child_event_drops_are_reported_by_parent_sink ... ok
+test semantics::exec::concurrent::tests::vm_close_reports_non_owner_and_direct_ownership_is_not_transitive ... ok
+test semantics::exec::concurrent::tests::vm_exit_closes_owned_runtime_after_restoring_owner_context ... ok
+test semantics::exec::concurrent::tests::detached_child_event_overflow_returns_report_to_runtime_channel ... ok
+
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\b0_b_production.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\b0_b_production-b3cd5e6a4dd3394a.exe)
+
+running 9 tests
+test cancellation_interrupts_finally_subroutine ... ok
+test production_checkpoint_can_cancel_and_can_be_disabled ... ok
+test bounded_events_do_not_change_result_or_release_sequence ... ok
+test cancellation_bypasses_catch_and_runs_cleanup_once ... ok
+test production_rejects_invalid_ir_before_vm ... ok
+test production_rejects_invalid_options_with_structured_fatal ... ok
+test production_rejects_unverified_tac_before_entering_vm ... ok
+test production_fault_report_contains_source_span_and_identity ... ok
+test script_and_project_share_entry_zero ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\b0_e_checkpoint_performance.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\b0_e_checkpoint_performance-d516501f76645a25.exe)
+
+running 1 test
+test checkpoint_toggle_release_comparison ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.19s
+
+     Running tests\r2_iteration_values.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\r2_iteration_values-ef2db15de2075390.exe)
+
+running 2 tests
+test len_executes_on_all_carriers ... ok
+test dynamic_index_executes_on_all_carriers ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\r2_selector_values.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\r2_selector_values-964313eefc3fd3a6.exe)
+
+running 7 tests
+test random_selection_returns_observable_values ... ok
+test dictionary_repetition_returns_ordered_tuple ... ok
+test empty_selection_preserves_root_shape ... ok
+test selector_returns_exact_and_ordered_multi_values ... ok
+test selector_ranges_and_all_return_expected_values ... ok
+test selector_step_is_applied_per_item ... ok
+test selector_preserves_source_and_nested_shapes ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\r2_set_values.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\r2_set_values-566a394e5b1c2504.exe)
+
+running 6 tests
+test dynamic_set_values_pass_checks_and_execute ... ok
+test executes_set_comparisons_and_membership_direction ... ok
+test executes_all_set_algebras_on_all_carriers ... ok
+test dynamic_set_checks_reject_non_set_and_unhashable_values ... ok
+test repeated_runtime_set_elements_are_deduplicated ... ok
+test set_operation_reports_stable_error_for_non_set_operand ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\r2_stack.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\r2_stack-5fb0339fd5607e05.exe)
+
+running 55 tests
+test catch_rethrow_does_not_repeat_own_finally ... ok
+test catch_binding_rethrow_preserves_error_identity ... ok
+test catch_exit_runs_outer_finally_after_inner_finally ... ok
+test catches_constructed_error_and_runs_finally ... ok
+test copying_between_bindings_keeps_the_source ... ok
+test dynamic_conversion_check_has_stable_failure_code ... ok
+test dictionary_column_key_selector_is_executed ... ok
+test catch_control_exit_runs_own_finally ... ok
+test dynamic_boolean_condition_is_verified_and_recoverable ... ok
+test dynamic_random_count_is_recoverable ... ok
+test dynamic_zero_step_is_recoverable ... ok
+test dynamic_random_seed_is_recoverable ... ok
+test dynamic_selector_inputs_are_executed ... ok
+test errors_retain_vm_stack_and_bytecode_offset ... ok
+test errors_use_encoded_pc_mapping ... ok
+test executes_advanced_selector ... ok
+test executes_calls_and_loops ... ok
+test executes_scalar_arithmetic ... ok
+test executes_containers_and_exact_index ... ok
+test executes_random_seed_plan ... ok
+test executes_selector_broadcast_assignment ... ok
+test fatal_event_is_emitted_once_at_run_boundary ... ok
+test fatal_bypasses_handlers_and_cleanup ... ok
+test fatal_with_heap_values_has_no_releases ... ok
+test finally_break_cleanup_with_heap_values ... ok
+test executes_selector_ranges_steps_and_random ... ok
+test finally_failure_is_suppressed_on_primary_error ... ok
+test finally_failure_reaches_outer_catch ... ok
+test finally_failure_on_normal_and_catch_paths_is_routed_once ... ok
+test finally_raise_releases_active_scopes ... ok
+test finally_control_exit_is_dispatched_after_subroutine ... ok
+test finally_return_overrides_error_without_leaking_try_values ... ok
+test loop_exit_does_not_reenter_finally_on_later_error ... ok
+test finally_runs_once_on_normal_and_return ... ok
+test finally_return_releases_try_scope_value ... ok
+test moving_temporaries_into_bindings_still_works ... ok
+test loop_exits_run_finally_before_jump ... ok
+test machine_metrics_keep_independent_cost_axes ... ok
+test nested_finally_failure_does_not_repeat_outer_finally ... ok
+test nested_finally_return_releases_each_scope_once ... ok
+test nested_return_runs_finally_from_inner_to_outer ... ok
+test nested_try_finally_runs_once_per_loop_iteration ... ok
+test nested_try_inside_finally_is_routed_locally ... ok
+test overflow_is_recoverable ... ok
+test nested_unmatched_reaches_outer_catch_once ... ok
+test releases_heap_values_on_scope_exit ... ok
+test propagates_error_to_caller_handler ... ok
+test records_all_event_categories ... ok
+test returning_heap_string_survives_finally_cleanup ... ok
+test replacement_random_and_empty_selection_are_executed ... ok
+test selects_first_matching_catch ... ok
+test research_module_stays_a_leaf ... ok
+test stack_overflow_is_fatal ... ok
+test stack_map_points_follow_the_frozen_machine_division ... ok
+test string_boolean_check_has_stable_failure_code ... ok
+
+test result: ok. 55 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests\r2_table_values.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\r2_table_values-e102335d0cc82007.exe)
+
+running 13 tests
+test drop_cannot_write_receiver ... ok
+test fatal_does_not_execute_drop ... ok
+test defaults_are_fresh_and_constants_are_visible ... ok
+test initialization_failure_rolls_back_and_preserves_errors ... ok
+test normal_drop_error_is_catchable ... ok
+test recursive_drop_obeys_call_depth ... ok
+test returned_instance_and_overwrite_release_exactly_once ... ok
+test singleton_defaults_and_declaration_order ... ok
+test singleton_and_drop_read_only_receiver ... ok
+test uninitialized_field_read_is_rejected ... ok
+test stable_function_ids_and_table_encoding_guards ... ok
+test unwind_keeps_primary_and_nested_drop_errors ... ok
+test constructs_instances_and_calls_methods ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
+     Running tests\r2_vectors.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\r2_vectors-bc4a7cb0cf773b51.exe)
+
+running 8 tests
+test control_vectors_are_stable ... ok
+test container_vectors_are_stable ... ok
+test scalar_vectors_are_stable ... ok
+test selector_vectors_are_stable ... ok
+test error_vectors_are_stable ... ok
+test iteration_vectors_are_stable ... ok
+test sets_vectors_are_stable ... ok
+test table_vectors_are_stable ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.91s
+
+   Doc-tests xiao_vm
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+exit=0

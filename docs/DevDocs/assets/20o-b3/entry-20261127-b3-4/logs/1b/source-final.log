@@ -1,0 +1,51 @@
+diff_check=0
+staged_diff=0
+locks_and_existing_evidence_diff=0
+HEAD:aeb8422be2e2d260f283c3e6ecea0acec8080122,tree:8b2f3c5dda5ad23359c7c8430e1837d90c017736
+core/rust/crates/xiao-standard-library/src/lib.rs:53:pub const STDLIB_INTERFACE_VERSION: u32 = 1;
+core/rust/crates/xiao-codegen-llvm/src/lib.rs:108:pub const CODEGEN_VERSION: u32 = 27;
+core/rust/crates/xiao-runtime-abi/src/lib.rs:24:pub const ABI_MAJOR_VERSION: u32 = 1;
+core/rust/crates/xiao-runtime-abi/src/lib.rs:26:pub const ABI_MINOR_VERSION: u32 = 20;
+b17c977ac4deff55bdb8c90cc5381dcd0e222e380813f19ff65f5d1e08e23d4a core/rust/crates/xiao-codegen-llvm/src/artifact.rs
+2f026c3f83fbdb621d4d69500b88788afee2ee8744de586ca904c00cc22eec3a core/rust/crates/xiao-codegen-llvm/src/build.rs
+2a462055a647402c96494539320fe36c30ae78bb9a4e729091291c1401af5533 core/rust/crates/xiao-codegen-llvm/src/dynamic.rs
+1917111686ae86315bfb01c8eef00a740c1764f761f46ca8d99ba345c82f4330 core/rust/crates/xiao-codegen-llvm/src/dynamic/cmath.rs
+422e04e41a92b616ace873929112b874216062265f11b5daab5b3aa3fff77758 core/rust/crates/xiao-codegen-llvm/src/dynamic/entry.rs
+ef81ce6f063e3835253ca7c58f07c91b7052c27f0df86e85fc253a6df1abbfba core/rust/crates/xiao-codegen-llvm/src/dynamic/expression.rs
+7c6f50b22fd4011b6a082d8bc01cbcc881bbf10b26faa5a0a8f2c1d4e6e0ee71 core/rust/crates/xiao-codegen-llvm/src/dynamic/predicate.rs
+ba951871a0c93927384070c1afa691bbd1cfdd2ef735818be26b781d0f460ace core/rust/crates/xiao-codegen-llvm/src/ir.rs
+7689e7bf2c782359d536327b11d27fbaa3ac61c69deb2b332afea0d11343f111 core/rust/crates/xiao-codegen-llvm/src/lib.rs
+a7c0b8c097d127fe46c8bb834ab2ad13db82285f84441c4e9b4265c9a3b4e48f core/rust/crates/xiao-driver/src/archive_run.rs
+18c472052f99220f595c9b3466e531342af175a96008c3e93073b70c70f56fda core/rust/crates/xiao-driver/src/frontend.rs
+085e1834898d78152b7fb49a799aff0baa88ec907e27efdf20c6895bc477a801 core/rust/crates/xiao-driver/src/lib.rs
+d33bc614acaee459749e131a0e22c4dcecefaf8ac20a1183fd24279b11900a18 core/rust/crates/xiao-driver/src/module_loader.rs
+3565245f1a931e17ecee5c8bc59377890612082637d32da62f3977f75b00f35d core/rust/crates/xiao-driver/src/native.rs
+bf357216e4fc01f9f966a24444e3dc81fcc0b75a1c36493027a8e0a1218cc3d6 core/rust/crates/xiao-driver/src/protocol/request.rs
+7778555382ce532aba1e885db9e1fa677d5be7c7a38459aa0c383b9b7ca8757f core/rust/crates/xiao-driver/src/protocol/run.rs
+4d61b730379b6c55856f2d25ebbaea4bcede00265c86f3e721403480721bd28a core/rust/crates/xiao-driver/src/protocol/service.rs
+fee07e671faaf10374cff021a06cee28cfcbe117e583e260f14ddbf3b48837d3 core/rust/crates/xiao-driver/src/run.rs
+d9ca22d397443e8390d140dc32837ce7bc1afd91f0d987f8540fb3c347e7f2f3 core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_llvm.rs
+7240f727aef5ac8ecd6c7a8d67ac4f1d5d9861e90b4ba6fa1781e73d4d1b89ae core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs
+d928a759a428d6a4865169205de9af67c289a0cbb6f2cb7ca953674e72852ec1 core/rust/crates/xiao-driver/tests/20o_b2_b4_frontend.rs
+809ec9bd8c7565b0cc99e8c4700db1242b2051d9ccca2895fb67171dfba193e6 core/rust/crates/xiao-driver/tests/20o_b2_b5_versions.rs
+b3784d504008e3d184eea066b5a990cd1af19877a91959a312ec68ec94622bf7 core/rust/crates/xiao-driver/tests/20o_b3_env.rs
+50a117a1650095bf851dd3ed346eafd9001ad72c6d1e782f15157724fd40d9f9 core/rust/crates/xiao-driver/tests/20o_static_float_equality.rs
+c922ab83059961aa84cbfb72d6d35ebcbf2294a62bb80eccf1c67831387780f1 core/rust/crates/xiao-driver/tests/support/b3_env_native.rs
+099872455c05607c2ca0f1018028c504ada6288ed3468c0a09974d89bc324010 core/rust/crates/xiao-runtime-abi/src/lib.rs
+312cf0513dc29344efd673b365fbebf084cfaa2ce80c59e3356cec8f0fffb43b core/rust/crates/xiao-runtime/src/abi_concurrency.rs
+17fb231b2ca549a869e608f990b78d2a74c822b86b1510b2e84e7b1242b23ff4 core/rust/crates/xiao-runtime/src/abi_env_tests.rs
+862fb53b67e94d3ec896608fca5bfba6821aee01ce85675843848e1fcbbfac0a core/rust/crates/xiao-runtime/src/abi_env.rs
+1277c9466ca2a7abde3aec5327fa81042ab07422be617ac3d93f42dafddcd74c core/rust/crates/xiao-runtime/src/abi.rs
+e6968566bd8b42ee0662dcb7bbd55a3a175177b43aabf4c4ab677a813b329e0c core/rust/crates/xiao-runtime/src/arguments.rs
+e8a672b55e54799640c87902dd9fccfec877057267c44d20a6e3967af33a7b12 core/rust/crates/xiao-runtime/src/environment.rs
+b5bc69ffce33e8b60e5801def37db61a2c25b7c56d4052b9914e8ae3281a66d9 core/rust/crates/xiao-types/src/checker/expression.rs
+c4e1b61cc83c369b13681eeba27d50ef832b3cc725110bbb52cf0d05f1d3ec0e core/rust/crates/xiao-vm/src/lib.rs
+581317552dcf91b9b439f05ee6ca10ee5556130da573b1555bec4e571f6ca7c5 core/rust/crates/xiao-vm/src/run.rs
+77f9d4f784683e55d3e8d03d21fad7a8508e65ebe26a41596bcc09500c2ae997 core/rust/crates/xiao-vm/src/semantics/concurrent.rs
+f47c15349eafbb6864819425136f5f4fa6af64171142d9960abb53a1b18d2ece core/rust/crates/xiao-vm/src/semantics/env_intrinsics.rs
+4fd62bb915904de3f53abd1cfe3dfe777650d60e800f0fdfbd4dcbe4f19b292f core/rust/crates/xiao-vm/src/semantics/exec.rs
+7dae075c6bd2fcef5354c01d1c5203fb855a24ae6afdf51e2bdc42986a55a430 core/rust/crates/xiao-vm/src/semantics/tables.rs
+ed9e1828c18a9b716ce12946fa014d72e6e4e6dfb82f15015a7cef385df768c3 core/rust/crates/xiao-xar/src/lib.rs
+de97f4f6238f63cde5f72bac5547f4fc2c72c0e817e435c58872749a5681858a core/rust/crates/xiao-xar/src/runner.rs
+3128504df16322fce5b390f834f832d6f83ca03bc8af9bbee0e7484a0a3473dd stdlib/env.xiao
+exit=0

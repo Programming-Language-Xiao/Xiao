@@ -1,0 +1,17 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.26s
+     Running tests\20o_b3_env.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b3_env-ea90f5adb987c71b.exe)
+
+running 1 test
+环境原生启动任务目录 D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/test-runs\xiao-b3-env-74052-0
+环境原生 direct-valid 退出 Some(0)，输出 12 字节，诊断 0 字节
+环境原生 direct-invalid 退出 Some(2)，输出 0 字节，诊断 53 字节
+环境原生 injected 退出 Some(0)，输出 16 字节，诊断 0 字节
+环境原生 injected-limit 退出 Some(2)，输出 0 字节，诊断 47 字节
+环境原生 static-invalid-host 退出 Some(2)，输出 0 字节，诊断 53 字节
+环境原生 static-injected-empty 退出 Some(0)，输出 0 字节，诊断 0 字节
+环境原生 drop 退出 Some(0)，输出 13 字节，诊断 0 字节
+test native::native_env_entry_resolves_host_and_explicit_inputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 8.12s
+
+exit=0

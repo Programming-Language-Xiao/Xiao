@@ -1,0 +1,2 @@
+Assertion failed: out.tag == 1 && out.payload.raw == 1, file docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1b/c-abi-probe.c, line 67
+exit=-1073740791

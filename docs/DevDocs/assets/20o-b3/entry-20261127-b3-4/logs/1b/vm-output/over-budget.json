@@ -1,0 +1,17 @@
+{
+  "type": "error",
+  "request_id": "over-budget",
+  "error": {
+    "code": "X09-DRIVER-007",
+    "message_id": "x11.protocol.request",
+    "message": "环境快照超过接纳上限",
+    "text": "invalid protocol request: 环境快照超过接纳上限",
+    "phase": "protocol",
+    "next_step": "修正请求字段后重试",
+    "details": {
+      "field": "options.environment"
+    }
+  },
+  "report": null,
+  "exit_code": 2
+}

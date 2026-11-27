@@ -1,0 +1,8 @@
+name-256-value-65536 pairs=2 logical_bytes=65823 wire_bytes=65840 exit=0
+name-257 pairs=2 logical_bytes=288 wire_bytes=305 exit=2
+value-65537 pairs=2 logical_bytes=65569 wire_bytes=65586 exit=2
+pairs-1024 pairs=1024 logical_bytes=8215 wire_bytes=16408 exit=0
+pairs-1025 pairs=1025 logical_bytes=8219 wire_bytes=16420 exit=2
+total-1048576 pairs=17 logical_bytes=1048576 wire_bytes=1048713 exit=0
+total-1048577 pairs=17 logical_bytes=1048577 wire_bytes=1048714 exit=2
+exit=0

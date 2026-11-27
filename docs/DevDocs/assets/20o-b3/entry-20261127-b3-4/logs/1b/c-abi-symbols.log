@@ -1,0 +1,5 @@
+00000000 T xiao_runtime_env_get
+00000000 T xiao_runtime_env_run_injected
+00000000 T xiao_runtime_env_run_native
+00000000 T xiao_runtime_env_set
+00000000 T xiao_runtime_env_unset

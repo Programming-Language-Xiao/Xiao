@@ -1454,6 +1454,8 @@ fn runtime_link_dependencies(symbol: &str) -> &'static [&'static str] {
         | "xiao_runtime_dict_new"
         | "xiao_runtime_dynamic_member_get"
         | "xiao_runtime_error_take"
+        | "xiao_runtime_env_get"
+        | "xiao_runtime_env_unset"
         | "xiao_runtime_fs_list_dir"
         | "xiao_runtime_fs_metadata"
         | "xiao_runtime_fs_remove"
@@ -1518,6 +1520,15 @@ mod link_tests;
 
 /// 将一个 Runtime 符号登记到它所属的组件集合。
 fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
+    if matches!(
+        symbol,
+        "xiao_runtime_env_run_native" | "xiao_runtime_env_run_injected"
+    ) || xiao_intrinsics::declarations()
+        .iter()
+        .any(|declaration| declaration.abi_binding.env_symbol() == Some(symbol))
+    {
+        components.insert("env".to_owned());
+    }
     if xiao_intrinsics::declarations()
         .iter()
         .any(|declaration| declaration.abi_binding.fs_symbol() == Some(symbol))

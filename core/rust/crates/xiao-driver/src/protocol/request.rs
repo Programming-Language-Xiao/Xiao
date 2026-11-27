@@ -5,7 +5,7 @@ use std::fmt::{self, Display, Formatter};
 use serde::{Deserialize, Serialize};
 use xiao_codegen_llvm::{Endian, ObjectFormat, TargetDescription};
 use xiao_runtime::arguments::{ArgumentsError, ArgumentsSnapshot};
-use xiao_runtime::environment::EnvironmentSnapshot;
+use xiao_runtime::environment::{EnvironmentSnapshot, SnapshotError};
 use xiao_vm::VmOptions;
 
 /// 请求字段或 JSON 形状非法。
@@ -277,11 +277,7 @@ impl RunOptions {
         let Some(environment) = &self.environment else {
             return Ok(EnvironmentSnapshot::default());
         };
-        EnvironmentSnapshot::from_pairs(&environment.0).map_err(|error| ProtocolError {
-            code: error.code(),
-            field: Some("options.environment".to_owned()),
-            message: error.to_string(),
-        })
+        EnvironmentSnapshot::from_pairs(&environment.0).map_err(ProtocolError::environment)
     }
 }
 
@@ -627,6 +623,15 @@ pub struct ProtocolError {
 }
 
 impl ProtocolError {
+    /// 报告环境快照接纳失败，省略原始环境内容。
+    pub(super) fn environment(error: SnapshotError) -> Self {
+        Self {
+            code: error.code(),
+            field: Some("options.environment".to_owned()),
+            message: error.to_string(),
+        }
+    }
+
     /// 报告快照接纳失败，省略实际参数文本。
     pub(super) fn arguments(error: ArgumentsError) -> Self {
         Self {

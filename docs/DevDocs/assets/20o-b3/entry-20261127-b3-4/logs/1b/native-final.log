@@ -1,0 +1,43 @@
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18.69s
+     Running tests\20o_b3_env.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b3_env-ea90f5adb987c71b.exe)
+
+running 3 tests
+test native::native_env_entry_resolves_host_and_explicit_inputs ... 环境原生启动任务目录 D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/test-runs\xiao-b3-env-45484-0
+环境原生 direct-valid 退出 Some(0)，输出 12 字节，诊断 0 字节
+环境原生 direct-invalid 退出 Some(2)，输出 0 字节，诊断 53 字节
+环境原生 injected 退出 Some(0)，输出 16 字节，诊断 0 字节
+环境原生 injected-limit 退出 Some(2)，输出 0 字节，诊断 47 字节
+环境原生 static-invalid-host 退出 Some(2)，输出 0 字节，诊断 53 字节
+环境原生 static-injected-empty 退出 Some(0)，输出 0 字节，诊断 0 字节
+ok
+test native::native_env_o0_o3_matches_vm_and_owns_outputs ... 环境原生任务目录 D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/test-runs\xiao-b3-env-45484-1，目标 x86_64-pc-windows-msvc
+环境原生 operations-o0 退出 Some(0)，输出 43 字节，诊断 0 字节
+环境原生释放追踪 Some("operations-o0.release.tsv")，22 个对象各销毁一次
+环境生成身份 xiao-codegen-27-024ada7077324dba 工具指纹 xiao-fnv1a64-426929088e9fb917 声明及观察组件 ["env", "rc", "value", "weak"] COFF Some(CoffLinkIdentity { map_path: "D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/test-runs\\xiao-b3-env-45484-1\\operations-o0.exe.map", artifact_sha256: "510f15b6687510e18a1733443d1d1a6d68d533bdd242ecc426ed8d592ac1d304", map_sha256: "4182326323a13f14c1efd48cc2c6bab31838ca1aca5874fbfcb679fa8d45842e" })
+环境原生 denied-o0 退出 Some(3)，输出 0 字节，诊断 239 字节
+环境原生释放追踪 Some("denied-o0.release.tsv")，1 个对象各销毁一次
+环境原生 invalid-o0 退出 Some(3)，输出 0 字节，诊断 278 字节
+环境原生释放追踪 Some("invalid-o0.release.tsv")，1 个对象各销毁一次
+环境原生 limit-o0 退出 Some(3)，输出 0 字节，诊断 237 字节
+环境原生释放追踪 Some("limit-o0.release.tsv")，2 个对象各销毁一次
+环境原生 operations-o3 退出 Some(0)，输出 43 字节，诊断 0 字节
+环境原生释放追踪 Some("operations-o3.release.tsv")，22 个对象各销毁一次
+环境生成身份 xiao-codegen-27-95aa0b5f1958b467 工具指纹 xiao-fnv1a64-8c46739a3511ef70 声明及观察组件 ["env", "rc", "value", "weak"] COFF Some(CoffLinkIdentity { map_path: "D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/test-runs\\xiao-b3-env-45484-1\\operations-o3.exe.map", artifact_sha256: "c8284389b49e1582f374e9b33e6118ee2a0f6838336c4ea50a8f0179ab4cf9e0", map_sha256: "b496bafbdfef43a2a1f1cba2cceea4c80129c75712df96ddf73a799e10ebd6b4" })
+环境原生 denied-o3 退出 Some(3)，输出 0 字节，诊断 239 字节
+环境原生释放追踪 Some("denied-o3.release.tsv")，1 个对象各销毁一次
+环境原生 invalid-o3 退出 Some(3)，输出 0 字节，诊断 278 字节
+环境原生释放追踪 Some("invalid-o3.release.tsv")，1 个对象各销毁一次
+环境原生 limit-o3 退出 Some(3)，输出 0 字节，诊断 237 字节
+环境原生释放追踪 Some("limit-o3.release.tsv")，2 个对象各销毁一次
+ok
+test native::native_env_worker_shares_snapshot_and_cancels_like_vm ... 环境原生并发任务目录 D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/test-runs\xiao-b3-env-45484-2
+环境原生 cancel-o0 退出 Some(3)，输出 27 字节，诊断 227 字节
+环境原生 cancel-o3 退出 Some(3)，输出 27 字节，诊断 227 字节
+ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 34.71s
+
+exit=0

@@ -1,0 +1,7 @@
+Runtime D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/generator-compare/fixed-runtime/xiao_runtime.lib
+目标 x86_64-pc-windows-msvc，生成器 26，工具指纹 xiao-fnv1a64-253256b8d2facb68
+O0 对照生成指纹 xiao-codegen-26-83f140797c0e4ec3
+O0 环境降低拒绝 原生后端不支持 动态 intrinsic os_env_get（0..25）
+O3 对照生成指纹 xiao-codegen-26-7eb640355c335cda
+O3 环境降低拒绝 原生后端不支持 动态 intrinsic os_env_get（0..25）
+exit=1

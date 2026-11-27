@@ -1,0 +1,33 @@
+rustc 1.96.0 (ac68faa20 2026-05-25)
+binary: rustc
+commit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96
+commit-date: 2026-05-25
+host: x86_64-pc-windows-msvc
+release: 1.96.0
+LLVM version: 22.1.2
+cargo 1.96.0 (30a34c682 2026-05-25)
+clang version 22.1.2 (https://github.com/msys2/MINGW-packages 4f19d31560faf73257116b7c95f0b322ba83d720)
+Target: x86_64-w64-windows-gnu
+Thread model: posix
+InstalledDir: D:/msys64/ucrt64/bin
+LLVM (http://llvm.org/):
+  LLVM version 22.1.2
+  Optimized build.
+LLVM (http://llvm.org/):
+  LLVM version 22.1.2
+  Optimized build.
+  Default target: x86_64-w64-windows-gnu
+  Host CPU: znver5
+
+  Registered Targets:
+C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231
+D:/Windows Kits/10/Lib/10.0.26100.0
+aeb8422be2e2d260f283c3e6ecea0acec8080122
+HEAD{tree}
+19D17BBF8FE496B3DA3A41726F6B67ECE508AB71526BA51F154971C754B7B439  D:\project\Xiao\Xiao\core\rust\Cargo.lock
+352AC2E54642A9F90DB55292B12B20DE797BEC64B839A8C8B80FC3EE07486159  D:\project\Xiao\Xiao\tests\benchmarks\Cargo.lock
+6606A78F1003D09322F8DF2CC61C584E418F3BE183F63BAE6B5CF91F19407BE1  D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\target-release\release\xiao_runtime.lib
+574047F1B98D62BEA1DA8AE9340FEA1EF06D262C3186E1D72D87E5401166C833  D:\msys64\ucrt64\bin\clang.exe
+63F559DB3D87798FA4F26923C4CD5839DDC41B40905D884EE341C74A8BD858E9  D:\msys64\ucrt64\bin\llvm-as.exe
+DF1409FABACDC625B2C2FEFE50712DE4BA140E07BF2BB4192101189498152869  D:\msys64\ucrt64\bin\llc.exe
+3EF8FCF80D409FAB22DDD89EE19249F31A26AD9914D3E3E48573C30998FA24DE  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\link.exe

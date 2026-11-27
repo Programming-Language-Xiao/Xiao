@@ -9,6 +9,7 @@ use serde_json::Value;
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, Severity};
 use xiao_optimizer::OptimizationLevel;
 use xiao_runtime::arguments::ArgumentsSnapshot;
+use xiao_runtime::environment::EnvironmentSnapshot;
 
 use super::mapping::{
     exit_name, protocol_diagnostic, protocol_error_body, protocol_error_from_error, protocol_event,
@@ -160,6 +161,24 @@ fn admit_arguments(
         .map_err(ProtocolError::arguments)
 }
 
+/// 缺省环境的来源由运行入口选择。
+#[derive(Clone, Copy)]
+pub(super) enum EnvironmentSource {
+    Embedded,
+    Cli,
+}
+
+impl EnvironmentSource {
+    fn admit(self, options: &RunOptions) -> Result<EnvironmentSnapshot, ProtocolError> {
+        if matches!(self, Self::Cli) && options.environment.is_none() {
+            EnvironmentSnapshot::capture_host(options.capabilities)
+                .map_err(ProtocolError::environment)
+        } else {
+            options.environment_snapshot()
+        }
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 /// 校验运行请求并交给前端到 VM 的驱动路径。
 pub(super) fn run_request_response(
@@ -187,6 +206,7 @@ pub(super) fn run_request_response(
         source,
         options,
         cancellation,
+        EnvironmentSource::Embedded,
         &mut driver,
         &mut fingerprint,
     )
@@ -204,6 +224,7 @@ pub(super) fn run_archive_request_response(
     diagnostic_config: Option<DiagnosticConfig>,
     debug: bool,
     cancellation: CancellationToken,
+    environment_source: EnvironmentSource,
 ) -> ProtocolResponse {
     let effective_locale = fs::read(&path)
         .ok()
@@ -224,6 +245,7 @@ pub(super) fn run_archive_request_response(
                 diagnostic_config,
                 debug,
                 cancellation,
+                environment_source,
             )
         });
     }
@@ -237,6 +259,7 @@ pub(super) fn run_archive_request_response(
         diagnostic_config,
         debug,
         cancellation,
+        environment_source,
     )
 }
 
@@ -252,6 +275,7 @@ pub(super) fn run_xiaoc_request_response(
     diagnostic_config: Option<DiagnosticConfig>,
     debug: bool,
     cancellation: CancellationToken,
+    environment_source: EnvironmentSource,
 ) -> ProtocolResponse {
     if let Err(error) = validate_versions(protocol_version, core_version) {
         return protocol_error_response(Some(request_id), &error);
@@ -308,6 +332,10 @@ pub(super) fn run_xiaoc_request_response(
     );
     let diagnostics_options =
         diagnostic_options(diagnostic_config, Some(effective_locale.effective.clone()));
+    let environment = match environment_source.admit(&options) {
+        Ok(snapshot) => snapshot,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
     let arguments = match admit_arguments(options.arguments) {
         Ok(arguments) => arguments,
         Err(error) => return protocol_error_response(Some(request_id), &error),
@@ -340,7 +368,7 @@ pub(super) fn run_xiaoc_request_response(
     };
     let module_loader = DriverModuleLoader::new(project_root.as_deref(), Some(&package_registry));
     let measurement = xiao_runtime::start_memory_measurement();
-    let result = xiao_vm::run_xiaoc_production_with_arguments(
+    let result = xiao_vm::run_xiaoc_production_with_environment(
         &bytes,
         vm_options,
         event_capacity,
@@ -349,6 +377,7 @@ pub(super) fn run_xiaoc_request_response(
         Some(&module_loader),
         xiao_bytecode::SUPPORTED_REQUIRED_FEATURES,
         arguments,
+        environment,
     );
     let peak_live_bytes = measurement.peak_live_bytes();
     drop(measurement);
@@ -426,6 +455,7 @@ fn run_archive_request_response_inner(
     diagnostic_config: Option<DiagnosticConfig>,
     debug: bool,
     cancellation: CancellationToken,
+    environment_source: EnvironmentSource,
 ) -> ProtocolResponse {
     if let Err(error) = validate_versions(protocol_version, core_version) {
         return protocol_error_response(Some(request_id), &error);
@@ -511,6 +541,10 @@ fn run_archive_request_response_inner(
         Ok(audit) => audit,
         Err(error) => return xar_run_error_response(request_id, path, error, None),
     };
+    let environment = match environment_source.admit(&options) {
+        Ok(snapshot) => snapshot,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
     xar_options.arguments = match admit_arguments(options.arguments) {
         Ok(arguments) => arguments,
         Err(error) => return protocol_error_response(Some(request_id), &error),
@@ -543,7 +577,12 @@ fn run_archive_request_response_inner(
         return archive_timeout_response(request_id);
     }
     let measurement = xiao_runtime::start_memory_measurement();
-    let result = crate::run_archive_with_control(&bytes, xar_options, Some(cancellation_source));
+    let result = crate::run_archive_with_environment(
+        &bytes,
+        xar_options,
+        Some(cancellation_source),
+        environment,
+    );
     let peak_live_bytes = measurement.peak_live_bytes();
     drop(measurement);
     if cancellation.is_cancelled() {
@@ -709,6 +748,7 @@ pub(super) fn run_request_response_with_driver(
     source: SourceIdentity,
     options: RunOptions,
     cancellation: CancellationToken,
+    environment_source: EnvironmentSource,
     driver: &mut FrontendVmDriver,
     session_fingerprint: &mut Option<RunSessionFingerprint>,
 ) -> ProtocolResponse {
@@ -729,6 +769,13 @@ pub(super) fn run_request_response_with_driver(
     };
     let (vm_options, event_capacity, timeout) = match run_options(&options) {
         Ok(value) => value,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
+    if cancellation.is_cancelled() {
+        return cancelled_error_response(request_id);
+    }
+    let environment = match environment_source.admit(&options) {
+        Ok(snapshot) => snapshot,
         Err(error) => return protocol_error_response(Some(request_id), &error),
     };
     let arguments = match admit_arguments(options.arguments) {
@@ -778,6 +825,7 @@ pub(super) fn run_request_response_with_driver(
         diagnostics,
         driver,
         &driver_request,
+        environment,
     )
 }
 
@@ -904,6 +952,7 @@ pub(super) fn run_with_diagnostics(
     diagnostics: DiagnosticOptions,
     driver: &mut FrontendVmDriver,
     request: &DriverRequest,
+    environment: EnvironmentSnapshot,
 ) -> ProtocolResponse {
     let mut session = if debug {
         match DiagnosticSession::start(module.clone(), source.clone(), &diagnostics) {
@@ -914,7 +963,7 @@ pub(super) fn run_with_diagnostics(
         None
     };
     let measurement = xiao_runtime::start_memory_measurement();
-    let outcome = driver.run(request);
+    let outcome = driver.run_with_environment(request, environment);
     let peak_live_bytes = measurement.peak_live_bytes();
     drop(measurement);
     if let Some(mut session) = session.take() {

@@ -5,7 +5,8 @@
 
 use xiao_diagnostics::{DiagnosticParam, error_kind_of};
 use xiao_intrinsics::{
-    CMATH_DECLARATIONS, IntrinsicKind, ValueType, cmath_parameters, fs_parameters, time_parameters,
+    CMATH_DECLARATIONS, IntrinsicKind, ValueType, cmath_parameters, env_parameters, fs_parameters,
+    time_parameters,
 };
 use xiao_source::SourceSpan;
 use xiao_syntax::{
@@ -667,11 +668,15 @@ impl<'source> TypeChecker<'source> {
             return self.check_cmath_intrinsic_call(declaration, arguments, span);
         }
         if let Some(declaration) = self.intrinsic_decl(callee)
-            && matches!(declaration.kind, IntrinsicKind::Time | IntrinsicKind::Fs)
+            && matches!(
+                declaration.kind,
+                IntrinsicKind::Time | IntrinsicKind::Fs | IntrinsicKind::Env
+            )
         {
             self.record_intrinsic_call(callee, span);
             let parameters = time_parameters(declaration.id)
                 .or_else(|| fs_parameters(declaration.id))
+                .or_else(|| env_parameters(declaration.id))
                 .expect("宿主库形参已在契约表校验");
             let parameters: Vec<_> = parameters
                 .iter()

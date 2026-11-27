@@ -1,0 +1,494 @@
+{
+  "type": "result",
+  "request_id": "provided",
+  "operation": "run",
+  "exit_code": 0,
+  "exit_name": "success",
+  "diagnostics": [],
+  "report": null,
+  "events": [
+    {
+      "kind": "module_loaded",
+      "data": {
+        "module": "main"
+      }
+    },
+    {
+      "kind": "function_entered",
+      "data": {
+        "depth": 1,
+        "function": ""
+      }
+    },
+    {
+      "kind": "stack_frame",
+      "data": {
+        "depth": 1,
+        "function": "",
+        "return_to": null
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 0
+      }
+    },
+    {
+      "kind": "function_entered",
+      "data": {
+        "depth": 2,
+        "function": ""
+      }
+    },
+    {
+      "kind": "stack_frame",
+      "data": {
+        "depth": 2,
+        "function": "",
+        "return_to": null
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 0
+      }
+    },
+    {
+      "kind": "scope_exited",
+      "data": {
+        "exit": "normal",
+        "scope": 0
+      }
+    },
+    {
+      "kind": "function_returned",
+      "data": {
+        "depth": 2,
+        "function": ""
+      }
+    },
+    {
+      "kind": "module_loaded",
+      "data": {
+        "module": "stdlib.env"
+      }
+    },
+    {
+      "kind": "function_entered",
+      "data": {
+        "depth": 2,
+        "function": "get"
+      }
+    },
+    {
+      "kind": "stack_frame",
+      "data": {
+        "depth": 2,
+        "function": "get",
+        "return_to": 7
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 0
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 1
+      }
+    },
+    {
+      "kind": "value_released",
+      "data": {
+        "exit": "return",
+        "kind": "strong",
+        "scope": 1,
+        "value": 1
+      }
+    },
+    {
+      "kind": "function_returned",
+      "data": {
+        "depth": 2,
+        "function": "get"
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 1
+      }
+    },
+    {
+      "kind": "intrinsic_output",
+      "data": {
+        "text": "entry<synthetic-input>\n"
+      }
+    },
+    {
+      "kind": "value_released",
+      "data": {
+        "exit": "normal",
+        "kind": "strong",
+        "scope": 1,
+        "value": 2
+      }
+    },
+    {
+      "kind": "scope_exited",
+      "data": {
+        "exit": "normal",
+        "scope": 1
+      }
+    },
+    {
+      "kind": "function_entered",
+      "data": {
+        "depth": 2,
+        "function": "set"
+      }
+    },
+    {
+      "kind": "stack_frame",
+      "data": {
+        "depth": 2,
+        "function": "set",
+        "return_to": 21
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 0
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 2
+      }
+    },
+    {
+      "kind": "value_released",
+      "data": {
+        "exit": "normal",
+        "kind": "strong",
+        "scope": 2,
+        "value": 5
+      }
+    },
+    {
+      "kind": "value_released",
+      "data": {
+        "exit": "normal",
+        "kind": "strong",
+        "scope": 2,
+        "value": 4
+      }
+    },
+    {
+      "kind": "scope_exited",
+      "data": {
+        "exit": "normal",
+        "scope": 2
+      }
+    },
+    {
+      "kind": "scope_exited",
+      "data": {
+        "exit": "normal",
+        "scope": 0
+      }
+    },
+    {
+      "kind": "function_returned",
+      "data": {
+        "depth": 2,
+        "function": "set"
+      }
+    },
+    {
+      "kind": "function_entered",
+      "data": {
+        "depth": 2,
+        "function": "get"
+      }
+    },
+    {
+      "kind": "stack_frame",
+      "data": {
+        "depth": 2,
+        "function": "get",
+        "return_to": 25
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 0
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 1
+      }
+    },
+    {
+      "kind": "value_released",
+      "data": {
+        "exit": "return",
+        "kind": "strong",
+        "scope": 1,
+        "value": 1
+      }
+    },
+    {
+      "kind": "function_returned",
+      "data": {
+        "depth": 2,
+        "function": "get"
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 2
+      }
+    },
+    {
+      "kind": "intrinsic_output",
+      "data": {
+        "text": "local<>\n"
+      }
+    },
+    {
+      "kind": "value_released",
+      "data": {
+        "exit": "normal",
+        "kind": "strong",
+        "scope": 2,
+        "value": 11
+      }
+    },
+    {
+      "kind": "scope_exited",
+      "data": {
+        "exit": "normal",
+        "scope": 2
+      }
+    },
+    {
+      "kind": "function_entered",
+      "data": {
+        "depth": 2,
+        "function": "unset"
+      }
+    },
+    {
+      "kind": "stack_frame",
+      "data": {
+        "depth": 2,
+        "function": "unset",
+        "return_to": 38
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 0
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 3
+      }
+    },
+    {
+      "kind": "value_released",
+      "data": {
+        "exit": "return",
+        "kind": "strong",
+        "scope": 3,
+        "value": 7
+      }
+    },
+    {
+      "kind": "function_returned",
+      "data": {
+        "depth": 2,
+        "function": "unset"
+      }
+    },
+    {
+      "kind": "intrinsic_output",
+      "data": {
+        "text": "true\n"
+      }
+    },
+    {
+      "kind": "function_entered",
+      "data": {
+        "depth": 2,
+        "function": "unset"
+      }
+    },
+    {
+      "kind": "stack_frame",
+      "data": {
+        "depth": 2,
+        "function": "unset",
+        "return_to": 41
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 0
+      }
+    },
+    {
+      "kind": "scope_entered",
+      "data": {
+        "scope": 3
+      }
+    },
+    {
+      "kind": "value_released",
+      "data": {
+        "exit": "return",
+        "kind": "strong",
+        "scope": 3,
+        "value": 7
+      }
+    },
+    {
+      "kind": "function_returned",
+      "data": {
+        "depth": 2,
+        "function": "unset"
+      }
+    },
+    {
+      "kind": "intrinsic_output",
+      "data": {
+        "text": "false\n"
+      }
+    },
+    {
+      "kind": "scope_exited",
+      "data": {
+        "exit": "normal",
+        "scope": 0
+      }
+    },
+    {
+      "kind": "function_returned",
+      "data": {
+        "depth": 1,
+        "function": ""
+      }
+    },
+    {
+      "kind": "metrics",
+      "data": {
+        "call_save_count": 0,
+        "dropped_events": 0,
+        "instructions": 121,
+        "max_call_depth": 2,
+        "max_stack_depth": 26,
+        "releases": 24,
+        "spill_count": 0,
+        "stack_map_entries": 10
+      }
+    }
+  ],
+  "metrics": {
+    "instructions": 121,
+    "peak_live_bytes": 1333,
+    "max_call_depth": 2,
+    "max_stack_depth": 26,
+    "releases": 24,
+    "spill_count": 0,
+    "stack_map_entries": 10,
+    "call_save_count": 0,
+    "dropped_events": 0
+  },
+  "value": null,
+  "artifact": null,
+  "cache": {
+    "status": "session",
+    "object_kind": "xiaoc",
+    "digest": null,
+    "verified": false,
+    "recompiled": true,
+    "recompile_reason": "session_state",
+    "reason": "session_state",
+    "optimization": {
+      "level": 0,
+      "optimizer_version": 1,
+      "config_fingerprint": "xiao-opt-fnv1a64-3e56d73059306232",
+      "input_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+      "output_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+      "validation": "passed",
+      "passes": [
+        {
+          "name": "bytecode.constant-pool",
+          "version": 1,
+          "status": "skipped",
+          "skip_reason": "optimization-disabled",
+          "changed": false,
+          "input_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "output_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "validation": "passed"
+        },
+        {
+          "name": "bytecode.redundant-move",
+          "version": 1,
+          "status": "skipped",
+          "skip_reason": "optimization-disabled",
+          "changed": false,
+          "input_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "output_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "validation": "passed"
+        },
+        {
+          "name": "bytecode.jump-simplify",
+          "version": 1,
+          "status": "skipped",
+          "skip_reason": "optimization-disabled",
+          "changed": false,
+          "input_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "output_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "validation": "passed"
+        },
+        {
+          "name": "bytecode.unreachable-block",
+          "version": 1,
+          "status": "skipped",
+          "skip_reason": "optimization-disabled",
+          "changed": false,
+          "input_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "output_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "validation": "passed"
+        },
+        {
+          "name": "bytecode.slot-layout",
+          "version": 1,
+          "status": "skipped",
+          "skip_reason": "optimization-disabled",
+          "changed": false,
+          "input_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "output_fingerprint": "xiao-bytecode-fnv1a64-129356d81ea3f2c5",
+          "validation": "passed"
+        }
+      ]
+    }
+  }
+}

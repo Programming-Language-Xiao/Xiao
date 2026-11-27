@@ -1,0 +1,227 @@
+use super::*;
+use std::sync::mpsc;
+use xiao_intrinsics::CAPABILITY_ENVIRONMENT as ENV;
+
+struct Value(XiaoValue);
+
+impl Value {
+    fn text(text: &str) -> Self {
+        Self(runtime_to_value(&RuntimeValue::new_string(text).unwrap()).unwrap())
+    }
+
+    fn runtime(&self) -> RuntimeValue {
+        unsafe { value_to_runtime(&self.0) }.unwrap()
+    }
+
+    fn array(&self) -> crate::ArrayHandle {
+        let RuntimeValue::Array(array) = self.runtime() else {
+            panic!("预期环境数组");
+        };
+        array
+    }
+}
+
+impl Drop for Value {
+    fn drop(&mut self) {
+        xiao_runtime_value_release_strong(&mut self.0);
+    }
+}
+
+fn environment(snapshot: EnvironmentSnapshot) -> Arc<NativeEnvironment> {
+    Arc::new(NativeEnvironment {
+        snapshot,
+        capabilities: ENV,
+    })
+}
+
+fn pending_code() -> String {
+    PENDING_ERROR.with_borrow(|pending| match pending {
+        Some(PendingError::Recoverable(error)) => error.code().to_owned(),
+        _ => panic!("预期可恢复错误"),
+    })
+}
+
+#[test]
+fn env_abi_status_output_and_ownership() {
+    let _entry = enter_environment(Some(environment(EnvironmentSnapshot::default())));
+    let name = Value::text("Name");
+    let empty = Value::text("");
+    let mut out = Value::text("旧值");
+    let invalid_tag = XiaoValue {
+        tag: XiaoValueTag::from_raw(255),
+        payload: XiaoValuePayload { raw: 0 },
+    };
+    let invalid_handle = XiaoValue {
+        tag: XiaoValueTag::Str,
+        payload: XiaoValuePayload { raw: 0 },
+    };
+    let old = out.runtime();
+    let alias = &raw mut out.0;
+    for read in [xiao_runtime_env_get, xiao_runtime_env_unset] {
+        assert_eq!(read(std::ptr::null(), &mut out.0, ENV), 1);
+        assert_eq!(read(&name.0, std::ptr::null_mut(), ENV), 1);
+        assert_eq!(read(&invalid_tag, &mut out.0, ENV), 2);
+        assert_eq!(read(alias, alias, ENV), 2);
+        assert_eq!(read(&name.0, &mut out.0, ENV | 0x100), 2);
+        assert_eq!(read(&invalid_handle, &mut out.0, ENV), 3);
+        let mut invalid_out = XiaoValue {
+            tag: XiaoValueTag::Str,
+            payload: XiaoValuePayload { raw: 0 },
+        };
+        assert_eq!(read(&name.0, &mut invalid_out, ENV), 3);
+        assert_eq!(read(&XiaoValue::int(0), &mut out.0, 0), 6);
+        assert_eq!(pending_code(), "X06-RUNTIME-002");
+        xiao_runtime_error_clear();
+        assert_eq!(read(&empty.0, &mut out.0, 0), 6);
+        assert_eq!(pending_code(), "X06-RUNTIME-026");
+        xiao_runtime_error_clear();
+        for invalid in ["".to_owned(), "a=b".into(), "a\0b".into(), "x".repeat(257)] {
+            let invalid = Value::text(&invalid);
+            assert_eq!(read(&invalid.0, &mut out.0, ENV), 6);
+            assert_eq!(pending_code(), "X06-RUNTIME-012");
+            xiao_runtime_error_clear();
+            assert_eq!(out.runtime(), old);
+        }
+    }
+    assert_eq!(xiao_runtime_env_set(&name.0, std::ptr::null(), ENV), 1);
+    assert_eq!(xiao_runtime_env_set(&invalid_tag, &name.0, ENV), 2);
+    assert_eq!(xiao_runtime_env_set(&name.0, &empty.0, ENV | 0x100), 2);
+    assert_eq!(xiao_runtime_env_set(&name.0, &name.0, ENV), 2);
+    assert_eq!(xiao_runtime_env_set(&name.0, &invalid_handle, ENV), 3);
+    assert_eq!(xiao_runtime_env_set(&name.0, &XiaoValue::int(0), 0), 6);
+    assert_eq!(pending_code(), "X06-RUNTIME-002");
+    xiao_runtime_error_clear();
+    assert_eq!(xiao_runtime_env_set(&empty.0, &name.0, 0), 6);
+    assert_eq!(pending_code(), "X06-RUNTIME-026");
+    xiao_runtime_error_clear();
+    let invalid = Value::text("\0");
+    assert_eq!(xiao_runtime_env_set(&name.0, &invalid.0, ENV), 6);
+    assert_eq!(pending_code(), "X06-RUNTIME-012");
+    xiao_runtime_error_clear();
+    let oversized = Value::text(&"x".repeat(65_537));
+    assert_eq!(xiao_runtime_env_set(&name.0, &oversized.0, ENV), 6);
+    assert_eq!(pending_code(), "ENV_LIMIT_EXCEEDED");
+    xiao_runtime_error_clear();
+
+    assert_eq!(xiao_runtime_env_get(&name.0, &mut out.0, ENV), 0);
+    assert!(out.array().is_empty());
+    assert_eq!(xiao_runtime_env_set(&name.0, &empty.0, ENV), 0);
+    assert_eq!(xiao_runtime_env_get(&name.0, &mut out.0, ENV), 0);
+    let owned = out.array();
+    assert_eq!(owned.len(), 1);
+    assert_eq!(owned.element(0).unwrap().unwrap(), empty.runtime());
+    assert_eq!(xiao_runtime_env_unset(&name.0, &mut out.0, ENV), 0);
+    assert_eq!(out.runtime(), RuntimeValue::Bool(true));
+    assert_eq!(xiao_runtime_env_unset(&name.0, &mut out.0, ENV), 0);
+    assert_eq!(out.runtime(), RuntimeValue::Bool(false));
+    assert_eq!(owned.element(0).unwrap().unwrap(), empty.runtime());
+    println!("env C ABI 状态 0/1/2/3/6，独立拥有结果，失败保留输出槽");
+}
+
+#[test]
+fn env_abi_fatal_does_not_unwind_or_replace_the_output() {
+    let environment = environment(EnvironmentSnapshot::default());
+    let name = Value::text("Name");
+    let name_value = name.runtime();
+    let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let _ = environment
+            .snapshot
+            .execute::<()>(Operation::Unset, &[&name_value], ENV, || {
+                panic!("模拟内部故障");
+            });
+    }));
+    let _entry = enter_environment(Some(environment));
+    let value = Value::text("value");
+    let mut out = Value::text("preserved");
+    let old = out.runtime();
+    assert_eq!(xiao_runtime_env_get(&name.0, &mut out.0, ENV), 8);
+    assert_eq!(xiao_runtime_env_set(&name.0, &value.0, ENV), 8);
+    assert_eq!(xiao_runtime_env_unset(&name.0, &mut out.0, ENV), 8);
+    assert_eq!(out.runtime(), old);
+    assert_eq!(pending_class(), xiao_runtime_abi::XiaoErrorClass::Fatal);
+    xiao_runtime_error_clear();
+    println!("env C ABI 三入口均交付状态 8，失败保留输出槽");
+}
+
+#[test]
+fn env_abi_cancelled_writes_and_removals_preserve_the_shared_view() {
+    let snapshot = environment(
+        EnvironmentSnapshot::from_pairs(&[("Name".to_owned(), "original".to_owned())]).unwrap(),
+    );
+    let runtime = crate::RuntimeHandle::create();
+    for replace in [true, false] {
+        let snapshot = Arc::clone(&snapshot);
+        let (ready, started) = mpsc::channel();
+        let (resume, blocked) = mpsc::channel();
+        let task = crate::scheduler::spawn_cooperative(&runtime, move |_| {
+            super::super::abi_concurrency::reset_cancellation_delivery();
+            let _entry = enter_environment(Some(snapshot));
+            let name = Value::text("Name");
+            let mut out = Value(XiaoValue::int(5));
+            ready.send(()).unwrap();
+            blocked.recv().unwrap();
+            let status = if replace {
+                xiao_runtime_env_set(&name.0, &Value::text("discarded").0, ENV)
+            } else {
+                xiao_runtime_env_unset(&name.0, &mut out.0, ENV)
+            };
+            assert_eq!(out.runtime(), RuntimeValue::Int(5));
+            let code = pending_code();
+            xiao_runtime_error_clear();
+            (status, code)
+        })
+        .unwrap();
+        started
+            .recv_timeout(std::time::Duration::from_secs(2))
+            .unwrap();
+        task.cancel();
+        resume.send(()).unwrap();
+        assert_eq!(task.join().unwrap(), (6, "X06-RUNTIME-027".to_owned()));
+    }
+    let _entry = enter_environment(Some(snapshot));
+    let mut out = Value(XiaoValue::none());
+    assert_eq!(
+        xiao_runtime_env_get(&Value::text("Name").0, &mut out.0, ENV),
+        0
+    );
+    assert_eq!(
+        out.array().element(0).unwrap().unwrap(),
+        Value::text("original").runtime()
+    );
+    runtime.close();
+    println!("env C ABI 提交前取消返回 6/027，视图和输出槽保留");
+}
+
+#[test]
+fn env_native_injection_distinguishes_omission_empty_and_explicit_bytes() {
+    extern "C" fn inspect() -> i32 {
+        let name = Value::text("Name");
+        let mut out = Value(XiaoValue::none());
+        let status = xiao_runtime_env_get(&name.0, &mut out.0, ENV);
+        if status != 0 {
+            return -status;
+        }
+        out.array().len() as i32 + 10
+    }
+    let invoke = |data: &[u8], capabilities| unsafe {
+        xiao_runtime_env_run_injected(Some(inspect), data.as_ptr(), data.len(), capabilities)
+    };
+    let outer = environment(
+        EnvironmentSnapshot::from_pairs(&[("Name".to_owned(), "outer".to_owned())]).unwrap(),
+    );
+    let _outer = enter_environment(Some(outer));
+    assert_eq!(
+        unsafe { xiao_runtime_env_run_injected(Some(inspect), std::ptr::null(), 0, ENV) },
+        10
+    );
+    assert_eq!(invoke(b"[]", ENV), 10);
+    assert_eq!(invoke(br#"[["Name",""]]"#, ENV), 11);
+    assert_eq!(invoke(br#"[["Name",""]]"#, 0), -6);
+    assert_eq!(pending_code(), "X06-RUNTIME-026");
+    xiao_runtime_error_clear();
+    assert_eq!(invoke(b"\xff", ENV), 2);
+    assert_eq!(invoke(br#"[["Name","\ud800"]]"#, ENV), 2);
+    assert_eq!(invoke(br#"[["=C:","drive"]]"#, ENV), 2);
+    assert_eq!(invoke(b"[]", ENV | 0x100), 2);
+    assert_eq!(inspect(), 11);
+}

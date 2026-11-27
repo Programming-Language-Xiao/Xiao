@@ -1,0 +1,87 @@
+   Compiling serde_json v1.0.151
+   Compiling zeroize v1.9.0
+   Compiling getrandom v0.2.17
+   Compiling untrusted v0.9.0
+   Compiling ring v0.17.14
+   Compiling rustls-pki-types v1.15.1
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-standard-library)
+   Compiling log v0.4.34
+   Compiling bytes v1.12.1
+   Compiling windows-targets v0.52.6
+   Compiling httparse v1.10.1
+   Compiling base64 v0.23.1
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-i18n)
+   Compiling http v1.5.0
+   Compiling rustls-webpki v0.103.15
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-lock v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lock)
+   Compiling once_cell v1.21.4
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-syntax)
+   Compiling subtle v2.6.1
+   Compiling adler2 v2.0.1
+   Compiling simd-adler32 v0.3.10
+   Compiling rustls v0.23.45
+   Compiling miniz_oxide v0.9.1
+   Compiling ureq-proto v0.6.4
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-modules)
+   Compiling xiao-config v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-config)
+   Compiling windows-sys v0.52.0
+   Compiling crc32fast v1.5.2
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling webpki-roots v1.0.9
+   Compiling filetime v0.2.29
+   Compiling percent-encoding v2.3.2
+   Compiling utf8-zero v0.8.1
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-ir)
+   Compiling ureq v3.4.2
+   Compiling tar v0.4.46
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+   Compiling flate2 v1.1.10
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 35.57s
+     Running tests\20o_b3_env.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b3_env-ea90f5adb987c71b.exe)
+
+running 7 tests
+test native::native_env_entry_resolves_host_and_explicit_inputs ... ignored, 需要本批 release Runtime 和固定 LLVM 工具
+test native::native_env_o0_o3_matches_vm_and_owns_outputs ... ignored, 需要本批 release Runtime 和固定 LLVM 工具
+
+thread 'cli_process_captures_only_authorized_omitted_environment' (25048) panicked at crates\xiao-driver\tests\20o_b3_env.rs:65:9:
+Error { request_id: Some("b3-env-source"), error: ProtocolErrorBody { code: "X11-PROTOCOL-002", message_id: "x11.protocol.request", message: "X05-CACHE-001: 缓存路径 <user-home> 不可用：无法确定用户主目录", text: Some("invalid protocol request: X05-CACHE-001: 缓存路径 <user-home> 不可用：无法确定用户主目录"), phase: Some("protocol"), next_step: Some("修正请求字段后重试"), details: {"field": String("environment")} }, report: None, exit_code: 2 }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test cli_process_captures_only_authorized_omitted_environment ... FAILED
+
+thread 'vm_position_keyword_and_owned_environment_results' (22208) panicked at crates\xiao-driver\tests\20o_b3_env.rs:111:9:
+assertion `left == right` failed
+  left: "Array(ArrayHandle { length: 0 })\nupdated\ntrue\nfalse\nempty<>\nArray(ArrayHandle { length: 0 })\n"
+ right: "[]\nupdated\ntrue\nfalse\nempty<>\n[]\n"
+test vm_position_keyword_and_owned_environment_results ... FAILED
+环境 VM 校验 256/257 字节名称、65,536/65,537 字节值和默认权限
+test vm_environment_errors_and_byte_limits ... ok
+
+thread 'vm_and_archive_keep_environment_as_a_run_input' (70988) panicked at crates\xiao-driver\tests\20o_b3_env.rs:80:5:
+assertion `left == right` failed: ProtocolErrorBody { code: "X06-RUNTIME-026", message_id: "x17.xar.archive_capability_unavailable", message: "归档缺少能力：", text: Some("归档缺少能力："), phase: Some("archive_validation"), next_step: Some("检查归档、Runtime 和目标平台后重试"), details: {"audit": Object {"archive_digest": String("26bf7dca6ede4025d3b7d34111be48598ce5c247b4d1722edb2578b1244d32b6"), "archive_platform": String("portable"), "debug_activation": Bool(false), "host_platform": String("x86_64-pc-windows-msvc"), "index_schema_major": Number(1), "index_schema_minor": Number(0), "language_effective": String("zh-CN"), "language_fallback": Bool(false), "language_requested": String("zh-CN"), "platform_compatible": Bool(true), "runtime_abi_compatible": Bool(true), "verified_member_count": Number(1)}, "path": String("C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b3-env-51844-0\\main.xar")} }
+  left: "X06-RUNTIME-026"
+ right: "X17-XAR-009"
+test vm_and_archive_keep_environment_as_a_run_input ... FAILED
+test vm_snapshots_are_distinct_and_invalid_input_is_rejected_before_execution ... ok
+
+failures:
+
+failures:
+    cli_process_captures_only_authorized_omitted_environment
+    vm_and_archive_keep_environment_as_a_run_input
+    vm_position_keyword_and_owned_environment_results
+
+test result: FAILED. 2 passed; 3 failed; 2 ignored; 0 measured; 0 filtered out; finished in 4.22s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b3_env`
+exit=101

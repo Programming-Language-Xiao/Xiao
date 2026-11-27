@@ -1,0 +1,116 @@
+   Compiling serde_core v1.0.229
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+    Checking cfg-if v1.0.5
+   Compiling zmij v1.0.23
+   Compiling serde v1.0.229
+   Compiling version_check v0.9.5
+    Checking typenum v1.20.1
+   Compiling generic-array v0.14.7
+    Checking itoa v1.0.18
+   Compiling syn v3.0.5
+   Compiling serde_json v1.0.151
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking memchr v2.8.3
+    Checking digest v0.10.7
+    Checking cpufeatures v0.2.17
+    Checking xiao-runtime-abi v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime-abi)
+    Checking sha2 v0.10.9
+   Compiling serde_derive v1.0.229
+    Checking xiao-source v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-source)
+   Compiling autocfg v1.5.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling shlex v2.0.1
+   Compiling num-traits v0.2.19
+   Compiling cc v1.5.1
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling libm v0.2.16
+    Checking zeroize v1.9.0
+   Compiling ring v0.17.14
+    Checking rustls-pki-types v1.15.1
+    Checking num-integer v0.1.47
+   Compiling bigdecimal v0.4.11
+    Checking getrandom v0.2.17
+    Checking untrusted v0.9.0
+   Compiling httparse v1.10.1
+    Checking xiao-i18n v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-i18n)
+    Checking xiao-diagnostics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+   Compiling libc v0.2.189
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-intrinsics)
+    Checking xiao-syntax v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-syntax)
+    Checking xiao-modules v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-modules)
+    Checking xiao-standard-library v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-standard-library)
+    Checking num-bigint v0.4.8
+    Checking xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+    Checking log v0.4.34
+   Compiling crc32fast v1.5.2
+    Checking bytes v1.12.1
+   Compiling rustls v0.23.45
+    Checking xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+    Checking xiao-ir v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-ir)
+    Checking http v1.5.0
+    Checking windows-targets v0.52.6
+    Checking xiao-lock v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lock)
+    Checking once_cell v1.21.4
+    Checking base64 v0.23.1
+    Checking subtle v2.6.1
+    Checking adler2 v2.0.1
+    Checking simd-adler32 v0.3.10
+    Checking ureq-proto v0.6.4
+    Checking miniz_oxide v0.9.1
+    Checking xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+    Checking xiao-optimizer v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+    Checking windows-sys v0.52.0
+    Checking xiao-config v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-config)
+    Checking xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+    Checking webpki-roots v1.0.9
+    Checking filetime v0.2.29
+    Checking percent-encoding v2.3.2
+    Checking utf8-zero v0.8.1
+    Checking tar v0.4.46
+    Checking xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+    Checking flate2 v1.1.10
+    Checking xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+    Checking xiao-artifacts v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+    Checking xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+    Checking rustls-webpki v0.103.15
+    Checking ureq v3.4.2
+    Checking xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+    Checking xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+error[E0616]: field `code` of struct `request::ProtocolError` is private
+   --> crates\xiao-driver\src\native.rs:136:51
+    |
+136 |                 stderr: format!("{}: {}\n", error.code, error.message),
+    |                                                   ^^^^ private field
+    |
+help: a method `code` also exists, call it with parentheses
+    |
+136 |                 stderr: format!("{}: {}\n", error.code(), error.message),
+    |                                                       ++
+
+error[E0616]: field `message` of struct `request::ProtocolError` is private
+   --> crates\xiao-driver\src\native.rs:136:63
+    |
+136 |                 stderr: format!("{}: {}\n", error.code, error.message),
+    |                                                               ^^^^^^^ private field
+    |
+help: a method `message` also exists, call it with parentheses
+    |
+136 |                 stderr: format!("{}: {}\n", error.code, error.message()),
+    |                                                                      ++
+
+error[E0599]: no method named `run_with_environment` found for struct `NativeRun` in the current scope
+   --> crates\xiao-driver\src\native.rs:154:14
+    |
+153 | /         NativeRun::new(&artifact.native)
+154 | |             .run_with_environment(args, payload.as_deref())
+    | |             -^^^^^^^^^^^^^^^^^^^^ method not found in `NativeRun`
+    | |_____________|
+    |
+
+Some errors have detailed explanations: E0599, E0616.
+For more information about an error, try `rustc --explain E0599`.
+error: could not compile `xiao-driver` (lib) due to 3 previous errors
+exit=101

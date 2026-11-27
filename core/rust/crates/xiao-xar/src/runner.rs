@@ -278,6 +278,23 @@ pub fn run_archive_with_module_loader(
     cancellation: Option<xiao_vm::CancellationSource>,
     official: Option<&dyn xiao_vm::ModuleLoader>,
 ) -> Result<xiao_vm::RunOutcome, XarRunError> {
+    run_archive_with_environment(
+        bytes,
+        options,
+        cancellation,
+        official,
+        xiao_vm::EnvironmentSnapshot::default(),
+    )
+}
+
+/// 运行已验证的归档，并为入口及其模块安装本次运行的环境快照。
+pub fn run_archive_with_environment(
+    bytes: &[u8],
+    options: XarRunOptions,
+    cancellation: Option<xiao_vm::CancellationSource>,
+    official: Option<&dyn xiao_vm::ModuleLoader>,
+    environment: xiao_vm::EnvironmentSnapshot,
+) -> Result<xiao_vm::RunOutcome, XarRunError> {
     let indexed = open_indexed_archive(bytes).map_err(classify_run_error)?;
     validate_archive_context(indexed.index(), &options)?;
     let archive = indexed.verify().map_err(classify_run_error)?;
@@ -294,7 +311,7 @@ pub fn run_archive_with_module_loader(
         archive: &archive,
         official,
     };
-    xiao_vm::run_xiaoc_production_with_arguments(
+    xiao_vm::run_xiaoc_production_with_environment(
         &entry_bytes,
         options.vm_options,
         options.event_capacity,
@@ -303,6 +320,7 @@ pub fn run_archive_with_module_loader(
         Some(&loader),
         options.runtime_features >> 1,
         options.arguments,
+        environment,
     )
     .map_err(|error| XarRunError::Validation(format!("入口 `.xiaoc` 执行前校验失败：{error}")))
 }
@@ -553,6 +571,7 @@ fn validate_requirements(
             (4, "native_extension"),
             (5, "stdout"),
             (6, "stdin"),
+            (7, "environment"),
         ]
         .into_iter()
         .filter_map(|(bit, name)| (missing & (1 << bit) != 0).then_some(name))

@@ -54,6 +54,8 @@ mod abi_concurrency;
 mod abi_diagnostics;
 #[path = "abi_dynamic.rs"]
 mod abi_dynamic;
+#[path = "abi_env.rs"]
+mod abi_env;
 #[path = "abi_fs.rs"]
 mod abi_fs;
 #[path = "abi_io.rs"]

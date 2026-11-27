@@ -1,0 +1,7 @@
+clang: error: no such file or directory: 'kernel32.lib'
+clang: error: no such file or directory: 'ntdll.lib'
+clang: error: no such file or directory: 'userenv.lib'
+clang: error: no such file or directory: 'ws2_32.lib'
+clang: error: no such file or directory: 'dbghelp.lib'
+clang: error: no such file or directory: '/defaultlib:msvcrt'
+exit=1

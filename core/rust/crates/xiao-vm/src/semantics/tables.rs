@@ -121,6 +121,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
             let concurrency = Rc::clone(&self.concurrency);
             let capabilities = self.capabilities;
             let clock = self.clock.clone();
+            let environment = Arc::downgrade(&self.environment_snapshot);
             runtime = runtime.with_drop_executor(move |object| {
                 if context.fatal.get() {
                     return Ok(());
@@ -136,6 +137,9 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 vm.concurrency = Rc::clone(&concurrency);
                 vm.capabilities = capabilities;
                 vm.clock = clock.clone();
+                if let Some(snapshot) = environment.upgrade() {
+                    vm.environment_snapshot = snapshot;
+                }
                 let result = vm.execute(
                     method,
                     &[BoundArgument {

@@ -1,0 +1,10 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.17s
+     Running tests\20o_b3_env.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b3_env-ea90f5adb987c71b.exe)
+
+running 1 test
+test vm_table_drop_inherits_the_running_environment ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.81s
+
+exit=0

@@ -31,6 +31,7 @@ impl<'a> DynamicGenerator<'a> {
     ) -> Result<String> {
         let parameters = xiao_intrinsics::time_parameters(declaration.id)
             .or_else(|| xiao_intrinsics::fs_parameters(declaration.id))
+            .or_else(|| xiao_intrinsics::env_parameters(declaration.id))
             .expect("活动宿主库 intrinsic 具有固定形参");
         let order =
             crate::cmath::intrinsic_argument_order(parameters, arguments).ok_or_else(|| {
@@ -43,6 +44,7 @@ impl<'a> DynamicGenerator<'a> {
             .abi_binding
             .time_symbol()
             .or_else(|| declaration.abi_binding.fs_symbol())
+            .or_else(|| declaration.abi_binding.env_symbol())
             .expect("宿主库 C ABI 绑定");
         let has_out = declaration.signature.return_type != xiao_intrinsics::ValueType::None;
         self.emit_borrowed_intrinsic(
@@ -151,8 +153,13 @@ impl<'a> DynamicGenerator<'a> {
         let ok = self.next_label(&format!("{label}.ok"));
         let error = self.next_label(&format!("{label}.error"));
         let fatal = self.next_label(&format!("{label}.abi.failure"));
+        let fatal_error = if label == "env" {
+            format!(" i32 8, label %{error}")
+        } else {
+            String::new()
+        };
         self.emit(format!(
-            "  switch i32 {status}, label %{fatal} [ i32 0, label %{ok} i32 6, label %{error} ]"
+            "  switch i32 {status}, label %{fatal} [ i32 0, label %{ok} i32 6, label %{error}{fatal_error} ]"
         ));
         self.terminated = true;
         self.emit_label(&fatal);

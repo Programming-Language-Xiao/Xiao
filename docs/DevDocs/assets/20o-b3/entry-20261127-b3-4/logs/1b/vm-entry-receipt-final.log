@@ -1,0 +1,7 @@
+host process=0 run=0 diagnostic=None
+empty process=0 run=0 diagnostic=None
+provided process=0 run=0 diagnostic=None
+denied process=0 run=3 diagnostic=X06-RUNTIME-026
+invalid process=0 run=2 diagnostic=X09-DRIVER-006
+over-budget process=0 run=2 diagnostic=X09-DRIVER-007
+exit=0

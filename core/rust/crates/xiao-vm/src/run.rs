@@ -13,6 +13,7 @@ use xiao_intrinsics::{CapabilityMaskError, DEFAULT_CAPABILITY_MASK, validate_cap
 use xiao_ir::{IrEntryMode, IrProgram};
 use xiao_runtime::RuntimeValue;
 use xiao_runtime::arguments::ArgumentsSnapshot;
+use xiao_runtime::environment::EnvironmentSnapshot;
 
 use crate::carrier::Carrier;
 use crate::machine::hybrid::HybridCarrier;
@@ -661,6 +662,32 @@ pub fn run_xiaoc_production_with_arguments(
     runtime_features: u64,
     arguments: Option<ArgumentsSnapshot>,
 ) -> Result<RunOutcome, XiaocLoadError> {
+    run_xiaoc_production_with_environment(
+        bytes,
+        options,
+        event_capacity,
+        cancellation,
+        capabilities,
+        loader,
+        runtime_features,
+        arguments,
+        EnvironmentSnapshot::default(),
+    )
+}
+
+/// 在字节码验证后安装一次运行独占的环境快照。
+#[allow(clippy::too_many_arguments)]
+pub fn run_xiaoc_production_with_environment(
+    bytes: &[u8],
+    options: VmOptions,
+    event_capacity: usize,
+    cancellation: Option<CancellationSource>,
+    capabilities: u64,
+    loader: Option<&dyn crate::modules::ModuleLoader>,
+    runtime_features: u64,
+    arguments: Option<ArgumentsSnapshot>,
+    environment: EnvironmentSnapshot,
+) -> Result<RunOutcome, XiaocLoadError> {
     validate_capability_mask(capabilities).map_err(|error| XiaocLoadError::InvalidField {
         field: "capabilities".to_owned(),
         message: error.to_string(),
@@ -683,6 +710,7 @@ pub fn run_xiaoc_production_with_arguments(
     vm.set_cancellation_source(cancellation);
     vm.set_module_loader(loader);
     vm.set_arguments_snapshot(arguments.map(Arc::new));
+    vm.set_environment_snapshot(environment);
     let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();
     let cleanup = vm.take_cancelled_fs_cleanup();
@@ -797,6 +825,16 @@ pub fn run_request_with_session(
     request: &RunRequest<'_>,
     session: VmSession,
 ) -> (RunOutcome, VmSession) {
+    run_request_with_environment(request, session, EnvironmentSnapshot::default())
+}
+
+/// 使用已有的模块会话与本次运行独占的环境快照执行 TAC。
+#[must_use]
+pub fn run_request_with_environment(
+    request: &RunRequest<'_>,
+    session: VmSession,
+    environment: EnvironmentSnapshot,
+) -> (RunOutcome, VmSession) {
     let mut sink = BoundedSink::new(request.event_capacity);
     let entry_span = request.entry_span();
     if let Err(error) = verify_for_execution(request.ir, request.program) {
@@ -848,6 +886,7 @@ pub fn run_request_with_session(
     vm.set_cancellation_source(request.cancellation.clone());
     vm.set_module_loader(request.module_loader);
     vm.set_arguments_snapshot(request.arguments_snapshot.clone());
+    vm.set_environment_snapshot(environment);
     let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();
     let cleanup = vm.take_cancelled_fs_cleanup();

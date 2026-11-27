@@ -1,0 +1,3 @@
+> tar -xf source-26.tar -C baseline
+      0 [main] tar (55868) D:\Program Files\Git\usr\bin\tar.exe: *** fatal error - CreateFileMapping S-1-5-21-1477302495-2509570740-3035065068-1006.1, Win32 error 5.  Terminating.
+exit=256

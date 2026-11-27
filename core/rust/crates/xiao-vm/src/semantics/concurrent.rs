@@ -414,6 +414,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 let external = self.cancellation.clone();
                 let clock = Arc::clone(&self.clock);
                 let arguments_snapshot = self.arguments_snapshot.clone();
+                let environment_snapshot = Arc::clone(&self.environment_snapshot);
                 let events = Arc::clone(&self.concurrency.events);
                 let events_for_child = Arc::clone(&events);
                 let return_runtime_id = current.id();
@@ -440,6 +441,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                         external,
                         clock,
                         arguments_snapshot,
+                        environment_snapshot,
                         events_for_child,
                         task_runtime,
                         return_runtime_id,
@@ -825,6 +827,7 @@ fn execute_child(
     external: Option<CancellationSource>,
     clock: Arc<xiao_runtime::time::TimeContext>,
     arguments_snapshot: Option<Arc<xiao_runtime::arguments::ArgumentsSnapshot>>,
+    environment_snapshot: Arc<xiao_runtime::environment::EnvironmentSnapshot>,
     events: Arc<Mutex<ChildEvents>>,
     runtime: RuntimeHandle,
     return_runtime_id: u64,
@@ -849,6 +852,7 @@ fn execute_child(
     vm.current_module = module;
     vm.clock = clock;
     vm.arguments_snapshot = arguments_snapshot;
+    vm.environment_snapshot = environment_snapshot;
     vm.cancellation = external;
     vm.module_loader = Some(&loader);
     let bound = arguments

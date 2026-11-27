@@ -16,6 +16,27 @@ pub fn run_archive_with_control(
     options: xiao_xar::XarRunOptions,
     cancellation: Option<xiao_vm::CancellationSource>,
 ) -> Result<xiao_vm::RunOutcome, xiao_xar::XarRunError> {
+    run_archive_with_environment(
+        bytes,
+        options,
+        cancellation,
+        xiao_vm::EnvironmentSnapshot::default(),
+    )
+}
+
+/// 为归档的 VM 入口安装一次执行独占的环境快照。
+pub fn run_archive_with_environment(
+    bytes: &[u8],
+    options: xiao_xar::XarRunOptions,
+    cancellation: Option<xiao_vm::CancellationSource>,
+    environment: xiao_vm::EnvironmentSnapshot,
+) -> Result<xiao_vm::RunOutcome, xiao_xar::XarRunError> {
     let official = DriverModuleLoader::new(None, None);
-    xiao_xar::run_archive_with_module_loader(bytes, options, cancellation, Some(&official))
+    xiao_xar::run_archive_with_environment(
+        bytes,
+        options,
+        cancellation,
+        Some(&official),
+        environment,
+    )
 }

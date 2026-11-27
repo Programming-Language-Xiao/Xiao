@@ -437,6 +437,14 @@ impl<'a> ModuleGenerator<'a> {
 
     /// 生成声明、函数、入口和可追踪指纹。
     fn generate(&mut self) -> Result<LlvmModule> {
+        let capture_environment =
+            self.options.capabilities & xiao_intrinsics::CAPABILITY_ENVIRONMENT != 0;
+        if capture_environment {
+            self.uses_runtime = true;
+            self.declaration(crate::NATIVE_ENV_ENTRY_DECLARATION);
+            self.declaration("declare i32 @xiao_runtime_abi_is_compatible(i32, i32)");
+            self.declaration("declare void @xiao_runtime_fatal_abi()");
+        }
         if self.options.debug_startup.is_some() {
             self.declaration("declare i32 @xiao_native_debug_start()");
         }
@@ -486,11 +494,16 @@ impl<'a> ModuleGenerator<'a> {
             text.push('\n');
         }
         text.push_str(&entry);
+        let capabilities = if capture_environment {
+            format!(";capabilities={:016x}", self.options.capabilities)
+        } else {
+            String::new()
+        };
         let fingerprint = format!(
             "xiao-codegen-{CODEGEN_VERSION}-{}",
             stable_hash(
                 format!(
-                    "{};optimization={};{}",
+                    "{};optimization={};{}{capabilities}",
                     CODEGEN_VERSION,
                     self.options.optimization_level,
                     self.options.target.fingerprint_fields()
@@ -667,6 +680,13 @@ impl<'a> ModuleGenerator<'a> {
 
     /// 发射带可选调试启动检查的 C `main` 适配器。
     fn main_adapter(&self, observed: bool) -> String {
+        let capture_environment =
+            self.options.capabilities & xiao_intrinsics::CAPABILITY_ENVIRONMENT != 0;
+        let signature = if capture_environment {
+            "define internal i32 @xiao_application_main()"
+        } else {
+            "define i32 @main()"
+        };
         let entry = if observed {
             "  %xiao_exit = call i64 @xiao_entry()\n  %xiao_exit_code = trunc i64 %xiao_exit to i32\n  ret i32 %xiao_exit_code\n"
         } else {
@@ -679,12 +699,17 @@ impl<'a> ModuleGenerator<'a> {
         } else {
             String::new()
         };
-        if self.options.debug_startup.is_none() {
-            return format!("define i32 @main() {{\nentry:\n{compatibility}{entry}}}\n");
+        let mut adapter = if self.options.debug_startup.is_none() {
+            format!("{signature} {{\nentry:\n{compatibility}{entry}}}\n")
+        } else {
+            format!(
+                "{signature} {{\nentry:\n  %xiao_debug_status = call i32 @xiao_native_debug_start()\n  %xiao_debug_ok = icmp eq i32 %xiao_debug_status, 0\n  br i1 %xiao_debug_ok, label %xiao.user, label %xiao.debug.fail\nxiao.user:\n{compatibility}{entry}xiao.debug.fail:\n  ret i32 %xiao_debug_status\n}}\n"
+            )
+        };
+        if capture_environment {
+            adapter.push_str(&crate::native_env_main(self.options.capabilities, false));
         }
-        format!(
-            "define i32 @main() {{\nentry:\n  %xiao_debug_status = call i32 @xiao_native_debug_start()\n  %xiao_debug_ok = icmp eq i32 %xiao_debug_status, 0\n  br i1 %xiao_debug_ok, label %xiao.user, label %xiao.debug.fail\nxiao.user:\n{compatibility}{entry}xiao.debug.fail:\n  ret i32 %xiao_debug_status\n}}\n"
-        )
+        adapter
     }
 
     /// 登记一条去重的 LLVM 声明。

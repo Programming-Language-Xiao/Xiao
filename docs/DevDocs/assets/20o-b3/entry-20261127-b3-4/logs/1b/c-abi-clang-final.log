@@ -1,0 +1,7 @@
+LINK : warning LNK4098: 默认库“msvcrt”与其他库的使用冲突；请使用 /NODEFAULTLIB:library
+LINK : warning LNK4217:符号“__stdio_common_vsprintf”(在“ libucrt.lib(output.obj)”中定义)已由“c-abi-probe-cb0ecc.o”(函数“_vsnprintf_l”中)导入
+c-abi-probe-cb0ecc.o : error LNK2019: 无法解析的外部符号 __imp__wassert，函数 main 中引用了该符号
+c-abi-probe-cb0ecc.o : error LNK2019: 无法解析的外部符号 __imp_puts，函数 main 中引用了该符号
+D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\generator-compare\c-abi\probe.exe : fatal error LNK1120: 2 个无法解析的外部命令
+clang: error: linker command failed with exit code 1120 (use -v to see invocation)
+exit=1120

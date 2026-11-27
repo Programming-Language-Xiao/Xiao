@@ -42,10 +42,11 @@ pub use run::{
     CancellationSource, CancellationToken, DEFAULT_CHECKPOINT_INTERVAL, DEFAULT_MAX_CALL_DEPTH,
     MAX_MAX_CALL_DEPTH, RunOutcome, RunRequest, RunRequestError, RunResult, VM_OPTIONS_CODE,
     VM_REQUEST_CODE, VmMetrics, VmOptions, VmOptionsError, XiaocLoadError, load_xiaoc, run,
-    run_checked, run_hybrid, run_production, run_register, run_request, run_request_with_session,
-    run_with, run_with_machine_seed, run_with_seed, run_with_values, run_xiaoc,
-    run_xiaoc_production, run_xiaoc_production_with_arguments,
-    run_xiaoc_production_with_capabilities, run_xiaoc_production_with_features,
+    run_checked, run_hybrid, run_production, run_register, run_request,
+    run_request_with_environment, run_request_with_session, run_with, run_with_machine_seed,
+    run_with_seed, run_with_values, run_xiaoc, run_xiaoc_production,
+    run_xiaoc_production_with_arguments, run_xiaoc_production_with_capabilities,
+    run_xiaoc_production_with_environment, run_xiaoc_production_with_features,
     run_xiaoc_production_with_loader, run_xiaoc_with_runtime_features,
 };
 /// 重导出语义核与终止原因。
@@ -57,6 +58,8 @@ pub use sink::{
 };
 /// 重导出跨运行入口共享的已接纳参数。
 pub use xiao_runtime::arguments::ArgumentsSnapshot;
+/// 重导出归一次执行所有的环境快照。
+pub use xiao_runtime::environment::EnvironmentSnapshot;
 
 /// 09R 冻结产物的兼容重导出层；沿革见 09R2D，冻结依据见 09R3。
 pub mod research;

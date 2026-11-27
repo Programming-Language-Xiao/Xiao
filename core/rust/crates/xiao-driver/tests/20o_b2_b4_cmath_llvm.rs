@@ -70,7 +70,7 @@ fn both_lowerings_use_fifteen_shared_abi_symbols_and_current_version() {
             assert!(module.text.contains("define double @xiao_fn_0_probe0"));
         }
     }
-    assert_eq!(xiao_codegen_llvm::CODEGEN_VERSION, 26);
+    assert_eq!(xiao_codegen_llvm::CODEGEN_VERSION, 27);
     assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 20);
 }
 

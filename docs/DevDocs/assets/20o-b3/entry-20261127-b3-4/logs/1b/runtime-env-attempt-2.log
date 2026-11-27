@@ -1,0 +1,19 @@
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+error[E0382]: borrow of moved value: `invalid_handle`
+  --> crates\xiao-runtime\src\abi_env_tests.rs:77:46
+   |
+47 |     let invalid_handle = XiaoValue {
+   |         -------------- move occurs because `invalid_handle` has type `xiao_runtime_abi::XiaoValue`, which does not implement the `Copy` trait
+...
+53 |     for read in [xiao_runtime_env_get, xiao_runtime_env_unset] {
+   |     ---------------------------------------------------------- inside of this loop
+...
+60 |         let mut invalid_out = invalid_handle;
+   |                               -------------- value moved here, in previous iteration of loop
+...
+77 |     assert_eq!(xiao_runtime_env_set(&name.0, &invalid_handle, ENV), 3);
+   |                                              ^^^^^^^^^^^^^^^ value borrowed here after move
+
+For more information about this error, try `rustc --explain E0382`.
+error: could not compile `xiao-runtime` (lib test) due to 1 previous error
+exit=101

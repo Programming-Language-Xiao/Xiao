@@ -63,7 +63,7 @@ pub use archive::{
     build_archive,
 };
 /// 带固定官方加载器及取消控制的归档执行入口。
-pub use archive_run::{run_archive, run_archive_with_control};
+pub use archive_run::{run_archive, run_archive_with_control, run_archive_with_environment};
 /// 重导出前端到 LLVM 原生程序的结构化构建接口。
 pub use native::{FrontendNativeDriver, NativeBuildRequest, NativeBuildResult, NativeDriverError};
 /// 可注入的环境包映射及其具体文件模块。

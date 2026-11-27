@@ -3,7 +3,7 @@
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use xiao_ir::IrProgram;
@@ -338,13 +338,45 @@ impl NativeRun {
         I: IntoIterator<Item = S>,
         S: AsRef<std::ffi::OsStr>,
     {
-        let output = Command::new(&self.executable)
-            .args(args)
-            .output()
-            .map_err(|error| CodegenError::ToolchainUnavailable {
-                tool: self.executable.display().to_string(),
-                message: error.to_string(),
-            })?;
+        self.run_with_environment(args, None)
+    }
+
+    /// 原生驱动透传已接纳的 UTF-8 JSON 载荷，省略时由独立入口接纳宿主环境。
+    #[doc(hidden)]
+    pub fn run_with_environment<I, S>(
+        &self,
+        args: I,
+        environment: Option<&[u8]>,
+    ) -> Result<NativeRunResult>
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<std::ffi::OsStr>,
+    {
+        let io_error = |error: std::io::Error| CodegenError::ToolchainUnavailable {
+            tool: self.executable.display().to_string(),
+            message: error.to_string(),
+        };
+        let mut command = Command::new(&self.executable);
+        let output = if let Some(data) = environment {
+            command
+                .arg(xiao_runtime_abi::NATIVE_ENVIRONMENT_STDIN)
+                .args(args)
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped());
+            let mut child = command.spawn().map_err(io_error)?;
+            let mut stdin = child.stdin.take().expect("已设置原生启动管道");
+            // 启动适配器在执行用户代码前读取完整载荷。
+            let written = stdin.write_all(data);
+            drop(stdin);
+            let output = child.wait_with_output().map_err(io_error)?;
+            if output.status.success() {
+                written.map_err(io_error)?;
+            }
+            output
+        } else {
+            command.args(args).output().map_err(io_error)?
+        };
         Ok(NativeRunResult {
             status: output.status.code(),
             stdout: String::from_utf8_lossy(&output.stdout).into_owned(),

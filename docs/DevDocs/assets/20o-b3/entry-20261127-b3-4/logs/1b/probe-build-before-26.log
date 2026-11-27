@@ -1,0 +1,11 @@
+   Compiling ring v0.17.14
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\baseline\core\rust\crates\xiao-runtime)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\baseline\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\baseline\core\rust\crates\xiao-xar)
+   Compiling rustls v0.23.45
+   Compiling rustls-webpki v0.103.15
+   Compiling ureq v3.4.2
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\baseline\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4-env-1b\baseline\core\rust\crates\xiao-driver)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 56.79s
+exit=0

@@ -588,6 +588,7 @@ struct NativeEntryContext {
     locale: String,
     clock: Option<Arc<crate::time::TimeContext>>,
     arguments: Option<Arc<crate::arguments::ArgumentsSnapshot>>,
+    environment: Option<Arc<super::abi_env::NativeEnvironment>>,
 }
 
 impl NativeEntryContext {
@@ -596,6 +597,7 @@ impl NativeEntryContext {
             locale,
             clock: super::abi_time::entry_clock(),
             arguments: super::abi_args::entry_arguments(),
+            environment: super::abi_env::entry_environment(),
         }
     }
 }
@@ -615,6 +617,7 @@ fn invoke_entry(
     crate::abi::set_current_locale(entry_context.locale);
     let _clock = super::abi_time::enter_clock(entry_context.clock);
     let _arguments = super::abi_args::enter_arguments(entry_context.arguments);
+    let _environment = super::abi_env::enter_environment(entry_context.environment);
     let outcome = (|| {
         let mut values = Vec::with_capacity(arguments.len());
         for argument in arguments {

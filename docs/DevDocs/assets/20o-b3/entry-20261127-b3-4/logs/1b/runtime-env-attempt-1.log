@@ -1,0 +1,71 @@
+   Compiling typenum v1.20.1
+   Compiling cpufeatures v0.2.17
+   Compiling cfg-if v1.0.5
+   Compiling xiao-runtime-abi v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime-abi)
+   Compiling xiao-source v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-source)
+   Compiling num-traits v0.2.19
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-intrinsics)
+   Compiling libm v0.2.16
+   Compiling libc v0.2.189
+   Compiling num-integer v0.1.47
+   Compiling generic-array v0.14.7
+   Compiling num-bigint v0.4.8
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling digest v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-i18n)
+   Compiling bigdecimal v0.4.11
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-syntax)
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+error[E0599]: no method named `get` found for struct `containers::array::ArrayHandle` in the current scope
+  --> crates\xiao-runtime\src\abi_env_tests.rs:96:22
+   |
+96 |     assert_eq!(owned.get(0).unwrap(), empty.runtime());
+   |                      ^^^ method not found in `containers::array::ArrayHandle`
+   |
+  ::: crates\xiao-runtime\src\containers\array.rs:56:1
+   |
+56 | pub struct ArrayHandle {
+   | ---------------------- method `get` not found for this struct
+   |
+   = help: items from traits can only be used if the trait is implemented and in scope
+   = note: the following trait defines an item `get`, perhaps you need to implement it:
+           candidate #1: `SliceIndex`
+
+error[E0599]: no method named `get` found for struct `containers::array::ArrayHandle` in the current scope
+   --> crates\xiao-runtime\src\abi_env_tests.rs:101:22
+    |
+101 |     assert_eq!(owned.get(0).unwrap(), empty.runtime());
+    |                      ^^^ method not found in `containers::array::ArrayHandle`
+    |
+   ::: crates\xiao-runtime\src\containers\array.rs:56:1
+    |
+ 56 | pub struct ArrayHandle {
+    | ---------------------- method `get` not found for this struct
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+    = note: the following trait defines an item `get`, perhaps you need to implement it:
+            candidate #1: `SliceIndex`
+
+error[E0599]: no method named `get` found for struct `containers::array::ArrayHandle` in the current scope
+   --> crates\xiao-runtime\src\abi_env_tests.rs:164:28
+    |
+164 |     assert_eq!(out.array().get(0).unwrap(), Value::text("original").runtime());
+    |                            ^^^ method not found in `containers::array::ArrayHandle`
+    |
+   ::: crates\xiao-runtime\src\containers\array.rs:56:1
+    |
+ 56 | pub struct ArrayHandle {
+    | ---------------------- method `get` not found for this struct
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+    = note: the following trait defines an item `get`, perhaps you need to implement it:
+            candidate #1: `SliceIndex`
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `xiao-runtime` (lib test) due to 3 previous errors
+exit=101

@@ -8,8 +8,8 @@ use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
 use xiao_codegen_llvm::{
-    BuildRequest, CodegenError, CodegenOptions, NativeArtifact, NativeBuild, TargetDescription,
-    Toolchain,
+    BuildRequest, CodegenError, CodegenOptions, NativeArtifact, NativeBuild, NativeRun,
+    NativeRunResult, TargetDescription, Toolchain,
 };
 use xiao_ir::{IrProgram, IrStatement, IrStatementKind};
 
@@ -118,6 +118,43 @@ impl FrontendNativeDriver {
         self.build_artifact(&frontend, request)
     }
 
+    /// 构建并以同一运行能力启动应用。省略环境时由子进程在用户代码前捕获一次。
+    pub fn run_application<I, S>(
+        &self,
+        request: &NativeBuildRequest,
+        options: &crate::RunOptions,
+        args: I,
+    ) -> Result<NativeRunResult, NativeDriverError>
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<std::ffi::OsStr>,
+    {
+        if let Err(error) = options.environment_snapshot() {
+            return Ok(NativeRunResult {
+                status: Some(2),
+                stdout: String::new(),
+                stderr: format!("{}: {}\n", error.code(), error.message()),
+            });
+        }
+        let mut request = request.clone();
+        request.codegen_options = request
+            .codegen_options
+            .with_capabilities(options.capabilities)
+            .expect("运行快照已校验能力掩码");
+        let payload = if options.capabilities & xiao_intrinsics::CAPABILITY_ENVIRONMENT != 0 {
+            options
+                .environment
+                .as_ref()
+                .map(|value| serde_json::to_vec(value).expect("环境仅包含字符串名值对"))
+        } else {
+            None
+        };
+        let artifact = self.build(&request)?;
+        NativeRun::new(&artifact.native)
+            .run_with_environment(args, payload.as_deref())
+            .map_err(NativeDriverError::Backend)
+    }
+
     /// 使用一份已经由统一前端产出的产物构建原生程序。
     ///
     /// 该入口专门供差分测试和后续内部编排使用：调用方可以先把同一份
@@ -170,7 +207,7 @@ fn strip_static_standard_imports(program: &mut IrProgram) {
         if !item.module.starts_with("stdlib.")
             || matches!(
                 item.module.as_str(),
-                "stdlib.args" | "stdlib.cli" | "stdlib.fs"
+                "stdlib.args" | "stdlib.cli" | "stdlib.env" | "stdlib.fs"
             )
             || selected.text != item.binding.text
             || selected.backticked != item.binding.backticked

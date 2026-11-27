@@ -1,0 +1,30 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.30s
+     Running tests\20o_b3_env.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b3_env-ea90f5adb987c71b.exe)
+
+running 2 tests
+环境原生启动任务目录 D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/test-runs\xiao-b3-env-12672-0
+环境原生任务目录 D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/test-runs\xiao-b3-env-12672-1，目标 x86_64-pc-windows-msvc
+环境原生 direct-valid 退出 Some(0)，输出 12 字节，诊断 0 字节
+环境原生 direct-invalid 退出 Some(2)，输出 0 字节，诊断 53 字节
+环境原生 injected 退出 Some(0)，输出 16 字节，诊断 0 字节
+环境原生 injected-limit 退出 Some(2)，输出 0 字节，诊断 47 字节
+环境原生 operations-o0 退出 Some(0)，输出 43 字节，诊断 0 字节
+环境原生释放追踪 Some("operations-o0.release.tsv")，22 个对象各销毁一次
+环境生成身份 xiao-codegen-26-aa186ec3e9142797 工具指纹 xiao-fnv1a64-7277369b980d76fb 声明及观察组件 ["env", "rc", "value", "weak"] COFF Some(CoffLinkIdentity { map_path: "D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/test-runs\\xiao-b3-env-12672-1\\operations-o0.exe.map", artifact_sha256: "c5998c4d4f49b95af1d0fa12f0661eaac088cd826b65c64434b6fce40941a937", map_sha256: "64163676c91fa03b67276b8a9dc46256adb56a5719e2519ce6450889de800e95" })
+test native::native_env_entry_resolves_host_and_explicit_inputs ... ok
+环境原生 denied-o0 退出 Some(3)，输出 0 字节，诊断 239 字节
+环境原生释放追踪 Some("denied-o0.release.tsv")，1 个对象各销毁一次
+环境原生 invalid-o0 退出 Some(3)，输出 0 字节，诊断 278 字节
+环境原生释放追踪 Some("invalid-o0.release.tsv")，1 个对象各销毁一次
+环境原生 operations-o3 退出 Some(0)，输出 43 字节，诊断 0 字节
+环境原生释放追踪 Some("operations-o3.release.tsv")，22 个对象各销毁一次
+环境生成身份 xiao-codegen-26-222c8e133957c16a 工具指纹 xiao-fnv1a64-a989177ac5163114 声明及观察组件 ["env", "rc", "value", "weak"] COFF Some(CoffLinkIdentity { map_path: "D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/test-runs\\xiao-b3-env-12672-1\\operations-o3.exe.map", artifact_sha256: "4af31d008af56f83783776f7c69c461677f38025743a50c4f5a4a1029005dacd", map_sha256: "da87d735d87fe3dd84a07b407cf32b57c590f8754a76681641c55ccc18094f60" })
+环境原生 denied-o3 退出 Some(3)，输出 0 字节，诊断 239 字节
+环境原生释放追踪 Some("denied-o3.release.tsv")，1 个对象各销毁一次
+环境原生 invalid-o3 退出 Some(3)，输出 0 字节，诊断 278 字节
+环境原生释放追踪 Some("invalid-o3.release.tsv")，1 个对象各销毁一次
+test native::native_env_o0_o3_matches_vm_and_owns_outputs ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 18.40s
+
+exit=0

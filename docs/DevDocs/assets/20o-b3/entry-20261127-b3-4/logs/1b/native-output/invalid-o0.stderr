@@ -1,0 +1,4 @@
+xiao-error class=recoverable code=X06-RUNTIME-012 message_id=runtime.invalid_value params={"message": Text("环境名称为空或含等号或 NUL")} span=38..54 exit_code=3
+error [X06-RUNTIME-012]: 环境名称为空或含等号或 NUL
+at bytes 38..54
+at stdlib.env::get (User)

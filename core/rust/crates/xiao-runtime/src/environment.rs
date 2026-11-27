@@ -159,6 +159,11 @@ impl EnvironmentSnapshot {
         Self::admit(pairs.iter().map(|(name, value)| Ok((name, value))))
     }
 
+    /// 由启动入口在授权后捕获一次当前进程的宿主环境。
+    pub fn capture_host(capabilities: u64) -> Result<Self, SnapshotError> {
+        Self::from_host(capabilities, || std::env::vars_os().filter(host_pair))
+    }
+
     /// 先校验能力，再最多调用一次原生数据来源。缺少环境能力时返回空视图。
     ///
     /// 启动适配层提供已过滤 Windows 驱动器 cwd 伪变量的原生名值对。
@@ -300,6 +305,16 @@ impl EnvironmentSnapshot {
         }
         Ok(RuntimeValue::Array(ArrayHandle::new(values)?))
     }
+}
+
+/// Windows 环境块中的驱动器工作目录项归操作系统管理。
+fn host_pair((name, _): &(OsString, OsString)) -> bool {
+    if cfg!(windows) {
+        if let [b'=', drive, b':'] = name.as_encoded_bytes() {
+            return !drive.is_ascii_alphabetic();
+        }
+    }
+    true
 }
 
 /// 借读已有字符串，先完成类型检查。

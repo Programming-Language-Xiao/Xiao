@@ -1,0 +1,17 @@
+{
+  "type": "error",
+  "request_id": "invalid",
+  "error": {
+    "code": "X09-DRIVER-006",
+    "message_id": "x11.protocol.request",
+    "message": "环境值含 NUL",
+    "text": "invalid protocol request: 环境值含 NUL",
+    "phase": "protocol",
+    "next_step": "修正请求字段后重试",
+    "details": {
+      "field": "options.environment"
+    }
+  },
+  "report": null,
+  "exit_code": 2
+}

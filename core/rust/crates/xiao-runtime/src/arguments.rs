@@ -82,8 +82,16 @@ impl ArgumentsSnapshot {
 
     /// 独立原生入口读取宿主拆分结果，Windows 保留原始宽字符。
     pub(crate) fn from_host() -> Result<Self, ArgumentsError> {
+        Self::from_host_after_marker(false)
+    }
+
+    /// 在原生驱动注入路径上跳过启动适配器已消费的标记。
+    pub(crate) fn from_host_after_marker(skip_marker: bool) -> Result<Self, ArgumentsError> {
         let mut argv = std::env::args_os();
         let program_name = argv.next().unwrap_or_default();
+        if skip_marker {
+            argv.next();
+        }
         Self::from_os_iter(program_name, argv)
     }
 

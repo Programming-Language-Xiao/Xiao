@@ -1,0 +1,503 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 00s
+     Running unittests src\lib.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\xiao_driver-20242f7734052ee0.exe)
+
+running 72 tests
+test compatibility::tests::standard_library_identity_is_parallel_to_existing_compatibility_versions ... ok
+test compatibility::tests::matrix_contains_no_unfrozen_migration_claim ... ok
+test compatibility::tests::matrix_is_generated_from_current_versions_and_has_every_axis ... ok
+test diagnostics::tests::disconnected_window_does_not_change_event_handling ... ok
+test diagnostics::tests::real_terminal_session_is_environment_gated ... ignored, 需要真实终端模拟器；准备方式见 10D §4.2
+test diagnostics::tests::missing_terminal_renderer_is_an_explicit_startup_failure ... ok
+test diagnostics::tests::persistent_diagnostic_logs_redact_sensitive_payloads ... ok
+test diagnostics::tests::runtime_events_keep_required_structured_identity ... ok
+test diagnostics::tests::terminal_candidates_forward_locale ... ok
+test diagnostics::tests::terminal_candidates_have_stable_platform_order ... ok
+test diagnostics::tests::focus_rules_match_module_and_source ... ok
+test module_loader::tests::executable_standard_module_registration_is_explicit ... ok
+test diagnostics::tests::unwritable_log_target_is_reported_without_startup_failure ... ok
+test diagnostics::tests::runtime_error_events_keep_localized_message_fields ... ok
+test module_loader::tests::removed_standard_library_module_is_not_loadable ... ok
+test protocol::package_view::tests::duplicate_roots_are_rejected ... ok
+test protocol::package_view::tests::active_and_global_views_do_not_leak ... ok
+test protocol::architecture_tests::module_dependency_direction_is_acyclic ... ok
+test protocol::tests::build_rejects_unknown_target_before_toolchain ... ok
+test protocol::tests::artifact_runtime_facts_round_trip ... ok
+test protocol::tests::build_request_round_trips_toolchain_and_config_fields ... ok
+test protocol::package_view::tests::interface_query_does_not_execute_module ... ok
+test protocol::tests::cache_clean_protocol_deletes_unreferenced_objects ... ok
+test protocol::tests::cache_clean_protocol_reads_archive_references ... ok
+test protocol::tests::cache_list_returns_structured_result ... ok
+test protocol::tests::debug_build_requires_diagnostics_path ... ok
+test protocol::tests::diagnostics_component_is_staged_next_to_executable ... ok
+test protocol::tests::cache_clean_protocol_reads_project_lock_from_directory ... ok
+test protocol::tests::environment_request_generates_stable_metadata ... ok
+test protocol::tests::frame_and_request_errors_keep_distinct_codes ... ok
+test protocol::tests::frame_uses_eight_byte_big_endian_payload_length ... ok
+test protocol::tests::hello_advertises_test_capability ... ok
+test protocol::tests::cache_clean_protocol_rejects_broken_archive_before_deleting ... ok
+test protocol::tests::protocol_run_accepts_nonzero_optimization_level ... ok
+test protocol::tests::read_frame_accepts_clean_eof_and_rejects_truncation ... ok
+test protocol::tests::read_frame_rejects_oversized_payload_before_allocating ... ok
+test protocol::tests::real_source_run_maps_cancel_to_artifact_rejected ... ok
+test protocol::tests::real_source_run_returns_structured_result_without_text_parsing ... ok
+test protocol::tests::repl_packages_request_validates_environment_without_renaming_package_operation ... ok
+test protocol::tests::run_archive_honors_zero_timeout_before_reading_archive ... ok
+test protocol::tests::run_archive_missing_file_has_stable_error ... ok
+test protocol::tests::run_environment_admission_has_stable_diagnostics ... ok
+test protocol::tests::run_environment_omission_and_explicit_empty_are_distinct ... ok
+test protocol::tests::run_environment_rejects_malformed_wire_pairs ... ok
+test protocol::tests::run_environment_round_trips_and_admits_explicit_pairs ... ok
+test protocol::tests::package_request_missing_lock_does_not_create_environment ... ok
+test protocol::tests::run_locale_is_optional_and_does_not_change_machine_error_fields ... ok
+test protocol::tests::run_locale_renders_known_message_and_preserves_missing_id_with_params ... ok
+test protocol::tests::runtime_config_freeze_is_deterministic_and_validated ... ok
+test protocol::tests::runtime_config_can_be_replaced ... ok
+test protocol::tests::service_requires_hello_as_first_frame ... ok
+test protocol::tests::service_round_trips_hello_run_and_shutdown_frames ... ok
+test protocol::tests::test_locale_renders_diagnostics_inside_each_case ... ok
+test protocol::tests::test_request_rejects_empty_case_list ... ok
+test protocol::tests::verify_missing_artifact_has_stable_error ... ok
+test protocol::tests::version_mismatch_is_machine_readable ... ok
+test run::tests::cancellation_and_zero_timeout_are_structured_control_errors ... ok
+test protocol::tests::test_request_preserves_case_order_and_aggregates_results ... ok
+test run::tests::concurrency_pool_submit_wait_shutdown_reaches_vm ... ok
+test run::tests::concurrency_runtime_create_spawn_join_reaches_vm ... ok
+test run::tests::corrupted_tac_is_rejected_before_execution ... ok
+test run::tests::frontend_failure_keeps_structured_diagnostics ... ok
+test run::tests::fs_cleanup_report_is_suppressed_under_the_driver_control_identity ... ok
+test run::tests::migrated_intrinsics_keep_existing_vm_semantics ... ok
+test run::tests::nonzero_optimization_levels_run_through_bytecode_pipeline ... ok
+test run::tests::print_intrinsic_reaches_vm_output_event ... ok
+test run::tests::removal_verification_print_contract_and_vm_binding ... ok
+test run::tests::runs_frontend_to_vm_without_an_entry_override ... ok
+test run::tests::structurally_invalid_tac_uses_internal_diagnostic ... ok
+test protocol::tests::diagnostics_component_staging_distinguishes_existing_source ... ok
+test run::tests::concurrency_shared_and_lock_reaches_vm ... ok
+test module_loader::tests::cmath_source_removal_is_observed_by_the_actual_vm_loader ... ok
+
+test result: ok. 71 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 34.07s
+
+     Running unittests src\protocol_main.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\xiao_core-bbaca1166b4706a5.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\18b_build_archive.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\18b_build_archive-92befea311e0756a.exe)
+
+running 13 tests
+test debug_has_separate_symbols_and_explicit_output ... ok
+test config_uses_unique_main_and_packages_only_reachable_local_modules_and_resources ... ok
+test indexed_corrupt_hit_is_rejected_without_replacing_output ... ok
+test lockfile_uses_authoritative_validation_and_is_never_rewritten ... ok
+test missing_or_multiple_main_third_party_and_bad_resources_leave_no_archive ... ok
+test review_archive_output_cannot_corrupt_its_cache ... ok
+test archive_build_runs_set_methods_through_host_module ... ok
+test review_output_cannot_replace_any_archive_input ... ok
+test script_builds_runs_and_keeps_xiaoc_in_global_cache ... ok
+test review_mixed_known_and_unresolved_targets_cannot_omit_capabilities ... ok
+test imported_stdlib_functions_have_precise_capabilities ... ok
+test served_protocol_builds_runs_stdlib_and_keeps_repl_out_of_global_cache ... ok
+test closure_tracks_calls_keywords_reexports_and_empty_requirements ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.78s
+
+     Running tests\20c_first_modules.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20c_first_modules-76246d0240847c32.exe)
+
+running 15 tests
+test first_modules_match_native_results ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test fixed_named_calls_preserve_argument_evaluation_and_binding ... ok
+test project_cannot_shadow_the_reserved_standard_library_namespace ... ok
+test removing_llvm_standard_library_function_binding_rejects_native_build ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test set_remove_missing_native_matches_vm ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test b1_release_edges_have_vm_golden_outputs ... ok
+test standard_library_import_requires_vm_loader_binding ... ok
+test helper_module_can_import_standard_library ... ok
+test std_aliases_preserve_imported_function_contracts ... ok
+test path_module_vm_result_and_removal_boundary_are_stable ... ok
+test string_indices_preserve_unicode_iteration_and_negative_bounds ... ok
+test std_alias_native_lowering_matches_the_canonical_capability_boundary ... ok
+test std_alias_archives_record_canonical_host_requirements ... ok
+test std_aliases_use_the_canonical_official_module ... ok
+test text_module_vm_result_and_removal_boundary_are_stable ... ok
+
+test result: ok. 12 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 10.37s
+
+     Running tests\20d_first_api.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20d_first_api-f59b5a889e8f4867.exe)
+
+running 17 tests
+test filesystem_capability_bit_is_the_frozen_bit_zero ... ok
+test directory_cannot_be_passed_to_read_text_at_type_check ... ok
+test imported_resource_interfaces_respect_scope_and_reassignment ... ok
+test native_os_module_matches_vm_output ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test imported_resource_signatures_reject_invalid_argument_shapes ... ok
+test imported_resource_signatures_preserve_type_boundaries ... ok
+test os_module_opens_reads_and_closes_file_in_vm ... ok
+test os_module_requires_filesystem_capability_before_open ... ok
+test resource_const_is_rejected_with_non_constant_diagnostic ... ok
+test resource_declarations_reject_ignored_path_constraints ... ok
+test resource_set_annotations_are_rejected_by_type_check ... ok
+test table_resource_constants_use_the_non_constant_diagnostic ... ok
+test vm_relative_path_child ... ignored, 由 vm_relative_paths_use_process_cwd 在隔离 cwd 中调用
+test resource_api_rejects_keyword_and_expanded_arguments_before_execution ... ok
+test vm_relative_paths_use_process_cwd ... ok
+test os_module_runtime_error_identities_are_stable_in_vm ... ok
+test imported_resource_calls_execute_in_vm_and_keep_native_boundary ... ok
+
+test result: ok. 15 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 7.31s
+
+     Running tests\20d_process_api.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20d_process_api-191766800dc3667d.exe)
+
+running 18 tests
+test native_dynamic_resource_boundaries_match_vm ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组
+test native_process_api_matches_vm ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组
+test native_process_lifecycle_and_capability_have_no_hidden_host_effects ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组
+test native_process_spawn_rejects_implicit_shell ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组
+test process_container_and_constant_boundaries_are_executable ... ok
+test dynamic_resource_module_imports_keep_valid_processes ... ok
+test dynamic_resource_boundaries_validate_values_in_vm ... ok
+test process_missing_capability_does_not_start_a_child ... ok
+test process_close_and_drop_detach_without_waiting_or_killing ... ok
+test process_spawn_inherits_path_environment_cwd_and_standard_streams ... ok
+test process_vm_child ... ignored, 仅由父测试在隔离进程与 cwd 下调用
+test process_table_fields_preserve_resource_kind ... ok
+test process_spawn_rejects_implicit_shell_in_vm ... ok
+test process_types_and_call_shapes_are_rejected_before_execution ... ok
+test resource_variadic_parameters_validate_each_value ... ok
+test process_vm_maps_child_signal_or_exception_exit ... ok
+test process_vm_error_identities_and_closed_alias_are_stable ... ok
+test process_vm_wait_caches_exit_code_and_preserves_kind ... ok
+
+test result: ok. 13 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 3.22s
+
+     Running tests\20e_archive_wiring.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20e_archive_wiring-1bd8366b7c2dd8c6.exe)
+
+running 11 tests
+test archive_error_messages_render_in_both_catalogs ... ok
+test builder_requires_metadata_and_rejects_official_module_objects ... ok
+test every_missing_capability_is_rejected_before_execution ... ok
+test review_builder_rejects_relabelled_payload_language ... ok
+test archive_protocol_passes_capabilities_to_preflight ... ok
+test incompatible_standard_library_is_rejected_before_execution ... ok
+test builder_derives_requirements_and_keeps_official_objects_external ... ok
+test unknown_request_capabilities_are_validation_errors ... ok
+test runtime_keeps_the_same_request_capabilities ... ok
+test review_protocol_checks_context_before_corrupt_payload ... ok
+test review_protocol_context_precedes_diagnostic_start ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests\20f_container_parameters.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20f_container_parameters-f231ff3325984a93.exe)
+
+running 10 tests
+test generic_recursive_call_keeps_rigid_signature ... ok
+test function_set_annotations_reject_unhashable_members ... ok
+test local_generic_set_function_has_multiple_instances ... ok
+test local_generic_scalar_function_has_multiple_instances ... ok
+test rigid_type_parameter_condition_has_stable_diagnostic ... ok
+test rigid_type_parameter_assignment_has_stable_diagnostic ... ok
+test rigid_type_parameter_return_has_stable_diagnostic ... ok
+test rigid_type_parameter_use_has_stable_diagnostic ... ok
+test official_set_module_supports_alias_and_empty_set ... ok
+test archive_closure_records_official_set_module ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.01s
+
+     Running tests\20g_set_mutation.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20g_set_mutation-37c503406b0ce70d.exe)
+
+running 7 tests
+test native_set_snapshot_nonlocal_exit_is_lowerable ... ok
+test add_rejects_unhashable_element ... ok
+test native_alias_calls_lower_to_canonical_functions ... ok
+test mutation_and_readonly_wrappers_observe_shared_ordered_set ... ok
+test remove_missing_element_is_catchable ... ok
+test remove_missing_element_keeps_stable_uncaught_code ... ok
+test set_iteration_uses_snapshot ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.94s
+
+     Running tests\20h_set_methods.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20h_set_methods-485f7df764b5ef49.exe)
+
+running 10 tests
+test method_diagnostics_are_stable ... ok
+test default_values_can_call_set_methods ... ok
+test method_linking_isolated_from_user_function_names ... ok
+test external_standard_library_methods_use_module_loader ... ok
+test explicit_set_import_and_user_method_name_remain_isolated ... ok
+test method_receiver_is_evaluated_once ... ok
+test table_methods_do_not_expose_set_free_functions ... ok
+test methods_match_set_module_semantics ... ok
+test table_method_named_add_remains_executable ... ok
+test native_lowering_supports_set_methods_and_chains ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.31s
+
+     Running tests\20i_indexing_and_text.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20i_indexing_and_text-5dde3f23795cdd19.exe)
+
+running 13 tests
+test expression_indices_can_call_index_producers ... ok
+test array_push_invalidates_table_member_array_length ... ok
+test expression_indices_cover_tuple_and_dict_column ... ok
+test array_annotations_and_push_preserve_shared_order ... ok
+test expression_indices_use_codepoints_and_array_positions ... ok
+test array_push_invalidates_fixed_length_after_direct_and_helper_calls ... ok
+test readonly_array_function_keeps_static_bounds_diagnostic ... ok
+test generic_array_annotations_infer_element_types ... ok
+test indexing_boundaries_keep_static_and_runtime_diagnostics ... ok
+test set_methods_inside_index_expressions_are_linked ... ok
+test native_lowering_accepts_expression_indices_and_array_push ... ok
+test text_find_slice_and_split_keep_frozen_boundaries ... ok
+test text_error_codes_are_stable ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.46s
+
+     Running tests\20j_dynamic_dict_keys.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20j_dynamic_dict_keys-b48c7f8aa62bf811.exe)
+
+running 7 tests
+test dict_dynamic_key_type_errors_are_static ... ok
+test missing_dynamic_key_is_runtime_015 ... ok
+test dict_column_without_key_name_uses_integer_position ... ok
+test dict_column_distinguishes_static_keys_dynamic_keys_and_positions ... ok
+test dict_table_uses_static_key_priority_then_dynamic_string_keys ... ok
+test missing_static_string_key_remains_a_type_error ... ok
+test native_lowering_accepts_dynamic_dictionary_keys ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\20k_dict_write.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20k_dict_write-f8bd53ed8f062056.exe)
+
+running 9 tests
+test generic_open_dict_annotation_infers_value_type ... ok
+test dynamic_dict_table_and_column_writes_update_aliases ... ok
+test dynamic_dict_write_errors_keep_runtime_codes ... ok
+test static_missing_dict_write_remains_type_error ... ok
+test open_dict_annotation_accepts_fixed_shape_values ... ok
+test native_lowering_emits_dynamic_dict_write_and_queries ... ok
+test stdlib_dict_queries_share_mutable_handles_and_order ... ok
+test dict_remove_invalidates_fixed_key_shape ... ok
+test stdlib_dict_remove_missing_key_is_015 ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.06s
+
+     Running tests\20l_dict_methods.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20l_dict_methods-a9967c99fd5809e2.exe)
+
+running 10 tests
+test dictionary_method_boundary_diagnostics_are_stable ... ok
+test dictionary_methods_preserve_aliases_and_missing_key_015 ... ok
+test dictionary_methods_link_without_explicit_import ... ok
+test modified_array_literal_bounds_use_runtime_017 ... ok
+test member_array_root_write_is_supported ... ok
+test external_standard_library_methods_use_module_loader ... ok
+test transitive_array_mutation_invalidates_fixed_length ... ok
+test native_lowering_links_dictionary_method_functions ... ok
+test dictionary_methods_match_free_functions_on_table_and_column ... ok
+test private_dictionary_actions_are_internal_and_lowered ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.55s
+
+     Running tests\20m_text_and_path.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20m_text_and_path-727893b671815ccf.exe)
+
+running 6 tests
+test text_path_candidates_match_native_golden_outputs ... ignored, 需要受控 LLVM、Runtime staticlib 和目标三元组；维护回归三平台执行
+test text_path_interfaces_match_native_golden_outputs ... ignored, 需要受控 LLVM、Runtime staticlib 和目标三元组；维护回归三平台执行
+test text_path_interfaces_require_loader_and_native_function_binding ... ok
+test text_path_interfaces_have_vm_golden_outputs ... ok
+test text_path_candidates_have_vm_golden_outputs ... ok
+test text_path_archives_replay_with_exact_host_module_requirements ... ok
+
+test result: ok. 4 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 13.21s
+
+     Running tests\20o_b1_imp_contract.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b1_imp_contract-5a60a6bf5c39a2f1.exe)
+
+running 9 tests
+test every_implemented_module_is_in_the_active_contract_matrix ... ok
+test product_tutorials_embed_the_executed_sources_and_match_registry ... ok
+test products_keep_the_official_namespace_out_of_ordinary_packages ... ok
+test colliding_public_names_keep_their_own_module_implementations ... ok
+test every_public_function_requires_its_real_implementation ... ok
+test public_calls_enforce_every_frozen_parameter_and_require_imports ... ok
+test products_execute_and_export_only_the_frozen_names has been running for over 60 seconds
+test products_replay_from_real_archives_without_bundled_library_bodies has been running for over 60 seconds
+test products_execute_and_export_only_the_frozen_names ... ok
+test products_replay_from_real_archives_without_bundled_library_bodies ... ok
+test public_std_aliases_execute_through_the_official_loader has been running for over 60 seconds
+test public_std_aliases_execute_through_the_official_loader ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 83.83s
+
+     Running tests\20o_b1_imp_resources.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b1_imp_resources-3d1c41c9c64fb5da.exe)
+
+running 18 tests
+test base64_standard_accepts_the_frozen_maximum ... ok
+test base64_url_safe_accepts_the_frozen_maximum ... ok
+test csv_accepts_the_maximum_ascii_record ... ok
+test csv_accepts_the_maximum_field_count ... ok
+test csv_accepts_the_maximum_unicode_record ... ok
+test csv_accepts_the_maximum_quoted_record ... ok
+test base64_checks_actual_decoded_size_after_the_last_quartet ... ok
+test csv_parse_budget_and_syntax_priority_is_positional ... ok
+test fmt_checks_both_radix_bounds_and_padding_argument_domains ... ok
+test csv_accepts_the_maximum_multiline_record ... ok
+test url_decoding_reaches_the_unicode_result_budget ... ok
+test url_decoding_resets_utf8_state_between_escaped_codepoints ... ok
+test hex_accepts_the_frozen_maximum_input_and_output ... ok
+test csv_rejects_every_format_budget_dimension ... ok
+test url_decoding_reaches_the_ascii_result_budget ... ok
+test url_encoding_reaches_the_unicode_output_budget ... ok
+test url_encoding_reaches_the_ascii_output_budget ... ok
+test url_limits_and_mixed_error_order_are_streamed ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 140.27s
+
+     Running tests\20o_b1_imp_vm_performance.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b1_imp_vm_performance-93dff8f507db39d2.exe)
+
+running 5 tests
+test calibration::tests::quantized_clock_converges_without_an_oversized_batch ... ok
+test run_directory::tests::old_native_programs_are_never_reused_by_a_new_run ... ok
+test source_snapshot::tests::loader_override_and_source_changes_cannot_mislabel_measurements ... ok
+test fmt_input_scaling_respects_the_frozen_vm_budget ... ok
+test fmt_maximum_input_has_bounded_vm_call_time ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 42.48s
+
+     Running tests\20o_b1_probe.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b1_probe-92e1d5d12973b4b8.exe)
+
+running 11 tests
+test b1_capabilities_match_native_golden_outputs ... ignored, 需要显式 LLVM/MSVC 或平台链接器、Runtime staticlib；维护回归三平台精确执行并校验一项通过
+test b1_tutorial_status_allows_verified_and_rejects_metadata_spoofing ... ok
+test b1_csv_nested_signature_records_frontend_boundary ... ok
+test b1_tutorials_embed_the_executed_sources ... ok
+test error_code_portable_artifacts_require_current_runtime ... ok
+test error_code_rejects_static_arguments_and_preserves_fatal_boundaries ... ok
+test b1_error_identities_and_member_access_boundary_are_recorded ... ok
+test error_code_vm_allocation_failure_preserves_source_and_recovers ... ok
+test error_code_vm_read_then_raise_preserves_structured_identity ... ok
+test error_code_llvm_copies_the_view_before_releasing_the_input ... ok
+test b1_capabilities_have_vm_golden_outputs has been running for over 60 seconds
+test b1_capabilities_have_vm_golden_outputs ... ok
+
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 88.28s
+
+     Running tests\20o_b2_a1_identity.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b2_a1_identity-bbbe64a8ade7b8b7.exe)
+
+running 2 tests
+test a1_numeric_values_and_errors_match_native_golden_outputs ... ignored, 需要本次新构建的Runtime及显式LLVM/平台链接器；既有原生workspace入口可执行
+test a1_numeric_values_and_errors_have_vm_golden_outputs ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests\20o_b2_a_contract.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b2_a_contract-74360c16c8f41206.exe)
+
+running 13 tests
+test a5_assignments_and_constants_keep_the_declared_numeric_value ... ok
+test a5_conversion_language_preserves_values_and_promotion ... ok
+test a5_decimal_language_preserves_frozen_scales ... ok
+test a5_integer_language_uses_exact_runtime_arithmetic ... ok
+test a5_encoded_numeric_matrix_matches_all_existing_carriers ... ok
+test a5_complete_numeric_language_matrix_matches_independent_golden ... ok
+test a5_language_values_match_native_golden_outputs ... ignored, 需要本任务新Runtime与显式LLVM/平台链接器
+test a5_portable_numeric_payloads_cannot_bypass_admission ... ok
+test a5_preserves_existing_function_type_boundaries ... ok
+test a5_static_invalid_numeric_combinations_remain_rejected ... ok
+test a5_language_errors_remain_recoverable_and_observable ... ok
+test a5_language_carriers_preserve_numeric_types_and_values ... ok
+test a5_complete_vm_entry_covers_resources_and_portable_replay ... ok
+
+test result: ok. 12 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 8.86s
+
+     Running tests\20o_b2_a_performance_protocol.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b2_a_performance_protocol-6de3882d1761b45b.exe)
+
+running 3 tests
+test calibration_stop_conditions_follow_the_frozen_protocol ... ok
+test quantized_clock_calibration_retains_real_batches ... ok
+test invalid_clock_samples_are_rejected ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\20o_b2_a_resources.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b2_a_resources-789b3998b6549d02.exe)
+
+running 8 tests
+test controlled_allocation_failure_is_distinct_from_numeric_limit ... ok
+test abi_semantic_failures_preserve_owned_out_and_inputs ... ok
+test mixed_error_priority_is_stable_at_the_language_entry ... ok
+test admission_boundaries_and_error_order_preserve_inputs ... ok
+test successful_abi_replacement_releases_old_out_without_clearing_pending ... ok
+test quotient_remainder_and_nontermination_have_independent_budgets ... ok
+test actual_results_accept_strong_cancellation_and_balanced_products ... ok
+test power_and_conversion_limits_do_not_expand_unbounded_values ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests\20o_b2_b2_divide.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b2_b2_divide-25ce90727f7308f9.exe)
+
+running 3 tests
+test lfloat_divide_matches_native_golden_outputs ... ignored, 需要本任务新Runtime和显式LLVM工具链；维护原生精确入口调用相同套件
+test lfloat_divide_requires_the_frozen_public_contract ... ok
+test lfloat_divide_has_vm_golden_outputs ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.87s
+
+     Running tests\20o_b2_b3_wrapper.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b2_b3_wrapper-3c50ea9a553c49d7.exe)
+
+running 8 tests
+test source_contract_aliases_share_identity_and_reject_package_override ... ok
+test source_contract_exports_exactly_fifteen_frozen_forwarders ... ok
+test source_contract_rejects_extra_exports_and_wrong_forwarders ... ok
+test source_contract_removing_each_wrapper_invalidates_exports ... ok
+test source_contract_tutorial_tracks_registry_and_requires_verified_evidence ... ok
+test existing_hex_import_keeps_native_lowering ... ok
+test unimported_module_cannot_pull_cmath_into_hex ... ok
+test b4_handoff_executes_all_thirty_language_imports ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 26.73s
+
+     Running tests\20o_b2_b4_cmath_boundary.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b2_b4_cmath_boundary-33adcf673a8f05d9.exe)
+
+running 4 tests
+test unknown_official_imports_fail_without_output_or_temporary_residue ... ok
+test unrelated_and_project_cmath_modules_keep_their_existing_boundaries ... ok
+test child_executes_cmath_alias_imports_and_calls ... ok
+test archive_executes_cmath_without_source_or_bundled_official_bodies ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 48.80s
+
+     Running tests\20o_b2_b4_cmath_library.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b2_b4_cmath_library-d7c818d0ba332969.exe)
+
+running 6 tests
+test cmath_library_matches_native_o0_o3 ... ignored, B4-4需要独立冷构建Runtime和显式LLVM工具链；固定任务精确执行
+test imported_signatures_reject_invalid_types_and_argument_shapes ... ok
+test child_float_values_and_text_survive_portable_replay ... ok
+test imported_domain_and_overflow_errors_preserve_numeric_identity ... ok
+test aliases_replay_from_xiaoc_and_xar_after_application_source_removal ... ok
+test native_module_removal_cannot_reuse_preloaded_function_bindings ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 23.62s
+
+     Running tests\20o_b2_b4_cmath_llvm.rs (D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1b/target\debug\deps\20o_b2_b4_cmath_llvm-9090e196891d3a92.exe)
+
+running 5 tests
+test native_cmath_static_dynamic_o0_o3_and_shared_pow ... ignored, 需要本任务全新Runtime和显式clang/llvm-as；B4-3独立取证精确执行
+test static_scalar_calls_keep_runtime_link_and_explicit_observation ... ok
+test float_power_uses_runtime_and_sfloat_keeps_existing_intrinsic ... ok
+test historical_float_power_diff_is_bound_to_formal_cmath_vectors ... ok
+test both_lowerings_use_fifteen_shared_abi_symbols_and_current_version ... FAILED
+
+failures:
+
+---- both_lowerings_use_fifteen_shared_abi_symbols_and_current_version stdout ----
+
+thread 'both_lowerings_use_fifteen_shared_abi_symbols_and_current_version' (39000) panicked at crates\xiao-driver\tests\20o_b2_b4_cmath_llvm.rs:73:5:
+assertion `left == right` failed
+  left: 27
+ right: 26
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    both_lowerings_use_fifteen_shared_abi_symbols_and_current_version
+
+test result: FAILED. 3 passed; 1 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b2_b4_cmath_llvm`
+exit=101

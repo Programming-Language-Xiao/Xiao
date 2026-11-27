@@ -1,6 +1,6 @@
 # 20O-B3. 简单宿主库实施规划
 
-> **当前进度（2026-11-27）**　B3-0A～F 已冻结，time、args/cli 与 fs 已完成内部收口。B3-4 入口产品为 `3506455e`，ABI 1.20、生成器 26、标准库接口 1。该产品已回验三平台 fs，Windows 六份产物达到 COFF `Complete`。B3-4A/B（env intrinsic 60～62 与 Runtime 核心）已实施，C～E 尚未完成。教程和 registry 为 `planned`。[B3-3 排他重命名复验](assets/20o-b3/entry-20261126-b3-3-rename-fix/README.md) · [新产品复验](assets/22d-fix2/entry-20261126/README.md) · [B3-4A/B 实施证据](assets/20o-b3/entry-20261127-b3-4/REPORT.md)
+> **当前进度（2026-11-27）**　B3-0A～F 已冻结，time、args/cli 与 fs 已完成内部收口。B3-4 入口产品为 `3506455e`；B3-4A/B 保持 ABI 1.20、生成器 26、接口 1，B3-4C 按 B3-4-GEN 升至生成器 27。B3-4A～C 已实施，D/E 尚未完成。教程和 registry 为 `planned`。[B3-3 排他重命名复验](assets/20o-b3/entry-20261126-b3-3-rename-fix/README.md) · [新产品复验](assets/22d-fix2/entry-20261126/README.md) · [B3-4A/B 证据](assets/20o-b3/entry-20261127-b3-4/REPORT.md) · [B3-4C 证据](assets/20o-b3/entry-20261127-b3-4/REPORT-1B.md)
 > **Windows 产物政策（2026-11-22）**　自 B3 起，所有 Windows 公共/发布产物必须产品级 COFF `Complete`，且声明组件与观察组件一致；B2-C 的同链接 10 份候选只是历史例外，不得继承。`UnverifiedCoffExports`、同链接映射或仅导出表检查不能替代。
 > B3 涉及六个模块、五个实施工作流：`time`（UTC + sleep）、`args`、`cli`、`fs`、`env`、`log`。
 > B0 只确认了部分方向；精确签名、模块归属、能力/错误、资源/性能及版本要求必须在 B3-0 冻结。

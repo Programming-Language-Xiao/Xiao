@@ -375,6 +375,7 @@ fn expression_uses_runtime(expression: &IrExpression) -> bool {
                                 | xiao_intrinsics::IntrinsicKind::Time
                                 | xiao_intrinsics::IntrinsicKind::Args
                                 | xiao_intrinsics::IntrinsicKind::Fs
+                                | xiao_intrinsics::IntrinsicKind::Env
                         )
                     });
                 intrinsic_requires_runtime
