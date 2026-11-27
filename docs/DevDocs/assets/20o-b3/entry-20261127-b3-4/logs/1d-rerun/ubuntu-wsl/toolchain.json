@@ -1,0 +1,169 @@
+{
+  "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+  "machine": "x86_64",
+  "target": "x86_64-unknown-linux-gnu",
+  "tools": {
+    "rustc": {
+      "file": {
+        "path": "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "bytes": 646032,
+        "sha256": "ba4b837efb6612dfa8d941c5a72b8a50d1d03a0f36216743b173949aa8d9eb75"
+      },
+      "version_exit": 0,
+      "version": [
+        "rustc 1.96.0 (ac68faa20 2026-05-25)",
+        "binary: rustc",
+        "commit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96",
+        "commit-date: 2026-05-25",
+        "host: x86_64-unknown-linux-gnu",
+        "release: 1.96.0",
+        "LLVM version: 22.1.2"
+      ]
+    },
+    "cargo": {
+      "file": {
+        "path": "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "bytes": 42865872,
+        "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f"
+      },
+      "version_exit": 0,
+      "version": [
+        "cargo 1.96.0 (30a34c682 2026-05-25)"
+      ]
+    },
+    "clang": {
+      "file": {
+        "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/llvm-22/bin/clang",
+        "bytes": 137752,
+        "sha256": "97b50a720cf5b662ebd3f5e7f64f995dc5f13999132124faaef37d7ddd6afbba"
+      },
+      "version_exit": 0,
+      "version": [
+        "Ubuntu clang version 22.1.2 (1ubuntu1)",
+        "Target: x86_64-pc-linux-gnu",
+        "Thread model: posix",
+        "InstalledDir: /home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/llvm-22/bin"
+      ]
+    },
+    "llvm-as": {
+      "file": {
+        "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/llvm-22/bin/llvm-as",
+        "bytes": 27040,
+        "sha256": "9dca18f3b1b9466d4469671dae408dd775c1b5a7f60629f34bf177cb047a6385"
+      },
+      "version_exit": 0,
+      "version": [
+        "Ubuntu LLVM version 22.1.2",
+        "  Optimized build."
+      ]
+    },
+    "llc": {
+      "file": {
+        "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/llvm-22/bin/llc",
+        "bytes": 192488,
+        "sha256": "b79b986d97e50d6b805666c630cb0a85e20988cd163134f1ed5e7a2d783c35ad"
+      },
+      "version_exit": 0,
+      "version": [
+        "Ubuntu LLVM version 22.1.2",
+        "  Optimized build.",
+        "  Default target: x86_64-pc-linux-gnu",
+        "  Host CPU: znver5"
+      ]
+    },
+    "link": {
+      "file": {
+        "path": "/usr/bin/x86_64-linux-gnu-ld.bfd",
+        "bytes": 1890472,
+        "sha256": "97f48d93b8b076a92d2809ec29dcb17f0f37c8827358f832255e2ed22fef6075"
+      },
+      "version_exit": 0,
+      "version": [
+        "GNU ld (GNU Binutils for Ubuntu) 2.46",
+        "Copyright (C) 2026 Free Software Foundation, Inc.",
+        "This program is free software; you may redistribute it under the terms of",
+        "the GNU General Public License version 3 or (at your option) a later version."
+      ]
+    },
+    "cc": {
+      "file": {
+        "path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+        "bytes": 1305304,
+        "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88"
+      },
+      "version_exit": 0,
+      "version": [
+        "cc (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "Copyright (C) 2025 Free Software Foundation, Inc.",
+        "This is free software; see the source for copying conditions.  There is NO",
+        "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
+      ]
+    },
+    "lscpu": {
+      "file": {
+        "path": "/usr/bin/lscpu",
+        "bytes": 117208,
+        "sha256": "d388925b460106dbfb52b35c78d2d14a382231b99debcae8ad79002782f06f58"
+      },
+      "version_exit": 0,
+      "version": [
+        "Architecture:                            x86_64",
+        "CPU op-mode(s):                          32-bit, 64-bit",
+        "Address sizes:                           48 bits physical, 48 bits virtual",
+        "Byte Order:                              Little Endian"
+      ]
+    },
+    "uname": {
+      "file": {
+        "path": "/usr/lib/cargo/bin/coreutils/uname",
+        "bytes": 11807104,
+        "sha256": "f84e76ea4da1e0c4e92254bd0d7dccdabe2c8b3098e734f27997dae3ee5d8e02"
+      },
+      "version_exit": 0,
+      "version": [
+        "Linux xiaoCZX 6.6.114.1-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Mon Dec  1 20:46:23 UTC 2025 x86_64 GNU/Linux"
+      ]
+    },
+    "os-release": {
+      "file": {
+        "path": "/usr/lib/cargo/bin/coreutils/cat",
+        "bytes": 11807104,
+        "sha256": "f84e76ea4da1e0c4e92254bd0d7dccdabe2c8b3098e734f27997dae3ee5d8e02"
+      },
+      "version_exit": 0,
+      "version": [
+        "PRETTY_NAME=\"Ubuntu 26.04 LTS\"",
+        "NAME=\"Ubuntu\"",
+        "VERSION_ID=\"26.04\"",
+        "VERSION=\"26.04 (Resolute Raccoon)\"",
+        "VERSION_CODENAME=resolute",
+        "ID=ubuntu",
+        "ID_LIKE=debian",
+        "HOME_URL=\"https://www.ubuntu.com/\"",
+        "SUPPORT_URL=\"https://help.ubuntu.com/\"",
+        "BUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"",
+        "PRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"",
+        "UBUNTU_CODENAME=resolute",
+        "LOGO=ubuntu-logo"
+      ]
+    }
+  },
+  "windows_sdk": null,
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/target",
+    "CARGO_BUILD_TARGET": "x86_64-unknown-linux-gnu",
+    "CARGO_TERM_COLOR": "never",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_BUILD_INCREMENTAL": "false",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "XIAO_TARGET_TRIPLE": "x86_64-unknown-linux-gnu",
+    "XIAO_CLANG": "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/llvm-22/bin/clang",
+    "XIAO_LLVM_AS": "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/llvm-22/bin/llvm-as",
+    "XIAO_LLC": "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/llvm-22/bin/llc",
+    "XIAO_RUNTIME_LIBRARY": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/fixed-runtime/libxiao_runtime.a",
+    "XIAO_HOME": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/xiao-home",
+    "XIAO_STDLIB_ROOT": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/src/stdlib",
+    "TMPDIR": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/tmp",
+    "LD_LIBRARY_PATH": "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/x86_64-linux-gnu"
+  }
+}

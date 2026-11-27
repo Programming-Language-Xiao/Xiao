@@ -1,0 +1,51 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "build",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-runtime",
+    "--release",
+    "--message-format=json",
+    "-vv"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2",
+  "started_at_utc": "2026-11-27T17:57:26.248767+00:00",
+  "elapsed_seconds": 63.14000000001397,
+  "exit": 0,
+  "environment": {
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target",
+    "CARGO_BUILD_TARGET": "x86_64-pc-windows-msvc",
+    "CARGO_TERM_COLOR": "never",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_BUILD_INCREMENTAL": "false",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\fixed-runtime\\xiao_runtime.lib",
+    "XIAO_HOME": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\xiao-home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2\\stdlib",
+    "TEMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\tmp",
+    "TMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\tmp",
+    "LIB": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\ucrt\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\um\\x64",
+    "INCLUDE": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\include;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\ucrt;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\shared;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\um",
+    "VCToolsInstallDir": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\",
+    "WindowsSdkDir": "D:\\Windows Kits\\10\\",
+    "WindowsSDKVersion": "10.0.26100.0\\"
+  },
+  "stdout": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\runtime-build.stdout.log",
+    "bytes": 116754,
+    "sha256": "0f9f27e6483cc3da091b0ed0ce97d92fbcc9200bdca14c48ce3b8b5ce7e50f63"
+  },
+  "stderr": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\runtime-build.stderr.log",
+    "bytes": 348599,
+    "sha256": "cb7495ce02f6c7c49a83aa362df8ae5513d7a7a0b6777175549a8d15f4d6ae64"
+  }
+}

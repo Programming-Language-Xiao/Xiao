@@ -1,0 +1,63 @@
+Get:1 http://archive.ubuntu.com/ubuntu resolute/universe amd64 libz3-4 amd64 4.13.3-1build1 [6887 kB]
+Fetched 6887 kB in 3s (2016 kB/s)
+libz3-4	4.13.3-1build1
+40390573227a6965210a477554d6c9aa0ab51edcc0daad51db9352a6b9bfdeb4  ./libz3-4_4.13.3-1build1_amd64.deb
+	linux-vdso.so.1 (0x00007ffc8b3e4000)
+	libclang-cpp.so.22.1 => /home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/x86_64-linux-gnu/libclang-cpp.so.22.1 (0x000071a043a00000)
+	libLLVM.so.22.1 => /home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/x86_64-linux-gnu/libLLVM.so.22.1 (0x000071a03aa00000)
+	libstdc++.so.6 => /usr/lib/x86_64-linux-gnu/libstdc++.so.6 (0x000071a03a600000)
+	libm.so.6 => /usr/lib/x86_64-linux-gnu/libm.so.6 (0x000071a04764d000)
+	libgcc_s.so.1 => /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 (0x000071a04761f000)
+	libc.so.6 => /usr/lib/x86_64-linux-gnu/libc.so.6 (0x000071a03a200000)
+	/lib64/ld-linux-x86-64.so.2 (0x000071a0477ae000)
+	libffi.so.8 => /usr/lib/x86_64-linux-gnu/libffi.so.8 (0x000071a04760c000)
+	libedit.so.2 => /usr/lib/x86_64-linux-gnu/libedit.so.2 (0x000071a0475d2000)
+	libz3.so.4 => /home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/x86_64-linux-gnu/libz3.so.4 (0x000071a038e00000)
+	libz.so.1 => /usr/lib/x86_64-linux-gnu/libz.so.1 (0x000071a0475b4000)
+	libzstd.so.1 => /usr/lib/x86_64-linux-gnu/libzstd.so.1 (0x000071a03a93d000)
+	libxml2.so.16 => /usr/lib/x86_64-linux-gnu/libxml2.so.16 (0x000071a03a49d000)
+	libtinfo.so.6 => /usr/lib/x86_64-linux-gnu/libtinfo.so.6 (0x000071a0439cb000)
+	libbsd.so.0 => /usr/lib/x86_64-linux-gnu/libbsd.so.0 (0x000071a0439b5000)
+	libmd.so.0 => /usr/lib/x86_64-linux-gnu/libmd.so.0 (0x000071a0475a3000)
+Ubuntu clang version 22.1.2 (1ubuntu1)
+Target: x86_64-pc-linux-gnu
+Thread model: posix
+InstalledDir: /home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/llvm-22/bin
+	linux-vdso.so.1 (0x00007ffd1548d000)
+	libLLVM.so.22.1 => /home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/x86_64-linux-gnu/libLLVM.so.22.1 (0x00007122ca600000)
+	libstdc++.so.6 => /usr/lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007122ca200000)
+	libm.so.6 => /usr/lib/x86_64-linux-gnu/libm.so.6 (0x00007122d357e000)
+	libgcc_s.so.1 => /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007122ca5d2000)
+	libc.so.6 => /usr/lib/x86_64-linux-gnu/libc.so.6 (0x00007122c9e00000)
+	libffi.so.8 => /usr/lib/x86_64-linux-gnu/libffi.so.8 (0x00007122d356b000)
+	libedit.so.2 => /usr/lib/x86_64-linux-gnu/libedit.so.2 (0x00007122ca598000)
+	libz3.so.4 => /home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/x86_64-linux-gnu/libz3.so.4 (0x00007122c8a00000)
+	libz.so.1 => /usr/lib/x86_64-linux-gnu/libz.so.1 (0x00007122ca57a000)
+	libzstd.so.1 => /usr/lib/x86_64-linux-gnu/libzstd.so.1 (0x00007122ca4b7000)
+	libxml2.so.16 => /usr/lib/x86_64-linux-gnu/libxml2.so.16 (0x00007122ca09d000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007122d36c4000)
+	libtinfo.so.6 => /usr/lib/x86_64-linux-gnu/libtinfo.so.6 (0x00007122ca068000)
+	libbsd.so.0 => /usr/lib/x86_64-linux-gnu/libbsd.so.0 (0x00007122ca4a1000)
+	libmd.so.0 => /usr/lib/x86_64-linux-gnu/libmd.so.0 (0x00007122ca059000)
+Ubuntu LLVM version 22.1.2
+  Optimized build.
+	linux-vdso.so.1 (0x00007fffa1b01000)
+	libLLVM.so.22.1 => /home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/x86_64-linux-gnu/libLLVM.so.22.1 (0x00007c2b7f200000)
+	libstdc++.so.6 => /usr/lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007c2b7ee00000)
+	libm.so.6 => /usr/lib/x86_64-linux-gnu/libm.so.6 (0x00007c2b7f0da000)
+	libgcc_s.so.1 => /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007c2b881b4000)
+	libc.so.6 => /usr/lib/x86_64-linux-gnu/libc.so.6 (0x00007c2b7ea00000)
+	libffi.so.8 => /usr/lib/x86_64-linux-gnu/libffi.so.8 (0x00007c2b881a1000)
+	libedit.so.2 => /usr/lib/x86_64-linux-gnu/libedit.so.2 (0x00007c2b7f0a0000)
+	libz3.so.4 => /home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/x86_64-linux-gnu/libz3.so.4 (0x00007c2b7d600000)
+	libz.so.1 => /usr/lib/x86_64-linux-gnu/libz.so.1 (0x00007c2b88183000)
+	libzstd.so.1 => /usr/lib/x86_64-linux-gnu/libzstd.so.1 (0x00007c2b7ed3d000)
+	libxml2.so.16 => /usr/lib/x86_64-linux-gnu/libxml2.so.16 (0x00007c2b7e89d000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007c2b8822c000)
+	libtinfo.so.6 => /usr/lib/x86_64-linux-gnu/libtinfo.so.6 (0x00007c2b7ed08000)
+	libbsd.so.0 => /usr/lib/x86_64-linux-gnu/libbsd.so.0 (0x00007c2b8816b000)
+	libmd.so.0 => /usr/lib/x86_64-linux-gnu/libmd.so.0 (0x00007c2b7ecf9000)
+Ubuntu LLVM version 22.1.2
+  Optimized build.
+  Default target: x86_64-pc-linux-gnu
+  Host CPU: znver5

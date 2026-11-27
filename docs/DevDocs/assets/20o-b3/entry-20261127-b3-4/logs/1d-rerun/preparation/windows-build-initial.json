@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "D:/Programs/Python/Python312/python.exe",
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\run_perf.py",
+    "build"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2",
+  "exit": 1,
+  "cargo_runtime_build_exit": 0,
+  "stage": "parse_cargo_compiler_artifact",
+  "diagnostic": "json.decoder.JSONDecodeError: Expecting value: line 1 column 2 (char 1)",
+  "cause": "Cargo -vv wrote build script text alongside JSON records.",
+  "resolution": "Read only JSON event lines and retain the initial Runtime build receipt.",
+  "formal_samples_emitted": 0
+}

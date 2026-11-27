@@ -1,0 +1,10 @@
+{
+  "commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "platform": "macOS",
+  "target": "aarch64-apple-darwin",
+  "status": "unverifiable",
+  "formal_samples": 0,
+  "combinations": 0,
+  "reason": "当前本机为 Windows，Ubuntu WSL 仅提供 Linux 目标。本批未取得 macOS arm64 运行回执。"
+}

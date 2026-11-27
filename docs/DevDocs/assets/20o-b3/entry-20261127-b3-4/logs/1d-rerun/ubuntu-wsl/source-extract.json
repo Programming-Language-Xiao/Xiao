@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "tar",
+    "-xf",
+    "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4e-rerun2/source-lf.tar",
+    "-C",
+    "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/src"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf",
+  "started_at_utc": "2026-11-27T18:02:17.861307+00:00",
+  "elapsed_seconds": 33.33158479598933,
+  "exit": 0,
+  "environment": null,
+  "stdout": {
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/logs/source-extract.stdout.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr": {
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/logs/source-extract.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

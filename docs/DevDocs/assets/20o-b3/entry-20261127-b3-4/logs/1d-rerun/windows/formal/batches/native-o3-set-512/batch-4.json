@@ -1,0 +1,148 @@
+{
+  "argv": [
+    {
+      "Windows": [
+        115,
+        101,
+        116
+      ]
+    }
+  ],
+  "backend": "native-o3",
+  "baseline_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "batch": 4,
+  "calibrated": true,
+  "case": "set",
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\tasks\\native-o3-set-512\\batch-4",
+  "executable": {
+    "bytes": 1443840,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement-o3.exe",
+    "sha256": "0916a53953b657654a44c128fb0748c35df9477a830d0223f473002f28c7ef36"
+  },
+  "formal_sample": {
+    "memory": {
+      "current_bytes": 4800512,
+      "current_raw": 4800512,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 4857856,
+      "peak_raw": 4857856,
+      "unit": "bytes"
+    },
+    "repeats": 1536,
+    "seconds": 0.1867674
+  },
+  "identity_sha256": "88de1eee6155ebc9e27b78de3cb86c7f74faf065153005426b15082be1fd9e82",
+  "input": {
+    "json_bytes": 29185,
+    "logical_bytes": 25088,
+    "pairs": 512,
+    "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+    "value_bytes": 32
+  },
+  "optimization": 3,
+  "probe": false,
+  "process": {
+    "baseline": {
+      "current_bytes": 3854336,
+      "current_raw": 3854336,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 3854336,
+      "peak_raw": 3854336,
+      "unit": "bytes"
+    },
+    "calibration": [
+      {
+        "memory": {
+          "current_bytes": 4427776,
+          "current_raw": 4427776,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4468736,
+          "peak_raw": 4468736,
+          "unit": "bytes"
+        },
+        "repeats": 1,
+        "seconds": 0.0002029
+      },
+      {
+        "memory": {
+          "current_bytes": 4673536,
+          "current_raw": 4673536,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4718592,
+          "peak_raw": 4718592,
+          "unit": "bytes"
+        },
+        "repeats": 16,
+        "seconds": 0.0023514
+      },
+      {
+        "memory": {
+          "current_bytes": 4685824,
+          "current_raw": 4685824,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4739072,
+          "peak_raw": 4739072,
+          "unit": "bytes"
+        },
+        "repeats": 256,
+        "seconds": 0.0353352
+      },
+      {
+        "memory": {
+          "current_bytes": 4673536,
+          "current_raw": 4673536,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4780032,
+          "peak_raw": 4780032,
+          "unit": "bytes"
+        },
+        "repeats": 768,
+        "seconds": 0.0919273
+      },
+      {
+        "memory": {
+          "current_bytes": 4800512,
+          "current_raw": 4800512,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4857856,
+          "peak_raw": 4857856,
+          "unit": "bytes"
+        },
+        "repeats": 1536,
+        "seconds": 0.1867674
+      }
+    ],
+    "error": null,
+    "exit": 0,
+    "pid": 25696,
+    "started_unix_ns": "1795803049974986100",
+    "warmup": {
+      "memory": {
+        "current_bytes": 4399104,
+        "current_raw": 4399104,
+        "method": "working-set/peak-working-set",
+        "peak_bytes": 4435968,
+        "peak_raw": 4435968,
+        "unit": "bytes"
+      },
+      "repeats": 1,
+      "seconds": 0.0002399
+    }
+  },
+  "product_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "resident_increment_upper_bytes": 1003520,
+  "runtime_sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a",
+  "schema": 1,
+  "seconds_per_workload": 0.000121593359375,
+  "stderr": {
+    "bytes": 0,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-512\\batch-4.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 1448,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-512\\batch-4.stdout.log",
+    "sha256": "e767a3961f77020e9e630eaa32894ab3115a5ac524965deaef8b42dc86e47cfb"
+  },
+  "target": "x86_64-pc-windows-msvc"
+}

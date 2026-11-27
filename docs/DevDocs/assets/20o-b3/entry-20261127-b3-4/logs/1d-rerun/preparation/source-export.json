@@ -1,0 +1,26 @@
+{
+  "argv": [
+    "cmd.exe",
+    "/c",
+    "git",
+    "archive",
+    "--format=tar",
+    "--output=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\source.tar",
+    "1e42f501af20890157a4ce28d96d451a70fc3e39"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2",
+  "started_at_utc": "2026-11-27T17:56:55.997507+00:00",
+  "elapsed_seconds": 3.6709999999729916,
+  "exit": 0,
+  "environment": null,
+  "stdout": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\source-export.stdout.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\source-export.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

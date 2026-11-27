@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu-26.04",
+    "--cd",
+    "/home/xiaoczx",
+    "--exec",
+    "/bin/bash",
+    "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4e-rerun2/llvm22-setup.sh",
+    "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22"
+  ],
+  "exit": 127,
+  "stdout": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d-rerun\\preparation\\llvm22-setup.stdout.log",
+    "bytes": 2081,
+    "sha256": "104e8ed28596ab4aa92ce6c85cabe3d9163390d83522b09a5e8bc1aa67d797e7"
+  },
+  "stderr": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d-rerun\\preparation\\llvm22-setup.stderr.log",
+    "bytes": 176,
+    "sha256": "5ea8cd692db55146be3afcf4f91ac1ed4d8703760823152f98a2732169f87aae"
+  }
+}

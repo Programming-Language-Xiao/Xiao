@@ -1,0 +1,53 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "run",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--release",
+    "--bin",
+    "b3_env_performance",
+    "--",
+    "--output-dir",
+    "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/logs/formal",
+    "--artifact-dir",
+    "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts",
+    "--identity",
+    "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/logs/performance-identity.json"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/src",
+  "started_at_utc": "2026-11-27T18:12:20.652315+00:00",
+  "elapsed_seconds": 214.42829637500108,
+  "exit": 0,
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/target",
+    "CARGO_BUILD_TARGET": "x86_64-unknown-linux-gnu",
+    "CARGO_TERM_COLOR": "never",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_BUILD_INCREMENTAL": "false",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "XIAO_TARGET_TRIPLE": "x86_64-unknown-linux-gnu",
+    "XIAO_CLANG": "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/llvm-22/bin/clang",
+    "XIAO_LLVM_AS": "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/llvm-22/bin/llvm-as",
+    "XIAO_LLC": "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/llvm-22/bin/llc",
+    "XIAO_RUNTIME_LIBRARY": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/fixed-runtime/libxiao_runtime.a",
+    "XIAO_HOME": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/xiao-home",
+    "XIAO_STDLIB_ROOT": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/src/stdlib",
+    "TMPDIR": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/tmp",
+    "LD_LIBRARY_PATH": "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/x86_64-linux-gnu"
+  },
+  "stdout": {
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/logs/formal.stdout.log",
+    "bytes": 4172,
+    "sha256": "b5b30b29b497031763471934cc1250b338ee444a7e503ef7a58d479c637891df"
+  },
+  "stderr": {
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/logs/formal.stderr.log",
+    "bytes": 379,
+    "sha256": "24c1d42c8c3788a605927d7641057f477937d5637b4aeed72f48eed5c39cf9ee"
+  }
+}

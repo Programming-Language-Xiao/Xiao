@@ -1,0 +1,25 @@
+Get:1 http://archive.ubuntu.com/ubuntu resolute/universe amd64 clang-22 amd64 1:22.1.2-1ubuntu1 [129 kB]
+Get:2 http://archive.ubuntu.com/ubuntu resolute/universe amd64 libclang-common-22-dev amd64 1:22.1.2-1ubuntu1 [771 kB]
+Get:3 http://archive.ubuntu.com/ubuntu resolute/universe amd64 libclang-cpp22 amd64 1:22.1.2-1ubuntu1 [14.2 MB]
+Get:4 http://archive.ubuntu.com/ubuntu resolute/universe amd64 libclang1-22 amd64 1:22.1.2-1ubuntu1 [8545 kB]
+Get:5 http://archive.ubuntu.com/ubuntu resolute/universe amd64 libllvm22 amd64 1:22.1.2-1ubuntu1 [32.1 MB]
+Get:6 http://archive.ubuntu.com/ubuntu resolute/universe amd64 llvm-22 amd64 1:22.1.2-1ubuntu1 [20.7 MB]
+Get:7 http://archive.ubuntu.com/ubuntu resolute/universe amd64 llvm-22-linker-tools amd64 1:22.1.2-1ubuntu1 [1284 kB]
+Get:8 http://archive.ubuntu.com/ubuntu resolute/universe amd64 llvm-22-runtime amd64 1:22.1.2-1ubuntu1 [598 kB]
+Fetched 78.3 MB in 18s (4358 kB/s)
+clang-22	1:22.1.2-1ubuntu1
+libclang-common-22-dev	1:22.1.2-1ubuntu1
+libclang-cpp22	1:22.1.2-1ubuntu1
+libclang1-22	1:22.1.2-1ubuntu1
+libllvm22	1:22.1.2-1ubuntu1
+llvm-22-linker-tools	1:22.1.2-1ubuntu1
+llvm-22-runtime	1:22.1.2-1ubuntu1
+llvm-22	1:22.1.2-1ubuntu1
+88e7c3b717fa0573773316d41df8a81487bc1c4be79173a35a73abd352cbd8b3  ./clang-22_1%3a22.1.2-1ubuntu1_amd64.deb
+8c390c08cd370b4d3b61ef788622be4f4886ee175d4888620a14cd67d40be964  ./libclang-common-22-dev_1%3a22.1.2-1ubuntu1_amd64.deb
+77800834c5544ab887397c93856d371a03e3e899e3eee585621b48cf07e86f50  ./libclang-cpp22_1%3a22.1.2-1ubuntu1_amd64.deb
+6e975db23d9b567384fac8d5e6f78feed2f90be9a5fd38db2db15973ceb1c549  ./libclang1-22_1%3a22.1.2-1ubuntu1_amd64.deb
+c7724b2a524e3bbeadd997beeafccf44349d4b6f704f6af1bf76036223f5b342  ./libllvm22_1%3a22.1.2-1ubuntu1_amd64.deb
+860341378699a29a91fe2e0fe3bb23aaaabba260ff0ccd80ba2bae4e0d1ee597  ./llvm-22-linker-tools_1%3a22.1.2-1ubuntu1_amd64.deb
+7281a2820449b2cd2eb272962a98ffbb1891e51e2c06ef6209b7239dccace850  ./llvm-22-runtime_1%3a22.1.2-1ubuntu1_amd64.deb
+1691c74ab075178ac3ab97fd4d4a61dce980a3bf2c7d825452faf938e69d49a7  ./llvm-22_1%3a22.1.2-1ubuntu1_amd64.deb

@@ -1,0 +1,18 @@
+{
+  "codegen_fingerprint": "xiao-codegen-27-62da669aa5fdf74f",
+  "executable": {
+    "bytes": 9698344,
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/overflow/measurement-o3",
+    "sha256": "14d244ebb43474f032c7f29e1ea7ff7c5ab1e8c43b11009bc8a97adf511407c8"
+  },
+  "llvm": {
+    "bytes": 151178,
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/overflow/measurement-o3.ll",
+    "sha256": "dd423290c889f3b1169d287256a72e3a4374a2d1f89bd60e0c2760c7ef5078ee"
+  },
+  "shim": {
+    "bytes": 7800,
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/env-shim.o",
+    "sha256": "d06128c6bdb1a68df45bf2b734e95c0a21fb4813fcb88d33000f8f9fe8b16831"
+  }
+}

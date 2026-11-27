@@ -1,0 +1,48 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "run",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--release",
+    "--bin",
+    "b3_env_performance",
+    "--",
+    "--help"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/src",
+  "started_at_utc": "2026-11-27T18:06:35.648744+00:00",
+  "elapsed_seconds": 0.51217733300291,
+  "exit": 0,
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/target",
+    "CARGO_BUILD_TARGET": "x86_64-unknown-linux-gnu",
+    "CARGO_TERM_COLOR": "never",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_BUILD_INCREMENTAL": "false",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "XIAO_TARGET_TRIPLE": "x86_64-unknown-linux-gnu",
+    "XIAO_CLANG": "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/llvm-22/bin/clang",
+    "XIAO_LLVM_AS": "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/llvm-22/bin/llvm-as",
+    "XIAO_LLC": "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/llvm-22/bin/llc",
+    "XIAO_RUNTIME_LIBRARY": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/fixed-runtime/libxiao_runtime.a",
+    "XIAO_HOME": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/xiao-home",
+    "XIAO_STDLIB_ROOT": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/src/stdlib",
+    "TMPDIR": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/tmp",
+    "LD_LIBRARY_PATH": "/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/x86_64-linux-gnu"
+  },
+  "stdout": {
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/logs/startup-help.stdout.log",
+    "bytes": 474,
+    "sha256": "1e578e61fa66d44fe1e5092ca3841ab09faaa2cdb7191e36b0d2492984c57db4"
+  },
+  "stderr": {
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/logs/startup-help.stderr.log",
+    "bytes": 179,
+    "sha256": "85e8e6fe8cd71ec37e1a263c3ba7e76114b272edf6ea6a26bd4ffe78fe72abda"
+  }
+}

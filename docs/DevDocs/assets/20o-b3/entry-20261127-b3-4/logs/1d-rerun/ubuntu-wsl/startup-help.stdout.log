@@ -1,0 +1,5 @@
+cargo +1.96.0 run --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --release --bin b3_env_performance -- --output-dir DIR --artifact-dir DIR --identity JSON [--probe]
+
+VM、原生 O0/O3 各五批，两个输出目录均须新建。--probe 只预热并验证负载。
+身份文件须含 baseline_commit、product_commit、target、runtime.sha256 和 toolchain。
+原生工具取 XIAO_TARGET_TRIPLE、XIAO_CLANG、XIAO_LLVM_AS、XIAO_LLC、XIAO_RUNTIME_LIBRARY。

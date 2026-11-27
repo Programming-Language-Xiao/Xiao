@@ -1,0 +1,3263 @@
+{
+  "capabilities": 162,
+  "codegen": 27,
+  "complete": true,
+  "identity": {
+    "baseline_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+    "baseline_tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+    "binary": {
+      "bytes": 11193344,
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+      "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+    },
+    "binary_event": {
+      "executable": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+      "features": [],
+      "filenames": [
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.pdb"
+      ],
+      "fresh": false,
+      "manifest_path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2\\core\\rust\\crates\\xiao-driver\\Cargo.toml",
+      "package_id": "path+file:///D:/project/Xiao/.xiao-orchestrator/worktrees/b3-4e-rerun2/core/rust/crates/xiao-driver#0.1.0",
+      "profile": {
+        "debug_assertions": false,
+        "debuginfo": 0,
+        "opt_level": "3",
+        "overflow_checks": false,
+        "test": false
+      },
+      "reason": "compiler-artifact",
+      "target": {
+        "crate_types": [
+          "bin"
+        ],
+        "doc": true,
+        "doctest": false,
+        "edition": "2024",
+        "kind": [
+          "bin"
+        ],
+        "name": "b3_env_performance",
+        "src_path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2\\core\\rust\\crates\\xiao-driver\\src\\bin\\b3_env_performance.rs",
+        "test": false
+      }
+    },
+    "binary_rustc_invocation": "     Running `set CARGO=C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe&& set CARGO_BIN_NAME=b3_env_performance&& set CARGO_CRATE_NAME=b3_env_performance&& set CARGO_MANIFEST_DIR=D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2\\core\\rust\\crates\\xiao-driver&& set CARGO_MANIFEST_PATH=D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2\\core\\rust\\crates\\xiao-driver\\Cargo.toml&& set CARGO_PKG_AUTHORS=\"\"&& set CARGO_PKG_DESCRIPTION=\"Xiao compiler and runtime driver interfaces\"&& set CARGO_PKG_HOMEPAGE=\"\"&& set CARGO_PKG_LICENSE=MIT&& set CARGO_PKG_LICENSE_FILE=\"\"&& set CARGO_PKG_NAME=xiao-driver&& set CARGO_PKG_README=README.md&& set CARGO_PKG_REPOSITORY=\"\"&& set CARGO_PKG_RUST_VERSION=1.85&& set CARGO_PKG_VERSION=0.1.0&& set CARGO_PKG_VERSION_MAJOR=0&& set CARGO_PKG_VERSION_MINOR=1&& set CARGO_PKG_VERSION_PATCH=0&& set CARGO_PKG_VERSION_PRE=\"\"&& set CARGO_PRIMARY_PACKAGE=1&& set PATH=\"D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\release\\deps;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64;D:\\msys64\\ucrt64\\bin;D:\\Program Files\\PowerShell\\7;C:\\Users\\xiaoc\\.codex\\tmp\\arg0-windows\\codex-arg0WfytE4;C:\\Users\\xiaoc\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\codex-path;C:\\Users\\xiaoc\\bin;D:\\Program Files\\Git\\mingw64\\bin;D:\\Program Files\\Git\\usr\\local\\bin;D:\\Program Files\\Git\\usr\\bin;D:\\Program Files\\Git\\usr\\bin;D:\\Program Files\\Git\\mingw64\\bin;D:\\Program Files\\Git\\usr\\bin;C:\\Users\\xiaoc\\bin;D:\\Program Files\\PowerShell\\7;D:\\Program Files\\ImageMagick-7.1.2-Q16-HDRI;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0;C:\\Windows\\System32\\OpenSSH;C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;D:\\Program Files\\Git\\cmd;D:\\msys64\\ucrt64\\bin;D:\\MC\\bin;D:\\Program Files\\java8\\bin;C:\\ProgramData\\chocolatey\\bin;C:\\Users\\xiaoc\\node_modules\\bun\\bin;D:\\Program Files\\Go\\bin;D:\\Program Files\\gradle-9.4.1-all\\gradle-9.4.1\\bin;C:\\Program Files\\dotnet;D:\\BiliLiveTool-v2.3.12-windows-amd64\\bin;D:\\project\\GeminiCLI_2API\\bin;D:\\Program Files\\GitHub CLI;D:\\Program Files\\Git LFS;D:\\Program Files\\llama-b9050-bin-win-cpu-x64;D:\\Program Files\\NASM;D:\\MC\\MC;D:\\.bin;D:\\Program Files\\.cargo\\bin;D:\\Program Files\\nodejs;D:\\Program Files\\MaiCoreStart-v5.1.0-beta\\bin;D:\\Program Files (x86)\\Inno Setup 6;C:\\Program Files\\Docker\\Docker\\resources\\bin;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64;D:\\Windows Kits\\10\\Windows Performance Toolkit;D:\\project\\learn\\ctest\\.bin;D:\\Program Files\\KTX-Software\\bin;D:\\Program Files\\PowerShell\\7;C:\\Users\\xiaoc\\.kimi-code\\bin;C:\\Users\\xiaoc\\.cargo\\bin;C:\\Users\\xiaoc\\.local\\bin;C:\\Users\\xiaoc\\AppData\\Local\\Programs\\Jan\\resources\\bin;D:\\Programs\\Python\\Python312\\Scripts;D:\\Programs\\Python\\Python312;C:\\Users\\xiaoc\\AppData\\Local\\Microsoft\\WindowsApps;D:\\Programs\\Microsoft VS Code\\bin;C:\\Users\\xiaoc\\AppData\\Local\\PowerToys\\DSCModules;C:\\Users\\xiaoc\\go\\bin;C:\\Users\\xiaoc\\.deno\\bin;D:\\BiliLiveTool-v2.3.12-windows-amd64;C:\\Users\\xiaoc\\AppData\\Local\\Programs\\Ollama;C:\\Users\\xiaoc\\.lmstudio\\bin;C:\\Users\\xiaoc\\AppData\\Local\\GitHubDesktop\\bin;C:\\Users\\xiaoc\\.dotnet\\tools;D:\\Program Files\\Huawei\\DevEco Studio\\bin;C:\\Users\\xiaoc\\AppData\\Roaming\\npm;C:\\Users\\xiaoc\\AppData\\Local\\Unity\\bin;C:\\Users\\xiaoc\\.dotnet\\tools;C:\\Users\\xiaoc\\.bun\\bin;D:\\Program Files\\Git\\usr\\bin\\vendor_perl;D:\\Program Files\\Git\\usr\\bin\\core_perl;C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\"&& set RUST_TEST_THREADS=4&& C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe --crate-name b3_env_performance --edition=2024 crates\\xiao-driver\\src\\bin\\b3_env_performance.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type bin --emit=dep-info,link -C opt-level=3 -C embed-bitcode=no --warn=missing_docs --check-cfg cfg(docsrs,test) --check-cfg \"cfg(feature, values(\\\"args-cli-native-test\\\", \\\"fs-native-test\\\", \\\"time-native-test\\\"))\" -C metadata=89d88c3a70057c43 --out-dir D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps --target x86_64-pc-windows-msvc -C strip=debuginfo -L dependency=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps -L dependency=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\release\\deps --extern serde=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libserde-abba323ac92983b3.rlib --extern serde_json=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libserde_json-44363eb9a22821e5.rlib --extern xiao_artifacts=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_artifacts-10bce2823f76a613.rlib --extern xiao_bytecode=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_bytecode-85820b7babbf70e9.rlib --extern xiao_codegen_llvm=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_codegen_llvm-b3d47f5cbf747b4f.rlib --extern xiao_config=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_config-65869c22a4e0a26a.rlib --extern xiao_diagnostics=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_diagnostics-a1415b526be002f2.rlib --extern xiao_driver=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_driver-129aff8919fc8fc6.rlib --extern xiao_i18n=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_i18n-845a60704e98e948.rlib --extern xiao_intrinsics=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_intrinsics-8d6658712a675860.rlib --extern xiao_ir=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_ir-50228ada1113a8e4.rlib --extern xiao_lifetime=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_lifetime-64b9b81d5d62ee6f.rlib --extern xiao_modules=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_modules-8a88073dcbdac946.rlib --extern xiao_optimizer=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_optimizer-e63d247eaaaa1252.rlib --extern xiao_package=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_package-52a0792d91966d71.rlib --extern xiao_runtime=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_runtime-cc614844e2614bb9.rlib --extern xiao_runtime_abi=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_runtime_abi-52e9e1fb1e5b20f4.rlib --extern xiao_source=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_source-123ddf8839a0f707.rlib --extern xiao_standard_library=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_standard_library-faf7bb72876a2446.rlib --extern xiao_syntax=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_syntax-6c0e3d8b3b3845f0.rlib --extern xiao_types=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_types-87a50dcf8635d26f.rlib --extern xiao_vm=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_vm-0907e7c99b3826f8.rlib --extern xiao_xar=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_xar-2186e69fa363da88.rlib -L native=D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\build\\ring-41307d88ad7af40e\\out -L native=C:\\Users\\xiaoc\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\windows_x86_64_msvc-0.52.6\\lib`",
+    "codegen": 27,
+    "fixtures": {
+      "core/rust/crates/xiao-driver/tests/20o_b3_env_tutorial.rs": {
+        "bytes": 5127,
+        "git_blob": "2cae6737754a5768726917c80c103840f1c146c8",
+        "sha256": "b86c912f58c4463eec38d197a2c081d9428eac340a20647594ba25b9af25c621"
+      },
+      "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials.json": {
+        "bytes": 10750,
+        "git_blob": "4c95a4d1235fdb3f64c61e562124fb2130c83d9f",
+        "sha256": "25665474f2f3df3783f19e244d6151b46f4c690c5cc4fc3d7ceb050656543f6a"
+      },
+      "tests/fixtures/docs/env/.gitattributes": {
+        "bytes": 48,
+        "git_blob": "1a8618e47b499fc8501f1c3333238ce222866488",
+        "sha256": "7e35c8ca07f92001fb5aede6cbf75c86372065bc37cb5998401062ade5193d03"
+      },
+      "tests/fixtures/docs/env/tutorial.input.json": {
+        "bytes": 69,
+        "git_blob": "2d522910128b600826234c1c3e95b56320fcb57c",
+        "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+      },
+      "tests/fixtures/docs/env/tutorial.stdout": {
+        "bytes": 55,
+        "git_blob": "b9950d503b9fab110ae177193c26abfc17d1d7b5",
+        "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+      },
+      "tests/fixtures/docs/env/tutorial.xiao": {
+        "bytes": 467,
+        "git_blob": "e72a682887cf9152bc93d2fa83ac008bff500bc9",
+        "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+      }
+    },
+    "harness": {
+      "core/rust/crates/xiao-driver/examples/numeric_perf/README.md": {
+        "bytes": 727,
+        "git_blob": "012328a62709551c51946db428d62d2bd646d6c2",
+        "sha256": "9945b3e7404c74c339189b2c7c950caefda5688447c46c4cf5ce7744f393cfab"
+      },
+      "core/rust/crates/xiao-driver/examples/numeric_perf/b6_cases.rs": {
+        "bytes": 19010,
+        "git_blob": "0ad232f00a82eb25187fa86cf041258253182296",
+        "sha256": "5ddafc4078e040041b72875d6f9267292d471fb7e54e5e32d7e2003c695e0e02"
+      },
+      "core/rust/crates/xiao-driver/examples/numeric_perf/calibration.rs": {
+        "bytes": 816,
+        "git_blob": "6184a41ce3982f2db91cb7d8302d2f7113beb087",
+        "sha256": "cdbea924ea23b5ca2b63cf410fc77d792cf923cad16b2944f9e5f81f832df578"
+      },
+      "core/rust/crates/xiao-driver/examples/numeric_perf/cases.rs": {
+        "bytes": 5743,
+        "git_blob": "010157a74631e10f30784cc690a351fe0be2a3d7",
+        "sha256": "ef26d452cb92e3f7053d38f9151ca57824d9293e661ab28e2d262cce947c6d76"
+      },
+      "core/rust/crates/xiao-driver/examples/numeric_perf/identity.rs": {
+        "bytes": 6123,
+        "git_blob": "04495222aa45dabc39fdaf8afaf491828b75474d",
+        "sha256": "0c1bb154b20a3c71cd0e705a3fe1fe5cf5803ffe4fb293536d7cd069a01696d3"
+      },
+      "core/rust/crates/xiao-driver/examples/numeric_perf/memory.rs": {
+        "bytes": 6182,
+        "git_blob": "2a15ca6c658be70add916788cd219dec5aaf783e",
+        "sha256": "786824624229db786565df4d34019d894ef6adfcef62d60337372c370448dc35"
+      },
+      "core/rust/crates/xiao-driver/examples/numeric_perf/native.rs": {
+        "bytes": 2845,
+        "git_blob": "0e856d894ae164c3797839569df66dcbcf6591a6",
+        "sha256": "ebb78bf3c2dac1953a5b19c3d51b58f658d4de7b302f00a7daf7e481900f3d90"
+      },
+      "core/rust/crates/xiao-driver/examples/numeric_perf/process.rs": {
+        "bytes": 9496,
+        "git_blob": "66bd5dc5dc566cd116c22868cc7426650b5658aa",
+        "sha256": "6b9ccaacd4fbac13e2fbf0e74e62b6b124374b23bca27072178f0e480f958e91"
+      },
+      "core/rust/crates/xiao-driver/examples/numeric_perf/worker.rs": {
+        "bytes": 3355,
+        "git_blob": "ad5eacbefd3da779fdeead1e1e423ab6da9997c1",
+        "sha256": "7d12cc3171625e4fce371778c248948bc8976e96a6905f92674e17a9f697764d"
+      },
+      "core/rust/crates/xiao-driver/src/bin/b3_env_performance.rs": {
+        "bytes": 18150,
+        "git_blob": "a1ad7f0fa5789b42ce1f0c6b2779a8b9649229a6",
+        "sha256": "29a786504afcb29d5e1238b0a5df19d2f46631716923c484fac294ec53b8cbad"
+      },
+      "core/rust/crates/xiao-driver/src/bin/env_perf/native.c": {
+        "bytes": 5893,
+        "git_blob": "10e8e534e996868e11db1bd7c00a60f00158a5f0",
+        "sha256": "0dcde108c22cea84e0daccb5dc0d8b14dc64609087b0279677db44283b39e26d"
+      },
+      "core/rust/crates/xiao-driver/src/bin/env_perf/native.rs": {
+        "bytes": 4441,
+        "git_blob": "7fb1b072819a85c7cd9624fd467e500b0cf5789c",
+        "sha256": "13db190cbcdee7eb53d0008c2e8b7943400e7a76c79a345cbe10225c7eb8e1b5"
+      },
+      "core/rust/crates/xiao-driver/src/bin/env_perf/process.rs": {
+        "bytes": 5903,
+        "git_blob": "2df11ea6aa2574e03df1b9584de1b2f3203eb7bc",
+        "sha256": "f7432aaba2345ceca51d1003f69fe342bf4f3a7b478e173bc6dbc3f02ee7bc0f"
+      },
+      "core/rust/crates/xiao-driver/src/bin/env_perf/workload.rs": {
+        "bytes": 4390,
+        "git_blob": "ce48c2403b8539e88f97409b76e3709b7b2458bc",
+        "sha256": "1ced70293fb557771edb29af96382d67af838a1a45b4a369e68e6930f4aa2821"
+      }
+    },
+    "locks": {
+      "core/rust/Cargo.lock": {
+        "bytes": 20539,
+        "git_blob": "289e73cf35899dc28699c5c66f4ccd39331a7d2c",
+        "sha256": "f514ddb34b7784c61f5220d56554d382a849dd1222deec7d0b23d5d6f668c050"
+      },
+      "tests/benchmarks/Cargo.lock": {
+        "bytes": 20120,
+        "git_blob": "e76e62666709db695fd5467bf984fdb638d1497a",
+        "sha256": "fbde7dc465dfab4217aa6638336900a253061b4e9f46aa18428ebd528728bdc1"
+      },
+      "tests/research/concurrency/Cargo.lock": {
+        "bytes": 177,
+        "git_blob": "786375c35038e3b08ae0280521c525c9c65eb0eb",
+        "sha256": "7d5943848f76bd02adbccf49a07f9f3b8eaabd0d26eabac691110fbcefb3776c"
+      }
+    },
+    "native_runtime_build_artifact": {
+      "bytes": 27860696,
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+      "sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a"
+    },
+    "native_runtime_event": {
+      "executable": null,
+      "features": [],
+      "filenames": [
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\libxiao_runtime.rlib",
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib"
+      ],
+      "fresh": false,
+      "manifest_path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2\\core\\rust\\crates\\xiao-runtime\\Cargo.toml",
+      "package_id": "path+file:///D:/project/Xiao/.xiao-orchestrator/worktrees/b3-4e-rerun2/core/rust/crates/xiao-runtime#0.1.0",
+      "profile": {
+        "debug_assertions": false,
+        "debuginfo": 0,
+        "opt_level": "3",
+        "overflow_checks": false,
+        "test": false
+      },
+      "reason": "compiler-artifact",
+      "target": {
+        "crate_types": [
+          "rlib",
+          "staticlib"
+        ],
+        "doc": true,
+        "doctest": true,
+        "edition": "2024",
+        "kind": [
+          "rlib",
+          "staticlib"
+        ],
+        "name": "xiao_runtime",
+        "src_path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2\\core\\rust\\crates\\xiao-runtime\\src\\lib.rs",
+        "test": true
+      }
+    },
+    "product_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+    "product_tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+    "runtime": {
+      "bytes": 27860696,
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\fixed-runtime\\xiao_runtime.lib",
+      "sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a"
+    },
+    "runtime_abi": "1.20",
+    "source": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2",
+    "source_sha256_rollup": "dbf42ae1c2c32625826b69af6ba83cf37dc1d07e4b050f5285d743ec6f1df02d",
+    "startup_assertion": {
+      "help_exit": 0,
+      "receipt": "startup-help.json",
+      "source": "core/rust/crates/xiao-driver/src/bin/b3_env_performance.rs",
+      "test_failpoints_enabled": false
+    },
+    "stdlib_interface": 1,
+    "target": "x86_64-pc-windows-msvc",
+    "toolchain": {
+      "environment": {
+        "CARGO_BUILD_INCREMENTAL": "false",
+        "CARGO_BUILD_TARGET": "x86_64-pc-windows-msvc",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target",
+        "CARGO_TERM_COLOR": "never",
+        "INCLUDE": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\include;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\ucrt;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\shared;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\um",
+        "LIB": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\ucrt\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\um\\x64",
+        "RUSTUP_TOOLCHAIN": "1.96.0",
+        "TEMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\tmp",
+        "TMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\tmp",
+        "VCToolsInstallDir": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\",
+        "WindowsSDKVersion": "10.0.26100.0\\",
+        "WindowsSdkDir": "D:\\Windows Kits\\10\\",
+        "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+        "XIAO_HOME": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\xiao-home",
+        "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+        "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+        "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\fixed-runtime\\xiao_runtime.lib",
+        "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2\\stdlib",
+        "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc"
+      },
+      "machine": "AMD64",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "target": "x86_64-pc-windows-msvc",
+      "tools": {
+        "cargo": {
+          "file": {
+            "bytes": 31347200,
+            "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+            "sha256": "122f18d28a63fa358f3db266abee1ff1d8aabf0ab7f2dd9ac38a38da99977ae5"
+          },
+          "version": [
+            "cargo 1.96.0 (30a34c682 2026-05-25)"
+          ],
+          "version_exit": 0
+        },
+        "clang": {
+          "file": {
+            "bytes": 157296,
+            "path": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+            "sha256": "574047f1b98d62bea1da8ae9340fea1ef06d262c3186e1d72d87e5401166c833"
+          },
+          "version": [
+            "clang version 22.1.2 (https://github.com/msys2/MINGW-packages 4f19d31560faf73257116b7c95f0b322ba83d720)",
+            "Target: x86_64-w64-windows-gnu",
+            "Thread model: posix",
+            "InstalledDir: D:/msys64/ucrt64/bin"
+          ],
+          "version_exit": 0
+        },
+        "link": {
+          "file": {
+            "bytes": 3701088,
+            "path": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+            "sha256": "3ef8fcf80d409fab22ddd89ee19249f31a26ad9914d3e3e48573c30998fa24de"
+          },
+          "version": [
+            "Microsoft (R) Incremental Linker Version 14.51.36256.0",
+            "Copyright (C) Microsoft Corporation.  All rights reserved.",
+            "",
+            " 用法: LINK [选项] [文件] [@commandfile]"
+          ],
+          "version_exit": 1100
+        },
+        "llc": {
+          "file": {
+            "bytes": 211961,
+            "path": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+            "sha256": "df1409fabacdc625b2c2fefe50712de4ba140e07bf2bb4192101189498152869"
+          },
+          "version": [
+            "LLVM (http://llvm.org/):",
+            "  LLVM version 22.1.2",
+            "  Optimized build.",
+            "  Default target: x86_64-w64-windows-gnu"
+          ],
+          "version_exit": 0
+        },
+        "llvm-as": {
+          "file": {
+            "bytes": 40741,
+            "path": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+            "sha256": "63f559db3d87798fa4f26923c4cd5839ddc41b40905d884ee341c74a8bd858e9"
+          },
+          "version": [
+            "LLVM (http://llvm.org/):",
+            "  LLVM version 22.1.2",
+            "  Optimized build."
+          ],
+          "version_exit": 0
+        },
+        "rustc": {
+          "file": {
+            "bytes": 111104,
+            "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+            "sha256": "acb138286bbe20c6cf3ec39a7e0a68c3fab0cd949baa2912cf466514d0d531ab"
+          },
+          "version": [
+            "rustc 1.96.0 (ac68faa20 2026-05-25)",
+            "binary: rustc",
+            "commit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96",
+            "commit-date: 2026-05-25",
+            "host: x86_64-pc-windows-msvc",
+            "release: 1.96.0",
+            "LLVM version: 22.1.2"
+          ],
+          "version_exit": 0
+        }
+      },
+      "windows_sdk": "10.0.26100.0"
+    },
+    "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+    "vm_runtime": {
+      "bytes": 7969580,
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_runtime-cc614844e2614bb9.rlib",
+      "sha256": "16c232bd6ebfcf1b53db5142fd8bb14b82f447e19d671471a41de5afba061de4"
+    },
+    "vm_runtime_event": {
+      "executable": null,
+      "features": [],
+      "filenames": [
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_runtime-cc614844e2614bb9.rlib",
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\xiao_runtime-cc614844e2614bb9.lib"
+      ],
+      "fresh": false,
+      "manifest_path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2\\core\\rust\\crates\\xiao-runtime\\Cargo.toml",
+      "package_id": "path+file:///D:/project/Xiao/.xiao-orchestrator/worktrees/b3-4e-rerun2/core/rust/crates/xiao-runtime#0.1.0",
+      "profile": {
+        "debug_assertions": false,
+        "debuginfo": 0,
+        "opt_level": "3",
+        "overflow_checks": false,
+        "test": false
+      },
+      "reason": "compiler-artifact",
+      "target": {
+        "crate_types": [
+          "rlib",
+          "staticlib"
+        ],
+        "doc": true,
+        "doctest": true,
+        "edition": "2024",
+        "kind": [
+          "rlib",
+          "staticlib"
+        ],
+        "name": "xiao_runtime",
+        "src_path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2\\core\\rust\\crates\\xiao-runtime\\src\\lib.rs",
+        "test": true
+      }
+    }
+  },
+  "identity_sha256": "88de1eee6155ebc9e27b78de3cb86c7f74faf065153005426b15082be1fd9e82",
+  "passed": true,
+  "probe": false,
+  "protocol": {
+    "batches_per_case": 5,
+    "calibration_target_seconds": 0.1,
+    "fixed_calls_per_workload": 64,
+    "maximum_growth_factor": 16,
+    "maximum_repeats": 16777216,
+    "minimum_seconds": 0.05,
+    "release": true,
+    "warmup_repetitions": 1
+  },
+  "records": [
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5969,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-256\\batch-1.json",
+          "sha256": "8a46184f4adc9a0685af329704104a8a147f044de521dbc15d798efbf053ef96"
+        },
+        {
+          "bytes": 5615,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-256\\batch-2.json",
+          "sha256": "db8e769859d2b77acbd9b6fe179187441d1b8ed42a4854850cfbddf8ead4d701"
+        },
+        {
+          "bytes": 5945,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-256\\batch-3.json",
+          "sha256": "7910b3ef4564708f23bfa10c69d4983b3a05c4a7788d1082b8d77f5ff385bd18"
+        },
+        {
+          "bytes": 5625,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-256\\batch-4.json",
+          "sha256": "d52c0fcd2af706f3d1595f82ff9f7150b0e5ccaf632b0b4a0f5e03cc774d0900"
+        },
+        {
+          "bytes": 5636,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-256\\batch-5.json",
+          "sha256": "2cf8beed6498b0fd43db522e302597220abf17a0561deca6070bd3d83560b772"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 11193344,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+        "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00020062929687499992,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 9105408,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.00019523515625000006,
+        0.0001975998046875,
+        0.00020062929687499992,
+        0.00020690058593749976,
+        0.00021908046875000018
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5300,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-512\\batch-1.json",
+          "sha256": "9d5e7ff5910d32b19a7c494a98535e8d44f75f3c7d17f3448a2ed3aac95ac2ae"
+        },
+        {
+          "bytes": 5637,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-512\\batch-2.json",
+          "sha256": "cb4658297198754d6bb8111dc0e78fec3a17018a734d6ddfbbf8e8c6c2e279cd"
+        },
+        {
+          "bytes": 5299,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-512\\batch-3.json",
+          "sha256": "bf1f6e73671852d0a658d9b3b918400b51aa0d56bbb244069c8d4ea46ba797f4"
+        },
+        {
+          "bytes": 5310,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-512\\batch-4.json",
+          "sha256": "f0411843bf8def102de4d2f2f73383c362ebea12e3d81765a8146b75e916d2b5"
+        },
+        {
+          "bytes": 5299,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-512\\batch-5.json",
+          "sha256": "a604c2a51b909f384223aaddc20d040e39ea6a1fc6d935db25c4d8e01e35aee7"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 2.7196658282518986,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 11193344,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+        "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0005456446428571427,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 10174464,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0005786661458333332,
+        0.0004642590624999998,
+        0.0005968120192307692,
+        0.0005435875000000001,
+        0.0005456446428571427
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5280,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-1024\\batch-1.json",
+          "sha256": "a167513c2b4bafd9467915af682d5a324b408e655b0dba7231eda5c43fd14fd1"
+        },
+        {
+          "bytes": 5300,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-1024\\batch-2.json",
+          "sha256": "c26f18757b6d7aa22087679611bc6e6b323dcd1f7dcf18cfc2cbe45ec7111641"
+        },
+        {
+          "bytes": 5628,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-1024\\batch-3.json",
+          "sha256": "1f541028c5320bbe3d9a0be745c462ee5688f796b78470f73bbfda9243e70eb7"
+        },
+        {
+          "bytes": 5314,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-1024\\batch-4.json",
+          "sha256": "d0205f0c31b49b31344185f86667eb157636d62a4cc72572b1bd62e43c0aca43"
+        },
+        {
+          "bytes": 5629,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-1024\\batch-5.json",
+          "sha256": "3d7a2e9800b0201dc10f8774dd3ffce45aa2f759681b13627d6d8d41a4874b3f"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 2.234822179532074,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 11193344,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+        "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0012194187499999997,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 9773056,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0012206395833333334,
+        0.0013074437499999993,
+        0.0012194187499999997,
+        0.0010847625000000004,
+        0.0010005837500000002
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5223,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-get-256\\batch-1.json",
+          "sha256": "22d3e9249857d83d17b9d601a41a19bc0270b475f76439f5cf76d5dc02e25f09"
+        },
+        {
+          "bytes": 5210,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-get-256\\batch-2.json",
+          "sha256": "1a1ef4429364d0f5f21b0b5c0c91f9f3d601cc19b008b17c2467ba576962a757"
+        },
+        {
+          "bytes": 5212,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-get-256\\batch-3.json",
+          "sha256": "39c84cf7f1c04f99cf007621c33186fe7729ec1b394da4a200493c042a143da2"
+        },
+        {
+          "bytes": 5181,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-get-256\\batch-4.json",
+          "sha256": "d2e8104f7c908425b2e760f59570991c711bbc7de79d96309d4e6ab427c0684e"
+        },
+        {
+          "bytes": 5223,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-get-256\\batch-5.json",
+          "sha256": "296e922d94a391994590fa3c9801a3f4b85fcf6ae0980fafbadf734261fb0b4f"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 11193344,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+        "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0034933906249999995,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 9863168,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0035716437499999994,
+        0.003386537500000001,
+        0.0034102000000000004,
+        0.0039199,
+        0.0034933906249999995
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5185,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-get-512\\batch-1.json",
+          "sha256": "c8c6b3c38012beff81beb738b9a98b2e1e92c6761c875a5a1d114d0770b10e88"
+        },
+        {
+          "bytes": 5224,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-get-512\\batch-2.json",
+          "sha256": "9b8285b9eaebf2ecc0269cbf38b07e61f025670f372dff6da64e859034eef8c5"
+        },
+        {
+          "bytes": 5195,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-get-512\\batch-3.json",
+          "sha256": "bb01f33eae52344780355a768e4cd3965bbf0bec60c8c85ecd77e418dfdecf05"
+        },
+        {
+          "bytes": 5211,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-get-512\\batch-4.json",
+          "sha256": "afab6cc491dbf3771ed6533ecaa27864d82eae764649387dbfd0c36bff4a237c"
+        },
+        {
+          "bytes": 5222,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-get-512\\batch-5.json",
+          "sha256": "45527e8c31b14f470a6369db558c21e8853aaec7dd8901c94eb323dec3d6eff3"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 1.200779149912558,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 11193344,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+        "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.004194790624999999,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 10395648,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.00347045625,
+        0.0037579999999999996,
+        0.004406996875,
+        0.004520671875000002,
+        0.004194790624999999
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5217,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-get-1024\\batch-1.json",
+          "sha256": "9357168a721c12c1165ce90b1a76b655ec111102c569fa3d56aa302e24ef0ca2"
+        },
+        {
+          "bytes": 5216,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-get-1024\\batch-2.json",
+          "sha256": "32ee690f21e1c89383710ec39dabe9300b8125d7868d2bc6d44a0a4a9b16b3f7"
+        },
+        {
+          "bytes": 5227,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-get-1024\\batch-3.json",
+          "sha256": "b9ebbdcaeb8f49b6bdf053cb1d0a86de6c3050d445764afa214f8761825dd5bc"
+        },
+        {
+          "bytes": 5201,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-get-1024\\batch-4.json",
+          "sha256": "f32832b713997c22658bc49f615085d529aec71d8a26936decfdac685a1d6852"
+        },
+        {
+          "bytes": 5217,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-get-1024\\batch-5.json",
+          "sha256": "cabeeec1691576bf01350161c5afae1b362901756ca251be0dcc91b56dd34591"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 0.9262910172066099,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 11193344,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+        "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.003885596875,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 9560064,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0036066687500000004,
+        0.004014684374999999,
+        0.0038998593749999997,
+        0.003885596875,
+        0.0036472437500000006
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5222,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-set-256\\batch-1.json",
+          "sha256": "8668fabe81f2ec5156d9af548cdeec03de568daf5746c13aa130e147d4970b5c"
+        },
+        {
+          "bytes": 5189,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-set-256\\batch-2.json",
+          "sha256": "a892f8cb3f4687d0b63f9273b0bd668331624a58dc1ac58f94b9acb6f30e6d8f"
+        },
+        {
+          "bytes": 5222,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-set-256\\batch-3.json",
+          "sha256": "3a202b7a07aab8d7f65b2b685bf9abfe063d55d9b00a126532803dbcd827b465"
+        },
+        {
+          "bytes": 5212,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-set-256\\batch-4.json",
+          "sha256": "d08730df08117ae49170db1c07c35f6117f15f6f91e081b14d0e1da126b0c809"
+        },
+        {
+          "bytes": 5212,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-set-256\\batch-5.json",
+          "sha256": "c98ccf7eec10812e66abd25a6144f4c977439a06126689875b259dd09f1c86c1"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 11193344,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+        "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.002539441666666667,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 9723904,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.002830166666666667,
+        0.002537879166666667,
+        0.002645345833333333,
+        0.002439181249999999,
+        0.002539441666666667
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5213,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-set-512\\batch-1.json",
+          "sha256": "809a5bd9676afbfe9450402c8778ae1ca127e4bf7387502bc6502246ef2bb968"
+        },
+        {
+          "bytes": 5213,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-set-512\\batch-2.json",
+          "sha256": "10b365bc4416034f569ce516371271208d5f3e7a57a5f143e9e94126d2cc411e"
+        },
+        {
+          "bytes": 5193,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-set-512\\batch-3.json",
+          "sha256": "040c470f75e2f9d0a90ec563c515014d5f45026d064f9f86ed0943aec8794a26"
+        },
+        {
+          "bytes": 5222,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-set-512\\batch-4.json",
+          "sha256": "b699e1da8f02d57664e50bd54200fd10a8bd5c8149005cf68877afa863a6fad3"
+        },
+        {
+          "bytes": 5181,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-set-512\\batch-5.json",
+          "sha256": "c042f555a42b6b78f3cdd85d8d2748c419c8bfa7fc03fd4a6ad5c0ea79d423eb"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 0.9956666983884254,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 11193344,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+        "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0025284375000000007,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 9801728,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0029946041666666675,
+        0.0025284375000000007,
+        0.0024739104166666666,
+        0.003190875000000001,
+        0.002286925
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5227,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-set-1024\\batch-1.json",
+          "sha256": "0adfed4704ac70ba5c791f0c38d22f0b799070f9320e294aa3458ee9100c2235"
+        },
+        {
+          "bytes": 5197,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-set-1024\\batch-2.json",
+          "sha256": "eae6206fda00f5b5400e3ab190212269405ce622050b1cd8ba3bb35621d978b3"
+        },
+        {
+          "bytes": 5226,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-set-1024\\batch-3.json",
+          "sha256": "a33451d3c96af4a531898ed96ad558b8442ea2350232d4fc5239bb3d1ea7c7cf"
+        },
+        {
+          "bytes": 5207,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-set-1024\\batch-4.json",
+          "sha256": "18efe2cc42f9e18b89b4a3ca87cc527c8e0c68d2ac55d504df2885fdb73d96b2"
+        },
+        {
+          "bytes": 5217,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-set-1024\\batch-5.json",
+          "sha256": "e924bf7840bf4eb18276cc0df9d84c759fb021974091ccf6db6b0acc02921b55"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 0.9650047377744816,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 11193344,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+        "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0024399541666666664,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 9269248,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.002801095833333333,
+        0.0028239062499999996,
+        0.0023731020833333335,
+        0.0024399541666666664,
+        0.0023568291666666665
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5273,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-unset-256\\batch-1.json",
+          "sha256": "afde778d58bfdb268b9de83c48b20285571f5e9c60a6d5b66b56ac3dadead3e9"
+        },
+        {
+          "bytes": 5282,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-unset-256\\batch-2.json",
+          "sha256": "c7a9e3addf66a61e9937c8ce5a2b04b10f956a5330212b3e35a26844956dacee"
+        },
+        {
+          "bytes": 5272,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-unset-256\\batch-3.json",
+          "sha256": "7a2baa1626c7a435ca1b125f3d7e5ffccc5a3e3337b48348ea2ba595db771eb8"
+        },
+        {
+          "bytes": 5283,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-unset-256\\batch-4.json",
+          "sha256": "6db1cb41eaf59e2f857f1b342173d7dcc812d10fdeec03f49465885f4ce9a966"
+        },
+        {
+          "bytes": 5251,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-unset-256\\batch-5.json",
+          "sha256": "c024059f3ff8ecc03ef4b5679a77a95172d611c165e0cabf5e288897b77c3357"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 11193344,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+        "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.002501006249999999,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 9789440,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0028608187499999994,
+        0.002839266666666666,
+        0.002501006249999999,
+        0.002446045833333333,
+        0.0024995708333333333
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5243,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-unset-512\\batch-1.json",
+          "sha256": "516366b6cede4a39344198a863a84897a8fa7b7a2f05a12664bf1b925f9f86f4"
+        },
+        {
+          "bytes": 5273,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-unset-512\\batch-2.json",
+          "sha256": "bfea76c406194337ac9358348a0e702ff37b9e59a91896f5fbf335a3d20cecda"
+        },
+        {
+          "bytes": 5272,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-unset-512\\batch-3.json",
+          "sha256": "a83071e8891428ffc6e3144fdfca6e350bf2ad408c5b31bc12cd82043611898b"
+        },
+        {
+          "bytes": 5272,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-unset-512\\batch-4.json",
+          "sha256": "5587088d0dc8624b9d07025fda3c8e15870b79484511db0d122857af470b7312"
+        },
+        {
+          "bytes": 5272,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-unset-512\\batch-5.json",
+          "sha256": "5335c89f47231d01f0f927092cff5294e5ecc1541b725f6f04e13a6f7a11b461"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.0022807486653296,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 11193344,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+        "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0025067104166666674,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 9752576,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0025911625,
+        0.0023867520833333327,
+        0.002239202083333333,
+        0.002871258333333333,
+        0.0025067104166666674
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5277,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-unset-1024\\batch-1.json",
+          "sha256": "96d7365a5487b791ea40a767179da66e71d838767286a6146571e59a1bfcfc4a"
+        },
+        {
+          "bytes": 5287,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-unset-1024\\batch-2.json",
+          "sha256": "ccec705341f18f6edb8770db5d52c963389029536074bd33ef44e281ddbd9a60"
+        },
+        {
+          "bytes": 5246,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-unset-1024\\batch-3.json",
+          "sha256": "9fe0d154114aacb62bd069ac6d5e13b040eff29a241e798dc744a72213c86d1e"
+        },
+        {
+          "bytes": 5277,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-unset-1024\\batch-4.json",
+          "sha256": "dee1cdcd322e9ba785af6ccecafab671d385b7e3bb1b2cf7103abc82b05ce497"
+        },
+        {
+          "bytes": 5275,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-unset-1024\\batch-5.json",
+          "sha256": "d2b653fc4b6b8733c993369b89cad8c8a9ff2cb271c810a97f7058cf2dce2236"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.0966381072138867,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 11193344,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+        "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0027489541666666675,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 9576448,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0024488875000000005,
+        0.003011897916666666,
+        0.0026040875,
+        0.0027489541666666675,
+        0.003375791666666667
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5468,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-full-replace-1024\\batch-1.json",
+          "sha256": "b9dba1e8f84dae97c690c687f0058d44797c6cc9174bf939fb23dd97bca499d0"
+        },
+        {
+          "bytes": 5468,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-full-replace-1024\\batch-2.json",
+          "sha256": "eb6ddc1df32e550f2368417e8d81c2fdba2a08667b792d215dcc7229a4eb535a"
+        },
+        {
+          "bytes": 5462,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-full-replace-1024\\batch-3.json",
+          "sha256": "424783700e4296b9a75de9f209a884b79955ed2cc85548f60a637740d78d5882"
+        },
+        {
+          "bytes": 5498,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-full-replace-1024\\batch-4.json",
+          "sha256": "353e817855518f28fe7f8f129637e5e028502c67770abba93cb3b1da22c902c5"
+        },
+        {
+          "bytes": 5488,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-full-replace-1024\\batch-5.json",
+          "sha256": "c7e6b056304f2e6b679d72d49c6a25f5328694d1347c5839e2a38755c01fa240"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18572,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\full-replace\\measurement.xiaoc",
+        "sha256": "41b3ce0fe042aaa08002e366f65f261413f9a082ae56cd9d71937c3c13811c8e"
+      },
+      "case": "full-replace",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 11193344,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+        "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.0026926874999999993,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 11259904,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0021460479166666665,
+        0.0027390958333333333,
+        0.002416354166666667,
+        0.0035139000000000017,
+        0.0026926874999999993
+      ],
+      "source": {
+        "bytes": 3016,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\full-replace\\measurement.xiao",
+        "sha256": "0c8eb78116619c71030e909170c35457e0d219a8a8db6ba15946752a68df3c4c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5708,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-overflow-1024\\batch-1.json",
+          "sha256": "bf8e7e0e5252f38e506b6b4ad1221c1b83f0a1b380d657bb401714344b270ad4"
+        },
+        {
+          "bytes": 5343,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-overflow-1024\\batch-2.json",
+          "sha256": "e91e48392ef4cb01882b0d81b6109039624ffde34c255dd2f42f7c70349e2457"
+        },
+        {
+          "bytes": 5374,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-overflow-1024\\batch-3.json",
+          "sha256": "091d14b39890a3ac1bf26a73da754542c74cfdd38c1805ade13bce6caf9033f4"
+        },
+        {
+          "bytes": 5374,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-overflow-1024\\batch-4.json",
+          "sha256": "55c6a532c45c447c65db8ec153a4968e3d38159b456f7ffb1c345c8b39028203"
+        },
+        {
+          "bytes": 5371,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-overflow-1024\\batch-5.json",
+          "sha256": "afc11302e821293cef8df761c2705d83abfc2d74f469d24d4a62f05b54cb1595"
+        }
+      ],
+      "bytecode": {
+        "bytes": 26444,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\overflow\\measurement.xiaoc",
+        "sha256": "9fe8cbe3ac8cdabd8b4f5896a484f66be03ef8011851901d12735d560ae6c7f1"
+      },
+      "case": "overflow",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 11193344,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+        "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.0033727031250000003,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 10616832,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0029926062499999987,
+        0.00380965,
+        0.0033727031250000003,
+        0.0034983156249999998,
+        0.003270191666666667
+      ],
+      "source": {
+        "bytes": 4455,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\overflow\\measurement.xiao",
+        "sha256": "b851b65d790ce89cc99e9db1e13c4d00343e8901ebceb5ce70f441f1da79206a"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 4082,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-snapshot-256\\batch-1.json",
+          "sha256": "ce989b01f97184157ff320302701d25976fc9d71816a51b3d80c03bf87b15520"
+        },
+        {
+          "bytes": 4081,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-snapshot-256\\batch-2.json",
+          "sha256": "d3a7e5e95defc8b73a915dcae42b8948b231ed60ab1c6ad8ceeb1d84d46ae0b9"
+        },
+        {
+          "bytes": 4080,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-snapshot-256\\batch-3.json",
+          "sha256": "d80bb1ef5ad8248eef833fc463b5b8101e931d23a453374b244036db0d28dff3"
+        },
+        {
+          "bytes": 4081,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-snapshot-256\\batch-4.json",
+          "sha256": "f743c55c22113ada404332ef153b61c57179168350feaa8c7737801a4d1453ca"
+        },
+        {
+          "bytes": 4081,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-snapshot-256\\batch-5.json",
+          "sha256": "b1ed5aeecc4dc1932e5ab9033198cf844bc9b84f458bf5ab932193487c4cce85"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1480192,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement-o0.exe",
+        "sha256": "bbf1ae4a03ae51e7b0b0862a2f8130403b84fb8487deb6f7d727919f3aaa7cdf"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00027174941249023436,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 905216,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00023776386649414062,
+        0.00027174941249023436,
+        0.00027521503955078126,
+        0.00035037402415039065,
+        0.0002617064458261719
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3762,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-snapshot-512\\batch-1.json",
+          "sha256": "b58c63724e7ba97773a30242dce4fc98e1d35013953d21d27f586f689e7052a8"
+        },
+        {
+          "bytes": 3763,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-snapshot-512\\batch-2.json",
+          "sha256": "df40c400cd104253aa2afb661aba1481743358f9366badc92a291da6efef7673"
+        },
+        {
+          "bytes": 3762,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-snapshot-512\\batch-3.json",
+          "sha256": "c9bf622ad084b53ba06fa1e6f1f3629365bd0ee3c64e3b9aad483c55d35076e2"
+        },
+        {
+          "bytes": 3762,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-snapshot-512\\batch-4.json",
+          "sha256": "48d6eb114fa2aacaaa42d5dcff0182138622cc60f5cd733e7af5e09602c5460e"
+        },
+        {
+          "bytes": 3758,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-snapshot-512\\batch-5.json",
+          "sha256": "ed56747e874eedd95baea0653fdaba0eeeed91bfa13a3167c08f3757a877a235"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 2.501307983222058,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1480192,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement-o0.exe",
+        "sha256": "bbf1ae4a03ae51e7b0b0862a2f8130403b84fb8487deb6f7d727919f3aaa7cdf"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0006797289748977273,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 921600,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0006797289748977273,
+        0.0006927880650340909,
+        0.0006405215879715909,
+        0.0005985329546761364,
+        0.000740586875325
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3762,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-snapshot-1024\\batch-1.json",
+          "sha256": "4f2bf2670a0a47f4972771a1cb720ca141421f49e9fdf015aca91077836bcb7b"
+        },
+        {
+          "bytes": 3763,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-snapshot-1024\\batch-2.json",
+          "sha256": "d526c2db4380b06475f18e6922e79a5c767c09b7b2030e51fe63d292e2371b4b"
+        },
+        {
+          "bytes": 3766,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-snapshot-1024\\batch-3.json",
+          "sha256": "60de0be2df7f21b3c104ac1451b745ddbd856ff86570a5bce80293ad128b586b"
+        },
+        {
+          "bytes": 3766,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-snapshot-1024\\batch-4.json",
+          "sha256": "22cd4bf7d35203b9846926129fb71796c09539d2d1870e9b36bb1a4a16ecc314"
+        },
+        {
+          "bytes": 3763,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-snapshot-1024\\batch-5.json",
+          "sha256": "37c6f0785ed9714d3d618813d7de6b3c1c61012c7495322de2085ac651ca92f1"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 2.1471020866913757,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1480192,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement-o0.exe",
+        "sha256": "bbf1ae4a03ae51e7b0b0862a2f8130403b84fb8487deb6f7d727919f3aaa7cdf"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0014594475003875,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 1024000,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0013616349970125,
+        0.0015505350056625,
+        0.0012308729134583333,
+        0.0014629427084062502,
+        0.0014594475003875
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3964,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-get-256\\batch-1.json",
+          "sha256": "319d48660eae9f184998000c250fce7f45dc40d07ce78e81cd1a05a877ca2a0b"
+        },
+        {
+          "bytes": 3961,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-get-256\\batch-2.json",
+          "sha256": "4dd99795fdd5a23c2ff911dbf6ac99b591a86f84aed796e343e8e2fb859c51b0"
+        },
+        {
+          "bytes": 3964,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-get-256\\batch-3.json",
+          "sha256": "a053fa5daa96e9bdd26c02c2b5e27b205041b6a67c343d7e799b415068495930"
+        },
+        {
+          "bytes": 3956,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-get-256\\batch-4.json",
+          "sha256": "f1cf3a68735e45ead82584e4b82048f1698e6c1512807fb504a01d1ce440086a"
+        },
+        {
+          "bytes": 3960,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-get-256\\batch-5.json",
+          "sha256": "2302d252a30b8a2648876de1736107f0b86733093d1a13aad4fa2381f0c12b1d"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1480192,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement-o0.exe",
+        "sha256": "bbf1ae4a03ae51e7b0b0862a2f8130403b84fb8487deb6f7d727919f3aaa7cdf"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.000270736328125,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 917504,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0002675689453125,
+        0.000299020703125,
+        0.0002907041015625,
+        0.0002605625,
+        0.000270736328125
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3963,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-get-512\\batch-1.json",
+          "sha256": "fd3c53ef40cccdfddaea57e3a0620efc6fbfe114e91ce93d9edc9f2c746beb9a"
+        },
+        {
+          "bytes": 3963,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-get-512\\batch-2.json",
+          "sha256": "a29773bc0c28c81ee09be9eb3c56b4b20fb89819bd61f0d114e996d1f145563a"
+        },
+        {
+          "bytes": 3963,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-get-512\\batch-3.json",
+          "sha256": "de4c149525a9ef7da562dc36f4ec37d9955194e20f4136feb23b093a822ff50a"
+        },
+        {
+          "bytes": 3963,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-get-512\\batch-4.json",
+          "sha256": "d694441b58129c52e2a35cdf1a4d5608f8158cd9d1b09be4ccf88f2c5da5f065"
+        },
+        {
+          "bytes": 3962,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-get-512\\batch-5.json",
+          "sha256": "43ba6195c3a513abc81fc09f22ec5b8889f9a9578a40047bc67a9cdafee9fc66"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 1.1088849131058962,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1480192,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement-o0.exe",
+        "sha256": "bbf1ae4a03ae51e7b0b0862a2f8130403b84fb8487deb6f7d727919f3aaa7cdf"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0003002154296875,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 995328,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0003002154296875,
+        0.000304215234375,
+        0.000297914453125,
+        0.0002948744140625,
+        0.000310413671875
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3967,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-get-1024\\batch-1.json",
+          "sha256": "f9c35f6609c1e79eee8567cb40e741827bb3bc69a772edc3a21b3b044dd73018"
+        },
+        {
+          "bytes": 3969,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-get-1024\\batch-2.json",
+          "sha256": "e91fc54a7dd22540b695fb57d2729feb001362836834f0cf506e85197b025ff9"
+        },
+        {
+          "bytes": 3968,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-get-1024\\batch-3.json",
+          "sha256": "5da860cc71bc5a6f07b2384e68674a48e141c3e8bcf35798dfce957b5abe77e2"
+        },
+        {
+          "bytes": 3969,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-get-1024\\batch-4.json",
+          "sha256": "a56b67464e3eeccfef281538e7f318bc515a808d0fe7cbe700d71e45536ea168"
+        },
+        {
+          "bytes": 3966,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-get-1024\\batch-5.json",
+          "sha256": "dbd92dedb9df5e7ed2b62d7c0ad6a51c58e39cb8c864539783bf2d2bdedc78b8"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 1.0223016935104545,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1480192,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement-o0.exe",
+        "sha256": "bbf1ae4a03ae51e7b0b0862a2f8130403b84fb8487deb6f7d727919f3aaa7cdf"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0003069107421875,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 1044480,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0003069107421875,
+        0.0003040927734375,
+        0.000297881640625,
+        0.0003095556640625,
+        0.00032036015625
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3964,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-set-256\\batch-1.json",
+          "sha256": "5bc15b6ddf4d745de4bf61e7ad0df06414ff01de2f5b87bb2a48297a8e4c9a26"
+        },
+        {
+          "bytes": 4283,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-set-256\\batch-2.json",
+          "sha256": "f707d25dd7c7e116cd352e1cc8c25847ceedf4d8eb058810013e17344b25a51b"
+        },
+        {
+          "bytes": 3965,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-set-256\\batch-3.json",
+          "sha256": "0f6ea2707e48464764b347f8621fa5281b6e2c3c994ae338e77343570315a565"
+        },
+        {
+          "bytes": 3968,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-set-256\\batch-4.json",
+          "sha256": "dd082e1d1df5311d1edbb1f7ba21587a3ead3201e27d343e6431372e55f5ddb8"
+        },
+        {
+          "bytes": 3961,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-set-256\\batch-5.json",
+          "sha256": "996e6a227e55f006c7077ef660da130d5b78fdd69d6cb6948a7f2e517a6a9f9b"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1481216,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement-o0.exe",
+        "sha256": "f848e10099438eaa338df80f9af69f370b046a60f048ba893d11d17cbf19c4a3"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00015002643229166667,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 929792,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00012415771484375,
+        0.00012889466145833334,
+        0.00015863984374999999,
+        0.00015002643229166667,
+        0.000167198828125
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3962,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-set-512\\batch-1.json",
+          "sha256": "5b9b861d743c7b04e1e99558feebf64d3c8734350a789c1ba74dc41a5db6faad"
+        },
+        {
+          "bytes": 3964,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-set-512\\batch-2.json",
+          "sha256": "e284f2754e59393403ffd8f6dd5275b58d5c1129b6712c48a2544c41fa15aa10"
+        },
+        {
+          "bytes": 3969,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-set-512\\batch-3.json",
+          "sha256": "9a862ad0d373e60c5e0aed524793eda5510da16ee54d6ffb74ebbeaa5f6ca428"
+        },
+        {
+          "bytes": 3966,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-set-512\\batch-4.json",
+          "sha256": "b5b12668ccd584f41c9ec20c774c47b1308be0f77b2b1730422aa0645a9722e8"
+        },
+        {
+          "bytes": 3969,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-set-512\\batch-5.json",
+          "sha256": "3befbf910e450e197bef87f464487e2116a596108961547f036eeebf109b450d"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 1.0408816849114262,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1481216,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement-o0.exe",
+        "sha256": "f848e10099438eaa338df80f9af69f370b046a60f048ba893d11d17cbf19c4a3"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.000156159765625,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 1040384,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00016160078125,
+        0.000139855859375,
+        0.00013826028645833334,
+        0.000156159765625,
+        0.00018379739583333332
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 4285,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-set-1024\\batch-1.json",
+          "sha256": "cfc8897e5e532fedb2f2d0bd83b7bcd9bb479c0807650f5462c766ac9445cfd7"
+        },
+        {
+          "bytes": 3973,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-set-1024\\batch-2.json",
+          "sha256": "7fb4dceda9cb021ce5c92e38a997c0b7d48488770f2664837b15e19fbdbeb533"
+        },
+        {
+          "bytes": 3973,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-set-1024\\batch-3.json",
+          "sha256": "182fc10983bbe5f17fbd395e9dca3e37a0cd54a8802ab6cfdbf4b8605ff164bb"
+        },
+        {
+          "bytes": 3972,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-set-1024\\batch-4.json",
+          "sha256": "31c6ed970cb4624720d3dc5ff2f131c431e36b4c90c91f5fce581972d295edc4"
+        },
+        {
+          "bytes": 3964,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-set-1024\\batch-5.json",
+          "sha256": "1c2a93b9a2bd8790f1f2595c9622ff9bade18b09b0f5c97b56a8603fe42db1bd"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 0.985218963951682,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1481216,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement-o0.exe",
+        "sha256": "f848e10099438eaa338df80f9af69f370b046a60f048ba893d11d17cbf19c4a3"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0001538515625,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 1064960,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00019219755859375,
+        0.00017427486979166665,
+        0.00013822369791666666,
+        0.00014177005208333333,
+        0.0001538515625
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 4000,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-unset-256\\batch-1.json",
+          "sha256": "14cfe4f976502a881011f1f26d2a8e31082ad9979a46e1cfa7be6f3c6f3baf78"
+        },
+        {
+          "bytes": 3997,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-unset-256\\batch-2.json",
+          "sha256": "20c22d0cf504dbb6d39ad1826c88ea7059f6b236b1bf804a30b8fd138e1fd979"
+        },
+        {
+          "bytes": 4000,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-unset-256\\batch-3.json",
+          "sha256": "f9eddc25d6fccf4e383fe34e832ce78f75546dda5989fec2e398efb13f53d9bc"
+        },
+        {
+          "bytes": 3999,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-unset-256\\batch-4.json",
+          "sha256": "ce04c525393a15c4bb8ff499371adf05f79f57d2745464bbad09913e3ac05f87"
+        },
+        {
+          "bytes": 4002,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-unset-256\\batch-5.json",
+          "sha256": "44f421eb5e0c6ae75498a5fb22f29624dd48ee5c7a31905fb72bcca25178ef91"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1481216,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement-o0.exe",
+        "sha256": "1ae87b0f7b0301e74b0a8dfb6c968d4af476c7af0e8d9e5dc4a749ac485929f5"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0001145849609375,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 815104,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0001145849609375,
+        0.000120496875,
+        0.00011620791015625,
+        0.00011139140625,
+        0.0001040060546875
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 4003,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-unset-512\\batch-1.json",
+          "sha256": "0d7ebd0a6e752acb2c03acb522f701e3687bcd0b46a30d7c760493115f6a6e58"
+        },
+        {
+          "bytes": 4001,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-unset-512\\batch-2.json",
+          "sha256": "8f2a0029ec91cc6a02798a47dca0e5f7d135dc8a4605cbfaf0db717b880e59f6"
+        },
+        {
+          "bytes": 3999,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-unset-512\\batch-3.json",
+          "sha256": "3dd0c991da6ab38456546ef96fffcdffad9a6f009a9e9c9fe03107d992795fa5"
+        },
+        {
+          "bytes": 4004,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-unset-512\\batch-4.json",
+          "sha256": "f5ff248690210c2b2b5bebe500703317910c8670a85b67fa7404a56be72b5e1b"
+        },
+        {
+          "bytes": 4004,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-unset-512\\batch-5.json",
+          "sha256": "3805f009c7703323520a648d177fe27221cf9b88e67c26d1f27981a98165285a"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.3063757617079303,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1481216,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement-o0.exe",
+        "sha256": "1ae87b0f7b0301e74b0a8dfb6c968d4af476c7af0e8d9e5dc4a749ac485929f5"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.000149691015625,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 933888,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00013481162109375,
+        0.0001430970703125,
+        0.000149691015625,
+        0.00018325403645833333,
+        0.00016025247395833332
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 4003,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-unset-1024\\batch-1.json",
+          "sha256": "7d412094ab774e558f3646de2c60a6261561ffbf4850a2ba34842c136db78800"
+        },
+        {
+          "bytes": 4009,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-unset-1024\\batch-2.json",
+          "sha256": "3f4031f4ef55b40d87b3681728908f4ed2622b0cb0d3d1e6fed69a8fda1bbb39"
+        },
+        {
+          "bytes": 4317,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-unset-1024\\batch-3.json",
+          "sha256": "ce0d958aef04d81d172d2ea2a3ef7f69d3178d54375a89048e5c0b4a73941151"
+        },
+        {
+          "bytes": 4004,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-unset-1024\\batch-4.json",
+          "sha256": "7a1f9294aab356349b8f1fb1ba9c8db03bf8efac8e81c2233a6856cd940f4ba0"
+        },
+        {
+          "bytes": 4008,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-unset-1024\\batch-5.json",
+          "sha256": "98edcacd2a520c8b3ec678652ba35135ab3a97f6c1d288444f75d1c7cab8912e"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.365994361649474,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1481216,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement-o0.exe",
+        "sha256": "1ae87b0f7b0301e74b0a8dfb6c968d4af476c7af0e8d9e5dc4a749ac485929f5"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00020447708333333332,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 1064960,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00020509921875,
+        0.00020447708333333332,
+        0.0001916162109375,
+        0.000202980859375,
+        0.00022196302083333334
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 4135,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-full-replace-1024\\batch-1.json",
+          "sha256": "617cbc4f8cdb4d61d9f6465a326ef318791a075f69e37182c6f29c0baa4ad32a"
+        },
+        {
+          "bytes": 4138,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-full-replace-1024\\batch-2.json",
+          "sha256": "ff14dfbb3d0f676d6204b50003a7901ead44caf7b13713d79a76357ca92d13e5"
+        },
+        {
+          "bytes": 4138,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-full-replace-1024\\batch-3.json",
+          "sha256": "8aba9d034bd477450d5f29f39e05a1720dc8cbaa72d364d06873d66548b2c0bb"
+        },
+        {
+          "bytes": 4138,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-full-replace-1024\\batch-4.json",
+          "sha256": "6fd89e36a102b53f60a6b77cd84ffd195197b653be98a5a65692c36fd5bb9f86"
+        },
+        {
+          "bytes": 4138,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-full-replace-1024\\batch-5.json",
+          "sha256": "68846719ac6ecda8bfb0bc7d68bfb9413859a75e81ccfac59cb54d3834474bd9"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18572,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\full-replace\\measurement.xiaoc",
+        "sha256": "41b3ce0fe042aaa08002e366f65f261413f9a082ae56cd9d71937c3c13811c8e"
+      },
+      "case": "full-replace",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1474048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\full-replace\\measurement-o0.exe",
+        "sha256": "37eb6a2a58be50528cc4276c6b1ba81f3ef490a7dff3c14f79765f62259f7e3a"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.00015399322916666668,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 3739648,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00015124479166666666,
+        0.00016176888020833334,
+        0.00015399322916666668,
+        0.00017376223958333334,
+        0.00014829010416666667
+      ],
+      "source": {
+        "bytes": 3016,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\full-replace\\measurement.xiao",
+        "sha256": "0c8eb78116619c71030e909170c35457e0d219a8a8db6ba15946752a68df3c4c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3750,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-overflow-1024\\batch-1.json",
+          "sha256": "ac1b780879e4827d3ff0a40f59153613449be0e483173b80dbbbf1c40501eb7f"
+        },
+        {
+          "bytes": 4065,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-overflow-1024\\batch-2.json",
+          "sha256": "ed5a01027e88d002cb724a1420f694cda2e5d9911a9685b9893842e06479cc68"
+        },
+        {
+          "bytes": 4064,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-overflow-1024\\batch-3.json",
+          "sha256": "6fcc8ad646a29e75ab0e80f8f7b8bf2380f2663264282f52ed420be7c62e3a2d"
+        },
+        {
+          "bytes": 3746,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-overflow-1024\\batch-4.json",
+          "sha256": "9a621063ea0a55f454b6b93f60eea2f3002fa9a52de89cb67cdf4e2f5a52eba0"
+        },
+        {
+          "bytes": 4068,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-overflow-1024\\batch-5.json",
+          "sha256": "a973ae7da72b9efd0c05f242a9f12d9b3a3ad440d4d727c71a47510d4ac81b6f"
+        }
+      ],
+      "bytecode": {
+        "bytes": 26444,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\overflow\\measurement.xiaoc",
+        "sha256": "9fe8cbe3ac8cdabd8b4f5896a484f66be03ef8011851901d12735d560ae6c7f1"
+      },
+      "case": "overflow",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1500160,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\overflow\\measurement-o0.exe",
+        "sha256": "e1e0385c958d98f226bd0067f4b61cd272336579d7d7accdfa03de5b568423c4"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.0003945953125,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 3764224,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.000437133203125,
+        0.0004076986328125,
+        0.0003513576171875,
+        0.0003945953125,
+        0.0003604763888888889
+      ],
+      "source": {
+        "bytes": 4455,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\overflow\\measurement.xiao",
+        "sha256": "b851b65d790ce89cc99e9db1e13c4d00343e8901ebceb5ce70f441f1da79206a"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 4080,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-snapshot-256\\batch-1.json",
+          "sha256": "0707bda236413a5dc0f05cba73cd0f1c9adbb5bdf1fa49f59615d990af6ca9c7"
+        },
+        {
+          "bytes": 4082,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-snapshot-256\\batch-2.json",
+          "sha256": "99ba6e7bb10591b965af59665f21ec3e13791185be5efddb03db2d56a873c84f"
+        },
+        {
+          "bytes": 4080,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-snapshot-256\\batch-3.json",
+          "sha256": "1c7ff7059b201ce0660a337c4d3c351f8548d325f0ae6ed22551b8d09729c3dc"
+        },
+        {
+          "bytes": 4082,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-snapshot-256\\batch-4.json",
+          "sha256": "1b73a3b0664765422a77758f3282cf72330c60286547239892c67b95144ca843"
+        },
+        {
+          "bytes": 4080,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-snapshot-256\\batch-5.json",
+          "sha256": "6ffe994325e37dbb126ffcc98b9a32585d695e66e383b9867853d5b65474cca1"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1443328,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement-o3.exe",
+        "sha256": "e917a81d87865abdb6e1a85e1c563763734661f6d52bf6beca195688fb05258a"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00027538124970703125,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 880640,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00027538124970703125,
+        0.00025827343756640623,
+        0.0002537482433808594,
+        0.00028582675906835937,
+        0.0002789437493222656
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3763,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-snapshot-512\\batch-1.json",
+          "sha256": "b62adea27979326295862585a0ade5cc55783893c8e14c8164c4203c8eb28db7"
+        },
+        {
+          "bytes": 3758,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-snapshot-512\\batch-2.json",
+          "sha256": "0c195a1a1dc1964c2dd76e10c94ffea5f5e8bce2aa75fa4ade5c2612bb78d47b"
+        },
+        {
+          "bytes": 3763,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-snapshot-512\\batch-3.json",
+          "sha256": "81c366bf920051fd647b8a56496cc0ec5095109ee7d6f3b500e88662554996aa"
+        },
+        {
+          "bytes": 3760,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-snapshot-512\\batch-4.json",
+          "sha256": "902f4f3d144d2ee37f3e6b9e8ad6070bb5bc7399a7643be69f06a38e154cbde0"
+        },
+        {
+          "bytes": 3763,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-snapshot-512\\batch-5.json",
+          "sha256": "5e466ccfc66934687c1dfd631866386eca75dc9b7e696f2828538dde8af877f9"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 2.0593079264322203,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1443328,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement-o3.exe",
+        "sha256": "e917a81d87865abdb6e1a85e1c563763734661f6d52bf6beca195688fb05258a"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0005670947903125,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 958464,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0005875437512552084,
+        0.0005670947903125,
+        0.0005395651026770834,
+        0.0005844708330208333,
+        0.0005578583341041667
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3763,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-snapshot-1024\\batch-1.json",
+          "sha256": "9c393a58707425c3dde90a20aa0cde40f24bdfb5a0a28a03c9f0dff9cb17c2fd"
+        },
+        {
+          "bytes": 3762,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-snapshot-1024\\batch-2.json",
+          "sha256": "2ddcedcf077c0faa384421ac5886059de0549d6dd61521eb5777100516e9550a"
+        },
+        {
+          "bytes": 3759,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-snapshot-1024\\batch-3.json",
+          "sha256": "92edb138b36c98fc3321cbc0a4cbe008343dfa7439a54bd1f75d49d50b3b49c3"
+        },
+        {
+          "bytes": 3765,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-snapshot-1024\\batch-4.json",
+          "sha256": "7c5137714f2ca44c5f32cb56e48d6c45ca23bbdf5c773445e168122d1797cdbc"
+        },
+        {
+          "bytes": 3764,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-snapshot-1024\\batch-5.json",
+          "sha256": "ef26fc89264d402496cbad5a3ed5e18287d9c80fe05992298e55522180f5d622"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 2.2371370251230744,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1443328,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement-o3.exe",
+        "sha256": "e917a81d87865abdb6e1a85e1c563763734661f6d52bf6beca195688fb05258a"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0012686687521625,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 974848,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00123421041765625,
+        0.0012686687521625,
+        0.001256408754125,
+        0.0014992062533625001,
+        0.0015072781273645832
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3963,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-256\\batch-1.json",
+          "sha256": "5383d3a23c392011c3a3b666d3193c9602bf6df000b32b451a7fca5b76b6e9bb"
+        },
+        {
+          "bytes": 3963,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-256\\batch-2.json",
+          "sha256": "2963cca555fca4d065c8dc7f12f8f27b4d040312cf780757a919596698e325e9"
+        },
+        {
+          "bytes": 3964,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-256\\batch-3.json",
+          "sha256": "cb63957507c0c372987733fad3156683eeb301748ebe96dd1b2e90c87c75ec41"
+        },
+        {
+          "bytes": 3964,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-256\\batch-4.json",
+          "sha256": "85b5d4d794b3a1e72ec4ef3851dc853508f4121c07684685db6f0768be6d014e"
+        },
+        {
+          "bytes": 3961,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-256\\batch-5.json",
+          "sha256": "7916a5fd3e12b4418f44a4f8d580998b2cac839b39f49fd2070f4f728a1be32e"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1443328,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement-o3.exe",
+        "sha256": "e917a81d87865abdb6e1a85e1c563763734661f6d52bf6beca195688fb05258a"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0002895201171875,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 561152,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.000277915234375,
+        0.0002601525390625,
+        0.0003341267578125,
+        0.0002895201171875,
+        0.00031727421875
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3964,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-512\\batch-1.json",
+          "sha256": "df65faf0b5858949faf9da0cb1eb825f2a92287bac6db7236827cec5dea96b86"
+        },
+        {
+          "bytes": 3968,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-512\\batch-2.json",
+          "sha256": "7a7c7abbd3448d315f7f4b9a2a8c996caabba17c57ecf3558e298d6d2b1ad02e"
+        },
+        {
+          "bytes": 3964,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-512\\batch-3.json",
+          "sha256": "6ceba976dd8373c1a09f9fee8ded6f1d490c770916be09063e63df44206f4b25"
+        },
+        {
+          "bytes": 3963,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-512\\batch-4.json",
+          "sha256": "4cd91db3e8f5904d831b347c138641fab082252c482e0b78861c17d0ce359e73"
+        },
+        {
+          "bytes": 3964,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-512\\batch-5.json",
+          "sha256": "a8136cb5b65a0a1cfae25ce90669f2dca6cbe7345f09efcbba98a240ba55b8d9"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 0.9966369906739982,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1443328,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement-o3.exe",
+        "sha256": "e917a81d87865abdb6e1a85e1c563763734661f6d52bf6beca195688fb05258a"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00028854645833333335,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 942080,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0003499697265625,
+        0.00028854645833333335,
+        0.0002837150390625,
+        0.000280399609375,
+        0.0003020345703125
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3969,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-1024\\batch-1.json",
+          "sha256": "fb29e028be4de0a344410eec7af9fa42155ad15481f44e416c7afea76bdc3f52"
+        },
+        {
+          "bytes": 3969,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-1024\\batch-2.json",
+          "sha256": "81da5a4ca08ed34627fa1c87e902badcb23ac808f53e5cdeed6d5aa8271944ac"
+        },
+        {
+          "bytes": 3967,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-1024\\batch-3.json",
+          "sha256": "656df1894457a583c0776deec22f2b345fc22c24236b6e336cc9ee7013333a22"
+        },
+        {
+          "bytes": 3966,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-1024\\batch-4.json",
+          "sha256": "2056cdb8d2455f014185a2e0e4477337db9dbe7798a95038f4834ab80c4bcb69"
+        },
+        {
+          "bytes": 3969,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-1024\\batch-5.json",
+          "sha256": "a6da2df80c0cde6bab131b83c6dcedb64cd071df07639e29c2ec752489d3fd3c"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 1.12343463790854,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1443328,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement-o3.exe",
+        "sha256": "e917a81d87865abdb6e1a85e1c563763734661f6d52bf6beca195688fb05258a"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0003241630859375,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 1007616,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0002700240234375,
+        0.0003301380859375,
+        0.000330101953125,
+        0.0003006578125,
+        0.0003241630859375
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3966,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-256\\batch-1.json",
+          "sha256": "20766132c349585e72a127ea248f8155f18da21bdd1db9cb69dc75c3dfdd3216"
+        },
+        {
+          "bytes": 3965,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-256\\batch-2.json",
+          "sha256": "78c06c93cdb760d8fbbb877c061d04569af1f6dd30f7f64bea66c5eef2a2de61"
+        },
+        {
+          "bytes": 3967,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-256\\batch-3.json",
+          "sha256": "c4f77a3b7f95f95086a7559ecfe6f61b64ec15ed7a3287d9cb5a7d5bacc3b2b0"
+        },
+        {
+          "bytes": 3963,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-256\\batch-4.json",
+          "sha256": "34fc8bf428e6ee19f9dc4aec5e7122fcfd2598031a4197e442c6b020b643cede"
+        },
+        {
+          "bytes": 3967,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-256\\batch-5.json",
+          "sha256": "a1fa05a2c029796b70c7242d8858d8c82c48767cdd70bba10bcc0e22671adb05"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1443840,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement-o3.exe",
+        "sha256": "0916a53953b657654a44c128fb0748c35df9477a830d0223f473002f28c7ef36"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00012379990234375,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 827392,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00012558857421875,
+        0.00014357685546875,
+        0.00012379990234375,
+        0.0001143060546875,
+        0.00011983681640625
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3966,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-512\\batch-1.json",
+          "sha256": "a20c7e42193bd88a25a741a80ade5bd70bedfaf96b3f5c5d0ccd394372fcd424"
+        },
+        {
+          "bytes": 3967,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-512\\batch-2.json",
+          "sha256": "1cb799e74ce603017f440371b324fb74fd52abb382c6e818150e3a016352b053"
+        },
+        {
+          "bytes": 3966,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-512\\batch-3.json",
+          "sha256": "0fe1cfdb548d7ca624884f1fcd4868fbeff1cf2019c2ee8c14045a62efe2aa5d"
+        },
+        {
+          "bytes": 4279,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-512\\batch-4.json",
+          "sha256": "5e4a3e1f9ee92bf6f08bbfeab01da6f1322fd0cfbdc282bcef1cd2443198e2f4"
+        },
+        {
+          "bytes": 3963,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-512\\batch-5.json",
+          "sha256": "1b296bef16ff5581e9c7b8b53426b616c4babd12927501f015dfe509da80b4ba"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 1.0076287103290893,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1443840,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement-o3.exe",
+        "sha256": "0916a53953b657654a44c128fb0748c35df9477a830d0223f473002f28c7ef36"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0001247443359375,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 1003520,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0001247443359375,
+        0.00013827747395833335,
+        0.0001264212890625,
+        0.000121593359375,
+        0.00012343671875
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3972,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-1024\\batch-1.json",
+          "sha256": "6c56a22fe56564d2ac6fdfc31795e0265272789d9e7a7db960c241070bdb6f07"
+        },
+        {
+          "bytes": 3971,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-1024\\batch-2.json",
+          "sha256": "da308ad86df0befbb79a855315d933bb8cd148e0071657e572f01d51b7bacd15"
+        },
+        {
+          "bytes": 3969,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-1024\\batch-3.json",
+          "sha256": "806939082ea54f91feabb69dcbab2b31e93f184204809537320ac6ca332a4afb"
+        },
+        {
+          "bytes": 3966,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-1024\\batch-4.json",
+          "sha256": "1628d8c94e62ab0c037b738dc224a8d356f8e23a74c002881afd155db41dfb84"
+        },
+        {
+          "bytes": 3965,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-set-1024\\batch-5.json",
+          "sha256": "33f78a4d9698127e8a3472c69276b562f65320379e008afae8519429c5f8e70f"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 1.145859265278515,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1443840,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement-o3.exe",
+        "sha256": "0916a53953b657654a44c128fb0748c35df9477a830d0223f473002f28c7ef36"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.000142939453125,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 1032192,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00013136533203125,
+        0.00014523974609375,
+        0.0001467138671875,
+        0.000142939453125,
+        0.0001391515625
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\set\\measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3999,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-unset-256\\batch-1.json",
+          "sha256": "868318c9fe11fca2baa61c675eb420df4a8378c3102929fe9e896bd89e539d17"
+        },
+        {
+          "bytes": 4000,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-unset-256\\batch-2.json",
+          "sha256": "17c0aef740ad3350ba50f7033650b8d782818b5bc3971e78360a80b1519de516"
+        },
+        {
+          "bytes": 4002,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-unset-256\\batch-3.json",
+          "sha256": "4f17f784ab863dbcce086fcf5452fb8026073228c0e93d31fcec145af03df2ee"
+        },
+        {
+          "bytes": 4003,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-unset-256\\batch-4.json",
+          "sha256": "c54beb7355a3163991c99a375a7309e3c478e6fad3b0d8acce45f64d1ce991dd"
+        },
+        {
+          "bytes": 4003,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-unset-256\\batch-5.json",
+          "sha256": "b8e438ad9d6d180863c7be354697dd3f99e3d1a5bef74b971953cc0a12ec52b2"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1443840,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement-o3.exe",
+        "sha256": "c4d390b8e37a7be1b79098b74117bb13a71a7ae3bc5184ba3679f0c10a21abb9"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0001054650390625,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 851968,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00010153232421875,
+        0.000107308203125,
+        0.0001054650390625,
+        0.00010435634765625,
+        0.00010675341796875
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 4319,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-unset-512\\batch-1.json",
+          "sha256": "8b5c8ba90aa6afdc527284561b21c5263143a8dbc3088d7631ee7335572f8e6c"
+        },
+        {
+          "bytes": 4003,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-unset-512\\batch-2.json",
+          "sha256": "fdb2c631c95a98e5ec4b768b60b7731f5de200e86ae5310fc969159c74ee4005"
+        },
+        {
+          "bytes": 4319,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-unset-512\\batch-3.json",
+          "sha256": "a5c4ac5023c6007b43aec24060d6e0d4344b032b55089cc57ba92b810cc24522"
+        },
+        {
+          "bytes": 3995,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-unset-512\\batch-4.json",
+          "sha256": "6daef6141d9154050afbcd7fc7ab4906af353e119ef00ad0bb3eebaf1c167853"
+        },
+        {
+          "bytes": 4003,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-unset-512\\batch-5.json",
+          "sha256": "1df80442d63bec64783a1e5b8e1f18f3755d2fb742936c3db3ba028279e30a7b"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.1776630412304632,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1443840,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement-o3.exe",
+        "sha256": "c4d390b8e37a7be1b79098b74117bb13a71a7ae3bc5184ba3679f0c10a21abb9"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00012420227864583334,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 978944,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00012482174479166668,
+        0.00012132529296875,
+        0.00012420227864583334,
+        0.0001211375,
+        0.00013835377604166666
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 4002,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-unset-1024\\batch-1.json",
+          "sha256": "165e2af4c78d1fa1fa3905086faada54464564304501462e57b2bd4ebdaa7309"
+        },
+        {
+          "bytes": 4008,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-unset-1024\\batch-2.json",
+          "sha256": "2b16e71e474d3b6fcf9d8af07aeed3c20b5d79cdb2d149daa6a47fb819180c89"
+        },
+        {
+          "bytes": 4001,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-unset-1024\\batch-3.json",
+          "sha256": "8984bf8d509bf7a6035ff9ffe54bf1e95027225f16003e00485a55af7b760e08"
+        },
+        {
+          "bytes": 4007,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-unset-1024\\batch-4.json",
+          "sha256": "7a7eb5a5ac56e83b7e5b28cda46821f89b0ba75959aebf519b4a56a0e4dd33a1"
+        },
+        {
+          "bytes": 4008,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-unset-1024\\batch-5.json",
+          "sha256": "bb62f01c4f6828863466ff7e2d270d9db619deeeea085e8f3f70c62fa7456a7b"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.273314543280634,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1443840,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement-o3.exe",
+        "sha256": "c4d390b8e37a7be1b79098b74117bb13a71a7ae3bc5184ba3679f0c10a21abb9"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00015814856770833332,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 983040,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.000169716796875,
+        0.00015814856770833332,
+        0.00015491640625,
+        0.00016525338541666665,
+        0.00015792083333333333
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\unset\\measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 4137,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-full-replace-1024\\batch-1.json",
+          "sha256": "f8ff57ab632dd32e77c1bc123588fcae4c1449b77307d4edbeb4ba8bef3f7c30"
+        },
+        {
+          "bytes": 4132,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-full-replace-1024\\batch-2.json",
+          "sha256": "efe99d3a0f9a74db7ce05146f46504c862fd4b573e6b6ca7f22ed29ccb5b5910"
+        },
+        {
+          "bytes": 4132,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-full-replace-1024\\batch-3.json",
+          "sha256": "ffc012de8408e3310ba605b3ab66659c86fa9d2b10480a0d3738f6c67dc97b53"
+        },
+        {
+          "bytes": 4134,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-full-replace-1024\\batch-4.json",
+          "sha256": "5cb5dde98abfac48a7c7c62787f0046cd41433f44a1aefb766365f1d7511a386"
+        },
+        {
+          "bytes": 4136,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-full-replace-1024\\batch-5.json",
+          "sha256": "733c05a2a089244e541a42ba307ae92221a28074ab6d107b1b7a13fec36fbee3"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18572,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\full-replace\\measurement.xiaoc",
+        "sha256": "41b3ce0fe042aaa08002e366f65f261413f9a082ae56cd9d71937c3c13811c8e"
+      },
+      "case": "full-replace",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1437696,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\full-replace\\measurement-o3.exe",
+        "sha256": "8691e25406486d11b4dbb4d6586a323ec01396eb8da0d883601279fe3956dcbd"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.0001100287109375,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 3706880,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00011186708984375,
+        0.000115771875,
+        0.0001076455078125,
+        0.00010597109375,
+        0.0001100287109375
+      ],
+      "source": {
+        "bytes": 3016,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\full-replace\\measurement.xiao",
+        "sha256": "0c8eb78116619c71030e909170c35457e0d219a8a8db6ba15946752a68df3c4c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 4062,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-overflow-1024\\batch-1.json",
+          "sha256": "acbf07b6f4f69cb4428c6febdddc536b887025c9453fbc2019b95f75abaf249e"
+        },
+        {
+          "bytes": 4065,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-overflow-1024\\batch-2.json",
+          "sha256": "ae4e48527ca4f17863426e7402be82c48fc858bbdb4d3f2cd3c553fb6d7ff271"
+        },
+        {
+          "bytes": 4062,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-overflow-1024\\batch-3.json",
+          "sha256": "32e70528823174c8551fe3476e5fb547e0455ebb608ae2af58f32b9643ce2477"
+        },
+        {
+          "bytes": 4063,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-overflow-1024\\batch-4.json",
+          "sha256": "6848a10838ee5c392dcb8478b053ae4e6539c3caaba861b73487c0807e7b4ed0"
+        },
+        {
+          "bytes": 4060,
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-overflow-1024\\batch-5.json",
+          "sha256": "6f94142636ef8f29e668761ee8518fc188de6f4f38a15783d56d97979d884c94"
+        }
+      ],
+      "bytecode": {
+        "bytes": 26444,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\overflow\\measurement.xiaoc",
+        "sha256": "9fe8cbe3ac8cdabd8b4f5896a484f66be03ef8011851901d12735d560ae6c7f1"
+      },
+      "case": "overflow",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 1461760,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\overflow\\measurement-o3.exe",
+        "sha256": "f4bfa86b9d012b36f60a96ad9f299bd755c454f6033014bef569aced07a79efd"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.000347023125,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 3739648,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.000376888671875,
+        0.0003372130859375,
+        0.00034669765625,
+        0.000355448046875,
+        0.000347023125
+      ],
+      "source": {
+        "bytes": 4455,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\overflow\\measurement.xiao",
+        "sha256": "b851b65d790ce89cc99e9db1e13c4d00343e8901ebceb5ce70f441f1da79206a"
+      },
+      "status": "pass"
+    }
+  ],
+  "runtime": {
+    "bytes": 27860696,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\fixed-runtime\\xiao_runtime.lib",
+    "sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a"
+  },
+  "runtime_abi": 65556,
+  "runtime_unchanged": true,
+  "schema": 1,
+  "stdlib_interface": 1,
+  "target": "x86_64-pc-windows-msvc"
+}

@@ -1,0 +1,18 @@
+{
+  "runtime": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\fixed-runtime\\xiao_runtime.lib",
+    "bytes": 27860696,
+    "sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a"
+  },
+  "vm_runtime": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_runtime-cc614844e2614bb9.rlib",
+    "bytes": 7969580,
+    "sha256": "16c232bd6ebfcf1b53db5142fd8bb14b82f447e19d671471a41de5afba061de4"
+  },
+  "binary": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+    "bytes": 11193344,
+    "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+  },
+  "unchanged": true
+}

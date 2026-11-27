@@ -1,0 +1,22 @@
+{
+  "worktree": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2",
+  "head": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "status": [],
+  "status_with_ignored": [],
+  "baseline_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "product_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "baseline_tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "product_tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "tracked_files": 10705,
+  "tracked_tree_manifest": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\tracked-tree.json",
+    "bytes": 1808515,
+    "sha256": "ff44cb0232b0905f186744d826a935b2e0d001055852aaf8d4109c682d4eb6be"
+  },
+  "archive": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\source.tar",
+    "bytes": 672337920,
+    "sha256": "1ec24b7a18811a1858143b6c8b57a4562742589ff879762ea29f702541642f7a"
+  }
+}

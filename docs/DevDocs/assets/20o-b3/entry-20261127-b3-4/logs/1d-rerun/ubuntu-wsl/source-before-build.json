@@ -1,0 +1,140 @@
+{
+  "recorded_at_utc": "2026-11-27T18:02:54.376884+00:00",
+  "source": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/src",
+  "label": "before-build",
+  "baseline_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "worktree": null,
+  "tracked_files": 10705,
+  "tracked_bytes": 662816964,
+  "tracked_path_sha256_rollup": "72471ec49817201cf5a9a8f69c9d221745bfc4fe4fea3922394c6f363c780468",
+  "locks": {
+    "core/rust/Cargo.lock": {
+      "bytes": 19660,
+      "sha256": "28d38451ba0490b70d2d136bc3268acad8de02b5658bf826f842069019161c53",
+      "git_blob": "289e73cf35899dc28699c5c66f4ccd39331a7d2c"
+    },
+    "tests/benchmarks/Cargo.lock": {
+      "bytes": 19264,
+      "sha256": "8ac4f16af6e8baf5b71e0e0b5d89397eb5ae7bf2e3cc5a96053683c6e8b4b577",
+      "git_blob": "e76e62666709db695fd5467bf984fdb638d1497a"
+    },
+    "tests/research/concurrency/Cargo.lock": {
+      "bytes": 170,
+      "sha256": "1b1c040b33912dc265b95867a484a7eda98ef9bf8f5da38405bc374d55ec40d9",
+      "git_blob": "786375c35038e3b08ae0280521c525c9c65eb0eb"
+    }
+  },
+  "fixtures": {
+    "core/rust/crates/xiao-driver/tests/20o_b3_env_tutorial.rs": {
+      "bytes": 4995,
+      "sha256": "7d169b170db82ddf28663a9bdfbc08465462981262b43dfc40972554e5ba4328",
+      "git_blob": "2cae6737754a5768726917c80c103840f1c146c8"
+    },
+    "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials.json": {
+      "bytes": 10750,
+      "sha256": "25665474f2f3df3783f19e244d6151b46f4c690c5cc4fc3d7ceb050656543f6a",
+      "git_blob": "4c95a4d1235fdb3f64c61e562124fb2130c83d9f"
+    },
+    "tests/fixtures/docs/env/.gitattributes": {
+      "bytes": 46,
+      "sha256": "275137a5faac6951e42d2f4214563ebf19d111d67c386646f32f8882ae0624b3",
+      "git_blob": "1a8618e47b499fc8501f1c3333238ce222866488"
+    },
+    "tests/fixtures/docs/env/tutorial.input.json": {
+      "bytes": 69,
+      "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522",
+      "git_blob": "2d522910128b600826234c1c3e95b56320fcb57c"
+    },
+    "tests/fixtures/docs/env/tutorial.stdout": {
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491",
+      "git_blob": "b9950d503b9fab110ae177193c26abfc17d1d7b5"
+    },
+    "tests/fixtures/docs/env/tutorial.xiao": {
+      "bytes": 467,
+      "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb",
+      "git_blob": "e72a682887cf9152bc93d2fa83ac008bff500bc9"
+    }
+  },
+  "harness": {
+    "core/rust/crates/xiao-driver/examples/numeric_perf/README.md": {
+      "bytes": 720,
+      "sha256": "b024fdef7c6c2558c5bd48daa83c184942f0232abc7620903938d194584898d6",
+      "git_blob": "012328a62709551c51946db428d62d2bd646d6c2"
+    },
+    "core/rust/crates/xiao-driver/examples/numeric_perf/b6_cases.rs": {
+      "bytes": 18471,
+      "sha256": "53b8896273de0b78999c953b9f003c326ce6af83070f9d2a8c991d38c5e1928c",
+      "git_blob": "0ad232f00a82eb25187fa86cf041258253182296"
+    },
+    "core/rust/crates/xiao-driver/examples/numeric_perf/calibration.rs": {
+      "bytes": 796,
+      "sha256": "93ae4e4d7c6f8ca9220ff076e8825f5c803f4fc9bb39c314584d9e019a30a4f2",
+      "git_blob": "6184a41ce3982f2db91cb7d8302d2f7113beb087"
+    },
+    "core/rust/crates/xiao-driver/examples/numeric_perf/cases.rs": {
+      "bytes": 5622,
+      "sha256": "27b25caee5202ecfba2372fb487e47cb9155a55a831e65a737c21e9ba8d85322",
+      "git_blob": "010157a74631e10f30784cc690a351fe0be2a3d7"
+    },
+    "core/rust/crates/xiao-driver/examples/numeric_perf/identity.rs": {
+      "bytes": 5949,
+      "sha256": "eb6c7777f1846171758cc59fdec066c6173759166d131df7fc1a723e322adff8",
+      "git_blob": "04495222aa45dabc39fdaf8afaf491828b75474d"
+    },
+    "core/rust/crates/xiao-driver/examples/numeric_perf/memory.rs": {
+      "bytes": 6004,
+      "sha256": "7da47e0dfc147a5bb72671e527718cb8c64e834642353fcfa696293a78b6890e",
+      "git_blob": "2a15ca6c658be70add916788cd219dec5aaf783e"
+    },
+    "core/rust/crates/xiao-driver/examples/numeric_perf/native.rs": {
+      "bytes": 2773,
+      "sha256": "afdc94be4a6a8adc26de912f762c50b6db36dcef8efbb08c5844fcf4840b7db2",
+      "git_blob": "0e856d894ae164c3797839569df66dcbcf6591a6"
+    },
+    "core/rust/crates/xiao-driver/examples/numeric_perf/process.rs": {
+      "bytes": 9245,
+      "sha256": "aa418d619c095162277c125fe5239eb63cf4c6f91d23c4f1a665884102f0acb4",
+      "git_blob": "66bd5dc5dc566cd116c22868cc7426650b5658aa"
+    },
+    "core/rust/crates/xiao-driver/examples/numeric_perf/worker.rs": {
+      "bytes": 3266,
+      "sha256": "6a4f03e572416bf0fbd2df6b5c66410f85f117d9176e96f1b316682600763343",
+      "git_blob": "ad5eacbefd3da779fdeead1e1e423ab6da9997c1"
+    },
+    "core/rust/crates/xiao-driver/src/bin/b3_env_performance.rs": {
+      "bytes": 17724,
+      "sha256": "21f5421c49dcf81f5aa934182e590dfd56229d640a94e35758387962b73e3e82",
+      "git_blob": "a1ad7f0fa5789b42ce1f0c6b2779a8b9649229a6"
+    },
+    "core/rust/crates/xiao-driver/src/bin/env_perf/native.c": {
+      "bytes": 5730,
+      "sha256": "2a09150c6c42333b48c4a510b67b545c5a9249a84b1ba20077081a9f06c164ee",
+      "git_blob": "10e8e534e996868e11db1bd7c00a60f00158a5f0"
+    },
+    "core/rust/crates/xiao-driver/src/bin/env_perf/native.rs": {
+      "bytes": 4310,
+      "sha256": "5f5fac1e1e047ff98f907f0fb507c229d5ae60a897fa57761d4e81d0f6ccc457",
+      "git_blob": "7fb1b072819a85c7cd9624fd467e500b0cf5789c"
+    },
+    "core/rust/crates/xiao-driver/src/bin/env_perf/process.rs": {
+      "bytes": 5725,
+      "sha256": "2deca841c42e5a9af7c12924f3e7b13a6e58a374fca5194fe5b4eebc3a4bf398",
+      "git_blob": "2df11ea6aa2574e03df1b9584de1b2f3203eb7bc"
+    },
+    "core/rust/crates/xiao-driver/src/bin/env_perf/workload.rs": {
+      "bytes": 4291,
+      "sha256": "990d723d4699958d19b72256fbf72d8dfbb69995cd21edf8da309f4768fd1a46",
+      "git_blob": "ce48c2403b8539e88f97409b76e3709b7b2458bc"
+    }
+  },
+  "frozen_fixtures_match": {
+    "source": true,
+    "input": true,
+    "golden": true
+  },
+  "changed": [],
+  "unexpected_files": [],
+  "source_unchanged": true
+}

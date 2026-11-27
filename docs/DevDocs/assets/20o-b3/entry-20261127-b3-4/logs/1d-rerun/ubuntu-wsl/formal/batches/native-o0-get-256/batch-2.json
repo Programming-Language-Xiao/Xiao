@@ -1,0 +1,148 @@
+{
+  "argv": [
+    {
+      "Unix": [
+        103,
+        101,
+        116
+      ]
+    }
+  ],
+  "backend": "native-o0",
+  "baseline_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "batch": 2,
+  "calibrated": true,
+  "case": "get",
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/tasks/native-o0-get-256/batch-2",
+  "executable": {
+    "bytes": 9702496,
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/get/measurement-o0",
+    "sha256": "09c388457ab54f340f8d32235e9eb805d0a0f3021245c24d0e6da27449722759"
+  },
+  "formal_sample": {
+    "memory": {
+      "current_bytes": 4800512,
+      "current_raw": 4688,
+      "method": "proc-vmrss-vmhwm",
+      "peak_bytes": 4800512,
+      "peak_raw": 4688,
+      "unit": "KiB"
+    },
+    "repeats": 1024,
+    "seconds": 0.171354048
+  },
+  "identity_sha256": "b3e0ec97e5507d78a98faff7e1aa4634aa01496c49c7bcd0968217997648172e",
+  "input": {
+    "json_bytes": 14593,
+    "logical_bytes": 12544,
+    "pairs": 256,
+    "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+    "value_bytes": 32
+  },
+  "optimization": 0,
+  "probe": false,
+  "process": {
+    "baseline": {
+      "current_bytes": 2904064,
+      "current_raw": 2836,
+      "method": "proc-vmrss-vmhwm",
+      "peak_bytes": 2904064,
+      "peak_raw": 2836,
+      "unit": "KiB"
+    },
+    "calibration": [
+      {
+        "memory": {
+          "current_bytes": 4788224,
+          "current_raw": 4676,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4788224,
+          "peak_raw": 4676,
+          "unit": "KiB"
+        },
+        "repeats": 1,
+        "seconds": 0.00022963
+      },
+      {
+        "memory": {
+          "current_bytes": 4788224,
+          "current_raw": 4676,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4788224,
+          "peak_raw": 4676,
+          "unit": "KiB"
+        },
+        "repeats": 16,
+        "seconds": 0.00287435
+      },
+      {
+        "memory": {
+          "current_bytes": 4792320,
+          "current_raw": 4680,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4792320,
+          "peak_raw": 4680,
+          "unit": "KiB"
+        },
+        "repeats": 256,
+        "seconds": 0.050975741
+      },
+      {
+        "memory": {
+          "current_bytes": 4796416,
+          "current_raw": 4684,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4796416,
+          "peak_raw": 4684,
+          "unit": "KiB"
+        },
+        "repeats": 512,
+        "seconds": 0.083679502
+      },
+      {
+        "memory": {
+          "current_bytes": 4800512,
+          "current_raw": 4688,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4800512,
+          "peak_raw": 4688,
+          "unit": "KiB"
+        },
+        "repeats": 1024,
+        "seconds": 0.171354048
+      }
+    ],
+    "error": null,
+    "exit": 0,
+    "pid": 16929,
+    "started_unix_ns": "1795803233339993378",
+    "warmup": {
+      "memory": {
+        "current_bytes": 4780032,
+        "current_raw": 4668,
+        "method": "proc-vmrss-vmhwm",
+        "peak_bytes": 4780032,
+        "peak_raw": 4668,
+        "unit": "KiB"
+      },
+      "repeats": 1,
+      "seconds": 0.000175472
+    }
+  },
+  "product_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "resident_increment_upper_bytes": 1896448,
+  "runtime_sha256": "e1bb44e9142353c35217e608c1fbd49b69d137b0b9a53becb02d20b3e5d70eaa",
+  "schema": 1,
+  "seconds_per_workload": 0.0001673379375,
+  "stderr": {
+    "bytes": 0,
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/logs/formal/batches/native-o0-get-256/batch-2.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 1301,
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/logs/formal/batches/native-o0-get-256/batch-2.stdout.log",
+    "sha256": "74375bf7e100b81f8a130c1030e68c3d95aff075b3ab55c7f7420119cffe20c7"
+  },
+  "target": "x86_64-unknown-linux-gnu"
+}

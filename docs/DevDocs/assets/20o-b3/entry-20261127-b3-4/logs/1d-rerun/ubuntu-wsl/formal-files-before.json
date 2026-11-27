@@ -1,0 +1,18 @@
+{
+  "runtime": {
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/fixed-runtime/libxiao_runtime.a",
+    "bytes": 34443472,
+    "sha256": "e1bb44e9142353c35217e608c1fbd49b69d137b0b9a53becb02d20b3e5d70eaa"
+  },
+  "vm_runtime": {
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/target/x86_64-unknown-linux-gnu/release/deps/libxiao_runtime-6ff6e9b7d69a8a9e.rlib",
+    "bytes": 6581030,
+    "sha256": "e22d5e85a8de4d38288465ec67374d2993950493cca95b16b94f780a69ccd519"
+  },
+  "binary": {
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/target/x86_64-unknown-linux-gnu/release/b3_env_performance",
+    "bytes": 12127520,
+    "sha256": "8def770638634d868809eedfb9e209588b4237e8491fcad9bdcf748362cbee6f"
+  },
+  "unchanged": true
+}

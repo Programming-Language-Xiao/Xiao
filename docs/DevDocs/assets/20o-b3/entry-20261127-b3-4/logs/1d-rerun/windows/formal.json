@@ -1,0 +1,58 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "run",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--release",
+    "--bin",
+    "b3_env_performance",
+    "--",
+    "--output-dir",
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal",
+    "--artifact-dir",
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts",
+    "--identity",
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\performance-identity.json"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2",
+  "started_at_utc": "2026-11-27T18:07:08.177061+00:00",
+  "elapsed_seconds": 283.219000000041,
+  "exit": 0,
+  "environment": {
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target",
+    "CARGO_BUILD_TARGET": "x86_64-pc-windows-msvc",
+    "CARGO_TERM_COLOR": "never",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_BUILD_INCREMENTAL": "false",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\fixed-runtime\\xiao_runtime.lib",
+    "XIAO_HOME": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\xiao-home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2\\stdlib",
+    "TEMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\tmp",
+    "TMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\tmp",
+    "LIB": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\ucrt\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\um\\x64",
+    "INCLUDE": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\include;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\ucrt;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\shared;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\um",
+    "VCToolsInstallDir": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\",
+    "WindowsSdkDir": "D:\\Windows Kits\\10\\",
+    "WindowsSDKVersion": "10.0.26100.0\\"
+  },
+  "stdout": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal.stdout.log",
+    "bytes": 4109,
+    "sha256": "74834c0a0201f5a6a3a1bd46b785d147f8dffa06a12ec9fd722208389d90e0d4"
+  },
+  "stderr": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal.stderr.log",
+    "bytes": 497,
+    "sha256": "d3fb756fb3467a385bf1234ed5925768fba60ba15469052dba76f32027d302d4"
+  }
+}

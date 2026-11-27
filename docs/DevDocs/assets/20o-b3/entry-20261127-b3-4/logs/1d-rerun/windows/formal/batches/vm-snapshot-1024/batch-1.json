@@ -1,0 +1,251 @@
+{
+  "argv": [
+    {
+      "Windows": [
+        45,
+        45,
+        119,
+        111,
+        114,
+        107,
+        101,
+        114,
+        45,
+        118,
+        109
+      ]
+    },
+    {
+      "Windows": [
+        68,
+        58,
+        92,
+        112,
+        114,
+        111,
+        106,
+        101,
+        99,
+        116,
+        92,
+        88,
+        105,
+        97,
+        111,
+        92,
+        46,
+        120,
+        105,
+        97,
+        111,
+        45,
+        111,
+        114,
+        99,
+        104,
+        101,
+        115,
+        116,
+        114,
+        97,
+        116,
+        111,
+        114,
+        92,
+        101,
+        118,
+        105,
+        100,
+        101,
+        110,
+        99,
+        101,
+        92,
+        98,
+        51,
+        45,
+        52,
+        101,
+        45,
+        114,
+        101,
+        114,
+        117,
+        110,
+        50,
+        92,
+        119,
+        105,
+        110,
+        100,
+        111,
+        119,
+        115,
+        92,
+        102,
+        111,
+        114,
+        109,
+        97,
+        108,
+        45,
+        97,
+        114,
+        116,
+        105,
+        102,
+        97,
+        99,
+        116,
+        115,
+        92,
+        103,
+        101,
+        116,
+        92,
+        109,
+        101,
+        97,
+        115,
+        117,
+        114,
+        101,
+        109,
+        101,
+        110,
+        116,
+        46,
+        120,
+        105,
+        97,
+        111,
+        99
+      ]
+    },
+    {
+      "Windows": [
+        115,
+        110,
+        97,
+        112,
+        115,
+        104,
+        111,
+        116
+      ]
+    }
+  ],
+  "backend": "vm",
+  "baseline_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "batch": 1,
+  "calibrated": true,
+  "case": "snapshot",
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\tasks\\vm-snapshot-1024\\batch-1",
+  "executable": {
+    "bytes": 11193344,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target\\x86_64-pc-windows-msvc\\release\\b3_env_performance.exe",
+    "sha256": "e79893e717adc4bf1d8b7e3fdaf5e0c7aacfb3b11a07150a0c4306d8cfb7de3e"
+  },
+  "formal_sample": {
+    "memory": {
+      "current_bytes": 11681792,
+      "current_raw": 11681792,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 18472960,
+      "peak_raw": 18472960,
+      "unit": "bytes"
+    },
+    "repeats": 96,
+    "seconds": 0.1171814
+  },
+  "identity_sha256": "88de1eee6155ebc9e27b78de3cb86c7f74faf065153005426b15082be1fd9e82",
+  "input": {
+    "json_bytes": 58369,
+    "logical_bytes": 50176,
+    "pairs": 1024,
+    "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+    "value_bytes": 32
+  },
+  "optimization": null,
+  "probe": false,
+  "process": {
+    "baseline": {
+      "current_bytes": 9207808,
+      "current_raw": 9207808,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 9207808,
+      "peak_raw": 9207808,
+      "unit": "bytes"
+    },
+    "calibration": [
+      {
+        "memory": {
+          "current_bytes": 11485184,
+          "current_raw": 11485184,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 18472960,
+          "peak_raw": 18472960,
+          "unit": "bytes"
+        },
+        "repeats": 1,
+        "seconds": 0.0009815
+      },
+      {
+        "memory": {
+          "current_bytes": 11665408,
+          "current_raw": 11665408,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 18472960,
+          "peak_raw": 18472960,
+          "unit": "bytes"
+        },
+        "repeats": 16,
+        "seconds": 0.016902
+      },
+      {
+        "memory": {
+          "current_bytes": 11681792,
+          "current_raw": 11681792,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 18472960,
+          "peak_raw": 18472960,
+          "unit": "bytes"
+        },
+        "repeats": 96,
+        "seconds": 0.1171814
+      }
+    ],
+    "error": null,
+    "exit": 0,
+    "pid": 20520,
+    "started_unix_ns": "1795802878110383400",
+    "warmup": {
+      "memory": {
+        "current_bytes": 11468800,
+        "current_raw": 11468800,
+        "method": "working-set/peak-working-set",
+        "peak_bytes": 18472960,
+        "peak_raw": 18472960,
+        "unit": "bytes"
+      },
+      "repeats": 1,
+      "seconds": 0.0009818
+    }
+  },
+  "product_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "resident_increment_upper_bytes": 9265152,
+  "runtime_sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a",
+  "schema": 1,
+  "seconds_per_workload": 0.0012206395833333334,
+  "stderr": {
+    "bytes": 0,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-1024\\batch-1.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 1014,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\vm-snapshot-1024\\batch-1.stdout.log",
+    "sha256": "3345e506323244e22c2c0ed9b405c4bdd6a6d7555731f4a2fd1dcfa5a463a0a2"
+  },
+  "target": "x86_64-pc-windows-msvc"
+}

@@ -1,0 +1,136 @@
+{
+  "argv": [
+    {
+      "Unix": [
+        103,
+        101,
+        116
+      ]
+    }
+  ],
+  "backend": "native-o0",
+  "baseline_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "batch": 2,
+  "calibrated": true,
+  "case": "get",
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/tasks/native-o0-get-1024/batch-2",
+  "executable": {
+    "bytes": 9702496,
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/get/measurement-o0",
+    "sha256": "09c388457ab54f340f8d32235e9eb805d0a0f3021245c24d0e6da27449722759"
+  },
+  "formal_sample": {
+    "memory": {
+      "current_bytes": 4931584,
+      "current_raw": 4816,
+      "method": "proc-vmrss-vmhwm",
+      "peak_bytes": 4931584,
+      "peak_raw": 4816,
+      "unit": "KiB"
+    },
+    "repeats": 768,
+    "seconds": 0.136807107
+  },
+  "identity_sha256": "b3e0ec97e5507d78a98faff7e1aa4634aa01496c49c7bcd0968217997648172e",
+  "input": {
+    "json_bytes": 58369,
+    "logical_bytes": 50176,
+    "pairs": 1024,
+    "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+    "value_bytes": 32
+  },
+  "optimization": 0,
+  "probe": false,
+  "process": {
+    "baseline": {
+      "current_bytes": 2969600,
+      "current_raw": 2900,
+      "method": "proc-vmrss-vmhwm",
+      "peak_bytes": 2969600,
+      "peak_raw": 2900,
+      "unit": "KiB"
+    },
+    "calibration": [
+      {
+        "memory": {
+          "current_bytes": 4927488,
+          "current_raw": 4812,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4927488,
+          "peak_raw": 4812,
+          "unit": "KiB"
+        },
+        "repeats": 1,
+        "seconds": 0.000171162
+      },
+      {
+        "memory": {
+          "current_bytes": 4927488,
+          "current_raw": 4812,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4927488,
+          "peak_raw": 4812,
+          "unit": "KiB"
+        },
+        "repeats": 16,
+        "seconds": 0.002813141
+      },
+      {
+        "memory": {
+          "current_bytes": 4931584,
+          "current_raw": 4816,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4931584,
+          "peak_raw": 4816,
+          "unit": "KiB"
+        },
+        "repeats": 256,
+        "seconds": 0.044243723
+      },
+      {
+        "memory": {
+          "current_bytes": 4931584,
+          "current_raw": 4816,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4931584,
+          "peak_raw": 4816,
+          "unit": "KiB"
+        },
+        "repeats": 768,
+        "seconds": 0.136807107
+      }
+    ],
+    "error": null,
+    "exit": 0,
+    "pid": 16949,
+    "started_unix_ns": "1795803238703740110",
+    "warmup": {
+      "memory": {
+        "current_bytes": 4923392,
+        "current_raw": 4808,
+        "method": "proc-vmrss-vmhwm",
+        "peak_bytes": 4923392,
+        "peak_raw": 4808,
+        "unit": "KiB"
+      },
+      "repeats": 1,
+      "seconds": 0.000183587
+    }
+  },
+  "product_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "resident_increment_upper_bytes": 1961984,
+  "runtime_sha256": "e1bb44e9142353c35217e608c1fbd49b69d137b0b9a53becb02d20b3e5d70eaa",
+  "schema": 1,
+  "seconds_per_workload": 0.00017813425390625001,
+  "stderr": {
+    "bytes": 0,
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/logs/formal/batches/native-o0-get-1024/batch-2.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 1110,
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/logs/formal/batches/native-o0-get-1024/batch-2.stdout.log",
+    "sha256": "5b9a370b23e9ff988801aae523d4a0793596d67bd25494362f51b0770ebaa126"
+  },
+  "target": "x86_64-unknown-linux-gnu"
+}

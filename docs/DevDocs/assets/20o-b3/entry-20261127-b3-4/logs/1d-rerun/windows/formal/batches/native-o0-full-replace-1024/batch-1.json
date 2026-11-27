@@ -1,0 +1,145 @@
+{
+  "argv": [
+    {
+      "Windows": [
+        102,
+        117,
+        108,
+        108,
+        45,
+        114,
+        101,
+        112,
+        108,
+        97,
+        99,
+        101
+      ]
+    }
+  ],
+  "backend": "native-o0",
+  "baseline_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "batch": 1,
+  "calibrated": true,
+  "case": "full-replace",
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\tasks\\native-o0-full-replace-1024\\batch-1",
+  "executable": {
+    "bytes": 1474048,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\full-replace\\measurement-o0.exe",
+    "sha256": "37eb6a2a58be50528cc4276c6b1ba81f3ef490a7dff3c14f79765f62259f7e3a"
+  },
+  "formal_sample": {
+    "memory": {
+      "current_bytes": 6549504,
+      "current_raw": 6549504,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 7872512,
+      "peak_raw": 7872512,
+      "unit": "bytes"
+    },
+    "repeats": 768,
+    "seconds": 0.116156
+  },
+  "identity_sha256": "88de1eee6155ebc9e27b78de3cb86c7f74faf065153005426b15082be1fd9e82",
+  "input": {
+    "json_bytes": 1056769,
+    "logical_bytes": 1048576,
+    "pairs": 1024,
+    "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+    "value_bytes": 1007
+  },
+  "optimization": 0,
+  "probe": false,
+  "process": {
+    "baseline": {
+      "current_bytes": 4280320,
+      "current_raw": 4280320,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 4280320,
+      "peak_raw": 4280320,
+      "unit": "bytes"
+    },
+    "calibration": [
+      {
+        "memory": {
+          "current_bytes": 6291456,
+          "current_raw": 6291456,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 7290880,
+          "peak_raw": 7290880,
+          "unit": "bytes"
+        },
+        "repeats": 1,
+        "seconds": 0.0002743
+      },
+      {
+        "memory": {
+          "current_bytes": 6406144,
+          "current_raw": 6406144,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 7483392,
+          "peak_raw": 7483392,
+          "unit": "bytes"
+        },
+        "repeats": 16,
+        "seconds": 0.0024806
+      },
+      {
+        "memory": {
+          "current_bytes": 6434816,
+          "current_raw": 6434816,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 7561216,
+          "peak_raw": 7561216,
+          "unit": "bytes"
+        },
+        "repeats": 256,
+        "seconds": 0.038386
+      },
+      {
+        "memory": {
+          "current_bytes": 6549504,
+          "current_raw": 6549504,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 7872512,
+          "peak_raw": 7872512,
+          "unit": "bytes"
+        },
+        "repeats": 768,
+        "seconds": 0.116156
+      }
+    ],
+    "error": null,
+    "exit": 0,
+    "pid": 30044,
+    "started_unix_ns": "1795802997504117000",
+    "warmup": {
+      "memory": {
+        "current_bytes": 6152192,
+        "current_raw": 6152192,
+        "method": "working-set/peak-working-set",
+        "peak_bytes": 7008256,
+        "peak_raw": 7008256,
+        "unit": "bytes"
+      },
+      "repeats": 1,
+      "seconds": 0.0002676
+    }
+  },
+  "product_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "resident_increment_upper_bytes": 3592192,
+  "runtime_sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a",
+  "schema": 1,
+  "seconds_per_workload": 0.00015124479166666666,
+  "stderr": {
+    "bytes": 0,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-full-replace-1024\\batch-1.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 1236,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o0-full-replace-1024\\batch-1.stdout.log",
+    "sha256": "e9e9e93bc1c240981675155dc171fe1da64e6620ec6608373d81c9b75b813448"
+  },
+  "target": "x86_64-pc-windows-msvc"
+}

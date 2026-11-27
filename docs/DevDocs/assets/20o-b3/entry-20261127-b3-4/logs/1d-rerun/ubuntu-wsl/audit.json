@@ -1,0 +1,130 @@
+{
+  "commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "formal_exit": 0,
+  "started_at_utc": "2026-11-27T18:12:20.652315+00:00",
+  "elapsed_seconds": 214.42829637500108,
+  "batch_records": 210,
+  "formal_samples": 210,
+  "distinct_processes": 210,
+  "combinations": 42,
+  "threshold_statuses": {
+    "pass": 42
+  },
+  "maxima": {
+    "middle": {
+      "vm": {
+        "value": 0.001786907171875,
+        "combination": "vm-get-1024"
+      },
+      "native-o0": {
+        "value": 0.00047049182188333333,
+        "combination": "native-o0-snapshot-1024"
+      },
+      "native-o3": {
+        "value": 0.0004646657222443182,
+        "combination": "native-o3-snapshot-1024"
+      }
+    },
+    "peak": {
+      "value": 14180352,
+      "combination": "vm-overflow-1024"
+    },
+    "ratio": {
+      "value": 2.1271018190799227,
+      "combination": "native-o0-snapshot-512"
+    }
+  },
+  "findings": [],
+  "evidence_errors": [],
+  "verified_file_receipts": 694,
+  "performance_json": {
+    "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/logs/formal/performance.json",
+    "bytes": 137690,
+    "sha256": "0e3bda7e22ff976f30dd9979a334b192b5754ada4267205470d23973b1f55374"
+  },
+  "input_digests": {
+    "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8": {
+      "json_bytes": 14593,
+      "logical_bytes": 12544,
+      "pairs": 256,
+      "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+      "value_bytes": 32
+    },
+    "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb": {
+      "json_bytes": 29185,
+      "logical_bytes": 25088,
+      "pairs": 512,
+      "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+      "value_bytes": 32
+    },
+    "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586": {
+      "json_bytes": 58369,
+      "logical_bytes": 50176,
+      "pairs": 1024,
+      "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+      "value_bytes": 32
+    },
+    "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d": {
+      "json_bytes": 1056769,
+      "logical_bytes": 1048576,
+      "pairs": 1024,
+      "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+      "value_bytes": 1007
+    }
+  },
+  "native_executables": {
+    "get-o0": {
+      "bytes": 9702496,
+      "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/get/measurement-o0",
+      "sha256": "09c388457ab54f340f8d32235e9eb805d0a0f3021245c24d0e6da27449722759"
+    },
+    "get-o3": {
+      "bytes": 9698344,
+      "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/get/measurement-o3",
+      "sha256": "6b137f5985b88e3e7a8d0d17b5ff2abdcf8efaffe27a17c90bd55478891a3c93"
+    },
+    "set-o0": {
+      "bytes": 9706592,
+      "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/set/measurement-o0",
+      "sha256": "24a8428454c70de726d594698243b35ac420d134a4a6ee9af1c3d8b6845b3791"
+    },
+    "set-o3": {
+      "bytes": 9698344,
+      "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/set/measurement-o3",
+      "sha256": "c9c72132ceaa2487c4c7184212e2f4113277008cf86d277925015f6fccc9473e"
+    },
+    "unset-o0": {
+      "bytes": 9706592,
+      "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/unset/measurement-o0",
+      "sha256": "0367556f68518b9df47d7f0545492cbf6d1aec0af1f09d4aa191471d9de96369"
+    },
+    "unset-o3": {
+      "bytes": 9698344,
+      "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/unset/measurement-o3",
+      "sha256": "d7913bac9094dc394a7834547e5b4428d5edf8a849ad964cf69e0cb1b145895e"
+    },
+    "full-replace-o0": {
+      "bytes": 9702496,
+      "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/full-replace/measurement-o0",
+      "sha256": "91a54eb353ebc10b0c8b99ce362723a95965c6ed8386d7bbf6fa12119c7e30d0"
+    },
+    "full-replace-o3": {
+      "bytes": 9694248,
+      "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/full-replace/measurement-o3",
+      "sha256": "724998818f1d42bc08e4745626a492fb730a8901d2760f85f3ea52f89e1d10c7"
+    },
+    "overflow-o0": {
+      "bytes": 9706592,
+      "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/overflow/measurement-o0",
+      "sha256": "5a4f93b8d4f2953e84af88931e213482317b8a1ef00a25152a71ff00ce57a43a"
+    },
+    "overflow-o3": {
+      "bytes": 9698344,
+      "path": "/home/xiaoczx/.xiao-b3-4e-rerun2-lf/formal-artifacts/overflow/measurement-o3",
+      "sha256": "14d244ebb43474f032c7f29e1ea7ff7c5ab1e8c43b11009bc8a97adf511407c8"
+    }
+  },
+  "all_thresholds_met": true
+}

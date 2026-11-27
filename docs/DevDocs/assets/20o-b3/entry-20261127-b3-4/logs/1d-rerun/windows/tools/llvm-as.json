@@ -1,0 +1,42 @@
+{
+  "argv": [
+    "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "--version"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2",
+  "started_at_utc": "2026-11-27T17:57:25.815337+00:00",
+  "elapsed_seconds": 0.07800000003771856,
+  "exit": 0,
+  "environment": {
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target",
+    "CARGO_BUILD_TARGET": "x86_64-pc-windows-msvc",
+    "CARGO_TERM_COLOR": "never",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_BUILD_INCREMENTAL": "false",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\fixed-runtime\\xiao_runtime.lib",
+    "XIAO_HOME": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\xiao-home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2\\stdlib",
+    "TEMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\tmp",
+    "TMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\tmp",
+    "LIB": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\ucrt\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\um\\x64",
+    "INCLUDE": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\include;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\ucrt;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\shared;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\um",
+    "VCToolsInstallDir": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\",
+    "WindowsSdkDir": "D:\\Windows Kits\\10\\",
+    "WindowsSDKVersion": "10.0.26100.0\\"
+  },
+  "stdout": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\tools\\llvm-as.stdout.log",
+    "bytes": 66,
+    "sha256": "850f8cd692366c21e25e0f2e3e4a0b69774af132389e557d99575888bf78c9ee"
+  },
+  "stderr": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\tools\\llvm-as.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

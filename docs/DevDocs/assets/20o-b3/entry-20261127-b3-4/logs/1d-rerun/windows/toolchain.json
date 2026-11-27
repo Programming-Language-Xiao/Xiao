@@ -1,0 +1,113 @@
+{
+  "platform": "Windows-11-10.0.26200-SP0",
+  "machine": "AMD64",
+  "target": "x86_64-pc-windows-msvc",
+  "tools": {
+    "rustc": {
+      "file": {
+        "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+        "bytes": 111104,
+        "sha256": "acb138286bbe20c6cf3ec39a7e0a68c3fab0cd949baa2912cf466514d0d531ab"
+      },
+      "version_exit": 0,
+      "version": [
+        "rustc 1.96.0 (ac68faa20 2026-05-25)",
+        "binary: rustc",
+        "commit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96",
+        "commit-date: 2026-05-25",
+        "host: x86_64-pc-windows-msvc",
+        "release: 1.96.0",
+        "LLVM version: 22.1.2"
+      ]
+    },
+    "cargo": {
+      "file": {
+        "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+        "bytes": 31347200,
+        "sha256": "122f18d28a63fa358f3db266abee1ff1d8aabf0ab7f2dd9ac38a38da99977ae5"
+      },
+      "version_exit": 0,
+      "version": [
+        "cargo 1.96.0 (30a34c682 2026-05-25)"
+      ]
+    },
+    "clang": {
+      "file": {
+        "path": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+        "bytes": 157296,
+        "sha256": "574047f1b98d62bea1da8ae9340fea1ef06d262c3186e1d72d87e5401166c833"
+      },
+      "version_exit": 0,
+      "version": [
+        "clang version 22.1.2 (https://github.com/msys2/MINGW-packages 4f19d31560faf73257116b7c95f0b322ba83d720)",
+        "Target: x86_64-w64-windows-gnu",
+        "Thread model: posix",
+        "InstalledDir: D:/msys64/ucrt64/bin"
+      ]
+    },
+    "llvm-as": {
+      "file": {
+        "path": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+        "bytes": 40741,
+        "sha256": "63f559db3d87798fa4f26923c4cd5839ddc41b40905d884ee341c74a8bd858e9"
+      },
+      "version_exit": 0,
+      "version": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 22.1.2",
+        "  Optimized build."
+      ]
+    },
+    "llc": {
+      "file": {
+        "path": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+        "bytes": 211961,
+        "sha256": "df1409fabacdc625b2c2fefe50712de4ba140e07bf2bb4192101189498152869"
+      },
+      "version_exit": 0,
+      "version": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 22.1.2",
+        "  Optimized build.",
+        "  Default target: x86_64-w64-windows-gnu"
+      ]
+    },
+    "link": {
+      "file": {
+        "path": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+        "bytes": 3701088,
+        "sha256": "3ef8fcf80d409fab22ddd89ee19249f31a26ad9914d3e3e48573c30998fa24de"
+      },
+      "version_exit": 1100,
+      "version": [
+        "Microsoft (R) Incremental Linker Version 14.51.36256.0",
+        "Copyright (C) Microsoft Corporation.  All rights reserved.",
+        "",
+        " 用法: LINK [选项] [文件] [@commandfile]"
+      ]
+    }
+  },
+  "windows_sdk": "10.0.26100.0",
+  "environment": {
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\target",
+    "CARGO_BUILD_TARGET": "x86_64-pc-windows-msvc",
+    "CARGO_TERM_COLOR": "never",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_BUILD_INCREMENTAL": "false",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\fixed-runtime\\xiao_runtime.lib",
+    "XIAO_HOME": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\xiao-home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4e-rerun2\\stdlib",
+    "TEMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\tmp",
+    "TMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\tmp",
+    "LIB": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\ucrt\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\um\\x64",
+    "INCLUDE": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\include;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\ucrt;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\shared;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\um",
+    "VCToolsInstallDir": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\",
+    "WindowsSdkDir": "D:\\Windows Kits\\10\\",
+    "WindowsSDKVersion": "10.0.26100.0\\"
+  }
+}

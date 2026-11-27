@@ -1,0 +1,1 @@
+/home/xiaoczx/.xiao-b3-4e-rerun2-llvm22/usr/lib/llvm-22/bin/clang: error while loading shared libraries: libz3.so.4: cannot open shared object file: No such file or directory

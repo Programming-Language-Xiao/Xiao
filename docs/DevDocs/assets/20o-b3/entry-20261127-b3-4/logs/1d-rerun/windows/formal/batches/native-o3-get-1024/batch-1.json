@@ -1,0 +1,136 @@
+{
+  "argv": [
+    {
+      "Windows": [
+        103,
+        101,
+        116
+      ]
+    }
+  ],
+  "backend": "native-o3",
+  "baseline_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "batch": 1,
+  "calibrated": true,
+  "case": "get",
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\tasks\\native-o3-get-1024\\batch-1",
+  "executable": {
+    "bytes": 1443328,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\formal-artifacts\\get\\measurement-o3.exe",
+    "sha256": "e917a81d87865abdb6e1a85e1c563763734661f6d52bf6beca195688fb05258a"
+  },
+  "formal_sample": {
+    "memory": {
+      "current_bytes": 4661248,
+      "current_raw": 4661248,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 4861952,
+      "peak_raw": 4861952,
+      "unit": "bytes"
+    },
+    "repeats": 512,
+    "seconds": 0.1382523
+  },
+  "identity_sha256": "88de1eee6155ebc9e27b78de3cb86c7f74faf065153005426b15082be1fd9e82",
+  "input": {
+    "json_bytes": 58369,
+    "logical_bytes": 50176,
+    "pairs": 1024,
+    "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+    "value_bytes": 32
+  },
+  "optimization": 3,
+  "probe": false,
+  "process": {
+    "baseline": {
+      "current_bytes": 3854336,
+      "current_raw": 3854336,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 3854336,
+      "peak_raw": 3854336,
+      "unit": "bytes"
+    },
+    "calibration": [
+      {
+        "memory": {
+          "current_bytes": 4435968,
+          "current_raw": 4435968,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4558848,
+          "peak_raw": 4558848,
+          "unit": "bytes"
+        },
+        "repeats": 1,
+        "seconds": 0.0002838
+      },
+      {
+        "memory": {
+          "current_bytes": 4640768,
+          "current_raw": 4640768,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4825088,
+          "peak_raw": 4825088,
+          "unit": "bytes"
+        },
+        "repeats": 16,
+        "seconds": 0.0049143
+      },
+      {
+        "memory": {
+          "current_bytes": 4710400,
+          "current_raw": 4710400,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4853760,
+          "peak_raw": 4853760,
+          "unit": "bytes"
+        },
+        "repeats": 256,
+        "seconds": 0.0806927
+      },
+      {
+        "memory": {
+          "current_bytes": 4661248,
+          "current_raw": 4661248,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4861952,
+          "peak_raw": 4861952,
+          "unit": "bytes"
+        },
+        "repeats": 512,
+        "seconds": 0.1382523
+      }
+    ],
+    "error": null,
+    "exit": 0,
+    "pid": 21544,
+    "started_unix_ns": "1795803033042397600",
+    "warmup": {
+      "memory": {
+        "current_bytes": 4415488,
+        "current_raw": 4415488,
+        "method": "working-set/peak-working-set",
+        "peak_bytes": 4542464,
+        "peak_raw": 4542464,
+        "unit": "bytes"
+      },
+      "repeats": 1,
+      "seconds": 0.0003812
+    }
+  },
+  "product_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "resident_increment_upper_bytes": 1007616,
+  "runtime_sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a",
+  "schema": 1,
+  "seconds_per_workload": 0.0002700240234375,
+  "stderr": {
+    "bytes": 0,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-1024\\batch-1.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 1236,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-rerun2\\windows\\logs\\formal\\batches\\native-o3-get-1024\\batch-1.stdout.log",
+    "sha256": "6a1058f30dc9a3e3717d4bfa739878fecde0241bf30144c58e3a9db041cc2bd3"
+  },
+  "target": "x86_64-pc-windows-msvc"
+}
