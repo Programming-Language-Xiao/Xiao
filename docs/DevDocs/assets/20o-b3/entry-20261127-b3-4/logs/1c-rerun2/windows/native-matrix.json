@@ -1,0 +1,71 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "runtime_sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a",
+  "validator": "xiao_codegen_llvm::artifact::verify_artifact_with_link_evidence",
+  "object_format": "Coff",
+  "complete_cases": 6,
+  "cases": {
+    "env-std-o0": {
+      "path": "windows/native/env-std-o0/receipt.json",
+      "bytes": 3524,
+      "sha256": "f5ed7d5a3f1da230e28b4ee8742e81fa47bfe11989dd37b6de643119e5ef58ef",
+      "exit": 0,
+      "diagnostic": null,
+      "verification": "Complete",
+      "artifact_sha256": "0d4beba9c2283ca6c7967275b6188de8ee39830a7c11829fee0102fcceb5c7d1",
+      "map_sha256": "7d95d6a7a1d9e51a1937166e57ff84f5897c6eece50861c6342fd3a726b2e722"
+    },
+    "env-std-o3": {
+      "path": "windows/native/env-std-o3/receipt.json",
+      "bytes": 3524,
+      "sha256": "646aed5ad70c81c6ad97d851387b092f97bbf980c02a2ff27e603d6a3f492d2b",
+      "exit": 0,
+      "diagnostic": null,
+      "verification": "Complete",
+      "artifact_sha256": "f22413ac7f165a10725c68afcbf8f6ea0faf79b50e534a3614f359384581cec8",
+      "map_sha256": "3e51d79f0e030466db0c97b88f75bbc36e23e533e7ef2f1c03bea434468656f7"
+    },
+    "env-stdlib-o0": {
+      "path": "windows/native/env-stdlib-o0/receipt.json",
+      "bytes": 3572,
+      "sha256": "8e9a82ba8193d6b22e27f46af47eebcf5b8af599fccf60f8ecea24373fe7ef3b",
+      "exit": 0,
+      "diagnostic": null,
+      "verification": "Complete",
+      "artifact_sha256": "6a9caf6ed0e8a87ee1c73d8b3e76fae251b95582853ba4d6adc2331d1b87cb5b",
+      "map_sha256": "e80f240d74df04f07a6f50b6c7056f86ad39b94bb8b193d43754a813658139a1"
+    },
+    "env-stdlib-o3": {
+      "path": "windows/native/env-stdlib-o3/receipt.json",
+      "bytes": 3572,
+      "sha256": "3e3f5684aefe26a59137631bb00f287e3edea5910b6db1f4b24eab8e9370c0bc",
+      "exit": 0,
+      "diagnostic": null,
+      "verification": "Complete",
+      "artifact_sha256": "38e73e657339bb263bac13cdeb642def4758cc98a7b3deaa3c40db2a51498b54",
+      "map_sha256": "8231a062f04d964114bab7a6f3ece6920399420bf0420ec0d543e69326c0d733"
+    },
+    "denied-o0": {
+      "path": "windows/native/denied-o0/receipt.json",
+      "bytes": 3438,
+      "sha256": "505e236ffc9d14d2627709b1c58e079e0658082873fd2fb49bd2b9c9c647c844",
+      "exit": 3,
+      "diagnostic": "X06-RUNTIME-026",
+      "verification": "Complete",
+      "artifact_sha256": "b7b7e73c3f47a5d0dbbb0cdc18a8c3b62eb221c0a882b5ddbf83cb4455f2eb78",
+      "map_sha256": "b5f7c93fa3a317e83c7b7c8626434bb75d4f56fbabdf878554120644caf4bc15"
+    },
+    "denied-o3": {
+      "path": "windows/native/denied-o3/receipt.json",
+      "bytes": 3438,
+      "sha256": "643fcabe1ebb504e243330ed2262675dea4c9bc55c9b3c3bab45da8fa8cc9a1a",
+      "exit": 3,
+      "diagnostic": "X06-RUNTIME-026",
+      "verification": "Complete",
+      "artifact_sha256": "0390a898c586b6689ca9b46c03c7647cb839c9e48947c7b748e9f321113464ee",
+      "map_sha256": "3837424b05802359efe2aa60314757d348e5dfdec61e2806385576d7ae84a5e1"
+    }
+  }
+}

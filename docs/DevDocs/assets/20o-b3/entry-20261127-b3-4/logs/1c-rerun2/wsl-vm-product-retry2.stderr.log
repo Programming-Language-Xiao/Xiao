@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/vm_product.py", line 116, in <module>
+    golden_vm("retry" in sys.argv)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/vm_product.py", line 26, in golden_vm
+    build = read_json(OUT / "commands/vm-product-build.json") if resume else logged("vm-product-build", [
+                                                                             ~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+        *CARGO, "build", *LOCKED, "-p", "xiao-driver", "--release", "--bin", "xiao-core",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        "--message-format=json",
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+    ])
+    ^^
+  File "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/run.py", line 128, in logged
+    with stdout_path.open("xb") as stdout, stderr_path.open("xb") as stderr:
+         ~~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.14/pathlib/__init__.py", line 772, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileExistsError: [Errno 17] File exists: '/mnt/d/project/Xiao/.xiao-orchestrator/worktrees/b3-4d-rerun2/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1c-rerun2/ubuntu-wsl/commands/vm-product-build.stdout.log'

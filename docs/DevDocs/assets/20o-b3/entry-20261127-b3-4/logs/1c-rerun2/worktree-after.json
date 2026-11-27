@@ -1,0 +1,28 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "phase": "after",
+  "worktree": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+  "tracked_files": 10705,
+  "tracked_raw_bytes_manifest_sha256": "dbf42ae1c2c32625826b69af6ba83cf37dc1d07e4b050f5285d743ec6f1df02d",
+  "other_changes": [],
+  "status_entries": 715,
+  "tutorial": {
+    "source": {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2\\tests\\fixtures\\docs\\env\\tutorial.xiao",
+      "bytes": 467,
+      "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+    },
+    "input": {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2\\tests\\fixtures\\docs\\env\\tutorial.input.json",
+      "bytes": 69,
+      "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+    },
+    "golden": {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2\\tests\\fixtures\\docs\\env\\tutorial.stdout",
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    }
+  },
+  "source_unchanged": true
+}

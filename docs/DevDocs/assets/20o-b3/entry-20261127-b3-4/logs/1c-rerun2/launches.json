@@ -1,0 +1,602 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "attempts": {
+    "windows-run": {
+      "argv": [
+        "D:/Programs/Python/Python312/python.exe",
+        "-B",
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\run.py",
+        "run"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 1,
+      "exit_file": {
+        "path": "windows-run.exit",
+        "bytes": 3,
+        "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+      },
+      "stdout": {
+        "path": "windows-run.stdout.log",
+        "bytes": 86,
+        "sha256": "8fd4db55500d6f4427912f93812abe2bc85a2fb6188e227de23512b77860ff7c"
+      },
+      "stderr": {
+        "path": "windows-run.stderr.log",
+        "bytes": 1453,
+        "sha256": "9ed536d29b0afa2eff4e87ab4a2d61db8a81f1383cda5f4683bf9fe377a1936a"
+      }
+    },
+    "windows-retry": {
+      "argv": [
+        "D:/Programs/Python/Python312/python.exe",
+        "-B",
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\run.py",
+        "retry"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 0,
+      "exit_file": {
+        "path": "windows-retry.exit",
+        "bytes": 3,
+        "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+      },
+      "stdout": {
+        "path": "windows-retry.stdout.log",
+        "bytes": 638,
+        "sha256": "d154a8a925d685edc66fc62571fb8967f0d27cef26c5065463abad4a5e44d0f3"
+      },
+      "stderr": {
+        "path": "windows-retry.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "wsl-run": {
+      "argv": [
+        "C:\\Windows\\System32\\wsl.exe",
+        "--distribution",
+        "Ubuntu-26.04",
+        "--exec",
+        "/usr/bin/python3",
+        "-B",
+        "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/run.py",
+        "run"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 1,
+      "exit_file": {
+        "path": "wsl-run.exit",
+        "bytes": 3,
+        "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+      },
+      "stdout": {
+        "path": "wsl-run.stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "wsl-run.stderr.log",
+        "bytes": 1386,
+        "sha256": "62d3082456c7c646de7d11dfccf703c70a4cf30d03a4659dd7fc73297ed4c9f9"
+      }
+    },
+    "wsl-retry": {
+      "argv": [
+        "C:\\Windows\\System32\\wsl.exe",
+        "--distribution",
+        "Ubuntu-26.04",
+        "--exec",
+        "/usr/bin/python3",
+        "-B",
+        "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/run.py",
+        "retry"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 0,
+      "exit_file": {
+        "path": "wsl-retry.exit",
+        "bytes": 3,
+        "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+      },
+      "stdout": {
+        "path": "wsl-retry.stdout.log",
+        "bytes": 734,
+        "sha256": "398cf3aec9acbed07aeca49c546a9b41ca5c3086ed158beb8b1a047d6a3273d4"
+      },
+      "stderr": {
+        "path": "wsl-retry.stderr.log",
+        "bytes": 234,
+        "sha256": "3871fa8f2cc07a85556ebb388f7c986bb03a65f2cb933fc5fc25e4206e0de2be"
+      }
+    },
+    "windows-c-abi": {
+      "argv": [
+        "D:/Programs/Python/Python312/python.exe",
+        "-B",
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\capture.py",
+        "c-abi"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 0,
+      "exit_file": {
+        "path": "windows-c-abi.exit",
+        "bytes": 3,
+        "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+      },
+      "stdout": {
+        "path": "windows-c-abi.stdout.log",
+        "bytes": 68,
+        "sha256": "0058757303b2f9df71b4a7dde317cc8d05d5c36f9327cb9fa6871d4bb3e146bd"
+      },
+      "stderr": {
+        "path": "windows-c-abi.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "wsl-c-abi-vm": {
+      "argv": [
+        "C:\\Windows\\System32\\wsl.exe",
+        "--distribution",
+        "Ubuntu-26.04",
+        "--exec",
+        "/usr/bin/python3",
+        "-B",
+        "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/capture.py",
+        "c-abi",
+        "vm"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 0,
+      "exit_file": {
+        "path": "wsl-c-abi-vm.exit",
+        "bytes": 3,
+        "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+      },
+      "stdout": {
+        "path": "wsl-c-abi-vm.stdout.log",
+        "bytes": 72,
+        "sha256": "b9e4f199ba0764c158f794958c894b7ac2f3efdb28fb8e3bf65ca6d3fa11516b"
+      },
+      "stderr": {
+        "path": "wsl-c-abi-vm.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "windows-vm": {
+      "argv": [
+        "D:/Programs/Python/Python312/python.exe",
+        "-B",
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\capture.py",
+        "vm"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 0,
+      "exit_file": {
+        "path": "windows-vm.exit",
+        "bytes": 3,
+        "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+      },
+      "stdout": {
+        "path": "windows-vm.stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "windows-vm.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "windows-capture": {
+      "argv": [
+        "D:/Programs/Python/Python312/python.exe",
+        "-B",
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\capture.py",
+        "native",
+        "replay",
+        "control"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 0,
+      "exit_file": {
+        "path": "windows-capture.exit",
+        "bytes": 3,
+        "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+      },
+      "stdout": {
+        "path": "windows-capture.stdout.log",
+        "bytes": 347,
+        "sha256": "cf83c749e4ecaa4d06b10068a527020ad02f9d1e51a6ca5cc4d8bdd383aef6fc"
+      },
+      "stderr": {
+        "path": "windows-capture.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "wsl-capture": {
+      "argv": [
+        "C:\\Windows\\System32\\wsl.exe",
+        "--distribution",
+        "Ubuntu-26.04",
+        "--exec",
+        "/usr/bin/python3",
+        "-B",
+        "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/capture.py",
+        "native",
+        "replay",
+        "control"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 1,
+      "exit_file": {
+        "path": "wsl-capture.exit",
+        "bytes": 3,
+        "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+      },
+      "stdout": {
+        "path": "wsl-capture.stdout.log",
+        "bytes": 262,
+        "sha256": "1169c8fd37dbe83e098b2262fc5fd76eb05c2832c64d9232e9938c154fd98801"
+      },
+      "stderr": {
+        "path": "wsl-capture.stderr.log",
+        "bytes": 594,
+        "sha256": "b03e71f72e70bf8a09308e6dbda7262d6666e069aac57fdbf3083fcfcbda14ad"
+      }
+    },
+    "wsl-capture-retry": {
+      "argv": [
+        "C:\\Windows\\System32\\wsl.exe",
+        "--distribution",
+        "Ubuntu-26.04",
+        "--exec",
+        "/usr/bin/python3",
+        "-B",
+        "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/capture.py",
+        "replay-retry",
+        "control"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 0,
+      "exit_file": {
+        "path": "wsl-capture-retry.exit",
+        "bytes": 3,
+        "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+      },
+      "stdout": {
+        "path": "wsl-capture-retry.stdout.log",
+        "bytes": 93,
+        "sha256": "70ca941910b6aff9617aedecd2579417fee0dd42a3daff4625c5f27e568e9bab"
+      },
+      "stderr": {
+        "path": "wsl-capture-retry.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "windows-after": {
+      "argv": [
+        "D:/Programs/Python/Python312/python.exe",
+        "-B",
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\run.py",
+        "after"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 0,
+      "exit_file": {
+        "path": "windows-after.exit",
+        "bytes": 3,
+        "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+      },
+      "stdout": {
+        "path": "windows-after.stdout.log",
+        "bytes": 85,
+        "sha256": "008928fe077d924d695a3cdc69b660b300cfb9fae4f17945d3b96a1148449c8f"
+      },
+      "stderr": {
+        "path": "windows-after.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "wsl-after": {
+      "argv": [
+        "C:\\Windows\\System32\\wsl.exe",
+        "--distribution",
+        "Ubuntu-26.04",
+        "--exec",
+        "/usr/bin/python3",
+        "-B",
+        "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/run.py",
+        "after"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 0,
+      "exit_file": {
+        "path": "wsl-after.exit",
+        "bytes": 3,
+        "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+      },
+      "stdout": {
+        "path": "wsl-after.stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "wsl-after.stderr.log",
+        "bytes": 234,
+        "sha256": "3871fa8f2cc07a85556ebb388f7c986bb03a65f2cb933fc5fc25e4206e0de2be"
+      }
+    },
+    "windows-audit": {
+      "argv": [
+        "D:/Programs/Python/Python312/python.exe",
+        "-B",
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\audit.py"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 0,
+      "exit_file": {
+        "path": "windows-audit.exit",
+        "bytes": 3,
+        "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+      },
+      "stdout": {
+        "path": "windows-audit.stdout.log",
+        "bytes": 48,
+        "sha256": "a7fc450af40d8850a764754385e9538efe3d50a1d48ea92ce7810912f87083d7"
+      },
+      "stderr": {
+        "path": "windows-audit.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "wsl-audit": {
+      "argv": [
+        "C:\\Windows\\System32\\wsl.exe",
+        "--distribution",
+        "Ubuntu-26.04",
+        "--exec",
+        "/usr/bin/python3",
+        "-B",
+        "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/audit.py"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 0,
+      "exit_file": {
+        "path": "wsl-audit.exit",
+        "bytes": 3,
+        "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+      },
+      "stdout": {
+        "path": "wsl-audit.stdout.log",
+        "bytes": 50,
+        "sha256": "dc942e29c559abaecf5c5bdc5497840bfb67d87083bfa9b33525d521aa587e16"
+      },
+      "stderr": {
+        "path": "wsl-audit.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "windows-vm-product": {
+      "argv": [
+        "D:/Programs/Python/Python312/python.exe",
+        "-B",
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\vm_product.py"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 1,
+      "exit_file": {
+        "path": "windows-vm-product.exit",
+        "bytes": 3,
+        "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+      },
+      "stdout": {
+        "path": "windows-vm-product.stdout.log",
+        "bytes": 40,
+        "sha256": "f65b4eaa522557c1877590d58c66155e1603f974e9cb84fb952bf5ddd0e2f9c5"
+      },
+      "stderr": {
+        "path": "windows-vm-product.stderr.log",
+        "bytes": 403,
+        "sha256": "964bba3a1cab4c524c01cc73e01af4ef32f15a0d8d650d5ca2fe809bf1bae314"
+      }
+    },
+    "windows-vm-product-retry": {
+      "argv": [
+        "D:/Programs/Python/Python312/python.exe",
+        "-B",
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\vm_product.py",
+        "retry"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 1,
+      "exit_file": {
+        "path": "windows-vm-product-retry.exit",
+        "bytes": 3,
+        "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+      },
+      "stdout": {
+        "path": "windows-vm-product-retry.stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "windows-vm-product-retry.stderr.log",
+        "bytes": 482,
+        "sha256": "c643ba7e978bd7531d16f7820bdd25ba4d230dbb0f10eb787c012fdd39857951"
+      }
+    },
+    "windows-vm-product-retry2": {
+      "argv": [
+        "D:/Programs/Python/Python312/python.exe",
+        "-B",
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\vm_product.py",
+        "retry2"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 1,
+      "exit_file": {
+        "path": "windows-vm-product-retry2.exit",
+        "bytes": 3,
+        "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+      },
+      "stdout": {
+        "path": "windows-vm-product-retry2.stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "windows-vm-product-retry2.stderr.log",
+        "bytes": 1138,
+        "sha256": "9ea20af80540012f2ec817ec33d020ac7cf3fd519af15216d39e35bb85463c95"
+      }
+    },
+    "windows-vm-product-final": {
+      "argv": [
+        "D:/Programs/Python/Python312/python.exe",
+        "-B",
+        "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\vm_product.py",
+        "retry"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 0,
+      "exit_file": {
+        "path": "windows-vm-product-final.exit",
+        "bytes": 3,
+        "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+      },
+      "stdout": {
+        "path": "windows-vm-product-final.stdout.log",
+        "bytes": 83,
+        "sha256": "12d32d7f013410803a74b0cf6e5205ce74718aa0d46b306e474b39529072fab1"
+      },
+      "stderr": {
+        "path": "windows-vm-product-final.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "wsl-vm-product": {
+      "argv": [
+        "C:\\Windows\\System32\\wsl.exe",
+        "--distribution",
+        "Ubuntu-26.04",
+        "--exec",
+        "/usr/bin/python3",
+        "-B",
+        "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/vm_product.py"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 1,
+      "exit_file": {
+        "path": "wsl-vm-product.exit",
+        "bytes": 3,
+        "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+      },
+      "stdout": {
+        "path": "wsl-vm-product.stdout.log",
+        "bytes": 42,
+        "sha256": "2753c21fff5815bab2a46c11500c7f19cd19b6cf59fa5e79dd511e17faace223"
+      },
+      "stderr": {
+        "path": "wsl-vm-product.stderr.log",
+        "bytes": 428,
+        "sha256": "a86aadd15613841ff1bda214edd369a43ed58b5f89be7c5c074e5194c7a2b24c"
+      }
+    },
+    "wsl-vm-product-retry": {
+      "argv": [
+        "C:\\Windows\\System32\\wsl.exe",
+        "--distribution",
+        "Ubuntu-26.04",
+        "--exec",
+        "/usr/bin/python3",
+        "-B",
+        "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/vm_product.py",
+        "retry"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 1,
+      "exit_file": {
+        "path": "wsl-vm-product-retry.exit",
+        "bytes": 3,
+        "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+      },
+      "stdout": {
+        "path": "wsl-vm-product-retry.stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "wsl-vm-product-retry.stderr.log",
+        "bytes": 526,
+        "sha256": "404409a07cfb3b031cd0e3df5e93a1df9852374509d88dd98d15df13fd62a5f1"
+      }
+    },
+    "wsl-vm-product-retry2": {
+      "argv": [
+        "C:\\Windows\\System32\\wsl.exe",
+        "--distribution",
+        "Ubuntu-26.04",
+        "--exec",
+        "/usr/bin/python3",
+        "-B",
+        "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/vm_product.py",
+        "retry2"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 1,
+      "exit_file": {
+        "path": "wsl-vm-product-retry2.exit",
+        "bytes": 3,
+        "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+      },
+      "stdout": {
+        "path": "wsl-vm-product-retry2.stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "wsl-vm-product-retry2.stderr.log",
+        "bytes": 1439,
+        "sha256": "b1100fa7485b18cfd91f966730fc3959b0208b6e3a0f58914dd641a9158c468c"
+      }
+    },
+    "wsl-vm-product-final": {
+      "argv": [
+        "C:\\Windows\\System32\\wsl.exe",
+        "--distribution",
+        "Ubuntu-26.04",
+        "--exec",
+        "/usr/bin/python3",
+        "-B",
+        "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/vm_product.py",
+        "retry"
+      ],
+      "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+      "exit": 0,
+      "exit_file": {
+        "path": "wsl-vm-product-final.exit",
+        "bytes": 3,
+        "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+      },
+      "stdout": {
+        "path": "wsl-vm-product-final.stdout.log",
+        "bytes": 87,
+        "sha256": "6d749078f6160a653a577a699c6a5639e80b4e1a7c405e4c838ba45d1c234fde"
+      },
+      "stderr": {
+        "path": "wsl-vm-product-final.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  }
+}

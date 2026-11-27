@@ -1,0 +1,34 @@
+
+running 4 tests
+test artifact::tests::parses_controlled_pe_coff_symbols ... ok
+test artifact::tests::readable_coff_rejects_unclassified_runtime_symbol ... ok
+test artifact::tests::bound_coff_map_rejects_unclassified_runtime_symbol ... ok
+test artifact::tests::pe_symbol_table_status_reflects_actual_coff_table ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 57 filtered out; finished in 1.28s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 24 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+

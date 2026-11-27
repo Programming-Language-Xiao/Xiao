@@ -1,0 +1,61 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "source_unchanged": true,
+  "tracked_files": 10705,
+  "archive": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\source.tar",
+    "bytes": 671764480,
+    "sha256": "445274609a1c809fe12bc9397e822d7a2b2fc31eb50d4df230287968e023c23f"
+  },
+  "archive_command": {
+    "path": "source-export.json",
+    "bytes": 387,
+    "sha256": "c2ad0eda2c19adf27dbdac07945ccd49c49ae8d0a89630e9797227a5dc5c3d50"
+  },
+  "git_tree_manifest": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\tree.bin",
+    "bytes": 1508643,
+    "sha256": "3633ac3971bb906ceb80a4fbc1a88fbb0016cf227a63a8c529c0d998be45e31d"
+  },
+  "git_tree_command": [
+    "cmd.exe",
+    "/d",
+    "/c",
+    "git",
+    "ls-tree",
+    "-r",
+    "-z",
+    "1e42f501af20890157a4ce28d96d451a70fc3e39"
+  ],
+  "worktree_before": {
+    "path": "worktree-before.json",
+    "bytes": 1201,
+    "sha256": "eea18f250437b7808edcc15149e734dca90b548bfd9fc523c369f7af324f943c"
+  },
+  "worktree_after": {
+    "path": "worktree-after.json",
+    "bytes": 1201,
+    "sha256": "86493326ecf48c0bf575cda98bd6d5b8d8904202823809d30f346e38f715cf7f"
+  },
+  "windows_source_before": {
+    "path": "windows/source-before.json",
+    "bytes": 4019,
+    "sha256": "d09a552ba42ba151fb62c4ee299353fc59f5643bc7b53bba638c8371f215b4fb"
+  },
+  "windows_source_after": {
+    "path": "windows/source-after.json",
+    "bytes": 4264,
+    "sha256": "b88196866fca0d371e4b6af500e3c2027142577f029beee7d28bc8f42bc560c1"
+  },
+  "wsl_source_before": {
+    "path": "ubuntu-wsl/source-before.json",
+    "bytes": 3539,
+    "sha256": "4307067deb593078c99f1bfa9689b919ddf0ba45c088c5190ab720eb5ca262e4"
+  },
+  "wsl_source_after": {
+    "path": "ubuntu-wsl/source-after.json",
+    "bytes": 3749,
+    "sha256": "f6603d78fc58f887c996162ab61474c038b521773b26de04e8fce9d720c82e98"
+  }
+}

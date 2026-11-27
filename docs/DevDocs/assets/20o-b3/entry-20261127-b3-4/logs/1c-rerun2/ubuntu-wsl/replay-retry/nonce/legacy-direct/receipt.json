@@ -1,0 +1,47 @@
+{
+  "case": "nonce/legacy-direct",
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "runtime_sha256": "e1bb44e9142353c35217e608c1fbd49b69d137b0b9a53becb02d20b3e5d70eaa",
+  "artifact": {
+    "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/env-native/xiao-b3-env-4818-3/legacy-marker",
+    "bytes": 5478336,
+    "sha256": "4cbf70e666b365146f9a16e66f7c605a5e6f7cfeb8eecfa30cc4d10ea6b96e99"
+  },
+  "argv": [
+    "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/env-native/xiao-b3-env-4818-3/legacy-marker",
+    "--__xiao-run-environment-stdin",
+    "tail"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/replay-retry/nonce/legacy-direct",
+  "started_at_utc": "2026-11-27T18:05:36.292817+00:00",
+  "environment": {
+    "XIAO_B3_TEST_ENV": "host-native",
+    "XIAO_INTERNAL_RUN_ENVIRONMENT_NONCE": "6dc1455fdb1d4a8a63e230fd63e8ac55"
+  },
+  "stdin": {
+    "bytes": 39,
+    "sha256": "90d32efdf6efa65e75f967e3bdbef9d2ece09d7786b444c92dd64751ea2b595c",
+    "pairs": 1,
+    "logical_bytes": 30
+  },
+  "exit": 0,
+  "diagnostic": null,
+  "outputs": {
+    "stdout": {
+      "path": "ubuntu-wsl/replay-retry/nonce/legacy-direct/stdout.stdout",
+      "bytes": 48,
+      "sha256": "ed9813d0512e2f15bb54230261614aea505816e48afd52a73ea5901a5a6c5237"
+    },
+    "stderr": {
+      "path": "ubuntu-wsl/replay-retry/nonce/legacy-direct/stderr.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "expected_exit": 0,
+  "expected_diagnostic": null,
+  "expected_stdout_sha256": "ed9813d0512e2f15bb54230261614aea505816e48afd52a73ea5901a5a6c5237",
+  "passed": true
+}

@@ -1,0 +1,107 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "backend": "vm",
+  "runtime": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_runtime-cc614844e2614bb9.rlib",
+    "bytes": 7879356,
+    "sha256": "e3195bf65d9354e80eaed129327f6a3196c65071bf921a420a9196a4862c8568"
+  },
+  "static_library_from_same_rustc_output": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\deps\\xiao_runtime-cc614844e2614bb9.lib",
+    "bytes": 28016874,
+    "sha256": "e64b6a0d5b069e241bd2681acabb0f67b0e9045c2aa2c3d5dad40d7db90379f1"
+  },
+  "native_runtime_sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a",
+  "executable": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao-core.exe",
+    "bytes": 17423360,
+    "sha256": "15d69e155804212fcb4c50aa1c4acae28bddb7db516a151ac70c333846a28422"
+  },
+  "cargo_runtime_event": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///D:/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/win/src/core/rust/crates/xiao-runtime#0.1.0",
+    "manifest_path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src\\core\\rust\\crates\\xiao-runtime\\Cargo.toml",
+    "target": {
+      "kind": [
+        "rlib",
+        "staticlib"
+      ],
+      "crate_types": [
+        "rlib",
+        "staticlib"
+      ],
+      "name": "xiao_runtime",
+      "src_path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src\\core\\rust\\crates\\xiao-runtime\\src\\lib.rs",
+      "edition": "2024",
+      "doc": true,
+      "doctest": true,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "3",
+      "debuginfo": 0,
+      "debug_assertions": false,
+      "overflow_checks": false,
+      "test": false
+    },
+    "features": [],
+    "filenames": [
+      "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_runtime-cc614844e2614bb9.rlib",
+      "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\deps\\xiao_runtime-cc614844e2614bb9.lib"
+    ],
+    "executable": null,
+    "fresh": false
+  },
+  "cargo_product_event": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///D:/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/win/src/core/rust/crates/xiao-driver#0.1.0",
+    "manifest_path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src\\core\\rust\\crates\\xiao-driver\\Cargo.toml",
+    "target": {
+      "kind": [
+        "bin"
+      ],
+      "crate_types": [
+        "bin"
+      ],
+      "name": "xiao-core",
+      "src_path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src\\core\\rust\\crates\\xiao-driver\\src\\protocol_main.rs",
+      "edition": "2024",
+      "doc": true,
+      "doctest": false,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "3",
+      "debuginfo": 0,
+      "debug_assertions": false,
+      "overflow_checks": false,
+      "test": false
+    },
+    "features": [],
+    "filenames": [
+      "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao-core.exe",
+      "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao_core.pdb"
+    ],
+    "executable": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao-core.exe",
+    "fresh": false
+  },
+  "build": {
+    "path": "windows/commands/vm-product-build.json",
+    "bytes": 1057,
+    "sha256": "27bd604730b954cc0de20b10c0d9050200f78cac9da12374b0924ea0ed7a551b"
+  },
+  "cases": {
+    "std.env": {
+      "path": "windows/vm-product-retry/std.env/receipt.json",
+      "bytes": 2497,
+      "sha256": "985b3df8e9a106838755fb09e18c08dd535914eb49be44ee16ece336449e6ee4"
+    },
+    "stdlib.env": {
+      "path": "windows/vm-product-retry/stdlib.env/receipt.json",
+      "bytes": 2521,
+      "sha256": "0eb6b6f73a3a2144d5304fef79d49135c47472eae414ca556b3ee72e572aa3b5"
+    }
+  }
+}

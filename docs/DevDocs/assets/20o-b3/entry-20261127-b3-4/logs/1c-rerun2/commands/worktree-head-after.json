@@ -1,0 +1,29 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "argv": [
+    "cmd.exe",
+    "/d",
+    "/c",
+    "git",
+    "rev-parse",
+    "HEAD",
+    "1e42f501af20890157a4ce28d96d451a70fc3e39:"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2",
+  "started_at_utc": "2026-11-27T18:22:04.919877+00:00",
+  "elapsed_seconds": 0.11,
+  "exit": 0,
+  "stdout": {
+    "path": "commands/worktree-head-after.stdout.log",
+    "bytes": 82,
+    "sha256": "829d5d599e483b987f12af42412353869c30699f0abf8bf025ef0ed23c889cb8"
+  },
+  "stderr": {
+    "path": "commands/worktree-head-after.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "environment": {}
+}

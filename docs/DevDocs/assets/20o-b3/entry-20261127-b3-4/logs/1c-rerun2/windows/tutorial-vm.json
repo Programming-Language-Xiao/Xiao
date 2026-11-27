@@ -1,0 +1,43 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "backend": "vm",
+  "command": {
+    "path": "windows/commands/tutorial-vm.json",
+    "bytes": 1260,
+    "sha256": "3a3858f67f8d7db3f7d73072c67b72c71a7fb452514c1bafb64609a963f2dbec"
+  },
+  "runtime": {
+    "path": "windows/vm-runtime.json",
+    "bytes": 3716,
+    "sha256": "44d7307f70fb4f27db35ebb44978acded074814d0bf29b6eab619989088ca644"
+  },
+  "stdout_origin": "已通过黄金断言的 VM 输出事件，由测试日志的转义字符串逐字还原",
+  "cases": {
+    "std": {
+      "import": "std.env",
+      "canonical_module": "stdlib.env",
+      "exit": 0,
+      "capabilities": 160,
+      "source_sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb",
+      "stdout": {
+        "path": "windows/vm/std.stdout",
+        "bytes": 55,
+        "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+      }
+    },
+    "stdlib": {
+      "import": "stdlib.env",
+      "canonical_module": "stdlib.env",
+      "exit": 0,
+      "capabilities": 160,
+      "source_sha256": "a8cb3149daec0193db2de4b6d42752c38812965de8e624f4a106c879de5c6e1d",
+      "stdout": {
+        "path": "windows/vm/stdlib.stdout",
+        "bytes": 55,
+        "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+      }
+    }
+  }
+}

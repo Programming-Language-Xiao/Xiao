@@ -1,0 +1,195 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "runtime_sha256": "e1bb44e9142353c35217e608c1fbd49b69d137b0b9a53becb02d20b3e5d70eaa",
+  "counts": {
+    "X09-DRIVER-006": 2,
+    "accepted": 16,
+    "X09-DRIVER-007": 8
+  },
+  "cases": {
+    "o0/invalid-duplicate": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o0/invalid-duplicate/receipt.json",
+      "bytes": 1845,
+      "sha256": "00e7087efbb828239fcb8ee178be9175325f5483c70db5fedd428ff331f7cef8",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-006"
+    },
+    "o0/name-255": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o0/name-255/receipt.json",
+      "bytes": 1787,
+      "sha256": "cc99d49a635d1c6adba894f29517b7a3dd7b2b12179e50440eb00e5b9da515ce",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/name-256": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o0/name-256/receipt.json",
+      "bytes": 1787,
+      "sha256": "f25d2ec985c8186d31d540c358ad4f558145a6547e04296235999eb6ed2b09fd",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/name-257": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o0/name-257/receipt.json",
+      "bytes": 1811,
+      "sha256": "5a25fc35c0e980f56a047d75ede0970545bff149c1db5ceda80c36cbbe831ae4",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    },
+    "o0/value-65535": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o0/value-65535/receipt.json",
+      "bytes": 1803,
+      "sha256": "2bf90eec3d4e6221eb64637927da7aae7fe7cb5f3b27976ab0cc19dccc59d47b",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/value-65536": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o0/value-65536/receipt.json",
+      "bytes": 1803,
+      "sha256": "18c24419f84163e31ded9a2613c09f3755b9dddd932e0e82b19cfc134edca8da",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/value-65537": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o0/value-65537/receipt.json",
+      "bytes": 1827,
+      "sha256": "5609f31fbccb3097484c707258c210fd0c451b54756a785024669755b915acc1",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    },
+    "o0/pairs-1023": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o0/pairs-1023/receipt.json",
+      "bytes": 1801,
+      "sha256": "9badd952d0272e9e8004a2e8e15d7dde5476fba18639815e45adf25d5594bd8c",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/pairs-1024": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o0/pairs-1024/receipt.json",
+      "bytes": 1801,
+      "sha256": "03323011926c6f79f2ce8cd13d80aba383ff7c9fe83437fdf4f72104b9f6972a",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/pairs-1025": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o0/pairs-1025/receipt.json",
+      "bytes": 1825,
+      "sha256": "4746076c9aaf969ae26518dc9b819c2ec1f169e17a558e4b9474d99e2adcc43c",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    },
+    "o0/total-1048575": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o0/total-1048575/receipt.json",
+      "bytes": 1816,
+      "sha256": "46230320bfe773e11d43bb62d80e0a0cec1678333cb664fbc244c212d377cf9a",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/total-1048576": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o0/total-1048576/receipt.json",
+      "bytes": 1816,
+      "sha256": "e95e0947e9b259aa0f02581bfbc84ebfdfb89a88602ed923c899e78a762e13cc",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/total-1048577": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o0/total-1048577/receipt.json",
+      "bytes": 1840,
+      "sha256": "f84476ed14fb7783b9fdeaf19c10ab4fc802031c31fcbab1d8e991bc0baee72a",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    },
+    "o3/invalid-duplicate": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o3/invalid-duplicate/receipt.json",
+      "bytes": 1845,
+      "sha256": "da4e76eb311b5192f79bb00807189a932292f89e0a7f01eaeb7e3c7544cfc195",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-006"
+    },
+    "o3/name-255": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o3/name-255/receipt.json",
+      "bytes": 1787,
+      "sha256": "f7cfcc5506065d045e4a3fa22d1da5eecbaa7a6c774cfae7ffb0ef42dd323d11",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/name-256": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o3/name-256/receipt.json",
+      "bytes": 1787,
+      "sha256": "1360f0abb129bbdedfa8b9e8b1a88d980d796f8ce785b147b68a1fb095a91e7c",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/name-257": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o3/name-257/receipt.json",
+      "bytes": 1811,
+      "sha256": "1db63e5c1e67ca890962ab6122ccd1a1a7f7b456bd7d242a3524283bcead7a7d",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    },
+    "o3/value-65535": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o3/value-65535/receipt.json",
+      "bytes": 1803,
+      "sha256": "7efde45b4ec732cf1aa88a55d367d16ff9fd09fd9250c6e4780b5c4cc41ee53d",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/value-65536": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o3/value-65536/receipt.json",
+      "bytes": 1803,
+      "sha256": "56c0a7d59abe1cb5b38cab1f110a63c4dbad0570eb86af08668a57730fd55228",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/value-65537": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o3/value-65537/receipt.json",
+      "bytes": 1827,
+      "sha256": "2f0c2c0bcf6d917b319c098c4591f60a6475d37d389544d2cc31e4c6d366413f",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    },
+    "o3/pairs-1023": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o3/pairs-1023/receipt.json",
+      "bytes": 1801,
+      "sha256": "2f42ba1e8030684a469d15fe8667b3d2f6f67f68386968798ca9c63573c4fa2b",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/pairs-1024": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o3/pairs-1024/receipt.json",
+      "bytes": 1801,
+      "sha256": "3210ec1aae14f3c19937bbad9700ed2e3056e185ac52d5e179cdddc9c14f3797",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/pairs-1025": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o3/pairs-1025/receipt.json",
+      "bytes": 1825,
+      "sha256": "0a4b62c151363ed32ce4b11420c2f819d9d586931010921ba23a4217b4b57dc8",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    },
+    "o3/total-1048575": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o3/total-1048575/receipt.json",
+      "bytes": 1816,
+      "sha256": "ff00f71014e5f5824c7fe1a70ed218f9754692e2f1012d253b74b031903f0473",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/total-1048576": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o3/total-1048576/receipt.json",
+      "bytes": 1816,
+      "sha256": "82a19094b5f76f0dbff1599b420b2c1c92b56e5222e763325b9bfb462765b4ad",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/total-1048577": {
+      "path": "ubuntu-wsl/replay-retry/boundaries/o3/total-1048577/receipt.json",
+      "bytes": 1840,
+      "sha256": "288e4b8dac6b78440f8b36391b6ef9e163016c3e8c90e81dd300d079a06ad71a",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    }
+  }
+}

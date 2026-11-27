@@ -1,0 +1,26 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "argv": [
+    "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "--version"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src",
+  "started_at_utc": "2026-11-27T17:59:12.386258+00:00",
+  "elapsed_seconds": 0.047,
+  "exit": 0,
+  "stdout": {
+    "path": "windows/commands/tool-llc.stdout.log",
+    "bytes": 1807,
+    "sha256": "f948a15c7cf1ebc326b4b2d40d4161d843b7c66d7da696a968fd17a372858217"
+  },
+  "stderr": {
+    "path": "windows/commands/tool-llc.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "environment": {
+    "toolchain": "windows/toolchain.json"
+  }
+}

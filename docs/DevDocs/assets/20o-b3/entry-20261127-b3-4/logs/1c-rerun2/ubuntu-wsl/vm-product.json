@@ -1,0 +1,106 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "backend": "vm",
+  "runtime": {
+    "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/deps/libxiao_runtime-6ff6e9b7d69a8a9e.rlib",
+    "bytes": 6580654,
+    "sha256": "6e9d4da34a9c101a18ce794334334e079ec0692460f581a355b20a08c70418fa"
+  },
+  "static_library_from_same_rustc_output": {
+    "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/deps/libxiao_runtime-6ff6e9b7d69a8a9e.a",
+    "bytes": 34589720,
+    "sha256": "863756cb558aaaa37701972b619b3c351bac90e413c4b3746063e8f37e094336"
+  },
+  "native_runtime_sha256": "e1bb44e9142353c35217e608c1fbd49b69d137b0b9a53becb02d20b3e5d70eaa",
+  "executable": {
+    "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/xiao-core",
+    "bytes": 19247440,
+    "sha256": "8bade79866b6f1390ee72cbe9c0937bcfc55b8f71dc1b81bfe21c1e048a5951a"
+  },
+  "cargo_runtime_event": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-runtime#0.1.0",
+    "manifest_path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-runtime/Cargo.toml",
+    "target": {
+      "kind": [
+        "rlib",
+        "staticlib"
+      ],
+      "crate_types": [
+        "rlib",
+        "staticlib"
+      ],
+      "name": "xiao_runtime",
+      "src_path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-runtime/src/lib.rs",
+      "edition": "2024",
+      "doc": true,
+      "doctest": true,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "3",
+      "debuginfo": 0,
+      "debug_assertions": false,
+      "overflow_checks": false,
+      "test": false
+    },
+    "features": [],
+    "filenames": [
+      "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/deps/libxiao_runtime-6ff6e9b7d69a8a9e.rlib",
+      "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/deps/libxiao_runtime-6ff6e9b7d69a8a9e.a"
+    ],
+    "executable": null,
+    "fresh": false
+  },
+  "cargo_product_event": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-driver#0.1.0",
+    "manifest_path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-driver/Cargo.toml",
+    "target": {
+      "kind": [
+        "bin"
+      ],
+      "crate_types": [
+        "bin"
+      ],
+      "name": "xiao-core",
+      "src_path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-driver/src/protocol_main.rs",
+      "edition": "2024",
+      "doc": true,
+      "doctest": false,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "3",
+      "debuginfo": 0,
+      "debug_assertions": false,
+      "overflow_checks": false,
+      "test": false
+    },
+    "features": [],
+    "filenames": [
+      "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/xiao-core"
+    ],
+    "executable": "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/xiao-core",
+    "fresh": false
+  },
+  "build": {
+    "path": "ubuntu-wsl/commands/vm-product-build.json",
+    "bytes": 1034,
+    "sha256": "5ab1ab9abe3f2706dec613a36b30f1e0e74d911901c0cece91ce6711950f8879"
+  },
+  "cases": {
+    "std.env": {
+      "path": "ubuntu-wsl/vm-product-retry/std.env/receipt.json",
+      "bytes": 2238,
+      "sha256": "66671dbc75b90eee2a86c4f9a699323d8514cf00dff33f21e91bba9c405f9cc3"
+    },
+    "stdlib.env": {
+      "path": "ubuntu-wsl/vm-product-retry/stdlib.env/receipt.json",
+      "bytes": 2262,
+      "sha256": "78f54bc026fb99521a85f2ea26a260658fea8ce54c00d2c90ee9e24e6cba4ee1"
+    }
+  }
+}

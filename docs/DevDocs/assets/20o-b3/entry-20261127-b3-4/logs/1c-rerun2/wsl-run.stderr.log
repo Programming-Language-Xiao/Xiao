@@ -1,0 +1,23 @@
+Traceback (most recent call last):
+  File "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/run.py", line 379, in <module>
+    main()
+    ~~~~^^
+  File "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/run.py", line 359, in main
+    prepare()
+    ~~~~~~~^^
+  File "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/run.py", line 243, in prepare
+    verify_source("before")
+    ~~~~~~~~~~~~~^^^^^^^^^^
+  File "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/run.py", line 194, in verify_source
+    "test_sources": {path: entry(SRC / path) for path in TEST_SOURCES},
+                           ~~~~~^^^^^^^^^^^^
+  File "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/run.py", line 116, in entry
+    return {"path": name, **fingerprint(path)}
+                            ~~~~~~~~~~~^^^^^^
+  File "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/run.py", line 110, in fingerprint
+    with path.open("rb") as file:
+         ~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.14/pathlib/__init__.py", line 772, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-driver/tests/b3_env_control.c'

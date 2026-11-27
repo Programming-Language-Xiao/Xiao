@@ -1,0 +1,39 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "build",
+    "--offline",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--target",
+    "x86_64-pc-windows-msvc",
+    "-p",
+    "xiao-driver",
+    "--release",
+    "--bin",
+    "xiao-core",
+    "--message-format=json"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src",
+  "started_at_utc": "2026-11-27T18:09:11.118316+00:00",
+  "elapsed_seconds": 94.187,
+  "exit": 0,
+  "stdout": {
+    "path": "windows/commands/vm-product-build.stdout.log",
+    "bytes": 110651,
+    "sha256": "84a04e77eeb296102515ca5e9c7e2c5817563bcfcdcddbfff33b9dbccdebe848"
+  },
+  "stderr": {
+    "path": "windows/commands/vm-product-build.stderr.log",
+    "bytes": 563,
+    "sha256": "16e4339a8c476270ca27c5cbaeabe11afdcb1f1376b1d0d672762694d18657c9"
+  },
+  "environment": {
+    "toolchain": "windows/toolchain.json"
+  }
+}

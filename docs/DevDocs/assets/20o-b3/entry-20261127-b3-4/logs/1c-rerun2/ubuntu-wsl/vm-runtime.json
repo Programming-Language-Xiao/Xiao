@@ -1,0 +1,87 @@
+{
+  "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/deps/libxiao_runtime-ae9f79b744753267.rlib",
+  "bytes": 6607878,
+  "sha256": "93daa8d188c98bc0b2c5bac1eda266b4465862ba59e27f4ba5af53f69ed1d947",
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "cargo_artifact_event": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-runtime#0.1.0",
+    "manifest_path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-runtime/Cargo.toml",
+    "target": {
+      "kind": [
+        "rlib",
+        "staticlib"
+      ],
+      "crate_types": [
+        "rlib",
+        "staticlib"
+      ],
+      "name": "xiao_runtime",
+      "src_path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-runtime/src/lib.rs",
+      "edition": "2024",
+      "doc": true,
+      "doctest": true,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "3",
+      "debuginfo": 0,
+      "debug_assertions": false,
+      "overflow_checks": false,
+      "test": false
+    },
+    "features": [
+      "test-failpoints"
+    ],
+    "filenames": [
+      "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/deps/libxiao_runtime-ae9f79b744753267.rlib",
+      "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/deps/libxiao_runtime-ae9f79b744753267.a"
+    ],
+    "executable": null,
+    "fresh": false
+  },
+  "tutorial_cargo_artifact_event": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-driver#0.1.0",
+    "manifest_path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-driver/Cargo.toml",
+    "target": {
+      "kind": [
+        "test"
+      ],
+      "crate_types": [
+        "bin"
+      ],
+      "name": "20o_b3_env_tutorial",
+      "src_path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-driver/tests/20o_b3_env_tutorial.rs",
+      "edition": "2024",
+      "doc": false,
+      "doctest": false,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "3",
+      "debuginfo": 0,
+      "debug_assertions": false,
+      "overflow_checks": false,
+      "test": true
+    },
+    "features": [],
+    "filenames": [
+      "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/deps/20o_b3_env_tutorial-fd5acfa33166fbab"
+    ],
+    "executable": "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/deps/20o_b3_env_tutorial-fd5acfa33166fbab",
+    "fresh": false
+  },
+  "test_executable_at_run": {
+    "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/deps/20o_b3_env_tutorial-fd5acfa33166fbab",
+    "bytes": 12764920,
+    "sha256": "aeefae4bcc2e1a4a38b906da06cae5a2ee03fd0dabad4f73c7a00df1c0b383e7"
+  },
+  "command": {
+    "path": "ubuntu-wsl/commands/tutorial-vm.json",
+    "bytes": 1201,
+    "sha256": "bfb17411e7bf920fabda869759cb7b2d6148541d58a87d0cb06def0b917b00a6"
+  }
+}

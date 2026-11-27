@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\vm_product.py", line 108, in <module>
+    golden_vm()
+  File "D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\vm_product.py", line 37, in golden_vm
+    assert entry(linked_static)["sha256"] == native["sha256"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

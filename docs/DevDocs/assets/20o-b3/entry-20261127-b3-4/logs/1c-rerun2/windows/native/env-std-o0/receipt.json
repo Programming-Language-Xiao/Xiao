@@ -1,0 +1,93 @@
+{
+  "case": "env-std-o0",
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "backend": "native",
+  "optimization": 0,
+  "import": "std.env",
+  "canonical_module": "stdlib.env",
+  "capabilities": 160,
+  "source_sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb",
+  "task_root": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\tutorial-native\\xiao-b3-env-73064-0\\env-std-o0",
+  "runtime_sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a",
+  "runtime": {
+    "path": "windows/runtime.json",
+    "bytes": 1930,
+    "sha256": "f89fbb949868848b953e41e2d6768501cf986a355dbfc577f14c3241bd58eceb"
+  },
+  "source_identity": {
+    "path": "windows/source-ready.json",
+    "bytes": 4264,
+    "sha256": "a0ca4402adb06cf8987ee47920aa7feef3e57ad1d87b5baf66650694a14d53d3"
+  },
+  "toolchain": {
+    "path": "windows/toolchain.json",
+    "bytes": 8357,
+    "sha256": "15234a8554840a4cf03bdf6add4e4f0a8e9d8a58aefaf72dde064c653947ccaf"
+  },
+  "build_and_test_command": {
+    "path": "windows/commands/tutorial-native.json",
+    "bytes": 1669,
+    "sha256": "c97d4a8446122f365a561dc92374bfa84ac3f81d5ebd9fe3e94a633ac7f4fd46"
+  },
+  "application": {
+    "argv": [
+      "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\tutorial-native\\xiao-b3-env-73064-0\\env-std-o0\\env-std-o0.exe",
+      "--__xiao-run-environment-stdin=0123456789abcdef0123456789abcdef"
+    ],
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\tutorial-native\\xiao-b3-env-73064-0\\env-std-o0",
+    "environment_mode": "synthetic",
+    "environment": {
+      "XIAO_B3_TUTORIAL_VALUE": "synthetic-host",
+      "XIAO_INTERNAL_RUN_ENVIRONMENT_NONCE": "0123456789abcdef0123456789abcdef"
+    },
+    "stdin": {
+      "bytes": 38,
+      "sha256": "4e364ac487566cda95cc9f1ddf64079141e25480b1b276f3acf637dfabd7e434",
+      "fixture": "tests/fixtures/docs/env/tutorial.input.json"
+    }
+  },
+  "exit": 0,
+  "diagnostic": null,
+  "files": {
+    "artifact": {
+      "path": "windows/native/env-std-o0/env-std-o0.exe",
+      "bytes": 1371136,
+      "sha256": "0d4beba9c2283ca6c7967275b6188de8ee39830a7c11829fee0102fcceb5c7d1"
+    },
+    "stdout": {
+      "path": "windows/native/env-std-o0/env-std-o0.stdout",
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    },
+    "stderr": {
+      "path": "windows/native/env-std-o0/env-std-o0.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "map": {
+      "path": "windows/native/env-std-o0/env-std-o0.exe.map",
+      "bytes": 2533190,
+      "sha256": "7d95d6a7a1d9e51a1937166e57ff84f5897c6eece50861c6342fd3a726b2e722"
+    }
+  },
+  "link_command": {
+    "path": "windows/native/env-std-o0/link-command.json",
+    "bytes": 6755,
+    "sha256": "c3ff06239f904ef4647f22965aeb8fdf0eaf437f4bec350f6a973fda06268067"
+  },
+  "verification": {
+    "path": "windows/native/env-std-o0/verification.json",
+    "bytes": 2120,
+    "sha256": "eee1555cf031f5b8b4b73604cf2056c6c171a77ad2456fdbb3a70c83b68b0e74",
+    "level": "Complete",
+    "object_format": "Coff",
+    "log_line": 3,
+    "original_stdout": {
+      "path": "windows/commands/tutorial-native.stdout.log",
+      "bytes": 8733,
+      "sha256": "28cc84503167b5b20891a5955ce3a1183ef3c5dcb63c8a9256651782a16c86c4"
+    }
+  }
+}

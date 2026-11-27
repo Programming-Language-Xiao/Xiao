@@ -1,0 +1,269 @@
+   Compiling serde_json v1.0.151
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling zeroize v1.9.0
+   Compiling rustls-pki-types v1.15.1
+   Compiling httparse v1.10.1
+   Compiling cc v1.5.1
+   Compiling untrusted v0.9.0
+   Compiling log v0.4.34
+   Compiling rustls v0.23.45
+   Compiling bytes v1.12.1
+   Compiling base64 v0.23.1
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-i18n)
+   Compiling xiao-lock v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-lock)
+   Compiling http v1.5.0
+   Compiling subtle v2.6.1
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-diagnostics)
+   Compiling ring v0.17.14
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-syntax)
+   Compiling once_cell v1.21.4
+   Compiling ureq-proto v0.6.4
+   Compiling webpki-roots v1.0.9
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-types)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-modules)
+   Compiling xiao-config v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-config)
+   Compiling filetime v0.2.29
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-lifetime)
+   Compiling percent-encoding v2.3.2
+   Compiling utf8-zero v0.8.1
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-ir)
+   Compiling rustls-webpki v0.103.15
+   Compiling tar v0.4.46
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-runtime)
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-optimizer)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-codegen-llvm)
+   Compiling ureq v3.4.2
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-bytecode)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-package)
+   Compiling windows-targets v0.52.6
+   Compiling windows-sys v0.52.0
+   Compiling crc32fast v1.5.2
+   Compiling simd-adler32 v0.3.10
+   Compiling adler2 v2.0.1
+   Compiling miniz_oxide v0.9.1
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-artifacts)
+   Compiling flate2 v1.1.10
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-vm)
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling xiao-platform v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-platform)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-driver)
+   Compiling syn v2.0.119
+   Compiling xiao-doc-coverage-rust v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-doc-coverage-rust)
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-intrinsics)
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-standard-library)
+   Compiling xiao-runtime-abi v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-runtime-abi)
+   Compiling xiao-source v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-source)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 25s
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_artifacts-f80f6a37d7475aad.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_bytecode-8b75397dbc2a66fb.exe)
+     Running unittests src\bin\xiaoc-check.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiaoc_check-ac3555d676dfe3e8.exe)
+     Running tests\b0_a_api.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\b0_a_api-245b53363bec7260.exe)
+     Running tests\b4_cmath_tac.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\b4_cmath_tac-a5d184a34f25ac54.exe)
+     Running tests\fuzz_xiaoc.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\fuzz_xiaoc-673e2746fae4345d.exe)
+     Running tests\r2_tac.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\r2_tac-989a362e80bd1496.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_codegen_llvm-924faf9a94664810.exe)
+     Running tests\15e_ci_gated.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\15e_ci_gated-d29fe95294462adf.exe)
+     Running tests\n0_a.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\n0_a-6874aad84727e5ce.exe)
+     Running tests\n0_b_dynamic.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\n0_b_dynamic-eb9e0928e03c1057.exe)
+     Running tests\n0_c_errors.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\n0_c_errors-f6aa64212fe156a2.exe)
+     Running tests\stdlib_bindings.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\stdlib_bindings-43bc017707a9f2c6.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_config-c00d91d5eddd8597.exe)
+     Running tests\d05_config.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\d05_config-8106217bf1b55374.exe)
+     Running tests\spec_snapshots.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\spec_snapshots-c64f601578193ec6.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_diagnostics-3fd2ddaba9d896b5.exe)
+     Running unittests src\bin\xiao-diagnostics.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_diagnostics-2d6765d0e1917468.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_doc_coverage_rust-d2993cd7c55170da.exe)
+     Running unittests src\main.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_doc_coverage_rust-aa4bc23c461bcced.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_driver-565633e1f9ddbe36.exe)
+     Running unittests src\protocol_main.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_core-4cc468df226b9c34.exe)
+     Running tests\18b_build_archive.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\18b_build_archive-56a2f475fb29ba91.exe)
+     Running tests\20c_first_modules.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20c_first_modules-684f6eed5af093e2.exe)
+     Running tests\20d_first_api.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20d_first_api-178dcb914dda9a99.exe)
+     Running tests\20d_process_api.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20d_process_api-a6cfe8e9655b58ef.exe)
+     Running tests\20e_archive_wiring.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20e_archive_wiring-49fc2c00c9c9d931.exe)
+     Running tests\20f_container_parameters.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20f_container_parameters-5d4a877fc48c2bb2.exe)
+     Running tests\20g_set_mutation.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20g_set_mutation-8a672877853e88d9.exe)
+     Running tests\20h_set_methods.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20h_set_methods-770b87d524c16484.exe)
+     Running tests\20i_indexing_and_text.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20i_indexing_and_text-fc87c58838ab7ea5.exe)
+     Running tests\20j_dynamic_dict_keys.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20j_dynamic_dict_keys-349a47b15ad73fdf.exe)
+     Running tests\20k_dict_write.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20k_dict_write-d55909334ed8ec3a.exe)
+     Running tests\20l_dict_methods.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20l_dict_methods-ff46cf48eb6e3039.exe)
+     Running tests\20m_text_and_path.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20m_text_and_path-3bcedea8783ad584.exe)
+     Running tests\20o_b1_imp_contract.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b1_imp_contract-f510a5f72ec316f3.exe)
+     Running tests\20o_b1_imp_resources.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b1_imp_resources-216d178075f2c35f.exe)
+     Running tests\20o_b1_imp_vm_performance.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b1_imp_vm_performance-92b581e26a5cdbef.exe)
+     Running tests\20o_b1_probe.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b1_probe-dec518c3ad2a1c24.exe)
+     Running tests\20o_b2_a1_identity.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b2_a1_identity-5f2069dc89bb5d44.exe)
+     Running tests\20o_b2_a_contract.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b2_a_contract-3dc65a4578500f3f.exe)
+     Running tests\20o_b2_a_performance_protocol.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b2_a_performance_protocol-23c3d7e559f47126.exe)
+     Running tests\20o_b2_a_resources.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b2_a_resources-eb3326c8cf4d752c.exe)
+     Running tests\20o_b2_b2_divide.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b2_b2_divide-7f12a2b601c27d46.exe)
+     Running tests\20o_b2_b3_wrapper.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b2_b3_wrapper-149a9cfee9c47ef4.exe)
+     Running tests\20o_b2_b4_cmath_boundary.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b2_b4_cmath_boundary-35dcc303eb846d33.exe)
+     Running tests\20o_b2_b4_cmath_library.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b2_b4_cmath_library-8a9a692af6923a14.exe)
+     Running tests\20o_b2_b4_cmath_llvm.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b2_b4_cmath_llvm-d3168407f5b24585.exe)
+     Running tests\20o_b2_b4_cmath_vm.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b2_b4_cmath_vm-d9da2322135361b0.exe)
+     Running tests\20o_b2_b4_frontend.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b2_b4_frontend-83e663bc596cd3d4.exe)
+     Running tests\20o_b2_b4_numeric_range_routing.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b2_b4_numeric_range_routing-53317da8a2e7487f.exe)
+     Running tests\20o_b2_b5_versions.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b2_b5_versions-eb8b8ddbdccf8fce.exe)
+     Running tests\20o_b2_b6_resources.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b2_b6_resources-41d95e29a3362897.exe)
+     Running tests\20o_b3_args_cli.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b3_args_cli-d68d008e0941994c.exe)
+     Running tests\20o_b3_env.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b3_env-7fd9eebeba154b28.exe)
+     Running tests\20o_b3_env_tutorial.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b3_env_tutorial-0abef133f417452a.exe)
+     Running tests\20o_b3_fs_tutorial.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b3_fs_tutorial-4e2b8c57fd71a87c.exe)
+     Running tests\20o_b3_time_tutorial.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_b3_time_tutorial-b99ce4426eaa380b.exe)
+     Running tests\20o_static_float_equality.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\20o_static_float_equality-ba7e47374d1bc5c0.exe)
+     Running tests\22b_concurrency_wiring.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\22b_concurrency_wiring-d6884fc0db383c84.exe)
+     Running tests\22c_runtime_gates.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\22c_runtime_gates-189d90213f3101fe.exe)
+     Running tests\22c_vm_concurrency.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\22c_vm_concurrency-ba443401e62978d1.exe)
+     Running tests\22d_llvm_concurrency.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\22d_llvm_concurrency-96a7d751e731a0d1.exe)
+     Running tests\22e_release.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\22e_release-3f3820f743f05ce8.exe)
+     Running tests\artifact_size_regression.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\artifact_size_regression-9a2501cad6cd3205.exe)
+     Running tests\b0_c_driver.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\b0_c_driver-82f5bd0c010cf986.exe)
+     Running tests\b0_d_exit_codes.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\b0_d_exit_codes-d3bca63cfc260322.exe)
+     Running tests\c20_capability_probe.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c20_capability_probe-838f0d75b2e95c13.exe)
+     Running tests\compatibility_matrix.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\compatibility_matrix-bb7cda193dd35c8f.exe)
+     Running tests\cross_platform_release.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\cross_platform_release-247948572b589083.exe)
+     Running tests\d17c_archive.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\d17c_archive-fe1ef7c4d3e3e5b8.exe)
+     Running tests\d19a_differential.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\d19a_differential-4f4adc74bedf3544.exe)
+     Running tests\d19a_regression.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\d19a_regression-a8d0f30e84c964dd.exe)
+     Running tests\eighth_batch.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\eighth_batch-e00e7bdb05c24d12.exe)
+     Running tests\i4a2_module_loading.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\i4a2_module_loading-734f04e1648693d4.exe)
+     Running tests\i4a2_retry.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\i4a2_retry-332c147058f2e033.exe)
+     Running tests\i4b_session.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\i4b_session-01c41e380c480edb.exe)
+     Running tests\n0_a_native_driver.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\n0_a_native_driver-b345bb35a7e345c9.exe)
+     Running tests\n0_b_dynamic_native.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\n0_b_dynamic_native-5d3e502b1d7d5575.exe)
+     Running tests\native_benchmark_probe.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\native_benchmark_probe-cf9a7aae62439905.exe)
+     Running tests\ninth_batch.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\ninth_batch-6d872fa4ca72c79d.exe)
+     Running tests\release_report.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\release_report-aa8f176b2b3c979e.exe)
+     Running tests\seventh_batch.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\seventh_batch-dcafc202b0133d1c.exe)
+     Running tests\u0_frontend.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\u0_frontend-51150fbf3990afdd.exe)
+     Running tests\x0_a_protocol.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\x0_a_protocol-fd846b6eec1b8a86.exe)
+     Running tests\y3_selector_plan.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\y3_selector_plan-a0d7379d2880e876.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_i18n-d78a8279b641713b.exe)
+     Running tests\catalog.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\catalog-a35afbb0a8eda280.exe)
+     Running tests\language_pack.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\language_pack-191725a6f46865c4.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_intrinsics-c030955a9d76d860.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_ir-ea95b2202343f6fb.exe)
+     Running tests\fuzz_snapshots.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\fuzz_snapshots-d2403caf008dba4a.exe)
+     Running tests\r2_release_reconciliation.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\r2_release_reconciliation-c9092b9c07f067a2.exe)
+     Running tests\structure_snapshots.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\structure_snapshots-286f66c6d581b4b1.exe)
+     Running tests\u0_ir.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\u0_ir-c342770663792d50.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_lifetime-35361e9d3f55713c.exe)
+     Running tests\a06_lifetime.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\a06_lifetime-ba8db3fd30e6dac9.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_lock-3ccca9f8e0504c28.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_modules-03c7925f84c6a255.exe)
+     Running tests\c05_tables.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c05_tables-bfc07f55529b7517.exe)
+     Running tests\d0_modules.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\d0_modules-696ad2979eb1efa2.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_optimizer-79f91da17fca0e04.exe)
+     Running tests\boundary_inputs.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\boundary_inputs-291152e77a11dec0.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_package-c26faf430b7e2ac2.exe)
+     Running tests\d1_package.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\d1_package-6799a7795d425ee9.exe)
+     Running tests\e0_environment.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\e0_environment-54bc916a3e5b3303.exe)
+     Running tests\e1_cache.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\e1_cache-c64a193d7b73a5a3.exe)
+     Running tests\e2a_lockfile.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\e2a_lockfile-bd86e200fbf80bfb.exe)
+     Running tests\e2b_sync.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\e2b_sync-ff7fafed81b01444.exe)
+     Running tests\e3a_source.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\e3a_source-664b7247cdd14796.exe)
+     Running tests\e3b_cache.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\e3b_cache-b511c46c26107a46.exe)
+     Running tests\e3c_remote.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\e3c_remote-c3f3cc181949c380.exe)
+     Running tests\e3d1_remote.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\e3d1_remote-e3fdbbe81f5b1018.exe)
+     Running tests\e3d_config_edit.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\e3d_config_edit-9b38e594a473080d.exe)
+     Running tests\e3d_operations.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\e3d_operations-a9ea4d092c7c5764.exe)
+     Running tests\e3d_solver.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\e3d_solver-7a4cd9bea36ea8f5.exe)
+     Running tests\e3d_version.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\e3d_version-3e38d76a9e96ed00.exe)
+     Running tests\e4_language_pack.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\e4_language_pack-a092fe8754c400cc.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_platform-6f00d470bab4e095.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_runtime-ee2ce6c013236364.exe)
+X09-DRIVER-006: 环境快照含无效的宿主编码
+X09-DRIVER-006: 环境快照含无效的宿主编码
+X09-DRIVER-006: 环境名称为空或含等号或 NUL
+X06-RUNTIME-012: 能力掩码含未知位（收到 0x0000000000000180，已知掩码 0x00000000000000ff）
+xiao-error class=recoverable code=X06-RUNTIME-009 message_id=runtime.user_error params={"message": Text("overflow")} span=4..9 exit_code=3
+error [X06-RUNTIME-009]: overflow
+at bytes 4..9
+X09-DRIVER-007: 环境快照超过接纳上限
+X09-DRIVER-007: 环境快照超过接纳上限
+X09-DRIVER-007: 环境快照超过接纳上限
+X09-DRIVER-007: 环境快照超过接纳上限
+X09-DRIVER-006: 环境快照含无效的宿主编码
+X09-DRIVER-007: 环境快照超过接纳上限
+     Running tests\b06_runtime.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\b06_runtime-1848b7819b198b58.exe)
+     Running tests\b1_string_bridge.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\b1_string_bridge-658b37c7a3280e2a.exe)
+     Running tests\b2_a1_identity_allocations.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\b2_a1_identity_allocations-cbeb07d0760ce629.exe)
+     Running tests\n0_c2_error_boundary.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\n0_c2_error_boundary-85d6fcf33e3f9a91.exe)
+     Running tests\r2a_containers.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\r2a_containers-58df7f8c8105558f.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_runtime_abi-2d9b4f6ffc5a753e.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_source-cf532cde5a93205f.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_standard_library-a857d1ff6d00c78d.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_syntax-14681084cc87c51b.exe)
+     Running tests\c05_tables.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c05_tables-3d8a32391842a192.exe)
+     Running tests\c0_containers.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c0_containers-98191fe6495e65d8.exe)
+     Running tests\c0_snapshots.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c0_snapshots-c5c89604f2376121.exe)
+     Running tests\c2a_sets.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c2a_sets-76de2c1231fdfd3a.exe)
+     Running tests\c2b_sets.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c2b_sets-fc92e1f00d174e9b.exe)
+     Running tests\c2c_set_operations.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c2c_set_operations-0bd0e7b616f9e201.exe)
+     Running tests\concurrency_annotations.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\concurrency_annotations-de2d02bb85677068.exe)
+     Running tests\d0_imports.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\d0_imports-7ca069f90cffca59.exe)
+     Running tests\f04_functions.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\f04_functions-e1adb4ee523ec35e.exe)
+     Running tests\lexical_snapshots.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\lexical_snapshots-32114dfc8dcf27f6.exe)
+     Running tests\p1_expression.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\p1_expression-3e765e87d73055d9.exe)
+     Running tests\p2_declarations.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\p2_declarations-9a6eefa9c796de73.exe)
+     Running tests\p2_snapshots.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\p2_snapshots-857a526c1639aceb.exe)
+     Running tests\p2_type_parameters.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\p2_type_parameters-a8a5d6a8172d2b78.exe)
+     Running tests\parser_snapshots.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\parser_snapshots-2b0c6b5ed8e0ac5c.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_types-06137b3031bdf91b.exe)
+     Running tests\c05_tables.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c05_tables-c3ba3b25769234db.exe)
+     Running tests\c0_containers.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c0_containers-ead2dd391d53690f.exe)
+     Running tests\c0c1_snapshots.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c0c1_snapshots-45d119331a7aae77.exe)
+     Running tests\c1_selectors.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c1_selectors-7540d7d76e9a993a.exe)
+     Running tests\c2a_sets.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c2a_sets-df7dabbaa824746a.exe)
+     Running tests\c2a_snapshots.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c2a_snapshots-7c9d156d9ee047e0.exe)
+     Running tests\c2b_heterogeneous_sets.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c2b_heterogeneous_sets-32b6dcb81907d3d3.exe)
+     Running tests\c2b_snapshots.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c2b_snapshots-e0420321261ba992.exe)
+     Running tests\c2c_set_operations.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c2c_set_operations-143fd425356719ea.exe)
+     Running tests\c2c_snapshots.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\c2c_snapshots-9a98999265ebaa03.exe)
+     Running tests\control_flow_snapshots.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\control_flow_snapshots-443e6988dc01d922.exe)
+     Running tests\d19a_fixed_random.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\d19a_fixed_random-5c6da77384d7f0ba.exe)
+     Running tests\f04_functions.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\f04_functions-77e24a896b779a76.exe)
+     Running tests\i4a2_external_namespaces.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\i4a2_external_namespaces-23850450795f2921.exe)
+     Running tests\s0_types.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\s0_types-6f659a3f01b37c0f.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_vm-c2cdbee07d73add6.exe)
+     Running tests\b0_b_production.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\b0_b_production-10d53ca6ecb0c729.exe)
+     Running tests\b0_e_checkpoint_performance.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\b0_e_checkpoint_performance-5bf6937c97dbdbee.exe)
+     Running tests\r2_iteration_values.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\r2_iteration_values-9e95fc4040ee568a.exe)
+     Running tests\r2_selector_values.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\r2_selector_values-e8f42b30cacf6e8d.exe)
+     Running tests\r2_set_values.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\r2_set_values-38d2d49c9735c79e.exe)
+     Running tests\r2_stack.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\r2_stack-76987939f3cbe2d6.exe)
+     Running tests\r2_table_values.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\r2_table_values-3d46e0caab768e7f.exe)
+     Running tests\r2_vectors.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\r2_vectors-7cbb28a3c6cb04f1.exe)
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_xar-98e413763f590f8b.exe)
+     Running tests\fuzz_archive.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\fuzz_archive-8795e7cf4baa49f8.exe)
+   Doc-tests xiao_artifacts
+   Doc-tests xiao_bytecode
+   Doc-tests xiao_codegen_llvm
+   Doc-tests xiao_config
+   Doc-tests xiao_diagnostics
+   Doc-tests xiao_doc_coverage_rust
+   Doc-tests xiao_driver
+   Doc-tests xiao_i18n
+   Doc-tests xiao_intrinsics
+   Doc-tests xiao_ir
+   Doc-tests xiao_lifetime
+   Doc-tests xiao_lock
+   Doc-tests xiao_modules
+   Doc-tests xiao_optimizer
+   Doc-tests xiao_package
+   Doc-tests xiao_platform
+   Doc-tests xiao_runtime
+   Doc-tests xiao_runtime_abi
+   Doc-tests xiao_source
+   Doc-tests xiao_standard_library
+   Doc-tests xiao_syntax
+   Doc-tests xiao_types
+   Doc-tests xiao_vm
+   Doc-tests xiao_xar

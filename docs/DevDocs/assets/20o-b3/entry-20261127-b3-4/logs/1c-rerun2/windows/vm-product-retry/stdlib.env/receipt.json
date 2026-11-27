@@ -1,0 +1,55 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "backend": "vm",
+  "runtime": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_runtime-cc614844e2614bb9.rlib",
+    "bytes": 7879356,
+    "sha256": "e3195bf65d9354e80eaed129327f6a3196c65071bf921a420a9196a4862c8568"
+  },
+  "executable": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao-core.exe",
+    "bytes": 17423360,
+    "sha256": "15d69e155804212fcb4c50aa1c4acae28bddb7db516a151ac70c333846a28422"
+  },
+  "import": "stdlib.env",
+  "canonical_module": "stdlib.env",
+  "capabilities": 160,
+  "source_sha256": "a8cb3149daec0193db2de4b6d42752c38812965de8e624f4a106c879de5c6e1d",
+  "argv": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao-core.exe"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\vm-product-retry\\stdlib.env",
+  "started_at_utc": "2026-11-27T18:12:59.243117+00:00",
+  "elapsed_seconds": 0.266,
+  "environment": {
+    "USERPROFILE": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\vm-product-retry\\stdlib.env\\host-home",
+    "XIAO_HOME": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\vm-product-retry\\stdlib.env\\xiao-home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src\\stdlib"
+  },
+  "process_exit": 0,
+  "run_exit": 0,
+  "protocol": {
+    "protocol.stdin.bin": {
+      "path": "windows/vm-product-retry/stdlib.env/protocol.stdin.bin",
+      "bytes": 1106,
+      "sha256": "90c647ff2834e717c528d670fdd7fe17f2f78b99aedd467fb7be71c5d7f2a7b6"
+    },
+    "protocol.stdout.bin": {
+      "path": "windows/vm-product-retry/stdlib.env/protocol.stdout.bin",
+      "bytes": 7807,
+      "sha256": "b2d3f942fd5ac2a0985b9a8177d66e9db86c8939ba94e53f2c34ac49fd088989"
+    },
+    "protocol.stderr": {
+      "path": "windows/vm-product-retry/stdlib.env/protocol.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "stdout": {
+    "path": "windows/vm-product-retry/stdlib.env/tutorial.stdout",
+    "bytes": 55,
+    "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+  }
+}

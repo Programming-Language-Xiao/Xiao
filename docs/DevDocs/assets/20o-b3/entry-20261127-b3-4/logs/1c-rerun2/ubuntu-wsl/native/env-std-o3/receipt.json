@@ -1,0 +1,88 @@
+{
+  "case": "env-std-o3",
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "backend": "native",
+  "optimization": 3,
+  "import": "std.env",
+  "canonical_module": "stdlib.env",
+  "capabilities": 160,
+  "source_sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb",
+  "task_root": "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/tutorial-native/xiao-b3-env-4670-0/env-std-o3",
+  "runtime_sha256": "e1bb44e9142353c35217e608c1fbd49b69d137b0b9a53becb02d20b3e5d70eaa",
+  "runtime": {
+    "path": "ubuntu-wsl/runtime.json",
+    "bytes": 1719,
+    "sha256": "c0db787e6edfd7fdce3d7a8f9e88b7b1bbba51ac410f8ccae8fd6e5d6dac449f"
+  },
+  "source_identity": {
+    "path": "ubuntu-wsl/source-ready.json",
+    "bytes": 3749,
+    "sha256": "716160d033ba644eb001c6e362e444f07cc65db64fa06e8a33ab01c754f29e35"
+  },
+  "toolchain": {
+    "path": "ubuntu-wsl/toolchain.json",
+    "bytes": 7691,
+    "sha256": "b00d8d863f432758bdd82c5b028ad7b9fc4feb2ae5175660e4ab7cce6d891cd9"
+  },
+  "build_and_test_command": {
+    "path": "ubuntu-wsl/commands/tutorial-native.json",
+    "bytes": 1569,
+    "sha256": "62c328b265e28aaee262e4bdb2453049ed6e95cb940c791af33f80e74cf987a6"
+  },
+  "application": {
+    "argv": [
+      "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/tutorial-native/xiao-b3-env-4670-0/env-std-o3/env-std-o3",
+      "--__xiao-run-environment-stdin=0123456789abcdef0123456789abcdef"
+    ],
+    "cwd": "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/tutorial-native/xiao-b3-env-4670-0/env-std-o3",
+    "environment_mode": "synthetic",
+    "environment": {
+      "XIAO_B3_TUTORIAL_VALUE": "synthetic-host",
+      "XIAO_INTERNAL_RUN_ENVIRONMENT_NONCE": "0123456789abcdef0123456789abcdef"
+    },
+    "stdin": {
+      "bytes": 38,
+      "sha256": "4e364ac487566cda95cc9f1ddf64079141e25480b1b276f3acf637dfabd7e434",
+      "fixture": "tests/fixtures/docs/env/tutorial.input.json"
+    }
+  },
+  "exit": 0,
+  "diagnostic": null,
+  "files": {
+    "artifact": {
+      "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/tutorial-native/xiao-b3-env-4670-0/env-std-o3/env-std-o3",
+      "bytes": 5652664,
+      "sha256": "f98a75de022ea9477e3d818b112e9c2840109e45fe0e8a320c2b495ad4413aea"
+    },
+    "stdout": {
+      "path": "ubuntu-wsl/native/env-std-o3/env-std-o3.stdout",
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    },
+    "stderr": {
+      "path": "ubuntu-wsl/native/env-std-o3/env-std-o3.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "link_command": {
+    "path": "ubuntu-wsl/native/env-std-o3/link-command.json",
+    "bytes": 6571,
+    "sha256": "12a1bedd8f63d983970bf244d971e2ea42db8f9229e867f142f92787c979816c"
+  },
+  "verification": {
+    "path": "ubuntu-wsl/native/env-std-o3/verification.json",
+    "bytes": 1790,
+    "sha256": "557c8f573bced825c698ca58e90e3db70a220323bac23b9a0740f0e6c89e2b7c",
+    "level": "Complete",
+    "object_format": "Elf",
+    "log_line": 4,
+    "original_stdout": {
+      "path": "ubuntu-wsl/commands/tutorial-native.stdout.log",
+      "bytes": 7401,
+      "sha256": "f11a335cd59df19fdcf99ddd5c05b01019799a53303065aa9fa9ba06b7e98749"
+    }
+  }
+}

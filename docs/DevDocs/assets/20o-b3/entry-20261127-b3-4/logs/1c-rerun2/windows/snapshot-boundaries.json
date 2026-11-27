@@ -1,0 +1,195 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "runtime_sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a",
+  "counts": {
+    "X09-DRIVER-006": 2,
+    "accepted": 16,
+    "X09-DRIVER-007": 8
+  },
+  "cases": {
+    "o0/invalid-duplicate": {
+      "path": "windows/replay/boundaries/o0/invalid-duplicate/receipt.json",
+      "bytes": 1884,
+      "sha256": "04d3ffced3b5f651fae2db46458744f5af017c47168a21d508223b6b4e680e71",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-006"
+    },
+    "o0/name-255": {
+      "path": "windows/replay/boundaries/o0/name-255/receipt.json",
+      "bytes": 1826,
+      "sha256": "2fa3f913dcc85b64f795a0bafd920c5c5728aae20dcac73f42299a70c7e97024",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/name-256": {
+      "path": "windows/replay/boundaries/o0/name-256/receipt.json",
+      "bytes": 1826,
+      "sha256": "92d4cd62a09c1e72d5c2ac732eb51932876d1f5a034219166ed68ef16c68a46a",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/name-257": {
+      "path": "windows/replay/boundaries/o0/name-257/receipt.json",
+      "bytes": 1850,
+      "sha256": "35d51fdf503be2dc75945b4cf9d192663fc4d725456798d5245b017348c4c9ba",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    },
+    "o0/value-65535": {
+      "path": "windows/replay/boundaries/o0/value-65535/receipt.json",
+      "bytes": 1842,
+      "sha256": "754b6788ffef77a3107b361518eb17dc9387206a8255e2ca5305433034359238",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/value-65536": {
+      "path": "windows/replay/boundaries/o0/value-65536/receipt.json",
+      "bytes": 1842,
+      "sha256": "2896e7babc0e167378e8d9f8f3ab233eef91dd7b02282c9faa111d5bc8189734",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/value-65537": {
+      "path": "windows/replay/boundaries/o0/value-65537/receipt.json",
+      "bytes": 1866,
+      "sha256": "f4072ebd0fc01d7710552597467ac4192b7bc3371c8f6de51baa1ae4864e186e",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    },
+    "o0/pairs-1023": {
+      "path": "windows/replay/boundaries/o0/pairs-1023/receipt.json",
+      "bytes": 1840,
+      "sha256": "9cc1be441b393bc67d15a11cab8a8c5a1bcad2f1dc542f1d585e1de24b0e51e5",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/pairs-1024": {
+      "path": "windows/replay/boundaries/o0/pairs-1024/receipt.json",
+      "bytes": 1840,
+      "sha256": "ffb379aaae95e3a97fdf566a2f7cb5fa09f0bef34e4f5cacd0ea39801c545acf",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/pairs-1025": {
+      "path": "windows/replay/boundaries/o0/pairs-1025/receipt.json",
+      "bytes": 1864,
+      "sha256": "457d3a04b5dd944b4692338cd0c26f7960bc88eba21f7f702b55b197c0a4d19a",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    },
+    "o0/total-1048575": {
+      "path": "windows/replay/boundaries/o0/total-1048575/receipt.json",
+      "bytes": 1855,
+      "sha256": "8153b8e27453234b9a40b5eb3573113f027dc6e8241d888977d1f983cffd7bc0",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/total-1048576": {
+      "path": "windows/replay/boundaries/o0/total-1048576/receipt.json",
+      "bytes": 1855,
+      "sha256": "2bc73d9f2991b84ef7c39f138070b6255bdec1fe424d7f658975c2540397db87",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o0/total-1048577": {
+      "path": "windows/replay/boundaries/o0/total-1048577/receipt.json",
+      "bytes": 1879,
+      "sha256": "2bdfa3dc27a9825c6a007b138e647edadd0163d19e579ed3b959496fb8de3fbe",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    },
+    "o3/invalid-duplicate": {
+      "path": "windows/replay/boundaries/o3/invalid-duplicate/receipt.json",
+      "bytes": 1884,
+      "sha256": "9c8f5c26a53e7f336403de03f756554b2d8c250526b2d50cf8d11c689f0303b1",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-006"
+    },
+    "o3/name-255": {
+      "path": "windows/replay/boundaries/o3/name-255/receipt.json",
+      "bytes": 1826,
+      "sha256": "15b8846803ebe8a2239f03bb699e8e7a1cfdac5821c8e27ce0ba2e1ca538940c",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/name-256": {
+      "path": "windows/replay/boundaries/o3/name-256/receipt.json",
+      "bytes": 1826,
+      "sha256": "c370026efe50c5cfd9d623001a528d9c34b4add1311e0478b1a08bf042f35cca",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/name-257": {
+      "path": "windows/replay/boundaries/o3/name-257/receipt.json",
+      "bytes": 1850,
+      "sha256": "562e756beea3fc1f7267a1b0046c11b69d2b644ee2713c59b8dbbe711840bfff",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    },
+    "o3/value-65535": {
+      "path": "windows/replay/boundaries/o3/value-65535/receipt.json",
+      "bytes": 1842,
+      "sha256": "42ec49913d186a981b7470bd4fed0f612ad417763f0cde548f676388b25aa2d3",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/value-65536": {
+      "path": "windows/replay/boundaries/o3/value-65536/receipt.json",
+      "bytes": 1842,
+      "sha256": "61a781e95c6249f344948f8571b8ae1db849e3a869afd915eaa29e567fa205fa",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/value-65537": {
+      "path": "windows/replay/boundaries/o3/value-65537/receipt.json",
+      "bytes": 1866,
+      "sha256": "7f927160467885ddbff42418466ee678f753c2c785148f792be3aa484218faa7",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    },
+    "o3/pairs-1023": {
+      "path": "windows/replay/boundaries/o3/pairs-1023/receipt.json",
+      "bytes": 1840,
+      "sha256": "fdd3b6c7fc92fc25dc6a591764c4dd2a992228108c962baeaa9cdd6b20b6693e",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/pairs-1024": {
+      "path": "windows/replay/boundaries/o3/pairs-1024/receipt.json",
+      "bytes": 1840,
+      "sha256": "1f381ad0f0b1d813ebe7249079a871124171bf131c936454e070aff4871954f9",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/pairs-1025": {
+      "path": "windows/replay/boundaries/o3/pairs-1025/receipt.json",
+      "bytes": 1864,
+      "sha256": "836147813af0afff8b3ffbf499b8f7a5a35194319614a47031cf0d7682b74dd8",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    },
+    "o3/total-1048575": {
+      "path": "windows/replay/boundaries/o3/total-1048575/receipt.json",
+      "bytes": 1855,
+      "sha256": "2282c79134cdc5c8401dd4b254d507efaa11d2bae0429d35d1c54c562cfe1f5a",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/total-1048576": {
+      "path": "windows/replay/boundaries/o3/total-1048576/receipt.json",
+      "bytes": 1855,
+      "sha256": "74c3d736768314787d38878a79314315b59372231523c55151c201902acc286e",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "o3/total-1048577": {
+      "path": "windows/replay/boundaries/o3/total-1048577/receipt.json",
+      "bytes": 1879,
+      "sha256": "13b7118cde29ba879e75b547c57aa43579f3dfc85758c0f984c95e544d72920d",
+      "exit": 2,
+      "diagnostic": "X09-DRIVER-007"
+    }
+  }
+}

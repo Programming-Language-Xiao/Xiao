@@ -1,0 +1,131 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "source_unchanged": true,
+  "source_before": {
+    "path": "ubuntu-wsl/source-before.json",
+    "bytes": 3539,
+    "sha256": "4307067deb593078c99f1bfa9689b919ddf0ba45c088c5190ab720eb5ca262e4"
+  },
+  "source_after": {
+    "path": "ubuntu-wsl/source-after.json",
+    "bytes": 3749,
+    "sha256": "f6603d78fc58f887c996162ab61474c038b521773b26de04e8fce9d720c82e98"
+  },
+  "vendor_toolchain": {
+    "path": "ubuntu-wsl/toolchain.json",
+    "bytes": 7691,
+    "sha256": "b00d8d863f432758bdd82c5b028ad7b9fc4feb2ae5175660e4ab7cce6d891cd9"
+  },
+  "runtime": {
+    "path": "ubuntu-wsl/runtime.json",
+    "bytes": 1719,
+    "sha256": "c0db787e6edfd7fdce3d7a8f9e88b7b1bbba51ac410f8ccae8fd6e5d6dac449f"
+  },
+  "runtime_sha256": "e1bb44e9142353c35217e608c1fbd49b69d137b0b9a53becb02d20b3e5d70eaa",
+  "vm_golden": {
+    "path": "ubuntu-wsl/tutorial-vm.json",
+    "bytes": 1446,
+    "sha256": "64fb10f55fe7869c2ddc806e16f0bdac0febc8862fc7a1503a7712ac8fd0aad8"
+  },
+  "vm_product_golden": {
+    "path": "ubuntu-wsl/vm-product.json",
+    "bytes": 3771,
+    "sha256": "3990aaadb5a1299e0c71694b5826d0bff5c2162e93da6258dcc396c702f3f2e5"
+  },
+  "native_matrix": {
+    "path": "ubuntu-wsl/native-matrix.json",
+    "bytes": 2746,
+    "sha256": "e38e2639bab7612486c573491d195b9b7fbea331150a25526a02ca5e97fedade"
+  },
+  "verified_artifacts": 6,
+  "commands": {
+    "tutorial-vm": {
+      "path": "ubuntu-wsl/commands/tutorial-vm.json",
+      "bytes": 1201,
+      "sha256": "bfb17411e7bf920fabda869759cb7b2d6148541d58a87d0cb06def0b917b00a6",
+      "exit": 0
+    },
+    "tutorial-native": {
+      "path": "ubuntu-wsl/commands/tutorial-native.json",
+      "bytes": 1569,
+      "sha256": "62c328b265e28aaee262e4bdb2453049ed6e95cb940c791af33f80e74cf987a6",
+      "exit": 0
+    },
+    "env": {
+      "path": "ubuntu-wsl/commands/env.json",
+      "bytes": 1083,
+      "sha256": "c4baf6af82d0071525749520c4577fdac7d900f480355ce3511ea9df93e4ab9c",
+      "exit": 0
+    },
+    "env-native": {
+      "path": "ubuntu-wsl/commands/env-native.json",
+      "bytes": 1485,
+      "sha256": "68988d1e4cbe4cb1214889437feebde6845fb3674e92ed73b61ab5e018991adf",
+      "exit": 0
+    },
+    "runtime-env": {
+      "path": "ubuntu-wsl/commands/runtime-env.json",
+      "bytes": 1108,
+      "sha256": "b1f428bc476418a148abd9d4bc510b904fa0e5cde1a073505c24ecf16866a261",
+      "exit": 0
+    },
+    "workspace": {
+      "path": "ubuntu-wsl/commands/workspace.json",
+      "bytes": 1018,
+      "sha256": "48a56ab0736dd41c732cbc2c432aaa46c46e31b3c136c91395e8845245768cd9",
+      "exit": 0
+    },
+    "fmt": {
+      "path": "ubuntu-wsl/commands/fmt.json",
+      "bytes": 926,
+      "sha256": "e9ef46230200370ef1d846f771e0ee7c16977499dc81a8da231064e1c4af0cea",
+      "exit": 0
+    },
+    "runtime-build": {
+      "path": "ubuntu-wsl/commands/runtime-build.json",
+      "bytes": 1000,
+      "sha256": "0cb009b66f9d15093fd31546610cd76a0c6b48bafe3c492e030a3eba4286a211",
+      "exit": 0
+    },
+    "c-abi-compile": {
+      "path": "ubuntu-wsl/commands/c-abi-compile.json",
+      "bytes": 1606,
+      "sha256": "e6501a167527b546da84181ddde0f1da3765bd339f35a0fae55f10dff6e208c1",
+      "exit": 0
+    },
+    "c-abi-run": {
+      "path": "ubuntu-wsl/commands/c-abi-run.json",
+      "bytes": 764,
+      "sha256": "3620ebcb63fc2b3d9677ca0a7324696a49abd8a7ee90f5c36e56dc78f61d9e0e",
+      "exit": 0
+    },
+    "vm-product-build": {
+      "path": "ubuntu-wsl/commands/vm-product-build.json",
+      "bytes": 1034,
+      "sha256": "5ab1ab9abe3f2706dec613a36b30f1e0e74d911901c0cece91ce6711950f8879",
+      "exit": 0
+    }
+  },
+  "snapshot_boundaries": {
+    "path": "ubuntu-wsl/snapshot-boundaries.json",
+    "bytes": 7181,
+    "sha256": "3a8cfd3fef5c47a6ed9ae1b0e82e973b0153aeb8783e604ac9ba72d3e23f051e"
+  },
+  "nonce": {
+    "path": "ubuntu-wsl/nonce.json",
+    "bytes": 2033,
+    "sha256": "ef75697e2417c6c0fe6f8c34855483413aba154dab883eed7b8d2a140d1ecad2"
+  },
+  "run_control": {
+    "path": "ubuntu-wsl/run-control.json",
+    "bytes": 15392,
+    "sha256": "5aa906782ab03ae91b6405531f82fb48ad0f333783f2d8e84c1fcd119f09c1c2"
+  },
+  "test_results": {
+    "path": "ubuntu-wsl/test-results.json",
+    "bytes": 744,
+    "sha256": "60d1bd1fb812b562e80a665d1cca823348f1a2380f7d347697c80f3836566624"
+  }
+}

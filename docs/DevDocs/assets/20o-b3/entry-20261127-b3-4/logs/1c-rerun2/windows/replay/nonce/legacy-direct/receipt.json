@@ -1,0 +1,47 @@
+{
+  "case": "nonce/legacy-direct",
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "runtime_sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a",
+  "artifact": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-3\\legacy-marker.exe",
+    "bytes": 1191936,
+    "sha256": "1d708f9d87d3ecb97bcbf81d742df7a2c365c3c4c585b0a9ff67a6cd98178324"
+  },
+  "argv": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-3\\legacy-marker.exe",
+    "--__xiao-run-environment-stdin",
+    "tail"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\replay\\nonce\\legacy-direct",
+  "started_at_utc": "2026-11-27T18:06:29.830083+00:00",
+  "environment": {
+    "XIAO_B3_TEST_ENV": "host-native",
+    "XIAO_INTERNAL_RUN_ENVIRONMENT_NONCE": "db6cd2e273a60b837bd0c8da3e56bae0"
+  },
+  "stdin": {
+    "bytes": 39,
+    "sha256": "90d32efdf6efa65e75f967e3bdbef9d2ece09d7786b444c92dd64751ea2b595c",
+    "pairs": 1,
+    "logical_bytes": 30
+  },
+  "exit": 0,
+  "diagnostic": null,
+  "outputs": {
+    "stdout": {
+      "path": "windows/replay/nonce/legacy-direct/stdout.stdout",
+      "bytes": 48,
+      "sha256": "ed9813d0512e2f15bb54230261614aea505816e48afd52a73ea5901a5a6c5237"
+    },
+    "stderr": {
+      "path": "windows/replay/nonce/legacy-direct/stderr.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "expected_exit": 0,
+  "expected_diagnostic": null,
+  "expected_stdout_sha256": "ed9813d0512e2f15bb54230261614aea505816e48afd52a73ea5901a5a6c5237",
+  "passed": true
+}

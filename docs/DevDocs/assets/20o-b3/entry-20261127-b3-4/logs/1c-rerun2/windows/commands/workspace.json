@@ -1,0 +1,35 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--offline",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--target",
+    "x86_64-pc-windows-msvc",
+    "--workspace"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src",
+  "started_at_utc": "2026-11-27T18:07:01.567976+00:00",
+  "elapsed_seconds": 861.297,
+  "exit": 0,
+  "stdout": {
+    "path": "windows/commands/workspace.stdout.log",
+    "bytes": 152283,
+    "sha256": "8db91e44492c2cb40a6fc0f6c3119ac398c165733a74138fceaab6dcc8bf5c3c"
+  },
+  "stderr": {
+    "path": "windows/commands/workspace.stderr.log",
+    "bytes": 36249,
+    "sha256": "a42524380ee909027cd40a0e24d4b69b34de27ade04e5d82e58e6e3fc88a59c6"
+  },
+  "environment": {
+    "toolchain": "windows/toolchain.json",
+    "XIAO_B3_ENV_TEST_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\workspace"
+  }
+}

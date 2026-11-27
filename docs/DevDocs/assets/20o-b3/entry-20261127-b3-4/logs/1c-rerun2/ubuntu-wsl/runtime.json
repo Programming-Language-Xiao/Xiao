@@ -1,0 +1,52 @@
+{
+  "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/libxiao_runtime.a",
+  "bytes": 34443472,
+  "sha256": "e1bb44e9142353c35217e608c1fbd49b69d137b0b9a53becb02d20b3e5d70eaa",
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "profile": "release",
+  "runtime_abi": "1.20",
+  "generator": 27,
+  "stdlib_interface": 1,
+  "cargo_artifact_event": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-runtime#0.1.0",
+    "manifest_path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-runtime/Cargo.toml",
+    "target": {
+      "kind": [
+        "rlib",
+        "staticlib"
+      ],
+      "crate_types": [
+        "rlib",
+        "staticlib"
+      ],
+      "name": "xiao_runtime",
+      "src_path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-runtime/src/lib.rs",
+      "edition": "2024",
+      "doc": true,
+      "doctest": true,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "3",
+      "debuginfo": 0,
+      "debug_assertions": false,
+      "overflow_checks": false,
+      "test": false
+    },
+    "features": [],
+    "filenames": [
+      "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/libxiao_runtime.rlib",
+      "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/libxiao_runtime.a"
+    ],
+    "executable": null,
+    "fresh": false
+  },
+  "build": {
+    "path": "ubuntu-wsl/commands/runtime-build.json",
+    "bytes": 1000,
+    "sha256": "0cb009b66f9d15093fd31546610cd76a0c6b48bafe3c492e030a3eba4286a211"
+  }
+}

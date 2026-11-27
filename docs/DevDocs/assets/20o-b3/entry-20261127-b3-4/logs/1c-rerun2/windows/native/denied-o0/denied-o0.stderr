@@ -1,0 +1,4 @@
+xiao-error class=recoverable code=X06-RUNTIME-026 message_id=runtime.capability_unavailable params={} span=38..54 exit_code=3
+error [X06-RUNTIME-026]: 当前能力上下文不允许此外部操作
+at bytes 38..54
+at stdlib.env::get (User)

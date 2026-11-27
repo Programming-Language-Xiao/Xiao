@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "cmd.exe",
+    "/d",
+    "/c",
+    "git",
+    "-c",
+    "core.autocrlf=false",
+    "-c",
+    "core.eol=lf",
+    "archive",
+    "--format=tar",
+    "-o",
+    "D:/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/source.tar",
+    "1e42f501af20890157a4ce28d96d451a70fc3e39"
+  ],
+  "exit": 0,
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2"
+}

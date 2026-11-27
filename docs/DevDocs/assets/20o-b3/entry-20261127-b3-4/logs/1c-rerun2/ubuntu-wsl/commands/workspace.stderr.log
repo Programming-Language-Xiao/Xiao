@@ -1,0 +1,267 @@
+   Compiling serde_json v1.0.151
+   Compiling xiao-standard-library v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-standard-library)
+   Compiling getrandom v0.2.17
+   Compiling find-msvc-tools v0.1.14
+   Compiling shlex v2.0.1
+   Compiling zeroize v1.9.0
+   Compiling untrusted v0.9.0
+   Compiling cc v1.5.1
+   Compiling rustls-pki-types v1.15.1
+   Compiling httparse v1.10.1
+   Compiling log v0.4.34
+   Compiling bytes v1.12.1
+   Compiling rustls v0.23.45
+   Compiling http v1.5.0
+   Compiling xiao-i18n v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-i18n)
+   Compiling xiao-lock v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-lock)
+   Compiling ring v0.17.14
+   Compiling subtle v2.6.1
+   Compiling once_cell v1.21.4
+   Compiling xiao-diagnostics v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-diagnostics)
+   Compiling base64 v0.23.1
+   Compiling ureq-proto v0.6.4
+   Compiling xiao-syntax v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-syntax)
+   Compiling webpki-roots v1.0.9
+   Compiling filetime v0.2.29
+   Compiling percent-encoding v2.3.2
+   Compiling utf8-zero v0.8.1
+   Compiling tar v0.4.46
+   Compiling xiao-types v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-types)
+   Compiling xiao-modules v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-modules)
+   Compiling xiao-config v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-config)
+   Compiling crc32fast v1.5.2
+   Compiling simd-adler32 v0.3.10
+   Compiling xiao-lifetime v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-lifetime)
+   Compiling adler2 v2.0.1
+   Compiling miniz_oxide v0.9.1
+   Compiling xiao-ir v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-ir)
+   Compiling rustls-webpki v0.103.15
+   Compiling flate2 v1.1.10
+   Compiling xiao-runtime v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-runtime)
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling syn v2.0.119
+   Compiling xiao-optimizer v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-optimizer)
+   Compiling ureq v3.4.2
+   Compiling xiao-codegen-llvm v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-codegen-llvm)
+   Compiling xiao-bytecode v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-bytecode)
+   Compiling xiao-doc-coverage-rust v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-doc-coverage-rust)
+   Compiling xiao-platform v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-platform)
+   Compiling xiao-artifacts v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-artifacts)
+   Compiling xiao-vm v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-vm)
+   Compiling xiao-package v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-package)
+   Compiling xiao-xar v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-xar)
+   Compiling xiao-driver v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-driver)
+   Compiling xiao-intrinsics v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-intrinsics)
+   Compiling xiao-runtime-abi v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-runtime-abi)
+   Compiling xiao-source v0.1.0 (/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-source)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 16s
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_artifacts-bfcb4e140050f639)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_bytecode-de72a188bbaafc09)
+     Running unittests src/bin/xiaoc-check.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiaoc_check-7bf318578a08d08f)
+     Running tests/b0_a_api.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/b0_a_api-b13ca117b2f5fdea)
+     Running tests/b4_cmath_tac.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/b4_cmath_tac-9cf0e0d4030c1b9d)
+     Running tests/fuzz_xiaoc.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/fuzz_xiaoc-5bbb35bd2065aa83)
+     Running tests/r2_tac.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/r2_tac-a06c2ea119304a51)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_codegen_llvm-a07198fe9f5a631f)
+     Running tests/15e_ci_gated.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/15e_ci_gated-3af77e7b9dc2c0b6)
+     Running tests/n0_a.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/n0_a-4a6efe913a8b162f)
+     Running tests/n0_b_dynamic.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/n0_b_dynamic-43f06852820c3c03)
+     Running tests/n0_c_errors.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/n0_c_errors-d6c0f7f8c999e94a)
+     Running tests/stdlib_bindings.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/stdlib_bindings-ab4c4581f8eddc23)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_config-93450278186b3b95)
+     Running tests/d05_config.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/d05_config-bab0689cd8017186)
+     Running tests/spec_snapshots.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/spec_snapshots-696c71932ab69e38)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_diagnostics-ada7a15a760eaab0)
+     Running unittests src/bin/xiao-diagnostics.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_diagnostics-04b54dc916d28d21)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_doc_coverage_rust-f38a9e963e595444)
+     Running unittests src/main.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_doc_coverage_rust-0d951cb599a06da3)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_driver-2925cc112af17886)
+     Running unittests src/protocol_main.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_core-da00b8325f457ec5)
+     Running tests/18b_build_archive.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/18b_build_archive-9da3ed478d4ff19b)
+     Running tests/20c_first_modules.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20c_first_modules-0af6cdc5f41f7242)
+     Running tests/20d_first_api.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20d_first_api-e5e45af481867c3e)
+     Running tests/20d_process_api.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20d_process_api-2bfaaab70bad1cc6)
+     Running tests/20e_archive_wiring.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20e_archive_wiring-68195fd3e8217c84)
+     Running tests/20f_container_parameters.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20f_container_parameters-b6e5684fae7832e8)
+     Running tests/20g_set_mutation.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20g_set_mutation-16cadfea8d22832a)
+     Running tests/20h_set_methods.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20h_set_methods-2c39b59bc754f759)
+     Running tests/20i_indexing_and_text.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20i_indexing_and_text-e79d7b9563a5b7cb)
+     Running tests/20j_dynamic_dict_keys.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20j_dynamic_dict_keys-d6c767e74f6921ea)
+     Running tests/20k_dict_write.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20k_dict_write-72f052ff90b711bf)
+     Running tests/20l_dict_methods.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20l_dict_methods-335a68ec885b3052)
+     Running tests/20m_text_and_path.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20m_text_and_path-36affe42bbc9a40c)
+     Running tests/20o_b1_imp_contract.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b1_imp_contract-5f9d560eda559036)
+     Running tests/20o_b1_imp_resources.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b1_imp_resources-555bcf74a407d57d)
+     Running tests/20o_b1_imp_vm_performance.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b1_imp_vm_performance-e34d2fef70484931)
+     Running tests/20o_b1_probe.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b1_probe-b58c195a028657e4)
+     Running tests/20o_b2_a1_identity.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b2_a1_identity-ac1e0cbb754bb4f6)
+     Running tests/20o_b2_a_contract.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b2_a_contract-25649f65a219cf3c)
+     Running tests/20o_b2_a_performance_protocol.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b2_a_performance_protocol-6be39e6ee913c764)
+     Running tests/20o_b2_a_resources.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b2_a_resources-0485d98f39c6b982)
+     Running tests/20o_b2_b2_divide.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b2_b2_divide-23df8e0a41fe7fb2)
+     Running tests/20o_b2_b3_wrapper.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b2_b3_wrapper-ce0f326d06b4fcb6)
+     Running tests/20o_b2_b4_cmath_boundary.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b2_b4_cmath_boundary-ffc779ebb82679f5)
+     Running tests/20o_b2_b4_cmath_library.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b2_b4_cmath_library-c88b7826262aa557)
+     Running tests/20o_b2_b4_cmath_llvm.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b2_b4_cmath_llvm-6b91d388b0a97b04)
+     Running tests/20o_b2_b4_cmath_vm.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b2_b4_cmath_vm-7ee6efd4a9aa1ca3)
+     Running tests/20o_b2_b4_frontend.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b2_b4_frontend-86ecaf4a4d4dd993)
+     Running tests/20o_b2_b4_numeric_range_routing.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b2_b4_numeric_range_routing-50c0519497b045b8)
+     Running tests/20o_b2_b5_versions.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b2_b5_versions-dac25d7c22851b0d)
+     Running tests/20o_b2_b6_resources.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b2_b6_resources-bb976ba722d74ac4)
+     Running tests/20o_b3_args_cli.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b3_args_cli-3636a091bfce347c)
+     Running tests/20o_b3_env.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b3_env-b133f5d348ab63db)
+     Running tests/20o_b3_env_tutorial.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b3_env_tutorial-193855f310a45ab0)
+     Running tests/20o_b3_fs_tutorial.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b3_fs_tutorial-410be5f4017dc07b)
+     Running tests/20o_b3_time_tutorial.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_b3_time_tutorial-3979a56e0882369a)
+     Running tests/20o_static_float_equality.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/20o_static_float_equality-4f6bed504e2bafe0)
+     Running tests/22b_concurrency_wiring.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/22b_concurrency_wiring-9aed0ac25350f0e2)
+     Running tests/22c_runtime_gates.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/22c_runtime_gates-c2f1c247f924fe05)
+     Running tests/22c_vm_concurrency.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/22c_vm_concurrency-bd52a52696571ce9)
+     Running tests/22d_llvm_concurrency.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/22d_llvm_concurrency-a456644be2496a7f)
+     Running tests/22e_release.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/22e_release-64a58b746eb1986f)
+     Running tests/artifact_size_regression.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/artifact_size_regression-5ec2a10d9ae4940f)
+     Running tests/b0_c_driver.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/b0_c_driver-f46c99277954ffa1)
+     Running tests/b0_d_exit_codes.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/b0_d_exit_codes-f0fe6fcafe8d7528)
+     Running tests/c20_capability_probe.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c20_capability_probe-5ca22e52144d1d00)
+     Running tests/compatibility_matrix.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/compatibility_matrix-353a0e78b3fd0110)
+     Running tests/cross_platform_release.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/cross_platform_release-14d9ec6463be5434)
+     Running tests/d17c_archive.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/d17c_archive-0bfa25f056919a7e)
+     Running tests/d19a_differential.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/d19a_differential-ec947c2b794dca99)
+     Running tests/d19a_regression.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/d19a_regression-7c14bfa764a80aeb)
+     Running tests/eighth_batch.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/eighth_batch-f0f426b0dbccbf88)
+     Running tests/i4a2_module_loading.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/i4a2_module_loading-d366791a564f466a)
+     Running tests/i4a2_retry.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/i4a2_retry-7008faf7892bf490)
+     Running tests/i4b_session.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/i4b_session-fd2f3c5a2921c89b)
+     Running tests/n0_a_native_driver.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/n0_a_native_driver-3b4db6f55e643abd)
+     Running tests/n0_b_dynamic_native.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/n0_b_dynamic_native-28ab634b4734601f)
+     Running tests/native_benchmark_probe.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/native_benchmark_probe-44fa149a49a0e110)
+     Running tests/ninth_batch.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/ninth_batch-ec57481e2803e1a9)
+     Running tests/release_report.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/release_report-20d1753428099fc8)
+     Running tests/seventh_batch.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/seventh_batch-b591edcab98a13b8)
+     Running tests/u0_frontend.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/u0_frontend-df9718176a8600a7)
+     Running tests/x0_a_protocol.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/x0_a_protocol-3793cf62c9e0bfab)
+     Running tests/y3_selector_plan.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/y3_selector_plan-b1cabed4c01a25c1)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_i18n-6da0cf049e2652fa)
+     Running tests/catalog.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/catalog-f0e1888316b97d64)
+     Running tests/language_pack.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/language_pack-d202d2e534018a6f)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_intrinsics-6ae71512b6ebbec4)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_ir-affcaca1e6b7aabb)
+     Running tests/fuzz_snapshots.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/fuzz_snapshots-e08ae401bafc2c2e)
+     Running tests/r2_release_reconciliation.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/r2_release_reconciliation-2455ae2cf138b3fe)
+     Running tests/structure_snapshots.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/structure_snapshots-b66289e61f32e055)
+     Running tests/u0_ir.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/u0_ir-098b62d174e8b26d)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_lifetime-513fa8aaccd40078)
+     Running tests/a06_lifetime.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/a06_lifetime-79862b9fd9dc8045)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_lock-110e01ea26f711b2)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_modules-f0c58eefc2e13fdf)
+     Running tests/c05_tables.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c05_tables-bda65a6d115cd036)
+     Running tests/d0_modules.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/d0_modules-cf8af44d92cb3908)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_optimizer-22fb1a811fa7bb0d)
+     Running tests/boundary_inputs.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/boundary_inputs-6adaf8ca101b836a)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_package-eabadb95d55699ef)
+     Running tests/d1_package.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/d1_package-ef6d67625cc2c8c8)
+     Running tests/e0_environment.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/e0_environment-5de2bc24014dd3f1)
+     Running tests/e1_cache.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/e1_cache-107577d9378467f8)
+     Running tests/e2a_lockfile.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/e2a_lockfile-17764ac964153fd5)
+     Running tests/e2b_sync.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/e2b_sync-2990e76bc57b0e63)
+     Running tests/e3a_source.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/e3a_source-85702bf2238c9d92)
+     Running tests/e3b_cache.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/e3b_cache-7e334ffd9d1a7a25)
+     Running tests/e3c_remote.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/e3c_remote-7462aacf8aa7108c)
+     Running tests/e3d1_remote.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/e3d1_remote-d2e34f559f8ece74)
+     Running tests/e3d_config_edit.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/e3d_config_edit-93228e16c116d4f7)
+     Running tests/e3d_operations.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/e3d_operations-5e8d411d26830649)
+     Running tests/e3d_solver.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/e3d_solver-40d2c77d5b8089e5)
+     Running tests/e3d_version.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/e3d_version-abc767e89873040f)
+     Running tests/e4_language_pack.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/e4_language_pack-236d271d8ff526c5)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_platform-f1fccc419d14ee71)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_runtime-8de023393e3b67f2)
+X09-DRIVER-006: 环境快照含无效的宿主编码
+X09-DRIVER-006: 环境快照含无效的宿主编码
+X09-DRIVER-006: 环境名称为空或含等号或 NUL
+X06-RUNTIME-012: 能力掩码含未知位（收到 0x0000000000000180，已知掩码 0x00000000000000ff）
+X09-DRIVER-007: 环境快照超过接纳上限
+X09-DRIVER-007: 环境快照超过接纳上限
+X09-DRIVER-007: 环境快照超过接纳上限
+X09-DRIVER-007: 环境快照超过接纳上限
+X09-DRIVER-006: 环境快照含无效的宿主编码
+xiao-error class=recoverable code=X06-RUNTIME-009 message_id=runtime.user_error params={"message": Text("overflow")} span=4..9 exit_code=3
+error [X06-RUNTIME-009]: overflow
+at bytes 4..9
+X09-DRIVER-007: 环境快照超过接纳上限
+     Running tests/b06_runtime.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/b06_runtime-f357e38cfcfab73f)
+     Running tests/b1_string_bridge.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/b1_string_bridge-4bee9ca84add3ab1)
+     Running tests/b2_a1_identity_allocations.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/b2_a1_identity_allocations-1fba167098b14e26)
+     Running tests/n0_c2_error_boundary.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/n0_c2_error_boundary-6d0a1c4b6baf0a09)
+     Running tests/r2a_containers.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/r2a_containers-99aac33d3f91cdb1)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_runtime_abi-a021c74a1cb71567)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_source-e5b7fe873d5790bd)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_standard_library-227881d197b9da37)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_syntax-de633c3ff4d42f24)
+     Running tests/c05_tables.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c05_tables-3aa15c6d828e9213)
+     Running tests/c0_containers.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c0_containers-fcd9fbf5258d67a3)
+     Running tests/c0_snapshots.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c0_snapshots-06a14d707f097859)
+     Running tests/c2a_sets.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c2a_sets-870bc15c0c6e760a)
+     Running tests/c2b_sets.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c2b_sets-3c387b5b353e2542)
+     Running tests/c2c_set_operations.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c2c_set_operations-aa73af32719dad57)
+     Running tests/concurrency_annotations.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/concurrency_annotations-ff341469a34f825c)
+     Running tests/d0_imports.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/d0_imports-a93953d248e2f482)
+     Running tests/f04_functions.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/f04_functions-8810000f7140e234)
+     Running tests/lexical_snapshots.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/lexical_snapshots-c4154dae9c900b00)
+     Running tests/p1_expression.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/p1_expression-8e610e2685b8fca4)
+     Running tests/p2_declarations.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/p2_declarations-d74749a7ef3b0b84)
+     Running tests/p2_snapshots.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/p2_snapshots-0361a4144e468956)
+     Running tests/p2_type_parameters.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/p2_type_parameters-135501e4cf8a8547)
+     Running tests/parser_snapshots.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/parser_snapshots-f8b275da1e9097ba)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_types-978ed0000a53a85c)
+     Running tests/c05_tables.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c05_tables-47f2fce8393951f2)
+     Running tests/c0_containers.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c0_containers-a6f172cc3284be66)
+     Running tests/c0c1_snapshots.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c0c1_snapshots-dae5c7f9fe20338f)
+     Running tests/c1_selectors.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c1_selectors-50a9add4130a3272)
+     Running tests/c2a_sets.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c2a_sets-9d107fb9d2d5cd6b)
+     Running tests/c2a_snapshots.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c2a_snapshots-c21c85538326eb00)
+     Running tests/c2b_heterogeneous_sets.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c2b_heterogeneous_sets-696da3a56299230f)
+     Running tests/c2b_snapshots.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c2b_snapshots-3150948731458b21)
+     Running tests/c2c_set_operations.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c2c_set_operations-5550b5dd75918cb5)
+     Running tests/c2c_snapshots.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/c2c_snapshots-34dc4dbc85183796)
+     Running tests/control_flow_snapshots.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/control_flow_snapshots-1597db4030961949)
+     Running tests/d19a_fixed_random.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/d19a_fixed_random-81bc413ff8146db3)
+     Running tests/f04_functions.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/f04_functions-48cb048a2bc32f56)
+     Running tests/i4a2_external_namespaces.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/i4a2_external_namespaces-514fb3362a35ca5b)
+     Running tests/s0_types.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/s0_types-2032c4f0d78ac7f5)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_vm-543cb28180755e33)
+     Running tests/b0_b_production.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/b0_b_production-87ca3b6efe51f0ae)
+     Running tests/b0_e_checkpoint_performance.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/b0_e_checkpoint_performance-8c7a85aca724dbaf)
+     Running tests/r2_iteration_values.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/r2_iteration_values-f04ae36c5c50ac7b)
+     Running tests/r2_selector_values.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/r2_selector_values-fd75afe51341c223)
+     Running tests/r2_set_values.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/r2_set_values-b40e9bee20c6f160)
+     Running tests/r2_stack.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/r2_stack-c77311ddc24b29d7)
+     Running tests/r2_table_values.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/r2_table_values-198273e197ae2929)
+     Running tests/r2_vectors.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/r2_vectors-16942ea11269a620)
+     Running unittests src/lib.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/xiao_xar-79255e87605aa1a8)
+     Running tests/fuzz_archive.rs (/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/debug/deps/fuzz_archive-dd04c77315c7c497)
+   Doc-tests xiao_artifacts
+   Doc-tests xiao_bytecode
+   Doc-tests xiao_codegen_llvm
+   Doc-tests xiao_config
+   Doc-tests xiao_diagnostics
+   Doc-tests xiao_doc_coverage_rust
+   Doc-tests xiao_driver
+   Doc-tests xiao_i18n
+   Doc-tests xiao_intrinsics
+   Doc-tests xiao_ir
+   Doc-tests xiao_lifetime
+   Doc-tests xiao_lock
+   Doc-tests xiao_modules
+   Doc-tests xiao_optimizer
+   Doc-tests xiao_package
+   Doc-tests xiao_platform
+   Doc-tests xiao_runtime
+   Doc-tests xiao_runtime_abi
+   Doc-tests xiao_source
+   Doc-tests xiao_standard_library
+   Doc-tests xiao_syntax
+   Doc-tests xiao_types
+   Doc-tests xiao_vm
+   Doc-tests xiao_xar

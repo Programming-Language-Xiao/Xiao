@@ -1,0 +1,94 @@
+{
+  "case": "denied-o0",
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "backend": "native",
+  "optimization": 0,
+  "import": "std.env",
+  "canonical_module": "stdlib.env",
+  "capabilities": 32,
+  "source_sha256": "116c4e04af8801fac4cbefd30a32b7074128e66cd44e3ecedb0c568c764a5da2",
+  "task_root": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-2",
+  "runtime_sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a",
+  "runtime": {
+    "path": "windows/runtime.json",
+    "bytes": 1930,
+    "sha256": "f89fbb949868848b953e41e2d6768501cf986a355dbfc577f14c3241bd58eceb"
+  },
+  "source_identity": {
+    "path": "windows/source-ready.json",
+    "bytes": 4264,
+    "sha256": "a0ca4402adb06cf8987ee47920aa7feef3e57ad1d87b5baf66650694a14d53d3"
+  },
+  "toolchain": {
+    "path": "windows/toolchain.json",
+    "bytes": 8357,
+    "sha256": "15234a8554840a4cf03bdf6add4e4f0a8e9d8a58aefaf72dde064c653947ccaf"
+  },
+  "build_and_test_command": {
+    "path": "windows/commands/env-native.json",
+    "bytes": 1585,
+    "sha256": "291b5a801299a6df4b0f2e6e4794124e0c583b344bc29cf11b2a9e7ab45f2eea"
+  },
+  "application": {
+    "argv": [
+      "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-2\\denied-o0.exe"
+    ],
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src\\core\\rust\\crates\\xiao-driver",
+    "environment_mode": "synthetic",
+    "environment": {
+      "XIAO_B3_TEST_ENV": "host-native",
+      "XIAO_B3_TEST_INVALID_ENCODING": {
+        "UTF-16 code units": [
+          "D800"
+        ]
+      },
+      "XIAO_RUNTIME_RELEASE_TRACE_PATH": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-2\\denied-o0.release.tsv",
+      "=C:": "C:\\work"
+    },
+    "stdin": null
+  },
+  "exit": 3,
+  "diagnostic": "X06-RUNTIME-026",
+  "files": {
+    "artifact": {
+      "path": "windows/native/denied-o0/denied-o0.exe",
+      "bytes": 835072,
+      "sha256": "b7b7e73c3f47a5d0dbbb0cdc18a8c3b62eb221c0a882b5ddbf83cb4455f2eb78"
+    },
+    "stdout": {
+      "path": "windows/native/denied-o0/denied-o0.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stderr": {
+      "path": "windows/native/denied-o0/denied-o0.stderr",
+      "bytes": 239,
+      "sha256": "9c3ee9e8020e3858b09278e4baff407f62f4f469f4c4fd18db702aad7035edd2"
+    },
+    "map": {
+      "path": "windows/native/denied-o0/denied-o0.exe.map",
+      "bytes": 1832245,
+      "sha256": "b5f7c93fa3a317e83c7b7c8626434bb75d4f56fbabdf878554120644caf4bc15"
+    }
+  },
+  "link_command": {
+    "path": "windows/native/denied-o0/link-command.json",
+    "bytes": 6683,
+    "sha256": "dbe15fbd225dba432172e6d63ed0e155705744014c9a4403270604827ca3203a"
+  },
+  "verification": {
+    "path": "windows/native/denied-o0/verification.json",
+    "bytes": 1815,
+    "sha256": "b24b9a057502854e0df5b87ede23c29c4b19d8a7926408fa4933df591c786e5d",
+    "level": "Complete",
+    "object_format": "Coff",
+    "log_line": 21,
+    "original_stdout": {
+      "path": "windows/commands/env-native.stdout.log",
+      "bytes": 15177,
+      "sha256": "baecff25cedf23cccb022d18f92dcbf42ded2e38b489512fffc3f31994a428e8"
+    }
+  }
+}

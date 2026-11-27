@@ -1,0 +1,13 @@
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-standard-library)
+   Compiling getrandom v0.2.17
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-modules)
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-ir)
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-optimizer)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\src\core\rust\crates\xiao-codegen-llvm)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.88s
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\xiao_codegen_llvm-524b7644dc43f865.exe)
+     Running tests\15e_ci_gated.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\15e_ci_gated-5df85530ef13a74f.exe)
+     Running tests\n0_a.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\n0_a-357bbdac50ef53f3.exe)
+     Running tests\n0_b_dynamic.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\n0_b_dynamic-7fb0c626ea9e5867.exe)
+     Running tests\n0_c_errors.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\n0_c_errors-0497669ba6cd1ea0.exe)
+     Running tests\stdlib_bindings.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\win\target\x86_64-pc-windows-msvc\debug\deps\stdlib_bindings-b55b4fc025d2ea60.exe)

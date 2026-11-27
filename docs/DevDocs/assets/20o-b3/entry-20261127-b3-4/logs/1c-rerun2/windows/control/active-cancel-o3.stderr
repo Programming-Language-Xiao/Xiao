@@ -1,0 +1,4 @@
+xiao-error class=fatal code=X09-DRIVER-001 message_id=x11.driver.rejected params={} span=38..54 exit_code=2
+fatal [X09-DRIVER-001]: 原生运行被取消
+at bytes 38..54
+at stdlib.env::get (User)

@@ -1,0 +1,46 @@
+{
+  "case": "boundaries/o0/total-1048577",
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "runtime_sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a",
+  "artifact": {
+    "path": "windows/native/env-std-o0/env-std-o0.exe",
+    "bytes": 1371136,
+    "sha256": "0d4beba9c2283ca6c7967275b6188de8ee39830a7c11829fee0102fcceb5c7d1"
+  },
+  "argv": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c-rerun2\\windows\\native\\env-std-o0\\env-std-o0.exe",
+    "--__xiao-run-environment-stdin=a7e5240991f9fffd276c22645d78fc9e"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\replay\\boundaries\\o0\\total-1048577",
+  "started_at_utc": "2026-11-27T18:06:29.032539+00:00",
+  "environment": {
+    "XIAO_B3_TUTORIAL_VALUE": "synthetic-host",
+    "XIAO_INTERNAL_RUN_ENVIRONMENT_NONCE": "a7e5240991f9fffd276c22645d78fc9e"
+  },
+  "stdin": {
+    "bytes": 1048714,
+    "sha256": "df215862603faf6182ed0ee61c294960a037e70ad1123ae3e7e33ffe6a02e382",
+    "pairs": 17,
+    "logical_bytes": 1048577
+  },
+  "exit": 2,
+  "diagnostic": "X09-DRIVER-007",
+  "outputs": {
+    "stdout": {
+      "path": "windows/replay/boundaries/o0/total-1048577/stdout.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stderr": {
+      "path": "windows/replay/boundaries/o0/total-1048577/stderr.stderr",
+      "bytes": 47,
+      "sha256": "962e168ac7124092a569905b8c20f471684a3b1b77450889dce27f19a80bb158"
+    }
+  },
+  "expected_exit": 2,
+  "expected_diagnostic": "X09-DRIVER-007",
+  "expected_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "passed": true
+}

@@ -1,0 +1,43 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "backend": "vm",
+  "command": {
+    "path": "ubuntu-wsl/commands/tutorial-vm.json",
+    "bytes": 1201,
+    "sha256": "bfb17411e7bf920fabda869759cb7b2d6148541d58a87d0cb06def0b917b00a6"
+  },
+  "runtime": {
+    "path": "ubuntu-wsl/vm-runtime.json",
+    "bytes": 3103,
+    "sha256": "169d57076378cf1b86318c17d76d3baa9d091eb86d494aef8b3484dc6d17c066"
+  },
+  "stdout_origin": "已通过黄金断言的 VM 输出事件，由测试日志的转义字符串逐字还原",
+  "cases": {
+    "std": {
+      "import": "std.env",
+      "canonical_module": "stdlib.env",
+      "exit": 0,
+      "capabilities": 160,
+      "source_sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb",
+      "stdout": {
+        "path": "ubuntu-wsl/vm/std.stdout",
+        "bytes": 55,
+        "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+      }
+    },
+    "stdlib": {
+      "import": "stdlib.env",
+      "canonical_module": "stdlib.env",
+      "exit": 0,
+      "capabilities": 160,
+      "source_sha256": "a8cb3149daec0193db2de4b6d42752c38812965de8e624f4a106c879de5c6e1d",
+      "stdout": {
+        "path": "ubuntu-wsl/vm/stdlib.stdout",
+        "bytes": 55,
+        "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "runtime_sha256": "e1bb44e9142353c35217e608c1fbd49b69d137b0b9a53becb02d20b3e5d70eaa",
+  "random_source": "Python secrets.token_hex(16)",
+  "distinct_nonce_count": 32,
+  "product_driver_log": {
+    "path": "ubuntu-wsl/commands/env-native.stdout.log",
+    "bytes": 12606,
+    "sha256": "4d63228910d5c1a74fd99dd8fc80a5b7c1cdc83eecf2ddeafdb084d6b44ba534"
+  },
+  "cases": {
+    "env-std-o0": {
+      "path": "ubuntu-wsl/replay-retry/nonce/env-std-o0/receipt.json",
+      "bytes": 1761,
+      "sha256": "a4737b3640dace5f124ed5bd5f46f91954f99ded88f4505eab6765c58826f146",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "env-std-o3": {
+      "path": "ubuntu-wsl/replay-retry/nonce/env-std-o3/receipt.json",
+      "bytes": 1761,
+      "sha256": "c7bd70acd8ff6bf44f763f2c479beb08f2ce53fa608e181737a108fe0671c305",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "env-stdlib-o0": {
+      "path": "ubuntu-wsl/replay-retry/nonce/env-stdlib-o0/receipt.json",
+      "bytes": 1785,
+      "sha256": "d5e96b657ebf3d9df3fec9777083b6ecbdf3bc996cf63515c5b38faecf919c05",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "env-stdlib-o3": {
+      "path": "ubuntu-wsl/replay-retry/nonce/env-stdlib-o3/receipt.json",
+      "bytes": 1785,
+      "sha256": "51fc3aea90db6eb4b1d7547bb41cd37d0b02d0d5c426db527b60c5d7121c8a0d",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "legacy-direct": {
+      "path": "ubuntu-wsl/replay-retry/nonce/legacy-direct/receipt.json",
+      "bytes": 1717,
+      "sha256": "900d463a1ccf427d6af0d9cb5358f40bb7a49b4d73b8f2ebd671039b9b434800",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "legacy-injected": {
+      "path": "ubuntu-wsl/replay-retry/nonce/legacy-injected/receipt.json",
+      "bytes": 1796,
+      "sha256": "4695c7da15ec062951f3f68b3136a6fcc0b5ee5dd4c14a304dc10802ac3adc1a",
+      "exit": 0,
+      "diagnostic": null
+    }
+  }
+}

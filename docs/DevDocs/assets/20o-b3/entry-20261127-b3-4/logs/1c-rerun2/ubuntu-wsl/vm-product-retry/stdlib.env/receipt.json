@@ -1,0 +1,55 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "backend": "vm",
+  "runtime": {
+    "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/deps/libxiao_runtime-6ff6e9b7d69a8a9e.rlib",
+    "bytes": 6580654,
+    "sha256": "6e9d4da34a9c101a18ce794334334e079ec0692460f581a355b20a08c70418fa"
+  },
+  "executable": {
+    "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/xiao-core",
+    "bytes": 19247440,
+    "sha256": "8bade79866b6f1390ee72cbe9c0937bcfc55b8f71dc1b81bfe21c1e048a5951a"
+  },
+  "import": "stdlib.env",
+  "canonical_module": "stdlib.env",
+  "capabilities": 160,
+  "source_sha256": "a8cb3149daec0193db2de4b6d42752c38812965de8e624f4a106c879de5c6e1d",
+  "argv": [
+    "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/xiao-core"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/vm-product-retry/stdlib.env",
+  "started_at_utc": "2026-11-27T18:12:59.582867+00:00",
+  "elapsed_seconds": 0.217,
+  "environment": {
+    "HOME": "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/vm-product-retry/stdlib.env/host-home",
+    "XIAO_HOME": "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/vm-product-retry/stdlib.env/xiao-home",
+    "XIAO_STDLIB_ROOT": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/stdlib"
+  },
+  "process_exit": 0,
+  "run_exit": 0,
+  "protocol": {
+    "protocol.stdin.bin": {
+      "path": "ubuntu-wsl/vm-product-retry/stdlib.env/protocol.stdin.bin",
+      "bytes": 1107,
+      "sha256": "d56ea86a447880c644f75c35993074109c7def1464d384b367946decd3cecfc8"
+    },
+    "protocol.stdout.bin": {
+      "path": "ubuntu-wsl/vm-product-retry/stdlib.env/protocol.stdout.bin",
+      "bytes": 7807,
+      "sha256": "9ce2bb2e7ca3caee97e8e980da0f050bb75b55324d710009d1407029b4412112"
+    },
+    "protocol.stderr": {
+      "path": "ubuntu-wsl/vm-product-retry/stdlib.env/protocol.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "stdout": {
+    "path": "ubuntu-wsl/vm-product-retry/stdlib.env/tutorial.stdout",
+    "bytes": 55,
+    "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+  }
+}

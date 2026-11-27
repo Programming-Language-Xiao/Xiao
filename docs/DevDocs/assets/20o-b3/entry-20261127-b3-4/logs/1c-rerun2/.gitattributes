@@ -1,0 +1,9 @@
+*.log -text
+*.stdout -text
+*.stderr -text
+*.map -text
+*.exe -text
+*.bin -text
+*.tsv -text
+*.exit -text
+*.json text eol=lf

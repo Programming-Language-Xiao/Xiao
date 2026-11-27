@@ -1,0 +1,197 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "machine": "AMD64",
+  "runner": "Windows 本机",
+  "windows_sdk": {
+    "path": "D:\\Windows Kits\\10",
+    "version": "10.0.26100.0"
+  },
+  "environment": {
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target",
+    "CARGO_BUILD_TARGET": "x86_64-pc-windows-msvc",
+    "CARGO_TERM_COLOR": "never",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_HOME": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\xiao-home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src\\stdlib",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_LLVM_READOBJ": "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+    "XIAO_LLVM_STRIP": "D:\\msys64\\ucrt64\\bin\\llvm-strip.exe",
+    "TEMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tmp",
+    "TMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tmp",
+    "TMPDIR": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tmp",
+    "LIB": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\ucrt\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\um\\x64",
+    "INCLUDE": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\include;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\ucrt;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\shared;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\um",
+    "VCToolsInstallDir": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\",
+    "WindowsSdkDir": "D:\\Windows Kits\\10\\",
+    "WindowsSDKVersion": "10.0.26100.0\\"
+  },
+  "path_prepend": [
+    "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64",
+    "D:\\msys64\\ucrt64\\bin"
+  ],
+  "tools": {
+    "rustc": {
+      "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+      "bytes": 111104,
+      "sha256": "acb138286bbe20c6cf3ec39a7e0a68c3fab0cd949baa2912cf466514d0d531ab",
+      "resolved": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+      "version": [
+        "rustc 1.96.0 (ac68faa20 2026-05-25)",
+        "binary: rustc",
+        "commit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96",
+        "commit-date: 2026-05-25",
+        "host: x86_64-pc-windows-msvc"
+      ],
+      "version_exit": 0,
+      "probe": {
+        "path": "windows/commands/tool-rustc.json",
+        "bytes": 866,
+        "sha256": "9d2d66e97d35c6c7cf325564af85c5e0b84eba2b8803f040bf8c92c4ff682156"
+      }
+    },
+    "cargo": {
+      "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+      "bytes": 31347200,
+      "sha256": "122f18d28a63fa358f3db266abee1ff1d8aabf0ab7f2dd9ac38a38da99977ae5",
+      "resolved": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+      "version": [
+        "cargo 1.96.0 (30a34c682 2026-05-25)"
+      ],
+      "version_exit": 0,
+      "probe": {
+        "path": "windows/commands/tool-cargo.json",
+        "bytes": 871,
+        "sha256": "e43227e1e6e7509b9ca89da4dff1e575a2e40db5e92fa107380f4bb7ae330507"
+      }
+    },
+    "rustfmt": {
+      "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustfmt.exe",
+      "bytes": 4772864,
+      "sha256": "5846618be9dafc003c7f9235d10fd7b3d79dd956f3fe07bf853f56cea672778a",
+      "resolved": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustfmt.exe",
+      "version": [
+        "rustfmt 1.9.0-stable (ac68faa20c 2026-05-25)"
+      ],
+      "version_exit": 0,
+      "probe": {
+        "path": "windows/commands/tool-rustfmt.json",
+        "bytes": 877,
+        "sha256": "d1b4810abfc2f452377bb215c99a9201946fec7341c7eb3493e4a03368b3bc16"
+      }
+    },
+    "clang": {
+      "path": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+      "bytes": 157296,
+      "sha256": "574047f1b98d62bea1da8ae9340fea1ef06d262c3186e1d72d87e5401166c833",
+      "resolved": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+      "version": [
+        "clang version 22.1.2 (https://github.com/msys2/MINGW-packages 4f19d31560faf73257116b7c95f0b322ba83d720)",
+        "Target: x86_64-w64-windows-gnu",
+        "Thread model: posix",
+        "InstalledDir: D:/msys64/ucrt64/bin"
+      ],
+      "version_exit": 0,
+      "probe": {
+        "path": "windows/commands/tool-clang.json",
+        "bytes": 822,
+        "sha256": "734068a1e03b5acaf403bf033549da628633c41287c18639969dc9d9f3d0f373"
+      }
+    },
+    "llvm-as": {
+      "path": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+      "bytes": 40741,
+      "sha256": "63f559db3d87798fa4f26923c4cd5839ddc41b40905d884ee341c74a8bd858e9",
+      "resolved": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+      "version": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 22.1.2",
+        "  Optimized build."
+      ],
+      "version_exit": 0,
+      "probe": {
+        "path": "windows/commands/tool-llvm-as.json",
+        "bytes": 827,
+        "sha256": "3cea54691361bd8ddaede034f3d039a58141bf92ca5f928546a02eb0e2d93587"
+      }
+    },
+    "llc": {
+      "path": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+      "bytes": 211961,
+      "sha256": "df1409fabacdc625b2c2fefe50712de4ba140e07bf2bb4192101189498152869",
+      "resolved": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+      "version": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 22.1.2",
+        "  Optimized build.",
+        "  Default target: x86_64-w64-windows-gnu",
+        "  Host CPU: znver5"
+      ],
+      "version_exit": 0,
+      "probe": {
+        "path": "windows/commands/tool-llc.json",
+        "bytes": 817,
+        "sha256": "34d2f801749680f567bd9edefbaab547d27aed2dba4c699414b29abe71d38ebc"
+      }
+    },
+    "llvm-readobj": {
+      "path": "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+      "bytes": 2140197,
+      "sha256": "768a76a82fedb79b5305ca6bfffa63c00b5738789c7f47225b247345ab99328e",
+      "resolved": "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+      "version": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 22.1.2",
+        "  Optimized build."
+      ],
+      "version_exit": 0,
+      "probe": {
+        "path": "windows/commands/tool-llvm-readobj.json",
+        "bytes": 842,
+        "sha256": "a1eee98507ff414a6a5a0f2052ee7fd62f8aaa6e1b37fb718f693982f3be3baf"
+      }
+    },
+    "llvm-strip": {
+      "path": "D:\\msys64\\ucrt64\\bin\\llvm-strip.exe",
+      "bytes": 244345,
+      "sha256": "99a27e4cad1d4061c579ae9d03e90142d36234478fdbe9c8458636c33bdc9cc7",
+      "resolved": "D:\\msys64\\ucrt64\\bin\\llvm-strip.exe",
+      "version": [
+        "llvm-strip, compatible with GNU strip",
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 22.1.2",
+        "  Optimized build."
+      ],
+      "version_exit": 0,
+      "probe": {
+        "path": "windows/commands/tool-llvm-strip.json",
+        "bytes": 837,
+        "sha256": "142c398a80df7ba2745ec298108dbc39cf15c5a60a6301616278f8903d4fba53"
+      }
+    },
+    "link": {
+      "path": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+      "bytes": 3701088,
+      "sha256": "3ef8fcf80d409fab22ddd89ee19249f31a26ad9914d3e3e48573c30998fa24de",
+      "resolved": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+      "version": [
+        "Microsoft (R) Incremental Linker Version 14.51.36256.0",
+        "Copyright (C) Microsoft Corporation.  All rights reserved.",
+        "",
+        " 用法: LINK [选项] [文件] [@commandfile]",
+        ""
+      ],
+      "version_exit": 1100,
+      "probe": {
+        "path": "windows/commands/tool-link.json",
+        "bytes": 899,
+        "sha256": "340edcada8406cbc2c57f876009cdc0b9f30690f6288ce1e64e11bf12e7acbed"
+      }
+    }
+  }
+}

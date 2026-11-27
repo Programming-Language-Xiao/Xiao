@@ -1,0 +1,26 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "argv": [
+    "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+    "-Vv"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src",
+  "started_at_utc": "2026-11-27T17:59:11.933159+00:00",
+  "elapsed_seconds": 0.047,
+  "exit": 0,
+  "stdout": {
+    "path": "windows/commands/tool-rustc.stdout.log",
+    "bytes": 194,
+    "sha256": "2efe229f7908c2c19f459ca734101a5b35cb482476b8bee1357f94a18c766078"
+  },
+  "stderr": {
+    "path": "windows/commands/tool-rustc.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "environment": {
+    "toolchain": "windows/toolchain.json"
+  }
+}

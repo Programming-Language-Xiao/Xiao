@@ -1,0 +1,23 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\run.py", line 379, in <module>
+    if __name__ == "__main__":
+        ^^^^^^
+  File "D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\run.py", line 359, in main
+    if stage in ("run", "retry"):
+        ^^^^^^^^^
+  File "D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\run.py", line 243, in prepare
+    check_worktree("before")
+^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\run.py", line 194, in verify_source
+    "test_sources": {path: entry(SRC / path) for path in TEST_SOURCES},
+                           ^^^^^^^^^^^^^^^^^
+  File "D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\run.py", line 116, in entry
+    return {"path": name, **fingerprint(path)}
+                            ^^^^^^^^^^^^^^^^^
+  File "D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun2\run.py", line 110, in fingerprint
+    with path.open("rb") as file:
+         ^^^^^^^^^^^^^^^
+  File "D:\Programs\Python\Python312\Lib\pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src\\core\\rust\\crates\\xiao-driver\\tests\\b3_env_control.c'

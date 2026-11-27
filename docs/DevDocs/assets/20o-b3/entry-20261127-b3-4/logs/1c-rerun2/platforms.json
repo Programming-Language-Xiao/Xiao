@@ -1,0 +1,30 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "scope": "B3-4D 本地复跑",
+  "platforms": {
+    "x86_64-pc-windows-msvc": {
+      "status": "verified",
+      "receipt": {
+        "path": "windows/audit.json",
+        "bytes": 4517,
+        "sha256": "d6677a70ad74a16b3de64d51968d690bca77b43c07a77f077c8e1bf2ac1fd070"
+      }
+    },
+    "x86_64-unknown-linux-gnu": {
+      "status": "verified",
+      "receipt": {
+        "path": "ubuntu-wsl/audit.json",
+        "bytes": 4389,
+        "sha256": "af869a38b4b3e129a0e1956544be8ff9e5f708737a6859a619f71f431dc74f24"
+      }
+    },
+    "aarch64-apple-darwin": {
+      "status": "unverifiable",
+      "reason": "本机缺 macOS 运行环境"
+    }
+  },
+  "ci": {
+    "status": "本批无实际作业回执"
+  }
+}

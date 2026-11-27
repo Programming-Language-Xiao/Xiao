@@ -1,0 +1,6 @@
+ubuntu-wsl env-std-o0 Elf Complete, exit=0
+ubuntu-wsl env-std-o3 Elf Complete, exit=0
+ubuntu-wsl env-stdlib-o0 Elf Complete, exit=0
+ubuntu-wsl env-stdlib-o3 Elf Complete, exit=0
+ubuntu-wsl denied-o0 Elf Complete, exit=3
+ubuntu-wsl denied-o3 Elf Complete, exit=3

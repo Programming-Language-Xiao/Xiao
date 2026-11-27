@@ -1,0 +1,71 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "runtime_sha256": "e1bb44e9142353c35217e608c1fbd49b69d137b0b9a53becb02d20b3e5d70eaa",
+  "validator": "xiao_codegen_llvm::artifact::verify_artifact_with_link_evidence",
+  "object_format": "Elf",
+  "complete_cases": 6,
+  "cases": {
+    "env-std-o0": {
+      "path": "ubuntu-wsl/native/env-std-o0/receipt.json",
+      "bytes": 3296,
+      "sha256": "dec42ffe26c6ebea3e775e1a79f7044956c5830b2012d2bf2f525c8a55a2e789",
+      "exit": 0,
+      "diagnostic": null,
+      "verification": "Complete",
+      "artifact_sha256": "beba33e6053177ce2884bbac1c6cfa11def0ace27356fac81e3dfa948322b232",
+      "map_sha256": null
+    },
+    "env-std-o3": {
+      "path": "ubuntu-wsl/native/env-std-o3/receipt.json",
+      "bytes": 3296,
+      "sha256": "e9dc3867172267c1149798fdab8c851965e37c3b77286b179942042c7f055ebe",
+      "exit": 0,
+      "diagnostic": null,
+      "verification": "Complete",
+      "artifact_sha256": "f98a75de022ea9477e3d818b112e9c2840109e45fe0e8a320c2b495ad4413aea",
+      "map_sha256": null
+    },
+    "env-stdlib-o0": {
+      "path": "ubuntu-wsl/native/env-stdlib-o0/receipt.json",
+      "bytes": 3338,
+      "sha256": "efbb44900dd8fe4e41e8625082c88908f4d8172be3142402541727060ce18702",
+      "exit": 0,
+      "diagnostic": null,
+      "verification": "Complete",
+      "artifact_sha256": "354ff0853b09413ffa40158632c263526d6ffabde9fff2958e45471cd7a1afbb",
+      "map_sha256": null
+    },
+    "env-stdlib-o3": {
+      "path": "ubuntu-wsl/native/env-stdlib-o3/receipt.json",
+      "bytes": 3338,
+      "sha256": "9ec88538cab731e69fe5e3d86370262cd113e8b3e6da1040e7bc6d2bd33ff4d2",
+      "exit": 0,
+      "diagnostic": null,
+      "verification": "Complete",
+      "artifact_sha256": "26dc47b33744f2a9e2e9f8a8fab8362b4b7a00bf403dfefe147cddc99ca19814",
+      "map_sha256": null
+    },
+    "denied-o0": {
+      "path": "ubuntu-wsl/native/denied-o0/receipt.json",
+      "bytes": 3098,
+      "sha256": "b6d75d10e1d39fe1e7bf6a9e68d577f6d6876483ae35c1d2fed6a8c4f721cc18",
+      "exit": 3,
+      "diagnostic": "X06-RUNTIME-026",
+      "verification": "Complete",
+      "artifact_sha256": "eb27a265d365160e4f4a363b1a53fa5ed7fcd4f6f8e901037eb3345404f28163",
+      "map_sha256": null
+    },
+    "denied-o3": {
+      "path": "ubuntu-wsl/native/denied-o3/receipt.json",
+      "bytes": 3098,
+      "sha256": "58294519c6dc8fcf909b011fcbb4404a591289c0da7468230ed7caa81d27f3aa",
+      "exit": 3,
+      "diagnostic": "X06-RUNTIME-026",
+      "verification": "Complete",
+      "artifact_sha256": "c7e0f93d425a03e262d87c7fd93adcd191dba07d462f63e084c1ed5a05810bba",
+      "map_sha256": null
+    }
+  }
+}

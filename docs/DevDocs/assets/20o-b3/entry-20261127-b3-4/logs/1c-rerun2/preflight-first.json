@@ -1,0 +1,6 @@
+{
+  "argv": "cmd /c git rev-parse HEAD HEAD^{tree}",
+  "exit": 128,
+  "note": "复现首次 PowerShell 参数解析错误",
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2"
+}

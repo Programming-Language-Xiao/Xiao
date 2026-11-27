@@ -1,0 +1,81 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "phase": "before",
+  "source_root": "/home/xiaoczx/.xiao-b3-4d-rerun2/src",
+  "tracked_files": 10705,
+  "verification": "git_blob_sha1",
+  "source_unchanged": true,
+  "differences": [],
+  "extra_files": [],
+  "locks": {
+    "core/rust/Cargo.lock": {
+      "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/Cargo.lock",
+      "bytes": 19660,
+      "sha256": "28d38451ba0490b70d2d136bc3268acad8de02b5658bf826f842069019161c53"
+    },
+    "tests/benchmarks/Cargo.lock": {
+      "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/tests/benchmarks/Cargo.lock",
+      "bytes": 19264,
+      "sha256": "8ac4f16af6e8baf5b71e0e0b5d89397eb5ae7bf2e3cc5a96053683c6e8b4b577"
+    }
+  },
+  "test_sources": {
+    "core/rust/crates/xiao-driver/tests/20o_b3_env_tutorial.rs": {
+      "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-driver/tests/20o_b3_env_tutorial.rs",
+      "bytes": 4995,
+      "sha256": "7d169b170db82ddf28663a9bdfbc08465462981262b43dfc40972554e5ba4328"
+    },
+    "core/rust/crates/xiao-driver/tests/20o_b3_env.rs": {
+      "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-driver/tests/20o_b3_env.rs",
+      "bytes": 14484,
+      "sha256": "e9a215b119f6e9da43941e2356dc97c6f58bb9d9553f1d87d480ae9ff74fc453"
+    },
+    "core/rust/crates/xiao-driver/tests/support/b3_env_native.rs": {
+      "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-driver/tests/support/b3_env_native.rs",
+      "bytes": 26402,
+      "sha256": "8791e9b35d742535b8ad0270a06f57dcdf53786da5fbd7ca8adcf74bbba348ef"
+    },
+    "core/rust/crates/xiao-driver/tests/support/b3_env_artifact.rs": {
+      "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-driver/tests/support/b3_env_artifact.rs",
+      "bytes": 5547,
+      "sha256": "6510903bf544225a3ff5b6fb2c97acee8e43a97b8f9c112f31b4afb0588fc004"
+    },
+    "core/rust/crates/xiao-driver/tests/support/b3_env_control.c": {
+      "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-driver/tests/support/b3_env_control.c",
+      "bytes": 4321,
+      "sha256": "d7b444c0ba9deca1ef006cf25c264d1f1f90f6fe47b925add414b7e19f4b07ab"
+    }
+  },
+  "frozen_matrix": {
+    "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials.json",
+    "bytes": 10750,
+    "sha256": "25665474f2f3df3783f19e244d6151b46f4c690c5cc4fc3d7ceb050656543f6a"
+  },
+  "tutorial_origin": {
+    "commit": "7f1017b7ff0b7b0a89d11943d5d33e0b432d0b3f",
+    "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/candidates/tests/fixtures/docs/env/b3-0c-candidate"
+  },
+  "tutorial": {
+    "source": {
+      "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/tests/fixtures/docs/env/tutorial.xiao",
+      "bytes": 467,
+      "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+    },
+    "input": {
+      "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/tests/fixtures/docs/env/tutorial.input.json",
+      "bytes": 69,
+      "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+    },
+    "golden": {
+      "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/tests/fixtures/docs/env/tutorial.stdout",
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    },
+    "alias_source": {
+      "bytes": 470,
+      "sha256": "a8cb3149daec0193db2de4b6d42752c38812965de8e624f4a106c879de5c6e1d"
+    }
+  },
+  "runtime": null
+}

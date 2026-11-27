@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/capture.py", line 409, in <module>
+    {"native": check_native, "replay": check_replay, "control": check_control,
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     "vm": vm_outputs, "c-abi": c_abi}[stage]()
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/capture.py", line 302, in check_replay
+    marker, = paths
+    ^^^^^^^
+ValueError: too many values to unpack (expected 1)

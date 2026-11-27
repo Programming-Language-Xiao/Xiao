@@ -1,0 +1,46 @@
+{
+  "case": "boundaries/o0/pairs-1024",
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "runtime_sha256": "e1bb44e9142353c35217e608c1fbd49b69d137b0b9a53becb02d20b3e5d70eaa",
+  "artifact": {
+    "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/tutorial-native/xiao-b3-env-4670-0/env-std-o0/env-std-o0",
+    "bytes": 5656760,
+    "sha256": "beba33e6053177ce2884bbac1c6cfa11def0ace27356fac81e3dfa948322b232"
+  },
+  "argv": [
+    "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/tutorial-native/xiao-b3-env-4670-0/env-std-o0/env-std-o0",
+    "--__xiao-run-environment-stdin=a3835f1918ba220eedaf98b20bf4cc8b"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/replay/boundaries/o0/pairs-1024",
+  "started_at_utc": "2026-11-27T18:04:16.269267+00:00",
+  "environment": {
+    "XIAO_B3_TUTORIAL_VALUE": "synthetic-host",
+    "XIAO_INTERNAL_RUN_ENVIRONMENT_NONCE": "a3835f1918ba220eedaf98b20bf4cc8b"
+  },
+  "stdin": {
+    "bytes": 13337,
+    "sha256": "a04907355ab7de53254011990215b8ef130449897a77a60e1ee1ff5d19cd562a",
+    "pairs": 1024,
+    "logical_bytes": 5144
+  },
+  "exit": 0,
+  "diagnostic": null,
+  "outputs": {
+    "stdout": {
+      "path": "ubuntu-wsl/replay/boundaries/o0/pairs-1024/stdout.stdout",
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    },
+    "stderr": {
+      "path": "ubuntu-wsl/replay/boundaries/o0/pairs-1024/stderr.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "expected_exit": 0,
+  "expected_diagnostic": null,
+  "expected_stdout_sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491",
+  "passed": true
+}

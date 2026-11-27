@@ -1,0 +1,44 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--offline",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--target",
+    "x86_64-pc-windows-msvc",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b3_env_tutorial",
+    "--release",
+    "--message-format=json",
+    "env_tutorial_matches_vm_golden",
+    "--",
+    "--exact",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src",
+  "started_at_utc": "2026-11-27T18:00:27.649535+00:00",
+  "elapsed_seconds": 244.266,
+  "exit": 0,
+  "stdout": {
+    "path": "windows/commands/tutorial-vm.stdout.log",
+    "bytes": 116843,
+    "sha256": "2cd8cbfc4c7bb932ff7fc0d4545a864a0571a356f65b5761822a06da1245e798"
+  },
+  "stderr": {
+    "path": "windows/commands/tutorial-vm.stderr.log",
+    "bytes": 3725,
+    "sha256": "f0d2888fe890a2c0903eab483c1c2e96a392ad300968353fdb63ec6a8cf4bc7c"
+  },
+  "environment": {
+    "toolchain": "windows/toolchain.json",
+    "XIAO_B3_ENV_TEST_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\tutorial-vm"
+  }
+}

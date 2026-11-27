@@ -1,0 +1,39 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--offline",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--target",
+    "x86_64-pc-windows-msvc",
+    "-p",
+    "xiao-codegen-llvm",
+    "coff_",
+    "--",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src",
+  "started_at_utc": "2026-11-27T18:06:42.956958+00:00",
+  "elapsed_seconds": 18.609,
+  "exit": 0,
+  "stdout": {
+    "path": "windows/commands/coff-unit.stdout.log",
+    "bytes": 982,
+    "sha256": "28487339ddbb38f0163d0fc84abda8449b406658ba3de340aad49f344219b376"
+  },
+  "stderr": {
+    "path": "windows/commands/coff-unit.stderr.log",
+    "bytes": 1807,
+    "sha256": "ff69360e6ac13e8a28619f163065fd10f1869c9eef237367b747d0c58a43e950"
+  },
+  "environment": {
+    "toolchain": "windows/toolchain.json",
+    "XIAO_B3_ENV_TEST_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\coff-unit"
+  }
+}

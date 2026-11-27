@@ -1,0 +1,137 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "source_unchanged": true,
+  "source_before": {
+    "path": "windows/source-before.json",
+    "bytes": 4019,
+    "sha256": "d09a552ba42ba151fb62c4ee299353fc59f5643bc7b53bba638c8371f215b4fb"
+  },
+  "source_after": {
+    "path": "windows/source-after.json",
+    "bytes": 4264,
+    "sha256": "b88196866fca0d371e4b6af500e3c2027142577f029beee7d28bc8f42bc560c1"
+  },
+  "vendor_toolchain": {
+    "path": "windows/toolchain.json",
+    "bytes": 8357,
+    "sha256": "15234a8554840a4cf03bdf6add4e4f0a8e9d8a58aefaf72dde064c653947ccaf"
+  },
+  "runtime": {
+    "path": "windows/runtime.json",
+    "bytes": 1930,
+    "sha256": "f89fbb949868848b953e41e2d6768501cf986a355dbfc577f14c3241bd58eceb"
+  },
+  "runtime_sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a",
+  "vm_golden": {
+    "path": "windows/tutorial-vm.json",
+    "bytes": 1432,
+    "sha256": "8ef19d265e7f0cc4e87220d9688fca3a2e0ab17e1cafdcb54e921d55638a7246"
+  },
+  "vm_product_golden": {
+    "path": "windows/vm-product.json",
+    "bytes": 4378,
+    "sha256": "d03627a393f03e01fc1213b22271ca2903063e39105b25340c3ebe2b8640c336"
+  },
+  "native_matrix": {
+    "path": "windows/native-matrix.json",
+    "bytes": 3099,
+    "sha256": "fd158f95a76c5a813edfa912a1548509688e898f4fc9d0d2664fe3ba992f9fa4"
+  },
+  "verified_artifacts": 6,
+  "commands": {
+    "tutorial-vm": {
+      "path": "windows/commands/tutorial-vm.json",
+      "bytes": 1260,
+      "sha256": "3a3858f67f8d7db3f7d73072c67b72c71a7fb452514c1bafb64609a963f2dbec",
+      "exit": 0
+    },
+    "tutorial-native": {
+      "path": "windows/commands/tutorial-native.json",
+      "bytes": 1669,
+      "sha256": "c97d4a8446122f365a561dc92374bfa84ac3f81d5ebd9fe3e94a633ac7f4fd46",
+      "exit": 0
+    },
+    "env": {
+      "path": "windows/commands/env.json",
+      "bytes": 1141,
+      "sha256": "712ed3c0d79d0a0eefce1cef9170f7cfa661e77526d2cfffcdaf4c9ba7f0ad71",
+      "exit": 0
+    },
+    "env-native": {
+      "path": "windows/commands/env-native.json",
+      "bytes": 1585,
+      "sha256": "291b5a801299a6df4b0f2e6e4794124e0c583b344bc29cf11b2a9e7ab45f2eea",
+      "exit": 0
+    },
+    "runtime-env": {
+      "path": "windows/commands/runtime-env.json",
+      "bytes": 1166,
+      "sha256": "ad9df8371fcebc0d6c8d7650b1c2c9a6bf420eded538620b91734a6e8ffa19f5",
+      "exit": 0
+    },
+    "coff-unit": {
+      "path": "windows/commands/coff-unit.json",
+      "bytes": 1129,
+      "sha256": "76c4831b5b480054dd1459de879f0df212a7644d607cb11c7ea0fd2eed80fe80",
+      "exit": 0
+    },
+    "workspace": {
+      "path": "windows/commands/workspace.json",
+      "bytes": 1076,
+      "sha256": "14d59ca4e9beba8afd19c17c74f3ef684f5837c2ab8bfc157d46ca8d1be85416",
+      "exit": 0
+    },
+    "fmt": {
+      "path": "windows/commands/fmt.json",
+      "bytes": 986,
+      "sha256": "40f5f153369e5f2ec50f7053485e76f4277741f35844fdd3528afdb58488e343",
+      "exit": 0
+    },
+    "runtime-build": {
+      "path": "windows/commands/runtime-build.json",
+      "bytes": 1021,
+      "sha256": "5a0ae9142a2d9ac6728af18c0677cfae5178163f045114b56199508ab02d6c10",
+      "exit": 0
+    },
+    "c-abi-compile": {
+      "path": "windows/commands/c-abi-compile.json",
+      "bytes": 1923,
+      "sha256": "f07efe097df5436743d468affcb83ec50fd160ae628107a096ade6b042ed68bf",
+      "exit": 0
+    },
+    "c-abi-run": {
+      "path": "windows/commands/c-abi-run.json",
+      "bytes": 833,
+      "sha256": "b5394999290e6f0cc3dfecc9283b423f6ecabc75b680dd3e96a9a549e28b4a1e",
+      "exit": 0
+    },
+    "vm-product-build": {
+      "path": "windows/commands/vm-product-build.json",
+      "bytes": 1057,
+      "sha256": "27bd604730b954cc0de20b10c0d9050200f78cac9da12374b0924ea0ed7a551b",
+      "exit": 0
+    }
+  },
+  "snapshot_boundaries": {
+    "path": "windows/snapshot-boundaries.json",
+    "bytes": 6945,
+    "sha256": "bb8048f1c2963dafb455a9e6ba69933db51f91f4d2634affc2e64f286746300a"
+  },
+  "nonce": {
+    "path": "windows/nonce.json",
+    "bytes": 1974,
+    "sha256": "aed32d761d59c718e426a70234b1a8903e4188083ffad37a9c18cd53b5d9c622"
+  },
+  "run_control": {
+    "path": "windows/run-control.json",
+    "bytes": 16027,
+    "sha256": "e6d16c97eb5e4c91545ce6c1893fc963767ed0c063fbc8d5f7fae54dc6ae144b"
+  },
+  "test_results": {
+    "path": "windows/test-results.json",
+    "bytes": 849,
+    "sha256": "167978ad3d0d111d4ad82e4a8ba0943e0a516af1ccd0c090e59940ab0b72d56e"
+  }
+}

@@ -1,0 +1,4 @@
+llvm-strip, compatible with GNU strip
+LLVM (http://llvm.org/):
+  LLVM version 22.1.2
+  Optimized build.

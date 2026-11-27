@@ -1,0 +1,35 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "runtime": {
+    "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/libxiao_runtime.a",
+    "bytes": 34443472,
+    "sha256": "e1bb44e9142353c35217e608c1fbd49b69d137b0b9a53becb02d20b3e5d70eaa"
+  },
+  "source": {
+    "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1b/c-abi-probe.c",
+    "bytes": 3456,
+    "sha256": "d186f948ff0b3388e0df3391fc7dcbaaa2bccf61c17c0f153e386b013a42fa6c"
+  },
+  "artifact": {
+    "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/c-abi/env-c-abi-probe",
+    "bytes": 9672192,
+    "sha256": "bf45f98a78ce04d8603e84708da3e0e3c51bd056df53c1790a3c96b43c404579"
+  },
+  "clang_trace": {
+    "path": "ubuntu-wsl/c-abi-clang.log",
+    "bytes": 2366,
+    "sha256": "168eb0584b73eca2e5da350861b8638acb2dd8e3d76a99b46ddcc5c62dba2342"
+  },
+  "compile": {
+    "path": "ubuntu-wsl/commands/c-abi-compile.json",
+    "bytes": 1606,
+    "sha256": "e6501a167527b546da84181ddde0f1da3765bd339f35a0fae55f10dff6e208c1"
+  },
+  "run": {
+    "path": "ubuntu-wsl/commands/c-abi-run.json",
+    "bytes": 764,
+    "sha256": "3620ebcb63fc2b3d9677ca0a7324696a49abd8a7ee90f5c36e56dc78f61d9e0e"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "build",
+    "--offline",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--target",
+    "x86_64-unknown-linux-gnu",
+    "-p",
+    "xiao-driver",
+    "--release",
+    "--bin",
+    "xiao-core",
+    "--message-format=json"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4d-rerun2/src",
+  "started_at_utc": "2026-11-27T18:09:11.473587+00:00",
+  "elapsed_seconds": 62.774,
+  "exit": 0,
+  "stdout": {
+    "path": "ubuntu-wsl/commands/vm-product-build.stdout.log",
+    "bytes": 91207,
+    "sha256": "1369c71a5c06115847a0ac1f400896a86fe6cb9afed7879ad0b6db7cbcf4f909"
+  },
+  "stderr": {
+    "path": "ubuntu-wsl/commands/vm-product-build.stderr.log",
+    "bytes": 451,
+    "sha256": "6cbfac1fc9b026be549f5acbeb5f07a5163fa4e975482793c643d8d4170e7f27"
+  },
+  "environment": {
+    "toolchain": "ubuntu-wsl/toolchain.json"
+  }
+}

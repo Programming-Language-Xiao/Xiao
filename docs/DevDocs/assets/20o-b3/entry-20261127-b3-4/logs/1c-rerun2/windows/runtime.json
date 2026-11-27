@@ -1,0 +1,52 @@
+{
+  "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+  "bytes": 27860696,
+  "sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a",
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "profile": "release",
+  "runtime_abi": "1.20",
+  "generator": 27,
+  "stdlib_interface": 1,
+  "cargo_artifact_event": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///D:/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun2/win/src/core/rust/crates/xiao-runtime#0.1.0",
+    "manifest_path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src\\core\\rust\\crates\\xiao-runtime\\Cargo.toml",
+    "target": {
+      "kind": [
+        "rlib",
+        "staticlib"
+      ],
+      "crate_types": [
+        "rlib",
+        "staticlib"
+      ],
+      "name": "xiao_runtime",
+      "src_path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src\\core\\rust\\crates\\xiao-runtime\\src\\lib.rs",
+      "edition": "2024",
+      "doc": true,
+      "doctest": true,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "3",
+      "debuginfo": 0,
+      "debug_assertions": false,
+      "overflow_checks": false,
+      "test": false
+    },
+    "features": [],
+    "filenames": [
+      "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\libxiao_runtime.rlib",
+      "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib"
+    ],
+    "executable": null,
+    "fresh": false
+  },
+  "build": {
+    "path": "windows/commands/runtime-build.json",
+    "bytes": 1021,
+    "sha256": "5a0ae9142a2d9ac6728af18c0677cfae5178163f045114b56199508ab02d6c10"
+  }
+}

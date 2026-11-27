@@ -1,0 +1,86 @@
+{
+  "case": "denied-o3",
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "backend": "native",
+  "optimization": 3,
+  "import": "std.env",
+  "canonical_module": "stdlib.env",
+  "capabilities": 32,
+  "source_sha256": "116c4e04af8801fac4cbefd30a32b7074128e66cd44e3ecedb0c568c764a5da2",
+  "task_root": "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/env-native/xiao-b3-env-4818-2",
+  "runtime_sha256": "e1bb44e9142353c35217e608c1fbd49b69d137b0b9a53becb02d20b3e5d70eaa",
+  "runtime": {
+    "path": "ubuntu-wsl/runtime.json",
+    "bytes": 1719,
+    "sha256": "c0db787e6edfd7fdce3d7a8f9e88b7b1bbba51ac410f8ccae8fd6e5d6dac449f"
+  },
+  "source_identity": {
+    "path": "ubuntu-wsl/source-ready.json",
+    "bytes": 3749,
+    "sha256": "716160d033ba644eb001c6e362e444f07cc65db64fa06e8a33ab01c754f29e35"
+  },
+  "toolchain": {
+    "path": "ubuntu-wsl/toolchain.json",
+    "bytes": 7691,
+    "sha256": "b00d8d863f432758bdd82c5b028ad7b9fc4feb2ae5175660e4ab7cce6d891cd9"
+  },
+  "build_and_test_command": {
+    "path": "ubuntu-wsl/commands/env-native.json",
+    "bytes": 1485,
+    "sha256": "68988d1e4cbe4cb1214889437feebde6845fb3674e92ed73b61ab5e018991adf"
+  },
+  "application": {
+    "argv": [
+      "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/env-native/xiao-b3-env-4818-2/denied-o3"
+    ],
+    "cwd": "/home/xiaoczx/.xiao-b3-4d-rerun2/src/core/rust/crates/xiao-driver",
+    "environment_mode": "synthetic",
+    "environment": {
+      "XIAO_B3_TEST_ENV": "host-native",
+      "XIAO_B3_TEST_INVALID_ENCODING": {
+        "hex": "FF"
+      },
+      "XIAO_RUNTIME_RELEASE_TRACE_PATH": "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/env-native/xiao-b3-env-4818-2/denied-o3.release.tsv"
+    },
+    "stdin": null
+  },
+  "exit": 3,
+  "diagnostic": "X06-RUNTIME-026",
+  "files": {
+    "artifact": {
+      "path": "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/env-native/xiao-b3-env-4818-2/denied-o3",
+      "bytes": 5118440,
+      "sha256": "c7e0f93d425a03e262d87c7fd93adcd191dba07d462f63e084c1ed5a05810bba"
+    },
+    "stdout": {
+      "path": "ubuntu-wsl/native/denied-o3/denied-o3.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stderr": {
+      "path": "ubuntu-wsl/native/denied-o3/denied-o3.stderr",
+      "bytes": 239,
+      "sha256": "9c3ee9e8020e3858b09278e4baff407f62f4f469f4c4fd18db702aad7035edd2"
+    }
+  },
+  "link_command": {
+    "path": "ubuntu-wsl/native/denied-o3/link-command.json",
+    "bytes": 6492,
+    "sha256": "79157422f7d2d87b153045c5f9aea52fdb2b74cfc82336c74c36e91dd4e5bfd8"
+  },
+  "verification": {
+    "path": "ubuntu-wsl/native/denied-o3/verification.json",
+    "bytes": 1504,
+    "sha256": "995b384671a6ae641ab14bd6d27118c74e5a81a9094ff0d9bfbda953cb6eba45",
+    "level": "Complete",
+    "object_format": "Elf",
+    "log_line": 31,
+    "original_stdout": {
+      "path": "ubuntu-wsl/commands/env-native.stdout.log",
+      "bytes": 12606,
+      "sha256": "4d63228910d5c1a74fd99dd8fc80a5b7c1cdc83eecf2ddeafdb084d6b44ba534"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--offline",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--target",
+    "x86_64-unknown-linux-gnu",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b3_env",
+    "--release",
+    "--",
+    "--ignored",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4d-rerun2/src",
+  "started_at_utc": "2026-11-27T18:02:53.677364+00:00",
+  "elapsed_seconds": 39.922,
+  "exit": 0,
+  "stdout": {
+    "path": "ubuntu-wsl/commands/env-native.stdout.log",
+    "bytes": 12606,
+    "sha256": "4d63228910d5c1a74fd99dd8fc80a5b7c1cdc83eecf2ddeafdb084d6b44ba534"
+  },
+  "stderr": {
+    "path": "ubuntu-wsl/commands/env-native.stderr.log",
+    "bytes": 203,
+    "sha256": "c687aef381f395e8c743ba676a7129e5a09edced066fb603954f89e8ae31e5fb"
+  },
+  "environment": {
+    "toolchain": "ubuntu-wsl/toolchain.json",
+    "XIAO_B3_ENV_TEST_ROOT": "/home/xiaoczx/.xiao-b3-4d-rerun2/tasks/env-native",
+    "XIAO_RUNTIME_LIBRARY": "/home/xiaoczx/.xiao-b3-4d-rerun2/target/x86_64-unknown-linux-gnu/release/libxiao_runtime.a",
+    "CC_PRINT_OPTIONS": "1",
+    "CC_PRINT_OPTIONS_FILE": "/mnt/d/project/Xiao/.xiao-orchestrator/worktrees/b3-4d-rerun2/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1c-rerun2/ubuntu-wsl/env-native-clang.log"
+  }
+}

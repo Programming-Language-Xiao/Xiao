@@ -1,0 +1,35 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "runtime": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+    "bytes": 27860696,
+    "sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a"
+  },
+  "source": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1b\\c-abi-probe.c",
+    "bytes": 3456,
+    "sha256": "d186f948ff0b3388e0df3391fc7dcbaaa2bccf61c17c0f153e386b013a42fa6c"
+  },
+  "artifact": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\c-abi\\env-c-abi-probe.exe",
+    "bytes": 730112,
+    "sha256": "7827905fc174607cbddd632868999475ba76054c01fccec2bc7b1f202ddd5941"
+  },
+  "clang_trace": {
+    "path": "windows/c-abi-clang.log",
+    "bytes": 2387,
+    "sha256": "8cd9123d8278e09236978f3f85280050198fb334386b6d789eaf9b55bb006db5"
+  },
+  "compile": {
+    "path": "windows/commands/c-abi-compile.json",
+    "bytes": 1923,
+    "sha256": "f07efe097df5436743d468affcb83ec50fd160ae628107a096ade6b042ed68bf"
+  },
+  "run": {
+    "path": "windows/commands/c-abi-run.json",
+    "bytes": 833,
+    "sha256": "b5394999290e6f0cc3dfecc9283b423f6ecabc75b680dd3e96a9a549e28b4a1e"
+  }
+}

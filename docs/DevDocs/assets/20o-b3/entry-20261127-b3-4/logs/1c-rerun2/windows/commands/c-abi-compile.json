@@ -1,0 +1,50 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "argv": [
+    "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "-target",
+    "x86_64-pc-windows-msvc",
+    "-std=c11",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\src\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1b\\c-abi-probe.c",
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+    "-Xlinker",
+    "kernel32.lib",
+    "-Xlinker",
+    "ntdll.lib",
+    "-Xlinker",
+    "userenv.lib",
+    "-Xlinker",
+    "ws2_32.lib",
+    "-Xlinker",
+    "dbghelp.lib",
+    "-Xlinker",
+    "/NODEFAULTLIB:msvcrt",
+    "-o",
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\c-abi\\env-c-abi-probe.exe"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\c-abi",
+  "started_at_utc": "2026-11-27T18:03:03.562673+00:00",
+  "elapsed_seconds": 2.422,
+  "exit": 0,
+  "stdout": {
+    "path": "windows/commands/c-abi-compile.stdout.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr": {
+    "path": "windows/commands/c-abi-compile.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "environment": {
+    "toolchain": "windows/toolchain.json",
+    "CC_PRINT_OPTIONS": "1",
+    "CC_PRINT_OPTIONS_FILE": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-4d-rerun2\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c-rerun2\\windows\\c-abi-clang.log",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib"
+  }
+}

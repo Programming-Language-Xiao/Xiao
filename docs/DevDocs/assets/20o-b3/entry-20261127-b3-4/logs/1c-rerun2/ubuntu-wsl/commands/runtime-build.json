@@ -1,0 +1,37 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-unknown-linux-gnu",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "build",
+    "--offline",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--target",
+    "x86_64-unknown-linux-gnu",
+    "-p",
+    "xiao-runtime",
+    "--release",
+    "--message-format=json"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4d-rerun2/src",
+  "started_at_utc": "2026-11-27T17:59:16.345275+00:00",
+  "elapsed_seconds": 45.544,
+  "exit": 0,
+  "stdout": {
+    "path": "ubuntu-wsl/commands/runtime-build.stdout.log",
+    "bytes": 49427,
+    "sha256": "24ecc15e06e9d01bd34ef40f68815596900b9294c4ad29b73f8a496ee8af2271"
+  },
+  "stderr": {
+    "path": "ubuntu-wsl/commands/runtime-build.stderr.log",
+    "bytes": 1808,
+    "sha256": "9a934ba2f777829567ac08fe1177816cfa8f9c05dcc5438205f90a54bf2bf81f"
+  },
+  "environment": {
+    "toolchain": "ubuntu-wsl/toolchain.json"
+  }
+}

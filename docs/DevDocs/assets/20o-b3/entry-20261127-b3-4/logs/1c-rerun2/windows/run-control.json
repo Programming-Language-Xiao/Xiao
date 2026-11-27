@@ -1,0 +1,433 @@
+{
+  "source_commit": "1e42f501af20890157a4ce28d96d451a70fc3e39",
+  "tree": "7631e0692c5734b34f8b2f0b31a1bca7f971c223",
+  "target": "x86_64-pc-windows-msvc",
+  "runtime_sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a",
+  "command": {
+    "path": "windows/commands/env-native.json",
+    "bytes": 1585,
+    "sha256": "291b5a801299a6df4b0f2e6e4794124e0c583b344bc29cf11b2a9e7ab45f2eea"
+  },
+  "cases": {
+    "before-build-cancel-o0": {
+      "case": "before-build-cancel-o0",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 50,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-4",
+      "original_log_line": 41,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/before-build-cancel-o0.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "windows/control/before-build-cancel-o0.stderr",
+          "bytes": 50,
+          "sha256": "48e486da4274bf9640805e474e4947b04769079bddc1a01a15b112752f693a3c"
+        }
+      }
+    },
+    "before-build-deadline-o0": {
+      "case": "before-build-deadline-o0",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 59,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-4",
+      "original_log_line": 42,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/before-build-deadline-o0.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "windows/control/before-build-deadline-o0.stderr",
+          "bytes": 59,
+          "sha256": "6229f9770c298e4a28350449be6629c24feb0cd678d702e3f89a2d36575f570f"
+        }
+      }
+    },
+    "before-spawn-cancel-o0": {
+      "case": "before-spawn-cancel-o0",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 38,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-4",
+      "original_log_line": 43,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/before-spawn-cancel-o0.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "windows/control/before-spawn-cancel-o0.stderr",
+          "bytes": 38,
+          "sha256": "8678f5d99246149f412a1cc971e8dce205f0b3a64ea4e8501d1a19460d7948e8"
+        }
+      }
+    },
+    "before-build-cancel-o3": {
+      "case": "before-build-cancel-o3",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 50,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-5",
+      "original_log_line": 44,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/before-build-cancel-o3.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "windows/control/before-build-cancel-o3.stderr",
+          "bytes": 50,
+          "sha256": "48e486da4274bf9640805e474e4947b04769079bddc1a01a15b112752f693a3c"
+        }
+      }
+    },
+    "before-build-deadline-o3": {
+      "case": "before-build-deadline-o3",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 59,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-5",
+      "original_log_line": 45,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/before-build-deadline-o3.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "windows/control/before-build-deadline-o3.stderr",
+          "bytes": 59,
+          "sha256": "6229f9770c298e4a28350449be6629c24feb0cd678d702e3f89a2d36575f570f"
+        }
+      }
+    },
+    "before-spawn-cancel-o3": {
+      "case": "before-spawn-cancel-o3",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 38,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-5",
+      "original_log_line": 46,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/before-spawn-cancel-o3.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "windows/control/before-spawn-cancel-o3.stderr",
+          "bytes": 38,
+          "sha256": "8678f5d99246149f412a1cc971e8dce205f0b3a64ea4e8501d1a19460d7948e8"
+        }
+      }
+    },
+    "commit-set-deadline-o0": {
+      "case": "commit-set-deadline-o0",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 875,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-6",
+      "original_log_line": 50,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/commit-set-deadline-o0.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        "stderr": {
+          "path": "windows/control/commit-set-deadline-o0.stderr",
+          "bytes": 875,
+          "sha256": "4f46b56b7b8942218f192b7416293902772f76c06d947104aa2efda09c27a02f"
+        }
+      }
+    },
+    "commit-set-cancel-o0": {
+      "case": "commit-set-cancel-o0",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 848,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-6",
+      "original_log_line": 51,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/commit-set-cancel-o0.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        "stderr": {
+          "path": "windows/control/commit-set-cancel-o0.stderr",
+          "bytes": 848,
+          "sha256": "0aa47cd6fd04334a1a9d47b1756b7ab8ebfd19d0f1649bee64965be870bad7ab"
+        }
+      }
+    },
+    "commit-unset-deadline-o0": {
+      "case": "commit-unset-deadline-o0",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 875,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-6",
+      "original_log_line": 52,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/commit-unset-deadline-o0.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        "stderr": {
+          "path": "windows/control/commit-unset-deadline-o0.stderr",
+          "bytes": 875,
+          "sha256": "4f46b56b7b8942218f192b7416293902772f76c06d947104aa2efda09c27a02f"
+        }
+      }
+    },
+    "commit-unset-cancel-o0": {
+      "case": "commit-unset-cancel-o0",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 848,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-6",
+      "original_log_line": 53,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/commit-unset-cancel-o0.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        "stderr": {
+          "path": "windows/control/commit-unset-cancel-o0.stderr",
+          "bytes": 848,
+          "sha256": "0aa47cd6fd04334a1a9d47b1756b7ab8ebfd19d0f1649bee64965be870bad7ab"
+        }
+      }
+    },
+    "commit-set-deadline-o3": {
+      "case": "commit-set-deadline-o3",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 875,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-7",
+      "original_log_line": 56,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/commit-set-deadline-o3.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        "stderr": {
+          "path": "windows/control/commit-set-deadline-o3.stderr",
+          "bytes": 875,
+          "sha256": "4f46b56b7b8942218f192b7416293902772f76c06d947104aa2efda09c27a02f"
+        }
+      }
+    },
+    "commit-set-cancel-o3": {
+      "case": "commit-set-cancel-o3",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 848,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-7",
+      "original_log_line": 57,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/commit-set-cancel-o3.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        "stderr": {
+          "path": "windows/control/commit-set-cancel-o3.stderr",
+          "bytes": 848,
+          "sha256": "0aa47cd6fd04334a1a9d47b1756b7ab8ebfd19d0f1649bee64965be870bad7ab"
+        }
+      }
+    },
+    "commit-unset-deadline-o3": {
+      "case": "commit-unset-deadline-o3",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 875,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-7",
+      "original_log_line": 58,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/commit-unset-deadline-o3.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        "stderr": {
+          "path": "windows/control/commit-unset-deadline-o3.stderr",
+          "bytes": 875,
+          "sha256": "4f46b56b7b8942218f192b7416293902772f76c06d947104aa2efda09c27a02f"
+        }
+      }
+    },
+    "commit-unset-cancel-o3": {
+      "case": "commit-unset-cancel-o3",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 848,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-7",
+      "original_log_line": 59,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/commit-unset-cancel-o3.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        "stderr": {
+          "path": "windows/control/commit-unset-cancel-o3.stderr",
+          "bytes": 848,
+          "sha256": "0aa47cd6fd04334a1a9d47b1756b7ab8ebfd19d0f1649bee64965be870bad7ab"
+        }
+      }
+    },
+    "before-entry-deadline-o0": {
+      "case": "before-entry-deadline-o0",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 47,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-8",
+      "original_log_line": 61,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/before-entry-deadline-o0.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "windows/control/before-entry-deadline-o0.stderr",
+          "bytes": 47,
+          "sha256": "ba4c06f99a617825cc7345ab0368d3c4d8829483567e31d0f3eabebf3d0b187b"
+        }
+      }
+    },
+    "active-deadline-o0": {
+      "case": "active-deadline-o0",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 205,
+      "stdout_bytes": 8,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-8",
+      "original_log_line": 62,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/active-deadline-o0.stdout",
+          "bytes": 8,
+          "sha256": "be91f7644f03cc4976431d2001387209fb097540e3c994bf3e8ba4a99efa1457"
+        },
+        "stderr": {
+          "path": "windows/control/active-deadline-o0.stderr",
+          "bytes": 205,
+          "sha256": "f2d8797ab9c7ccbffbf1d567d94e60d39d31c5556f6d91ed147f9c1c1b811af8"
+        }
+      }
+    },
+    "active-cancel-o0": {
+      "case": "active-cancel-o0",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 196,
+      "stdout_bytes": 8,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-8",
+      "original_log_line": 63,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/active-cancel-o0.stdout",
+          "bytes": 8,
+          "sha256": "be91f7644f03cc4976431d2001387209fb097540e3c994bf3e8ba4a99efa1457"
+        },
+        "stderr": {
+          "path": "windows/control/active-cancel-o0.stderr",
+          "bytes": 196,
+          "sha256": "085e0aa08df9c9ce9fcc3f0e5554cf00114ab5a1b09b6bcfb2b1fdc0a3911aaf"
+        }
+      }
+    },
+    "before-entry-deadline-o3": {
+      "case": "before-entry-deadline-o3",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 47,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-9",
+      "original_log_line": 65,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/before-entry-deadline-o3.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "windows/control/before-entry-deadline-o3.stderr",
+          "bytes": 47,
+          "sha256": "ba4c06f99a617825cc7345ab0368d3c4d8829483567e31d0f3eabebf3d0b187b"
+        }
+      }
+    },
+    "active-deadline-o3": {
+      "case": "active-deadline-o3",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 205,
+      "stdout_bytes": 8,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-9",
+      "original_log_line": 66,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/active-deadline-o3.stdout",
+          "bytes": 8,
+          "sha256": "be91f7644f03cc4976431d2001387209fb097540e3c994bf3e8ba4a99efa1457"
+        },
+        "stderr": {
+          "path": "windows/control/active-deadline-o3.stderr",
+          "bytes": 205,
+          "sha256": "f2d8797ab9c7ccbffbf1d567d94e60d39d31c5556f6d91ed147f9c1c1b811af8"
+        }
+      }
+    },
+    "active-cancel-o3": {
+      "case": "active-cancel-o3",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 196,
+      "stdout_bytes": 8,
+      "task": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun2\\win\\tasks\\env-native\\xiao-b3-env-15076-9",
+      "original_log_line": 67,
+      "outputs": {
+        "stdout": {
+          "path": "windows/control/active-cancel-o3.stdout",
+          "bytes": 8,
+          "sha256": "be91f7644f03cc4976431d2001387209fb097540e3c994bf3e8ba4a99efa1457"
+        },
+        "stderr": {
+          "path": "windows/control/active-cancel-o3.stderr",
+          "bytes": 196,
+          "sha256": "085e0aa08df9c9ce9fcc3f0e5554cf00114ab5a1b09b6bcfb2b1fdc0a3911aaf"
+        }
+      }
+    }
+  }
+}

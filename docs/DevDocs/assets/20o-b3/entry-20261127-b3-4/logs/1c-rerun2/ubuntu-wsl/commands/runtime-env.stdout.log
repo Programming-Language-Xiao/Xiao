@@ -1,0 +1,27 @@
+
+running 19 tests
+test abi::abi_env::tests::env_abi_cancelled_writes_and_removals_preserve_the_shared_view ... env C ABI 提交前取消返回 6/027，视图和输出槽保留
+ok
+test abi::abi_env::tests::env_abi_fatal_does_not_unwind_or_replace_the_output ... env C ABI 三入口均交付状态 8，失败保留输出槽
+ok
+test abi::abi_env::tests::env_abi_runtime_deadline_preserves_value_entries_and_bytes ... ok
+test abi::abi_env::tests::env_abi_status_output_and_ownership ... env C ABI 状态 0/1/2/3/6，独立拥有结果，失败保留输出槽
+ok
+test abi::abi_env::tests::env_injection_bounds_raw_bytes_before_decoding ... ok
+test abi::abi_env::tests::env_native_injection_distinguishes_omission_empty_and_explicit_bytes ... ok
+test abi::tests::diagnostic_ready_failure_cleans_session_and_environment ... ok
+test environment::tests::byte_limits_include_exact_name_and_value_boundaries ... ok
+test environment::tests::gates_host_source_and_keeps_distinct_snapshots ... ok
+test environment::tests::get_set_unset_return_owned_values ... ok
+test environment::tests::interruptions_preserve_entries_and_budget ... ok
+test environment::tests::output_allocation_failure_preserves_the_snapshot ... ok
+test environment::tests::pair_budget_counts_only_committed_names ... ok
+test environment::tests::platform_name_equivalence_governs_duplicate_lookup_and_removal ... ok
+test environment::tests::rejects_invalid_names_and_values ... ok
+test environment::tests::rejects_invalid_native_unicode ... ok
+test environment::tests::shares_committed_mutations_only_within_one_run ... ok
+test environment::tests::total_budget_accounts_for_replacement_and_failure ... ok
+test environment::tests::validates_types_authorization_arguments_and_budget_before_checkpoint ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 288 filtered out; finished in 0.81s
+

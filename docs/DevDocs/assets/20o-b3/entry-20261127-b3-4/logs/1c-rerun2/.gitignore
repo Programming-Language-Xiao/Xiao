@@ -1,0 +1,2 @@
+!windows/native/*/*.exe
+!windows/native/*/*.map

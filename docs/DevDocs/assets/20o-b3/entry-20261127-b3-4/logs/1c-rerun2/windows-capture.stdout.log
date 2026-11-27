@@ -1,0 +1,7 @@
+windows env-std-o0 Coff Complete, exit=0
+windows env-std-o3 Coff Complete, exit=0
+windows env-stdlib-o0 Coff Complete, exit=0
+windows env-stdlib-o3 Coff Complete, exit=0
+windows denied-o0 Coff Complete, exit=3
+windows denied-o3 Coff Complete, exit=3
+windows nonce 6, boundaries 26 {'X09-DRIVER-006': 2, 'accepted': 16, 'X09-DRIVER-007': 8}
