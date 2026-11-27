@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "bun",
+    "install",
+    "--frozen-lockfile"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "target": "x86_64-pc-windows-msvc",
+  "rustup_toolchain": "1.96.0",
+  "status": 0,
+  "seconds": 0.947,
+  "merged_log": "bun-install.log",
+  "log_sha256": "f996130e18985fb465b600ef9c24a438f6ac743329d63189bd7e83635508372b",
+  "environment_override": {}
+}

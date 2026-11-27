@@ -1,11 +1,17 @@
 //! 原生环境入口、线程上下文与 env 借读 C ABI。
 
-use std::io::Read;
+use std::io::BufRead;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use super::{abi_value_validation::validate_structure, *};
-use crate::environment::{EnvironmentSnapshot, Failure, Operation, SnapshotError};
+use crate::environment::{
+    EnvironmentSnapshot, Failure, MAX_INJECTED_BYTES, Operation, SnapshotError,
+};
 use xiao_intrinsics::{CAPABILITY_ENVIRONMENT, validate_capability_mask};
+use xiao_runtime_abi::native_control::{
+    CANCEL_ENV, CONTROL_PREFIX, DEADLINE_ENV, INTERRUPTED_EXIT, Interruption, monotonic_ns,
+};
 use xiao_runtime_abi::{NATIVE_ENVIRONMENT_NONCE_ENV, NATIVE_ENVIRONMENT_STDIN_PREFIX};
 
 thread_local! {
@@ -16,6 +22,62 @@ thread_local! {
 pub(super) struct NativeEnvironment {
     snapshot: EnvironmentSnapshot,
     capabilities: u64,
+    control: NativeControl,
+}
+
+#[derive(Default)]
+struct NativeControl {
+    deadline_ns: Option<u128>,
+    cancellation: Option<PathBuf>,
+}
+
+impl NativeControl {
+    fn from_launch() -> Result<Self, std::num::ParseIntError> {
+        Ok(Self {
+            deadline_ns: std::env::var_os(DEADLINE_ENV)
+                .map(|deadline| deadline.to_string_lossy().parse())
+                .transpose()?,
+            cancellation: std::env::var_os(CANCEL_ENV).map(PathBuf::from),
+        })
+    }
+
+    fn interruption(&self) -> Option<Interruption> {
+        if self
+            .cancellation
+            .as_ref()
+            .is_some_and(|path| std::fs::metadata(path).is_ok_and(|metadata| metadata.len() != 0))
+        {
+            return Some(Interruption::Cancelled);
+        }
+        if self
+            .deadline_ns
+            .is_some_and(|deadline| monotonic_ns().map_or(true, |now| now >= deadline))
+        {
+            return Some(Interruption::Deadline);
+        }
+        None
+    }
+}
+
+impl NativeEnvironment {
+    fn checkpoint(&self) -> Result<(), i32> {
+        if let Some(interruption) = self.control.interruption() {
+            // 运行级中断沿已冻结的不可捕获错误通道传播，退出码仍为 2。
+            set_pending_error(PendingError::Fatal(FatalError::new(
+                FatalKind::Internal,
+                interruption.code(),
+                "x11.driver.rejected",
+                interruption.message(),
+            )));
+            return Err(XiaoAbiStatus::Fatal.code());
+        }
+        let status = super::abi_concurrency::cancellation_status();
+        if status == XiaoAbiStatus::Ok.code() {
+            Ok(())
+        } else {
+            Err(status)
+        }
+    }
 }
 
 /// 从提交线程捕获同一次运行的快照，供任务调度使用。
@@ -38,17 +100,20 @@ pub(super) fn enter_environment(environment: Option<Arc<NativeEnvironment>>) -> 
 }
 
 fn run_entry(
-    entry: impl FnOnce() -> i32,
+    entry: impl FnOnce(&NativeControl) -> i32,
     snapshot: Result<EnvironmentSnapshot, SnapshotError>,
     capabilities: u64,
+    control: NativeControl,
 ) -> i32 {
     match snapshot {
         Ok(snapshot) => {
-            let _environment = enter_environment(Some(Arc::new(NativeEnvironment {
+            let environment = Arc::new(NativeEnvironment {
                 snapshot,
                 capabilities,
-            })));
-            entry()
+                control,
+            });
+            let _environment = enter_environment(Some(Arc::clone(&environment)));
+            entry(&environment.control)
         }
         Err(error) => {
             let _ = writeln!(std::io::stderr().lock(), "{}: {error}", error.code());
@@ -67,17 +132,56 @@ pub extern "C" fn xiao_runtime_env_run_native(
     let Some(entry) = entry else {
         return 2;
     };
-    let (injected, snapshot) = match validate_capability_mask(capabilities) {
-        Err(error) => (false, Err(SnapshotError::InvalidCapabilities(error))),
-        Ok(()) if capabilities & CAPABILITY_ENVIRONMENT != 0 && has_environment_handshake() => {
-            (true, read_injected_environment())
-        }
-        Ok(()) => (false, EnvironmentSnapshot::capture_host(capabilities)),
+    if let Err(error) = validate_capability_mask(capabilities) {
+        let error = SnapshotError::InvalidCapabilities(error);
+        let _ = writeln!(std::io::stderr().lock(), "{}: {error}", error.code());
+        return 2;
+    }
+    let handshake = if capabilities & CAPABILITY_ENVIRONMENT != 0 {
+        environment_handshake()
+    } else {
+        None
+    };
+    let control = if handshake.is_some() {
+        let Ok(control) = NativeControl::from_launch() else {
+            let _ = writeln!(
+                std::io::stderr().lock(),
+                "X09-DRIVER-003: 原生运行截止字段无效"
+            );
+            return 2;
+        };
+        control
+    } else {
+        NativeControl::default()
+    };
+    if let Some(status) = reject_interrupted_entry(&control) {
+        return status;
+    }
+    let snapshot = match handshake {
+        Some(LaunchEnvironment::Stdin) => read_injected_environment(std::io::stdin().lock()),
+        Some(LaunchEnvironment::Host) => EnvironmentSnapshot::from_host(capabilities, || {
+            std::env::vars_os().filter(|pair| {
+                crate::environment::host_pair(pair)
+                    && ![NATIVE_ENVIRONMENT_NONCE_ENV, DEADLINE_ENV, CANCEL_ENV]
+                        .iter()
+                        .any(|name| {
+                            let key = pair.0.as_encoded_bytes();
+                            if cfg!(windows) {
+                                key.eq_ignore_ascii_case(name.as_bytes())
+                            } else {
+                                key == name.as_bytes()
+                            }
+                        })
+            })
+        }),
+        None => EnvironmentSnapshot::capture_host(capabilities),
     };
     run_entry(
-        || {
+        |control| {
             let _arguments = if capture_arguments != 0 {
-                match crate::arguments::ArgumentsSnapshot::from_host_after_marker(injected) {
+                match crate::arguments::ArgumentsSnapshot::from_host_after_marker(
+                    handshake.is_some(),
+                ) {
                     Ok(snapshot) => {
                         Some(super::abi_args::enter_arguments(Some(Arc::new(snapshot))))
                     }
@@ -89,47 +193,73 @@ pub extern "C" fn xiao_runtime_env_run_native(
             } else {
                 None
             };
-            entry()
+            reject_interrupted_entry(control).unwrap_or_else(|| entry())
         },
         snapshot,
         capabilities,
+        control,
     )
 }
 
+fn reject_interrupted_entry(control: &NativeControl) -> Option<i32> {
+    control.interruption().map(|interruption| {
+        let _ = writeln!(
+            std::io::stderr().lock(),
+            "{}: {}",
+            interruption.code(),
+            interruption.message()
+        );
+        INTERRUPTED_EXIT
+    })
+}
+
+enum LaunchEnvironment {
+    Stdin,
+    Host,
+}
+
 /// 仅消费与子进程私有环境变量匹配的握手参数。
-fn has_environment_handshake() -> bool {
-    let arg = std::env::args_os().nth(1);
-    let Some(nonce) = arg
-        .as_deref()
-        .and_then(std::ffi::OsStr::to_str)
-        .and_then(|arg| arg.strip_prefix(NATIVE_ENVIRONMENT_STDIN_PREFIX))
-    else {
-        return false;
+fn environment_handshake() -> Option<LaunchEnvironment> {
+    let arg = std::env::args_os().nth(1)?;
+    let arg = arg.to_str()?;
+    let (nonce, source) = if let Some(nonce) = arg.strip_prefix(NATIVE_ENVIRONMENT_STDIN_PREFIX) {
+        (nonce, LaunchEnvironment::Stdin)
+    } else {
+        (arg.strip_prefix(CONTROL_PREFIX)?, LaunchEnvironment::Host)
     };
-    nonce.len() == 32
+    (nonce.len() == 32
         && nonce.bytes().all(|byte| byte.is_ascii_hexdigit())
-        && std::env::var(NATIVE_ENVIRONMENT_NONCE_ENV).is_ok_and(|expected| expected == nonce)
+        && std::env::var(NATIVE_ENVIRONMENT_NONCE_ENV).is_ok_and(|expected| expected == nonce))
+    .then_some(source)
 }
 
-/// 驱动发送经接纳的名值对。JSON 转义至多展开六倍，另留出数组结构的字节。
-fn read_injected_environment() -> Result<EnvironmentSnapshot, SnapshotError> {
-    const MAX_PAYLOAD_BYTES: usize = 6 * 1_048_576 + 8 * 1_024 + 2;
+/// 标准输入没有长度字段。先有界读取，遇到超限块时不扩容或解码。
+fn read_injected_environment(
+    mut input: impl BufRead,
+) -> Result<EnvironmentSnapshot, SnapshotError> {
     let mut data = Vec::new();
-    std::io::stdin()
-        .lock()
-        .take((MAX_PAYLOAD_BYTES + 1) as u64)
-        .read_to_end(&mut data)
-        .map_err(|_| SnapshotError::InvalidEncoding)?;
-    if data.len() > MAX_PAYLOAD_BYTES {
-        return Err(SnapshotError::LimitExceeded);
+    loop {
+        let chunk = input
+            .fill_buf()
+            .map_err(|_| SnapshotError::InvalidEncoding)?;
+        if chunk.is_empty() {
+            break;
+        }
+        let remaining = MAX_INJECTED_BYTES - data.len();
+        if chunk.len() > remaining {
+            return Err(SnapshotError::LimitExceeded);
+        }
+        let len = data.len() + chunk.len();
+        if len > data.capacity() {
+            let capacity = (data.capacity() * 2).max(len).min(MAX_INJECTED_BYTES);
+            data.try_reserve_exact(capacity - data.len())
+                .map_err(|_| SnapshotError::AllocationFailed)?;
+        }
+        data.extend_from_slice(chunk);
+        let consumed = chunk.len();
+        input.consume(consumed);
     }
-    decode_environment(&data)
-}
-
-fn decode_environment(data: &[u8]) -> Result<EnvironmentSnapshot, SnapshotError> {
-    let pairs: Vec<(String, String)> =
-        serde_json::from_slice(data).map_err(|_| SnapshotError::InvalidEncoding)?;
-    EnvironmentSnapshot::from_pairs(&pairs)
+    EnvironmentSnapshot::from_injected_json(&data)
 }
 
 /// 原生嵌入入口。省略载荷时从空快照开始。
@@ -145,17 +275,26 @@ pub unsafe extern "C" fn xiao_runtime_env_run_injected(
     };
     let snapshot = (|| {
         validate_capability_mask(capabilities).map_err(SnapshotError::InvalidCapabilities)?;
-        if data.is_null() && len == 0 {
-            return Ok(EnvironmentSnapshot::default());
+        if len > MAX_INJECTED_BYTES || len > isize::MAX as usize {
+            return Err(SnapshotError::LimitExceeded);
         }
-        if data.is_null() || len > isize::MAX as usize {
-            return Err(SnapshotError::InvalidEncoding);
+        if data.is_null() {
+            return if len == 0 {
+                Ok(EnvironmentSnapshot::default())
+            } else {
+                Err(SnapshotError::InvalidEncoding)
+            };
         }
         // SAFETY: 调用者在本次调用期间借出完整可读的 UTF-8 JSON 载荷。
         let data = unsafe { std::slice::from_raw_parts(data, len) };
-        decode_environment(data)
+        EnvironmentSnapshot::from_injected_json(data)
     })();
-    run_entry(|| entry(), snapshot, capabilities)
+    run_entry(
+        |_| entry(),
+        snapshot,
+        capabilities,
+        NativeControl::default(),
+    )
 }
 
 /// 先校验独立的 ABI 槽，然后委托共享 Runtime。只有成功时才交付新输出。
@@ -203,18 +342,13 @@ fn execute<const N: usize>(
             }
         };
         let result = snapshot.execute(operation, &values.each_ref(), capabilities, || {
-            if entry.is_none() {
+            let Some(entry) = &entry else {
                 set_pending_error(PendingError::Fatal(FatalError::internal(
                     "env 调用缺少原生运行上下文",
                 )));
                 return Err(XiaoAbiStatus::Fatal.code());
-            }
-            let status = super::abi_concurrency::cancellation_status();
-            if status == XiaoAbiStatus::Ok.code() {
-                Ok(())
-            } else {
-                Err(status)
-            }
+            };
+            entry.checkpoint()
         });
         let value = match result {
             Ok(value) => value,

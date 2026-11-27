@@ -6,6 +6,7 @@ use std::ffi::OsString;
 use std::fmt;
 use std::sync::Mutex;
 
+use serde::de::{Deserializer, Error, SeqAccess, Visitor};
 use xiao_intrinsics::{
     CAPABILITY_ENVIRONMENT, Capability, CapabilityMaskError, validate_capability_mask,
 };
@@ -19,6 +20,8 @@ const MAX_PAIRS: usize = 1_024;
 const MAX_NAME_BYTES: usize = 256;
 const MAX_VALUE_BYTES: usize = 65_536;
 const MAX_TOTAL_BYTES: usize = 1_048_576;
+/// JSON 字符转义至多展开六倍，另留数组结构字节。
+pub(crate) const MAX_INJECTED_BYTES: usize = 6 * MAX_TOTAL_BYTES + 8 * MAX_PAIRS + 2;
 
 /// 接纳失败，仅携带错误身份，不包含环境内容。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -93,6 +96,27 @@ struct View {
 }
 
 impl View {
+    fn admit_pair(&mut self, name: &str, value: &str) -> Result<(), SnapshotError> {
+        check_name(name)?;
+        check_value(value)?;
+        if !pair_fits(name, value) {
+            return Err(SnapshotError::LimitExceeded);
+        }
+        let index = self
+            .position(name)
+            .err()
+            .ok_or(SnapshotError::DuplicateName)?;
+        let bytes = self
+            .updated_bytes(None, name, value)
+            .ok_or(SnapshotError::LimitExceeded)?;
+        let entry = self
+            .prepare_entry(name, value, true)
+            .map_err(|_| SnapshotError::AllocationFailed)?;
+        self.entries.insert(index, entry);
+        self.total_bytes = bytes;
+        Ok(())
+    }
+
     /// 查找等价名称，或返回插入位置。
     fn position(&self, name: &str) -> Result<usize, usize> {
         self.entries
@@ -154,9 +178,28 @@ impl<C> From<RuntimeError> for Failure<C> {
 }
 
 impl EnvironmentSnapshot {
+    #[cfg(test)]
+    pub(crate) fn usage(&self) -> (usize, usize) {
+        let view = self.view.lock().unwrap();
+        (view.entries.len(), view.total_bytes)
+    }
+
     /// 接纳显式提供的有序 UTF-8 名值对，任一条目失败时整份拒绝。
     pub fn from_pairs(pairs: &[(String, String)]) -> Result<Self, SnapshotError> {
         Self::admit(pairs.iter().map(|(name, value)| Ok((name, value))))
+    }
+
+    /// 从已限制长度的 JSON 逐对接纳，等整个输入合法后才交付快照。
+    pub(crate) fn from_injected_json(data: &[u8]) -> Result<Self, SnapshotError> {
+        let mut parser = serde_json::Deserializer::from_slice(data);
+        let mut rejection = SnapshotError::InvalidEncoding;
+        let view = parser
+            .deserialize_seq(InjectedPairs(&mut rejection))
+            .map_err(|_| rejection)?;
+        parser.end().map_err(|_| SnapshotError::InvalidEncoding)?;
+        Ok(Self {
+            view: Mutex::new(view),
+        })
     }
 
     /// 由启动入口在授权后捕获一次当前进程的宿主环境。
@@ -193,24 +236,7 @@ impl EnvironmentSnapshot {
         let mut view = View::default();
         for pair in pairs {
             let (name, value) = pair?;
-            let (name, value) = (name.as_ref(), value.as_ref());
-            check_name(name)?;
-            check_value(value)?;
-            if !pair_fits(name, value) {
-                return Err(SnapshotError::LimitExceeded);
-            }
-            let index = match view.position(name) {
-                Ok(_) => return Err(SnapshotError::DuplicateName),
-                Err(index) => index,
-            };
-            let bytes = view
-                .updated_bytes(None, name, value)
-                .ok_or(SnapshotError::LimitExceeded)?;
-            let entry = view
-                .prepare_entry(name, value, true)
-                .map_err(|_| SnapshotError::AllocationFailed)?;
-            view.entries.insert(index, entry);
-            view.total_bytes = bytes;
+            view.admit_pair(name.as_ref(), value.as_ref())?;
         }
         Ok(Self {
             view: Mutex::new(view),
@@ -307,8 +333,29 @@ impl EnvironmentSnapshot {
     }
 }
 
+struct InjectedPairs<'a>(&'a mut SnapshotError);
+
+impl<'de> Visitor<'de> for InjectedPairs<'_> {
+    type Value = View;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("环境名值对数组")
+    }
+
+    fn visit_seq<A: SeqAccess<'de>>(self, mut pairs: A) -> Result<View, A::Error> {
+        let mut view = View::default();
+        while let Some((name, value)) = pairs.next_element::<(String, String)>()? {
+            view.admit_pair(&name, &value).map_err(|error| {
+                *self.0 = error;
+                A::Error::custom(error)
+            })?;
+        }
+        Ok(view)
+    }
+}
+
 /// Windows 环境块中的驱动器工作目录项归操作系统管理。
-fn host_pair((name, _): &(OsString, OsString)) -> bool {
+pub(crate) fn host_pair((name, _): &(OsString, OsString)) -> bool {
     if cfg!(windows) {
         if let [b'=', drive, b':'] = name.as_encoded_bytes() {
             return !drive.is_ascii_alphabetic();

@@ -1,0 +1,37 @@
+   Compiling xiao-runtime-abi v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime-abi)
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-i18n)
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-standard-library)
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-syntax)
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-modules)
+   Compiling xiao-config v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-config)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-ir)
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+warning: variable does not need to be mutable
+   --> crates\xiao-codegen-llvm\src\build.rs:517:13
+    |
+517 |         let mut builder = fs::DirBuilder::new();
+    |             ----^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+warning: `xiao-codegen-llvm` (lib) generated 1 warning (run `cargo fix --lib -p xiao-codegen-llvm` to apply 1 suggestion)
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `release` profile [optimized] target(s) in 3m 37s
+     Running `core\rust\target\x86_64-pc-windows-msvc\release\b3_env_performance.exe --help`
++cargo +1.96.0 run --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --release --bin b3_env_performance -- --output-dir DIR --artifact-dir DIR --identity JSON [--probe]
+
+VM、原生 O0/O3 各五批，两个输出目录均须新建。--probe 只预热并验证负载。
+身份文件须含 baseline_commit、product_commit、target、runtime.sha256 和 toolchain。
+原生工具取 XIAO_TARGET_TRIPLE、XIAO_CLANG、XIAO_LLVM_AS、XIAO_LLC、XIAO_RUNTIME_LIBRARY。

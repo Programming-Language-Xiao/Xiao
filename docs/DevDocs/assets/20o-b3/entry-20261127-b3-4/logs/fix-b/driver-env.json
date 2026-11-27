@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b3_env",
+    "--",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "target": "x86_64-pc-windows-msvc",
+  "rustup_toolchain": "1.96.0",
+  "status": 101,
+  "seconds": 28.394,
+  "merged_log": "driver-env.log",
+  "log_sha256": "a4dd1c7d28b6e9794fb7db06bb4febc4ae7704642163354ae7c8d409e1ed8db3",
+  "environment_override": {}
+}

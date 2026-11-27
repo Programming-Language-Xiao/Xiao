@@ -758,6 +758,7 @@ dependencies = [
  "libc",
  "libm",
  "num-bigint",
+ "serde",
  "serde_json",
  "xiao-diagnostics",
  "xiao-intrinsics",
@@ -771,6 +772,9 @@ dependencies = [
 [[package]]
 name = "xiao-runtime-abi"
 version = "0.1.0"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "xiao-source"

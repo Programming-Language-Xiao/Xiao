@@ -1,0 +1,40 @@
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-i18n)
+   Compiling ring v0.17.14
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-standard-library)
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-syntax)
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-modules)
+   Compiling xiao-config v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-config)
+   Compiling rustls v0.23.45
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-ir)
+   Compiling rustls-webpki v0.103.15
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+   Compiling ureq v3.4.2
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+error[E0382]: borrow of moved value: `control`
+   --> crates\xiao-driver\src\native.rs:152:44
+    |
+150 |         let mut control = control.clone();
+    |             ----------- move occurs because `control` has type `RunControl`, which does not implement the `Copy` trait
+151 |         if let Some(timeout) = options.timeout_ms.map(Duration::from_millis) {
+152 |             control = control.with_timeout(control.timeout().map_or(timeout, |at| at.min(timeout)));
+    |                       -------              ^^^^^^^ value borrowed here after move
+    |                       |
+    |                       value moved here
+    |
+help: consider cloning the value if the performance cost is acceptable
+    |
+152 |             control = control.clone().with_timeout(control.timeout().map_or(timeout, |at| at.min(timeout)));
+    |                              ++++++++
+
+For more information about this error, try `rustc --explain E0382`.
+error: could not compile `xiao-driver` (lib) due to 1 previous error

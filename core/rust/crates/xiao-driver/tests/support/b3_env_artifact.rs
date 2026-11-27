@@ -25,8 +25,12 @@ pub(super) fn run_injected(command: &mut Command, data: &[u8]) -> Output {
         .stderr(Stdio::piped())
         .spawn()
         .unwrap();
-    child.stdin.take().unwrap().write_all(data).unwrap();
-    child.wait_with_output().unwrap()
+    let written = child.stdin.take().unwrap().write_all(data);
+    let output = child.wait_with_output().unwrap();
+    if output.status.success() {
+        written.unwrap();
+    }
+    output
 }
 
 pub(super) fn toolchain(target: &TargetDescription) -> Toolchain {

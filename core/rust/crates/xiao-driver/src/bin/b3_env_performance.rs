@@ -1,8 +1,8 @@
-//! B3-4E env 性能示例。使用固定的合成快照与 release VM、原生 O0/O3。
+//! B3-4E env 性能入口。使用固定的合成快照与 release VM、原生 O0/O3。
 
-#[path = "numeric_perf/calibration.rs"]
+#[path = "../../examples/numeric_perf/calibration.rs"]
 mod calibration;
-#[path = "numeric_perf/memory.rs"]
+#[path = "../../examples/numeric_perf/memory.rs"]
 mod memory;
 #[path = "env_perf/native.rs"]
 mod native;
@@ -33,8 +33,8 @@ const BATCHES: usize = 5;
 const MEMORY_LIMIT: u64 = 64 * 1024 * 1024;
 const RATIO_LIMIT: f64 = 3.0;
 const HELP: &str =
-    "+cargo +1.96.0 run --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --release \
---example b3_env_performance -- --output-dir DIR --artifact-dir DIR --identity JSON [--probe]
+    "cargo +1.96.0 run --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --release \
+--bin b3_env_performance -- --output-dir DIR --artifact-dir DIR --identity JSON [--probe]
 
 VM、原生 O0/O3 各五批，两个输出目录均须新建。--probe 只预热并验证负载。
 身份文件须含 baseline_commit、product_commit、target、runtime.sha256 和 toolchain。
@@ -56,6 +56,10 @@ struct Program {
 }
 
 fn main() {
+    assert!(
+        !xiao_runtime::test_failpoints_enabled(),
+        "VM 性能入口要求 Runtime 关闭 test-failpoints"
+    );
     let mut args = std::env::args_os().skip(1);
     let mut options = Options::default();
     while let Some(argument) = args.next() {

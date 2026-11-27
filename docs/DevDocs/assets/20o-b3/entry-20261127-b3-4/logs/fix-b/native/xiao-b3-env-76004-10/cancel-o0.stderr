@@ -1,0 +1,5 @@
+xiao-error class=recoverable code=X06-RUNTIME-027 message_id=runtime.concurrency params={} span=204..227 exit_code=3
+error [X06-RUNTIME-027]: X06-RUNTIME-027
+at bytes 204..227
+at entry::read_flag (User)
+at entry::worker (User)

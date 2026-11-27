@@ -2,15 +2,19 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 use std::process::{Command, Output};
+use std::time::{Duration, Instant};
 
+use xiao_artifacts::Digest256;
 use xiao_codegen_llvm::{
-    ArtifactVerification, CODEGEN_VERSION, CodegenOptions, NativeArtifact, NativeRuntimeSupport,
-    TargetDescription, Toolchain,
+    ArtifactVerification, CODEGEN_VERSION, CodegenOptions, NativeArtifact, NativeRun,
+    NativeRunResult, NativeRuntimeSupport, TargetDescription, Toolchain,
 };
 use xiao_driver::{
-    FrontendNativeDriver, FrontendRequest, NativeBuildRequest, ProtocolResponse, dispatch,
+    CancellationToken, FrontendNativeDriver, FrontendRequest, NativeBuildRequest, ProtocolResponse,
+    RunControl, dispatch,
 };
 use xiao_intrinsics::CAPABILITY_PROCESS;
+use xiao_runtime_abi::native_control::{CANCEL_ENV, DEADLINE_ENV, monotonic_ns};
 use xiao_runtime_abi::{NATIVE_ENVIRONMENT_NONCE_ENV, NATIVE_ENVIRONMENT_STDIN_PREFIX};
 
 use super::native_artifact::{record, run_injected, toolchain};
@@ -257,6 +261,41 @@ fn native_env_entry_resolves_host_and_explicit_inputs() {
             .contains("X09-DRIVER-007")
     );
 
+    let mut pairs = vec![(NAME, "boundary-native".to_owned())];
+    let mut remaining = 1_048_576 - NAME.len() - pairs[0].1.len();
+    for name in [
+        "E0000", "E0001", "E0002", "E0003", "E0004", "E0005", "E0006", "E0007", "E0008", "E0009",
+        "E0010", "E0011", "E0012", "E0013", "E0014", "E0015",
+    ] {
+        let bytes = remaining.min(65_536);
+        pairs.push((name, "\u{1}".repeat(bytes - name.len())));
+        remaining -= bytes;
+    }
+    assert_eq!(remaining, 0);
+    let mut data = serde_json::to_vec(&pairs).unwrap();
+    let accepted = 6 * 1_048_576 + 8 * 1_024 + 2;
+    assert!(data.len() <= accepted);
+    data.resize(accepted, b' ');
+    let output = run_artifact(
+        &artifact,
+        "injected-raw-boundary",
+        false,
+        false,
+        Some(&data),
+    );
+    assert_eq!(output.status.code(), Some(0));
+    assert_eq!(output.stdout, b"boundary-native\n");
+    assert!(output.stderr.is_empty());
+    data.push(b' ');
+    let output = run_artifact(&artifact, "injected-raw-over", false, false, Some(&data));
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert!(
+        String::from_utf8(output.stderr)
+            .unwrap()
+            .starts_with("X09-DRIVER-007:")
+    );
+
     let build = build_request(&root, "static", "result = 1\n", &target, &tools, 0, ENV);
     let artifact = driver.build(&build).unwrap().native;
     assert!(artifact.module.text.starts_with("; Xiao N0-A LLVM module"));
@@ -371,5 +410,281 @@ fn native_env_worker_shares_snapshot_and_cancels_like_vm() {
         );
         assert_eq!(output.stdout, expected.as_bytes());
         assert!(String::from_utf8(output.stderr).unwrap().contains(&code));
+    }
+}
+
+fn assert_driver_interruption(
+    root: &Path,
+    case: &str,
+    output: &NativeRunResult,
+    code: &str,
+    stdout: &str,
+) {
+    fs::write(root.join(format!("{case}.stdout")), &output.stdout).unwrap();
+    fs::write(root.join(format!("{case}.stderr")), &output.stderr).unwrap();
+    println!(
+        "B3-4-ENV-CONTROL {}",
+        serde_json::json!({
+            "case": case, "task": root, "exit": output.status, "diagnostic": code,
+            "stdout_bytes": output.stdout.len(), "stderr_bytes": output.stderr.len(),
+        })
+    );
+    assert_eq!(output.status, Some(2), "{output:?}");
+    assert_eq!(output.stdout, stdout);
+    assert!(output.stderr.contains(code), "{output:?}");
+    assert!(!output.stderr.contains("X06-RUNTIME-027"), "{output:?}");
+}
+
+#[test]
+#[ignore = "需要本批 release Runtime 和固定 LLVM 工具"]
+fn native_env_run_control_before_build_and_spawn() {
+    let target = TargetDescription::host();
+    let tools = toolchain(&target);
+    let driver = FrontendNativeDriver::new();
+    for optimization in [0, 3] {
+        let root = test_dir();
+        let case = format!("never-start-o{optimization}");
+        let mask = ENV | STDOUT;
+        let build = build_request(
+            &root,
+            &case,
+            "print(\"user-code\")\n",
+            &target,
+            &tools,
+            optimization,
+            mask,
+        );
+        let token = CancellationToken::new();
+        token.cancel();
+        let run = options(None, mask);
+        let result = driver
+            .run_application_with_control(
+                &build,
+                &run,
+                [] as [&str; 0],
+                &RunControl::new().with_cancellation(token),
+            )
+            .unwrap();
+        assert_driver_interruption(
+            &root,
+            &format!("before-build-cancel-o{optimization}"),
+            &result,
+            "X09-DRIVER-001",
+            "",
+        );
+        let elapsed = xiao_driver::RunOptions {
+            timeout_ms: Some(0),
+            ..run.clone()
+        };
+        let result = driver
+            .run_application(&build, &elapsed, [] as [&str; 0])
+            .unwrap();
+        assert_driver_interruption(
+            &root,
+            &format!("before-build-deadline-o{optimization}"),
+            &result,
+            "X09-DRIVER-002",
+            "",
+        );
+        assert!(!build.output.exists());
+
+        let token = CancellationToken::new();
+        let args = std::iter::once_with(|| {
+            token.cancel();
+            "last-argument"
+        });
+        let result = driver
+            .run_application_with_control(
+                &build,
+                &run,
+                args,
+                &RunControl::new().with_cancellation(token.clone()),
+            )
+            .unwrap();
+        assert!(build.output.is_file());
+        assert_driver_interruption(
+            &root,
+            &format!("before-spawn-cancel-o{optimization}"),
+            &result,
+            "X09-DRIVER-001",
+            "",
+        );
+    }
+}
+
+#[test]
+#[ignore = "需要本批 release Runtime 和固定 LLVM 工具"]
+fn native_env_running_control_reaches_generated_code() {
+    let target = TargetDescription::host();
+    let tools = toolchain(&target);
+    let source = r#"from std.env import get
+from std.args import argv
+for value in argv()
+    print(value)
+while true
+    get("loop")
+"#;
+    let mask = ENV | STDOUT | CAPABILITY_PROCESS;
+    for optimization in [0, 3] {
+        let root = test_dir();
+        let case = format!("active-o{optimization}");
+        let build = build_request(&root, &case, source, &target, &tools, optimization, mask);
+        let artifact = FrontendNativeDriver::new().build(&build).unwrap().native;
+        let run = NativeRun::new(&artifact);
+        let output = run_injected(
+            Command::new(&artifact.executable)
+                .env_clear()
+                .env(DEADLINE_ENV, "0"),
+            b"[]",
+        );
+        let rejected = NativeRunResult {
+            status: output.status.code(),
+            stdout: String::from_utf8(output.stdout).unwrap(),
+            stderr: String::from_utf8(output.stderr).unwrap(),
+        };
+        let case = format!("before-entry-deadline-o{optimization}");
+        assert_driver_interruption(&root, &case, &rejected, "X09-DRIVER-002", "");
+
+        let deadline = Instant::now() + Duration::from_millis(900);
+        let output = run
+            .run_with_control(["entered"], None, Some(deadline), None, true)
+            .unwrap();
+        let case = format!("active-deadline-o{optimization}");
+        assert_driver_interruption(&root, &case, &output, "X09-DRIVER-002", "entered\n");
+        assert!(
+            output
+                .stderr
+                .contains("xiao-error class=fatal code=X09-DRIVER-002 ")
+        );
+
+        let start = Instant::now();
+        let cancelled = || start.elapsed() >= Duration::from_millis(900);
+        let output = run
+            .run_with_control(
+                ["entered"],
+                Some(b"[]"),
+                Some(start + Duration::from_secs(5)),
+                Some(&cancelled),
+                true,
+            )
+            .unwrap();
+        let case = format!("active-cancel-o{optimization}");
+        assert_driver_interruption(&root, &case, &output, "X09-DRIVER-001", "entered\n");
+        assert!(
+            output
+                .stderr
+                .contains("xiao-error class=fatal code=X09-DRIVER-001 ")
+        );
+        println!(
+            "环境原生 {} SHA-256 {}，O{}，原生入口 argv 隐藏握手参数",
+            artifact.executable.display(),
+            Digest256::of_bytes(&fs::read(&artifact.executable).unwrap()).as_hex(),
+            optimization,
+        );
+    }
+}
+
+#[test]
+#[ignore = "需要本批 release Runtime 和固定 LLVM 工具"]
+fn native_env_run_control_preserves_set_and_unset_budgets() {
+    let target = TargetDescription::host();
+    let tools = toolchain(&target);
+    let source = include_bytes!("b3_env_control.c");
+    let mut pairs = vec![
+        ("key".to_owned(), "old".to_owned()),
+        ("ref".to_owned(), "".to_owned()),
+    ];
+    pairs.extend((0..1_022).map(|n| (format!("E{n:04}"), String::new())));
+    let mut remaining =
+        (1_048_576 - 1) - pairs.iter().map(|(k, v)| k.len() + v.len()).sum::<usize>();
+    for (_, value) in &mut pairs[2..] {
+        let bytes = remaining.min(65_536);
+        *value = "x".repeat(bytes);
+        remaining -= bytes;
+    }
+    assert_eq!(remaining, 0);
+    let data = serde_json::to_vec(&pairs).unwrap();
+    for optimization in [0, 3] {
+        let root = test_dir();
+        let c_file = root.join("env_control.c");
+        let executable = root.join(format!("env_control{}", std::env::consts::EXE_SUFFIX));
+        fs::write(&c_file, source).unwrap();
+        let mut build = Command::new(&tools.clang);
+        build
+            .args([
+                "-target",
+                &target.triple,
+                "-std=c11",
+                &format!("-O{optimization}"),
+            ])
+            .arg(&c_file)
+            .arg(tools.runtime_library.as_ref().unwrap())
+            .args(&tools.native_static_libraries)
+            .arg("-o")
+            .arg(&executable);
+        let output = build.output().unwrap();
+        fs::write(root.join("control-build.stdout"), &output.stdout).unwrap();
+        fs::write(root.join("control-build.stderr"), &output.stderr).unwrap();
+        println!("{build:?} 退出 {:?}", output.status.code());
+        assert!(output.status.success(), "{output:?}");
+        println!(
+            "环境 C ABI 探针 O{optimization} {} SHA-256 {}",
+            executable.display(),
+            Digest256::of_bytes(&fs::read(&executable).unwrap()).as_hex(),
+        );
+
+        for operation in ["set", "unset"] {
+            for (reason, code) in [("deadline", "X09-DRIVER-002"), ("cancel", "X09-DRIVER-001")] {
+                let case = format!("commit-{operation}-{reason}-o{optimization}");
+                let mut command = Command::new(&executable);
+                command
+                    .env_clear()
+                    .env("XIAO_B3_CONTROL_TEST", operation)
+                    .current_dir(&root);
+                let output = if reason == "deadline" {
+                    let deadline = monotonic_ns().unwrap() + Duration::from_secs(3).as_nanos();
+                    command.env(DEADLINE_ENV, deadline.to_string());
+                    run_injected(&mut command, &data)
+                } else {
+                    let signal = root.join(format!("{case}.cancel"));
+                    let ready = format!("{case}.ready");
+                    command
+                        .env(CANCEL_ENV, &signal)
+                        .env("XIAO_B3_CONTROL_READY_FILE", &ready);
+                    let ready = root.join(ready);
+                    std::thread::scope(|scope| {
+                        scope.spawn(|| {
+                            let started = Instant::now();
+                            while !ready.is_file() {
+                                assert!(
+                                    started.elapsed() < Duration::from_secs(10),
+                                    "探针未完成旧值读取"
+                                );
+                                std::thread::sleep(Duration::from_millis(5));
+                            }
+                            fs::write(&signal, b"1").unwrap();
+                        });
+                        run_injected(&mut command, &data)
+                    })
+                };
+                let result = NativeRunResult {
+                    status: output.status.code(),
+                    stdout: String::from_utf8(output.stdout).unwrap(),
+                    stderr: String::from_utf8(output.stderr).unwrap(),
+                };
+                let old = if cfg!(windows) { "old\r\n" } else { "old\n" };
+                assert_driver_interruption(&root, &case, &result, code, old);
+                assert_eq!(
+                    result.stderr.matches(&format!("code={code} ")).count(),
+                    3,
+                    "{result:?}"
+                );
+                assert_eq!(
+                    result.stderr.matches("code=ENV_LIMIT_EXCEEDED ").count(),
+                    2,
+                    "{result:?}"
+                );
+            }
+        }
     }
 }

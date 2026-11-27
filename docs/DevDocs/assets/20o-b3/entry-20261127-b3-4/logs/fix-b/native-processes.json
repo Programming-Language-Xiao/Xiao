@@ -1,0 +1,1173 @@
+{
+  "target": "x86_64-pc-windows-msvc",
+  "native_test_run": "driver-env-native-retry.json",
+  "runtime_build": "runtime-release-final.json",
+  "runtime": {
+    "path": "core/rust/target/x86_64-pc-windows-msvc/release/xiao_runtime.lib",
+    "bytes": 27860696,
+    "sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a"
+  },
+  "control_cases": [
+    {
+      "case": "before-build-cancel-o0",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 50,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-4",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-4/before-build-cancel-o0.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-4/before-build-cancel-o0.stderr",
+        "bytes": 50,
+        "sha256": "48e486da4274bf9640805e474e4947b04769079bddc1a01a15b112752f693a3c"
+      }
+    },
+    {
+      "case": "before-build-deadline-o0",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 59,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-4",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-4/before-build-deadline-o0.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-4/before-build-deadline-o0.stderr",
+        "bytes": 59,
+        "sha256": "6229f9770c298e4a28350449be6629c24feb0cd678d702e3f89a2d36575f570f"
+      }
+    },
+    {
+      "case": "before-spawn-cancel-o0",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 38,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-4",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-4/before-spawn-cancel-o0.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-4/before-spawn-cancel-o0.stderr",
+        "bytes": 38,
+        "sha256": "8678f5d99246149f412a1cc971e8dce205f0b3a64ea4e8501d1a19460d7948e8"
+      }
+    },
+    {
+      "case": "before-build-cancel-o3",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 50,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-5",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-5/before-build-cancel-o3.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-5/before-build-cancel-o3.stderr",
+        "bytes": 50,
+        "sha256": "48e486da4274bf9640805e474e4947b04769079bddc1a01a15b112752f693a3c"
+      }
+    },
+    {
+      "case": "before-build-deadline-o3",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 59,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-5",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-5/before-build-deadline-o3.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-5/before-build-deadline-o3.stderr",
+        "bytes": 59,
+        "sha256": "6229f9770c298e4a28350449be6629c24feb0cd678d702e3f89a2d36575f570f"
+      }
+    },
+    {
+      "case": "before-spawn-cancel-o3",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 38,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-5",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-5/before-spawn-cancel-o3.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-5/before-spawn-cancel-o3.stderr",
+        "bytes": 38,
+        "sha256": "8678f5d99246149f412a1cc971e8dce205f0b3a64ea4e8501d1a19460d7948e8"
+      }
+    },
+    {
+      "case": "commit-set-deadline-o0",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 875,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-6",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-set-deadline-o0.stdout",
+        "bytes": 5,
+        "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-set-deadline-o0.stderr",
+        "bytes": 875,
+        "sha256": "4f46b56b7b8942218f192b7416293902772f76c06d947104aa2efda09c27a02f"
+      }
+    },
+    {
+      "case": "commit-set-cancel-o0",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 848,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-6",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-set-cancel-o0.stdout",
+        "bytes": 5,
+        "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-set-cancel-o0.stderr",
+        "bytes": 848,
+        "sha256": "0aa47cd6fd04334a1a9d47b1756b7ab8ebfd19d0f1649bee64965be870bad7ab"
+      }
+    },
+    {
+      "case": "commit-unset-deadline-o0",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 875,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-6",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-unset-deadline-o0.stdout",
+        "bytes": 5,
+        "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-unset-deadline-o0.stderr",
+        "bytes": 875,
+        "sha256": "4f46b56b7b8942218f192b7416293902772f76c06d947104aa2efda09c27a02f"
+      }
+    },
+    {
+      "case": "commit-unset-cancel-o0",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 848,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-6",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-unset-cancel-o0.stdout",
+        "bytes": 5,
+        "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-unset-cancel-o0.stderr",
+        "bytes": 848,
+        "sha256": "0aa47cd6fd04334a1a9d47b1756b7ab8ebfd19d0f1649bee64965be870bad7ab"
+      }
+    },
+    {
+      "case": "commit-set-deadline-o3",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 875,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-7",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-set-deadline-o3.stdout",
+        "bytes": 5,
+        "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-set-deadline-o3.stderr",
+        "bytes": 875,
+        "sha256": "4f46b56b7b8942218f192b7416293902772f76c06d947104aa2efda09c27a02f"
+      }
+    },
+    {
+      "case": "commit-set-cancel-o3",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 848,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-7",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-set-cancel-o3.stdout",
+        "bytes": 5,
+        "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-set-cancel-o3.stderr",
+        "bytes": 848,
+        "sha256": "0aa47cd6fd04334a1a9d47b1756b7ab8ebfd19d0f1649bee64965be870bad7ab"
+      }
+    },
+    {
+      "case": "commit-unset-deadline-o3",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 875,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-7",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-unset-deadline-o3.stdout",
+        "bytes": 5,
+        "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-unset-deadline-o3.stderr",
+        "bytes": 875,
+        "sha256": "4f46b56b7b8942218f192b7416293902772f76c06d947104aa2efda09c27a02f"
+      }
+    },
+    {
+      "case": "commit-unset-cancel-o3",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 848,
+      "stdout_bytes": 5,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-7",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-unset-cancel-o3.stdout",
+        "bytes": 5,
+        "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-unset-cancel-o3.stderr",
+        "bytes": 848,
+        "sha256": "0aa47cd6fd04334a1a9d47b1756b7ab8ebfd19d0f1649bee64965be870bad7ab"
+      }
+    },
+    {
+      "case": "before-entry-deadline-o0",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 47,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-8",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-8/before-entry-deadline-o0.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-8/before-entry-deadline-o0.stderr",
+        "bytes": 47,
+        "sha256": "ba4c06f99a617825cc7345ab0368d3c4d8829483567e31d0f3eabebf3d0b187b"
+      }
+    },
+    {
+      "case": "active-deadline-o0",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 205,
+      "stdout_bytes": 8,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-8",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-8/active-deadline-o0.stdout",
+        "bytes": 8,
+        "sha256": "be91f7644f03cc4976431d2001387209fb097540e3c994bf3e8ba4a99efa1457"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-8/active-deadline-o0.stderr",
+        "bytes": 205,
+        "sha256": "f2d8797ab9c7ccbffbf1d567d94e60d39d31c5556f6d91ed147f9c1c1b811af8"
+      }
+    },
+    {
+      "case": "active-cancel-o0",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 196,
+      "stdout_bytes": 8,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-8",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-8/active-cancel-o0.stdout",
+        "bytes": 8,
+        "sha256": "be91f7644f03cc4976431d2001387209fb097540e3c994bf3e8ba4a99efa1457"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-8/active-cancel-o0.stderr",
+        "bytes": 196,
+        "sha256": "085e0aa08df9c9ce9fcc3f0e5554cf00114ab5a1b09b6bcfb2b1fdc0a3911aaf"
+      }
+    },
+    {
+      "case": "before-entry-deadline-o3",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 47,
+      "stdout_bytes": 0,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-9",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-9/before-entry-deadline-o3.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-9/before-entry-deadline-o3.stderr",
+        "bytes": 47,
+        "sha256": "ba4c06f99a617825cc7345ab0368d3c4d8829483567e31d0f3eabebf3d0b187b"
+      }
+    },
+    {
+      "case": "active-deadline-o3",
+      "diagnostic": "X09-DRIVER-002",
+      "exit": 2,
+      "stderr_bytes": 205,
+      "stdout_bytes": 8,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-9",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-9/active-deadline-o3.stdout",
+        "bytes": 8,
+        "sha256": "be91f7644f03cc4976431d2001387209fb097540e3c994bf3e8ba4a99efa1457"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-9/active-deadline-o3.stderr",
+        "bytes": 205,
+        "sha256": "f2d8797ab9c7ccbffbf1d567d94e60d39d31c5556f6d91ed147f9c1c1b811af8"
+      }
+    },
+    {
+      "case": "active-cancel-o3",
+      "diagnostic": "X09-DRIVER-001",
+      "exit": 2,
+      "stderr_bytes": 196,
+      "stdout_bytes": 8,
+      "task": "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76004-9",
+      "stdout": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-9/active-cancel-o3.stdout",
+        "bytes": 8,
+        "sha256": "be91f7644f03cc4976431d2001387209fb097540e3c994bf3e8ba4a99efa1457"
+      },
+      "stderr": {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-9/active-cancel-o3.stderr",
+        "bytes": 196,
+        "sha256": "085e0aa08df9c9ce9fcc3f0e5554cf00114ab5a1b09b6bcfb2b1fdc0a3911aaf"
+      }
+    }
+  ],
+  "task_directories": {
+    "xiao-b3-env-76004-1": {
+      "artifacts": [
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-1/drop.exe",
+          "bytes": 1255936,
+          "sha256": "c5e85a254e2c0f1b25b53460e7ab76645c65deef3c66ed750142b7c6634b8891"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-1/drop.exe.map",
+          "bytes": 2418494,
+          "sha256": "ca19df7f5c529d8700c1454abe6db16db699a8d5c14100600f7fc5f255ea34dd"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-1/drop.ll",
+          "bytes": 44807,
+          "sha256": "5581442ecbf4fe72b53dad17c6fe4bf8526dcf48e8eb9a206cf2d37bf4f1fa1d"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-1/entry.exe",
+          "bytes": 1185280,
+          "sha256": "f327be7985959928a2fbe4f8a002866aa50aa104bf3dd888eb096ab1ed048e87"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-1/entry.exe.map",
+          "bytes": 2292224,
+          "sha256": "850715c7291b4cf28d0d7452fb1886aaee9d4a9710b8c3fabf99bdacc549990a"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-1/entry.ll",
+          "bytes": 31466,
+          "sha256": "35ee8b345fdc7601220c07447d20eb4f01989815d32066fe5738505d29123d56"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-1/static.exe",
+          "bytes": 559104,
+          "sha256": "58926ce3384d812d7e404cce8871fbb8cec4d1c4d6395e3ba1ebcabaf886b61e"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-1/static.exe.map",
+          "bytes": 909037,
+          "sha256": "c465225e3fd2c450f1caf9c4efddd73194e47940bdd36f1b8cf32fe3697698da"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-1/static.ll",
+          "bytes": 1443,
+          "sha256": "bb1baefbef477e80190065f7ac9eecb86ac267882d238f6fe677bdaa4c1c9b49"
+        }
+      ],
+      "logs": [
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/direct-invalid.stderr",
+          "bytes": 53,
+          "sha256": "bd9836a2211c9ddee47688ea5f5d50cd9afed0689cb7ece876861a3caa70545c"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/direct-invalid.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/direct-valid.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/direct-valid.stdout",
+          "bytes": 12,
+          "sha256": "01a0e625dceb00536500ffc66f02d387c57f26caaef2b4ad7d54434d2f749db2"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/drop.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/drop.stdout",
+          "bytes": 13,
+          "sha256": "4799baf565722664a922e8e4d8688605d29a9289543e5681111b353d748eeb82"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/injected-limit.stderr",
+          "bytes": 47,
+          "sha256": "962e168ac7124092a569905b8c20f471684a3b1b77450889dce27f19a80bb158"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/injected-limit.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/injected-raw-boundary.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/injected-raw-boundary.stdout",
+          "bytes": 16,
+          "sha256": "c9c0a45e20702c21f31f743118d0b0b9f56ef1c7a1865be98c529502b967698f"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/injected-raw-over.stderr",
+          "bytes": 47,
+          "sha256": "962e168ac7124092a569905b8c20f471684a3b1b77450889dce27f19a80bb158"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/injected-raw-over.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/injected.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/injected.stdout",
+          "bytes": 16,
+          "sha256": "3cb318256ab43e149413b225b0b6a333af5d7338d5db0c136c57d3a5d1dcd3de"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/static-injected-empty.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/static-injected-empty.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/static-invalid-host.stderr",
+          "bytes": 53,
+          "sha256": "bd9836a2211c9ddee47688ea5f5d50cd9afed0689cb7ece876861a3caa70545c"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-1/static-invalid-host.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    "xiao-b3-env-76004-10": {
+      "artifacts": [
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-10/cancel-o0.exe",
+          "bytes": 1603584,
+          "sha256": "3f8efa0323c1fde367c3bc02064e81e2f772f9732edd35d3d264e6f5a38058be"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-10/cancel-o0.exe.map",
+          "bytes": 2949843,
+          "sha256": "5487aa398c42b7d2d4acb4e68e1f7a0a33068399d6f7fc500752cfb14205644a"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-10/cancel-o0.ll",
+          "bytes": 92978,
+          "sha256": "d43b5f0146ebd30403f32824ec95dfbed1720181aa28836dfa1213b85c508484"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-10/cancel-o3.exe",
+          "bytes": 1600000,
+          "sha256": "f0ec904e63df718cc1505d991e030ea2e02cf641f7e467ab5a558b405c7eab9b"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-10/cancel-o3.exe.map",
+          "bytes": 2947463,
+          "sha256": "0e490312dd957bd8135dd20e725234c0299b9ae91c04f76085eed900cfea925e"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-10/cancel-o3.ll",
+          "bytes": 92978,
+          "sha256": "d43b5f0146ebd30403f32824ec95dfbed1720181aa28836dfa1213b85c508484"
+        }
+      ],
+      "logs": [
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-10/cancel-o0.stderr",
+          "bytes": 227,
+          "sha256": "a63c3add3b97bf4c84ecbee50e8031552f6eaf5fcf1f9e87ded21f49e145b757"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-10/cancel-o0.stdout",
+          "bytes": 27,
+          "sha256": "709d53ade7f069d475f6271812b0bbb1f1e7aa4121026ba561e8991767b9f9d5"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-10/cancel-o3.stderr",
+          "bytes": 227,
+          "sha256": "817c03d3aecc9f5ccd28a1f16a41f8cbd42b98c3465c238eeef5c1f0a8dfc58a"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-10/cancel-o3.stdout",
+          "bytes": 27,
+          "sha256": "709d53ade7f069d475f6271812b0bbb1f1e7aa4121026ba561e8991767b9f9d5"
+        }
+      ]
+    },
+    "xiao-b3-env-76004-2": {
+      "artifacts": [
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/denied-o0.exe",
+          "bytes": 835072,
+          "sha256": "9fccaf8572543b598462c6cd6f2443b8446a4fb413cf5143f1d083c7ba0f5013"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/denied-o0.exe.map",
+          "bytes": 1832245,
+          "sha256": "fb7110a692c0f37ac8d2701529d6fe4ec72fe9b749fb83dd5d7f8602b8d7bdf4"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/denied-o0.ll",
+          "bytes": 27258,
+          "sha256": "30d496cf9920a9873ad2272a42dc3e16ff96131a7149f7c442e2cd5a616a321c"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/denied-o3.exe",
+          "bytes": 834560,
+          "sha256": "f6dfd31363b350f547c3d2d77e2a54b21a072511f9fe338d338de890500a92fe"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/denied-o3.exe.map",
+          "bytes": 1832245,
+          "sha256": "fe2eeedf6da7acd600624a0b3f66f9952a558400783ea66a0417a46b355a5dd1"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/denied-o3.ll",
+          "bytes": 27258,
+          "sha256": "30d496cf9920a9873ad2272a42dc3e16ff96131a7149f7c442e2cd5a616a321c"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/invalid-o0.exe",
+          "bytes": 946688,
+          "sha256": "75cfa202288246986230fc7dfe51706f7c4f2199f504cf72d157729376212ed7"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/invalid-o0.exe.map",
+          "bytes": 1948291,
+          "sha256": "2277f5ae36a5a7e33ee8c576347ec190a05c6399c513f945ee97246a69870b4e"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/invalid-o0.ll",
+          "bytes": 27486,
+          "sha256": "9e62162e028afd2aef86f0103480b93c1bf74b86d7c51075a6c3bbdfd51937fa"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/invalid-o3.exe",
+          "bytes": 946176,
+          "sha256": "b1aba5e6e2918c50f22b6079c7b9374d8c4999a88831e8fc5f77e982ad208210"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/invalid-o3.exe.map",
+          "bytes": 1948291,
+          "sha256": "4e5d3a280f8154bcdc8b93fc52cb9865e8cea45da4648e46c9447cf74ecb888a"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/invalid-o3.ll",
+          "bytes": 27486,
+          "sha256": "9e62162e028afd2aef86f0103480b93c1bf74b86d7c51075a6c3bbdfd51937fa"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/limit-o0.exe",
+          "bytes": 939520,
+          "sha256": "9dd9c810d94e77d3f28f0c36654fc7e26459f314e235087af4334930f23c868c"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/limit-o0.exe.map",
+          "bytes": 1932407,
+          "sha256": "92665d1091149a4f759a5864ed998b37b8ce77e812927455298e2da41c8e126a"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/limit-o0.ll",
+          "bytes": 29207,
+          "sha256": "084df36c562eb145865243006ea9550d93347be2421ca005c088eccd895dccbb"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/limit-o3.exe",
+          "bytes": 939008,
+          "sha256": "69e4f1e98ec04b40dc276f1b5b809726c8e3fdf57f95aae3b0673210e93c4e67"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/limit-o3.exe.map",
+          "bytes": 1932407,
+          "sha256": "fdf9e8dfe6e3450e9fbb042dd9106370405a41ca4dcd2edd3d93e4491e2f7033"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/limit-o3.ll",
+          "bytes": 29207,
+          "sha256": "084df36c562eb145865243006ea9550d93347be2421ca005c088eccd895dccbb"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/operations-o0.exe",
+          "bytes": 1372160,
+          "sha256": "223f264cadc8f0d2e8c2b47228bf6707f81a76f6c2c5ea2c30fb0b739af7204b"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/operations-o0.exe.map",
+          "bytes": 2533825,
+          "sha256": "285ee4db58edb1841a32040dc9f1149493a3f93839e86ca50fa3f80f8dc06d5e"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/operations-o0.ll",
+          "bytes": 87519,
+          "sha256": "6dd83d86e29dad231605e549393594754cd3c8a8309b807e8c23847f1f5f5bd8"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/operations-o3.exe",
+          "bytes": 1369088,
+          "sha256": "11c85cfce3bf12d0f06bb4d04b7674b33c6943ffdb563a8fbf2b502a800a811d"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/operations-o3.exe.map",
+          "bytes": 2531326,
+          "sha256": "ad9187a82eb700922571348dc8a5ee5702b0324728d302466e41294a8a1c1cda"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-2/operations-o3.ll",
+          "bytes": 87519,
+          "sha256": "7603c7b9eaf95c0dde6e7dec6bbe39933af05179ccb8e31474e5480760abb207"
+        }
+      ],
+      "logs": [
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/denied-o0.release.tsv",
+          "bytes": 107,
+          "sha256": "aaeae29e2e97f39e07bbeb1d48e61192d9a377dab5e024f3f7ad25a15d5dde69"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/denied-o0.stderr",
+          "bytes": 239,
+          "sha256": "9c3ee9e8020e3858b09278e4baff407f62f4f469f4c4fd18db702aad7035edd2"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/denied-o0.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/denied-o3.release.tsv",
+          "bytes": 107,
+          "sha256": "aaeae29e2e97f39e07bbeb1d48e61192d9a377dab5e024f3f7ad25a15d5dde69"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/denied-o3.stderr",
+          "bytes": 239,
+          "sha256": "9c3ee9e8020e3858b09278e4baff407f62f4f469f4c4fd18db702aad7035edd2"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/denied-o3.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/invalid-o0.release.tsv",
+          "bytes": 107,
+          "sha256": "aaeae29e2e97f39e07bbeb1d48e61192d9a377dab5e024f3f7ad25a15d5dde69"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/invalid-o0.stderr",
+          "bytes": 278,
+          "sha256": "03d8408d489f3f1680d2d6d8ea2df6d89e12faf1af151ae7117da7da74dc34b8"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/invalid-o0.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/invalid-o3.release.tsv",
+          "bytes": 107,
+          "sha256": "aaeae29e2e97f39e07bbeb1d48e61192d9a377dab5e024f3f7ad25a15d5dde69"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/invalid-o3.stderr",
+          "bytes": 278,
+          "sha256": "03d8408d489f3f1680d2d6d8ea2df6d89e12faf1af151ae7117da7da74dc34b8"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/invalid-o3.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/limit-o0.release.tsv",
+          "bytes": 216,
+          "sha256": "7f8d00b0040bc1c286e50748eda483720129826b381c5e76d33eb7e57ff0db68"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/limit-o0.stderr",
+          "bytes": 237,
+          "sha256": "5f7225c1268a5b5dc683990dc12133f2552b59a3bdfbcb96a5db20c9a521c236"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/limit-o0.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/limit-o3.release.tsv",
+          "bytes": 216,
+          "sha256": "7f8d00b0040bc1c286e50748eda483720129826b381c5e76d33eb7e57ff0db68"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/limit-o3.stderr",
+          "bytes": 237,
+          "sha256": "5f7225c1268a5b5dc683990dc12133f2552b59a3bdfbcb96a5db20c9a521c236"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/limit-o3.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/operations-o0.release.tsv",
+          "bytes": 2280,
+          "sha256": "751780641a7d82c7c8576701d11736c658835c0bfe5b0ff69e54eae9c94c3595"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/operations-o0.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/operations-o0.stdout",
+          "bytes": 43,
+          "sha256": "587af686cb4e6ae6b9b5a1bc86ff8eec7d6c3e938dd940d76bcf7dd20a774f8e"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/operations-o3.release.tsv",
+          "bytes": 2280,
+          "sha256": "751780641a7d82c7c8576701d11736c658835c0bfe5b0ff69e54eae9c94c3595"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/operations-o3.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-2/operations-o3.stdout",
+          "bytes": 43,
+          "sha256": "587af686cb4e6ae6b9b5a1bc86ff8eec7d6c3e938dd940d76bcf7dd20a774f8e"
+        }
+      ]
+    },
+    "xiao-b3-env-76004-3": {
+      "artifacts": [
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-3/legacy-marker.exe",
+          "bytes": 1191936,
+          "sha256": "7534045e0dfac0c836076246a2b65ebdebc8e01026235ea4f60badee72652c67"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-3/legacy-marker.exe.map",
+          "bytes": 2304612,
+          "sha256": "9a1df839721d04c23b49b1214d621f7061c6026d620e3473d9d64175add0072e"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-3/legacy-marker.ll",
+          "bytes": 44624,
+          "sha256": "c5e08a4170a47fb5652a902bc7723a669cd1212de954ce0bd02fb1f892655fc4"
+        }
+      ],
+      "logs": []
+    },
+    "xiao-b3-env-76004-4": {
+      "artifacts": [
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-4/never-start-o0.exe",
+          "bytes": 911360,
+          "sha256": "dbf636df8b7af87350ec5b2c0a950d96c2deebcfb561b147b4756b1ebf55f324"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-4/never-start-o0.exe.map",
+          "bytes": 1883638,
+          "sha256": "3da2728ecebd8f2d4cbc507bef2191143a01716976281e0edbbf3b9b7e71f56b"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-4/never-start-o0.ll",
+          "bytes": 10854,
+          "sha256": "2ba767a42e611577171e4bf7752668a3e6bf47a3163344cdec3cb0f589d83a3c"
+        }
+      ],
+      "logs": [
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-4/before-build-cancel-o0.stderr",
+          "bytes": 50,
+          "sha256": "48e486da4274bf9640805e474e4947b04769079bddc1a01a15b112752f693a3c"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-4/before-build-cancel-o0.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-4/before-build-deadline-o0.stderr",
+          "bytes": 59,
+          "sha256": "6229f9770c298e4a28350449be6629c24feb0cd678d702e3f89a2d36575f570f"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-4/before-build-deadline-o0.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-4/before-spawn-cancel-o0.stderr",
+          "bytes": 38,
+          "sha256": "8678f5d99246149f412a1cc971e8dce205f0b3a64ea4e8501d1a19460d7948e8"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-4/before-spawn-cancel-o0.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    "xiao-b3-env-76004-5": {
+      "artifacts": [
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-5/never-start-o3.exe",
+          "bytes": 911360,
+          "sha256": "8c449e5e9e0c8012c2c3149a291c0c4c9a63d8ad8ef8aee02779f6de15dd5664"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-5/never-start-o3.exe.map",
+          "bytes": 1883638,
+          "sha256": "a184b8b02772ff6d7866dde08e1c63f128103467ed1b9c827bc612da31634cfb"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-5/never-start-o3.ll",
+          "bytes": 10854,
+          "sha256": "2ba767a42e611577171e4bf7752668a3e6bf47a3163344cdec3cb0f589d83a3c"
+        }
+      ],
+      "logs": [
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-5/before-build-cancel-o3.stderr",
+          "bytes": 50,
+          "sha256": "48e486da4274bf9640805e474e4947b04769079bddc1a01a15b112752f693a3c"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-5/before-build-cancel-o3.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-5/before-build-deadline-o3.stderr",
+          "bytes": 59,
+          "sha256": "6229f9770c298e4a28350449be6629c24feb0cd678d702e3f89a2d36575f570f"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-5/before-build-deadline-o3.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-5/before-spawn-cancel-o3.stderr",
+          "bytes": 38,
+          "sha256": "8678f5d99246149f412a1cc971e8dce205f0b3a64ea4e8501d1a19460d7948e8"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-5/before-spawn-cancel-o3.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    "xiao-b3-env-76004-6": {
+      "artifacts": [
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-6/env_control.c",
+          "bytes": 4321,
+          "sha256": "d7b444c0ba9deca1ef006cf25c264d1f1f90f6fe47b925add414b7e19f4b07ab"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-6/env_control.exe",
+          "bytes": 994816,
+          "sha256": "6557787add21061cbb9a0047fb24cb7ecaff5c4116e3ca7004505e7cbbe2eabf"
+        }
+      ],
+      "logs": [
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-set-cancel-o0.stderr",
+          "bytes": 848,
+          "sha256": "0aa47cd6fd04334a1a9d47b1756b7ab8ebfd19d0f1649bee64965be870bad7ab"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-set-cancel-o0.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-set-deadline-o0.stderr",
+          "bytes": 875,
+          "sha256": "4f46b56b7b8942218f192b7416293902772f76c06d947104aa2efda09c27a02f"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-set-deadline-o0.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-unset-cancel-o0.stderr",
+          "bytes": 848,
+          "sha256": "0aa47cd6fd04334a1a9d47b1756b7ab8ebfd19d0f1649bee64965be870bad7ab"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-unset-cancel-o0.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-unset-deadline-o0.stderr",
+          "bytes": 875,
+          "sha256": "4f46b56b7b8942218f192b7416293902772f76c06d947104aa2efda09c27a02f"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/commit-unset-deadline-o0.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/control-build.stderr",
+          "bytes": 3715,
+          "sha256": "d50072d32859b9eca1f7a0eedb17829ffc355553f5923b57b2224a4a3adcec73"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-6/control-build.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    "xiao-b3-env-76004-7": {
+      "artifacts": [
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-7/env_control.c",
+          "bytes": 4321,
+          "sha256": "d7b444c0ba9deca1ef006cf25c264d1f1f90f6fe47b925add414b7e19f4b07ab"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-7/env_control.exe",
+          "bytes": 994816,
+          "sha256": "f2be531190292065870ef3c71958c5b1783fb96492f5fbccca7211bd6d11f29c"
+        }
+      ],
+      "logs": [
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-set-cancel-o3.stderr",
+          "bytes": 848,
+          "sha256": "0aa47cd6fd04334a1a9d47b1756b7ab8ebfd19d0f1649bee64965be870bad7ab"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-set-cancel-o3.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-set-deadline-o3.stderr",
+          "bytes": 875,
+          "sha256": "4f46b56b7b8942218f192b7416293902772f76c06d947104aa2efda09c27a02f"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-set-deadline-o3.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-unset-cancel-o3.stderr",
+          "bytes": 848,
+          "sha256": "0aa47cd6fd04334a1a9d47b1756b7ab8ebfd19d0f1649bee64965be870bad7ab"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-unset-cancel-o3.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-unset-deadline-o3.stderr",
+          "bytes": 875,
+          "sha256": "4f46b56b7b8942218f192b7416293902772f76c06d947104aa2efda09c27a02f"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/commit-unset-deadline-o3.stdout",
+          "bytes": 5,
+          "sha256": "117c5d6a0f57e8e25b4b29cfd7db1d73c3c5e5dbf67fbcb33d218bc295c32d25"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/control-build.stderr",
+          "bytes": 3715,
+          "sha256": "54579d8b05af1fc4ce55287add7e8d30d48a2a6d1e5fc250867022bef29d4c1a"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-7/control-build.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    "xiao-b3-env-76004-8": {
+      "artifacts": [
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-8/active-o0.exe",
+          "bytes": 1191424,
+          "sha256": "c94616cc2281152231d9b787dd091c258ae16eb12fe057b442b0c57e3dd9af5b"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-8/active-o0.exe.map",
+          "bytes": 2304646,
+          "sha256": "e5e6839c60789285c8fdb86964d143031902b6fbbaa0dc6460e300c64342bb30"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-8/active-o0.ll",
+          "bytes": 41447,
+          "sha256": "572d3b7a057cd9119e3138a9e786faafd81d40f5196b46fee72bea0a6641e829"
+        }
+      ],
+      "logs": [
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-8/active-cancel-o0.stderr",
+          "bytes": 196,
+          "sha256": "085e0aa08df9c9ce9fcc3f0e5554cf00114ab5a1b09b6bcfb2b1fdc0a3911aaf"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-8/active-cancel-o0.stdout",
+          "bytes": 8,
+          "sha256": "be91f7644f03cc4976431d2001387209fb097540e3c994bf3e8ba4a99efa1457"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-8/active-deadline-o0.stderr",
+          "bytes": 205,
+          "sha256": "f2d8797ab9c7ccbffbf1d567d94e60d39d31c5556f6d91ed147f9c1c1b811af8"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-8/active-deadline-o0.stdout",
+          "bytes": 8,
+          "sha256": "be91f7644f03cc4976431d2001387209fb097540e3c994bf3e8ba4a99efa1457"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-8/before-entry-deadline-o0.stderr",
+          "bytes": 47,
+          "sha256": "ba4c06f99a617825cc7345ab0368d3c4d8829483567e31d0f3eabebf3d0b187b"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-8/before-entry-deadline-o0.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    "xiao-b3-env-76004-9": {
+      "artifacts": [
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-9/active-o3.exe",
+          "bytes": 1190400,
+          "sha256": "15ea7581ef6da1a0e8c3d71af875c12275aeec329bbe85db62d7ad5ed13de148"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-9/active-o3.exe.map",
+          "bytes": 2304646,
+          "sha256": "f1c5e9d325284b2da8c69ecc0619c8693af421ba52164a1f3816aff07ee4feef"
+        },
+        {
+          "path": "core/rust/target/fix-b/native/xiao-b3-env-76004-9/active-o3.ll",
+          "bytes": 41447,
+          "sha256": "572d3b7a057cd9119e3138a9e786faafd81d40f5196b46fee72bea0a6641e829"
+        }
+      ],
+      "logs": [
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-9/active-cancel-o3.stderr",
+          "bytes": 196,
+          "sha256": "085e0aa08df9c9ce9fcc3f0e5554cf00114ab5a1b09b6bcfb2b1fdc0a3911aaf"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-9/active-cancel-o3.stdout",
+          "bytes": 8,
+          "sha256": "be91f7644f03cc4976431d2001387209fb097540e3c994bf3e8ba4a99efa1457"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-9/active-deadline-o3.stderr",
+          "bytes": 205,
+          "sha256": "f2d8797ab9c7ccbffbf1d567d94e60d39d31c5556f6d91ed147f9c1c1b811af8"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-9/active-deadline-o3.stdout",
+          "bytes": 8,
+          "sha256": "be91f7644f03cc4976431d2001387209fb097540e3c994bf3e8ba4a99efa1457"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-9/before-entry-deadline-o3.stderr",
+          "bytes": 47,
+          "sha256": "ba4c06f99a617825cc7345ab0368d3c4d8829483567e31d0f3eabebf3d0b187b"
+        },
+        {
+          "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fix-b/native/xiao-b3-env-76004-9/before-entry-deadline-o3.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    }
+  }
+}

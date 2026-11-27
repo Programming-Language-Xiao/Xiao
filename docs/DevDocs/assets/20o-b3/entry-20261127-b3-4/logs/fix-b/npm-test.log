@@ -1,0 +1,435 @@
+
+> @xiao/cli@0.1.0 test
+> bun test
+
+bun test v1.4.0 (34cbb9a40)
+
+src\i18n.test.ts:
+(pass) CLI 状态消息保留双语文本并且不二次解析参数 [1.53ms]
+
+src\main.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find package 'string-width' from 'D:\project\Xiao\Xiao\cli\ts\src\ui\width.ts'
+-------------------------------
+
+
+src\commands\index.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+src\commands\input-routing.test.ts:
+(pass) 18A 输入路由 > 按意图区分 config、main 源码、普通源码、xiaoc 和 xar [1.70ms]
+(pass) 18A 输入路由 > 互斥、缺失意图和 build 产物输入都有稳定诊断 [0.36ms]
+
+src\commands\parser.test.ts:
+(pass) xiao 命令解析 > 同步模式互斥，install/i 共享命令形状 [1.54ms]
+(pass) xiao 命令解析 > 锁定与依赖编辑命令的参数边界 [1.06ms]
+(pass) xiao 命令解析 > 支持 run、源码快捷方式和全局输出选项 [0.31ms]
+(pass) xiao 命令解析 > 两种归档运行形式及选项顺序保持同一命令 [0.30ms]
+(pass) xiao 命令解析 > 仅解析首个 -- 前的启动选项 [0.25ms]
+(pass) xiao 命令解析 > 环境授权与优化、应用参数共存，并在两种语言的帮助中列出 [1.41ms]
+(pass) xiao 命令解析 > 单行 REPL 与多行文件入口互不混淆 [0.43ms]
+(pass) xiao 命令解析 > 五个入口在没有显式参数时统一保留 O0 缺省 [0.31ms]
+(pass) xiao 命令解析 > build 默认产物、LLVM 输出和优化级别保持冻结 [0.18ms]
+(pass) xiao 命令解析 > build -xar 默认同目录输出且拒绝原生输出选项与重复开关 [0.09ms]
+(pass) xiao 命令解析 > 环境命令解析默认名、显式名、Shell 和取消激活 [0.46ms]
+(pass) xiao 命令解析 > 非法参数不依赖本地化文本判断 [0.18ms]
+(pass) xiao 命令解析 > 18B 只新增 verify/cache 顶层命令 [0.55ms]
+(pass) xiao 命令解析 > 18C 文件关联动作和非交互详细选项保持稳定 [0.30ms]
+
+src\commands\test-discovery.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+src\config\editor.test.ts:
+(pass) config.xiao CLI 写回 > 只修改目标字面量并保留注释、无关字段和换行 [25.65ms]
+(pass) config.xiao CLI 写回 > 非法路径和值在写文件前拒绝 [0.74ms]
+(pass) config.xiao CLI 写回 > 发现非规范大小写配置文件时给出稳定诊断 [5.32ms]
+(pass) config.xiao CLI 写回 > 临时文件写入中断返回稳定错误且不覆盖原文 [7.39ms]
+(pass) config.xiao CLI 写回 > 损坏的静态容器不会被 CLI 悄悄改写 [4.89ms]
+
+src\config\locale.test.ts:
+(pass) 11C 生效语言 > 项目覆盖全局、别名规范化、缺省为中文 [15.41ms]
+(pass) 11C 生效语言 > 拒绝非字符串、非法标签及重复键 [12.55ms]
+(pass) 11C 生效语言 > 全局文件无效时诊断指向全局来源，项目覆盖时不解析它 [7.91ms]
+
+src\config\optimization.test.ts:
+(pass) 18A 优化归一化 > 只接受 O0 到 O3 [0.10ms]
+(pass) 18A 优化归一化 > 命令行 > 项目 > 全局 > O0，且列表稳定排序去重 [0.55ms]
+(pass) 18A 优化归一化 > 配置解析是静态的，并保留 13A 字段名 [0.92ms]
+(pass) 18A 优化归一化 > 18C [debug] 配置只提供诊断设置，由 -debug 决定是否激活窗口 [0.50ms]
+(pass) 18A 优化归一化 > 归一化 O2 不写回项目配置或锁文件 [9.50ms]
+
+src\diagnostics\render.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+src\environments\activation.test.ts:
+(pass) absolute 向量经当前平台 Shell 校验并清理文件 [4389.54ms]
+(pass) no-final-newline 向量经当前平台 Shell 校验并清理文件 [3823.72ms]
+(pass) third-line 向量经当前平台 Shell 校验并清理文件 [3711.07ms]
+(pass) relative 向量经当前平台 Shell 校验并清理文件 [3527.14ms]
+(pass) wrong-variable 向量经当前平台 Shell 校验并清理文件 [3564.92ms]
+(pass) embedded-newline 向量经当前平台 Shell 校验并清理文件 [3510.18ms]
+(pass) quote 向量经当前平台 Shell 校验并清理文件 [3489.01ms]
+(pass) control-character 向量经当前平台 Shell 校验并清理文件 [3638.25ms]
+(pass) extra-empty-line 向量经当前平台 Shell 校验并清理文件 [3574.43ms]
+(skip) zsh 在安装时复用白名单并可取消激活
+(skip) fish 在安装时复用白名单并可取消激活
+(skip) fish 激活切换后恢复用户原函数，未激活取消无副作用
+(pass) 失败命令也清理文件并保持 Shell 未激活 [3706.51ms]
+(pass) 前置全局选项能激活、取消激活，帮助请求不会更改环境 [14444.98ms]
+(pass) PowerShell 钩子失败时保留非零进程码，成功时不混入数字输出 [3747.67ms]
+(skip) 可选 MSYS Bash 在 Windows 同样按白名单激活和拒绝注入
+(pass) CLI 写入与 Shell 读取遵循相同白名单 [11.32ms]
+
+src\environments\index.test.ts:
+(pass) 项目环境边界 > 默认和显式目录遵循冻结规则 [0.29ms]
+(pass) 项目环境边界 > 提示符状态重复激活、切换和取消不叠加 [0.69ms]
+(pass) 项目环境边界 > 未激活时取消不改用户原有的美元符提示符 [0.06ms]
+(pass) 项目环境边界 > 前缀颜色遵守非 TTY、NO_COLOR、dumb 和 never 降级 [0.09ms]
+(pass) 项目环境边界 > Shell 钩子不改 profile，cmd 明确降级 [0.22ms]
+(pass) 项目环境边界 > 去除带 ANSI 的旧前缀不破坏原提示符 [0.20ms]
+
+src\environments\profile.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+src\environments\shell-vectors.test.ts:
+(pass) bash 消费同一份两行白名单向量 [2.00ms]
+(pass) zsh 消费同一份两行白名单向量 [0.20ms]
+(pass) fish 消费同一份两行白名单向量 [0.14ms]
+(pass) powershell 消费同一份两行白名单向量 [1.00ms]
+
+src\platform\atomic-write.test.ts:
+(pass) 临时文件使用目标前缀，成功替换后不遗留文件 [11.21ms]
+(pass) 覆盖替换中途失败回滚旧文件并清理临时文件 [12.46ms]
+(pass) 新文件已到位后备份清理失败不再误报保存失败 [13.48ms]
+(pass) 替换和回滚都失败时指出原文件的备份位置 [11.65ms]
+
+src\platform\core.test.ts:
+(pass) xiao-core 平台接线 > 主机目标字段与平台文件格式一致 [0.33ms]
+(pass) xiao-core 平台接线 > 显式覆盖路径不存在时使用稳定诊断 [2.13ms]
+(pass) xiao-core 平台接线 > 生产同目录候选优先于 PATH 和开发回环 [8.04ms]
+49 |         cwd: directory,
+50 |         executablePath: join(directory, "xiao.exe"),
+51 |         platform: "win32",
+52 |         architecture: "x64",
+53 |         env: { PATH: "" },
+54 |       })).rejects.toMatchObject({
+                       ^
+error: expect(received).rejects.toMatchObject(expected)
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (D:\project\Xiao\Xiao\cli\ts\src\platform\core.test.ts:54:19)
+(fail) xiao-core 平台接线 > 没有仓库根时不把开发候选混入生产诊断 [8.39ms]
+(pass) xiao-core 平台接线 > 开发回环候选带有 development 来源标记 [13.26ms]
+
+src\platform\file-association.test.ts:
+(pass) .xar 文件关联契约 > 三平台只生成设计，不执行安装副作用 [0.24ms]
+(pass) .xar 文件关联契约 > 双击契约不依赖 cwd，参数、IO 和退出码与命令行一致 [0.11ms]
+(pass) .xar 文件关联契约 > 未安装关联时的提示保持双语且不承诺自包含 Runtime [0.09ms]
+(pass) .xar 文件关联契约 > Linux 安装、检查、重复执行和移除都走用户目录且检查无副作用 [29.91ms]
+(pass) .xar 文件关联契约 > Windows 和 macOS 执行体使用可注入平台命令并保留卸载路径 [21.66ms]
+
+src\platform\packaging.test.ts:
+(pass) CLI 独立打包目标 > 目标参数与 Rust 目标描述保持一致 [0.38ms]
+(pass) CLI 独立打包目标 > 默认目标、参数和非法目标保持稳定形状 [0.46ms]
+
+src\platform\toolchain.test.ts:
+(pass) 主机工具链发现 > 显式 clang 无效时不回退到 PATH 候选，并保留 override 来源 [10.14ms]
+462 | function explicitOverrideError(
+463 |   tool: ToolchainName,
+464 |   path: string,
+465 |   candidates: readonly ToolchainDiscoveryCandidate[],
+466 | ): ToolchainDiscoveryError {
+467 |   return new ToolchainDiscoveryError(
+               ^
+ToolchainDiscoveryError: X11-CLI-TOOLCHAIN-OVERRIDE-001: 显式 runtime 路径不可用：D:\project\Xiao\Xiao\core\rust\target\x86_64-pc-windows-msvc\release\xiao_runtime.lib
+ candidates: [
+  [Object ...], [Object ...], [Object ...], [Object ...], [Object ...], [Object ...], [Object ...]
+],
+    details: {
+  tool: "runtime",
+  path: "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+  source: "override",
+},
+       code: "X11-CLI-TOOLCHAIN-OVERRIDE-001"
+
+      at explicitOverrideError (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.ts:467:10)
+      at discoverToolchainWithMetadata (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.ts:152:11)
+      at async <anonymous> (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.test.ts:64:28)
+      at async withDirectory (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.test.ts:31:18)
+      at async <anonymous> (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.test.ts:59:11)
+(fail) 主机工具链发现 > 显式 clang 始终执行所选路径而不是工作目录中的同名文件 [367.53ms]
+76 |       const clang = await fakeTool(directory, "clang", "17.0.0");
+77 |       await expect(discoverToolchainWithMetadata({
+78 |         cwd: directory,
+79 |         env: environment(directory, { XIAO_CLANG: clang }),
+80 |         probeLink: false,
+81 |       })).rejects.toMatchObject({ code: "X11-CLI-TOOLCHAIN-VERSION-001" });
+                       ^
+error: expect(received).toMatchObject(expected)
+
+- {
+-   "code": "X11-CLI-TOOLCHAIN-VERSION-001",
+- }
++ [ToolchainDiscoveryError: X11-CLI-TOOLCHAIN-OVERRIDE-001: 显式 runtime 路径不可用：D:\project\Xiao\Xiao\core\rust\target\x86_64-pc-windows-msvc\release\xiao_runtime.lib]
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.test.ts:81:19)
+      at async withDirectory (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.test.ts:31:18)
+      at async <anonymous> (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.test.ts:75:11)
+(fail) 主机工具链发现 > 低于 llvm-toolchain.toml 门槛的 clang 稳定拒绝 [324.04ms]
+89 |       await expect(discoverToolchainWithMetadata({
+90 |         cwd: directory,
+91 |         target,
+92 |         env: environment(directory, { XIAO_CLANG: clang }),
+93 |         probeLink: false,
+94 |       })).rejects.toMatchObject({ code: "X11-CLI-TOOLCHAIN-TARGET-001" });
+                       ^
+error: expect(received).toMatchObject(expected)
+
+- {
+-   "code": "X11-CLI-TOOLCHAIN-TARGET-001",
+- }
++ [ToolchainDiscoveryError: X11-CLI-TOOLCHAIN-OVERRIDE-001: 显式 runtime 路径不可用：D:\project\Xiao\Xiao\core\rust\target\x86_64-pc-windows-msvc\release\xiao_runtime.lib]
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.test.ts:94:19)
+      at async withDirectory (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.test.ts:31:18)
+      at async <anonymous> (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.test.ts:86:11)
+(fail) 主机工具链发现 > 版本报告的目标与请求目标冲突时在发现阶段拒绝 [316.21ms]
+(pass) 主机工具链发现 > debug 的显式诊断组件路径无效时不回退到 PATH [322.58ms]
+114 |     await withDirectory(async (directory) => {
+115 |       const clang = await fakeTool(directory, "clang", "22.0.0", undefined, 1);
+116 |       await expect(discoverToolchainWithMetadata({
+117 |         cwd: directory,
+118 |         env: environment(directory, { XIAO_CLANG: clang }),
+119 |       })).rejects.toMatchObject({ code: "X11-CLI-TOOLCHAIN-LINK-001" });
+                        ^
+error: expect(received).toMatchObject(expected)
+
+- {
+-   "code": "X11-CLI-TOOLCHAIN-LINK-001",
+- }
++ [ToolchainDiscoveryError: X11-CLI-TOOLCHAIN-OVERRIDE-001: 显式 runtime 路径不可用：D:\project\Xiao\Xiao\core\rust\target\x86_64-pc-windows-msvc\release\xiao_runtime.lib]
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.test.ts:119:19)
+      at async withDirectory (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.test.ts:31:18)
+      at async <anonymous> (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.test.ts:114:11)
+(fail) 主机工具链发现 > 真实链接探测失败时给出 LINK 诊断 [315.01ms]
+462 | function explicitOverrideError(
+463 |   tool: ToolchainName,
+464 |   path: string,
+465 |   candidates: readonly ToolchainDiscoveryCandidate[],
+466 | ): ToolchainDiscoveryError {
+467 |   return new ToolchainDiscoveryError(
+               ^
+ToolchainDiscoveryError: X11-CLI-TOOLCHAIN-OVERRIDE-001: 显式 runtime 路径不可用：D:\project\Xiao\Xiao\core\rust\target\x86_64-pc-windows-msvc\release\xiao_runtime.lib
+ candidates: [
+  [Object ...], [Object ...], [Object ...], [Object ...], [Object ...], [Object ...], [Object ...]
+],
+    details: {
+  tool: "runtime",
+  path: "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+  source: "override",
+},
+       code: "X11-CLI-TOOLCHAIN-OVERRIDE-001"
+
+      at explicitOverrideError (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.ts:467:10)
+      at discoverToolchainWithMetadata (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.ts:152:11)
+      at async <anonymous> (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.test.ts:126:28)
+      at async withDirectory (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.test.ts:31:18)
+      at async <anonymous> (D:\project\Xiao\Xiao\cli\ts\src\platform\toolchain.test.ts:124:11)
+(fail) 主机工具链发现 > 通过编译/链接探测后返回工具链描述 [349.70ms]
+(pass) 主机工具链发现 > 版本主版本解析保持稳定 [0.90ms]
+(skip) 主机工具链发现 > 环境门控：使用真实 clang 完成目标探测
+
+src\protocol\client.test.ts:
+(pass) 协议客户端 > 核心发现期间取消不会启动进程 [3.79ms]
+(pass) 协议客户端 > 握手前取消不会发送尚未存在的运行请求 [11.95ms]
+(pass) 协议客户端 > 运行帧写入期间取消仍会发送取消帧 [2.94ms]
+(pass) 协议客户端 > 旧核心未声明 package 能力时不发送新请求 [3.67ms]
+(pass) 协议客户端 > 旧核心未声明 build_archive 时拒绝构建且不发送未知请求 [1.56ms]
+(pass) 协议客户端 > 旧核心缺少 arguments 时拒绝三种携带快照的运行请求 [4.46ms]
+(pass) 协议客户端 > 握手支持 arguments 时传输调用时的快照 [1.92ms]
+(pass) 协议客户端 > 旧核心只声明 package 而无 repl_packages 时关闭进程并降级为空视图 [2.09ms]
+(pass) 协议客户端 > 先握手，再按 request_id 取得运行结果并关闭核心 [1.57ms]
+(pass) 协议客户端 > keepAlive 会复用核心和单次握手，显式 shutdown 才关闭 [2.81ms]
+(pass) 协议客户端 > repl_packages 同一环境键只发送一次并允许并发调用共享结果 [1.92ms]
+(pass) 协议客户端 > repl_packages 返回错误后下次会重试而不复用旧诊断 [2.06ms]
+(pass) 协议客户端 > 同一客户端的多个调用按提交顺序串行发送 [1.69ms]
+(pass) 协议客户端 > 通信失败后可重新握手，旧核心的包视图缓存不会复用 [3.56ms]
+(pass) 协议客户端 > 关闭后不能悄悄重启核心 [0.29ms]
+(pass) 协议客户端 > debug 位和诊断配置按结构化字段传给 Rust 核心 [1.76ms]
+(pass) 协议客户端 > buildSource 使用真实源码并传递工具链、配置和输出路径 [2.05ms]
+(pass) 协议客户端 > testSources 按输入顺序批量传递源码和每用例期限 [1.75ms]
+(pass) 协议客户端 > environmentMetadata 传递项目布局、配置和工具链并返回元数据 [1.54ms]
+
+src\protocol\protocol.test.ts:
+(pass) X0-A 长度前缀协议 > 共享本地化运行夹具保留 locale 请求与可选 text 响应 [3.91ms]
+(pass) X0-A 长度前缀协议 > REPL 包视图请求和接口响应共用 Rust 夹具，且不复用包管理请求 [1.98ms]
+(pass) X0-A 长度前缀协议 > 包请求共享夹具保留目标环境和锁定开关 [0.96ms]
+(pass) X0-A 长度前缀协议 > 共享 hello fixture 可编码、解码并验证消息形状 [1.02ms]
+(pass) X0-A 长度前缀协议 > 共享 response fixture 可被解析，且前缀只计算 JSON 负载 [1.25ms]
+(pass) X0-A 长度前缀协议 > 截断长度字段与过大长度都返回稳定错误码 [0.33ms]
+(pass) X0-A 长度前缀协议 > debug 请求保留诊断等级和聚焦规则 [0.91ms]
+(pass) X0-A 长度前缀协议 > 项目测试请求保留发现顺序、每用例源码和超时 [1.47ms]
+(pass) X0-A 长度前缀协议 > 项目测试响应保留聚合退出码和逐用例结构化结果 [1.60ms]
+
+src\repl\commands.test.ts:
+(pass) !outLF! 独占行触发后从源码与行号映射剔除 [1.55ms]
+(pass) !save! 独占行触发后从源码与行号映射剔除 [0.09ms]
+(pass) !panel! 独占行触发后从源码与行号映射剔除 [0.03ms]
+(pass) !ovr! 复用控制分派表并只切换覆盖状态 [0.13ms]
+(pass) 普通源码、带空白的控制词不被识别；唯一控制行移除后保留空缓冲 [0.06ms]
+
+src\repl\confirm.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+src\repl\editor.test.ts:
+(pass) 多行粘贴保留真实换行、缩进和字素位置 [1.45ms]
+(pass) Enter、行首退格与行尾 Delete 只改变真实换行 [0.55ms]
+(pass) 上下移动经过短行后记住目标列，按词操作基础分类明确 [2.33ms]
+(pass) Ctrl+W/K/U 更新唯一 kill 缓冲，Ctrl+Y 贴回最近内容 [0.47ms]
+(pass) 空缓冲 Ctrl+D 是 EOF，非空 Delete；Ctrl+C 清空而 Esc 无操作 [0.16ms]
+(pass) 99999 行上限对 Enter 和粘贴原子拒绝 [0.33ms]
+(pass) 覆盖模式替换当前字素，行尾追加且不吞掉真实换行 [0.37ms]
+(pass) Shift 方向键扩展选区，普通方向键折叠到对应端点 [0.38ms]
+(pass) 跨逻辑行选区可复制、剪切并用粘贴替换，kill 缓冲共用一份剪贴板 [0.41ms]
+(pass) Ctrl+Shift+A 全选，选区删除不改变剪贴板，editorSource 不带编辑状态 [0.27ms]
+
+src\repl\file.test.ts:
+(pass) 载入 CRLF、CR 和 LF 并保留缩进与尾换行 [6.80ms]
+(pass) 合法 UTF-8 BOM 可读，保存后按无 BOM 约定写出 [10.14ms]
+(pass) 非法 UTF-8 与破坏行结构的控制字节分属编码和换行诊断 [12.34ms]
+(pass) 当前只接受 .xiao；权限与路径错误分开报告 [1.45ms]
+(pass) 写出固定 UTF-8 无 BOM 和 LF，写前拒绝控制字符与非法 Unicode [9.93ms]
+
+src\repl\keys.test.ts:
+(pass) 传统 Enter 只能新建逻辑行，Kitty 回复本身不是输入 [1.47ms]
+(pass) 跨块 CSI、UTF-8、Esc 和退格不丢失也不拆坏字符 [0.26ms]
+(pass) 括号粘贴保留真实换行缩进，不把粘贴内容中的控制字节当编辑键 [0.15ms]
+(pass) 传统方向、Home/End、删除和 Alt 词操作稳定识别 [0.12ms]
+(pass) I1c 按键包含 Ins、Shift 选择、Ctrl 导航、Kitty 剪贴板和 SGR 鼠标 [0.17ms]
+
+src\repl\multiline.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+src\repl\output.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+src\repl\panel.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+src\repl\render.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+src\repl\save.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+src\repl\session.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+src\ui\git.test.ts:
+(pass) 分支计数由单次 porcelain v2 查询得到，且每次提示符可重新探测 [1.59ms]
+(pass) 无上游分支不捏造 +0/-0 计数 [0.08ms]
+(pass) 冷进程首次探测及时返回真实无上游分支 [1103.25ms]
+(pass) Git 缺失、非仓库和超时都保留可查询诊断，且超时不等待任务结束 [12.68ms]
+
+src\ui\prompt.test.ts:
+(pass) 版权与版本固定为两行 [0.09ms]
+(pass) windows 路径、环境名与 [X> 排列一致 [0.39ms]
+(pass) linux 路径、环境名与 [X> 排列一致 [0.02ms]
+(pass) macos 路径、环境名与 [X> 排列一致
+(pass) 无上游只显示分支，有上游才显示领先落后 [0.08ms]
+(pass) 非 TTY、NO_COLOR、dumb 与 never 必须完全不输出 ANSI [0.12ms]
+(pass) 显式 always 在非 TTY 下仍保留提示符颜色 [0.05ms]
+(pass) 真彩色与 256/16 色回退保持文本相同，分支颜色按规范区分 [0.22ms]
+
+src\ui\terminal.test.ts:
+(pass) 两步查询仅在确认 bit8 后开启 Shift+Enter [0.30ms]
+(pass) 查询或确认超时均禁用组合键并恢复推入的终端状态 [0.09ms]
+(pass) 鼠标上报开关使用 SGR 并按相反顺序恢复 [0.02ms]
+
+src\ui\ui.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+5 tests skipped:
+(skip) zsh 在安装时复用白名单并可取消激活
+(skip) fish 在安装时复用白名单并可取消激活
+(skip) fish 激活切换后恢复用户原函数，未激活取消无副作用
+(skip) 可选 MSYS Bash 在 Windows 同样按白名单激活和拒绝注入
+(skip) 主机工具链发现 > 环境门控：使用真实 clang 完成目标探测
+
+
+19 tests failed:
+(fail) xiao-core 平台接线 > 没有仓库根时不把开发候选混入生产诊断 [8.39ms]
+(fail) 主机工具链发现 > 显式 clang 始终执行所选路径而不是工作目录中的同名文件 [367.53ms]
+(fail) 主机工具链发现 > 低于 llvm-toolchain.toml 门槛的 clang 稳定拒绝 [324.04ms]
+(fail) 主机工具链发现 > 版本报告的目标与请求目标冲突时在发现阶段拒绝 [316.21ms]
+(fail) 主机工具链发现 > 真实链接探测失败时给出 LINK 诊断 [315.01ms]
+(fail) 主机工具链发现 > 通过编译/链接探测后返回工具链描述 [349.70ms]
+
+ 139 pass
+ 5 skip
+ 19 fail
+ 13 errors
+ 693 expect() calls
+Ran 163 tests across 36 files. [59.04s]

@@ -34,9 +34,11 @@ use crate::frontend::{FrontendArtifact, FrontendCompiler, FrontendError, Fronten
 /// 当前内部驱动器请求/结果字段的版本。
 pub const DRIVER_VERSION: u32 = 1;
 /// 运行在进入前端或 VM 前观察到取消时的稳定编号。
-pub const DRIVER_CANCELLED_CODE: &str = "X09-DRIVER-001";
+pub const DRIVER_CANCELLED_CODE: &str =
+    xiao_runtime_abi::native_control::Interruption::Cancelled.code();
 /// 运行在驱动器边界观察到超时时的稳定编号。
-pub const DRIVER_TIMEOUT_CODE: &str = "X09-DRIVER-002";
+pub const DRIVER_TIMEOUT_CODE: &str =
+    xiao_runtime_abi::native_control::Interruption::Deadline.code();
 /// 取消/超时控制字段自身无法建立时的稳定编号。
 pub const DRIVER_CONTROL_CODE: &str = "X09-DRIVER-003";
 
@@ -936,14 +938,14 @@ pub fn run_request(request: &DriverRequest) -> DriverOutcome {
 }
 
 /// 驱动器一次调用的控制窗口。
-struct ControlWindow {
+pub(crate) struct ControlWindow {
     cancellation: Option<CancellationToken>,
-    deadline: Option<Instant>,
+    pub(crate) deadline: Option<Instant>,
 }
 
 impl ControlWindow {
     /// 从运行控制字段建立一次调用的截止时间窗口。
-    fn start(control: &RunControl) -> Result<Self, Box<DriverError>> {
+    pub(crate) fn start(control: &RunControl) -> Result<Self, Box<DriverError>> {
         let deadline = match control.timeout {
             Some(timeout) => Some(Instant::now().checked_add(timeout).ok_or_else(|| {
                 Box::new(DriverError::control(
@@ -960,7 +962,7 @@ impl ControlWindow {
     }
 
     /// 在当前驱动器阶段边界采样取消和超时状态。
-    fn check(&self) -> Option<DriverError> {
+    pub(crate) fn check(&self) -> Option<DriverError> {
         if self
             .cancellation
             .as_ref()

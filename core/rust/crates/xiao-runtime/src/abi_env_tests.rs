@@ -31,6 +31,7 @@ fn environment(snapshot: EnvironmentSnapshot) -> Arc<NativeEnvironment> {
     Arc::new(NativeEnvironment {
         snapshot,
         capabilities: ENV,
+        control: NativeControl::default(),
     })
 }
 
@@ -224,4 +225,96 @@ fn env_native_injection_distinguishes_omission_empty_and_explicit_bytes() {
     assert_eq!(invoke(br#"[["=C:","drive"]]"#, ENV), 2);
     assert_eq!(invoke(b"[]", ENV | 0x100), 2);
     assert_eq!(inspect(), 11);
+}
+
+#[test]
+fn env_injection_bounds_raw_bytes_before_decoding() {
+    extern "C" fn entered() -> i32 {
+        17
+    }
+    let pairs: Vec<_> = (0..16)
+        .map(|n| (format!("E{n:04}"), "\u{1}".repeat(65_531)))
+        .collect();
+    let mut data = serde_json::to_vec(&pairs).unwrap();
+    assert!(data.len() <= MAX_INJECTED_BYTES);
+    data.resize(MAX_INJECTED_BYTES, b' ');
+    let invoke = |data: &[u8]| unsafe {
+        xiao_runtime_env_run_injected(Some(entered), data.as_ptr(), data.len(), ENV)
+    };
+    let snapshot = read_injected_environment(std::io::Cursor::new(&data)).unwrap();
+    assert_eq!(snapshot.usage(), (16, 1_048_576));
+    assert_eq!(invoke(&data), 17);
+
+    data.push(b' ');
+    assert_eq!(
+        read_injected_environment(std::io::Cursor::new(&data)).unwrap_err(),
+        SnapshotError::LimitExceeded
+    );
+    assert_eq!(invoke(&data), 2);
+    // 超限长度必须在借用指针前拒绝，即使该指针未借出任何字节。
+    for (ptr, len) in [
+        (std::ptr::dangling(), MAX_INJECTED_BYTES + 1),
+        (std::ptr::dangling(), usize::MAX),
+        (std::ptr::null(), usize::MAX),
+        (std::ptr::null(), 1),
+    ] {
+        assert_eq!(
+            unsafe { xiao_runtime_env_run_injected(Some(entered), ptr, len, ENV) },
+            2
+        );
+    }
+
+    let mut over = pairs;
+    over[15].1.push('x');
+    let over = serde_json::to_vec(&over).unwrap();
+    assert!(over.len() <= MAX_INJECTED_BYTES);
+    assert_eq!(
+        read_injected_environment(std::io::Cursor::new(&over)).unwrap_err(),
+        SnapshotError::LimitExceeded
+    );
+    assert_eq!(invoke(&over), 2);
+}
+
+#[test]
+fn env_abi_runtime_deadline_preserves_value_entries_and_bytes() {
+    let environment = Arc::new(NativeEnvironment {
+        snapshot: EnvironmentSnapshot::from_pairs(&[("Name".into(), "original".into())]).unwrap(),
+        capabilities: ENV,
+        control: NativeControl {
+            deadline_ns: Some(0),
+            cancellation: None,
+        },
+    });
+    let _entry = enter_environment(Some(Arc::clone(&environment)));
+    let name = Value::text("Name");
+    let mut out = Value(XiaoValue::int(5));
+    let replacement = Value::text("replacement");
+    for operation in [Operation::Get, Operation::Set, Operation::Unset] {
+        let status = match operation {
+            Operation::Get => xiao_runtime_env_get(&name.0, &mut out.0, ENV),
+            Operation::Set => xiao_runtime_env_set(&name.0, &replacement.0, ENV),
+            Operation::Unset => xiao_runtime_env_unset(&name.0, &mut out.0, ENV),
+        };
+        assert_eq!(status, XiaoAbiStatus::Fatal.code());
+        PENDING_ERROR.with_borrow(|pending| {
+            let Some(PendingError::Fatal(error)) = pending else {
+                panic!("预期不可捕获的运行截止");
+            };
+            assert_eq!(error.code(), "X09-DRIVER-002");
+        });
+        assert_eq!(pending_exit_code(), 2);
+        assert_eq!(out.runtime(), RuntimeValue::Int(5));
+        assert_eq!(environment.snapshot.usage(), (1, 12));
+        let result = environment
+            .snapshot
+            .execute(Operation::Get, &[&name.runtime()], ENV, || Ok::<_, ()>(()));
+        let RuntimeValue::Array(value) = result.unwrap() else {
+            panic!("预期环境数组");
+        };
+        assert_eq!(
+            value.element(0).unwrap().unwrap(),
+            Value::text("original").runtime()
+        );
+    }
+    xiao_runtime_error_clear();
 }

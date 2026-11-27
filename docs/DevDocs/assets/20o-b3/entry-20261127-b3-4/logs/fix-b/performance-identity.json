@@ -1,0 +1,28 @@
+{
+  "target": "x86_64-pc-windows-msvc",
+  "compile_receipt": "perf-identity-build-final.json",
+  "startup_assertion_receipt": "perf-identity-help-final.json",
+  "runtime_features": [],
+  "runtime_profile": {
+    "opt_level": "3",
+    "debuginfo": 0,
+    "debug_assertions": false,
+    "overflow_checks": false,
+    "test": false
+  },
+  "vm_runtime": {
+    "path": "core/rust/target/x86_64-pc-windows-msvc/release/deps/libxiao_runtime-cc614844e2614bb9.rlib",
+    "bytes": 7896330,
+    "sha256": "6d14be0588c8f225ab57499786f416f47912f2adc91ce9536c73f145dd18c757"
+  },
+  "binary": {
+    "path": "core/rust/target/x86_64-pc-windows-msvc/release/b3_env_performance.exe",
+    "bytes": 11193344,
+    "sha256": "7b5cc3497d4f290a58eeb346378bdb52d0e186b28955c576907ca78d8471e5fb"
+  },
+  "native_runtime": {
+    "path": "core/rust/target/x86_64-pc-windows-msvc/release/xiao_runtime.lib",
+    "bytes": 27860696,
+    "sha256": "1a0363e466d77d320c379029ad306b420a493acbbf34ac08e555bbabf03dd93a"
+  }
+}

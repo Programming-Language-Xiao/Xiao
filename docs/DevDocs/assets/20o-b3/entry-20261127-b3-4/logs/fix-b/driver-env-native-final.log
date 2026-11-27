@@ -1,0 +1,89 @@
+    Blocking waiting for file lock on build directory
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 04s
+     Running tests\20o_b3_env.rs (core\rust\target\x86_64-pc-windows-msvc\debug\deps\20o_b3_env-7fd9eebeba154b28.exe)
+
+running 8 tests
+test native::native_env_driver_injects_snapshot_with_random_nonce ... 驱动随机数注入退出 0，输出 "managed-native\n--__xiao-run-environment-stdin\ntail\n"
+ok
+test native::native_env_entry_resolves_host_and_explicit_inputs ... 环境原生启动任务目录 D:\project\Xiao\Xiao\core\rust\target\fix-b\native\xiao-b3-env-76304-1
+环境原生 direct-valid 退出 Some(0)，输出 12 字节，诊断 0 字节
+环境原生 direct-invalid 退出 Some(2)，输出 0 字节，诊断 53 字节
+环境原生 injected 退出 Some(0)，输出 16 字节，诊断 0 字节
+环境原生 injected-limit 退出 Some(2)，输出 0 字节，诊断 47 字节
+环境原生 injected-raw-boundary 退出 Some(0)，输出 16 字节，诊断 0 字节
+环境原生 injected-raw-over 退出 Some(2)，输出 0 字节，诊断 47 字节
+环境原生 static-invalid-host 退出 Some(2)，输出 0 字节，诊断 53 字节
+环境原生 static-injected-empty 退出 Some(0)，输出 0 字节，诊断 0 字节
+环境原生 drop 退出 Some(0)，输出 13 字节，诊断 0 字节
+ok
+test native::native_env_o0_o3_matches_vm_and_owns_outputs ... 环境原生任务目录 D:\project\Xiao\Xiao\core\rust\target\fix-b\native\xiao-b3-env-76304-2，目标 x86_64-pc-windows-msvc
+环境原生 operations-o0 退出 Some(0)，输出 43 字节，诊断 0 字节
+环境原生释放追踪 Some("operations-o0.release.tsv")，22 个对象各销毁一次
+环境生成身份 xiao-codegen-27-024ada7077324dba 工具指纹 xiao-fnv1a64-0abca36829fb5990 声明及观察组件 ["env", "rc", "value", "weak"] COFF Some(CoffLinkIdentity { map_path: "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-2\\operations-o0.exe.map", artifact_sha256: "1f15f721c3cb4ea8e9fd882663016b83ef8f8022f0d6d4f2c3f61ccd507b606d", map_sha256: "4019098cadeb684526bac85f408b0662fa3b68a02bc14aea99c985700af026b1" })
+环境原生 denied-o0 退出 Some(3)，输出 0 字节，诊断 239 字节
+B3-4-ENV-NATIVE {"artifact_sha256":"cfd013c1ae557cd65c87e1234a5e1066d15cab00c2b8fe898209e2d6812c5e78","capabilities":32,"case":"denied-o0","codegen_fingerprint":"xiao-codegen-27-2e3aba0bcc6aaf79","coff_artifact_sha256":"cfd013c1ae557cd65c87e1234a5e1066d15cab00c2b8fe898209e2d6812c5e78","coff_map":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-2\\denied-o0.exe.map","coff_map_sha256":"5f0b68349bd3ff9152a1ffa7de50bccfcd757208dbc0f48f3d860e86ea10693a","declared_components":["env","rc","value","weak"],"dependencies":["KERNEL32.dll","api-ms-win-core-synch-l1-2-0.dll","bcryptprimitives.dll","ntdll.dll"],"exit":3,"generator":27,"object_format":"Coff","observed_components":["env","rc","value","weak"],"optimization":0,"path":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-2\\denied-o0.exe","runtime_abi":65556,"runtime_symbols":["xiao_runtime_abi_is_compatible","xiao_runtime_env_get","xiao_runtime_error_attach_span","xiao_runtime_error_checkpoint_reset","xiao_runtime_error_class","xiao_runtime_error_clear","xiao_runtime_error_exit_code","xiao_runtime_error_push_native_frame","xiao_runtime_error_report","xiao_runtime_fatal_abi","xiao_runtime_language_context_set","xiao_runtime_release","xiao_runtime_release_trace_begin","xiao_runtime_release_trace_flush","xiao_runtime_retain","xiao_runtime_string_new","xiao_runtime_value_copy","xiao_runtime_value_release_strong","xiao_runtime_value_str_owned","xiao_runtime_weak_release","xiao_runtime_weak_retain"],"source_sha256":"116c4e04af8801fac4cbefd30a32b7074128e66cd44e3ecedb0c568c764a5da2","stdlib_interface":1,"target":"x86_64-pc-windows-msvc","toolchain_fingerprint":"xiao-fnv1a64-0abca36829fb5990","unclassified_runtime_symbols":[],"verification":"complete"}
+环境原生释放追踪 Some("denied-o0.release.tsv")，1 个对象各销毁一次
+环境原生 invalid-o0 退出 Some(3)，输出 0 字节，诊断 278 字节
+环境原生释放追踪 Some("invalid-o0.release.tsv")，1 个对象各销毁一次
+环境原生 limit-o0 退出 Some(3)，输出 0 字节，诊断 237 字节
+环境原生释放追踪 Some("limit-o0.release.tsv")，2 个对象各销毁一次
+环境原生 operations-o3 退出 Some(0)，输出 43 字节，诊断 0 字节
+环境原生释放追踪 Some("operations-o3.release.tsv")，22 个对象各销毁一次
+环境生成身份 xiao-codegen-27-95aa0b5f1958b467 工具指纹 xiao-fnv1a64-993962f4050e559f 声明及观察组件 ["env", "rc", "value", "weak"] COFF Some(CoffLinkIdentity { map_path: "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-2\\operations-o3.exe.map", artifact_sha256: "d15d82be91bccd1ccc5e74f38b77867b33bcf58a30a81c358e6fdb179a63a58b", map_sha256: "4544d29b88fb4851b5b68fcab6f2aa4aa6311dc4d020653568230fef728c1eaa" })
+环境原生 denied-o3 退出 Some(3)，输出 0 字节，诊断 239 字节
+B3-4-ENV-NATIVE {"artifact_sha256":"3d329ea8de496241159a8879bbcde4db0147216d3209529f1e2cf94488bbd926","capabilities":32,"case":"denied-o3","codegen_fingerprint":"xiao-codegen-27-d793f90d3ab7452c","coff_artifact_sha256":"3d329ea8de496241159a8879bbcde4db0147216d3209529f1e2cf94488bbd926","coff_map":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-2\\denied-o3.exe.map","coff_map_sha256":"5126456d2ece1c82f70b6b9a985947f7b9795bfd30a2e13866ab4351585bf1fc","declared_components":["env","rc","value","weak"],"dependencies":["KERNEL32.dll","api-ms-win-core-synch-l1-2-0.dll","bcryptprimitives.dll","ntdll.dll"],"exit":3,"generator":27,"object_format":"Coff","observed_components":["env","rc","value","weak"],"optimization":3,"path":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-2\\denied-o3.exe","runtime_abi":65556,"runtime_symbols":["xiao_runtime_abi_is_compatible","xiao_runtime_env_get","xiao_runtime_error_attach_span","xiao_runtime_error_checkpoint_reset","xiao_runtime_error_class","xiao_runtime_error_clear","xiao_runtime_error_exit_code","xiao_runtime_error_push_native_frame","xiao_runtime_error_report","xiao_runtime_fatal_abi","xiao_runtime_language_context_set","xiao_runtime_release","xiao_runtime_release_trace_begin","xiao_runtime_release_trace_flush","xiao_runtime_retain","xiao_runtime_string_new","xiao_runtime_value_copy","xiao_runtime_value_release_strong","xiao_runtime_value_str_owned","xiao_runtime_weak_release","xiao_runtime_weak_retain"],"source_sha256":"116c4e04af8801fac4cbefd30a32b7074128e66cd44e3ecedb0c568c764a5da2","stdlib_interface":1,"target":"x86_64-pc-windows-msvc","toolchain_fingerprint":"xiao-fnv1a64-993962f4050e559f","unclassified_runtime_symbols":[],"verification":"complete"}
+环境原生释放追踪 Some("denied-o3.release.tsv")，1 个对象各销毁一次
+环境原生 invalid-o3 退出 Some(3)，输出 0 字节，诊断 278 字节
+环境原生释放追踪 Some("invalid-o3.release.tsv")，1 个对象各销毁一次
+环境原生 limit-o3 退出 Some(3)，输出 0 字节，诊断 237 字节
+环境原生释放追踪 Some("limit-o3.release.tsv")，2 个对象各销毁一次
+ok
+test native::native_env_preserves_legacy_marker_as_first_argument ... D:\project\Xiao\Xiao\core\rust\target\fix-b\native\xiao-b3-env-76304-3\legacy-marker.exe 首参 "--__xiao-run-environment-stdin" 退出 0
+D:\project\Xiao\Xiao\core\rust\target\fix-b\native\xiao-b3-env-76304-3\legacy-marker.exe 首参 "--__xiao-run-environment-stdin=00000000000000000000000000000000" 退出 0
+ok
+test native::native_env_run_control_before_build_and_spawn ... B3-4-ENV-CONTROL {"case":"before-build-cancel-o0","diagnostic":"X09-DRIVER-001","exit":2,"stderr_bytes":50,"stdout_bytes":0,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-4"}
+B3-4-ENV-CONTROL {"case":"before-build-deadline-o0","diagnostic":"X09-DRIVER-002","exit":2,"stderr_bytes":59,"stdout_bytes":0,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-4"}
+B3-4-ENV-CONTROL {"case":"before-spawn-cancel-o0","diagnostic":"X09-DRIVER-001","exit":2,"stderr_bytes":38,"stdout_bytes":0,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-4"}
+B3-4-ENV-CONTROL {"case":"before-build-cancel-o3","diagnostic":"X09-DRIVER-001","exit":2,"stderr_bytes":50,"stdout_bytes":0,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-5"}
+B3-4-ENV-CONTROL {"case":"before-build-deadline-o3","diagnostic":"X09-DRIVER-002","exit":2,"stderr_bytes":59,"stdout_bytes":0,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-5"}
+B3-4-ENV-CONTROL {"case":"before-spawn-cancel-o3","diagnostic":"X09-DRIVER-001","exit":2,"stderr_bytes":38,"stdout_bytes":0,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-5"}
+ok
+test native::native_env_run_control_preserves_set_and_unset_budgets ... "D:\\msys64\\ucrt64\\bin\\clang.exe" "-target" "x86_64-pc-windows-msvc" "-std=c11" "-O0" "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-6\\env_control.c" "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib" "-lkernel32" "-lntdll" "-luserenv" "-lws2_32" "-ldbghelp" "-o" "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-6\\env_control.exe" 退出 Some(0)
+环境 C ABI 探针 O0 D:\project\Xiao\Xiao\core\rust\target\fix-b\native\xiao-b3-env-76304-6\env_control.exe SHA-256 15e4e18b21aabbf89bac3b94e386f7bbf1f2022cab5b5427a1b2968c872edd9e
+B3-4-ENV-CONTROL {"case":"commit-set-deadline-o0","diagnostic":"X09-DRIVER-002","exit":2,"stderr_bytes":875,"stdout_bytes":5,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-6"}
+B3-4-ENV-CONTROL {"case":"commit-set-cancel-o0","diagnostic":"X09-DRIVER-001","exit":2,"stderr_bytes":848,"stdout_bytes":5,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-6"}
+B3-4-ENV-CONTROL {"case":"commit-unset-deadline-o0","diagnostic":"X09-DRIVER-002","exit":2,"stderr_bytes":875,"stdout_bytes":5,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-6"}
+B3-4-ENV-CONTROL {"case":"commit-unset-cancel-o0","diagnostic":"X09-DRIVER-001","exit":2,"stderr_bytes":848,"stdout_bytes":5,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-6"}
+"D:\\msys64\\ucrt64\\bin\\clang.exe" "-target" "x86_64-pc-windows-msvc" "-std=c11" "-O3" "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-7\\env_control.c" "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib" "-lkernel32" "-lntdll" "-luserenv" "-lws2_32" "-ldbghelp" "-o" "D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-7\\env_control.exe" 退出 Some(0)
+环境 C ABI 探针 O3 D:\project\Xiao\Xiao\core\rust\target\fix-b\native\xiao-b3-env-76304-7\env_control.exe SHA-256 e26189819d325deedef3294ecf77cb9b9ab5c528d3df9932261ad60cc0094da9
+B3-4-ENV-CONTROL {"case":"commit-set-deadline-o3","diagnostic":"X09-DRIVER-002","exit":2,"stderr_bytes":47,"stdout_bytes":0,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-7"}
+
+thread 'native::native_env_run_control_preserves_set_and_unset_budgets' (13152) panicked at crates\xiao-driver\tests\support\b3_env_native.rs:433:5:
+assertion `left == right` failed
+  left: ""
+ right: "old\r\n"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test native::native_env_running_control_reaches_generated_code ... B3-4-ENV-CONTROL {"case":"before-entry-deadline-o0","diagnostic":"X09-DRIVER-002","exit":2,"stderr_bytes":47,"stdout_bytes":0,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-8"}
+B3-4-ENV-CONTROL {"case":"active-deadline-o0","diagnostic":"X09-DRIVER-002","exit":2,"stderr_bytes":205,"stdout_bytes":8,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-8"}
+B3-4-ENV-CONTROL {"case":"active-cancel-o0","diagnostic":"X09-DRIVER-001","exit":2,"stderr_bytes":196,"stdout_bytes":8,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-8"}
+环境原生 D:\project\Xiao\Xiao\core\rust\target\fix-b\native\xiao-b3-env-76304-8\active-o0.exe SHA-256 86b533dcb7ed1dcf386d753849cdc91217d63bba99e525248a2fc643d813c754，O0，原生入口 argv 隐藏握手参数
+B3-4-ENV-CONTROL {"case":"before-entry-deadline-o3","diagnostic":"X09-DRIVER-002","exit":2,"stderr_bytes":47,"stdout_bytes":0,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-9"}
+B3-4-ENV-CONTROL {"case":"active-deadline-o3","diagnostic":"X09-DRIVER-002","exit":2,"stderr_bytes":205,"stdout_bytes":8,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-9"}
+B3-4-ENV-CONTROL {"case":"active-cancel-o3","diagnostic":"X09-DRIVER-001","exit":2,"stderr_bytes":196,"stdout_bytes":8,"task":"D:\\project\\Xiao\\Xiao\\core\\rust\\target\\fix-b\\native\\xiao-b3-env-76304-9"}
+环境原生 D:\project\Xiao\Xiao\core\rust\target\fix-b\native\xiao-b3-env-76304-9\active-o3.exe SHA-256 53ec5bdc93d5d6f2d1263da4a2073f292686cae7e960c48ad4fea49c6d0481d8，O3，原生入口 argv 隐藏握手参数
+ok
+test native::native_env_worker_shares_snapshot_and_cancels_like_vm ... 环境原生并发任务目录 D:\project\Xiao\Xiao\core\rust\target\fix-b\native\xiao-b3-env-76304-10
+环境原生 cancel-o0 退出 Some(3)，输出 27 字节，诊断 227 字节
+环境原生 cancel-o3 退出 Some(3)，输出 27 字节，诊断 200 字节
+ok
+
+failures:
+
+failures:
+    native::native_env_run_control_preserves_set_and_unset_budgets
+
+test result: FAILED. 7 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 76.27s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b3_env`

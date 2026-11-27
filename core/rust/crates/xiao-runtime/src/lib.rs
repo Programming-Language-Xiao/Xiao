@@ -6,6 +6,13 @@
 
 /// 稳定 C ABI 的 Runtime 符号实现；公开布局来自 `xiao-runtime-abi`。
 mod abi;
+
+/// 返回本次链接的 Runtime 是否编入测试故障点。
+#[doc(hidden)]
+pub fn test_failpoints_enabled() -> bool {
+    cfg!(feature = "test-failpoints")
+}
+
 /// 仅测试构建启用的线程局部分配失败注入；没有环境变量或 C ABI 入口。
 #[cfg(any(test, feature = "test-failpoints"))]
 pub mod allocation_testing;

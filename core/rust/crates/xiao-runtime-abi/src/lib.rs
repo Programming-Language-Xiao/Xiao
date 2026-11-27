@@ -1,6 +1,6 @@
 //! Xiao 原生程序使用的稳定 C ABI 边界。
 //!
-//! 本 crate 只定义固定布局和外部符号声明。对象头、引用计数、字符串内容以及容器字段
+//! 本 crate 定义固定布局、外部符号声明和 Rust 启动器的私有约定。对象头、引用计数、字符串内容以及容器字段
 //! 全部由 `xiao-runtime` 实现；这里不能依赖 Runtime，也不能把 Rust enum 或对象字段
 //! 暴露成语言契约。所有拥有句柄的入口都在注释中写明了空指针和释放责任。
 //!
@@ -31,6 +31,10 @@ pub const NATIVE_ENVIRONMENT_STDIN_PREFIX: &str = "--__xiao-run-environment-stdi
 /// 原生子进程必须在此变量中收到同一个随机数。
 #[doc(hidden)]
 pub const NATIVE_ENVIRONMENT_NONCE_ENV: &str = "XIAO_INTERNAL_RUN_ENVIRONMENT_NONCE";
+
+/// 原生驱动与静态 Runtime 的私有启动约定。
+#[doc(hidden)]
+pub mod native_control;
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -1195,7 +1199,8 @@ unsafe extern "C" {
     ///
     /// # Safety
     ///
-    /// `(NULL, 0)` 代表省略。其余情况需要在本次调用内提供长度为 `len` 的可读缓冲区。
+    /// `(NULL, 0)` 代表省略。非空指针且长度在接纳上限内时，调用方须在本次调用内
+    /// 提供长度为 `len` 的可读缓冲区。超限长度在借用输入之前拒绝。
     pub fn xiao_runtime_env_run_injected(
         entry: Option<extern "C" fn() -> i32>,
         data: *const u8,

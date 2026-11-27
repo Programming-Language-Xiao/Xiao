@@ -333,12 +333,16 @@ fn error_kind_code(kind: XiaoErrorKind) -> u32 {
 
 /// 将当前线程状态的失败码映射到稳定宿主退出码。
 fn pending_exit_code() -> i32 {
-    match pending_class() {
-        XiaoErrorClass::None => 0,
-        XiaoErrorClass::Recoverable => 3,
-        XiaoErrorClass::Fatal => 4,
-        _ => 4,
-    }
+    use xiao_runtime_abi::native_control::{INTERRUPTED_EXIT, Interruption};
+
+    PENDING_ERROR.with_borrow(|pending| match pending {
+        None => 0,
+        Some(PendingError::Recoverable(_)) => 3,
+        Some(PendingError::Fatal(error)) if Interruption::has_code(error.code()) => {
+            INTERRUPTED_EXIT
+        }
+        Some(PendingError::Fatal(_)) => 4,
+    })
 }
 
 /// 把 Runtime 错误映射到 ABI 稳定状态码。

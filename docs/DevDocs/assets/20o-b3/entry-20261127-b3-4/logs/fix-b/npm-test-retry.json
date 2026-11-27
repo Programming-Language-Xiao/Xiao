@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "cmd",
+    "/d",
+    "/c",
+    "npm",
+    "--prefix",
+    "cli/ts",
+    "test"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "target": "x86_64-pc-windows-msvc",
+  "rustup_toolchain": "1.96.0",
+  "status": 0,
+  "seconds": 60.629,
+  "merged_log": "npm-test-retry.log",
+  "log_sha256": "612a4677dcae1473c775bad559802f94aa1fd3d8ff29a36a4bebb934c5bc9711",
+  "environment_override": {}
+}

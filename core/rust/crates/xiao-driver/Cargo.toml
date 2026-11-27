@@ -29,6 +29,12 @@ test = false
 bench = false
 
 [[bin]]
+name = "b3_env_performance"
+path = "src/bin/b3_env_performance.rs"
+test = false
+bench = false
+
+[[bin]]
 name = "process_child_exit7"
 path = "src/bin/process_child_exit7.rs"
 test = false

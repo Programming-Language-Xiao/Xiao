@@ -1,12 +1,16 @@
 //! LLVM 文本验证、编译、链接和运行的内部构建驱动器。
 
 use std::fs::{self, OpenOptions};
-use std::io::Write;
+use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::{Duration, Instant};
 
 use xiao_ir::IrProgram;
+use xiao_runtime_abi::native_control::{
+    CANCEL_ENV, CONTROL_PREFIX, DEADLINE_ENV, INTERRUPTED_EXIT, Interruption, monotonic_ns,
+};
 use xiao_runtime_abi::{NATIVE_ENVIRONMENT_NONCE_ENV, NATIVE_ENVIRONMENT_STDIN_PREFIX};
 
 use crate::CODEGEN_VERSION;
@@ -353,42 +357,248 @@ impl NativeRun {
         I: IntoIterator<Item = S>,
         S: AsRef<std::ffi::OsStr>,
     {
+        self.run_with_control(args, environment, None, None, true)
+    }
+
+    /// 用驱动器的截止时间和可选取消查询监视原生子进程。
+    #[doc(hidden)]
+    pub fn run_with_control<I, S>(
+        &self,
+        args: I,
+        environment: Option<&[u8]>,
+        deadline: Option<Instant>,
+        cancelled: Option<&dyn Fn() -> bool>,
+        env_entry: bool,
+    ) -> Result<NativeRunResult>
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<std::ffi::OsStr>,
+    {
         let io_error = |error: std::io::Error| CodegenError::ToolchainUnavailable {
             tool: self.executable.display().to_string(),
             message: error.to_string(),
         };
+        let controlled = cancelled.is_some() || deadline.is_some();
+        let interruption = || {
+            if cancelled.is_some_and(|check| check()) {
+                Some(Interruption::Cancelled)
+            } else if deadline.is_some_and(|at| Instant::now() >= at) {
+                Some(Interruption::Deadline)
+            } else {
+                None
+            }
+        };
         let mut command = Command::new(&self.executable);
-        let output = if let Some(data) = environment {
+        let nonce = if controlled || environment.is_some() {
             let mut bytes = [0; 16];
             getrandom::getrandom(&mut bytes).map_err(|error| CodegenError::Io {
                 path: self.executable.clone(),
                 message: format!("无法生成原生环境注入随机数：{error}"),
             })?;
-            let nonce = format!("{:032x}", u128::from_be_bytes(bytes));
+            Some(format!("{:032x}", u128::from_be_bytes(bytes)))
+        } else {
+            None
+        };
+        let files = if controlled {
+            Some(RunFiles::new(nonce.as_deref().unwrap()).map_err(io_error)?)
+        } else {
+            None
+        };
+        let mut signal = None;
+        if environment.is_some() || (controlled && env_entry) {
+            let nonce = nonce.as_deref().unwrap();
+            let prefix = if environment.is_some() {
+                NATIVE_ENVIRONMENT_STDIN_PREFIX
+            } else {
+                CONTROL_PREFIX
+            };
             command
-                .arg(format!("{NATIVE_ENVIRONMENT_STDIN_PREFIX}{nonce}"))
-                .args(args)
+                .arg(format!("{prefix}{nonce}"))
                 .env(NATIVE_ENVIRONMENT_NONCE_ENV, nonce)
-                .stdin(Stdio::piped())
-                .stdout(Stdio::piped())
-                .stderr(Stdio::piped());
-            let mut child = command.spawn().map_err(io_error)?;
-            let mut stdin = child.stdin.take().expect("已设置原生启动管道");
-            // 启动适配器在执行用户代码前读取完整载荷。
-            let written = stdin.write_all(data);
-            drop(stdin);
+                .env_remove(DEADLINE_ENV)
+                .env_remove(CANCEL_ENV);
+            if let Some(deadline) = deadline {
+                let now_ns = monotonic_ns().map_err(io_error)?;
+                let remaining_ns = deadline
+                    .saturating_duration_since(Instant::now())
+                    .as_nanos();
+                command.env(DEADLINE_ENV, (now_ns + remaining_ns).to_string());
+            }
+            if cancelled.is_some() {
+                let path = files.as_ref().unwrap().directory.join("cancel");
+                command.env(CANCEL_ENV, &path);
+                signal = Some(path);
+            }
+        }
+        command.args(args).stdin(if environment.is_some() {
+            Stdio::piped()
+        } else {
+            Stdio::null()
+        });
+        if let Some(files) = &files {
+            // 孙进程可以继承输出句柄。落盘后，驱动器无需等到所有继承者关闭句柄。
+            command
+                .stdout(files.output("stdout").map_err(io_error)?)
+                .stderr(files.output("stderr").map_err(io_error)?);
+        } else {
+            command.stdout(Stdio::piped()).stderr(Stdio::piped());
+        }
+        // 参数迭代、私有握手和管道准备结束后，紧邻 spawn 再采样一次。
+        if let Some(reason) = interruption() {
+            return Ok(interrupted_result(reason, String::new(), String::new()));
+        }
+        let mut child = command.spawn().map_err(io_error)?;
+        drop(command);
+        let (status, stdout, stderr, interrupted) = if let Some(files) = &files {
+            let (status, interrupted) =
+                wait_controlled(&mut child, environment, &interruption, signal.as_deref())
+                    .map_err(io_error)?;
+            (
+                status,
+                files.capture("stdout").map_err(io_error)?,
+                files.capture("stderr").map_err(io_error)?,
+                interrupted,
+            )
+        } else {
+            let written = child
+                .stdin
+                .take()
+                .zip(environment)
+                .map(|(mut stdin, data)| {
+                    // 启动适配器在执行用户代码前读取完整载荷。
+                    stdin.write_all(data)
+                });
             let output = child.wait_with_output().map_err(io_error)?;
             if output.status.success() {
-                written.map_err(io_error)?;
+                written.transpose().map_err(io_error)?;
             }
-            output
-        } else {
-            command.args(args).output().map_err(io_error)?
+            (output.status, output.stdout, output.stderr, None)
         };
+        let stdout = String::from_utf8_lossy(&stdout).into_owned();
+        let stderr = String::from_utf8_lossy(&stderr).into_owned();
+        if let Some(reason) = interrupted {
+            let pre_entry = format!("{}:", reason.code());
+            let in_entry = format!("xiao-error class=fatal code={} ", reason.code());
+            if status.code() != Some(INTERRUPTED_EXIT)
+                || !stderr
+                    .lines()
+                    .any(|line| line.starts_with(&pre_entry) || line.starts_with(&in_entry))
+            {
+                return Ok(interrupted_result(reason, stdout, stderr));
+            }
+        }
         Ok(NativeRunResult {
-            status: output.status.code(),
-            stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
-            stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
+            status: status.code(),
+            stdout,
+            stderr,
         })
     }
+}
+
+fn interrupted_result(reason: Interruption, stdout: String, mut stderr: String) -> NativeRunResult {
+    if !stderr.is_empty() && !stderr.ends_with('\n') {
+        stderr.push('\n');
+    }
+    stderr.push_str(&format!("{}: {}\n", reason.code(), reason.message()));
+    NativeRunResult {
+        status: Some(INTERRUPTED_EXIT),
+        stdout,
+        stderr,
+    }
+}
+
+struct RunFiles {
+    directory: PathBuf,
+}
+
+impl RunFiles {
+    fn new(nonce: &str) -> io::Result<Self> {
+        let directory =
+            std::path::absolute(std::env::temp_dir())?.join(format!("xiao-run-{nonce}"));
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::DirBuilderExt;
+            fs::DirBuilder::new().mode(0o700).create(&directory)?;
+        }
+        #[cfg(not(unix))]
+        fs::create_dir(&directory)?;
+        Ok(Self { directory })
+    }
+
+    fn output(&self, name: &str) -> io::Result<Stdio> {
+        fs::File::create_new(self.directory.join(name)).map(Stdio::from)
+    }
+
+    fn capture(&self, name: &str) -> io::Result<Vec<u8>> {
+        let file = fs::File::open(self.directory.join(name))?;
+        let len = file.metadata()?.len();
+        let mut data = Vec::new();
+        file.take(len).read_to_end(&mut data)?;
+        Ok(data)
+    }
+}
+
+impl Drop for RunFiles {
+    fn drop(&mut self) {
+        for file in ["stdout", "stderr", "cancel"] {
+            let _ = fs::remove_file(self.directory.join(file));
+        }
+        let _ = fs::remove_dir(&self.directory);
+    }
+}
+
+fn wait_controlled(
+    child: &mut Child,
+    environment: Option<&[u8]>,
+    interruption: &dyn Fn() -> Option<Interruption>,
+    signal: Option<&Path>,
+) -> io::Result<(ExitStatus, Option<Interruption>)> {
+    const POLL: Duration = Duration::from_millis(5);
+    const GRACE: Duration = Duration::from_millis(250);
+
+    std::thread::scope(|scope| {
+        let stdin = child
+            .stdin
+            .take()
+            .zip(environment)
+            .map(|(mut pipe, data)| scope.spawn(move || pipe.write_all(data)));
+        let mut interrupted = None;
+        let mut stopped_at = None;
+        let status = loop {
+            if let Some(reason) = interruption() {
+                if matches!(reason, Interruption::Cancelled)
+                    && !matches!(interrupted, Some(Interruption::Cancelled))
+                    && let Some(signal) = signal
+                {
+                    // 通知写入失败时，父进程仍会终止直接子进程。
+                    let _ = fs::write(signal, b"1");
+                }
+                interrupted = Some(reason);
+                stopped_at.get_or_insert_with(Instant::now);
+            }
+            match child.try_wait() {
+                Ok(Some(status)) => break Ok(status),
+                Err(error) => {
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    break Err(error);
+                }
+                Ok(None) => {}
+            }
+            if stopped_at.is_some_and(|at| at.elapsed() >= GRACE) {
+                break match child.kill() {
+                    Ok(()) => child.wait(),
+                    Err(error) => child.try_wait().and_then(|status| status.ok_or(error)),
+                };
+            }
+            std::thread::sleep(POLL);
+        }?;
+        if let Some(stdin) = stdin {
+            let written = stdin.join().expect("原生输入线程发生内部故障");
+            if status.success() && interrupted.is_none() {
+                written?;
+            }
+        }
+        Ok((status, interrupted))
+    })
 }

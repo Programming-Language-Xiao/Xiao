@@ -6,14 +6,17 @@
 use std::collections::BTreeSet;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
+use std::time::Duration;
 
 use xiao_codegen_llvm::{
     BuildRequest, CodegenError, CodegenOptions, NativeArtifact, NativeBuild, NativeRun,
     NativeRunResult, TargetDescription, Toolchain,
 };
+use xiao_intrinsics::CAPABILITY_ENVIRONMENT;
 use xiao_ir::{IrProgram, IrStatement, IrStatementKind};
 
 use crate::frontend::{FrontendArtifact, FrontendCompiler, FrontendError, FrontendRequest};
+use crate::run::{CancellationToken, ControlWindow, ExitCode, RunControl};
 
 /// 一次前端到原生程序的内部构建请求。
 #[derive(Clone, Debug)]
@@ -129,19 +132,43 @@ impl FrontendNativeDriver {
         I: IntoIterator<Item = S>,
         S: AsRef<std::ffi::OsStr>,
     {
+        self.run_application_with_control(request, options, args, &RunControl::new())
+    }
+
+    /// 以可选取消令牌或截止启动原生应用。两处均提供超时时取较早的期限。
+    pub fn run_application_with_control<I, S>(
+        &self,
+        request: &NativeBuildRequest,
+        options: &crate::RunOptions,
+        args: I,
+        control: &RunControl,
+    ) -> Result<NativeRunResult, NativeDriverError>
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<std::ffi::OsStr>,
+    {
+        let mut control = control.clone();
+        if let Some(timeout) = options.timeout_ms.map(Duration::from_millis) {
+            let timeout = control.timeout().map_or(timeout, |at| at.min(timeout));
+            control = control.with_timeout(timeout);
+        }
+        let window = match ControlWindow::start(&control) {
+            Ok(window) => window,
+            Err(error) => return Ok(rejected_run(error.code(), error.message())),
+        };
+        if let Some(error) = window.check() {
+            return Ok(rejected_run(error.code(), error.message()));
+        }
         if let Err(error) = options.environment_snapshot() {
-            return Ok(NativeRunResult {
-                status: Some(2),
-                stdout: String::new(),
-                stderr: format!("{}: {}\n", error.code(), error.message()),
-            });
+            return Ok(rejected_run(error.code(), error.message()));
         }
         let mut request = request.clone();
         request.codegen_options = request
             .codegen_options
             .with_capabilities(options.capabilities)
             .expect("运行快照已校验能力掩码");
-        let payload = if options.capabilities & xiao_intrinsics::CAPABILITY_ENVIRONMENT != 0 {
+        let env_entry = options.capabilities & CAPABILITY_ENVIRONMENT != 0;
+        let payload = if env_entry {
             options
                 .environment
                 .as_ref()
@@ -149,9 +176,29 @@ impl FrontendNativeDriver {
         } else {
             None
         };
-        let artifact = self.build(&request)?;
-        NativeRun::new(&artifact.native)
-            .run_with_environment(args, payload.as_deref())
+        if let Some(error) = window.check() {
+            return Ok(rejected_run(error.code(), error.message()));
+        }
+        let artifact = self.build(&request);
+        if let Some(error) = window.check() {
+            return Ok(rejected_run(error.code(), error.message()));
+        }
+        let cancelled = || {
+            control
+                .cancellation()
+                .is_some_and(CancellationToken::is_cancelled)
+        };
+        let cancellation_check = control
+            .cancellation()
+            .map(|_| &cancelled as &dyn Fn() -> bool);
+        NativeRun::new(&artifact?.native)
+            .run_with_control(
+                args,
+                payload.as_deref(),
+                window.deadline,
+                cancellation_check,
+                env_entry,
+            )
             .map_err(NativeDriverError::Backend)
     }
 
@@ -191,6 +238,14 @@ impl FrontendNativeDriver {
             frontend: frontend.clone(),
             native,
         })
+    }
+}
+
+fn rejected_run(code: &str, message: &str) -> NativeRunResult {
+    NativeRunResult {
+        status: Some(i32::from(ExitCode::ArtifactRejected.as_process_code())),
+        stdout: String::new(),
+        stderr: format!("{code}: {message}\n"),
     }
 }
 

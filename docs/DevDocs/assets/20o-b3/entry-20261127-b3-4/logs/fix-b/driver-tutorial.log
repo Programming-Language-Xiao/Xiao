@@ -1,0 +1,12 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.34s
+     Running tests\20o_b3_env_tutorial.rs (core\rust\target\x86_64-pc-windows-msvc\debug\deps\20o_b3_env_tutorial-0abef133f417452a.exe)
+
+running 2 tests
+test env_tutorial_matches_native_golden ... ignored, 需要固定目标、发布 Runtime 和 LLVM 工具链
+env VM std.env → stdlib.env，退出 0，"snapshot=[initial]\nempty=[]\nupdated=[local]\ntrue\nfalse\n"
+env VM stdlib.env → stdlib.env，退出 0，"snapshot=[initial]\nempty=[]\nupdated=[local]\ntrue\nfalse\n"
+test env_tutorial_matches_vm_golden ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.36s
+

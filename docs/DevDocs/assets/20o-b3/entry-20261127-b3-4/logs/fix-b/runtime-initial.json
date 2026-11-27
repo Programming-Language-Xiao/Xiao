@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-runtime"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "target": "x86_64-pc-windows-msvc",
+  "rustup_toolchain": "1.96.0",
+  "status": 0,
+  "seconds": 35.463,
+  "merged_log": "runtime-initial.log",
+  "log_sha256": "f3891061b36d9f929f3e19bb3ba118c8e46ac4ee26fdd5f60f5fb1542b0fce5a",
+  "environment_override": {}
+}
