@@ -1,6 +1,6 @@
 # 20O-B3-4. `env` 实施规划
 
-> **状态（2026-11-28）**　`b3_4_started=true`、`b3_4_passed=false`、`b3_4_entry_ready=true`。B3-4A～C 已实施；B3-4D 修复后本地复跑通过（Windows 与 Ubuntu WSL 教程、六份 Windows COFF、权限 026/退出 3），B3-4E 本地性能与六份 COFF 复核通过；`B3-4C-FIX-B` 已修有界注入、原生 001/002 运行控制与性能生产身份，并在 `1e42f501` 完成 D/E 本地复跑。macOS、CI 仍缺，B3-4E 未收口。入口产品 `3506455e`（`3506455ee5839214082df15af4c760f8d0361e66`）；B3-4C 修复产品 `00766ca3`，当前工作树为 ABI 1.20、生成器 27、标准库接口 1。[22D/FIX.2 状态回执] · [B3-4A/B 证据](assets/20o-b3/entry-20261127-b3-4/REPORT.md) · [B3-4C 证据](assets/20o-b3/entry-20261127-b3-4/REPORT-1B.md) · [B3-4C 修复](assets/20o-b3/entry-20261127-b3-4/REPORT-FIX-A.md) · [B3-4C-FIX-B](assets/20o-b3/entry-20261127-b3-4/REPORT-FIX-B.md) · [B3-4D 复跑](assets/20o-b3/entry-20261127-b3-4/REPORT-1C-RERUN.md) · [B3-4E 本地](assets/20o-b3/entry-20261127-b3-4/REPORT-1D.md) · [B3-4E 五批复跑](assets/20o-b3/entry-20261127-b3-4/REPORT-1D-RERUN.md) · [B3-4D 教程/COFF 复跑](assets/20o-b3/entry-20261127-b3-4/REPORT-1C-RERUN2.md)
+> **状态（2026-11-28）**　`b3_4_started=true`、`b3_4_passed=false`、`b3_4_entry_ready=true`。B3-4A～C 已实施；B3-4D 修复后本地复跑通过（Windows 与 Ubuntu WSL 教程、六份 Windows COFF、权限 026/退出 3），B3-4E 本地性能与六份 COFF 复核通过；`B3-4C-FIX-B` 已修有界注入、原生 001/002 运行控制与性能生产身份，并在 `1e42f501` 完成 D/E 本地复跑；CI `87bfa31f` 的 Windows/Linux/macOS env 原生专项与运行控制已通过。macOS VM 教程、macOS 五批性能仍缺，B3-4E 未收口。入口产品 `3506455e`（`3506455ee5839214082df15af4c760f8d0361e66`）；B3-4C 修复产品 `00766ca3`，当前工作树为 ABI 1.20、生成器 27、标准库接口 1。[22D/FIX.2 状态回执] · [B3-4A/B 证据](assets/20o-b3/entry-20261127-b3-4/REPORT.md) · [B3-4C 证据](assets/20o-b3/entry-20261127-b3-4/REPORT-1B.md) · [B3-4C 修复](assets/20o-b3/entry-20261127-b3-4/REPORT-FIX-A.md) · [B3-4C-FIX-B](assets/20o-b3/entry-20261127-b3-4/REPORT-FIX-B.md) · [B3-4D 复跑](assets/20o-b3/entry-20261127-b3-4/REPORT-1C-RERUN.md) · [B3-4E 本地](assets/20o-b3/entry-20261127-b3-4/REPORT-1D.md) · [B3-4E 五批复跑](assets/20o-b3/entry-20261127-b3-4/REPORT-1D-RERUN.md) · [B3-4D 教程/COFF 复跑](assets/20o-b3/entry-20261127-b3-4/REPORT-1C-RERUN2.md) · [B3-4E CI](assets/20o-b3/entry-20261127-b3-4/REPORT-1E-CI.md)
 >
 > **入口依据**　B3-3 已收口（`b3_3_passed=true`）。22D/FIX.2 已收口（`22d_open=false`），固定产品通过严格源码审计与 fs 三平台复验，Windows 六份 fs 产物获产品级 COFF `Complete`。这些回执共同派生 `b3_4_entry_ready=true`。[B3-3 收口] · [B3-3 实施规划] · [22D/FIX.2 严格审计]
 >
@@ -184,6 +184,13 @@ B3-4D-RERUN2 同在产品 `1e42f501` 完成：Windows 与 Ubuntu WSL 的 VM 双�
 `X06-RUNTIME-026`/退出 3、执行前快照 006/007/退出 2、nonce 握手与旧标记保留均通过。
 workspace 为 Windows 197/1,826/64、WSL 196/1,826/66。macOS 与 CI 仍未补齐。
 [教程/COFF 复跑](assets/20o-b3/entry-20261127-b3-4/REPORT-1C-RERUN2.md)
+
+B3-4E CI 已在 `87bfa31f` 通过 `workspace gates` 与 `maintenance regression`：Linux、Windows、
+macOS 的 env 原生专项各 8 通过，原生教程各 1 通过，运行控制含 001/002/027；macOS
+`denied-o0/o3` 的 Mach-O 产物验证为 `complete`。`939f2c34`/`87bfa31f` 只修门禁文档、
+布局和性能入口 debug 断言，env 语义不变；D/E 本地证据仍绑定 `1e42f501`。macOS VM 教程
+和 macOS 五批性能未在这些作业执行，故 `b3_4_passed` 仍为 false。
+[CI 回执](assets/20o-b3/entry-20261127-b3-4/REPORT-1E-CI.md)
 
 B3-4C 升生成器 27 后，B3-1/B3-2/B3-3 的原生证据仍绑定各自历史产品与生成器 26
 （B3-3 为 `3506455e`），不得把它们写成当前 27 产品的六模块验收。B3-4D/E 只声明 env；
