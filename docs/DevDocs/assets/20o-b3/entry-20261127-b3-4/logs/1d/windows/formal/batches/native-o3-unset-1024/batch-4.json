@@ -1,0 +1,138 @@
+{
+  "argv": [
+    {
+      "Windows": [
+        117,
+        110,
+        115,
+        101,
+        116
+      ]
+    }
+  ],
+  "backend": "native-o3",
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "batch": 4,
+  "calibrated": true,
+  "case": "unset",
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\formal\\tasks\\native-o3-unset-1024\\batch-4",
+  "executable": {
+    "bytes": 1425408,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\formal\\unset\\measurement-o3.exe",
+    "sha256": "1a4b154ac1254231a7515443913a6854dff9b40d169878cc06ff7076add37d0c"
+  },
+  "formal_sample": {
+    "memory": {
+      "current_bytes": 4960256,
+      "current_raw": 4960256,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 4988928,
+      "peak_raw": 4988928,
+      "unit": "bytes"
+    },
+    "repeats": 768,
+    "seconds": 0.1183461
+  },
+  "identity_sha256": "03188f1db05848d68f4ef70791ad22c218d8cad55765d1cd1c8244ff5371012a",
+  "input": {
+    "json_bytes": 58369,
+    "logical_bytes": 50176,
+    "pairs": 1024,
+    "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+    "value_bytes": 32
+  },
+  "optimization": 3,
+  "probe": false,
+  "process": {
+    "baseline": {
+      "current_bytes": 3854336,
+      "current_raw": 3854336,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 3854336,
+      "peak_raw": 3854336,
+      "unit": "bytes"
+    },
+    "calibration": [
+      {
+        "memory": {
+          "current_bytes": 4493312,
+          "current_raw": 4493312,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4702208,
+          "peak_raw": 4702208,
+          "unit": "bytes"
+        },
+        "repeats": 1,
+        "seconds": 0.0001556
+      },
+      {
+        "memory": {
+          "current_bytes": 4673536,
+          "current_raw": 4673536,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4911104,
+          "peak_raw": 4911104,
+          "unit": "bytes"
+        },
+        "repeats": 16,
+        "seconds": 0.0024055
+      },
+      {
+        "memory": {
+          "current_bytes": 4726784,
+          "current_raw": 4726784,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4976640,
+          "peak_raw": 4976640,
+          "unit": "bytes"
+        },
+        "repeats": 256,
+        "seconds": 0.0403801
+      },
+      {
+        "memory": {
+          "current_bytes": 4960256,
+          "current_raw": 4960256,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4988928,
+          "peak_raw": 4988928,
+          "unit": "bytes"
+        },
+        "repeats": 768,
+        "seconds": 0.1183461
+      }
+    ],
+    "error": null,
+    "exit": 0,
+    "pid": 50412,
+    "started_unix_ns": "1795781881196729500",
+    "warmup": {
+      "memory": {
+        "current_bytes": 4493312,
+        "current_raw": 4493312,
+        "method": "working-set/peak-working-set",
+        "peak_bytes": 4579328,
+        "peak_raw": 4579328,
+        "unit": "bytes"
+      },
+      "repeats": 1,
+      "seconds": 0.0001884
+    }
+  },
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "resident_increment_upper_bytes": 1134592,
+  "runtime_sha256": "fe42ae1385a46d65d3e6882b9120ade253033fdf17c45101b57e812f7b815089",
+  "schema": 1,
+  "seconds_per_workload": 0.00015409648437499999,
+  "stderr": {
+    "bytes": 0,
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\formal\\batches\\native-o3-unset-1024\\batch-4.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 1236,
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\formal\\batches\\native-o3-unset-1024\\batch-4.stdout.log",
+    "sha256": "e3205571bed8376bfff426e488e4ddf2d0aa0aa561b0fc24b836d6aa18067c18"
+  },
+  "target": "x86_64-pc-windows-msvc"
+}

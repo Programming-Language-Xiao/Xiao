@@ -1,0 +1,37 @@
+{
+  "tracked_files": 8275,
+  "tracked_path_sha256_rollup": "c1b7a6d7074f9a3b5c1ad5e0f1961265da4047de2a85a9bfbfd71df69336b0fd",
+  "changed": [],
+  "unexpected_files": [],
+  "source_unchanged": true,
+  "locks": {
+    "core/rust/Cargo.lock": {
+      "bytes": 19622,
+      "sha256": "b00b3e3f6d048f87f83128a2ccceeabe97ccdf375b4362a1bc1cdae653ad7405"
+    },
+    "tests/benchmarks/Cargo.lock": {
+      "bytes": 19226,
+      "sha256": "4de67a7f69935c83df26daf9d9949c93dbd57d99e53617c630f8bcf749970d5a"
+    }
+  },
+  "fixtures": {
+    "tests/fixtures/docs/env/.gitattributes": {
+      "bytes": 46,
+      "sha256": "275137a5faac6951e42d2f4214563ebf19d111d67c386646f32f8882ae0624b3"
+    },
+    "tests/fixtures/docs/env/tutorial.input.json": {
+      "bytes": 69,
+      "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+    },
+    "tests/fixtures/docs/env/tutorial.stdout": {
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    },
+    "tests/fixtures/docs/env/tutorial.xiao": {
+      "bytes": 467,
+      "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+    }
+  },
+  "examples": {},
+  "source": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\src"
+}

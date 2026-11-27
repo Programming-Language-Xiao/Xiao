@@ -1,0 +1,110 @@
+{
+  "platform": "Windows-11-10.0.26200-SP0",
+  "release": null,
+  "machine": "AMD64",
+  "target": "x86_64-pc-windows-msvc",
+  "environment": {
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\target",
+    "CARGO_BUILD_TARGET": "x86_64-pc-windows-msvc",
+    "CARGO_TERM_COLOR": "never",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "XIAO_HOME": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\xiao-home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\src\\stdlib",
+    "XIAO_B3_ENV_TEST_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\tests",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_LLVM_STRIP": "D:\\msys64\\ucrt64\\bin\\llvm-strip.exe",
+    "XIAO_LLVM_READOBJ": "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+    "TEMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\tmp",
+    "TMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\tmp",
+    "LIB": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\ucrt\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\um\\x64",
+    "INCLUDE": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\include;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\ucrt;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\shared;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\um"
+  },
+  "tools": {
+    "rustc": {
+      "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+      "resolved": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+      "bytes": 111104,
+      "sha256": "acb138286bbe20c6cf3ec39a7e0a68c3fab0cd949baa2912cf466514d0d531ab",
+      "version_exit": 0,
+      "first_line": "rustc 1.96.0 (ac68faa20 2026-05-25)"
+    },
+    "cargo": {
+      "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+      "resolved": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+      "bytes": 31347200,
+      "sha256": "122f18d28a63fa358f3db266abee1ff1d8aabf0ab7f2dd9ac38a38da99977ae5",
+      "version_exit": 0,
+      "first_line": "cargo 1.96.0 (30a34c682 2026-05-25)"
+    },
+    "rustfmt": {
+      "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustfmt.exe",
+      "resolved": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustfmt.exe",
+      "bytes": 4772864,
+      "sha256": "5846618be9dafc003c7f9235d10fd7b3d79dd956f3fe07bf853f56cea672778a",
+      "version_exit": 0,
+      "first_line": "rustfmt 1.9.0-stable (ac68faa20c 2026-05-25)"
+    },
+    "clang": {
+      "path": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+      "resolved": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+      "bytes": 157296,
+      "sha256": "574047f1b98d62bea1da8ae9340fea1ef06d262c3186e1d72d87e5401166c833",
+      "version_exit": 0,
+      "first_line": "clang version 22.1.2 (https://github.com/msys2/MINGW-packages 4f19d31560faf73257116b7c95f0b322ba83d720)"
+    },
+    "llvm-as": {
+      "path": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+      "resolved": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+      "bytes": 40741,
+      "sha256": "63f559db3d87798fa4f26923c4cd5839ddc41b40905d884ee341c74a8bd858e9",
+      "version_exit": 0,
+      "first_line": "LLVM (http://llvm.org/):"
+    },
+    "llc": {
+      "path": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+      "resolved": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+      "bytes": 211961,
+      "sha256": "df1409fabacdc625b2c2fefe50712de4ba140e07bf2bb4192101189498152869",
+      "version_exit": 0,
+      "first_line": "LLVM (http://llvm.org/):"
+    },
+    "llvm-readobj": {
+      "path": "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+      "resolved": "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+      "bytes": 2140197,
+      "sha256": "768a76a82fedb79b5305ca6bfffa63c00b5738789c7f47225b247345ab99328e",
+      "version_exit": 0,
+      "first_line": "LLVM (http://llvm.org/):"
+    },
+    "llvm-strip": {
+      "path": "D:\\msys64\\ucrt64\\bin\\llvm-strip.exe",
+      "resolved": "D:\\msys64\\ucrt64\\bin\\llvm-strip.exe",
+      "bytes": 244345,
+      "sha256": "99a27e4cad1d4061c579ae9d03e90142d36234478fdbe9c8458636c33bdc9cc7",
+      "version_exit": 0,
+      "first_line": "llvm-strip, compatible with GNU strip"
+    },
+    "link": {
+      "path": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.EXE",
+      "resolved": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+      "bytes": 3701088,
+      "sha256": "3ef8fcf80d409fab22ddd89ee19249f31a26ad9914d3e3e48573c30998fa24de",
+      "version_exit": 1100,
+      "first_line": "Microsoft (R) Incremental Linker Version 14.51.36256.0"
+    },
+    "cpu": {
+      "path": "D:\\Program Files\\PowerShell\\7\\pwsh.EXE",
+      "resolved": "D:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "bytes": 301384,
+      "sha256": "e94166ed9f376559c1359bafb08bc49e463a494c330f67644ec1d9f1ffeb5ee5",
+      "version_exit": 0,
+      "first_line": "AMD Ryzen 9 9955HX 16-Core Processor           "
+    }
+  },
+  "msvc_sdk": "10.0.26100.0"
+}

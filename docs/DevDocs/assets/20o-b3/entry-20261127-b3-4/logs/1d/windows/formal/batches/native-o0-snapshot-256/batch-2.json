@@ -1,0 +1,141 @@
+{
+  "argv": [
+    {
+      "Windows": [
+        115,
+        110,
+        97,
+        112,
+        115,
+        104,
+        111,
+        116
+      ]
+    }
+  ],
+  "backend": "native-o0",
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "batch": 2,
+  "calibrated": true,
+  "case": "snapshot",
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\formal\\tasks\\native-o0-snapshot-256\\batch-2",
+  "executable": {
+    "bytes": 1456128,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\formal\\get\\measurement-o0.exe",
+    "sha256": "aea672c3a9c1acffade52fdd1deb92994cf80c59bddd709f5e926485c15218cd"
+  },
+  "formal_sample": {
+    "memory": {
+      "current_bytes": 4530176,
+      "current_raw": 4530176,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 4579328,
+      "peak_raw": 4579328,
+      "unit": "bytes"
+    },
+    "repeats": 512,
+    "seconds": 0.118735800323
+  },
+  "identity_sha256": "03188f1db05848d68f4ef70791ad22c218d8cad55765d1cd1c8244ff5371012a",
+  "input": {
+    "json_bytes": 14593,
+    "logical_bytes": 12544,
+    "pairs": 256,
+    "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+    "value_bytes": 32
+  },
+  "optimization": 0,
+  "probe": false,
+  "process": {
+    "baseline": {
+      "current_bytes": 3850240,
+      "current_raw": 3850240,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 3850240,
+      "peak_raw": 3850240,
+      "unit": "bytes"
+    },
+    "calibration": [
+      {
+        "memory": {
+          "current_bytes": 4444160,
+          "current_raw": 4444160,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4444160,
+          "peak_raw": 4444160,
+          "unit": "bytes"
+        },
+        "repeats": 1,
+        "seconds": 0.000275400002
+      },
+      {
+        "memory": {
+          "current_bytes": 4452352,
+          "current_raw": 4452352,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4460544,
+          "peak_raw": 4460544,
+          "unit": "bytes"
+        },
+        "repeats": 16,
+        "seconds": 0.003814200056
+      },
+      {
+        "memory": {
+          "current_bytes": 4534272,
+          "current_raw": 4534272,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4579328,
+          "peak_raw": 4579328,
+          "unit": "bytes"
+        },
+        "repeats": 256,
+        "seconds": 0.059151600406
+      },
+      {
+        "memory": {
+          "current_bytes": 4530176,
+          "current_raw": 4530176,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 4579328,
+          "peak_raw": 4579328,
+          "unit": "bytes"
+        },
+        "repeats": 512,
+        "seconds": 0.118735800323
+      }
+    ],
+    "error": null,
+    "exit": 0,
+    "pid": 24744,
+    "started_unix_ns": "1795781731885749600",
+    "warmup": {
+      "memory": {
+        "current_bytes": 4411392,
+        "current_raw": 4411392,
+        "method": "working-set/peak-working-set",
+        "peak_bytes": 4411392,
+        "peak_raw": 4411392,
+        "unit": "bytes"
+      },
+      "repeats": 1,
+      "seconds": 0.000394399976
+    }
+  },
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "resident_increment_upper_bytes": 729088,
+  "runtime_sha256": "fe42ae1385a46d65d3e6882b9120ade253033fdf17c45101b57e812f7b815089",
+  "schema": 1,
+  "seconds_per_workload": 0.00023190586000585938,
+  "stderr": {
+    "bytes": 0,
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\formal\\batches\\native-o0-snapshot-256\\batch-2.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 1236,
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\formal\\batches\\native-o0-snapshot-256\\batch-2.stdout.log",
+    "sha256": "8acfb4f226fc89ed08fc3774908495395ccbfbbfc44c790a2243beb0fe9648a7"
+  },
+  "target": "x86_64-pc-windows-msvc"
+}

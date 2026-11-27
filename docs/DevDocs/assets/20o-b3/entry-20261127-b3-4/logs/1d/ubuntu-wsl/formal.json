@@ -1,0 +1,54 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "run",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--release",
+    "--example",
+    "b3_env_performance",
+    "--",
+    "--output-dir",
+    "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal",
+    "--artifact-dir",
+    "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal",
+    "--identity",
+    "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal-identity.json"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/src",
+  "started_at_utc": "2026-11-27T12:18:50.788605+00:00",
+  "elapsed_seconds": 377.17393322399585,
+  "exit": 0,
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target",
+    "CARGO_BUILD_TARGET": "x86_64-unknown-linux-gnu",
+    "CARGO_TERM_COLOR": "never",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "XIAO_HOME": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/xiao-home",
+    "XIAO_STDLIB_ROOT": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/src/stdlib",
+    "XIAO_B3_ENV_TEST_ROOT": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/tests",
+    "XIAO_TARGET_TRIPLE": "x86_64-unknown-linux-gnu",
+    "XIAO_RUNTIME_LIBRARY": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/libxiao_runtime.a",
+    "XIAO_CLANG": "/usr/lib/llvm-21/bin/clang",
+    "XIAO_LLVM_AS": "/usr/lib/llvm-21/bin/llvm-as",
+    "XIAO_LLC": "/usr/lib/llvm-21/bin/llc",
+    "XIAO_LLVM_STRIP": "/usr/lib/llvm-21/bin/llvm-strip",
+    "XIAO_LLVM_READOBJ": "/usr/lib/llvm-21/bin/llvm-readobj",
+    "TMPDIR": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/tmp"
+  },
+  "stdout": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal.stdout.log",
+    "bytes": 4172,
+    "sha256": "87cf0381443fdb5f9b3d0e603468b5dfb4d21da72b2606f80e9a2d2a5f9b7c6b"
+  },
+  "stderr": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal.stderr.log",
+    "bytes": 425,
+    "sha256": "63205fae468de6602d2175da12389d6d1ec694ebb3464829cd35d75ddd9d65be"
+  }
+}

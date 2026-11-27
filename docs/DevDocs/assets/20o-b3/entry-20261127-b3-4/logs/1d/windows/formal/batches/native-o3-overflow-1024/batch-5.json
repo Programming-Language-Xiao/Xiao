@@ -1,0 +1,141 @@
+{
+  "argv": [
+    {
+      "Windows": [
+        111,
+        118,
+        101,
+        114,
+        102,
+        108,
+        111,
+        119
+      ]
+    }
+  ],
+  "backend": "native-o3",
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "batch": 5,
+  "calibrated": true,
+  "case": "overflow",
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\formal\\tasks\\native-o3-overflow-1024\\batch-5",
+  "executable": {
+    "bytes": 1443840,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\formal\\overflow\\measurement-o3.exe",
+    "sha256": "1c887ee1b611f85eeb48729a2fe47f066a86149ab3470703c77d3be3c8da2855"
+  },
+  "formal_sample": {
+    "memory": {
+      "current_bytes": 8269824,
+      "current_raw": 8269824,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 8544256,
+      "peak_raw": 8544256,
+      "unit": "bytes"
+    },
+    "repeats": 512,
+    "seconds": 0.1926762
+  },
+  "identity_sha256": "03188f1db05848d68f4ef70791ad22c218d8cad55765d1cd1c8244ff5371012a",
+  "input": {
+    "json_bytes": 1056769,
+    "logical_bytes": 1048576,
+    "pairs": 1024,
+    "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+    "value_bytes": 1007
+  },
+  "optimization": 3,
+  "probe": false,
+  "process": {
+    "baseline": {
+      "current_bytes": 3858432,
+      "current_raw": 3858432,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 3858432,
+      "peak_raw": 3858432,
+      "unit": "bytes"
+    },
+    "calibration": [
+      {
+        "memory": {
+          "current_bytes": 5791744,
+          "current_raw": 5791744,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 7823360,
+          "peak_raw": 7823360,
+          "unit": "bytes"
+        },
+        "repeats": 1,
+        "seconds": 0.0004453
+      },
+      {
+        "memory": {
+          "current_bytes": 5689344,
+          "current_raw": 5689344,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 8040448,
+          "peak_raw": 8040448,
+          "unit": "bytes"
+        },
+        "repeats": 16,
+        "seconds": 0.0063323
+      },
+      {
+        "memory": {
+          "current_bytes": 6258688,
+          "current_raw": 6258688,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 8237056,
+          "peak_raw": 8237056,
+          "unit": "bytes"
+        },
+        "repeats": 256,
+        "seconds": 0.0952068
+      },
+      {
+        "memory": {
+          "current_bytes": 8269824,
+          "current_raw": 8269824,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 8544256,
+          "peak_raw": 8544256,
+          "unit": "bytes"
+        },
+        "repeats": 512,
+        "seconds": 0.1926762
+      }
+    ],
+    "error": null,
+    "exit": 0,
+    "pid": 14320,
+    "started_unix_ns": "1795781906266221900",
+    "warmup": {
+      "memory": {
+        "current_bytes": 6144000,
+        "current_raw": 6144000,
+        "method": "working-set/peak-working-set",
+        "peak_bytes": 7577600,
+        "peak_raw": 7577600,
+        "unit": "bytes"
+      },
+      "repeats": 1,
+      "seconds": 0.0004573
+    }
+  },
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "resident_increment_upper_bytes": 4685824,
+  "runtime_sha256": "fe42ae1385a46d65d3e6882b9120ade253033fdf17c45101b57e812f7b815089",
+  "schema": 1,
+  "seconds_per_workload": 0.000376320703125,
+  "stderr": {
+    "bytes": 0,
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\formal\\batches\\native-o3-overflow-1024\\batch-5.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 1236,
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\formal\\batches\\native-o3-overflow-1024\\batch-5.stdout.log",
+    "sha256": "53f98376d6e25a5ffd9ccbd9bcb8b318b8467580cc03295772b87f21c64e1472"
+  },
+  "target": "x86_64-pc-windows-msvc"
+}

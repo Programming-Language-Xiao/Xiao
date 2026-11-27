@@ -1,0 +1,18 @@
+{
+  "codegen_fingerprint": "xiao-codegen-27-799ca4042d36e0fc",
+  "executable": {
+    "bytes": 1477120,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\formal\\overflow\\measurement-o0.exe",
+    "sha256": "a5abb6de2f1a54356b0735f84ebce2ae6dc81a382f6f6f15ef32951dea1f53d8"
+  },
+  "llvm": {
+    "bytes": 164472,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\formal\\overflow\\measurement-o0.ll",
+    "sha256": "378bd3c400489267adb741e8ca22f81a776fba30871205c80280458d141b9601"
+  },
+  "shim": {
+    "bytes": 9462,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\formal\\env-shim.o",
+    "sha256": "e041a9e34d6542e69c1508b8a064d45a548e412ee00455cbd3e2764d06248908"
+  }
+}

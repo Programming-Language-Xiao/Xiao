@@ -1,0 +1,9 @@
+{
+  "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+  "bytes": 27833734,
+  "sha256": "fe42ae1385a46d65d3e6882b9120ade253033fdf17c45101b57e812f7b815089",
+  "profile": "release",
+  "target": "x86_64-pc-windows-msvc",
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f"
+}

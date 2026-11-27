@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "/usr/lib/llvm-21/bin/clang",
+    "--version"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/src",
+  "started_at_utc": "2026-11-27T11:50:02.205639+00:00",
+  "elapsed_seconds": 0.5315171179972822,
+  "exit": 0,
+  "environment": {},
+  "stdout": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/tools/clang.stdout.log",
+    "bytes": 122,
+    "sha256": "77467400b91c4cebb6c3e29d8a611af518a2f4078c22baf276b0a1373e996bf5"
+  },
+  "stderr": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/tools/clang.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

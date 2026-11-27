@@ -1,0 +1,81 @@
+{
+  "argv": [
+    {
+      "Unix": [
+        111,
+        118,
+        101,
+        114,
+        102,
+        108,
+        111,
+        119
+      ]
+    }
+  ],
+  "backend": "native-o0",
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "batch": 1,
+  "calibrated": false,
+  "case": "overflow",
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/probe-3/tasks/native-o0-overflow-1024/batch-1",
+  "executable": {
+    "bytes": 9695624,
+    "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/probe-3/overflow/measurement-o0",
+    "sha256": "001b9ad314f1200d4b36ddcf3d7ae2f51102f23b725a87227a6700945e5b4048"
+  },
+  "formal_sample": null,
+  "identity_sha256": "0c9a33ba64818dcf96a3afece298fdaf023d494e8fa3366a1bb8a8ab39fbb35f",
+  "input": {
+    "json_bytes": 1056769,
+    "logical_bytes": 1048576,
+    "pairs": 1024,
+    "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+    "value_bytes": 1007
+  },
+  "optimization": 0,
+  "probe": true,
+  "process": {
+    "baseline": {
+      "current_bytes": 2985984,
+      "current_raw": 2916,
+      "method": "proc-vmrss-vmhwm",
+      "peak_bytes": 2985984,
+      "peak_raw": 2916,
+      "unit": "KiB"
+    },
+    "calibration": [],
+    "error": null,
+    "exit": 0,
+    "pid": 1770,
+    "started_unix_ns": "1795781392481409339",
+    "warmup": {
+      "memory": {
+        "current_bytes": 7139328,
+        "current_raw": 6972,
+        "method": "proc-vmrss-vmhwm",
+        "peak_bytes": 7864320,
+        "peak_raw": 7680,
+        "unit": "KiB"
+      },
+      "repeats": 1,
+      "seconds": 0.000196807
+    }
+  },
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "resident_increment_upper_bytes": 4878336,
+  "runtime_sha256": "12308d5fd6e5b54e1c6a95f4b78bf18c9b9df777e04e5c4c01babe84b25640b1",
+  "schema": 1,
+  "seconds_per_workload": null,
+  "stderr": {
+    "bytes": 0,
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/probe-3/batches/native-o0-overflow-1024/batch-1.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 352,
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/probe-3/batches/native-o0-overflow-1024/batch-1.stdout.log",
+    "sha256": "1d1eee9b85c6bd5067e24708ac211ad2cedf18cd7fa6d457f63109eae6f58a64"
+  },
+  "target": "x86_64-unknown-linux-gnu"
+}

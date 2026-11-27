@@ -1,0 +1,3 @@
+   Compiling xiao-driver v0.1.0 (/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/src/core/rust/crates/xiao-driver)
+    Finished `release` profile [optimized] target(s) in 9.02s
+     Running `/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance --output-dir /mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/probe-3 --artifact-dir /home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/probe-3 --identity /home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/probe-3-identity.json --probe`

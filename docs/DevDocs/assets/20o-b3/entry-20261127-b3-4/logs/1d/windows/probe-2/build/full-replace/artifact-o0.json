@@ -1,0 +1,18 @@
+{
+  "codegen_fingerprint": "xiao-codegen-27-799ca4042d36e0fc",
+  "executable": {
+    "bytes": 1450496,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\probe-2\\full-replace\\measurement-o0.exe",
+    "sha256": "dac6fa7b9627ae79a065a5af315418714586e777acda47bcee1cbd68e030c79f"
+  },
+  "llvm": {
+    "bytes": 129286,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\probe-2\\full-replace\\measurement-o0.ll",
+    "sha256": "f44371097947cf2e4b6ec399380fb7f406d188ab5766793943ff0e722b8f45e1"
+  },
+  "shim": {
+    "bytes": 9462,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\probe-2\\env-shim.o",
+    "sha256": "798a4df499948bc3c1d01be474bc82bb7da088fba518923785dd8c5e68c5867c"
+  }
+}

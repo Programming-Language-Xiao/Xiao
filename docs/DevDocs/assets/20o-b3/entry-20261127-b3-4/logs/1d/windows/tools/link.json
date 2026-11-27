@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.EXE",
+    "/?"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\src",
+  "started_at_utc": "2026-11-27T11:48:57.148755+00:00",
+  "elapsed_seconds": 0.07459130004281178,
+  "exit": 1100,
+  "environment": {},
+  "stdout": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\tools\\link.stdout.log",
+    "bytes": 3664,
+    "sha256": "b20d1f9fbfbc9d2a128b9155c86382096cbf287085c7b72d7371ddf6b6a43bf1"
+  },
+  "stderr": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\tools\\link.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

@@ -1,0 +1,28 @@
+from std.env import get, set, unset
+from std.time import monotonic
+def env_matches(str name, str expected) -> bool
+    count = 0
+    valid = true
+    for value in get(name)
+        count = count + 1
+        if value != expected
+            valid = false
+    return count == 1 and valid
+def env_missing(str name) -> bool
+    missing = true
+    for value in get(name)
+        missing = false
+    return missing
+old = "oooooooooooooooooooooooooooooooo"
+replacement = "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+names = ["XIAO_B3_PERF_0000", "XIAO_B3_PERF_0004", "XIAO_B3_PERF_0008", "XIAO_B3_PERF_0012", "XIAO_B3_PERF_0016", "XIAO_B3_PERF_0020", "XIAO_B3_PERF_0024", "XIAO_B3_PERF_0028", "XIAO_B3_PERF_0032", "XIAO_B3_PERF_0036", "XIAO_B3_PERF_0040", "XIAO_B3_PERF_0044", "XIAO_B3_PERF_0048", "XIAO_B3_PERF_0052", "XIAO_B3_PERF_0056", "XIAO_B3_PERF_0060", "XIAO_B3_PERF_0064", "XIAO_B3_PERF_0068", "XIAO_B3_PERF_0072", "XIAO_B3_PERF_0076", "XIAO_B3_PERF_0080", "XIAO_B3_PERF_0084", "XIAO_B3_PERF_0088", "XIAO_B3_PERF_0092", "XIAO_B3_PERF_0096", "XIAO_B3_PERF_0100", "XIAO_B3_PERF_0104", "XIAO_B3_PERF_0108", "XIAO_B3_PERF_0112", "XIAO_B3_PERF_0116", "XIAO_B3_PERF_0120", "XIAO_B3_PERF_0124", "XIAO_B3_PERF_0128", "XIAO_B3_PERF_0132", "XIAO_B3_PERF_0136", "XIAO_B3_PERF_0140", "XIAO_B3_PERF_0144", "XIAO_B3_PERF_0148", "XIAO_B3_PERF_0152", "XIAO_B3_PERF_0156", "XIAO_B3_PERF_0160", "XIAO_B3_PERF_0164", "XIAO_B3_PERF_0168", "XIAO_B3_PERF_0172", "XIAO_B3_PERF_0176", "XIAO_B3_PERF_0180", "XIAO_B3_PERF_0184", "XIAO_B3_PERF_0188", "XIAO_B3_PERF_0192", "XIAO_B3_PERF_0196", "XIAO_B3_PERF_0200", "XIAO_B3_PERF_0204", "XIAO_B3_PERF_0208", "XIAO_B3_PERF_0212", "XIAO_B3_PERF_0216", "XIAO_B3_PERF_0220", "XIAO_B3_PERF_0224", "XIAO_B3_PERF_0228", "XIAO_B3_PERF_0232", "XIAO_B3_PERF_0236", "XIAO_B3_PERF_0240", "XIAO_B3_PERF_0244", "XIAO_B3_PERF_0248", "XIAO_B3_PERF_0252"]
+valid = true
+started = monotonic("ns")
+for name in names
+    if not env_matches(name, old)
+        valid = false
+elapsed = monotonic("ns") - started
+if valid
+    print(elapsed)
+else
+    print(-1)

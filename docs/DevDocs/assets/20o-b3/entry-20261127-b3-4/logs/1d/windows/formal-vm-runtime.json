@@ -1,0 +1,20 @@
+{
+  "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_runtime-9bbaeb215c9d9f59.rlib",
+  "bytes": 7838632,
+  "sha256": "5313f0563328d596e1136031b8f6c1a92c45dec7828a5f0fc8734d7d99aa82af",
+  "features": [
+    "test-failpoints"
+  ],
+  "profile": {
+    "opt_level": "3",
+    "debuginfo": 0,
+    "debug_assertions": false,
+    "overflow_checks": false,
+    "test": false
+  },
+  "example": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\target\\x86_64-pc-windows-msvc\\release\\examples\\b3_env_performance.exe",
+    "bytes": 11212288,
+    "sha256": "96ba9e31a32ffcffde65f1fb339469c07e6d66a381d0d87110b96139424a0087"
+  }
+}

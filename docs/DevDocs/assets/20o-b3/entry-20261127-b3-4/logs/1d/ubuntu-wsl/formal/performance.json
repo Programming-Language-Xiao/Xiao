@@ -1,0 +1,3169 @@
+{
+  "capabilities": 162,
+  "codegen": 27,
+  "complete": true,
+  "identity": {
+    "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+    "baseline_test_additions": [
+      "core/rust/crates/xiao-driver/tests/20o_b3_env_tutorial.rs",
+      "core/rust/crates/xiao-driver/tests/support/b3_env_artifact.rs",
+      "tests/fixtures/docs/env/.gitattributes",
+      "tests/fixtures/docs/env/tutorial.input.json",
+      "tests/fixtures/docs/env/tutorial.stdout",
+      "tests/fixtures/docs/env/tutorial.xiao"
+    ],
+    "baseline_tracked_files": 8275,
+    "baseline_tree": "281fb628590ef2f7f679f22da1d95c2180397b76",
+    "changed": [],
+    "compared_product_prefixes": [
+      "core/",
+      "stdlib/",
+      "resources/",
+      "tests/",
+      ".cargo/",
+      ".github/"
+    ],
+    "examples": {
+      "core/rust/crates/xiao-driver/examples/b3_env_performance.rs": {
+        "bytes": 17566,
+        "sha256": "f59850446f994db649e838b1945dbcd25bd08c020d64846f0dd1ecc3e1fc356a"
+      },
+      "core/rust/crates/xiao-driver/examples/env_perf/native.c": {
+        "bytes": 5730,
+        "sha256": "2a09150c6c42333b48c4a510b67b545c5a9249a84b1ba20077081a9f06c164ee"
+      },
+      "core/rust/crates/xiao-driver/examples/env_perf/native.rs": {
+        "bytes": 4310,
+        "sha256": "5f5fac1e1e047ff98f907f0fb507c229d5ae60a897fa57761d4e81d0f6ccc457"
+      },
+      "core/rust/crates/xiao-driver/examples/env_perf/process.rs": {
+        "bytes": 5725,
+        "sha256": "2deca841c42e5a9af7c12924f3e7b13a6e58a374fca5194fe5b4eebc3a4bf398"
+      },
+      "core/rust/crates/xiao-driver/examples/env_perf/workload.rs": {
+        "bytes": 4291,
+        "sha256": "990d723d4699958d19b72256fbf72d8dfbb69995cd21edf8da309f4768fd1a46"
+      }
+    },
+    "examples_match_worktree": true,
+    "fixture_origin": "7f1017b7ff0b7b0a89d11943d5d33e0b432d0b3f",
+    "fixtures": {
+      "tests/fixtures/docs/env/.gitattributes": {
+        "bytes": 46,
+        "sha256": "275137a5faac6951e42d2f4214563ebf19d111d67c386646f32f8882ae0624b3"
+      },
+      "tests/fixtures/docs/env/tutorial.input.json": {
+        "bytes": 69,
+        "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+      },
+      "tests/fixtures/docs/env/tutorial.stdout": {
+        "bytes": 55,
+        "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+      },
+      "tests/fixtures/docs/env/tutorial.xiao": {
+        "bytes": 467,
+        "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+      }
+    },
+    "fixtures_match_worktree": true,
+    "locks": {
+      "core/rust/Cargo.lock": {
+        "bytes": 19622,
+        "sha256": "b00b3e3f6d048f87f83128a2ccceeabe97ccdf375b4362a1bc1cdae653ad7405"
+      },
+      "tests/benchmarks/Cargo.lock": {
+        "bytes": 19226,
+        "sha256": "4de67a7f69935c83df26daf9d9949c93dbd57d99e53617c630f8bcf749970d5a"
+      }
+    },
+    "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+    "product_tree": "b73b72f6d0d90ca43a8dd37a133842a9eeb95d6f",
+    "runtime": {
+      "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+      "bytes": 34403698,
+      "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/libxiao_runtime.a",
+      "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+      "profile": "release",
+      "sha256": "12308d5fd6e5b54e1c6a95f4b78bf18c9b9df777e04e5c4c01babe84b25640b1",
+      "target": "x86_64-unknown-linux-gnu"
+    },
+    "runtime_unchanged": true,
+    "source": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/src",
+    "source_unchanged": true,
+    "target": "x86_64-unknown-linux-gnu",
+    "toolchain": {
+      "environment": {
+        "CARGO_BUILD_TARGET": "x86_64-unknown-linux-gnu",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO_TARGET_DIR": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target",
+        "CARGO_TERM_COLOR": "never",
+        "RUSTUP_TOOLCHAIN": "1.96.0",
+        "TMPDIR": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/tmp",
+        "XIAO_B3_ENV_TEST_ROOT": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/tests",
+        "XIAO_CLANG": "/usr/lib/llvm-21/bin/clang",
+        "XIAO_HOME": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/xiao-home",
+        "XIAO_LLC": "/usr/lib/llvm-21/bin/llc",
+        "XIAO_LLVM_AS": "/usr/lib/llvm-21/bin/llvm-as",
+        "XIAO_LLVM_READOBJ": "/usr/lib/llvm-21/bin/llvm-readobj",
+        "XIAO_LLVM_STRIP": "/usr/lib/llvm-21/bin/llvm-strip",
+        "XIAO_RUNTIME_LIBRARY": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/libxiao_runtime.a",
+        "XIAO_STDLIB_ROOT": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/src/stdlib",
+        "XIAO_TARGET_TRIPLE": "x86_64-unknown-linux-gnu"
+      },
+      "machine": "x86_64",
+      "msvc_sdk": null,
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "release": {
+        "BUG_REPORT_URL": "https://bugs.launchpad.net/ubuntu/",
+        "HOME_URL": "https://www.ubuntu.com/",
+        "ID": "ubuntu",
+        "ID_LIKE": "debian",
+        "LOGO": "ubuntu-logo",
+        "NAME": "Ubuntu",
+        "PRETTY_NAME": "Ubuntu 26.04 LTS",
+        "PRIVACY_POLICY_URL": "https://www.ubuntu.com/legal/terms-and-policies/privacy-policy",
+        "SUPPORT_URL": "https://help.ubuntu.com/",
+        "UBUNTU_CODENAME": "resolute",
+        "VERSION": "26.04 (Resolute Raccoon)",
+        "VERSION_CODENAME": "resolute",
+        "VERSION_ID": "26.04"
+      },
+      "target": "x86_64-unknown-linux-gnu",
+      "tools": {
+        "cargo": {
+          "bytes": 42865872,
+          "first_line": "cargo 1.96.0 (30a34c682 2026-05-25)",
+          "path": "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "resolved": "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f",
+          "version_exit": 0
+        },
+        "cc": {
+          "bytes": 1305304,
+          "first_line": "cc (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+          "path": "/usr/bin/cc",
+          "resolved": "/usr/bin/x86_64-linux-gnu-gcc-15",
+          "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88",
+          "version_exit": 0
+        },
+        "clang": {
+          "bytes": 137584,
+          "first_line": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+          "path": "/usr/lib/llvm-21/bin/clang",
+          "resolved": "/usr/lib/llvm-21/bin/clang",
+          "sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+          "version_exit": 0
+        },
+        "ld": {
+          "bytes": 1890472,
+          "first_line": "GNU ld (GNU Binutils for Ubuntu) 2.46",
+          "path": "/usr/bin/ld",
+          "resolved": "/usr/bin/x86_64-linux-gnu-ld.bfd",
+          "sha256": "97f48d93b8b076a92d2809ec29dcb17f0f37c8827358f832255e2ed22fef6075",
+          "version_exit": 0
+        },
+        "llc": {
+          "bytes": 176760,
+          "first_line": "Ubuntu LLVM version 21.1.8",
+          "path": "/usr/lib/llvm-21/bin/llc",
+          "resolved": "/usr/lib/llvm-21/bin/llc",
+          "sha256": "935bdae46915daba23b279efebc04400c085c56a8536dea633f1f5a96c9fd382",
+          "version_exit": 0
+        },
+        "llvm-as": {
+          "bytes": 28512,
+          "first_line": "Ubuntu LLVM version 21.1.8",
+          "path": "/usr/lib/llvm-21/bin/llvm-as",
+          "resolved": "/usr/lib/llvm-21/bin/llvm-as",
+          "sha256": "50526d303ae33ed44002023d8d9611186e916f4b8eaf70a608bdbf1d81122784",
+          "version_exit": 0
+        },
+        "llvm-readobj": {
+          "bytes": 1941432,
+          "first_line": "Ubuntu LLVM version 21.1.8",
+          "path": "/usr/lib/llvm-21/bin/llvm-readobj",
+          "resolved": "/usr/lib/llvm-21/bin/llvm-readobj",
+          "sha256": "35716d1eaa870ee4a723aa89c843df941d00645e734da803d797f230c31de50b",
+          "version_exit": 0
+        },
+        "llvm-strip": {
+          "bytes": 202200,
+          "first_line": "llvm-strip, compatible with GNU strip",
+          "path": "/usr/lib/llvm-21/bin/llvm-strip",
+          "resolved": "/usr/lib/llvm-21/bin/llvm-objcopy",
+          "sha256": "0de5f7adbb648ed88aa04f2d91bd05c08306b99a27741540cc0473cbac0a0b40",
+          "version_exit": 0
+        },
+        "lscpu": {
+          "bytes": 117208,
+          "first_line": "Architecture:                            x86_64",
+          "path": "/usr/bin/lscpu",
+          "resolved": "/usr/bin/lscpu",
+          "sha256": "d388925b460106dbfb52b35c78d2d14a382231b99debcae8ad79002782f06f58",
+          "version_exit": 0
+        },
+        "rustc": {
+          "bytes": 646032,
+          "first_line": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+          "path": "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "resolved": "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "sha256": "ba4b837efb6612dfa8d941c5a72b8a50d1d03a0f36216743b173949aa8d9eb75",
+          "version_exit": 0
+        },
+        "rustfmt": {
+          "bytes": 5288720,
+          "first_line": "rustfmt 1.9.0-stable (ac68faa20c 2026-05-25)",
+          "path": "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+          "resolved": "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+          "sha256": "342c3d56e8958da0b108108a39e37ceac64ebdd42e6eefafa237d219e5b7eb0c",
+          "version_exit": 0
+        }
+      }
+    },
+    "tracked_blob_manifest_sha256": "b97300c68738fd61a287d214a1d70f28c316f00c3e6d0b2277685f0d29ab182e",
+    "tracked_files": 8275,
+    "tracked_path_sha256_rollup": "c1b7a6d7074f9a3b5c1ad5e0f1961265da4047de2a85a9bfbfd71df69336b0fd",
+    "unexpected_files": [],
+    "vm_runtime": {
+      "bytes": 6558718,
+      "example": {
+        "bytes": 12121760,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+        "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+      },
+      "features": [
+        "test-failpoints"
+      ],
+      "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/deps/libxiao_runtime-8b4d2732a4d3a608.rlib",
+      "profile": {
+        "debug_assertions": false,
+        "debuginfo": 0,
+        "opt_level": "3",
+        "overflow_checks": false,
+        "test": false
+      },
+      "sha256": "c3d6d82090be554697cf288384854b6fb883d06d886bcfc1e4a1ff2f66487a55"
+    },
+    "worktree_examples": {
+      "core/rust/crates/xiao-driver/examples/b3_env_performance.rs": {
+        "bytes": 17566,
+        "sha256": "f59850446f994db649e838b1945dbcd25bd08c020d64846f0dd1ecc3e1fc356a"
+      },
+      "core/rust/crates/xiao-driver/examples/env_perf/native.c": {
+        "bytes": 5730,
+        "sha256": "2a09150c6c42333b48c4a510b67b545c5a9249a84b1ba20077081a9f06c164ee"
+      },
+      "core/rust/crates/xiao-driver/examples/env_perf/native.rs": {
+        "bytes": 4310,
+        "sha256": "5f5fac1e1e047ff98f907f0fb507c229d5ae60a897fa57761d4e81d0f6ccc457"
+      },
+      "core/rust/crates/xiao-driver/examples/env_perf/process.rs": {
+        "bytes": 5725,
+        "sha256": "2deca841c42e5a9af7c12924f3e7b13a6e58a374fca5194fe5b4eebc3a4bf398"
+      },
+      "core/rust/crates/xiao-driver/examples/env_perf/workload.rs": {
+        "bytes": 4291,
+        "sha256": "990d723d4699958d19b72256fbf72d8dfbb69995cd21edf8da309f4768fd1a46"
+      }
+    },
+    "worktree_fixtures": {
+      "tests/fixtures/docs/env/.gitattributes": {
+        "bytes": 46,
+        "sha256": "275137a5faac6951e42d2f4214563ebf19d111d67c386646f32f8882ae0624b3"
+      },
+      "tests/fixtures/docs/env/tutorial.input.json": {
+        "bytes": 69,
+        "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+      },
+      "tests/fixtures/docs/env/tutorial.stdout": {
+        "bytes": 55,
+        "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+      },
+      "tests/fixtures/docs/env/tutorial.xiao": {
+        "bytes": 467,
+        "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+      }
+    }
+  },
+  "identity_sha256": "ff3e88b0753b00dbfc328d2ac9a7d098d6e4da6572a36cbab44d2534beed8347",
+  "passed": true,
+  "probe": false,
+  "protocol": {
+    "batches_per_case": 5,
+    "calibration_target_seconds": 0.1,
+    "fixed_calls_per_workload": 64,
+    "maximum_growth_factor": 16,
+    "maximum_repeats": 16777216,
+    "minimum_seconds": 0.05,
+    "release": true,
+    "warmup_repetitions": 1
+  },
+  "records": [
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4997,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-snapshot-256/batch-1.json",
+          "sha256": "c2b61c015ca721854c30c89195124f10db543843e429c136fe130fd066e5ebcc"
+        },
+        {
+          "bytes": 4986,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-snapshot-256/batch-2.json",
+          "sha256": "9a7c301e7e7b86b011a29cde38369eef71d574d5dbf0bdfb4f630a9b44a10009"
+        },
+        {
+          "bytes": 4996,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-snapshot-256/batch-3.json",
+          "sha256": "d1753515bd9791571d6f45e147e00aa6a1d1f8c9d0a3c4f7062e41549428c83c"
+        },
+        {
+          "bytes": 4997,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-snapshot-256/batch-4.json",
+          "sha256": "23458484bc27f2aa0f7d747fbdf4c1273f6828f784ecf4af7177e829248acad7"
+        },
+        {
+          "bytes": 4987,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-snapshot-256/batch-5.json",
+          "sha256": "0b81a9ad355213a2723a77ce13d81c86709f3f2fef0843b87dda6d31ea6e6c42"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 12121760,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+        "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00007163775976562492,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 12918784,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.00007163775976562492,
+        0.00007358381835937505,
+        0.00006982889062500004,
+        0.00007125757031249992,
+        0.00007227742513020831
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4993,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-snapshot-512/batch-1.json",
+          "sha256": "6b036c058105a3f44a7d7731ca4bc4b58606028224cd3d586f0ed7be26aa2eba"
+        },
+        {
+          "bytes": 4976,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-snapshot-512/batch-2.json",
+          "sha256": "f93c179b6303111f57cd76f46a7b4b03d8dcc524d78cf569d98ef5a9cec8d409"
+        },
+        {
+          "bytes": 4986,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-snapshot-512/batch-3.json",
+          "sha256": "e0373fcb616b74f948db8414bdf897604ad6ccf64bd750be07461ce0d01a0953"
+        },
+        {
+          "bytes": 4984,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-snapshot-512/batch-4.json",
+          "sha256": "4178ab8fbdd41349ede2bdc46b1c304504b46f060bbbc5da025a7d43c4ca4791"
+        },
+        {
+          "bytes": 4968,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-snapshot-512/batch-5.json",
+          "sha256": "49d7ffe954ab3ef342cd7c13b8b61babeb6fdfc833ce4e787f85efc0fa56420e"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 2.0112070821734727,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 12121760,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+        "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00014407836979166667,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 12959744,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0001438549596354168,
+        0.00014711602604166652,
+        0.00014340116406250005,
+        0.00014990466536458344,
+        0.00014407836979166667
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4984,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-snapshot-1024/batch-1.json",
+          "sha256": "d4e44982669f419a31a0ec8a007bef2e42959621198c9071a26a9ffc4a745dae"
+        },
+        {
+          "bytes": 4985,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-snapshot-1024/batch-2.json",
+          "sha256": "a44a44e8c85678060199da835730342d348d09168b467b09883624114c4f6d65"
+        },
+        {
+          "bytes": 4978,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-snapshot-1024/batch-3.json",
+          "sha256": "6b4257bf78f48655aea0e3c13044074c21054a6818e2c2a86d71d11c41601918"
+        },
+        {
+          "bytes": 4979,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-snapshot-1024/batch-4.json",
+          "sha256": "87c48ec6b089c87ce5a9feb15a7a22301783f8fd9882b84a35b0d1a1b1f90afe"
+        },
+        {
+          "bytes": 4988,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-snapshot-1024/batch-5.json",
+          "sha256": "9485fa36e85ef017c6f5a9f69b26272b57eb8927a78f8fb76f571d9c7938fcc6"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 2.2136233401909786,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 12121760,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+        "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00031893524218750015,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 12840960,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0003229641152343752,
+        0.0003232273398437498,
+        0.00031528510937500016,
+        0.0003068619003906251,
+        0.00031893524218750015
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4588,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-get-256/batch-1.json",
+          "sha256": "b5b908eae42f2177d33e251d4ad7abf9bf95acfd0a8ee9548aacbb456ee962d1"
+        },
+        {
+          "bytes": 4598,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-get-256/batch-2.json",
+          "sha256": "cdfdb52e5821dc769fd48199aa074730b0e729d93e262c82d35c6cd29dd41733"
+        },
+        {
+          "bytes": 4589,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-get-256/batch-3.json",
+          "sha256": "0f3433fde6b91350fa3ddbf103282a194072c18a3a995248d2c9fe5f176aaf4c"
+        },
+        {
+          "bytes": 4577,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-get-256/batch-4.json",
+          "sha256": "1f053a02544f7626d105bf38b8debad9b57fe3147bb701fa1e17fb0f910261bb"
+        },
+        {
+          "bytes": 4598,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-get-256/batch-5.json",
+          "sha256": "696d22c6b7f9ca1f47299263143dbb96cfe76828a519fe503b1bfa9139aa9f3e"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 12121760,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+        "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0016735459375000004,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 12779520,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0017382154375000002,
+        0.0016190857499999993,
+        0.0016735459375000004,
+        0.001669442453125,
+        0.0016832459843749998
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4895,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-get-512/batch-1.json",
+          "sha256": "3e2025b71df5a64a235fd7f8cc856802046ed9c5a9afe8cdc42c1a0e42a6aac9"
+        },
+        {
+          "bytes": 4598,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-get-512/batch-2.json",
+          "sha256": "44b55bfc6f3df4e55f529aec89568398ce650d3719a164453ee26020d2e09d39"
+        },
+        {
+          "bytes": 4598,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-get-512/batch-3.json",
+          "sha256": "0fcb48baa946db6b34d7b0376ade0c7ef0fd1a0bb79acf9aefb3efb8ab3e0fd3"
+        },
+        {
+          "bytes": 4598,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-get-512/batch-4.json",
+          "sha256": "90e36c5a479cd644cafcd0b3022ab50900c17b54ad1f6f42aca079b1dd9a9db8"
+        },
+        {
+          "bytes": 4588,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-get-512/batch-5.json",
+          "sha256": "50e8e9a211f0b21a4dcb8c1e5474e1c330019bda823276af90388e1c9b0858dc"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 1.006893938587608,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 12121760,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+        "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.001685083260416666,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 12808192,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.001685083260416666,
+        0.0016572189062500002,
+        0.0016635305156249998,
+        0.0017270292812500002,
+        0.0017181581249999995
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4601,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-get-1024/batch-1.json",
+          "sha256": "474b3a4a65f8e0ef33be334a925d742d2d0606957a81989437d7223455bee757"
+        },
+        {
+          "bytes": 4602,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-get-1024/batch-2.json",
+          "sha256": "6699022a84e67d470a72f4b7a5c3ab97de340cd433afe9ea892c2c2b447c3be9"
+        },
+        {
+          "bytes": 4582,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-get-1024/batch-3.json",
+          "sha256": "6d67447eed027028e17c5e43453d78f63a0dca01ef635e5730a276f5c3b934b1"
+        },
+        {
+          "bytes": 4579,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-get-1024/batch-4.json",
+          "sha256": "623d06a7f116b6c4aa58c40ff3b2e692c278c0274777d3cdc1883741ab4ae31b"
+        },
+        {
+          "bytes": 4571,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-get-1024/batch-5.json",
+          "sha256": "4185de6ad94985e1f8e7da7931ba31788b6bb5fc034c5e54a2fd995876e9fd8d"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 0.9871309616853567,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 12121760,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+        "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.001663397859375,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 13033472,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0016681869843750007,
+        0.0016416804687500001,
+        0.001663397859375,
+        0.001884051375,
+        0.00166029290625
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4598,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-set-256/batch-1.json",
+          "sha256": "9ba2f9b4a20a7294bfc5de7d4559c357d00a77e8a910d4e88a46b6f99e08d53d"
+        },
+        {
+          "bytes": 4881,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-set-256/batch-2.json",
+          "sha256": "c607e34067818c70d4760c75127ed3fed45c2e6e37d2a48b6dfa401de5a03ff2"
+        },
+        {
+          "bytes": 4589,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-set-256/batch-3.json",
+          "sha256": "9a3c05d60951bd120468c58ad44cd1511b772fc78bec74d2eee369bf2205941b"
+        },
+        {
+          "bytes": 4888,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-set-256/batch-4.json",
+          "sha256": "fb1d137ebc54b03e3d7186aff8a74932866600ef81ef1d51a89283a70f00054e"
+        },
+        {
+          "bytes": 4589,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-set-256/batch-5.json",
+          "sha256": "3b71de184f665b632af15cf87d0f6dca107fafebaf8a478e95e5fd8ad0aa0b14"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 12121760,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+        "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0012384076625000001,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 12787712,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0012266004166666667,
+        0.0012384076625000001,
+        0.0012609761124999998,
+        0.0012875279124999997,
+        0.0012244046770833333
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4598,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-set-512/batch-1.json",
+          "sha256": "0e25460506c74252b4eee62df308013287642c3b86204ca71ee89fd03075cc80"
+        },
+        {
+          "bytes": 4589,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-set-512/batch-2.json",
+          "sha256": "9a3b5e2322e189c983689045c16ee7c18e763416fa774b41c74326926776e706"
+        },
+        {
+          "bytes": 4907,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-set-512/batch-3.json",
+          "sha256": "3dac377b81a02e7e798d5103c081d67e43a04e8ab38740208b5af8d14f4bd15c"
+        },
+        {
+          "bytes": 4598,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-set-512/batch-4.json",
+          "sha256": "28728a5f8a4fff77cef0bfd41b3072f6d5b9450fc6f033d3f2bcce90090e4bac"
+        },
+        {
+          "bytes": 4589,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-set-512/batch-5.json",
+          "sha256": "f08d5b1f88d8d6137aaaf7d9695c01121c8420652299613363178902a4fe736a"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 1.0626665615451167,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 12121760,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+        "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0013160144125000004,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 12845056,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0013411637750000004,
+        0.0012241238645833335,
+        0.0013160029812499998,
+        0.0013160144125000004,
+        0.0013400725124999998
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4586,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-set-1024/batch-1.json",
+          "sha256": "4a9e76c5a5539ababc6b78039b573578ff46beb89bd9941fa03f012874d31c4d"
+        },
+        {
+          "bytes": 4895,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-set-1024/batch-2.json",
+          "sha256": "bbe98b0b316824fc6e89f559186cec25a30bf9d4723657e0ae6c948cb077121d"
+        },
+        {
+          "bytes": 4602,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-set-1024/batch-3.json",
+          "sha256": "b4584f9caf8f2df9cff3bdbb2b4ebf479d13e8a3629c717a84da8a8412586a22"
+        },
+        {
+          "bytes": 4602,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-set-1024/batch-4.json",
+          "sha256": "4ce092afb0f5af07201ac596fab4e75e9f802b50a1584d1f01d6efedc2efb5f9"
+        },
+        {
+          "bytes": 4602,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-set-1024/batch-5.json",
+          "sha256": "616f64390b410101e0365e8f39816dd216704820c28b9175235aa0e08e8123dd"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 0.9887951075155873,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 12121760,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+        "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0013012686125000003,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 12832768,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.001329718225,
+        0.001280274775,
+        0.0013012686125000003,
+        0.0012737067916666664,
+        0.0022035683593749993
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4649,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-unset-256/batch-1.json",
+          "sha256": "a01f8a649764c7c7f567187f4f8b565bdd06234f2cd67326fbf8c88aaba16e81"
+        },
+        {
+          "bytes": 4658,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-unset-256/batch-2.json",
+          "sha256": "8ca9faede1d39a04f0ea5a9f72382834b9fd4dec7fdd544d7f57a2a236f80e75"
+        },
+        {
+          "bytes": 4658,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-unset-256/batch-3.json",
+          "sha256": "f4af43cd5354be70acef7f19baf7b07f5e02438a277662f17e6f53a49cfc22e1"
+        },
+        {
+          "bytes": 4657,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-unset-256/batch-4.json",
+          "sha256": "781cafadeda388d7c3e3fce087d87787fb232cb708e74f830c3ee4e428b6121e"
+        },
+        {
+          "bytes": 4656,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-unset-256/batch-5.json",
+          "sha256": "ed3c223464f8e384b088887558264cff4013633ee210e322f3fc251927312f00"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 12121760,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+        "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0012652306750000003,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 12906496,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0012652306750000003,
+        0.0012408396770833333,
+        0.0012342572083333335,
+        0.0013467956500000002,
+        0.0012914433999999995
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4649,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-unset-512/batch-1.json",
+          "sha256": "aeaae30f137001bde7a4b12f83d8d5e81dd34d95be8be60e1678bd85e9d05bb5"
+        },
+        {
+          "bytes": 4658,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-unset-512/batch-2.json",
+          "sha256": "465b7c3eb29cc8f6a31898be0b15b1e14f24992c3e7ef855e7e37d1834c58c33"
+        },
+        {
+          "bytes": 4649,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-unset-512/batch-3.json",
+          "sha256": "24cf0371ac0558244a2d4e7b8d6baad76b673bfb1720a9800ceb63525c72eef8"
+        },
+        {
+          "bytes": 4649,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-unset-512/batch-4.json",
+          "sha256": "322ae74d13d4875912b284eac45934d334a6161d9a1ddb99d7050e43547060bf"
+        },
+        {
+          "bytes": 4642,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-unset-512/batch-5.json",
+          "sha256": "23e812800e998adb093f79990d5862cf6fc61cb69832cd756a86281b00662969"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.0013533533453622,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 12121760,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+        "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0012669429791666667,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 12709888,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0012742350624999998,
+        0.0012642636624999996,
+        0.0014074086375000007,
+        0.0012619681875000004,
+        0.0012669429791666667
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4652,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-unset-1024/batch-1.json",
+          "sha256": "2cee83d31aea8b3e5d3b9a0c362a53479051a78c3d8b2f6923cb8238f075ca75"
+        },
+        {
+          "bytes": 4662,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-unset-1024/batch-2.json",
+          "sha256": "dc4aae9b4a6a4bfb5137ffb9968d0cd962a6333b82241bfe46c888912d4a221d"
+        },
+        {
+          "bytes": 4659,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-unset-1024/batch-3.json",
+          "sha256": "0ed4f82bda37baa5a907e71ffd99db0d97429056ea9199341c8f3aca8dea273d"
+        },
+        {
+          "bytes": 4662,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-unset-1024/batch-4.json",
+          "sha256": "0c0cb9cfcaca4abea831d1d9559cb960fdc766614abacc41c351dda234d8b0c9"
+        },
+        {
+          "bytes": 4640,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-unset-1024/batch-5.json",
+          "sha256": "02c5249bc6b0b79688bf9758cce2476b859b92ff339e7f087d00b3598d11bf1c"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.0352535564486978,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 12121760,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+        "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0013116072250000002,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 13033472,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0012785666499999994,
+        0.0012922748000000002,
+        0.0013144114125000004,
+        0.0013116072250000002,
+        0.0013556251625
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4872,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-full-replace-1024/batch-1.json",
+          "sha256": "d2d35a4f3304bf16010dc7233c67fb53d83cb061a180a77c7426fd92bd14a0ed"
+        },
+        {
+          "bytes": 4872,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-full-replace-1024/batch-2.json",
+          "sha256": "5cb9648b15bb22d8e1be11e5017279b654812d06ef72ae455789c99f46781340"
+        },
+        {
+          "bytes": 5179,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-full-replace-1024/batch-3.json",
+          "sha256": "e36bb07b945d8e0ef8e5cc553dc662a6b10ff538d96105c4e2e5833119b4e337"
+        },
+        {
+          "bytes": 4871,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-full-replace-1024/batch-4.json",
+          "sha256": "9564e4224f7c3035a13ab2f3a67b36a09b39030fdb7358df75a433f460f35068"
+        },
+        {
+          "bytes": 4863,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-full-replace-1024/batch-5.json",
+          "sha256": "d1dfe8fd6b088c8f4fc4d37184b3cd872bed3bc532d8f74989f54394d2bc41ea"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18572,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/full-replace/measurement.xiaoc",
+        "sha256": "41b3ce0fe042aaa08002e366f65f261413f9a082ae56cd9d71937c3c13811c8e"
+      },
+      "case": "full-replace",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 12121760,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+        "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.0012158519312500007,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 14114816,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0012237203020833336,
+        0.0011922560208333332,
+        0.0012158519312500007,
+        0.001219285520833333,
+        0.0012029260312500002
+      ],
+      "source": {
+        "bytes": 3016,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/full-replace/measurement.xiao",
+        "sha256": "0c8eb78116619c71030e909170c35457e0d219a8a8db6ba15946752a68df3c4c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4748,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-overflow-1024/batch-1.json",
+          "sha256": "788d2cc774046c651ea800b5f03792e492f0ebaefdc8051ce97856b58757ee5a"
+        },
+        {
+          "bytes": 4758,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-overflow-1024/batch-2.json",
+          "sha256": "199a8026cce04a3de2b3177fe2cb42065550bf163983c2e2d7b2c765040d9887"
+        },
+        {
+          "bytes": 4749,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-overflow-1024/batch-3.json",
+          "sha256": "41defbca5831c29a96175aa79cd7185a4069b664d4797f20771554c6e2acaafd"
+        },
+        {
+          "bytes": 4758,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-overflow-1024/batch-4.json",
+          "sha256": "bdf138a37e5919cc5052b46287309d3ffc0bc2fd5054e48a60edacd399830976"
+        },
+        {
+          "bytes": 4749,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/vm-overflow-1024/batch-5.json",
+          "sha256": "49f5647fa039f9a74da873fe42d1c572611f55ae2991e91340472b97849181b7"
+        }
+      ],
+      "bytecode": {
+        "bytes": 26444,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/overflow/measurement.xiaoc",
+        "sha256": "9fe8cbe3ac8cdabd8b4f5896a484f66be03ef8011851901d12735d560ae6c7f1"
+      },
+      "case": "overflow",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 12121760,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+        "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.0015773573281250002,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 14065664,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0015609014875000004,
+        0.0016405298593749997,
+        0.0016622742875000002,
+        0.0015678823499999995,
+        0.0015773573281250002
+      ],
+      "source": {
+        "bytes": 4455,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/overflow/measurement.xiao",
+        "sha256": "b851b65d790ce89cc99e9db1e13c4d00343e8901ebceb5ce70f441f1da79206a"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3869,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-snapshot-256/batch-1.json",
+          "sha256": "56df549402a973ba825511497e67f9af50a512c087324f0c07ec846404ca81ff"
+        },
+        {
+          "bytes": 3870,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-snapshot-256/batch-2.json",
+          "sha256": "2645ca74e5e043c4ea397d088478bb7c45c3fc21c753c40da700692c7f29c38d"
+        },
+        {
+          "bytes": 3870,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-snapshot-256/batch-3.json",
+          "sha256": "108e041b1a270f5e760ed71d6341aa525ff9c9cb72d32974ce90387a3557c608"
+        },
+        {
+          "bytes": 3870,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-snapshot-256/batch-4.json",
+          "sha256": "37f14dd01af20b65d16dc000cde6fc9b53e43cca25425f5f24dba7ac13b1f65c"
+        },
+        {
+          "bytes": 3870,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-snapshot-256/batch-5.json",
+          "sha256": "7e83897a3ad6f374dade899d2ddd426a89dada1dfbcefced8c8862d7667935d0"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9687432,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement-o0",
+        "sha256": "033e4fb69ec03c6d08a587b587dd1a80e1ba9eed9c10b95afc077c65b9c91b91"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0001108437664921875,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 2019328,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0001108437664921875,
+        0.00011249800029101563,
+        0.00011003307221777344,
+        0.00010912029581835938,
+        0.00011091623278515626
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3857,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-snapshot-512/batch-1.json",
+          "sha256": "d795637a0b7922d776d3fe2b5281bc63bd1cfdcb701c6991ba4ba62968cb111a"
+        },
+        {
+          "bytes": 3868,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-snapshot-512/batch-2.json",
+          "sha256": "9c8638e8ba9a71096ae8e205f9e5c9bd517e10171dd5bb27825b8b357f818d82"
+        },
+        {
+          "bytes": 3867,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-snapshot-512/batch-3.json",
+          "sha256": "c8f119463c2511ce8cc888b720193190609141404e3bf8e3298bdb92b547bb63"
+        },
+        {
+          "bytes": 3865,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-snapshot-512/batch-4.json",
+          "sha256": "5559e128f13097263fd8aad6d66bad03459c13dcba652b10a488f6dc5eb19e69"
+        },
+        {
+          "bytes": 3868,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-snapshot-512/batch-5.json",
+          "sha256": "f85ce3746168e2af353065278a75c2daa827dd580eabcb72cfbb735e90372b6a"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 2.1053875698144093,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9687432,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement-o0",
+        "sha256": "033e4fb69ec03c6d08a587b587dd1a80e1ba9eed9c10b95afc077c65b9c91b91"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0002333690881640625,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 2031616,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00021954287265625,
+        0.00024986918958789064,
+        0.00024164390171679687,
+        0.0002333690881640625,
+        0.00022156989848632814
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3870,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-snapshot-1024/batch-1.json",
+          "sha256": "2195de9fd90aadaba3a4353c0b82155d9eb6187ceab2d0013a472185739b6b5e"
+        },
+        {
+          "bytes": 3572,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-snapshot-1024/batch-2.json",
+          "sha256": "ffe192d3134509141c2ea1e74185c018917d96fb9f27516258a8480862668f75"
+        },
+        {
+          "bytes": 3570,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-snapshot-1024/batch-3.json",
+          "sha256": "4a054317472f08e68b3f24113b1548a57e1380ab4b610bb0c4cd231d45f0f240"
+        },
+        {
+          "bytes": 3572,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-snapshot-1024/batch-4.json",
+          "sha256": "e99a5726416aade7663e174a0db3f6e763536db0f17bb52dc602bedd4bb9f0d9"
+        },
+        {
+          "bytes": 3871,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-snapshot-1024/batch-5.json",
+          "sha256": "e19357a6a4871cb88f4b9e04539d2486be786e4e7e6d14e073ead3fa9bc78abb"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 2.148222199137255,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9687432,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement-o0",
+        "sha256": "033e4fb69ec03c6d08a587b587dd1a80e1ba9eed9c10b95afc077c65b9c91b91"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0005013286557864583,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 2105344,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0005013286557864583,
+        0.0006269062674147727,
+        0.0005002924370673077,
+        0.0005053425046971154,
+        0.0004943956642656249
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3764,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-get-256/batch-1.json",
+          "sha256": "8c66fbf83519bb25824d65699124149102a50b020e36fda332bfd495b7b71f2d"
+        },
+        {
+          "bytes": 3766,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-get-256/batch-2.json",
+          "sha256": "efbc9c71e2e63001eaeefb7cc63eb829a7e07d60ebcc49b433aede91bc3c1bb6"
+        },
+        {
+          "bytes": 3757,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-get-256/batch-3.json",
+          "sha256": "0158124404a5a0bdbc12054b9a6a7e1ce3b3c6fbe276a50a13348333e2c7e688"
+        },
+        {
+          "bytes": 3765,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-get-256/batch-4.json",
+          "sha256": "ec55fda12677bf41351dbddc86938acd85afeed19b834982f08dd10e475c476f"
+        },
+        {
+          "bytes": 3764,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-get-256/batch-5.json",
+          "sha256": "2fdc89da735e86ecb9e6ea10fe2524b6b2b45b39b893138da90c6279fe6e9701"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9687432,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement-o0",
+        "sha256": "033e4fb69ec03c6d08a587b587dd1a80e1ba9eed9c10b95afc077c65b9c91b91"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00016491265625,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 2019328,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00016476093098958332,
+        0.00017136810286458334,
+        0.00016491265625,
+        0.00016293679817708335,
+        0.00016996483203124998
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3763,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-get-512/batch-1.json",
+          "sha256": "fc1714d91dbf055542971304a753323b024cb8898823f06d23785595dc999c62"
+        },
+        {
+          "bytes": 3762,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-get-512/batch-2.json",
+          "sha256": "12b19622e631fff2334dc123b0ab22d0715a09b2e78e6d0de382845a2f53a953"
+        },
+        {
+          "bytes": 3761,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-get-512/batch-3.json",
+          "sha256": "d49d889a9a5e0760d82a8b8a093dd2c5b548097741c51a5323aeb02d8635a52f"
+        },
+        {
+          "bytes": 3764,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-get-512/batch-4.json",
+          "sha256": "cab3a2c73f99b7b23441effeef92e1c1aafe9b20a93d3c1964a01f2f6c3947f4"
+        },
+        {
+          "bytes": 3765,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-get-512/batch-5.json",
+          "sha256": "3d445aa3eec3b9f04152ae57b5edc69164013c95fff087220b99f594f2d0af62"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 1.048582440894375,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9687432,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement-o0",
+        "sha256": "033e4fb69ec03c6d08a587b587dd1a80e1ba9eed9c10b95afc077c65b9c91b91"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.000172924515625,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 2093056,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00016257855859375,
+        0.0001699161953125,
+        0.000172924515625,
+        0.000321575919921875,
+        0.00017835711197916666
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3769,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-get-1024/batch-1.json",
+          "sha256": "bc93d86f5164fcf17045770fe8137d1c1deaaa4cf905d18dabfe1e706d86b61e"
+        },
+        {
+          "bytes": 3770,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-get-1024/batch-2.json",
+          "sha256": "c875d4d4a57faa7ea6a7062d5382a5bd77292127636cd4a668e567e7bbb4215e"
+        },
+        {
+          "bytes": 3769,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-get-1024/batch-3.json",
+          "sha256": "5e646599fa6e9e9dfd3cdb67fedabf1e60e9a893b070b97fe11207d1895c644e"
+        },
+        {
+          "bytes": 3770,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-get-1024/batch-4.json",
+          "sha256": "03f7d85baec15bd809610f4f2a33054a6e0c998010ebc568b9300d7bc5d5fe80"
+        },
+        {
+          "bytes": 3769,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-get-1024/batch-5.json",
+          "sha256": "b21889204f90381dd3f1c08292d04dcae1fcbd179074986ec3bb9c0b3af8798b"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 1.0222985134379594,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9687432,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement-o0",
+        "sha256": "033e4fb69ec03c6d08a587b587dd1a80e1ba9eed9c10b95afc077c65b9c91b91"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00017678047526041669,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 2105344,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00017689711718750002,
+        0.00017371016536458334,
+        0.0001747064283854167,
+        0.00017678047526041669,
+        0.00017915256640625002
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3768,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-256/batch-1.json",
+          "sha256": "7e0981a889f8e3843804e3f744dab8ec224214c26d3959b8a3adb15e86de7b9e"
+        },
+        {
+          "bytes": 3766,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-256/batch-2.json",
+          "sha256": "c9d89431308af3ecb09081371802b34ef0ff17a7d188f14fde475c858eb33fbe"
+        },
+        {
+          "bytes": 3765,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-256/batch-3.json",
+          "sha256": "3981a29137ab9ee3bc706300b45090631efb0edc5439a88270d9f9a10623c53c"
+        },
+        {
+          "bytes": 3767,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-256/batch-4.json",
+          "sha256": "609f4401602508d579919a669287eccb3aa2e4de75ac29f63f33502d03d007f2"
+        },
+        {
+          "bytes": 3768,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-256/batch-5.json",
+          "sha256": "40adcd143ff5fed51894ee7c8c021b1be30d1cff15c303dab702739948cfca45"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9687432,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement-o0",
+        "sha256": "6e0dc23fc230398a01050c0a43d4f02e60a778f728a8c4dde2f14d73436f170d"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00007035226041666666,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 1986560,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00006659468229166667,
+        0.00007173188151041666,
+        0.00007713241796875,
+        0.00006869583463541667,
+        0.00007035226041666666
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3766,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-512/batch-1.json",
+          "sha256": "8638c57fe6486a66d90c4ee60c093199dbb64ba83b95953d41bfa961b2bac0c4"
+        },
+        {
+          "bytes": 3763,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-512/batch-2.json",
+          "sha256": "d718f14f2fdd0b6401973c6242181cd032333797db06b860d487003e3acc4abb"
+        },
+        {
+          "bytes": 3768,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-512/batch-3.json",
+          "sha256": "c40b5262d8740a9b5892f44c21eb8d9bb0574ff7317984c50e6d8a0b957354c2"
+        },
+        {
+          "bytes": 3768,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-512/batch-4.json",
+          "sha256": "faf5ab51a15f53f891f8666f8587f710654456050c46a3372d0d2d90bc6887fd"
+        },
+        {
+          "bytes": 3768,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-512/batch-5.json",
+          "sha256": "a18cda43c77e2265ebb3873274f5af1b5f5820b879e304ab21656766132e3786"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 1.0273467581369173,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9687432,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement-o0",
+        "sha256": "6e0dc23fc230398a01050c0a43d4f02e60a778f728a8c4dde2f14d73436f170d"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00007227616666666667,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 2031616,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.000072679072265625,
+        0.0000701063828125,
+        0.00007441681380208333,
+        0.00007190689127604167,
+        0.00007227616666666667
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 4068,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-1024/batch-1.json",
+          "sha256": "4fc38538e8eff62f6baaf9364e56dc201f62e78f8b32471be08fe3605a2b8210"
+        },
+        {
+          "bytes": 3770,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-1024/batch-2.json",
+          "sha256": "ce2e05d50246388462c98f8ce3ae173153008bf1f2af9f75dc3e896a23f4f30e"
+        },
+        {
+          "bytes": 3772,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-1024/batch-3.json",
+          "sha256": "e2ec5f0599c06a7d0cfb9642e9796d2242b341e850df0237b42a5dbb67995880"
+        },
+        {
+          "bytes": 4065,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-1024/batch-4.json",
+          "sha256": "5928b91daa6346e4fa8db6d0a5d7e5d5eb59a0e8442b942229a3833870a02486"
+        },
+        {
+          "bytes": 3771,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-1024/batch-5.json",
+          "sha256": "b9d5416a9927f0a78605025ed7350a604fe982232ec545bae8e76545dd8c700a"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 1.02481101135229,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9687432,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement-o0",
+        "sha256": "6e0dc23fc230398a01050c0a43d4f02e60a778f728a8c4dde2f14d73436f170d"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00007406941145833333,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 2215936,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00007868502001953125,
+        0.000073842880859375,
+        0.00007406941145833333,
+        0.000074398644140625,
+        0.00007290955143229166
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3802,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-256/batch-1.json",
+          "sha256": "a17fade0e4fe34e9eac36e02cd3f2080c854922234d5c0afc31d7b5e53bdd08a"
+        },
+        {
+          "bytes": 3803,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-256/batch-2.json",
+          "sha256": "cecdf4e5dced40212e5be65632922e974f463227e7b471049058449bbaa6cbb0"
+        },
+        {
+          "bytes": 3804,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-256/batch-3.json",
+          "sha256": "5a5d20ace5a26859d8029891777bb4682f1d98329fb6acbe9b198efb19e8f952"
+        },
+        {
+          "bytes": 3803,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-256/batch-4.json",
+          "sha256": "c7e6126703d279c45801f5c6911fb8b7c65b6a82d40291526ebee6b881794f13"
+        },
+        {
+          "bytes": 3803,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-256/batch-5.json",
+          "sha256": "3e78138fb8f8e16f653ca094266af65fcf414f580be4a486f88a9c8c91484866"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9687432,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement-o0",
+        "sha256": "0bf94dc7dc492eb260dcdf0b56b048d2a15901f5ef3c309744b138a99d1a638c"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.000057930424107142853,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 1961984,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00005980261941964286,
+        0.0000550302236328125,
+        0.000056276052455357144,
+        0.000057930424107142853,
+        0.0000582651943359375
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3804,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-512/batch-1.json",
+          "sha256": "61a995f5cee00be03641d12d0b8712ae6c154ca18deb91de5b1f14763f11ce15"
+        },
+        {
+          "bytes": 3804,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-512/batch-2.json",
+          "sha256": "9a4815e645b67e6b37d1bb273c2ca392b163ebc3cdcbd51c6137788fb5acd818"
+        },
+        {
+          "bytes": 3804,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-512/batch-3.json",
+          "sha256": "4ec38e6bded15b897afe6104bffe156f5ff2683b0bc593aeb680ff116b73b11c"
+        },
+        {
+          "bytes": 3804,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-512/batch-4.json",
+          "sha256": "a080ff7971d83490fc1f5982418210ca448d2ed1b395753f09d9fc2e7d7e2ef3"
+        },
+        {
+          "bytes": 3800,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-512/batch-5.json",
+          "sha256": "0c681dda96b419a662c6d66205c0f39e4efc9098b94edbf496526f08a35436ba"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.1566753012420354,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9687432,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement-o0",
+        "sha256": "0bf94dc7dc492eb260dcdf0b56b048d2a15901f5ef3c309744b138a99d1a638c"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00006700669075520834,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 2039808,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00006708406184895834,
+        0.00006765456919642857,
+        0.00006490309933035714,
+        0.00006700669075520834,
+        0.00006517247265625
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3808,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-1024/batch-1.json",
+          "sha256": "c0941990a66b6093f986ad4c34e0475f3fd4b561bb52954f285e5b7fba9af736"
+        },
+        {
+          "bytes": 4103,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-1024/batch-2.json",
+          "sha256": "bf70880e72b45ab81d99ea8a375ea3626387448e5f008ab0a8b4830ef62883cc"
+        },
+        {
+          "bytes": 3803,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-1024/batch-3.json",
+          "sha256": "c0946be1cc2fd1704a25c67d5c7ce716b9a248be5388bffbe894ddd9acf4f37e"
+        },
+        {
+          "bytes": 4102,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-1024/batch-4.json",
+          "sha256": "e897fa833db761e85fab345d95d798aaaea1b079220a8ff22c25e021dc40e064"
+        },
+        {
+          "bytes": 3802,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-1024/batch-5.json",
+          "sha256": "e7d38b8363436bf170fce75548644a9cf4e67dfc3356cd65027b1f421c2dbb3c"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.4114416765186801,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9687432,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement-o0",
+        "sha256": "0bf94dc7dc492eb260dcdf0b56b048d2a15901f5ef3c309744b138a99d1a638c"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0000945760359375,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 2183168,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00009775518437500001,
+        0.0000970093291015625,
+        0.0000945760359375,
+        0.0000924980439453125,
+        0.000092374646875
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3935,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-full-replace-1024/batch-1.json",
+          "sha256": "d6fe2547c6e81cf89031885d88d697b31c712f048e01838eda6846a87ea72d96"
+        },
+        {
+          "bytes": 3937,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-full-replace-1024/batch-2.json",
+          "sha256": "ae02fea08f42ff790797c860c5b41e482ffef8c84e218f62b6c0aa1c9bb01e98"
+        },
+        {
+          "bytes": 3937,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-full-replace-1024/batch-3.json",
+          "sha256": "766b51ea4e1dc877870b15a951c619ee399f8d770f0e215f7eabcb904282d028"
+        },
+        {
+          "bytes": 3937,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-full-replace-1024/batch-4.json",
+          "sha256": "a5f9981b2df046c0cadf4bd0f2432ce7b5e9467051abce838fb42ecbf231b60b"
+        },
+        {
+          "bytes": 3937,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-full-replace-1024/batch-5.json",
+          "sha256": "7fc2e70339b0e4e7ef4eceb177723f95fdcfd6abda8149416c004a8e04d0f49b"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18572,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/full-replace/measurement.xiaoc",
+        "sha256": "41b3ce0fe042aaa08002e366f65f261413f9a082ae56cd9d71937c3c13811c8e"
+      },
+      "case": "full-replace",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9683336,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/full-replace/measurement-o0",
+        "sha256": "72588c57fe637ab0291514ec810f55dbc9c73d1a6726ab8ffb0cbf3069c2a077"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.00007056062369791667,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 4993024,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00007056062369791667,
+        0.00006969582161458334,
+        0.00007514533072916667,
+        0.00007245036783854168,
+        0.00006976001041666667
+      ],
+      "source": {
+        "bytes": 3016,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/full-replace/measurement.xiao",
+        "sha256": "0c8eb78116619c71030e909170c35457e0d219a8a8db6ba15946752a68df3c4c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3863,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-overflow-1024/batch-1.json",
+          "sha256": "3ba0565681d14988be73b2a440ff636323148477807f53241d92856d5c2fbede"
+        },
+        {
+          "bytes": 3866,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-overflow-1024/batch-2.json",
+          "sha256": "c3866374e2072d43c0187b35a0e2f946665ddb64277cbb4895f758beb8b3d559"
+        },
+        {
+          "bytes": 3863,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-overflow-1024/batch-3.json",
+          "sha256": "045b43bb7605e9673432a4c1b1ba76d6755faa26ec2b720f54564d2fd493c80e"
+        },
+        {
+          "bytes": 4157,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-overflow-1024/batch-4.json",
+          "sha256": "7573f424b7c6adddf5c2b60471192a7db83ec987a9dbf0ddb5b149e9cea1963a"
+        },
+        {
+          "bytes": 3866,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-overflow-1024/batch-5.json",
+          "sha256": "004ea6ddf2ba782756e0a1366be9eeb760e7f5d0b2402ea3ae7d3459ee5d2429"
+        }
+      ],
+      "bytecode": {
+        "bytes": 26444,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/overflow/measurement.xiaoc",
+        "sha256": "9fe8cbe3ac8cdabd8b4f5896a484f66be03ef8011851901d12735d560ae6c7f1"
+      },
+      "case": "overflow",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9695624,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/overflow/measurement-o0",
+        "sha256": "001b9ad314f1200d4b36ddcf3d7ae2f51102f23b725a87227a6700945e5b4048"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.00018907569010416666,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 5148672,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00018907569010416666,
+        0.00019296360286458333,
+        0.00018428096484375,
+        0.00018829701171875,
+        0.00019166231640625002
+      ],
+      "source": {
+        "bytes": 4455,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/overflow/measurement.xiao",
+        "sha256": "b851b65d790ce89cc99e9db1e13c4d00343e8901ebceb5ce70f441f1da79206a"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3870,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-256/batch-1.json",
+          "sha256": "44ce8d8959d52a5c4bc7175d63ac0607e9968a57923013619187264a837bc452"
+        },
+        {
+          "bytes": 3870,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-256/batch-2.json",
+          "sha256": "01dbb2b933b5af52cc9247d89150b4825d918a113f0a8f238b210b7d85fee1ee"
+        },
+        {
+          "bytes": 3868,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-256/batch-3.json",
+          "sha256": "cb83fcc58e84375adbeb0756cd8a422a8151530feac0027990f602c67a11ad24"
+        },
+        {
+          "bytes": 3870,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-256/batch-4.json",
+          "sha256": "9fbbaabda1624e930b16f5935265ca98e61f04930fc491f200d67ac82e172c2a"
+        },
+        {
+          "bytes": 3870,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-256/batch-5.json",
+          "sha256": "5ab0ed2a8a4d43ff8d1b2a93556a75a08958396d031fb76c77224d7e8debc6f6"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9683288,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement-o3",
+        "sha256": "01006b73c26faf1fda48ef94619a6aadb844566a28b3081b6c406e0aafea2718"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00010903242005566406,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 1953792,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00011286458099804687,
+        0.00010966188771972656,
+        0.0001086635252109375,
+        0.00010773265137207031,
+        0.00010903242005566406
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3868,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-512/batch-1.json",
+          "sha256": "c027ba9deaf70c1741fedae185cce301ae2015a3af39da31e321d4dbfde6c7f1"
+        },
+        {
+          "bytes": 3862,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-512/batch-2.json",
+          "sha256": "0a255ad3d2b4ac15e4fdd49d99a80e7e9fbcf83136d2c20571ed431074721782"
+        },
+        {
+          "bytes": 3868,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-512/batch-3.json",
+          "sha256": "2d5875077da0f7b98428f6855255436b1f3ad870d300e2cd5dc06f2d157395cd"
+        },
+        {
+          "bytes": 3868,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-512/batch-4.json",
+          "sha256": "ae3db9ad1b08d8818e74e4ed105f92684a01a6d97235f6c744b2f4a7fa64216e"
+        },
+        {
+          "bytes": 3863,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-512/batch-5.json",
+          "sha256": "a9ebd58eba5191762cd081907ab51d96f5fe235897c337c6039978bdf70bee4d"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 1.9963797661358569,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9683288,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement-o3",
+        "sha256": "01006b73c26faf1fda48ef94619a6aadb844566a28b3081b6c406e0aafea2718"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00021767011725195312,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 2109440,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00021668517754882811,
+        0.000215119691375,
+        0.00021767011725195312,
+        0.00022282054064257814,
+        0.0002193658576171875
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3572,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-1024/batch-1.json",
+          "sha256": "5e35e41d1ea8bba65248ed9b75568ed4a8b7e2f87b1689ab28ce697d72c504a7"
+        },
+        {
+          "bytes": 3871,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-1024/batch-2.json",
+          "sha256": "3a4e3c62c636cf93a509a789177d583c177c788186b57dcd5711ea9fe0df4781"
+        },
+        {
+          "bytes": 3572,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-1024/batch-3.json",
+          "sha256": "1351fb940ac91c2009d5c0d43d2e1446f090b189e24848a46fccaa6de09eda18"
+        },
+        {
+          "bytes": 3572,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-1024/batch-4.json",
+          "sha256": "98e7ccf493af703917d71eab691db93d3e3771f9ba5cdfd0d2a3f4bc2d23d256"
+        },
+        {
+          "bytes": 3571,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-1024/batch-5.json",
+          "sha256": "c4ebf3dd3e62e98c1e8b87b3ade1eb2aedc93b7ae6ae1dea68fc81ceacff9133"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 2.3119991889854554,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9683288,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement-o3",
+        "sha256": "01006b73c26faf1fda48ef94619a6aadb844566a28b3081b6c406e0aafea2718"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0005032531345528846,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 2129920,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0004918250483221154,
+        0.0005157993174401042,
+        0.0004965785522548078,
+        0.0005032531345528846,
+        0.0005035510766923076
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3764,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-get-256/batch-1.json",
+          "sha256": "1ede5b1533a47408428cacfb813ee23a14d68dc6f78e8cf78d7c24bf96a56cdd"
+        },
+        {
+          "bytes": 3758,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-get-256/batch-2.json",
+          "sha256": "103e3f5d2ec317efb6cdcf97b7ed34f7f518cf89c8458715c38829c092575cb4"
+        },
+        {
+          "bytes": 3766,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-get-256/batch-3.json",
+          "sha256": "2d9d206846d8f48924a7547fece9074412261e3f4b41d242d01f926ff2d90bfa"
+        },
+        {
+          "bytes": 3766,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-get-256/batch-4.json",
+          "sha256": "3ab402b0e1550163783f52f231e2b737e789d5a57b32a1f3bc393adf3cfc3b74"
+        },
+        {
+          "bytes": 3759,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-get-256/batch-5.json",
+          "sha256": "ab4024ba18ee8966b35ceb5ee8c0f14687a51f0af37222109a2fef7cf1083256"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9683288,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement-o3",
+        "sha256": "01006b73c26faf1fda48ef94619a6aadb844566a28b3081b6c406e0aafea2718"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00016276890625000002,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 1970176,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00016276890625000002,
+        0.0001601187109375,
+        0.00016785616666666666,
+        0.00016744390234375002,
+        0.000159880546875
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3764,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-get-512/batch-1.json",
+          "sha256": "1fe741663cbae298bd9bc6f7d602e8bde6fda4f97681e31b1cdc184fc224eed5"
+        },
+        {
+          "bytes": 3766,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-get-512/batch-2.json",
+          "sha256": "558308057821bb4759ffca689d64eaff33a1a2db567b8ffb4bf31516ce2afbd9"
+        },
+        {
+          "bytes": 3763,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-get-512/batch-3.json",
+          "sha256": "fbdc7a2f2510665ce352037da7fd91c73165cfe77d5e37fc5a2419c72d16ee4a"
+        },
+        {
+          "bytes": 3766,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-get-512/batch-4.json",
+          "sha256": "2963bfdcf493735a20f71f0507663528ee25c3ccc7ccccabaafb3f2027147155"
+        },
+        {
+          "bytes": 3766,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-get-512/batch-5.json",
+          "sha256": "a626e672298b6adbff48c30868f8e0050a2deb01c6069a938f6977943c38126c"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 0.9949409278812015,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9683288,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement-o3",
+        "sha256": "01006b73c26faf1fda48ef94619a6aadb844566a28b3081b6c406e0aafea2718"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00016194544661458332,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 2027520,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00016476623177083332,
+        0.00016337956119791665,
+        0.00016068862890625,
+        0.00016194544661458332,
+        0.00016147322526041666
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3756,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-get-1024/batch-1.json",
+          "sha256": "fa6ef7114d0ea404644157b55f0ada353c8e3edeeca171bbecb3f89a80a23057"
+        },
+        {
+          "bytes": 3766,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-get-1024/batch-2.json",
+          "sha256": "a16eefd485b0ff06f9c594c001993a1453764ac5df5fbe3bf2373b01079a8f39"
+        },
+        {
+          "bytes": 3769,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-get-1024/batch-3.json",
+          "sha256": "a252000972ad26723434331ec9b6c161dd3c0ebdf89d0ab1d88835d0dcb796c2"
+        },
+        {
+          "bytes": 3764,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-get-1024/batch-4.json",
+          "sha256": "862ff59d9b7d5e6fd463ec1f9f72374d1807c80691d2473628efddc4eabc93f8"
+        },
+        {
+          "bytes": 3766,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-get-1024/batch-5.json",
+          "sha256": "9ca129ddf3def6ff14d742013bd8d749254d1a222f6ac9d0b013fbcfe6cb4c50"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 1.048269228522597,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9683288,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement-o3",
+        "sha256": "01006b73c26faf1fda48ef94619a6aadb844566a28b3081b6c406e0aafea2718"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0001697624283854167,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 2117632,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00019852,
+        0.00016691837109375,
+        0.0001697624283854167,
+        0.0001751195703125,
+        0.00016908252604166667
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3766,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-set-256/batch-1.json",
+          "sha256": "e9aa7107e263272d573a6b20868af9ebb61efb1dc87e83289e8097eedce13d35"
+        },
+        {
+          "bytes": 3768,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-set-256/batch-2.json",
+          "sha256": "2bb05a91fc0643cab95f5309691a9e7ea32041148a82ee457c22dc654f80d435"
+        },
+        {
+          "bytes": 3767,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-set-256/batch-3.json",
+          "sha256": "579c8831d07992fe4be30422ea2af97afb42f976329f7b28d8096bff13a539b9"
+        },
+        {
+          "bytes": 3768,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-set-256/batch-4.json",
+          "sha256": "45d45220dbe158101d8393d16141a0db214e07b9385b27030a2c6fa67877a36d"
+        },
+        {
+          "bytes": 3768,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-set-256/batch-5.json",
+          "sha256": "2d39a9168f5476fa69dd322e6618c6914c91bea877aaa04381194b3529df876f"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9683288,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement-o3",
+        "sha256": "df8c2ca1c60003e89d7abc94d2bade1aae5c220324160afe5c69d2f330bc749d"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00006780403059895833,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 2031616,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00006743570963541667,
+        0.00006780403059895833,
+        0.00006720891666666667,
+        0.00006868593164062501,
+        0.00007576110481770833
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3768,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-set-512/batch-1.json",
+          "sha256": "52364d8b6982a7eacfedaba338cf022043983ba879938b7101698fa680248932"
+        },
+        {
+          "bytes": 3761,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-set-512/batch-2.json",
+          "sha256": "6242210fb6197ce756ef4a4b3f75cfc413d354a0a3785130290224454b39a175"
+        },
+        {
+          "bytes": 3768,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-set-512/batch-3.json",
+          "sha256": "a1bda0e90dd220610fec9dcc31fe3fc33db59572e1f12ab1a8263fbd22a1fcdf"
+        },
+        {
+          "bytes": 3766,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-set-512/batch-4.json",
+          "sha256": "859a3d5d2563eeddb33b1fca32247761f937436ae0916badc2d69929053a4a1a"
+        },
+        {
+          "bytes": 3768,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-set-512/batch-5.json",
+          "sha256": "422bddfb21f71d787fec0c0db8482b62719b3a26a0e7845b73ee62c9a8e2d0cb"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 1.0433895108885094,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9683288,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement-o3",
+        "sha256": "df8c2ca1c60003e89d7abc94d2bade1aae5c220324160afe5c69d2f330bc749d"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00007074601432291666,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 2019328,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00007574548111979167,
+        0.0000715069375,
+        0.00007074601432291666,
+        0.00007000281705729167,
+        0.00006895791080729166
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3770,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-set-1024/batch-1.json",
+          "sha256": "eb99f3018b4245f19301df7fa85728bf38b0ffe9655a0e745a02f31c727693d5"
+        },
+        {
+          "bytes": 3772,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-set-1024/batch-2.json",
+          "sha256": "cec76686a48c4648c194b5150a3340a0779c6a4dc26bc4d00f5ea4e6ab8897fd"
+        },
+        {
+          "bytes": 3772,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-set-1024/batch-3.json",
+          "sha256": "c9f04b2f21dacf7e7b1b6fbe390e7d3a0f7d1adf929f2483abcebb659199e32b"
+        },
+        {
+          "bytes": 4065,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-set-1024/batch-4.json",
+          "sha256": "a3a8ea03d3e94c59de6d7c60816131e1eb5f5186e57d0966322b96cfb3fa271b"
+        },
+        {
+          "bytes": 4066,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-set-1024/batch-5.json",
+          "sha256": "77678fd59a9dac3972147f1fdb941a9e02ff031747dd4fa5737e49f50125c701"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 1.0260168606008961,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9683288,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement-o3",
+        "sha256": "df8c2ca1c60003e89d7abc94d2bade1aae5c220324160afe5c69d2f330bc749d"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.000072586603515625,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 2211840,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.000072586603515625,
+        0.00007231811458333334,
+        0.00007745685221354166,
+        0.000072471355078125,
+        0.000074300479296875
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3803,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-unset-256/batch-1.json",
+          "sha256": "3997b3fd1970543142e7df6d4de87278a000d8767106d633a12022b587e630e8"
+        },
+        {
+          "bytes": 3804,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-unset-256/batch-2.json",
+          "sha256": "0f2de210a6ccdc15f3228c79300da644ad17fe9de7cb2189f19daf3bae2b4d6c"
+        },
+        {
+          "bytes": 3804,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-unset-256/batch-3.json",
+          "sha256": "4c77ab2b36f304d9020bf444215b866191f4f7eb7bca83019b158778e2682ebf"
+        },
+        {
+          "bytes": 3802,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-unset-256/batch-4.json",
+          "sha256": "407e490995e263a9b31f2f378462d7b94daa961e73b1e28bf152c60be3480ce3"
+        },
+        {
+          "bytes": 4099,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-unset-256/batch-5.json",
+          "sha256": "32ca5e0747b12c80c7b259471022abd32fa121c8a7d5ff53d4576021ea59057a"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9683288,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement-o3",
+        "sha256": "c0bc7c8a5802b8103fc636b3109b9bcfbc8af14254506d5af831707291cade49"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00005695437834821428,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 2019328,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0000572217119140625,
+        0.00005496378955078125,
+        0.00005695437834821428,
+        0.000055824103515625,
+        0.00005761949720982142
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3804,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-unset-512/batch-1.json",
+          "sha256": "a5f4fc1fd1707c6fcd63ca2b5302da01e6be6cf4aafe43bd314298a20702a303"
+        },
+        {
+          "bytes": 3804,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-unset-512/batch-2.json",
+          "sha256": "4147f4a0a0e5eacddbcbd430fcab6abdc7cd793e3d9354d8e5e5fbe225ac3f71"
+        },
+        {
+          "bytes": 3801,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-unset-512/batch-3.json",
+          "sha256": "9c29ffa496addfe0aa9d8ca9e3e2c9add78723fd0e813b6841e2ad69a38bca7d"
+        },
+        {
+          "bytes": 3804,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-unset-512/batch-4.json",
+          "sha256": "c77ca7d9332a5845a1baa399d339ade73131a6712c657a0903306a3f50af0574"
+        },
+        {
+          "bytes": 3804,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-unset-512/batch-5.json",
+          "sha256": "d4e0ab45a358718fe1553b612fe3958df7b2ab65f595e2c479cbbed0082a4b33"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.1998962966188302,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9683288,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement-o3",
+        "sha256": "c0bc7c8a5802b8103fc636b3109b9bcfbc8af14254506d5af831707291cade49"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00006833934765625,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 2097152,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00006837977994791667,
+        0.00006866238783482143,
+        0.00006833934765625,
+        0.00006627615178571429,
+        0.00006388976283482143
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3803,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-unset-1024/batch-1.json",
+          "sha256": "0a917296f8829874652315c0081d262556facffc02e24b09e8b1a1eae8edd9cb"
+        },
+        {
+          "bytes": 3804,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-unset-1024/batch-2.json",
+          "sha256": "836a4f0bffe958d26b9a985d6c01bb0ba0f4e72a8669d53e57c396125b2b1e0b"
+        },
+        {
+          "bytes": 3804,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-unset-1024/batch-3.json",
+          "sha256": "971fb07c69ef6ccc0de97d9f7c38dedf15e51e31ad9ab501769c6dd78656bb8e"
+        },
+        {
+          "bytes": 4102,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-unset-1024/batch-4.json",
+          "sha256": "5995a9c44a01e84d171efc1a30bb4c363368d4786f2f88a8f18fd7ac32df60c3"
+        },
+        {
+          "bytes": 3802,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-unset-1024/batch-5.json",
+          "sha256": "a68d6b3e2ecfe00ef1d5a80d838573c412df43d3b68850b7158006cecdfe9af7"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.3498611621816288,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9683288,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement-o3",
+        "sha256": "c0bc7c8a5802b8103fc636b3109b9bcfbc8af14254506d5af831707291cade49"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00009224863125,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 2183168,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0000919972484375,
+        0.0000932938171875,
+        0.00009181734453125,
+        0.0000933603642578125,
+        0.00009224863125
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3937,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-full-replace-1024/batch-1.json",
+          "sha256": "52a7bfbaae2ac55bd27a35327d2c09ac47eeb7afab12a6a76b09b2ab9c7d9b37"
+        },
+        {
+          "bytes": 4232,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-full-replace-1024/batch-2.json",
+          "sha256": "a830f2d6a8cd0eefd68326a34519c5a2908aef12fba2c4e9893c9d868cfa35d2"
+        },
+        {
+          "bytes": 3937,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-full-replace-1024/batch-3.json",
+          "sha256": "36967c808874ddb8a5351edd8243adbb6d4427af8dd62b4a5c3e18b21fcf8b95"
+        },
+        {
+          "bytes": 3935,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-full-replace-1024/batch-4.json",
+          "sha256": "3168b1a156b7fdbddc7712d5dbf7839ad6e705a55ccaf326ae22b4eaf38be04e"
+        },
+        {
+          "bytes": 3937,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-full-replace-1024/batch-5.json",
+          "sha256": "c2c9ef7993dda1f8179f5a10b06d7660107785692563fd267361cafa99d70e09"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18572,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/full-replace/measurement.xiaoc",
+        "sha256": "41b3ce0fe042aaa08002e366f65f261413f9a082ae56cd9d71937c3c13811c8e"
+      },
+      "case": "full-replace",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9679192,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/full-replace/measurement-o3",
+        "sha256": "0c07c2f35bb1a09c568be11ced90bba8e3f92174254da28885331bbcf5de05e1"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.00007214140559895834,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 5013504,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00007214140559895834,
+        0.00007182071132812501,
+        0.00007175430924479167,
+        0.000075367384765625,
+        0.00007391186002604167
+      ],
+      "source": {
+        "bytes": 3016,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/full-replace/measurement.xiao",
+        "sha256": "0c8eb78116619c71030e909170c35457e0d219a8a8db6ba15946752a68df3c4c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3865,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-overflow-1024/batch-1.json",
+          "sha256": "1808a9e7a6200a9e6c5f394c65c3f1f02e54a77502a5ee9981a828498d1d5dbe"
+        },
+        {
+          "bytes": 3862,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-overflow-1024/batch-2.json",
+          "sha256": "060e2ce52ab6120ac40753f26fb01a3b46bbda093e4dd3141ba08b09761ea832"
+        },
+        {
+          "bytes": 3865,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-overflow-1024/batch-3.json",
+          "sha256": "ad2f5b5643237cd9475b3fa8e6171067e16806649b9662ac515314a39bb4cf1b"
+        },
+        {
+          "bytes": 3863,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-overflow-1024/batch-4.json",
+          "sha256": "e0f7a9b35a2528d2e3be594e7bbc923d50919d821d33fc6cd19ffeb231f53c52"
+        },
+        {
+          "bytes": 3863,
+          "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-overflow-1024/batch-5.json",
+          "sha256": "3322aaf201c11b9fa88216867422c5dc55e95f05fd6eaba2d2a1e8c6a0fd288b"
+        }
+      ],
+      "bytecode": {
+        "bytes": 26444,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/overflow/measurement.xiaoc",
+        "sha256": "9fe8cbe3ac8cdabd8b4f5896a484f66be03ef8011851901d12735d560ae6c7f1"
+      },
+      "case": "overflow",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9687384,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/overflow/measurement-o3",
+        "sha256": "47ba7e09d053667fec83bb8d6ad47db946ed6896baddb71ea1ee040626caf38f"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.00018014383984375,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 5091328,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00018627870963541665,
+        0.00017758250911458333,
+        0.00017530234765625002,
+        0.00018014383984375,
+        0.00018436794921875
+      ],
+      "source": {
+        "bytes": 4455,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/overflow/measurement.xiao",
+        "sha256": "b851b65d790ce89cc99e9db1e13c4d00343e8901ebceb5ce70f441f1da79206a"
+      },
+      "status": "pass"
+    }
+  ],
+  "runtime": {
+    "bytes": 34403698,
+    "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/libxiao_runtime.a",
+    "sha256": "12308d5fd6e5b54e1c6a95f4b78bf18c9b9df777e04e5c4c01babe84b25640b1"
+  },
+  "runtime_abi": 65556,
+  "runtime_unchanged": true,
+  "schema": 1,
+  "stdlib_interface": 1,
+  "target": "x86_64-unknown-linux-gnu"
+}

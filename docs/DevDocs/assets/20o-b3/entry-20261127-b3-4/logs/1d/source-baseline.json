@@ -1,0 +1,24 @@
+{
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "baseline_tree": "281fb628590ef2f7f679f22da1d95c2180397b76",
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "product_tree": "b73b72f6d0d90ca43a8dd37a133842a9eeb95d6f",
+  "baseline_tracked_files": 8275,
+  "compared_product_prefixes": [
+    "core/",
+    "stdlib/",
+    "resources/",
+    "tests/",
+    ".cargo/",
+    ".github/"
+  ],
+  "baseline_test_additions": [
+    "core/rust/crates/xiao-driver/tests/20o_b3_env_tutorial.rs",
+    "core/rust/crates/xiao-driver/tests/support/b3_env_artifact.rs",
+    "tests/fixtures/docs/env/.gitattributes",
+    "tests/fixtures/docs/env/tutorial.input.json",
+    "tests/fixtures/docs/env/tutorial.stdout",
+    "tests/fixtures/docs/env/tutorial.xiao"
+  ],
+  "tracked_blob_manifest_sha256": "b97300c68738fd61a287d214a1d70f28c316f00c3e6d0b2277685f0d29ab182e"
+}

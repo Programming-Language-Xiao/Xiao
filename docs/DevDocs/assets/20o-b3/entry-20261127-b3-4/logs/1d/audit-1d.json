@@ -1,0 +1,422 @@
+{
+  "schema": 1,
+  "scope": "B3-4D archived COFF link-evidence audit",
+  "method": "SHA-256 of archived bytes and receipt field comparison",
+  "audited_at_utc": "2026-11-27T11:40:27.761126+00:00",
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "product_tree": "b73b72f6d0d90ca43a8dd37a133842a9eeb95d6f",
+  "matrix": {
+    "path": "native-matrix.json",
+    "bytes": 2825,
+    "sha256": "cc58a514d533ccee2304808239c910c7d379f48c6456e69c21fd52f085a2babb"
+  },
+  "archived_runtime_sha256": "fe42ae1385a46d65d3e6882b9120ade253033fdf17c45101b57e812f7b815089",
+  "runtime_receipt": {
+    "path": "runtime.json",
+    "bytes": 480,
+    "sha256": "531891b36662bb490ffbc2be5bfb3ee17cec5e9f51b706749f5f54618dd923f0"
+  },
+  "validator": "xiao_codegen_llvm::artifact::verify_artifact_with_link_evidence",
+  "differences": [],
+  "status": "pass",
+  "complete": true,
+  "cases": [
+    {
+      "case": "env-std-o0",
+      "status": "pass",
+      "differences": [],
+      "recomputed": {
+        "artifact": {
+          "path": "native/env-std-o0/env-std-o0.exe",
+          "bytes": 1348608,
+          "sha256": "58e691c22c53b66b1f9be27ccd9cfbc3f994471737c60b8053df3c964de50d65"
+        },
+        "map": {
+          "path": "native/env-std-o0/env-std-o0.exe.map",
+          "bytes": 2502500,
+          "sha256": "90f8c25a144df555ee21b30eca7db64b53f090d09b72e065385c889adab51a7b"
+        },
+        "receipt": {
+          "path": "native/env-std-o0/receipt.json",
+          "bytes": 2871,
+          "sha256": "c107bd25085096de17b247118e619e97bc8568b1be3aa5db638b90b4410c9c9b"
+        },
+        "verification": {
+          "path": "native/env-std-o0/verification.json",
+          "bytes": 2397,
+          "sha256": "e1e3368bb4633dc0b679160fabe916ee557f4dbdf51ca35b2bd5683c2179a1fa"
+        }
+      },
+      "source_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+      "source_sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb",
+      "optimization": 0,
+      "target": "x86_64-pc-windows-msvc",
+      "capabilities": 160,
+      "object_format": "Coff",
+      "level": "Complete",
+      "exit": 0,
+      "diagnostic": null,
+      "declared_components": [
+        "env",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "observed_components": [
+        "env",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "unclassified_runtime_symbols": [],
+      "recorded_digests": {
+        "matrix": {
+          "artifact": "58e691c22c53b66b1f9be27ccd9cfbc3f994471737c60b8053df3c964de50d65",
+          "map": "90f8c25a144df555ee21b30eca7db64b53f090d09b72e065385c889adab51a7b",
+          "receipt": "c107bd25085096de17b247118e619e97bc8568b1be3aa5db638b90b4410c9c9b"
+        },
+        "receipt": {
+          "artifact": "58e691c22c53b66b1f9be27ccd9cfbc3f994471737c60b8053df3c964de50d65",
+          "map": "90f8c25a144df555ee21b30eca7db64b53f090d09b72e065385c889adab51a7b",
+          "verification": "e1e3368bb4633dc0b679160fabe916ee557f4dbdf51ca35b2bd5683c2179a1fa"
+        },
+        "verification": {
+          "artifact": "58e691c22c53b66b1f9be27ccd9cfbc3f994471737c60b8053df3c964de50d65",
+          "coff_artifact": "58e691c22c53b66b1f9be27ccd9cfbc3f994471737c60b8053df3c964de50d65",
+          "map": "90f8c25a144df555ee21b30eca7db64b53f090d09b72e065385c889adab51a7b"
+        }
+      }
+    },
+    {
+      "case": "env-std-o3",
+      "status": "pass",
+      "differences": [],
+      "recomputed": {
+        "artifact": {
+          "path": "native/env-std-o3/env-std-o3.exe",
+          "bytes": 1345536,
+          "sha256": "48170de9ccae496f39ba37024d8e323ac552dc9ee3972b64ac27468109cb9405"
+        },
+        "map": {
+          "path": "native/env-std-o3/env-std-o3.exe.map",
+          "bytes": 2500730,
+          "sha256": "6f8cacdb579df1d1d17e75165284ce223a0afc579c9dcd765e34bee99832d769"
+        },
+        "receipt": {
+          "path": "native/env-std-o3/receipt.json",
+          "bytes": 2871,
+          "sha256": "f9d7049f1106ee7f41df5a4b245558d7c5160bbb55dd95d715700cf274d29e09"
+        },
+        "verification": {
+          "path": "native/env-std-o3/verification.json",
+          "bytes": 2397,
+          "sha256": "d26ec8852c124ec9514bf533be0461ba6987d09e98d3d488a759c6f90e718b9f"
+        }
+      },
+      "source_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+      "source_sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb",
+      "optimization": 3,
+      "target": "x86_64-pc-windows-msvc",
+      "capabilities": 160,
+      "object_format": "Coff",
+      "level": "Complete",
+      "exit": 0,
+      "diagnostic": null,
+      "declared_components": [
+        "env",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "observed_components": [
+        "env",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "unclassified_runtime_symbols": [],
+      "recorded_digests": {
+        "matrix": {
+          "artifact": "48170de9ccae496f39ba37024d8e323ac552dc9ee3972b64ac27468109cb9405",
+          "map": "6f8cacdb579df1d1d17e75165284ce223a0afc579c9dcd765e34bee99832d769",
+          "receipt": "f9d7049f1106ee7f41df5a4b245558d7c5160bbb55dd95d715700cf274d29e09"
+        },
+        "receipt": {
+          "artifact": "48170de9ccae496f39ba37024d8e323ac552dc9ee3972b64ac27468109cb9405",
+          "map": "6f8cacdb579df1d1d17e75165284ce223a0afc579c9dcd765e34bee99832d769",
+          "verification": "d26ec8852c124ec9514bf533be0461ba6987d09e98d3d488a759c6f90e718b9f"
+        },
+        "verification": {
+          "artifact": "48170de9ccae496f39ba37024d8e323ac552dc9ee3972b64ac27468109cb9405",
+          "coff_artifact": "48170de9ccae496f39ba37024d8e323ac552dc9ee3972b64ac27468109cb9405",
+          "map": "6f8cacdb579df1d1d17e75165284ce223a0afc579c9dcd765e34bee99832d769"
+        }
+      }
+    },
+    {
+      "case": "env-stdlib-o0",
+      "status": "pass",
+      "differences": [],
+      "recomputed": {
+        "artifact": {
+          "path": "native/env-stdlib-o0/env-stdlib-o0.exe",
+          "bytes": 1348608,
+          "sha256": "aadb308d1ec661aff8875780c5cb74e1a0ade5a8ba72a6c8c3127b6e0da51251"
+        },
+        "map": {
+          "path": "native/env-stdlib-o0/env-stdlib-o0.exe.map",
+          "bytes": 2502503,
+          "sha256": "fe9d136762d1f4d571bce8507b977606a0d24a37656b1040d0b52e900ef70f1e"
+        },
+        "receipt": {
+          "path": "native/env-stdlib-o0/receipt.json",
+          "bytes": 2915,
+          "sha256": "f3b9840004f1124dec2974dab3ae306f9deda7015a0659f8965c0dcd18c9cd79"
+        },
+        "verification": {
+          "path": "native/env-stdlib-o0/verification.json",
+          "bytes": 2412,
+          "sha256": "e52492c94d669cdb5e9187022f95e5e70bb0579d26865d6c7ccef845ec497833"
+        }
+      },
+      "source_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+      "source_sha256": "a8cb3149daec0193db2de4b6d42752c38812965de8e624f4a106c879de5c6e1d",
+      "optimization": 0,
+      "target": "x86_64-pc-windows-msvc",
+      "capabilities": 160,
+      "object_format": "Coff",
+      "level": "Complete",
+      "exit": 0,
+      "diagnostic": null,
+      "declared_components": [
+        "env",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "observed_components": [
+        "env",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "unclassified_runtime_symbols": [],
+      "recorded_digests": {
+        "matrix": {
+          "artifact": "aadb308d1ec661aff8875780c5cb74e1a0ade5a8ba72a6c8c3127b6e0da51251",
+          "map": "fe9d136762d1f4d571bce8507b977606a0d24a37656b1040d0b52e900ef70f1e",
+          "receipt": "f3b9840004f1124dec2974dab3ae306f9deda7015a0659f8965c0dcd18c9cd79"
+        },
+        "receipt": {
+          "artifact": "aadb308d1ec661aff8875780c5cb74e1a0ade5a8ba72a6c8c3127b6e0da51251",
+          "map": "fe9d136762d1f4d571bce8507b977606a0d24a37656b1040d0b52e900ef70f1e",
+          "verification": "e52492c94d669cdb5e9187022f95e5e70bb0579d26865d6c7ccef845ec497833"
+        },
+        "verification": {
+          "artifact": "aadb308d1ec661aff8875780c5cb74e1a0ade5a8ba72a6c8c3127b6e0da51251",
+          "coff_artifact": "aadb308d1ec661aff8875780c5cb74e1a0ade5a8ba72a6c8c3127b6e0da51251",
+          "map": "fe9d136762d1f4d571bce8507b977606a0d24a37656b1040d0b52e900ef70f1e"
+        }
+      }
+    },
+    {
+      "case": "env-stdlib-o3",
+      "status": "pass",
+      "differences": [],
+      "recomputed": {
+        "artifact": {
+          "path": "native/env-stdlib-o3/env-stdlib-o3.exe",
+          "bytes": 1345536,
+          "sha256": "0789a9e3cff7c5134aba295952a703912e75bed612e7b2e8771bcf64f7bfe548"
+        },
+        "map": {
+          "path": "native/env-stdlib-o3/env-stdlib-o3.exe.map",
+          "bytes": 2500755,
+          "sha256": "151d58d68f6b128a017c3e0c7375f3b9dc66c6aa1827b9fd97aa5e34c06f4249"
+        },
+        "receipt": {
+          "path": "native/env-stdlib-o3/receipt.json",
+          "bytes": 2915,
+          "sha256": "6493d43018f8b54b258f51130605cdbf34afd71109086971788c6bfc38b56456"
+        },
+        "verification": {
+          "path": "native/env-stdlib-o3/verification.json",
+          "bytes": 2412,
+          "sha256": "ad048883c9befd08edb2bf6124bce61fc60ffccc87b051bbd58ed95177ea39ef"
+        }
+      },
+      "source_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+      "source_sha256": "a8cb3149daec0193db2de4b6d42752c38812965de8e624f4a106c879de5c6e1d",
+      "optimization": 3,
+      "target": "x86_64-pc-windows-msvc",
+      "capabilities": 160,
+      "object_format": "Coff",
+      "level": "Complete",
+      "exit": 0,
+      "diagnostic": null,
+      "declared_components": [
+        "env",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "observed_components": [
+        "env",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "unclassified_runtime_symbols": [],
+      "recorded_digests": {
+        "matrix": {
+          "artifact": "0789a9e3cff7c5134aba295952a703912e75bed612e7b2e8771bcf64f7bfe548",
+          "map": "151d58d68f6b128a017c3e0c7375f3b9dc66c6aa1827b9fd97aa5e34c06f4249",
+          "receipt": "6493d43018f8b54b258f51130605cdbf34afd71109086971788c6bfc38b56456"
+        },
+        "receipt": {
+          "artifact": "0789a9e3cff7c5134aba295952a703912e75bed612e7b2e8771bcf64f7bfe548",
+          "map": "151d58d68f6b128a017c3e0c7375f3b9dc66c6aa1827b9fd97aa5e34c06f4249",
+          "verification": "ad048883c9befd08edb2bf6124bce61fc60ffccc87b051bbd58ed95177ea39ef"
+        },
+        "verification": {
+          "artifact": "0789a9e3cff7c5134aba295952a703912e75bed612e7b2e8771bcf64f7bfe548",
+          "coff_artifact": "0789a9e3cff7c5134aba295952a703912e75bed612e7b2e8771bcf64f7bfe548",
+          "map": "151d58d68f6b128a017c3e0c7375f3b9dc66c6aa1827b9fd97aa5e34c06f4249"
+        }
+      }
+    },
+    {
+      "case": "denied-o0",
+      "status": "pass",
+      "differences": [],
+      "recomputed": {
+        "artifact": {
+          "path": "native/denied-o0/denied-o0.exe",
+          "bytes": 818688,
+          "sha256": "4f971cf1aa3841db9e3b1d215411132e128770ab443a9dc069d6653ac3be67ee"
+        },
+        "map": {
+          "path": "native/denied-o0/denied-o0.exe.map",
+          "bytes": 1794587,
+          "sha256": "f7e5f505ced6a3c9bc69bb3125ce9e56a3225d6806d22593fdd1a99c3d956014"
+        },
+        "receipt": {
+          "path": "native/denied-o0/receipt.json",
+          "bytes": 2470,
+          "sha256": "2892fc9e4da478d3efcab0dbd3dfcc9ae63e0c0c448d5f124e6a46f2ca51ae47"
+        },
+        "verification": {
+          "path": "native/denied-o0/verification.json",
+          "bytes": 2057,
+          "sha256": "b79a3b9c35c4b085900871f99581fc8fdf52a12ec29bb2a60408c9d73808861f"
+        }
+      },
+      "source_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+      "source_sha256": "116c4e04af8801fac4cbefd30a32b7074128e66cd44e3ecedb0c568c764a5da2",
+      "optimization": 0,
+      "target": "x86_64-pc-windows-msvc",
+      "capabilities": 32,
+      "object_format": "Coff",
+      "level": "Complete",
+      "exit": 3,
+      "diagnostic": "X06-RUNTIME-026",
+      "declared_components": [
+        "env",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "observed_components": [
+        "env",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "unclassified_runtime_symbols": [],
+      "recorded_digests": {
+        "matrix": {
+          "artifact": "4f971cf1aa3841db9e3b1d215411132e128770ab443a9dc069d6653ac3be67ee",
+          "map": "f7e5f505ced6a3c9bc69bb3125ce9e56a3225d6806d22593fdd1a99c3d956014",
+          "receipt": "2892fc9e4da478d3efcab0dbd3dfcc9ae63e0c0c448d5f124e6a46f2ca51ae47"
+        },
+        "receipt": {
+          "artifact": "4f971cf1aa3841db9e3b1d215411132e128770ab443a9dc069d6653ac3be67ee",
+          "map": "f7e5f505ced6a3c9bc69bb3125ce9e56a3225d6806d22593fdd1a99c3d956014",
+          "verification": "b79a3b9c35c4b085900871f99581fc8fdf52a12ec29bb2a60408c9d73808861f"
+        },
+        "verification": {
+          "artifact": "4f971cf1aa3841db9e3b1d215411132e128770ab443a9dc069d6653ac3be67ee",
+          "coff_artifact": "4f971cf1aa3841db9e3b1d215411132e128770ab443a9dc069d6653ac3be67ee",
+          "map": "f7e5f505ced6a3c9bc69bb3125ce9e56a3225d6806d22593fdd1a99c3d956014"
+        }
+      }
+    },
+    {
+      "case": "denied-o3",
+      "status": "pass",
+      "differences": [],
+      "recomputed": {
+        "artifact": {
+          "path": "native/denied-o3/denied-o3.exe",
+          "bytes": 818176,
+          "sha256": "a8112317b0f7193e438f234358d229ec7e676ac0482b39d32345000b668896f9"
+        },
+        "map": {
+          "path": "native/denied-o3/denied-o3.exe.map",
+          "bytes": 1794587,
+          "sha256": "442efea4a7f638b1e51c0c2ca62a0b052e3bbfcbe1d9cbac9ff533ba5b3b59b0"
+        },
+        "receipt": {
+          "path": "native/denied-o3/receipt.json",
+          "bytes": 2470,
+          "sha256": "475239d48aff4c380af986ddc6aa68b6fbd6b699123e2d04c037ac5e4f72cdf8"
+        },
+        "verification": {
+          "path": "native/denied-o3/verification.json",
+          "bytes": 2057,
+          "sha256": "fd5b2316032130d1dd788d88427838a786b7ce69aeb9fe6068912f07c6f4fc39"
+        }
+      },
+      "source_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+      "source_sha256": "116c4e04af8801fac4cbefd30a32b7074128e66cd44e3ecedb0c568c764a5da2",
+      "optimization": 3,
+      "target": "x86_64-pc-windows-msvc",
+      "capabilities": 32,
+      "object_format": "Coff",
+      "level": "Complete",
+      "exit": 3,
+      "diagnostic": "X06-RUNTIME-026",
+      "declared_components": [
+        "env",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "observed_components": [
+        "env",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "unclassified_runtime_symbols": [],
+      "recorded_digests": {
+        "matrix": {
+          "artifact": "a8112317b0f7193e438f234358d229ec7e676ac0482b39d32345000b668896f9",
+          "map": "442efea4a7f638b1e51c0c2ca62a0b052e3bbfcbe1d9cbac9ff533ba5b3b59b0",
+          "receipt": "475239d48aff4c380af986ddc6aa68b6fbd6b699123e2d04c037ac5e4f72cdf8"
+        },
+        "receipt": {
+          "artifact": "a8112317b0f7193e438f234358d229ec7e676ac0482b39d32345000b668896f9",
+          "map": "442efea4a7f638b1e51c0c2ca62a0b052e3bbfcbe1d9cbac9ff533ba5b3b59b0",
+          "verification": "fd5b2316032130d1dd788d88427838a786b7ce69aeb9fe6068912f07c6f4fc39"
+        },
+        "verification": {
+          "artifact": "a8112317b0f7193e438f234358d229ec7e676ac0482b39d32345000b668896f9",
+          "coff_artifact": "a8112317b0f7193e438f234358d229ec7e676ac0482b39d32345000b668896f9",
+          "map": "442efea4a7f638b1e51c0c2ca62a0b052e3bbfcbe1d9cbac9ff533ba5b3b59b0"
+        }
+      }
+    }
+  ]
+}

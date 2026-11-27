@@ -1,0 +1,2 @@
+{"event":"baseline","memory":{"current_bytes":3747840,"current_raw":3660,"method":"proc-vmrss-vmhwm","peak_bytes":3747840,"peak_raw":3660,"unit":"KiB"},"pid":1722}
+{"event":"sample","memory":{"current_bytes":13897728,"current_raw":13572,"method":"proc-vmrss-vmhwm","peak_bytes":16084992,"peak_raw":15708,"unit":"KiB"},"repeats":1,"seconds":0.001757964}

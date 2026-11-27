@@ -1,0 +1,20 @@
+{
+  "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/deps/libxiao_runtime-8b4d2732a4d3a608.rlib",
+  "bytes": 6558718,
+  "sha256": "c3d6d82090be554697cf288384854b6fb883d06d886bcfc1e4a1ff2f66487a55",
+  "features": [
+    "test-failpoints"
+  ],
+  "profile": {
+    "opt_level": "3",
+    "debuginfo": 0,
+    "debug_assertions": false,
+    "overflow_checks": false,
+    "test": false
+  },
+  "example": {
+    "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+    "bytes": 12121760,
+    "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+  }
+}

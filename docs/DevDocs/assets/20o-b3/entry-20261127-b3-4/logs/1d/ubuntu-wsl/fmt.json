@@ -1,0 +1,44 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "fmt",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--all",
+    "--",
+    "--check"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/src",
+  "started_at_utc": "2026-11-27T12:26:13.863467+00:00",
+  "elapsed_seconds": 4.7481430350017035,
+  "exit": 0,
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target",
+    "CARGO_BUILD_TARGET": "x86_64-unknown-linux-gnu",
+    "CARGO_TERM_COLOR": "never",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "XIAO_HOME": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/xiao-home",
+    "XIAO_STDLIB_ROOT": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/src/stdlib",
+    "XIAO_B3_ENV_TEST_ROOT": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/tests",
+    "XIAO_TARGET_TRIPLE": "x86_64-unknown-linux-gnu",
+    "XIAO_RUNTIME_LIBRARY": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/libxiao_runtime.a",
+    "XIAO_CLANG": "/usr/lib/llvm-21/bin/clang",
+    "XIAO_LLVM_AS": "/usr/lib/llvm-21/bin/llvm-as",
+    "XIAO_LLC": "/usr/lib/llvm-21/bin/llc",
+    "XIAO_LLVM_STRIP": "/usr/lib/llvm-21/bin/llvm-strip",
+    "XIAO_LLVM_READOBJ": "/usr/lib/llvm-21/bin/llvm-readobj",
+    "TMPDIR": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/tmp"
+  },
+  "stdout": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/fmt.stdout.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/fmt.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

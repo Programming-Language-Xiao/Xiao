@@ -1,0 +1,219 @@
+{
+  "schema": 1,
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "platforms": {
+    "windows": {
+      "status": "pass",
+      "target": "x86_64-pc-windows-msvc",
+      "batches": 210,
+      "combinations": 42,
+      "counts": {
+        "pass": 42
+      },
+      "native_runtime": {
+        "bytes": 27833734,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+        "sha256": "fe42ae1385a46d65d3e6882b9120ade253033fdf17c45101b57e812f7b815089"
+      },
+      "vm_runtime": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\target\\x86_64-pc-windows-msvc\\release\\deps\\libxiao_runtime-9bbaeb215c9d9f59.rlib",
+        "bytes": 7838632,
+        "sha256": "5313f0563328d596e1136031b8f6c1a92c45dec7828a5f0fc8734d7d99aa82af",
+        "features": [
+          "test-failpoints"
+        ],
+        "profile": {
+          "opt_level": "3",
+          "debuginfo": 0,
+          "debug_assertions": false,
+          "overflow_checks": false,
+          "test": false
+        },
+        "example": {
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\target\\x86_64-pc-windows-msvc\\release\\examples\\b3_env_performance.exe",
+          "bytes": 11212288,
+          "sha256": "96ba9e31a32ffcffde65f1fb339469c07e6d66a381d0d87110b96139424a0087"
+        }
+      },
+      "performance_exit": 0,
+      "max_median_seconds": {
+        "vm": 0.00324709375,
+        "native-o0": 0.0011313333337395833,
+        "native-o3": 0.0012974104156458332
+      },
+      "max_doubling_ratio": {
+        "vm": 2.13131442640556,
+        "native-o0": 2.260036137469421,
+        "native-o3": 2.276742410911319
+      },
+      "max_resident_increment_bytes": 10907648,
+      "exceptions": [],
+      "controller_summary": "windows/formal/performance.json",
+      "toolchain": "windows/toolchain.json",
+      "command": "windows/formal.json",
+      "source_before": "windows/source-formal-before.json",
+      "source_after": "windows/source-formal-after.json",
+      "validation": {
+        "runtime-build": {
+          "exit": 0,
+          "receipt": "windows/runtime-build.json"
+        },
+        "help": {
+          "exit": 0,
+          "receipt": "windows/help.json"
+        },
+        "workspace": {
+          "exit": 0,
+          "receipt": "windows/workspace.json",
+          "groups": 197,
+          "passed": 1824,
+          "failed": 0,
+          "ignored": 61
+        },
+        "fmt": {
+          "exit": 0,
+          "receipt": "windows/fmt.json"
+        },
+        "formal-example-build": {
+          "exit": 0,
+          "receipt": "windows/formal-example-build.json"
+        },
+        "formal": {
+          "exit": 0,
+          "receipt": "windows/formal.json"
+        }
+      },
+      "source_after_validation": "windows/source-after-validation.json",
+      "runtime_features": [
+        "test-failpoints"
+      ]
+    },
+    "ubuntu-wsl": {
+      "status": "pass",
+      "target": "x86_64-unknown-linux-gnu",
+      "batches": 210,
+      "combinations": 42,
+      "counts": {
+        "pass": 42
+      },
+      "native_runtime": {
+        "bytes": 34403698,
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/libxiao_runtime.a",
+        "sha256": "12308d5fd6e5b54e1c6a95f4b78bf18c9b9df777e04e5c4c01babe84b25640b1"
+      },
+      "vm_runtime": {
+        "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/deps/libxiao_runtime-8b4d2732a4d3a608.rlib",
+        "bytes": 6558718,
+        "sha256": "c3d6d82090be554697cf288384854b6fb883d06d886bcfc1e4a1ff2f66487a55",
+        "features": [
+          "test-failpoints"
+        ],
+        "profile": {
+          "opt_level": "3",
+          "debuginfo": 0,
+          "debug_assertions": false,
+          "overflow_checks": false,
+          "test": false
+        },
+        "example": {
+          "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+          "bytes": 12121760,
+          "sha256": "4ab3562629e1d1883ab0a3d56ad8550a5c46c79411a8c4b85a0dd4673f6b9e9e"
+        }
+      },
+      "performance_exit": 0,
+      "max_median_seconds": {
+        "vm": 0.001685083260416666,
+        "native-o0": 0.0005013286557864583,
+        "native-o3": 0.0005032531345528846
+      },
+      "max_doubling_ratio": {
+        "vm": 2.2136233401909786,
+        "native-o0": 2.148222199137255,
+        "native-o3": 2.3119991889854554
+      },
+      "max_resident_increment_bytes": 14114816,
+      "exceptions": [],
+      "controller_summary": "ubuntu-wsl/formal/performance.json",
+      "toolchain": "ubuntu-wsl/toolchain.json",
+      "command": "ubuntu-wsl/formal.json",
+      "source_before": "ubuntu-wsl/source-formal-before.json",
+      "source_after": "ubuntu-wsl/source-formal-after.json",
+      "validation": {
+        "runtime-build": {
+          "exit": 0,
+          "receipt": "ubuntu-wsl/runtime-build.json"
+        },
+        "help": {
+          "exit": 0,
+          "receipt": "ubuntu-wsl/help.json"
+        },
+        "workspace": {
+          "exit": 0,
+          "receipt": "ubuntu-wsl/workspace.json",
+          "groups": 196,
+          "passed": 1824,
+          "failed": 0,
+          "ignored": 63
+        },
+        "fmt": {
+          "exit": 0,
+          "receipt": "ubuntu-wsl/fmt.json"
+        },
+        "formal-example-build": {
+          "exit": 0,
+          "receipt": "ubuntu-wsl/formal-example-build.json"
+        },
+        "formal": {
+          "exit": 0,
+          "receipt": "ubuntu-wsl/formal.json"
+        }
+      },
+      "source_after_validation": "ubuntu-wsl/source-after-validation.json",
+      "runtime_features": [
+        "test-failpoints"
+      ]
+    }
+  },
+  "status": "pass",
+  "macos": {
+    "status": "unverifiable",
+    "target": "aarch64-apple-darwin",
+    "batches": 0,
+    "reason": "No local macOS runtime"
+  },
+  "coff": {
+    "status": "pass",
+    "cases": 6,
+    "evidence": "audit-1d.json"
+  },
+  "frozen_tutorial": {
+    "frozen_table": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials.json",
+    "fixture_origin": "7f1017b7ff0b7b0a89d11943d5d33e0b432d0b3f",
+    "files": {
+      "tests/fixtures/docs/env/tutorial.xiao": {
+        "bytes": 467,
+        "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+      },
+      "tests/fixtures/docs/env/tutorial.input.json": {
+        "bytes": 69,
+        "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+      },
+      "tests/fixtures/docs/env/tutorial.stdout": {
+        "bytes": 55,
+        "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+      }
+    },
+    "alias_source": {
+      "bytes": 470,
+      "sha256": "a8cb3149daec0193db2de4b6d42752c38812965de8e624f4a106c879de5c6e1d"
+    }
+  },
+  "ci": {
+    "status": "pending",
+    "workflow": ".github/workflows/maintenance-regression.yml",
+    "statically_selected_env_tutorial_native": 1,
+    "statically_selected_env_native": 5
+  }
+}

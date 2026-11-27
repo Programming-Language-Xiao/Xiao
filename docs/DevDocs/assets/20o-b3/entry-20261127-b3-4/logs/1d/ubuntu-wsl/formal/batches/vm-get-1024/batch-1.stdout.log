@@ -1,0 +1,5 @@
+{"event":"baseline","memory":{"current_bytes":3751936,"current_raw":3664,"method":"proc-vmrss-vmhwm","peak_bytes":3751936,"peak_raw":3664,"unit":"KiB"},"pid":1712}
+{"event":"sample","memory":{"current_bytes":13930496,"current_raw":13604,"method":"proc-vmrss-vmhwm","peak_bytes":16347136,"peak_raw":15964,"unit":"KiB"},"repeats":1,"seconds":0.00181663}
+{"event":"sample","memory":{"current_bytes":13930496,"current_raw":13604,"method":"proc-vmrss-vmhwm","peak_bytes":16347136,"peak_raw":15964,"unit":"KiB"},"repeats":1,"seconds":0.001645933}
+{"event":"sample","memory":{"current_bytes":13930496,"current_raw":13604,"method":"proc-vmrss-vmhwm","peak_bytes":16347136,"peak_raw":15964,"unit":"KiB"},"repeats":16,"seconds":0.026785505999999997}
+{"event":"sample","memory":{"current_bytes":13930496,"current_raw":13604,"method":"proc-vmrss-vmhwm","peak_bytes":16347136,"peak_raw":15964,"unit":"KiB"},"repeats":64,"seconds":0.10676396700000004}

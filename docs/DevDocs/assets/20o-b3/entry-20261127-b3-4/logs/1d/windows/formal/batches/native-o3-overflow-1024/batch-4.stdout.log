@@ -1,0 +1,5 @@
+{"event":"baseline","pid":22264,"memory":{"method":"working-set/peak-working-set","unit":"bytes","current_raw":3854336,"peak_raw":3854336,"current_bytes":3854336,"peak_bytes":3854336}}
+{"event":"sample","repeats":1,"seconds":0.000463700000,"memory":{"method":"working-set/peak-working-set","unit":"bytes","current_raw":6139904,"peak_raw":7573504,"current_bytes":6139904,"peak_bytes":7573504}}
+{"event":"sample","repeats":1,"seconds":0.000444600000,"memory":{"method":"working-set/peak-working-set","unit":"bytes","current_raw":5787648,"peak_raw":7819264,"current_bytes":5787648,"peak_bytes":7819264}}
+{"event":"sample","repeats":16,"seconds":0.006325100000,"memory":{"method":"working-set/peak-working-set","unit":"bytes","current_raw":5681152,"peak_raw":8040448,"current_bytes":5681152,"peak_bytes":8040448}}
+{"event":"sample","repeats":256,"seconds":0.111604600000,"memory":{"method":"working-set/peak-working-set","unit":"bytes","current_raw":6254592,"peak_raw":8232960,"current_bytes":6254592,"peak_bytes":8232960}}

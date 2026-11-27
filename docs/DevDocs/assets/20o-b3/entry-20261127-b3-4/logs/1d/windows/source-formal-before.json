@@ -1,0 +1,128 @@
+{
+  "tracked_files": 8275,
+  "tracked_path_sha256_rollup": "c1b7a6d7074f9a3b5c1ad5e0f1961265da4047de2a85a9bfbfd71df69336b0fd",
+  "changed": [],
+  "unexpected_files": [],
+  "source_unchanged": true,
+  "locks": {
+    "core/rust/Cargo.lock": {
+      "bytes": 19622,
+      "sha256": "b00b3e3f6d048f87f83128a2ccceeabe97ccdf375b4362a1bc1cdae653ad7405"
+    },
+    "tests/benchmarks/Cargo.lock": {
+      "bytes": 19226,
+      "sha256": "4de67a7f69935c83df26daf9d9949c93dbd57d99e53617c630f8bcf749970d5a"
+    }
+  },
+  "fixtures": {
+    "tests/fixtures/docs/env/.gitattributes": {
+      "bytes": 46,
+      "sha256": "275137a5faac6951e42d2f4214563ebf19d111d67c386646f32f8882ae0624b3"
+    },
+    "tests/fixtures/docs/env/tutorial.input.json": {
+      "bytes": 69,
+      "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+    },
+    "tests/fixtures/docs/env/tutorial.stdout": {
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    },
+    "tests/fixtures/docs/env/tutorial.xiao": {
+      "bytes": 467,
+      "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+    }
+  },
+  "examples": {
+    "core/rust/crates/xiao-driver/examples/b3_env_performance.rs": {
+      "bytes": 17566,
+      "sha256": "f59850446f994db649e838b1945dbcd25bd08c020d64846f0dd1ecc3e1fc356a"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/native.c": {
+      "bytes": 5730,
+      "sha256": "2a09150c6c42333b48c4a510b67b545c5a9249a84b1ba20077081a9f06c164ee"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/native.rs": {
+      "bytes": 4310,
+      "sha256": "5f5fac1e1e047ff98f907f0fb507c229d5ae60a897fa57761d4e81d0f6ccc457"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/process.rs": {
+      "bytes": 5725,
+      "sha256": "2deca841c42e5a9af7c12924f3e7b13a6e58a374fca5194fe5b4eebc3a4bf398"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/workload.rs": {
+      "bytes": 4291,
+      "sha256": "990d723d4699958d19b72256fbf72d8dfbb69995cd21edf8da309f4768fd1a46"
+    }
+  },
+  "worktree_examples": {
+    "core/rust/crates/xiao-driver/examples/b3_env_performance.rs": {
+      "bytes": 17566,
+      "sha256": "f59850446f994db649e838b1945dbcd25bd08c020d64846f0dd1ecc3e1fc356a"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/native.c": {
+      "bytes": 5730,
+      "sha256": "2a09150c6c42333b48c4a510b67b545c5a9249a84b1ba20077081a9f06c164ee"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/native.rs": {
+      "bytes": 4310,
+      "sha256": "5f5fac1e1e047ff98f907f0fb507c229d5ae60a897fa57761d4e81d0f6ccc457"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/process.rs": {
+      "bytes": 5725,
+      "sha256": "2deca841c42e5a9af7c12924f3e7b13a6e58a374fca5194fe5b4eebc3a4bf398"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/workload.rs": {
+      "bytes": 4291,
+      "sha256": "990d723d4699958d19b72256fbf72d8dfbb69995cd21edf8da309f4768fd1a46"
+    }
+  },
+  "runtime": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+    "bytes": 27833734,
+    "sha256": "fe42ae1385a46d65d3e6882b9120ade253033fdf17c45101b57e812f7b815089"
+  },
+  "worktree_fixtures": {
+    "tests/fixtures/docs/env/.gitattributes": {
+      "bytes": 46,
+      "sha256": "275137a5faac6951e42d2f4214563ebf19d111d67c386646f32f8882ae0624b3"
+    },
+    "tests/fixtures/docs/env/tutorial.input.json": {
+      "bytes": 69,
+      "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+    },
+    "tests/fixtures/docs/env/tutorial.stdout": {
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    },
+    "tests/fixtures/docs/env/tutorial.xiao": {
+      "bytes": 467,
+      "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+    }
+  },
+  "examples_match_worktree": true,
+  "fixtures_match_worktree": true,
+  "runtime_unchanged": true,
+  "source": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\src",
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "baseline_tree": "281fb628590ef2f7f679f22da1d95c2180397b76",
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "product_tree": "b73b72f6d0d90ca43a8dd37a133842a9eeb95d6f",
+  "baseline_tracked_files": 8275,
+  "compared_product_prefixes": [
+    "core/",
+    "stdlib/",
+    "resources/",
+    "tests/",
+    ".cargo/",
+    ".github/"
+  ],
+  "baseline_test_additions": [
+    "core/rust/crates/xiao-driver/tests/20o_b3_env_tutorial.rs",
+    "core/rust/crates/xiao-driver/tests/support/b3_env_artifact.rs",
+    "tests/fixtures/docs/env/.gitattributes",
+    "tests/fixtures/docs/env/tutorial.input.json",
+    "tests/fixtures/docs/env/tutorial.stdout",
+    "tests/fixtures/docs/env/tutorial.xiao"
+  ],
+  "tracked_blob_manifest_sha256": "b97300c68738fd61a287d214a1d70f28c316f00c3e6d0b2277685f0d29ab182e"
+}

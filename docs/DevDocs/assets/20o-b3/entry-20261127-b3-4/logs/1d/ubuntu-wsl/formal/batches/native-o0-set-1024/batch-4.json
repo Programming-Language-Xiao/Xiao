@@ -1,0 +1,148 @@
+{
+  "argv": [
+    {
+      "Unix": [
+        115,
+        101,
+        116
+      ]
+    }
+  ],
+  "backend": "native-o0",
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "batch": 4,
+  "calibrated": true,
+  "case": "set",
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/tasks/native-o0-set-1024/batch-4",
+  "executable": {
+    "bytes": 9687432,
+    "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/set/measurement-o0",
+    "sha256": "6e0dc23fc230398a01050c0a43d4f02e60a778f728a8c4dde2f14d73436f170d"
+  },
+  "formal_sample": {
+    "memory": {
+      "current_bytes": 5046272,
+      "current_raw": 4928,
+      "method": "proc-vmrss-vmhwm",
+      "peak_bytes": 5046272,
+      "peak_raw": 4928,
+      "unit": "KiB"
+    },
+    "repeats": 2560,
+    "seconds": 0.190460529
+  },
+  "identity_sha256": "ff3e88b0753b00dbfc328d2ac9a7d098d6e4da6572a36cbab44d2534beed8347",
+  "input": {
+    "json_bytes": 58369,
+    "logical_bytes": 50176,
+    "pairs": 1024,
+    "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+    "value_bytes": 32
+  },
+  "optimization": 0,
+  "probe": false,
+  "process": {
+    "baseline": {
+      "current_bytes": 2830336,
+      "current_raw": 2764,
+      "method": "proc-vmrss-vmhwm",
+      "peak_bytes": 2830336,
+      "peak_raw": 2764,
+      "unit": "KiB"
+    },
+    "calibration": [
+      {
+        "memory": {
+          "current_bytes": 5033984,
+          "current_raw": 4916,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 5033984,
+          "peak_raw": 4916,
+          "unit": "KiB"
+        },
+        "repeats": 1,
+        "seconds": 0.00007591
+      },
+      {
+        "memory": {
+          "current_bytes": 5033984,
+          "current_raw": 4916,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 5033984,
+          "peak_raw": 4916,
+          "unit": "KiB"
+        },
+        "repeats": 16,
+        "seconds": 0.001134938
+      },
+      {
+        "memory": {
+          "current_bytes": 5042176,
+          "current_raw": 4924,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 5042176,
+          "peak_raw": 4924,
+          "unit": "KiB"
+        },
+        "repeats": 256,
+        "seconds": 0.020682267
+      },
+      {
+        "memory": {
+          "current_bytes": 5042176,
+          "current_raw": 4924,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 5042176,
+          "peak_raw": 4924,
+          "unit": "KiB"
+        },
+        "repeats": 1280,
+        "seconds": 0.098749606
+      },
+      {
+        "memory": {
+          "current_bytes": 5046272,
+          "current_raw": 4928,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 5046272,
+          "peak_raw": 4928,
+          "unit": "KiB"
+        },
+        "repeats": 2560,
+        "seconds": 0.190460529
+      }
+    ],
+    "error": null,
+    "exit": 0,
+    "pid": 1888,
+    "started_unix_ns": "1795782127756164257",
+    "warmup": {
+      "memory": {
+        "current_bytes": 4993024,
+        "current_raw": 4876,
+        "method": "proc-vmrss-vmhwm",
+        "peak_bytes": 4993024,
+        "peak_raw": 4876,
+        "unit": "KiB"
+      },
+      "repeats": 1,
+      "seconds": 0.000083925
+    }
+  },
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "resident_increment_upper_bytes": 2215936,
+  "runtime_sha256": "12308d5fd6e5b54e1c6a95f4b78bf18c9b9df777e04e5c4c01babe84b25640b1",
+  "schema": 1,
+  "seconds_per_workload": 0.000074398644140625,
+  "stderr": {
+    "bytes": 0,
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-1024/batch-4.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 1301,
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-set-1024/batch-4.stdout.log",
+    "sha256": "c04cb4256cad635aa36daf97a04fe5cc54e603cf639b343200e574b5c47f1aab"
+  },
+  "target": "x86_64-unknown-linux-gnu"
+}

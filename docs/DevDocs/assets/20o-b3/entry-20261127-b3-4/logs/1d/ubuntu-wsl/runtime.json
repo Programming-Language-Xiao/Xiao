@@ -1,0 +1,9 @@
+{
+  "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/libxiao_runtime.a",
+  "bytes": 34403698,
+  "sha256": "12308d5fd6e5b54e1c6a95f4b78bf18c9b9df777e04e5c4c01babe84b25640b1",
+  "profile": "release",
+  "target": "x86_64-unknown-linux-gnu",
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f"
+}

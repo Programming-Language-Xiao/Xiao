@@ -1,0 +1,78 @@
+{
+  "argv": [
+    {
+      "Windows": [
+        117,
+        110,
+        115,
+        101,
+        116
+      ]
+    }
+  ],
+  "backend": "native-o0",
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "batch": 1,
+  "calibrated": false,
+  "case": "unset",
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\probe-2\\tasks\\native-o0-unset-512\\batch-1",
+  "executable": {
+    "bytes": 1456640,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\probe-2\\unset\\measurement-o0.exe",
+    "sha256": "dee85609327d4dea685cc11670e9246a3895164d72e471b2ea7dcd3e6cdab988"
+  },
+  "formal_sample": null,
+  "identity_sha256": "c40c50e13c685dcd706109214fca4245633dedc7a1b5531dc4aa8745821bf295",
+  "input": {
+    "json_bytes": 29185,
+    "logical_bytes": 25088,
+    "pairs": 512,
+    "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+    "value_bytes": 32
+  },
+  "optimization": 0,
+  "probe": true,
+  "process": {
+    "baseline": {
+      "current_bytes": 3862528,
+      "current_raw": 3862528,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 3862528,
+      "peak_raw": 3862528,
+      "unit": "bytes"
+    },
+    "calibration": [],
+    "error": null,
+    "exit": 0,
+    "pid": 59996,
+    "started_unix_ns": "1795781153407366200",
+    "warmup": {
+      "memory": {
+        "current_bytes": 4431872,
+        "current_raw": 4431872,
+        "method": "working-set/peak-working-set",
+        "peak_bytes": 4456448,
+        "peak_raw": 4456448,
+        "unit": "bytes"
+      },
+      "repeats": 1,
+      "seconds": 0.0001549
+    }
+  },
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "resident_increment_upper_bytes": 593920,
+  "runtime_sha256": "fe42ae1385a46d65d3e6882b9120ade253033fdf17c45101b57e812f7b815089",
+  "schema": 1,
+  "seconds_per_workload": null,
+  "stderr": {
+    "bytes": 0,
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\probe-2\\batches\\native-o0-unset-512\\batch-1.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 395,
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\probe-2\\batches\\native-o0-unset-512\\batch-1.stdout.log",
+    "sha256": "01d837126a458d916c4ed828834d39e172ae4656872ae15234a1899f5af5cd72"
+  },
+  "target": "x86_64-pc-windows-msvc"
+}

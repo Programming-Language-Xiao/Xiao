@@ -1,0 +1,244 @@
+{
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "baseline_test_additions": [
+    "core/rust/crates/xiao-driver/tests/20o_b3_env_tutorial.rs",
+    "core/rust/crates/xiao-driver/tests/support/b3_env_artifact.rs",
+    "tests/fixtures/docs/env/.gitattributes",
+    "tests/fixtures/docs/env/tutorial.input.json",
+    "tests/fixtures/docs/env/tutorial.stdout",
+    "tests/fixtures/docs/env/tutorial.xiao"
+  ],
+  "baseline_tracked_files": 8275,
+  "baseline_tree": "281fb628590ef2f7f679f22da1d95c2180397b76",
+  "changed": [],
+  "compared_product_prefixes": [
+    "core/",
+    "stdlib/",
+    "resources/",
+    "tests/",
+    ".cargo/",
+    ".github/"
+  ],
+  "examples": {
+    "core/rust/crates/xiao-driver/examples/b3_env_performance.rs": {
+      "bytes": 16327,
+      "sha256": "1affc97d4978941163805b8768c50d890cffa7cf1b173c075c342c00881e940f"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/native.c": {
+      "bytes": 5730,
+      "sha256": "2a09150c6c42333b48c4a510b67b545c5a9249a84b1ba20077081a9f06c164ee"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/native.rs": {
+      "bytes": 4310,
+      "sha256": "5f5fac1e1e047ff98f907f0fb507c229d5ae60a897fa57761d4e81d0f6ccc457"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/process.rs": {
+      "bytes": 5725,
+      "sha256": "2deca841c42e5a9af7c12924f3e7b13a6e58a374fca5194fe5b4eebc3a4bf398"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/workload.rs": {
+      "bytes": 3752,
+      "sha256": "efebf6b621db8917eeeee49d2fb04507deb6e8aaed0b3f8e38780e8382f4f565"
+    }
+  },
+  "examples_match_worktree": true,
+  "fixture_origin": "7f1017b7ff0b7b0a89d11943d5d33e0b432d0b3f",
+  "fixtures": {
+    "tests/fixtures/docs/env/.gitattributes": {
+      "bytes": 46,
+      "sha256": "275137a5faac6951e42d2f4214563ebf19d111d67c386646f32f8882ae0624b3"
+    },
+    "tests/fixtures/docs/env/tutorial.input.json": {
+      "bytes": 69,
+      "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+    },
+    "tests/fixtures/docs/env/tutorial.stdout": {
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    },
+    "tests/fixtures/docs/env/tutorial.xiao": {
+      "bytes": 467,
+      "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+    }
+  },
+  "fixtures_match_worktree": true,
+  "locks": {
+    "core/rust/Cargo.lock": {
+      "bytes": 19622,
+      "sha256": "b00b3e3f6d048f87f83128a2ccceeabe97ccdf375b4362a1bc1cdae653ad7405"
+    },
+    "tests/benchmarks/Cargo.lock": {
+      "bytes": 19226,
+      "sha256": "4de67a7f69935c83df26daf9d9949c93dbd57d99e53617c630f8bcf749970d5a"
+    }
+  },
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "product_tree": "b73b72f6d0d90ca43a8dd37a133842a9eeb95d6f",
+  "runtime": {
+    "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+    "bytes": 27833734,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+    "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+    "profile": "release",
+    "sha256": "fe42ae1385a46d65d3e6882b9120ade253033fdf17c45101b57e812f7b815089",
+    "target": "x86_64-pc-windows-msvc"
+  },
+  "runtime_unchanged": true,
+  "source": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\src",
+  "source_unchanged": true,
+  "target": "x86_64-pc-windows-msvc",
+  "toolchain": {
+    "environment": {
+      "CARGO_BUILD_TARGET": "x86_64-pc-windows-msvc",
+      "CARGO_NET_OFFLINE": "true",
+      "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\target",
+      "CARGO_TERM_COLOR": "never",
+      "INCLUDE": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\include;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\ucrt;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\shared;D:\\Windows Kits\\10\\Include\\10.0.26100.0\\um",
+      "LIB": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\ucrt\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\um\\x64",
+      "RUSTUP_TOOLCHAIN": "1.96.0",
+      "TEMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\tmp",
+      "TMP": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\tmp",
+      "XIAO_B3_ENV_TEST_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\tests",
+      "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+      "XIAO_HOME": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\xiao-home",
+      "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+      "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+      "XIAO_LLVM_READOBJ": "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+      "XIAO_LLVM_STRIP": "D:\\msys64\\ucrt64\\bin\\llvm-strip.exe",
+      "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+      "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\src\\stdlib",
+      "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc"
+    },
+    "machine": "AMD64",
+    "msvc_sdk": "10.0.26100.0",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "release": null,
+    "target": "x86_64-pc-windows-msvc",
+    "tools": {
+      "cargo": {
+        "bytes": 31347200,
+        "first_line": "cargo 1.96.0 (30a34c682 2026-05-25)",
+        "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+        "resolved": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+        "sha256": "122f18d28a63fa358f3db266abee1ff1d8aabf0ab7f2dd9ac38a38da99977ae5",
+        "version_exit": 0
+      },
+      "clang": {
+        "bytes": 157296,
+        "first_line": "clang version 22.1.2 (https://github.com/msys2/MINGW-packages 4f19d31560faf73257116b7c95f0b322ba83d720)",
+        "path": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+        "resolved": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+        "sha256": "574047f1b98d62bea1da8ae9340fea1ef06d262c3186e1d72d87e5401166c833",
+        "version_exit": 0
+      },
+      "cpu": {
+        "bytes": 301384,
+        "first_line": "AMD Ryzen 9 9955HX 16-Core Processor           ",
+        "path": "D:\\Program Files\\PowerShell\\7\\pwsh.EXE",
+        "resolved": "D:\\Program Files\\PowerShell\\7\\pwsh.exe",
+        "sha256": "e94166ed9f376559c1359bafb08bc49e463a494c330f67644ec1d9f1ffeb5ee5",
+        "version_exit": 0
+      },
+      "link": {
+        "bytes": 3701088,
+        "first_line": "Microsoft (R) Incremental Linker Version 14.51.36256.0",
+        "path": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.EXE",
+        "resolved": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+        "sha256": "3ef8fcf80d409fab22ddd89ee19249f31a26ad9914d3e3e48573c30998fa24de",
+        "version_exit": 1100
+      },
+      "llc": {
+        "bytes": 211961,
+        "first_line": "LLVM (http://llvm.org/):",
+        "path": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+        "resolved": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+        "sha256": "df1409fabacdc625b2c2fefe50712de4ba140e07bf2bb4192101189498152869",
+        "version_exit": 0
+      },
+      "llvm-as": {
+        "bytes": 40741,
+        "first_line": "LLVM (http://llvm.org/):",
+        "path": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+        "resolved": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+        "sha256": "63f559db3d87798fa4f26923c4cd5839ddc41b40905d884ee341c74a8bd858e9",
+        "version_exit": 0
+      },
+      "llvm-readobj": {
+        "bytes": 2140197,
+        "first_line": "LLVM (http://llvm.org/):",
+        "path": "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+        "resolved": "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+        "sha256": "768a76a82fedb79b5305ca6bfffa63c00b5738789c7f47225b247345ab99328e",
+        "version_exit": 0
+      },
+      "llvm-strip": {
+        "bytes": 244345,
+        "first_line": "llvm-strip, compatible with GNU strip",
+        "path": "D:\\msys64\\ucrt64\\bin\\llvm-strip.exe",
+        "resolved": "D:\\msys64\\ucrt64\\bin\\llvm-strip.exe",
+        "sha256": "99a27e4cad1d4061c579ae9d03e90142d36234478fdbe9c8458636c33bdc9cc7",
+        "version_exit": 0
+      },
+      "rustc": {
+        "bytes": 111104,
+        "first_line": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+        "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+        "resolved": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+        "sha256": "acb138286bbe20c6cf3ec39a7e0a68c3fab0cd949baa2912cf466514d0d531ab",
+        "version_exit": 0
+      },
+      "rustfmt": {
+        "bytes": 4772864,
+        "first_line": "rustfmt 1.9.0-stable (ac68faa20c 2026-05-25)",
+        "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustfmt.exe",
+        "resolved": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustfmt.exe",
+        "sha256": "5846618be9dafc003c7f9235d10fd7b3d79dd956f3fe07bf853f56cea672778a",
+        "version_exit": 0
+      }
+    }
+  },
+  "tracked_blob_manifest_sha256": "b97300c68738fd61a287d214a1d70f28c316f00c3e6d0b2277685f0d29ab182e",
+  "tracked_files": 8275,
+  "tracked_path_sha256_rollup": "c1b7a6d7074f9a3b5c1ad5e0f1961265da4047de2a85a9bfbfd71df69336b0fd",
+  "unexpected_files": [],
+  "worktree_examples": {
+    "core/rust/crates/xiao-driver/examples/b3_env_performance.rs": {
+      "bytes": 16327,
+      "sha256": "1affc97d4978941163805b8768c50d890cffa7cf1b173c075c342c00881e940f"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/native.c": {
+      "bytes": 5730,
+      "sha256": "2a09150c6c42333b48c4a510b67b545c5a9249a84b1ba20077081a9f06c164ee"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/native.rs": {
+      "bytes": 4310,
+      "sha256": "5f5fac1e1e047ff98f907f0fb507c229d5ae60a897fa57761d4e81d0f6ccc457"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/process.rs": {
+      "bytes": 5725,
+      "sha256": "2deca841c42e5a9af7c12924f3e7b13a6e58a374fca5194fe5b4eebc3a4bf398"
+    },
+    "core/rust/crates/xiao-driver/examples/env_perf/workload.rs": {
+      "bytes": 3752,
+      "sha256": "efebf6b621db8917eeeee49d2fb04507deb6e8aaed0b3f8e38780e8382f4f565"
+    }
+  },
+  "worktree_fixtures": {
+    "tests/fixtures/docs/env/.gitattributes": {
+      "bytes": 46,
+      "sha256": "275137a5faac6951e42d2f4214563ebf19d111d67c386646f32f8882ae0624b3"
+    },
+    "tests/fixtures/docs/env/tutorial.input.json": {
+      "bytes": 69,
+      "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+    },
+    "tests/fixtures/docs/env/tutorial.stdout": {
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    },
+    "tests/fixtures/docs/env/tutorial.xiao": {
+      "bytes": 467,
+      "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+    }
+  }
+}

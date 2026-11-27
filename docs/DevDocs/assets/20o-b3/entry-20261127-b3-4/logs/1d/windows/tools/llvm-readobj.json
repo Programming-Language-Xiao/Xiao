@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "D:\\msys64\\ucrt64\\bin\\llvm-readobj.exe",
+    "--version"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\src",
+  "started_at_utc": "2026-11-27T11:48:56.795641+00:00",
+  "elapsed_seconds": 0.07113970001228154,
+  "exit": 0,
+  "environment": {},
+  "stdout": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\tools\\llvm-readobj.stdout.log",
+    "bytes": 66,
+    "sha256": "850f8cd692366c21e25e0f2e3e4a0b69774af132389e557d99575888bf78c9ee"
+  },
+  "stderr": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\tools\\llvm-readobj.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

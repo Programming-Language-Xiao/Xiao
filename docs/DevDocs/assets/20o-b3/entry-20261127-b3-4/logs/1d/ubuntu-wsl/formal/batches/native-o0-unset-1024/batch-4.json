@@ -1,0 +1,150 @@
+{
+  "argv": [
+    {
+      "Unix": [
+        117,
+        110,
+        115,
+        101,
+        116
+      ]
+    }
+  ],
+  "backend": "native-o0",
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "batch": 4,
+  "calibrated": true,
+  "case": "unset",
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/tasks/native-o0-unset-1024/batch-4",
+  "executable": {
+    "bytes": 9687432,
+    "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/unset/measurement-o0",
+    "sha256": "0bf94dc7dc492eb260dcdf0b56b048d2a15901f5ef3c309744b138a99d1a638c"
+  },
+  "formal_sample": {
+    "memory": {
+      "current_bytes": 4874240,
+      "current_raw": 4760,
+      "method": "proc-vmrss-vmhwm",
+      "peak_bytes": 4874240,
+      "peak_raw": 4760,
+      "unit": "KiB"
+    },
+    "repeats": 2048,
+    "seconds": 0.189435994
+  },
+  "identity_sha256": "ff3e88b0753b00dbfc328d2ac9a7d098d6e4da6572a36cbab44d2534beed8347",
+  "input": {
+    "json_bytes": 58369,
+    "logical_bytes": 50176,
+    "pairs": 1024,
+    "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+    "value_bytes": 32
+  },
+  "optimization": 0,
+  "probe": false,
+  "process": {
+    "baseline": {
+      "current_bytes": 2834432,
+      "current_raw": 2768,
+      "method": "proc-vmrss-vmhwm",
+      "peak_bytes": 2834432,
+      "peak_raw": 2768,
+      "unit": "KiB"
+    },
+    "calibration": [
+      {
+        "memory": {
+          "current_bytes": 4861952,
+          "current_raw": 4748,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4861952,
+          "peak_raw": 4748,
+          "unit": "KiB"
+        },
+        "repeats": 1,
+        "seconds": 0.000094015
+      },
+      {
+        "memory": {
+          "current_bytes": 4870144,
+          "current_raw": 4756,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4870144,
+          "peak_raw": 4756,
+          "unit": "KiB"
+        },
+        "repeats": 16,
+        "seconds": 0.001428058
+      },
+      {
+        "memory": {
+          "current_bytes": 4870144,
+          "current_raw": 4756,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4870144,
+          "peak_raw": 4756,
+          "unit": "KiB"
+        },
+        "repeats": 256,
+        "seconds": 0.025080032
+      },
+      {
+        "memory": {
+          "current_bytes": 4870144,
+          "current_raw": 4756,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4870144,
+          "peak_raw": 4756,
+          "unit": "KiB"
+        },
+        "repeats": 1024,
+        "seconds": 0.098920803
+      },
+      {
+        "memory": {
+          "current_bytes": 4874240,
+          "current_raw": 4760,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4874240,
+          "peak_raw": 4760,
+          "unit": "KiB"
+        },
+        "repeats": 2048,
+        "seconds": 0.189435994
+      }
+    ],
+    "error": null,
+    "exit": 0,
+    "pid": 1918,
+    "started_unix_ns": "1795782152823824455",
+    "warmup": {
+      "memory": {
+        "current_bytes": 4829184,
+        "current_raw": 4716,
+        "method": "proc-vmrss-vmhwm",
+        "peak_bytes": 4829184,
+        "peak_raw": 4716,
+        "unit": "KiB"
+      },
+      "repeats": 1,
+      "seconds": 0.00010107
+    }
+  },
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "resident_increment_upper_bytes": 2039808,
+  "runtime_sha256": "12308d5fd6e5b54e1c6a95f4b78bf18c9b9df777e04e5c4c01babe84b25640b1",
+  "schema": 1,
+  "seconds_per_workload": 0.0000924980439453125,
+  "stderr": {
+    "bytes": 0,
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-1024/batch-4.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 1301,
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o0-unset-1024/batch-4.stdout.log",
+    "sha256": "ac034f892c81c281766c90c9a3c9ec5ba7a3bc3bdc1ba96116053fe727602300"
+  },
+  "target": "x86_64-unknown-linux-gnu"
+}

@@ -1,0 +1,4 @@
+
+thread 'main' (1733) panicked at crates/xiao-driver/examples/b3_env_performance.rs:355:13:
+Error(XiaoError(XiaoErrorData { code: "X06-RUNTIME-012", message_id: "runtime.invalid_value", params: {"message": Text("官方标准库模块 env 加载失败: 未注册模块编译器")}, kind: Type, message: "官方标准库模块 env 加载失败: 未注册模块编译器", location: Some(SourceSpan { start: 0, end: 35 }), context: {}, stack: [StackFrame { module: "host", function: "", source: Some("<unknown>"), span: Some(SourceSpan { start: 0, end: 35 }), backend: BackendLocation { bytecode_offset: Some(3), native_address: None, inline_depth: None }, kind: User }], cause: None, suppressed: [], error_id: 1 }))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

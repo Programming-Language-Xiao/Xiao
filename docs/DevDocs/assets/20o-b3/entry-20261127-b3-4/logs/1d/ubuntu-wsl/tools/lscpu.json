@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "/usr/bin/lscpu"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/src",
+  "started_at_utc": "2026-11-27T11:50:03.590584+00:00",
+  "elapsed_seconds": 0.051592484989669174,
+  "exit": 0,
+  "environment": {},
+  "stdout": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/tools/lscpu.stdout.log",
+    "bytes": 3305,
+    "sha256": "884d5cb05f44396826fa19745918761036b22a1a4e715f6d231cd42c6eeda507"
+  },
+  "stderr": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/tools/lscpu.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

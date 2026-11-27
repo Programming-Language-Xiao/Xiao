@@ -1,0 +1,236 @@
+{
+  "argv": [
+    {
+      "Windows": [
+        45,
+        45,
+        119,
+        111,
+        114,
+        107,
+        101,
+        114,
+        45,
+        118,
+        109
+      ]
+    },
+    {
+      "Windows": [
+        68,
+        58,
+        92,
+        112,
+        114,
+        111,
+        106,
+        101,
+        99,
+        116,
+        92,
+        88,
+        105,
+        97,
+        111,
+        92,
+        46,
+        120,
+        105,
+        97,
+        111,
+        45,
+        111,
+        114,
+        99,
+        104,
+        101,
+        115,
+        116,
+        114,
+        97,
+        116,
+        111,
+        114,
+        92,
+        101,
+        118,
+        105,
+        100,
+        101,
+        110,
+        99,
+        101,
+        92,
+        98,
+        51,
+        45,
+        52,
+        101,
+        45,
+        108,
+        111,
+        99,
+        97,
+        108,
+        92,
+        119,
+        105,
+        110,
+        92,
+        119,
+        111,
+        114,
+        107,
+        92,
+        102,
+        111,
+        114,
+        109,
+        97,
+        108,
+        92,
+        103,
+        101,
+        116,
+        92,
+        109,
+        101,
+        97,
+        115,
+        117,
+        114,
+        101,
+        109,
+        101,
+        110,
+        116,
+        46,
+        120,
+        105,
+        97,
+        111,
+        99
+      ]
+    },
+    {
+      "Windows": [
+        103,
+        101,
+        116
+      ]
+    }
+  ],
+  "backend": "vm",
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "batch": 2,
+  "calibrated": true,
+  "case": "get",
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\work\\formal\\tasks\\vm-get-512\\batch-2",
+  "executable": {
+    "bytes": 11212288,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\target\\x86_64-pc-windows-msvc\\release\\examples\\b3_env_performance.exe",
+    "sha256": "96ba9e31a32ffcffde65f1fb339469c07e6d66a381d0d87110b96139424a0087"
+  },
+  "formal_sample": {
+    "memory": {
+      "current_bytes": 11669504,
+      "current_raw": 11669504,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 18735104,
+      "peak_raw": 18735104,
+      "unit": "bytes"
+    },
+    "repeats": 32,
+    "seconds": 0.10430309999999998
+  },
+  "identity_sha256": "03188f1db05848d68f4ef70791ad22c218d8cad55765d1cd1c8244ff5371012a",
+  "input": {
+    "json_bytes": 29185,
+    "logical_bytes": 25088,
+    "pairs": 512,
+    "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+    "value_bytes": 32
+  },
+  "optimization": null,
+  "probe": false,
+  "process": {
+    "baseline": {
+      "current_bytes": 9199616,
+      "current_raw": 9199616,
+      "method": "working-set/peak-working-set",
+      "peak_bytes": 9199616,
+      "peak_raw": 9199616,
+      "unit": "bytes"
+    },
+    "calibration": [
+      {
+        "memory": {
+          "current_bytes": 11591680,
+          "current_raw": 11591680,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 18735104,
+          "peak_raw": 18735104,
+          "unit": "bytes"
+        },
+        "repeats": 1,
+        "seconds": 0.0031134
+      },
+      {
+        "memory": {
+          "current_bytes": 11661312,
+          "current_raw": 11661312,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 18735104,
+          "peak_raw": 18735104,
+          "unit": "bytes"
+        },
+        "repeats": 16,
+        "seconds": 0.0503875
+      },
+      {
+        "memory": {
+          "current_bytes": 11669504,
+          "current_raw": 11669504,
+          "method": "working-set/peak-working-set",
+          "peak_bytes": 18735104,
+          "peak_raw": 18735104,
+          "unit": "bytes"
+        },
+        "repeats": 32,
+        "seconds": 0.10430309999999998
+      }
+    ],
+    "error": null,
+    "exit": 0,
+    "pid": 74684,
+    "started_unix_ns": "1795781690974061500",
+    "warmup": {
+      "memory": {
+        "current_bytes": 11546624,
+        "current_raw": 11546624,
+        "method": "working-set/peak-working-set",
+        "peak_bytes": 18735104,
+        "peak_raw": 18735104,
+        "unit": "bytes"
+      },
+      "repeats": 1,
+      "seconds": 0.0032719
+    }
+  },
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "resident_increment_upper_bytes": 9535488,
+  "runtime_sha256": "fe42ae1385a46d65d3e6882b9120ade253033fdf17c45101b57e812f7b815089",
+  "schema": 1,
+  "seconds_per_workload": 0.0032594718749999994,
+  "stderr": {
+    "bytes": 0,
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\formal\\batches\\vm-get-512\\batch-2.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 1025,
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\formal\\batches\\vm-get-512\\batch-2.stdout.log",
+    "sha256": "eeec3032be9e90a5cff0c253500c96784068747e6364bd3462b69ea67652a5b1"
+  },
+  "target": "x86_64-pc-windows-msvc"
+}

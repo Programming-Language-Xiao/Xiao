@@ -1,0 +1,76 @@
+{
+  "argv": [
+    {
+      "Unix": [
+        103,
+        101,
+        116
+      ]
+    }
+  ],
+  "backend": "native-o0",
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "batch": 1,
+  "calibrated": false,
+  "case": "get",
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/probe-3/tasks/native-o0-get-512/batch-1",
+  "executable": {
+    "bytes": 9687432,
+    "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/probe-3/get/measurement-o0",
+    "sha256": "033e4fb69ec03c6d08a587b587dd1a80e1ba9eed9c10b95afc077c65b9c91b91"
+  },
+  "formal_sample": null,
+  "identity_sha256": "0c9a33ba64818dcf96a3afece298fdaf023d494e8fa3366a1bb8a8ab39fbb35f",
+  "input": {
+    "json_bytes": 29185,
+    "logical_bytes": 25088,
+    "pairs": 512,
+    "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+    "value_bytes": 32
+  },
+  "optimization": 0,
+  "probe": true,
+  "process": {
+    "baseline": {
+      "current_bytes": 2912256,
+      "current_raw": 2844,
+      "method": "proc-vmrss-vmhwm",
+      "peak_bytes": 2912256,
+      "peak_raw": 2844,
+      "unit": "KiB"
+    },
+    "calibration": [],
+    "error": null,
+    "exit": 0,
+    "pid": 1752,
+    "started_unix_ns": "1795781389587848183",
+    "warmup": {
+      "memory": {
+        "current_bytes": 4820992,
+        "current_raw": 4708,
+        "method": "proc-vmrss-vmhwm",
+        "peak_bytes": 4820992,
+        "peak_raw": 4708,
+        "unit": "KiB"
+      },
+      "repeats": 1,
+      "seconds": 0.000196187
+    }
+  },
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "resident_increment_upper_bytes": 1908736,
+  "runtime_sha256": "12308d5fd6e5b54e1c6a95f4b78bf18c9b9df777e04e5c4c01babe84b25640b1",
+  "schema": 1,
+  "seconds_per_workload": null,
+  "stderr": {
+    "bytes": 0,
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/probe-3/batches/native-o0-get-512/batch-1.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 352,
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/probe-3/batches/native-o0-get-512/batch-1.stdout.log",
+    "sha256": "227e902047254079aa35067787255acc10c7f2965ad9a03ae25277bd18dde63a"
+  },
+  "target": "x86_64-unknown-linux-gnu"
+}

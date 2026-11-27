@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "-Vv"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/src",
+  "started_at_utc": "2026-11-27T11:50:01.802308+00:00",
+  "elapsed_seconds": 0.05789760599145666,
+  "exit": 0,
+  "environment": {},
+  "stdout": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/tools/cargo.stdout.log",
+    "bytes": 339,
+    "sha256": "247bc3947154a1f2789d98a4886db9b3ab1f3d3787eea2aaf78cc3bd02fd40a3"
+  },
+  "stderr": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/tools/cargo.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

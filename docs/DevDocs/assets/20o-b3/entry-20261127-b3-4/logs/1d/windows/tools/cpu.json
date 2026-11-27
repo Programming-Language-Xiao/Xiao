@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "D:\\Program Files\\PowerShell\\7\\pwsh.EXE",
+    "-NoProfile",
+    "-Command",
+    "Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\win\\src",
+  "started_at_utc": "2026-11-27T11:48:57.235371+00:00",
+  "elapsed_seconds": 1.987254000036046,
+  "exit": 0,
+  "environment": {},
+  "stdout": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\tools\\cpu.stdout.log",
+    "bytes": 49,
+    "sha256": "03a5a233b62647e8052a2993058c755fcd2a02591e207af0580a28ccfb517ce5"
+  },
+  "stderr": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\windows\\tools\\cpu.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

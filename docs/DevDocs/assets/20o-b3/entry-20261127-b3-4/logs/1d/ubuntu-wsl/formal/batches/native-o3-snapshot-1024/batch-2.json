@@ -1,0 +1,141 @@
+{
+  "argv": [
+    {
+      "Unix": [
+        115,
+        110,
+        97,
+        112,
+        115,
+        104,
+        111,
+        116
+      ]
+    }
+  ],
+  "backend": "native-o3",
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "batch": 2,
+  "calibrated": true,
+  "case": "snapshot",
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/tasks/native-o3-snapshot-1024/batch-2",
+  "executable": {
+    "bytes": 9683288,
+    "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/formal/get/measurement-o3",
+    "sha256": "01006b73c26faf1fda48ef94619a6aadb844566a28b3081b6c406e0aafea2718"
+  },
+  "formal_sample": {
+    "memory": {
+      "current_bytes": 4915200,
+      "current_raw": 4800,
+      "method": "proc-vmrss-vmhwm",
+      "peak_bytes": 4980736,
+      "peak_raw": 4864,
+      "unit": "KiB"
+    },
+    "repeats": 384,
+    "seconds": 0.198066937897
+  },
+  "identity_sha256": "ff3e88b0753b00dbfc328d2ac9a7d098d6e4da6572a36cbab44d2534beed8347",
+  "input": {
+    "json_bytes": 58369,
+    "logical_bytes": 50176,
+    "pairs": 1024,
+    "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+    "value_bytes": 32
+  },
+  "optimization": 3,
+  "probe": false,
+  "process": {
+    "baseline": {
+      "current_bytes": 2850816,
+      "current_raw": 2784,
+      "method": "proc-vmrss-vmhwm",
+      "peak_bytes": 2850816,
+      "peak_raw": 2784,
+      "unit": "KiB"
+    },
+    "calibration": [
+      {
+        "memory": {
+          "current_bytes": 4911104,
+          "current_raw": 4796,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4980736,
+          "peak_raw": 4864,
+          "unit": "KiB"
+        },
+        "repeats": 1,
+        "seconds": 0.000532531994
+      },
+      {
+        "memory": {
+          "current_bytes": 4911104,
+          "current_raw": 4796,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4980736,
+          "peak_raw": 4864,
+          "unit": "KiB"
+        },
+        "repeats": 16,
+        "seconds": 0.008598477987
+      },
+      {
+        "memory": {
+          "current_bytes": 4915200,
+          "current_raw": 4800,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4980736,
+          "peak_raw": 4864,
+          "unit": "KiB"
+        },
+        "repeats": 192,
+        "seconds": 0.095180536053
+      },
+      {
+        "memory": {
+          "current_bytes": 4915200,
+          "current_raw": 4800,
+          "method": "proc-vmrss-vmhwm",
+          "peak_bytes": 4980736,
+          "peak_raw": 4864,
+          "unit": "KiB"
+        },
+        "repeats": 384,
+        "seconds": 0.198066937897
+      }
+    ],
+    "error": null,
+    "exit": 0,
+    "pid": 1964,
+    "started_unix_ns": "1795782195773243837",
+    "warmup": {
+      "memory": {
+        "current_bytes": 4911104,
+        "current_raw": 4796,
+        "method": "proc-vmrss-vmhwm",
+        "peak_bytes": 4911104,
+        "peak_raw": 4796,
+        "unit": "KiB"
+      },
+      "repeats": 1,
+      "seconds": 0.000618182996
+    }
+  },
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "resident_increment_upper_bytes": 2129920,
+  "runtime_sha256": "12308d5fd6e5b54e1c6a95f4b78bf18c9b9df777e04e5c4c01babe84b25640b1",
+  "schema": 1,
+  "seconds_per_workload": 0.0005157993174401042,
+  "stderr": {
+    "bytes": 0,
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-1024/batch-2.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 1109,
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/formal/batches/native-o3-snapshot-1024/batch-2.stdout.log",
+    "sha256": "05f34e0098820cafc1c224119f80d62367d5fbd05ab8514d7ad439dd81f61ee7"
+  },
+  "target": "x86_64-unknown-linux-gnu"
+}

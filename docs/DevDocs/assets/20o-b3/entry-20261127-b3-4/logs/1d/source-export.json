@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "cmd.exe",
+    "/d",
+    "/c",
+    "git",
+    "-c",
+    "core.autocrlf=false",
+    "-c",
+    "core.eol=lf",
+    "archive",
+    "--format=tar",
+    "8a0aaaddee12206226f19a21d1eaa5101001841f"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "started_at_utc": "2026-11-27T11:45:18.741206+00:00",
+  "elapsed_seconds": 4.885381200001575,
+  "exit": 0,
+  "environment": {},
+  "stdout": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4e-local\\source.tar",
+    "bytes": 664186880,
+    "sha256": "70750520080a772c94eb4ed1049e2ef65deef5f63abbe8acb56dbbad1b2f9ef5"
+  },
+  "stderr": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\source-export.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

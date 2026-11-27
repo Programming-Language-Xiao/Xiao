@@ -1,6 +1,6 @@
 # 20O-B3-4. `env` 实施规划
 
-> **状态（2026-11-27）**　`b3_4_started=true`、`b3_4_passed=false`、`b3_4_entry_ready=true`。B3-4A～C 已实施；B3-4D 修复后本地复跑通过（Windows 与 Ubuntu WSL 教程、六份 Windows COFF、权限 026/退出 3），macOS、CI 与性能回执仍缺，B3-4E 未完成。入口产品 `3506455e`（`3506455ee5839214082df15af4c760f8d0361e66`）；B3-4C 修复产品 `00766ca3`，当前工作树为 ABI 1.20、生成器 27、标准库接口 1。[22D/FIX.2 状态回执] · [B3-4A/B 证据](assets/20o-b3/entry-20261127-b3-4/REPORT.md) · [B3-4C 证据](assets/20o-b3/entry-20261127-b3-4/REPORT-1B.md) · [B3-4C 修复](assets/20o-b3/entry-20261127-b3-4/REPORT-FIX-A.md) · [B3-4D 复跑](assets/20o-b3/entry-20261127-b3-4/REPORT-1C-RERUN.md)
+> **状态（2026-11-27）**　`b3_4_started=true`、`b3_4_passed=false`、`b3_4_entry_ready=true`。B3-4A～C 已实施；B3-4D 修复后本地复跑通过（Windows 与 Ubuntu WSL 教程、六份 Windows COFF、权限 026/退出 3），B3-4E 本地性能与六份 COFF 复核通过；macOS、CI 与原生 001/002 回执仍缺，B3-4E 未收口。入口产品 `3506455e`（`3506455ee5839214082df15af4c760f8d0361e66`）；B3-4C 修复产品 `00766ca3`，当前工作树为 ABI 1.20、生成器 27、标准库接口 1。[22D/FIX.2 状态回执] · [B3-4A/B 证据](assets/20o-b3/entry-20261127-b3-4/REPORT.md) · [B3-4C 证据](assets/20o-b3/entry-20261127-b3-4/REPORT-1B.md) · [B3-4C 修复](assets/20o-b3/entry-20261127-b3-4/REPORT-FIX-A.md) · [B3-4D 复跑](assets/20o-b3/entry-20261127-b3-4/REPORT-1C-RERUN.md) · [B3-4E 本地](assets/20o-b3/entry-20261127-b3-4/REPORT-1D.md)
 >
 > **入口依据**　B3-3 已收口（`b3_3_passed=true`）。22D/FIX.2 已收口（`22d_open=false`），固定产品通过严格源码审计与 fs 三平台复验，Windows 六份 fs 产物获产品级 COFF `Complete`。这些回执共同派生 `b3_4_entry_ready=true`。[B3-3 收口] · [B3-3 实施规划] · [22D/FIX.2 严格审计]
 >
@@ -161,6 +161,12 @@ O0/O3 均逐字匹配 55 字节黄金；Windows 六份新产物获产品级 COFF
 FIX-A 仍存三项风险：原生 `run_application` 未消费 `timeout_ms`，env C ABI 安全点只覆盖
 任务取消；跨平台链接依赖只实测 Windows；注入载荷先完整解码 JSON 再检查 1 MiB 配额。
 前两项与 B3-4E 的平台矩阵合并处理，第三项在 B3-4C-FIX-B 修正。
+
+B3-4E 本地部分已在 `8a0aaadd`（产品代码仍为 `00766ca3`）完成：Windows 与 Ubuntu WSL
+各 210 个正式样本、42/42 组合通过，最大中位数 3.247 ms、峰值增量 13.46 MiB、最大翻倍
+比 2.312，均在阈值内；六份 COFF 产物/map/回执重算一致。macOS 本机为 `unverifiable`，
+Linux/macOS CI、原生运行取消/截止 001/002 和注入配额仍待补齐，故不置 `b3_4_passed`。
+[本地性能与审计](assets/20o-b3/entry-20261127-b3-4/REPORT-1D.md)
 
 B3-4C 升生成器 27 后，B3-1/B3-2/B3-3 的原生证据仍绑定各自历史产品与生成器 26
 （B3-3 为 `3506455e`），不得把它们写成当前 27 产品的六模块验收。B3-4D/E 只声明 env；

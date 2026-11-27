@@ -1,0 +1,27 @@
+{
+  "argv": [
+    "C:\\Windows\\System32\\wsl.exe",
+    "--distribution",
+    "Ubuntu-26.04",
+    "--exec",
+    "/usr/bin/python3",
+    "-B",
+    "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4e-local/local.py",
+    "prepare-resume"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "started_at_utc": "2026-11-27T11:47:42.651070+00:00",
+  "elapsed_seconds": 7.496274699980859,
+  "exit": 1,
+  "environment": {},
+  "stdout": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\wsl-prepare-resume.stdout.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1d\\wsl-prepare-resume.stderr.log",
+    "bytes": 1231,
+    "sha256": "c4fa87889b04c26b2fc56fc5b968f73e2559f8d2322169a4dc0f72f13cb2e32b"
+  }
+}

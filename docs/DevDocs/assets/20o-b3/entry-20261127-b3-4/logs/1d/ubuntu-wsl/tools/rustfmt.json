@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+    "--version"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/src",
+  "started_at_utc": "2026-11-27T11:50:02.055063+00:00",
+  "elapsed_seconds": 0.04745834799541626,
+  "exit": 0,
+  "environment": {},
+  "stdout": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/tools/rustfmt.stdout.log",
+    "bytes": 45,
+    "sha256": "58e77f09cbe97eb2d0ab9174e5523494d03814f2879c8e187ed66370320abc7c"
+  },
+  "stderr": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/tools/rustfmt.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

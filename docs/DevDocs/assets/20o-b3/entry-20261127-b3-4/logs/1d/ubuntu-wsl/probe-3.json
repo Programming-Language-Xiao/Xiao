@@ -1,0 +1,55 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "run",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--release",
+    "--example",
+    "b3_env_performance",
+    "--",
+    "--output-dir",
+    "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/probe-3",
+    "--artifact-dir",
+    "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/probe-3",
+    "--identity",
+    "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/probe-3-identity.json",
+    "--probe"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/src",
+  "started_at_utc": "2026-11-27T12:09:02.322863+00:00",
+  "elapsed_seconds": 62.80403510799806,
+  "exit": 0,
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target",
+    "CARGO_BUILD_TARGET": "x86_64-unknown-linux-gnu",
+    "CARGO_TERM_COLOR": "never",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "XIAO_HOME": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/xiao-home",
+    "XIAO_STDLIB_ROOT": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/src/stdlib",
+    "XIAO_B3_ENV_TEST_ROOT": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/tests",
+    "XIAO_TARGET_TRIPLE": "x86_64-unknown-linux-gnu",
+    "XIAO_RUNTIME_LIBRARY": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/libxiao_runtime.a",
+    "XIAO_CLANG": "/usr/lib/llvm-21/bin/clang",
+    "XIAO_LLVM_AS": "/usr/lib/llvm-21/bin/llvm-as",
+    "XIAO_LLC": "/usr/lib/llvm-21/bin/llc",
+    "XIAO_LLVM_STRIP": "/usr/lib/llvm-21/bin/llvm-strip",
+    "XIAO_LLVM_READOBJ": "/usr/lib/llvm-21/bin/llvm-readobj",
+    "TMPDIR": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/tmp"
+  },
+  "stdout": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/probe-3.stdout.log",
+    "bytes": 3021,
+    "sha256": "57bc12b1fad1e31dfc42c6816ea208d82d8e05d4285dc03121ce76b51e55fcd8"
+  },
+  "stderr": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/probe-3.stderr.log",
+    "bytes": 538,
+    "sha256": "353116e584f6bc0488dcca19a8cf6ff2922619b62e8e9a6794df25950500c192"
+  }
+}

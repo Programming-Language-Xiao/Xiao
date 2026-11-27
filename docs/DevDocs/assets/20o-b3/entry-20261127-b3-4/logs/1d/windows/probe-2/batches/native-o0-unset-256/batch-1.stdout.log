@@ -1,0 +1,2 @@
+{"event":"baseline","pid":67856,"memory":{"method":"working-set/peak-working-set","unit":"bytes","current_raw":4288512,"peak_raw":4288512,"current_bytes":4288512,"peak_bytes":4288512}}
+{"event":"sample","repeats":1,"seconds":0.000148900000,"memory":{"method":"working-set/peak-working-set","unit":"bytes","current_raw":4825088,"peak_raw":4825088,"current_bytes":4825088,"peak_bytes":4825088}}

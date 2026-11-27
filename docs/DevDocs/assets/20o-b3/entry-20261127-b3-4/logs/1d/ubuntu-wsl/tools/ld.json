@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "/usr/bin/ld",
+    "--version"
+  ],
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/src",
+  "started_at_utc": "2026-11-27T11:50:03.332924+00:00",
+  "elapsed_seconds": 0.03951296900049783,
+  "exit": 0,
+  "environment": {},
+  "stdout": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/tools/ld.stdout.log",
+    "bytes": 281,
+    "sha256": "90619b44f5e33d31b24e5eaefa374736e4db86d56a01e8b1f6ceb0b4c2cab821"
+  },
+  "stderr": {
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/tools/ld.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

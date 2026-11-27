@@ -1,0 +1,153 @@
+{
+  "argv": [
+    {
+      "Unix": [
+        45,
+        45,
+        119,
+        111,
+        114,
+        107,
+        101,
+        114,
+        45,
+        118,
+        109
+      ]
+    },
+    {
+      "Unix": [
+        47,
+        104,
+        111,
+        109,
+        101,
+        47,
+        120,
+        105,
+        97,
+        111,
+        99,
+        122,
+        120,
+        47,
+        46,
+        120,
+        105,
+        97,
+        111,
+        45,
+        98,
+        51,
+        45,
+        52,
+        101,
+        45,
+        111,
+        107,
+        95,
+        104,
+        115,
+        50,
+        109,
+        103,
+        47,
+        119,
+        111,
+        114,
+        107,
+        47,
+        112,
+        114,
+        111,
+        98,
+        101,
+        45,
+        50,
+        47,
+        103,
+        101,
+        116,
+        47,
+        109,
+        101,
+        97,
+        115,
+        117,
+        114,
+        101,
+        109,
+        101,
+        110,
+        116,
+        46,
+        120,
+        105,
+        97,
+        111,
+        99
+      ]
+    },
+    {
+      "Unix": [
+        103,
+        101,
+        116
+      ]
+    }
+  ],
+  "backend": "vm",
+  "baseline_commit": "8a0aaaddee12206226f19a21d1eaa5101001841f",
+  "batch": 1,
+  "calibrated": false,
+  "case": "get",
+  "cwd": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/work/probe-2/tasks/vm-get-1024/batch-1",
+  "executable": {
+    "bytes": 11635416,
+    "path": "/home/xiaoczx/.xiao-b3-4e-ok_hs2mg/target/x86_64-unknown-linux-gnu/release/examples/b3_env_performance",
+    "sha256": "ea2cdd96ca09301935cb105c036d07df93f4210484c72d66363684edd82f144e"
+  },
+  "formal_sample": null,
+  "identity_sha256": "0e6afc103ea40e2cd67e7fde5566a076cfde31ed2e9b015a25fca7620a7dc283",
+  "input": {
+    "json_bytes": 58369,
+    "logical_bytes": 50176,
+    "pairs": 1024,
+    "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+    "value_bytes": 32
+  },
+  "optimization": null,
+  "probe": true,
+  "process": {
+    "baseline": {
+      "current_bytes": 3612672,
+      "current_raw": 3528,
+      "method": "proc-vmrss-vmhwm",
+      "peak_bytes": 3612672,
+      "peak_raw": 3528,
+      "unit": "KiB"
+    },
+    "calibration": [],
+    "error": "读取 sample 失败 channel is empty and sending half is closed",
+    "exit": 101,
+    "pid": 1731,
+    "started_unix_ns": "1795781075837576571",
+    "warmup": null
+  },
+  "product_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "resident_increment_upper_bytes": null,
+  "runtime_sha256": "12308d5fd6e5b54e1c6a95f4b78bf18c9b9df777e04e5c4c01babe84b25640b1",
+  "schema": 1,
+  "seconds_per_workload": null,
+  "stderr": {
+    "bytes": 792,
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/probe-2/batches/vm-get-1024/batch-1.stderr.log",
+    "sha256": "d862685451017155fa42184884e539908ac86f7574e0b72a919f363031bab8d8"
+  },
+  "stdout": {
+    "bytes": 164,
+    "path": "/mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1d/ubuntu-wsl/probe-2/batches/vm-get-1024/batch-1.stdout.log",
+    "sha256": "1332f034ae8c297c6012c1e6ba63bcc4fa020607696c34ebb3b22186b29ed4c2"
+  },
+  "target": "x86_64-unknown-linux-gnu"
+}

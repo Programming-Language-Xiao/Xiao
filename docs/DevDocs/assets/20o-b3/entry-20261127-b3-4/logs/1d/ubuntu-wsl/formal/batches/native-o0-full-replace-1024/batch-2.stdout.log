@@ -1,0 +1,6 @@
+{"event":"baseline","pid":1924,"memory":{"method":"proc-vmrss-vmhwm","unit":"KiB","current_raw":2828,"peak_raw":2828,"current_bytes":2895872,"peak_bytes":2895872}}
+{"event":"sample","repeats":1,"seconds":0.000079396000,"memory":{"method":"proc-vmrss-vmhwm","unit":"KiB","current_raw":6856,"peak_raw":7424,"current_bytes":7020544,"peak_bytes":7602176}}
+{"event":"sample","repeats":1,"seconds":0.000069447000,"memory":{"method":"proc-vmrss-vmhwm","unit":"KiB","current_raw":6856,"peak_raw":7540,"current_bytes":7020544,"peak_bytes":7720960}}
+{"event":"sample","repeats":16,"seconds":0.001143505000,"memory":{"method":"proc-vmrss-vmhwm","unit":"KiB","current_raw":6868,"peak_raw":7540,"current_bytes":7032832,"peak_bytes":7720960}}
+{"event":"sample","repeats":256,"seconds":0.017634521000,"memory":{"method":"proc-vmrss-vmhwm","unit":"KiB","current_raw":6868,"peak_raw":7540,"current_bytes":7032832,"peak_bytes":7720960}}
+{"event":"sample","repeats":1536,"seconds":0.107052782000,"memory":{"method":"proc-vmrss-vmhwm","unit":"KiB","current_raw":6868,"peak_raw":7540,"current_bytes":7032832,"peak_bytes":7720960}}
