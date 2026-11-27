@@ -251,6 +251,12 @@ def check_status_fields(status, product):
             and status["stdlib_interface"] == 1, "版本身份")
 
 
+def check_ci_workflow(archive, product):
+    text = archive.read("ci/22d-fix2-runner.yml").decode("utf-8", errors="replace")
+    require("ref: ${{ env.PRODUCT }}" in text and f"PRODUCT: '{product}'" in text,
+            "CI 工作流未固定到产品提交")
+
+
 def check_ci_runs(archive, ci):
     for key in ("evidence", "maintenance", "workspace", "maintenance_documented"):
         if key not in ci:
@@ -310,6 +316,7 @@ def audit(root, legacy_source=False):
                 for library in ("math", "statistics", "fmt", "hex", "base64", "url", "csv")
                 for level in (0, 3)
             ), f"{platform} B1 七库精确入口")
+        check_ci_workflow(archive, product)
         check_ci_runs(archive, ci)
         for platform, os_name in (("windows", "windows-2025"), ("linux", "ubuntu-24.04"), ("macos", "macos-15")):
             row = status["platforms"][platform]
