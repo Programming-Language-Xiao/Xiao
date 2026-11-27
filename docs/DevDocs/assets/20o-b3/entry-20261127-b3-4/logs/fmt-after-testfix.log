@@ -1,0 +1,14 @@
+Diff in \\?\D:\project\Xiao\Xiao\core\rust\crates\xiao-driver\src\lib.rs:77:
+     ProtocolBackendLocation, ProtocolDiagnostic, ProtocolDiagnosticActivation, ProtocolError,
+     ProtocolErrorBody, ProtocolEvent, ProtocolMetrics, ProtocolParam, ProtocolReport,
+     ProtocolRequest, ProtocolResponse, ProtocolRuntimeConfig, ProtocolSpan, ProtocolStackFrame,
+[31m-    ProtocolTarget, ProtocolValue, REQUEST_ERROR_CODE, RunEnvironment, RunOptions, SourceIdentity, ToolchainSpec,
+[0m[31m-    ToolchainVersionsSpec, UNSUPPORTED_OPERATION_CODE, VERSION_MISMATCH_CODE, core_crash_response,
+[0m[31m-    decode_frame, dispatch, encode_frame, read_frame, read_request, serve, serve_stdio,
+[0m[31m-    write_frame,
+[0m[32m+    ProtocolTarget, ProtocolValue, REQUEST_ERROR_CODE, RunEnvironment, RunOptions, SourceIdentity,
+[0m[32m+    ToolchainSpec, ToolchainVersionsSpec, UNSUPPORTED_OPERATION_CODE, VERSION_MISMATCH_CODE,
+[0m[32m+    core_crash_response, decode_frame, dispatch, encode_frame, read_frame, read_request, serve,
+[0m[32m+    serve_stdio, write_frame,
+[0m };
+ 

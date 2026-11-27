@@ -1,0 +1,159 @@
+   Compiling version_check v0.9.5
+   Compiling typenum v1.20.1
+   Compiling autocfg v1.5.1
+   Compiling cfg-if v1.0.5
+   Compiling cpufeatures v0.2.17
+   Compiling xiao-runtime-abi v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime-abi)
+   Compiling generic-array v0.14.7
+   Compiling xiao-source v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-source)
+   Compiling num-traits v0.2.19
+   Compiling libm v0.2.16
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-intrinsics)
+   Compiling bigdecimal v0.4.11
+   Compiling libc v0.2.189
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling digest v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-i18n)
+   Compiling num-integer v0.1.47
+   Compiling num-bigint v0.4.8
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-syntax)
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+error[E0277]: `std::rc::Weak<std::cell::RefCell<TableData>>` cannot be sent between threads safely
+   --> crates\xiao-runtime\src\environment_tests.rs:318:15
+    |
+318 |         scope.spawn(|| run(&local, Operation::Set, &["Name", "updated"]).unwrap()).join().unwrap();
+    |               ^^^^^ `std::rc::Weak<std::cell::RefCell<TableData>>` cannot be sent between threads safely
+    |
+    = help: within `value::RuntimeValue`, the trait `Send` is not implemented for `std::rc::Weak<std::cell::RefCell<TableData>>`
+note: required because it appears within the type `TableDropView`
+   --> crates\xiao-runtime\src\tables\mod.rs:385:12
+    |
+385 | pub struct TableDropView {
+    |            ^^^^^^^^^^^^^
+note: required because it appears within the type `value::RuntimeValue`
+   --> crates\xiao-runtime\src\value\mod.rs:511:10
+    |
+511 | pub enum RuntimeValue {
+    |          ^^^^^^^^^^^^
+note: required by a bound in `Scope::<'scope, 'env>::spawn`
+   --> /rustc/ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96/library\std\src\thread\scoped.rs:201:4
+
+error[E0277]: `std::rc::Rc<VmThreadValue>` cannot be sent between threads safely
+   --> crates\xiao-runtime\src\environment_tests.rs:318:15
+    |
+318 |         scope.spawn(|| run(&local, Operation::Set, &["Name", "updated"]).unwrap()).join().unwrap();
+    |               ^^^^^ `std::rc::Rc<VmThreadValue>` cannot be sent between threads safely
+    |
+    = help: within `value::RuntimeValue`, the trait `Send` is not implemented for `std::rc::Rc<VmThreadValue>`
+note: required because it appears within the type `vm_concurrency::VmConcurrencyValue`
+   --> crates\xiao-runtime\src\vm_concurrency.rs:442:10
+    |
+442 | pub enum VmConcurrencyValue {
+    |          ^^^^^^^^^^^^^^^^^^
+note: required because it appears within the type `value::RuntimeValue`
+   --> crates\xiao-runtime\src\value\mod.rs:511:10
+    |
+511 | pub enum RuntimeValue {
+    |          ^^^^^^^^^^^^
+note: required by a bound in `Scope::<'scope, 'env>::spawn`
+   --> /rustc/ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96/library\std\src\thread\scoped.rs:201:4
+
+error[E0277]: `std::rc::Rc<VmTaskValue>` cannot be sent between threads safely
+   --> crates\xiao-runtime\src\environment_tests.rs:318:15
+    |
+318 |         scope.spawn(|| run(&local, Operation::Set, &["Name", "updated"]).unwrap()).join().unwrap();
+    |               ^^^^^ `std::rc::Rc<VmTaskValue>` cannot be sent between threads safely
+    |
+    = help: within `value::RuntimeValue`, the trait `Send` is not implemented for `std::rc::Rc<VmTaskValue>`
+note: required because it appears within the type `vm_concurrency::VmConcurrencyValue`
+   --> crates\xiao-runtime\src\vm_concurrency.rs:442:10
+    |
+442 | pub enum VmConcurrencyValue {
+    |          ^^^^^^^^^^^^^^^^^^
+note: required because it appears within the type `value::RuntimeValue`
+   --> crates\xiao-runtime\src\value\mod.rs:511:10
+    |
+511 | pub enum RuntimeValue {
+    |          ^^^^^^^^^^^^
+note: required by a bound in `Scope::<'scope, 'env>::spawn`
+   --> /rustc/ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96/library\std\src\thread\scoped.rs:201:4
+
+error[E0277]: `std::rc::Rc<std::cell::RefCell<SharedOwnedGuard<vm_concurrency::VmTransferValue>>>` cannot be sent between threads safely
+   --> crates\xiao-runtime\src\environment_tests.rs:318:15
+    |
+318 |         scope.spawn(|| run(&local, Operation::Set, &["Name", "updated"]).unwrap()).join().unwrap();
+    |               ^^^^^ `std::rc::Rc<std::cell::RefCell<SharedOwnedGuard<vm_concurrency::VmTransferValue>>>` cannot be sent between threads safely
+    |
+    = help: within `value::RuntimeValue`, the trait `Send` is not implemented for `std::rc::Rc<std::cell::RefCell<SharedOwnedGuard<vm_concurrency::VmTransferValue>>>`
+note: required because it appears within the type `vm_concurrency::VmConcurrencyValue`
+   --> crates\xiao-runtime\src\vm_concurrency.rs:442:10
+    |
+442 | pub enum VmConcurrencyValue {
+    |          ^^^^^^^^^^^^^^^^^^
+note: required because it appears within the type `value::RuntimeValue`
+   --> crates\xiao-runtime\src\value\mod.rs:511:10
+    |
+511 | pub enum RuntimeValue {
+    |          ^^^^^^^^^^^^
+note: required by a bound in `Scope::<'scope, 'env>::spawn`
+   --> /rustc/ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96/library\std\src\thread\scoped.rs:201:4
+
+error[E0277]: `NonNull<ObjectHeader>` cannot be sent between threads safely
+   --> crates\xiao-runtime\src\environment_tests.rs:318:15
+    |
+318 |         scope.spawn(|| run(&local, Operation::Set, &["Name", "updated"]).unwrap()).join().unwrap();
+    |               ^^^^^ `NonNull<ObjectHeader>` cannot be sent between threads safely
+    |
+    = help: within `value::RuntimeValue`, the trait `Send` is not implemented for `NonNull<ObjectHeader>`
+note: required because it appears within the type `StrongHandle`
+   --> crates\xiao-runtime\src\memory\mod.rs:624:12
+    |
+624 | pub struct StrongHandle {
+    |            ^^^^^^^^^^^^
+note: required because it appears within the type `value::StringHandle`
+   --> crates\xiao-runtime\src\value\mod.rs:89:12
+    |
+ 89 | pub struct StringHandle {
+    |            ^^^^^^^^^^^^
+note: required because it appears within the type `value::RuntimeValue`
+   --> crates\xiao-runtime\src\value\mod.rs:511:10
+    |
+511 | pub enum RuntimeValue {
+    |          ^^^^^^^^^^^^
+note: required by a bound in `Scope::<'scope, 'env>::spawn`
+   --> /rustc/ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96/library\std\src\thread\scoped.rs:201:4
+
+error[E0277]: `std::rc::Rc<()>` cannot be sent between threads safely
+   --> crates\xiao-runtime\src\environment_tests.rs:318:15
+    |
+318 |         scope.spawn(|| run(&local, Operation::Set, &["Name", "updated"]).unwrap()).join().unwrap();
+    |               ^^^^^ `std::rc::Rc<()>` cannot be sent between threads safely
+    |
+    = help: within `value::RuntimeValue`, the trait `Send` is not implemented for `std::rc::Rc<()>`
+note: required because it appears within the type `PhantomData<std::rc::Rc<()>>`
+   --> /rustc/ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96/library\core\src\marker.rs:811:11
+note: required because it appears within the type `StrongHandle`
+   --> crates\xiao-runtime\src\memory\mod.rs:624:12
+    |
+624 | pub struct StrongHandle {
+    |            ^^^^^^^^^^^^
+note: required because it appears within the type `value::StringHandle`
+   --> crates\xiao-runtime\src\value\mod.rs:89:12
+    |
+ 89 | pub struct StringHandle {
+    |            ^^^^^^^^^^^^
+note: required because it appears within the type `value::RuntimeValue`
+   --> crates\xiao-runtime\src\value\mod.rs:511:10
+    |
+511 | pub enum RuntimeValue {
+    |          ^^^^^^^^^^^^
+note: required by a bound in `Scope::<'scope, 'env>::spawn`
+   --> /rustc/ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96/library\std\src\thread\scoped.rs:201:4
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `xiao-runtime` (lib test) due to 6 previous errors

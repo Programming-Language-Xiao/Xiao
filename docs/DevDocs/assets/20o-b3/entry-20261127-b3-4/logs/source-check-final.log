@@ -1,0 +1,41 @@
+command: git rev-parse HEAD
+7936b307afeafec628def0fbaa7708f65fc29106
+command: git diff --name-only
+warning: in the working copy of 'core/rust/crates/xiao-bytecode/src/encode/tests.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-driver/src/lib.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-driver/src/protocol/request.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-driver/src/protocol_tests.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-driver/tests/20o_b3_time_tutorial.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-intrinsics/build.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-intrinsics/src/lib.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-runtime/src/lib.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/DevDocs/20o-b3-4-env-implementation-plan.md', LF will be replaced by CRLF the next time Git touches it
+core/rust/crates/xiao-bytecode/src/encode/tests.rs
+core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs
+core/rust/crates/xiao-driver/src/lib.rs
+core/rust/crates/xiao-driver/src/protocol/request.rs
+core/rust/crates/xiao-driver/src/protocol_tests.rs
+core/rust/crates/xiao-driver/tests/20o_b2_b2_divide.rs
+core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs
+core/rust/crates/xiao-driver/tests/20o_b3_time_tutorial.rs
+core/rust/crates/xiao-intrinsics/build.rs
+core/rust/crates/xiao-intrinsics/intrinsics.json
+core/rust/crates/xiao-intrinsics/src/lib.rs
+core/rust/crates/xiao-runtime/src/lib.rs
+core/rust/crates/xiao-runtime/src/resources.rs
+docs/DevDocs/20o-b3-4-env-implementation-plan.md
+command: git diff --check
+warning: in the working copy of 'core/rust/crates/xiao-bytecode/src/encode/tests.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-driver/src/lib.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-driver/src/protocol/request.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-driver/src/protocol_tests.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-driver/tests/20o_b3_time_tutorial.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-intrinsics/build.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-intrinsics/src/lib.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-runtime/src/lib.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/DevDocs/20o-b3-4-env-implementation-plan.md', LF will be replaced by CRLF the next time Git touches it
+exit=0

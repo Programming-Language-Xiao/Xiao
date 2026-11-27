@@ -5,6 +5,7 @@ use std::fmt::{self, Display, Formatter};
 use serde::{Deserialize, Serialize};
 use xiao_codegen_llvm::{Endian, ObjectFormat, TargetDescription};
 use xiao_runtime::arguments::{ArgumentsError, ArgumentsSnapshot};
+use xiao_runtime::environment::EnvironmentSnapshot;
 use xiao_vm::VmOptions;
 
 /// 请求字段或 JSON 形状非法。
@@ -174,13 +175,45 @@ impl TryFrom<RunArguments> for ArgumentsSnapshot {
     }
 }
 
+/// 输入方提供的有序环境名值对，JSON 形状为 `[[name, value]]`。
+#[derive(Clone, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(transparent)]
+pub struct RunEnvironment(
+    /// 显式提供的名值对，保留输入顺序及重复项以供接纳检查。
+    pub Vec<(String, String)>,
+);
+
+impl fmt::Debug for RunEnvironment {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("RunEnvironment")
+            .field("pair_count", &self.0.len())
+            .finish_non_exhaustive()
+    }
+}
+
+/// 区分省略字段与显式空数组，并在该字段出现时要求数组形状。
+fn deserialize_environment<'de, D>(deserializer: D) -> Result<Option<RunEnvironment>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    RunEnvironment::deserialize(deserializer).map(Some)
+}
+
 /// VM 请求参数。
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct RunOptions {
     /// 本次运行的可选参数快照。
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub arguments: Option<RunArguments>,
-    /// 本次运行允许的能力位；旧请求省略时沿用全开默认值。
+    /// 本次运行的显式环境快照；省略时由启动入口选择来源。
+    #[serde(
+        default,
+        deserialize_with = "deserialize_environment",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub environment: Option<RunEnvironment>,
+    /// 本次运行允许的能力位；省略时使用旧请求的 `0x7F`。
     #[serde(
         default = "default_capabilities",
         skip_serializing_if = "is_default_capabilities"
@@ -210,7 +243,7 @@ fn default_capabilities() -> u64 {
     xiao_intrinsics::DEFAULT_CAPABILITY_MASK
 }
 
-/// 全开默认值不增加旧请求序列化后的字段。
+/// 旧请求默认值不增加序列化字段。
 fn is_default_capabilities(value: &u64) -> bool {
     *value == default_capabilities()
 }
@@ -225,6 +258,7 @@ impl Default for RunOptions {
     fn default() -> Self {
         Self {
             arguments: None,
+            environment: None,
             max_call_depth: VmOptions::default().max_call_depth,
             capabilities: default_capabilities(),
             event_capacity: xiao_vm::DEFAULT_EVENT_CAPACITY,
@@ -232,6 +266,22 @@ impl Default for RunOptions {
             checkpoints_enabled: true,
             checkpoint_interval: xiao_vm::DEFAULT_CHECKPOINT_INTERVAL,
         }
+    }
+}
+
+impl RunOptions {
+    /// 接纳显式快照，或为嵌入和原生注入入口生成独立的空视图。
+    pub fn environment_snapshot(&self) -> Result<EnvironmentSnapshot, ProtocolError> {
+        xiao_intrinsics::validate_capability_mask(self.capabilities)
+            .map_err(|error| ProtocolError::request("options.capabilities", error.to_string()))?;
+        let Some(environment) = &self.environment else {
+            return Ok(EnvironmentSnapshot::default());
+        };
+        EnvironmentSnapshot::from_pairs(&environment.0).map_err(|error| ProtocolError {
+            code: error.code(),
+            field: Some("options.environment".to_owned()),
+            message: error.to_string(),
+        })
     }
 }
 

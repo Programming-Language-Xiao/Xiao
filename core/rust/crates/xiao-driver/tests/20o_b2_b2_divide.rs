@@ -71,7 +71,7 @@ fn lfloat_divide_requires_the_frozen_public_contract() {
         assert_eq!(internal.capability, xiao_intrinsics::Capability::None);
     }
     assert!(
-        xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(60).unwrap()).is_none()
+        xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(63).unwrap()).is_none()
     );
     assert!(
         xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(100).unwrap()).is_none()

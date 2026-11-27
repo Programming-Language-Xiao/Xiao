@@ -1,0 +1,23 @@
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-ir)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 38.87s
+     Running unittests src\lib.rs (core\rust\target\b3-4-env-1a\debug\deps\xiao_driver-20242f7734052ee0.exe)
+
+running 4 tests
+test protocol::tests::run_environment_admission_has_stable_diagnostics ... ok
+test protocol::tests::run_environment_rejects_malformed_wire_pairs ... ok
+test protocol::tests::run_environment_omission_and_explicit_empty_are_distinct ... ok
+test protocol::tests::run_environment_round_trips_and_admits_explicit_pairs ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 68 filtered out; finished in 0.00s
+

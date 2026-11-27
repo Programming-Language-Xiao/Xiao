@@ -1,0 +1,12 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.87s
+     Running unittests src\lib.rs (core/rust/target/b3-4-env-1a\debug\deps\xiao_driver-20242f7734052ee0.exe)
+
+running 4 tests
+test protocol::tests::run_environment_rejects_malformed_wire_pairs ... ok
+test protocol::tests::run_environment_admission_has_stable_diagnostics ... ok
+test protocol::tests::run_environment_round_trips_and_admits_explicit_pairs ... ok
+test protocol::tests::run_environment_omission_and_explicit_empty_are_distinct ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 68 filtered out; finished in 0.00s
+

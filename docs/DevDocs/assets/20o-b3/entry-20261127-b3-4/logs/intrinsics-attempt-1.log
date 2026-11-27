@@ -1,0 +1,45 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling serde_core v1.0.229
+   Compiling zmij v1.0.23
+   Compiling serde_json v1.0.151
+   Compiling serde v1.0.229
+   Compiling syn v3.0.5
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.3
+   Compiling serde_derive v1.0.229
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-intrinsics)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.23s
+     Running unittests src\lib.rs (core\rust\target\b3-4-env-1a\debug\deps\xiao_intrinsics-960031eeb1796bb1.exe)
+
+running 11 tests
+test tests::array_push_contract_is_active_and_bound_on_both_paths ... ok
+test tests::capability_bits_cover_standard_streams_and_reject_unknown_bits ... ok
+test tests::env_parameters_and_symbols_match_the_active_contract ... ok
+test tests::error_code_has_a_unique_owned_string_contract ... ok
+test tests::explicit_division_binding_preserves_source_order_and_rejects_ambiguous_shapes ... ok
+test tests::cmath_fifteen_declarations_keep_the_frozen_identity_and_parameters ... FAILED
+test tests::fs_parameters_and_symbols_match_the_active_contract ... ok
+test tests::generated_table_is_valid_and_zero_is_rejected ... ok
+test tests::log_id_retains_reserved_identity ... ok
+test tests::print_is_variadic_and_returns_none ... ok
+test tests::removed_ids_remain_tombstones ... ok
+
+failures:
+
+---- tests::cmath_fifteen_declarations_keep_the_frozen_identity_and_parameters stdout ----
+
+thread 'tests::cmath_fifteen_declarations_keep_the_frozen_identity_and_parameters' (55584) panicked at crates\xiao-intrinsics\src\lib.rs:877:9:
+assertion `left == right` failed
+  left: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62]
+ right: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::cmath_fifteen_declarations_keep_the_frozen_identity_and_parameters
+
+test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p xiao-intrinsics --lib`

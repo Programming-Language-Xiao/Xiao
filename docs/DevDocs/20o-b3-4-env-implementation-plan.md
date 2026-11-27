@@ -1,6 +1,6 @@
 # 20O-B3-4. `env` 实施规划
 
-> **状态（2026-11-27）**　`b3_4_started=false`、`b3_4_passed=false`、`b3_4_entry_ready=true`。入口产品 `3506455e`（`3506455ee5839214082df15af4c760f8d0361e66`），ABI 1.20、生成器 26、标准库接口 1。[22D/FIX.2 状态回执]
+> **状态（2026-11-27）**　`b3_4_started=true`、`b3_4_passed=false`、`b3_4_entry_ready=true`。B3-4A/B 已实施，B3-4C～E 未完成。入口产品 `3506455e`（`3506455ee5839214082df15af4c760f8d0361e66`），ABI 1.20、生成器 26、标准库接口 1。[22D/FIX.2 状态回执] · [B3-4A/B 实施证据](assets/20o-b3/entry-20261127-b3-4/REPORT.md)
 >
 > **入口依据**　B3-3 已收口（`b3_3_passed=true`）。22D/FIX.2 已收口（`22d_open=false`），固定产品通过严格源码审计与 fs 三平台复验，Windows 六份 fs 产物获产品级 COFF `Complete`。这些回执共同派生 `b3_4_entry_ready=true`。[B3-3 收口] · [B3-3 实施规划] · [22D/FIX.2 严格审计]
 >
@@ -132,3 +132,11 @@ Windows 六份 env 产物按 B3-3 的覆盖组合安排。两种导入各在 O0/
 [22D/FIX.2 严格审计]: assets/22d-fix2/entry-20261126/README.md
 [22D/FIX.2 状态回执]: assets/22d-fix2/entry-20261126/status.json
 [20D 能力上下文]: 20d-capability-context.md
+
+## 八、实施记录
+
+2026-11-27 完成 B3-4A/B：固定入口 `3506455e`，激活 60～62、保留 63；`Capability::Environment`
+位 7、`RunOptions.environment` 有序名值对、Runtime 快照接纳/校验/限额/局部读写和驱动数据层
+测试已落地。五项旧负例从 60 改为 63，workspace 最终 195 组、1,810 通过、0 失败、55 忽略。
+ABI 1.20、生成器 26、标准库接口 1 未变；B3-4C 的 VM/TAC、LLVM、C ABI、CLI/原生快照接线和
+B3-4D/E 的教程/三平台/收口尚未开始。[实施证据](assets/20o-b3/entry-20261127-b3-4/REPORT.md)

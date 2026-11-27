@@ -64,6 +64,7 @@ pub enum IntrinsicKind {
     Time,
     Args,
     Fs,
+    Env,
     Print,
     Input,
     ResourceOpenFile,
@@ -109,6 +110,7 @@ pub enum ValueType {
     ErrorParameters,
     LfloatDivideParameters,
     TimeValueAndUnit,
+    TwoStrings,
     TwoStringsAndBool,
     Error,
     File,
@@ -132,6 +134,8 @@ pub enum Effects {
     ReleasesProcess,
     ReadsClock,
     ReadsArguments,
+    ReadsEnvironmentAndAllocates,
+    WritesEnvironment,
     Sleeps,
     None,
 }
@@ -144,6 +148,7 @@ pub enum Capability {
     Filesystem,
     Process,
     Clock,
+    Environment,
 }
 
 /// 文件系统能力位。
@@ -204,6 +209,7 @@ impl Capability {
             Self::Filesystem => Some(CAPABILITY_FILESYSTEM),
             Self::Process => Some(CAPABILITY_PROCESS),
             Self::Clock => Some(CAPABILITY_CLOCK),
+            Self::Environment => Some(CAPABILITY_ENVIRONMENT),
         }
     }
 
@@ -217,6 +223,7 @@ impl Capability {
             Self::Filesystem => "filesystem",
             Self::Process => "process",
             Self::Clock => "clock",
+            Self::Environment => "environment",
         }
     }
 }
@@ -267,6 +274,9 @@ pub enum VmBinding {
     FsRemove,
     FsRename,
     FsMetadata,
+    EnvGet,
+    EnvSet,
+    EnvUnset,
     Print,
     Input,
     ResourceOpenFile,
@@ -310,6 +320,9 @@ pub enum AbiBinding {
     FsRemove,
     FsRename,
     FsMetadata,
+    EnvGet,
+    EnvSet,
+    EnvUnset,
     SetAdd,
     SetRemove,
     ArrayPush,
@@ -393,6 +406,16 @@ pub const fn fs_parameters(id: IntrinsicId) -> Option<&'static [(&'static str, V
     }
 }
 
+/// env 位置与命名参数共同使用的冻结形参表。
+#[must_use]
+pub const fn env_parameters(id: IntrinsicId) -> Option<&'static [(&'static str, ValueType)]> {
+    match id.get() {
+        60 | 62 => Some(&[("name", ValueType::Str)]),
+        61 => Some(&[("name", ValueType::Str), ("value", ValueType::Str)]),
+        _ => None,
+    }
+}
+
 impl AbiBinding {
     /// time 的链接符号，其他绑定沿各自入口发射。
     #[must_use]
@@ -425,6 +448,17 @@ impl AbiBinding {
             Self::FsRemove => Some("xiao_runtime_fs_remove"),
             Self::FsRename => Some("xiao_runtime_fs_rename"),
             Self::FsMetadata => Some("xiao_runtime_fs_metadata"),
+            _ => None,
+        }
+    }
+
+    /// 返回 env 的固定 C ABI 符号。
+    #[must_use]
+    pub const fn env_symbol(self) -> Option<&'static str> {
+        match self {
+            Self::EnvGet => Some("xiao_runtime_env_get"),
+            Self::EnvSet => Some("xiao_runtime_env_set"),
+            Self::EnvUnset => Some("xiao_runtime_env_unset"),
             _ => None,
         }
     }
@@ -840,7 +874,7 @@ mod tests {
             .map(|d| d.id.get())
             .collect();
         active.sort_unstable();
-        assert_eq!(active, (1..=59).collect::<Vec<_>>());
+        assert_eq!(active, (1..=62).collect::<Vec<_>>());
         for (index, &(name, vm, abi)) in CMATH_DECLARATIONS.iter().enumerate() {
             let id = IntrinsicId::new(34 + index as u32).unwrap();
             let declaration = active_by_id(id).unwrap();
@@ -962,20 +996,71 @@ mod tests {
         assert_eq!(DEFAULT_CAPABILITY_MASK, 0x7f);
         assert_eq!(KNOWN_CAPABILITY_MASK, 0xff);
         assert_eq!(Capability::Clock.bit(), Some(CAPABILITY_CLOCK));
+        assert_eq!(Capability::Environment.bit(), Some(1 << 7));
+        assert_eq!(Capability::Environment.as_str(), "environment");
+        assert_eq!(DEFAULT_CAPABILITY_MASK & CAPABILITY_ENVIRONMENT, 0);
         assert!(validate_capability_mask(CAPABILITY_ENVIRONMENT).is_ok());
         assert!(validate_capability_mask(1 << 8).is_err());
     }
     #[test]
-    fn b3_reserved_ids_have_identity_without_callable_bindings() {
-        for raw in 60..=63 {
+    fn log_id_retains_reserved_identity() {
+        let id = IntrinsicId::new(63).unwrap();
+        let declaration = by_id(id).unwrap();
+        assert_eq!(declaration.status, DeclarationStatus::Reserved);
+        assert_eq!(declaration.vm_binding, VmBinding::None);
+        assert_eq!(declaration.abi_binding, AbiBinding::None);
+        assert!(active_by_id(id).is_none());
+        assert!(by_name(declaration.public_name).is_none());
+    }
+
+    #[test]
+    /// 逐项核对环境入口的活动声明、冻结形参和 C 符号。
+    fn env_parameters_and_symbols_match_the_active_contract() {
+        for (raw, operation, result, effects, fields) in [
+            (
+                60,
+                "get",
+                ValueType::StrArray,
+                Effects::ReadsEnvironmentAndAllocates,
+                &["name"][..],
+            ),
+            (
+                61,
+                "set",
+                ValueType::None,
+                Effects::WritesEnvironment,
+                &["name", "value"][..],
+            ),
+            (
+                62,
+                "unset",
+                ValueType::Bool,
+                Effects::WritesEnvironment,
+                &["name"][..],
+            ),
+        ] {
             let id = IntrinsicId::new(raw).unwrap();
-            let declaration = by_id(id).unwrap();
-            assert_eq!(declaration.status, DeclarationStatus::Reserved);
-            assert_eq!(declaration.vm_binding, VmBinding::None);
-            assert_eq!(declaration.abi_binding, AbiBinding::None);
-            assert!(active_by_id(id).is_none());
-            assert!(by_name(declaration.public_name).is_none());
+            let declaration = active_by_id(id).unwrap();
+            assert_eq!(declaration.public_name, format!("os_env_{operation}"));
+            assert_eq!(by_name(declaration.public_name), Some(declaration));
+            assert_eq!(declaration.kind, IntrinsicKind::Env);
+            assert_eq!(declaration.capability, Capability::Environment);
+            assert_eq!(declaration.signature.return_type, result);
+            assert_eq!(declaration.effects, effects);
+            assert_eq!(declaration.error_code, "runtime.type_mismatch");
+            assert_eq!(
+                declaration.abi_binding.env_symbol().unwrap(),
+                format!("xiao_runtime_env_{operation}")
+            );
+            assert!(
+                env_parameters(id)
+                    .unwrap()
+                    .iter()
+                    .copied()
+                    .eq(fields.iter().map(|&name| (name, ValueType::Str)))
+            );
         }
+        assert!(env_parameters(IntrinsicId::new(63).unwrap()).is_none());
     }
 
     #[test]

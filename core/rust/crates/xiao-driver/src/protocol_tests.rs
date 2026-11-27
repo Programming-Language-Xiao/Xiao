@@ -2,6 +2,7 @@
 
 use super::*;
 use crate::DRIVER_TIMEOUT_CODE;
+use std::convert::Infallible;
 use std::env;
 use std::fs;
 use std::io::Cursor;
@@ -11,9 +12,141 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use xiao_artifacts::{
     ArchiveEntry, ArchiveIndex, ArtifactStore, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR, ObjectKind,
 };
+use xiao_intrinsics::CAPABILITY_ENVIRONMENT;
+use xiao_runtime::{
+    RuntimeValue, StringHandle,
+    environment::{EnvironmentSnapshot, Operation},
+};
 use xiao_xar::{XarObject, encode_xar};
 
 static CACHE_ENV_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+
+/// 读取数据层接纳后的快照，返回数组中的字符串。
+fn run_environment_values(snapshot: &EnvironmentSnapshot, name: &str) -> Vec<String> {
+    let name = RuntimeValue::Str(StringHandle::new(name).unwrap());
+    let value = snapshot
+        .execute(Operation::Get, &[&name], CAPABILITY_ENVIRONMENT, || {
+            Ok::<_, Infallible>(())
+        })
+        .unwrap();
+    let RuntimeValue::Array(array) = value else {
+        panic!("环境读取必须返回数组");
+    };
+    array
+        .with_elements(|items| {
+            items
+                .iter()
+                .map(|item| item.display_text().unwrap())
+                .collect()
+        })
+        .unwrap()
+}
+
+#[test]
+/// 旧请求继续省略字段，显式空数组往返时保留，二者接纳后均为空视图。
+fn run_environment_omission_and_explicit_empty_are_distinct() {
+    let mut wire = serde_json::to_value(RunOptions::default()).unwrap();
+    assert!(wire.get("environment").is_none());
+    assert!(wire.get("capabilities").is_none());
+    let omitted: RunOptions = serde_json::from_value(wire.clone()).unwrap();
+    assert_eq!(omitted.capabilities, 0x7f);
+    assert_eq!(omitted.environment, None);
+    assert!(
+        run_environment_values(&omitted.environment_snapshot().unwrap(), "XIAO_ENV_TEST")
+            .is_empty()
+    );
+
+    wire["environment"] = serde_json::json!([]);
+    wire["capabilities"] = serde_json::json!(CAPABILITY_ENVIRONMENT);
+    let empty: RunOptions = serde_json::from_value(wire.clone()).unwrap();
+    assert_eq!(empty.environment, Some(RunEnvironment::default()));
+    assert!(
+        run_environment_values(&empty.environment_snapshot().unwrap(), "XIAO_ENV_TEST").is_empty()
+    );
+    assert_eq!(serde_json::to_value(empty).unwrap(), wire);
+}
+
+#[test]
+/// 显式有序输入按原顺序往返，每次接纳生成独立视图。
+fn run_environment_round_trips_and_admits_explicit_pairs() {
+    let mut wire = serde_json::to_value(RunOptions::default()).unwrap();
+    wire["environment"] = serde_json::json!([["Z_NAME", "private-value"], ["A_NAME", ""]]);
+    wire["capabilities"] = serde_json::json!(CAPABILITY_ENVIRONMENT);
+    let options: RunOptions = serde_json::from_value(wire.clone()).unwrap();
+    assert_eq!(serde_json::to_value(&options).unwrap(), wire);
+    let debug = format!("{options:?}");
+    assert!(!debug.contains("Z_NAME") && !debug.contains("private-value"));
+
+    let snapshot = options.environment_snapshot().unwrap();
+    assert_eq!(
+        run_environment_values(&snapshot, "Z_NAME"),
+        ["private-value"]
+    );
+    assert_eq!(run_environment_values(&snapshot, "A_NAME"), [""]);
+    let name = RuntimeValue::Str(StringHandle::new("Z_NAME").unwrap());
+    snapshot
+        .execute(Operation::Unset, &[&name], CAPABILITY_ENVIRONMENT, || {
+            Ok::<_, Infallible>(())
+        })
+        .unwrap();
+    assert!(run_environment_values(&snapshot, "Z_NAME").is_empty());
+    assert_eq!(
+        run_environment_values(&options.environment_snapshot().unwrap(), "Z_NAME"),
+        ["private-value"]
+    );
+}
+
+#[test]
+/// 数据层拒绝非法与超限快照，未知能力位先于快照接纳。
+fn run_environment_admission_has_stable_diagnostics() {
+    let invalid = RunEnvironment(vec![("secret\0name".into(), "secret-value".into())]);
+    for (input, code) in [
+        (invalid.clone(), "X09-DRIVER-006"),
+        (
+            RunEnvironment(vec![("DUP".into(), "a".into()), ("DUP".into(), "b".into())]),
+            "X09-DRIVER-006",
+        ),
+        (
+            RunEnvironment(vec![("Name".into(), "é".repeat(32_769))]),
+            "X09-DRIVER-007",
+        ),
+    ] {
+        let options = RunOptions {
+            environment: Some(input),
+            capabilities: CAPABILITY_ENVIRONMENT,
+            ..RunOptions::default()
+        };
+        let error = options.environment_snapshot().unwrap_err();
+        assert_eq!(error.code(), code);
+        assert_eq!(error.field(), Some("options.environment"));
+        assert!(!error.to_string().contains("secret"));
+    }
+    let error = RunOptions {
+        environment: Some(invalid),
+        capabilities: 1 << 8,
+        ..RunOptions::default()
+    }
+    .environment_snapshot()
+    .unwrap_err();
+    assert_eq!(error.code(), REQUEST_ERROR_CODE);
+    assert_eq!(error.field(), Some("options.capabilities"));
+}
+
+#[test]
+/// 显式字段必须是定长字符串对组成的 JSON 数组。
+fn run_environment_rejects_malformed_wire_pairs() {
+    let mut wire = serde_json::to_value(RunOptions::default()).unwrap();
+    for malformed in [
+        serde_json::Value::Null,
+        serde_json::json!({"NAME": "value"}),
+        serde_json::json!([["NAME"]]),
+        serde_json::json!([["NAME", "value", "extra"]]),
+        serde_json::json!([["NAME", 1]]),
+    ] {
+        wire["environment"] = malformed;
+        assert!(serde_json::from_value::<RunOptions>(wire.clone()).is_err());
+    }
+}
 
 /// 为会修改 XIAO_HOME 的协议测试建立相互排斥的临时缓存目录。
 fn with_protocol_cache_home<T>(test: impl FnOnce(&PathBuf) -> T) -> T {

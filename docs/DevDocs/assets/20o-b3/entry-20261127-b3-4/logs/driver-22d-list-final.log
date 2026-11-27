@@ -1,0 +1,15 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.38s
+     Running tests\22d_llvm_concurrency.rs (core\rust\target\b3-4-env-1a\debug\deps\22d_llvm_concurrency-8a9243125e2bb84b.exe)
+closure_golden_sources_compile_and_lower: test
+native_concurrency_llvm_assembly_fixtures: test
+native_concurrency_shared_c_layout_probe: test
+native_concurrency_vm_native_differential_matches_from_same_ir: test
+native_lowering_consumes_concurrency_spans_and_emits_trampoline: test
+native_project_module_concurrency_is_rejected_structurally: test
+native_shared_lock_plan_keeps_cancel_and_runtime_abi_paths: test
+public_native_build_emits_required_concurrency_metadata: test
+release_trace::release_projection_v2_regressions: test
+unknown_native_concurrency_operation_is_rejected_before_lowering: test
+
+10 tests, 0 benchmarks

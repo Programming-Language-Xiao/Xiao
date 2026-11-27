@@ -15,6 +15,8 @@ pub mod arguments;
 pub mod concurrency;
 /// 平台级未处理异常的最小机器报告入口。
 mod crash;
+/// 单次运行共享的环境快照及局部读写。
+pub mod environment;
 /// 22C Runtime/线程/任务池生命周期骨架。
 pub mod scheduler;
 /// 22A 冻结的 XCON v1 长度前缀序列化。

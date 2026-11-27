@@ -1,0 +1,4 @@
+CI-CHECKOUT ci/trace/windows: source_unchanged 由固定产品 checkout 保证
+CI-CHECKOUT ci/trace/linux: source_unchanged 由固定产品 checkout 保证
+CI-CHECKOUT ci/trace/macos: source_unchanged 由固定产品 checkout 保证
+22D-FIX.2 证据对账通过

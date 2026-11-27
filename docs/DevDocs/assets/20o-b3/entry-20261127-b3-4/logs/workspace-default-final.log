@@ -1,0 +1,86 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.53s
+     Running unittests src\lib.rs (core\rust\target\b3-4-env-1a\debug\deps\xiao_artifacts-88e53382a7fb35a1.exe)
+
+running 25 tests
+test tests::archive_index_entry_validation_is_symmetric ... ok
+test tests::archive_index_extended_metadata_round_trips_without_changing_old_fields ... ok
+test tests::archive_index_rejects_unknown_required_features ... ok
+test tests::archive_rejects_unknown_capabilities_and_overflowing_interface_version ... ok
+test tests::archive_requirements_round_trip_is_canonical ... ok
+test tests::archive_requires_new_feature_and_version_fields ... ok
+test tests::cleanup_rechecks_references_added_after_plan_creation ... ok
+test tests::cleanup_plan_defers_invalid_object_isolation_until_apply ... ok
+test tests::cleanup_archive_reference_protects_its_object ... ok
+test tests::cleanup_reference_source_failure_is_conservative ... ok
+test tests::cleanup_plan_protects_project_lock_references_and_apply_is_explicit ... ok
+test tests::cleanup_revalidates_and_quarantines_object_changed_after_plan ... ok
+test tests::digest_and_sharded_xiaoc_object_are_deterministic ... ok
+test tests::conservative_reference_set_protects_objects_when_sources_are_unavailable ... ok
+test tests::corrupt_object_is_quarantined ... ok
+test tests::indexes_round_trip_deterministically_and_reject_unknown_major ... ok
+test tests::index_store_commits_global_snapshot_atomically ... ok
+test tests::new_archive_feature_rejects_legacy_reader_without_changing_global_index ... ok
+test tests::interrupted_object_write_cleans_temporary_input ... ok
+test tests::global_index_can_rebuild_from_verified_objects_and_query_both_directions ... ok
+test tests::seeded_index_mutations_never_panic_and_are_rejected_without_io_errors ... ok
+test tests::scan_quarantines_objects_with_invalid_names_or_shards ... ok
+test tests::indexes_remain_readable_while_their_write_locks_are_held ... ok
+test tests::xiaoc_validation_comes_from_authoritative_codec ... ok
+test tests::objects_are_read_only_and_hash_collisions_quarantine_both_inputs ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+     Running unittests src\lib.rs (core\rust\target\b3-4-env-1a\debug\deps\xiao_bytecode-ef27298a8b1870d3.exe)
+
+running 33 tests
+test encode::tests::bad_references_and_fixed_width_overflow_are_rejected ... ok
+test encode::tests::check_expected_type_round_trips_in_both_widths ... ok
+test encode::tests::damaged_inputs_are_rejected_structurally ... ok
+test encode::tests::all_opcodes_and_abi_fields_round_trip_in_both_widths ... ok
+test encode::tests::fixed_width_reports_the_overflowing_handler_binding ... ok
+test encode::tests::decoded_intrinsic_ids_are_checked_in_both_operand_widths ... FAILED
+test encode::tests::resource_constant_is_rejected_with_fatal_identity_at_encode_boundary ... ok
+test encode::tests::scalar_and_release_tags_have_one_bidirectional_mapping ... ok
+test encode::tests::set_tags_have_explicit_bidirectional_mapping ... ok
+test encode::tests::unsigned_and_signed_leb128_cover_integer_boundaries ... ok
+test liveness::tests::does_not_invent_fallthrough_and_tracks_explicit_branch ... ok
+test liveness::tests::protected_blocks_keep_handler_inputs_live ... ok
+test liveness::tests::release_plan_is_an_indirect_register_use ... ok
+test lower::expr::tests::unresolved_type_variables_keep_set_only_operators_and_membership_lowerable ... ok
+test optimize::tests::o0_skips_semantic_passes_without_claiming_optimization ... ok
+test optimize::tests::optimization_pipeline_preserves_observable_operation_families ... ok
+test optimize::tests::standard_passes_report_snapshots_and_skip_reasons ... ok
+test optimize::tests::unreachable_block_pass_remaps_targets_and_keeps_execution_blocks ... ok
+test optimize::tests::unreachable_protected_region_is_kept_for_handler_remapping ... ok
+test sig::tests::intrinsic_id_round_trips_full_u32_through_two_u16_slots ... ok
+test sig::tests::zero_intrinsic_id_is_preserved_for_validator_rejection ... ok
+test verify::tests::finally_subroutine_cannot_fall_through_into_continuation ... ok
+test verify::tests::production_entry_distinguishes_known_unsupported ... ok
+test verify::tests::production_entry_rejects_resource_constant_boundary ... ok
+test verify::tests::production_entry_rejects_unsupported_as_internal_error ... ok
+test verify::tests::program_level_categories_are_not_used_for_function_validation ... ok
+test xiaoc::tests::inferred_concurrency_types_require_abi_features_before_vm_load ... ok
+test xiaoc::tests::malformed_random_bytes_never_panic ... ok
+test xiaoc::tests::rejects_truncation_overlap_unknown_required_and_compression ... ok
+test xiaoc::tests::round_trip_is_deterministic_and_variable_length_header_is_supported ... ok
+test xiaoc::tests::runtime_requirements_reject_unknown_features_and_old_abi ... ok
+test encode::tests::module_dependency_direction_is_acyclic ... ok
+test encode::tests::concurrency_plans_round_trip_in_both_widths ... ok
+
+failures:
+
+---- encode::tests::decoded_intrinsic_ids_are_checked_in_both_operand_widths stdout ----
+
+thread 'encode::tests::decoded_intrinsic_ids_are_checked_in_both_operand_widths' (50296) panicked at crates\xiao-bytecode\src\encode\tests.rs:711:13:
+assertion `left == right` failed
+  left: Ok(TacProgram { version: 1, abi: TacAbi { bytecode_abi_version: 1, runtime_abi_version: 65556, ir_version: 1, language_version: "0.1.0-test", target: "test-target" }, constants: ConstPool { entries: [Int(-7), Sint(-3), Lint("12345678901234567890"), Float(NaN), Float(-0.0), Sfloat(NaN), Lfloat("1.234567890123456789"), Bool(true), Str("雪\0行")] }, signatures: CallSigTable { entries: [CallSig { parameter_names: [""], parameter_kinds: [PositionalOrKeyword], parameter_types: [Dynamic], has_defaults: [false], var_args_slot: None, kw_args_slot: None, return_type: Dynamic }, CallSig { parameter_names: ["p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "p21"], parameter_kinds: [PositionalOrKeyword, PositionalOnly, KeywordOnly, VarArgs, VarKeywords, PositionalOrKeyword, PositionalOnly, KeywordOnly, VarArgs, VarKeywords, PositionalOrKeyword, PositionalOnly, KeywordOnly, VarArgs, VarKeywords, PositionalOrKeyword, PositionalOnly, KeywordOnly, VarArgs, VarKeywords, PositionalOrKeyword, PositionalOnly], parameter_types: [Scalar { name: "int" }, None, Variable { id: 9 }, Function { parameters: [Dynamic], return_type: None }, Array { shape: Homogeneous { element: Dynamic, length: Some(3) } }, Array { shape: Heterogeneous { elements: [None, Dynamic] } }, Array { shape: Unknown }, Tuple { elements: [None, Dynamic] }, DictTable { entries: [IrDictTypeEntry { key: "a", value: Dynamic }] }, DictColumn { entries: [IrDictTypeEntry { key: "b", value: None }] }, Set { members: [Dynamic], allows_dynamic: true, empty: false, unknown: true }, Table { name: "Point", kind: "record" }, Resource { kind: "file" }, Thread { value: Scalar { name: "int" } }, Task { value: None }, Runtime, Pool, Shared { value: Scalar { name: "str" } }, SharedMut { value: Scalar { name: "bool" } }, LockGuard { value: Scalar { name: "int" } }, OrdinaryHandle, Dynamic], has_defaults: [true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false], var_args_slot: Some(3), kw_args_slot: Some(4), return_type: Dynamic }, CallSig { parameter_names: [], parameter_kinds: [], parameter_types: [], has_defaults: [], var_args_slot: Some(60), kw_args_slot: Some(0), return_type: Dynamic }] }, functions: [TacFunction { name: "main", signature: Some(SigId(0)), entry: BlockId(0), blocks: [TacBlock { id: BlockId(0), scope: 0, instructions: [TacInstr { op: LoadConst(ConstId(0)), dst: Some(VReg(20)), span: IrSpan { start: 100, end: 102 } }, TacInstr { op: LoadNone, dst: Some(VReg(21)), span: IrSpan { start: 103, end: 105 } }, TacInstr { op: LoadFunc(FuncId(1)), dst: Some(VReg(22)), span: IrSpan { start: 106, end: 108 } }, TacInstr { op: Move(VReg(0)), dst: Some(VReg(23)), span: IrSpan { start: 109, end: 111 } }, TacInstr { op: Copy(VReg(1)), dst: Some(VReg(24)), span: IrSpan { start: 112, end: 114 } }, TacInstr { op: Box(VReg(2)), dst: Some(VReg(25)), span: IrSpan { start: 115, end: 117 } }, TacInstr { op: Unbox(VReg(3)), dst: Some(VReg(26)), span: IrSpan { start: 118, end: 120 } }, TacInstr { op: Cast { value: VReg(4), target: Sfloat }, dst: Some(VReg(27)), span: IrSpan { start: 121, end: 123 } }, TacInstr { op: Arith { op: Power, left: VReg(5), right: VReg(6) }, dst: Some(VReg(28)), span: IrSpan { start: 124, end: 126 } }, TacInstr { op: Compare { op: NotEqual, left: VReg(7), right: VReg(8) }, dst: Some(VReg(29)), span: IrSpan { start: 127, end: 129 } }, TacInstr { op: NewArray { elements: [VReg(0), VReg(1)] }, dst: Some(VReg(30)), span: IrSpan { start: 130, end: 132 } }, TacInstr { op: NewTuple { elements: [VReg(2), VReg(3)] }, dst: Some(VReg(31)), span: IrSpan { start: 133, end: 135 } }, TacInstr { op: NewDictTable { entries: [("first", VReg(4))] }, dst: Some(VReg(32)), span: IrSpan { start: 136, end: 138 } }, TacInstr { op: NewDictColumn { entries: [("second", VReg(5))] }, dst: Some(VReg(33)), span: IrSpan { start: 139, end: 141 } }, TacInstr { op: NewSet { elements: [VReg(6), VReg(7)] }, dst: Some(VReg(34)), span: IrSpan { start: 142, end: 144 } }, TacInstr { op: IndexGet { source: VReg(8), path: [Index(-129), Key("key")] }, dst: Some(VReg(35)), span: IrSpan { start: 145, end: 147 } }, TacInstr { op: Jump(BlockId(1)), dst: None, span: IrSpan { start: 148, end: 150 } }, TacInstr { op: BranchIf { condition: VReg(9), if_true: BlockId(1), if_false: BlockId(2) }, dst: None, span: IrSpan { start: 151, end: 153 } }, TacInstr { op: Call { callee: FuncId(1), signature: SigId(0), arguments: [TacArgument { kind: Positional, name: None, value: VReg(0) }, TacArgument { kind: Keyword, name: Some("named"), value: VReg(1) }, TacArgument { kind: VarArgs, name: None, value: VReg(2) }, TacArgument { kind: KwArgs, name: None, value: VReg(3) }] }, dst: None, span: IrSpan { start: 154, end: 156 } }, TacInstr { op: CallDynamic { callee: VReg(10), arguments: [TacArgument { kind: Positional, name: None, value: VReg(0) }, TacArgument { kind: Keyword, name: Some("named"), value: VReg(1) }, TacArgument { kind: VarArgs, name: None, value: VReg(2) }, TacArgument { kind: KwArgs, name: None, value: VReg(3) }] }, dst: None, span: IrSpan { start: 157, end: 159 } }, TacInstr { op: Return { value: Some(VReg(11)) }, dst: None, span: IrSpan { start: 160, end: 162 } }, TacInstr { op: Raise { value: VReg(12) }, dst: None, span: IrSpan { start: 163, end: 165 } }, TacInstr { op: MakeError { type_name: "ValueError", code: Some(VReg(13)), message: Some(VReg(14)) }, dst: None, span: IrSpan { start: 166, end: 168 } }, TacInstr { op: CallSub { sub: BlockId(2) }, dst: None, span: IrSpan { start: 169, end: 171 } }, TacInstr { op: RetFromSub, dst: None, span: IrSpan { start: 172, end: 174 } }, TacInstr { op: Check { kind: "numeric_range", value: VReg(15), on_failure: BlockId(2), expected: None }, dst: None, span: IrSpan { start: 175, end: 177 } }, TacInstr { op: Release { value: VReg(16), kind: Strong }, dst: None, span: IrSpan { start: 178, end: 180 } }, TacInstr { op: Transfer { value: VReg(17) }, dst: None, span: IrSpan { start: 181, end: 183 } }, TacInstr { op: RunReleasePlan { scope: 7, exit: "normal" }, dst: None, span: IrSpan { start: 184, end: 186 } }, TacInstr { op: EnterScope(7), dst: None, span: IrSpan { start: 187, end: 189 } }, TacInstr { op: ExitScope { scope: 7, exit: "return" }, dst: None, span: IrSpan { start: 190, end: 192 } }, TacInstr { op: SelectorApply { source: VReg(18), plan: 0, step: None, random_counts: [None] }, dst: None, span: IrSpan { start: 193, end: 195 } }, TacInstr { op: BroadcastAssign { root: VReg(19), value: VReg(20), plan: 0 }, dst: None, span: IrSpan { start: 196, end: 198 } }, TacInstr { op: RandomSeed { value: VReg(21), plan: 0 }, dst: None, span: IrSpan { start: 199, end: 201 } }, TacInstr { op: SetOp { op: SymmetricDifference, left: VReg(22), right: VReg(23) }, dst: None, span: IrSpan { start: 202, end: 204 } }, TacInstr { op: SetCompare { op: ProperSubset, left: VReg(22), right: VReg(23) }, dst: None, span: IrSpan { start: 205, end: 207 } }, TacInstr { op: Len { source: VReg(24) }, dst: None, span: IrSpan { start: 208, end: 210 } }, TacInstr { op: IndexGetDynamic { source: VReg(25), index: VReg(26) }, dst: None, span: IrSpan { start: 211, end: 213 } }, TacInstr { op: LoadTable { table: 0, construct: true, arguments: [] }, dst: None, span: IrSpan { start: 214, end: 216 } }, TacInstr { op: MemberGet { object: VReg(25), member: "ascii:value" }, dst: None, span: IrSpan { start: 217, end: 219 } }, TacInstr { op: MemberSet { object: VReg(25), member: "ascii:value", value: VReg(26) }, dst: None, span: IrSpan { start: 220, end: 222 } }, TacInstr { op: Negate(VReg(25)), dst: None, span: IrSpan { start: 223, end: 225 } }] }, TacBlock { id: BlockId(1), scope: 7, instructions: [TacInstr { op: Jump(BlockId(2)), dst: None, span: IrSpan { start: 400, end: 401 } }] }, TacBlock { id: BlockId(2), scope: 7, instructions: [TacInstr { op: RetFromSub, dst: None, span: IrSpan { start: 500, end: 500 } }] }], parameters: [VReg(0)], locals: [VReg(1), VReg(2)], categories: CategoryMap { classes: [Int, Float, Bool, ObjHandle, Dynamic, None, Poly] }, scopes: [0, 7], handlers: [TacHandler { protected: (BlockId(0), BlockId(2)), handler: BlockId(2), scope: 7, exit: "catch", catch_type: Some("Error"), binding: Some(VReg(3)) }], value_registers: {44: VReg(4), 45: VReg(5)}, span: IrSpan { start: 80, end: 700 } }, TacFunction { name: "callee", signature: Some(SigId(0)), entry: BlockId(0), blocks: [TacBlock { id: BlockId(0), scope: 0, instructions: [TacInstr { op: Return { value: None }, dst: None, span: IrSpan { start: 800, end: 801 } }] }], parameters: [VReg(0)], locals: [], categories: CategoryMap { classes: [Int, Float, Bool, ObjHandle, Dynamic, None, Poly] }, scopes: [0], handlers: [], value_registers: {}, span: IrSpan { start: 780, end: 820 } }], categories: CategoryMap { classes: [Int, Float, Bool, ObjHandle, Dynamic, None, Poly] }, plans: [TacReleasePlan { scope: 7, exit: "normal", actions: [TacReleaseAction { value: 44, order: 0, kind: Weak }], transferred: [45] }], selection_plans: [IrSelectionPlan { span: IrSpan { start: 1, end: 2 }, source_type: Dynamic, result_type: Dynamic, items: [All], selected_paths: [], target_types: [], step: None, requires_runtime_check: false, with_replacement: false, has_duplicates: false }], broadcast_assignment_plans: [IrBroadcastAssignmentPlan { span: IrSpan { start: 5, end: 6 }, root_name: Some("values"), target_paths: [], value_type: Dynamic, dynamic: false, transactional: true }], random_seed_plans: [IrRandomSeedPlan { span: IrSpan { start: 3, end: 4 }, value: Some(7), dynamic: false }], table_definitions: [TacTableDefinition { signature: IrTableSignature { name: "Example", kind: "instance", members: [IrTableMember { name: "ascii:value", method: false, public: true, ty: Dynamic, span: IrSpan { start: 0, end: 1 } }], span: IrSpan { start: 0, end: 1 } }, fields: FuncId(1), methods: {} }], unsupported: [], required_features: 0, concurrency_plans: [] })
+ right: Err(InvalidFormat("未知或已废弃的 intrinsic ID 60"))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    encode::tests::decoded_intrinsic_ids_are_checked_in_both_operand_widths
+
+test result: FAILED. 32 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
+
+error: test failed, to rerun pass `-p xiao-bytecode --lib`

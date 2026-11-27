@@ -1,0 +1,66 @@
+   Compiling serde_json v1.0.151
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling zeroize v1.9.0
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling rustls-pki-types v1.15.1
+   Compiling cc v1.5.1
+   Compiling getrandom v0.2.17
+   Compiling untrusted v0.9.0
+   Compiling httparse v1.10.1
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-standard-library)
+   Compiling log v0.4.34
+   Compiling rustls v0.23.45
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-i18n)
+   Compiling ring v0.17.14
+   Compiling crc32fast v1.5.2
+   Compiling bytes v1.12.1
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+   Compiling http v1.5.0
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-syntax)
+   Compiling xiao-lock v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lock)
+   Compiling windows-targets v0.52.6
+   Compiling subtle v2.6.1
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-modules)
+   Compiling once_cell v1.21.4
+   Compiling simd-adler32 v0.3.10
+   Compiling adler2 v2.0.1
+   Compiling base64 v0.23.1
+   Compiling ureq-proto v0.6.4
+   Compiling miniz_oxide v0.9.1
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling xiao-config v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-config)
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-ir)
+   Compiling windows-sys v0.52.0
+   Compiling webpki-roots v1.0.9
+   Compiling filetime v0.2.29
+   Compiling percent-encoding v2.3.2
+   Compiling utf8-zero v0.8.1
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+   Compiling tar v0.4.46
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+   Compiling flate2 v1.1.10
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+   Compiling rustls-webpki v0.103.15
+   Compiling ureq v3.4.2
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 16s
+     Running tests\22d_llvm_concurrency.rs (core\rust\target\b3-4-env-1a\debug\deps\22d_llvm_concurrency-8a9243125e2bb84b.exe)
+closure_golden_sources_compile_and_lower: test
+native_concurrency_llvm_assembly_fixtures: test
+native_concurrency_shared_c_layout_probe: test
+native_concurrency_vm_native_differential_matches_from_same_ir: test
+native_lowering_consumes_concurrency_spans_and_emits_trampoline: test
+native_project_module_concurrency_is_rejected_structurally: test
+native_shared_lock_plan_keeps_cancel_and_runtime_abi_paths: test
+public_native_build_emits_required_concurrency_metadata: test
+release_trace::release_projection_v2_regressions: test
+unknown_native_concurrency_operation_is_rejected_before_lowering: test
+
+10 tests, 0 benchmarks

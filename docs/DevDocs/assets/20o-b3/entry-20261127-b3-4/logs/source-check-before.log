@@ -1,0 +1,24 @@
+HEAD=7936b307afeafec628def0fbaa7708f65fc29106
+fixed_product=3506455ee5839214082df15af4c760f8d0361e66
+intrinsic_rows_changed=60,61,62
+intrinsic_63=reserved and intrinsic_100=tombstone
+locks_match_fixed_product=true
+versions=ABI 1.20, generator 26, stdlib interface 1
+protected_paths_unchanged=true
+git_diff_check=passed
+{
+  "head": "7936b307afeafec628def0fbaa7708f65fc29106",
+  "tree": "06025ce20893d9479e687aa1c0e4fb338694c5b7",
+  "sources": {
+    "core/rust/crates/xiao-driver/src/lib.rs": "602d9e3b49717b6d6fea44fa535a8bcd3c9bf68f156c43eb9ccacfb835796ec0",
+    "core/rust/crates/xiao-driver/src/protocol/request.rs": "d2b9b75e1e48437e2a1d65b355853c6ec05044d60df600de17570925aeeeb981",
+    "core/rust/crates/xiao-driver/src/protocol_tests.rs": "9db955d9417706bc74605a77e8d06ac0e9b2ae08cd11432e8967a3fb6ab90c63",
+    "core/rust/crates/xiao-intrinsics/build.rs": "57a0d054388567fab9c305e44b42eb89cd63f6ae325a2440f3032baf5565a4f5",
+    "core/rust/crates/xiao-intrinsics/intrinsics.json": "1fa56230ba90f71046e16c337aba39f7865bf890d8318b6c0b650fd99a45827f",
+    "core/rust/crates/xiao-intrinsics/src/lib.rs": "26175f10b36f1e2a568cc0b281c4ab517e36fb182b6db04f8bdba44037128580",
+    "core/rust/crates/xiao-runtime/src/environment.rs": "f9ec3a9d2e941ddfc56e79ab42c38d2c751433f6ca4f132a4086d0615dd0336a",
+    "core/rust/crates/xiao-runtime/src/environment_tests.rs": "d47ac41e3fdd034656a70b4bf5f0c1907f4c9ce63ad1028c040821edf524952f",
+    "core/rust/crates/xiao-runtime/src/lib.rs": "81a078cfae703ac49dee8664eea2730bd891210e8126f240b4f771cd911ca6b5",
+    "core/rust/crates/xiao-runtime/src/resources.rs": "190158fa12db1e49f80b08f41add10b3a8fc7f657ece6f02b2afd17d6ddd31a2"
+  }
+}

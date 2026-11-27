@@ -1,0 +1,23 @@
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 19.02s
+     Running unittests src\lib.rs (core\rust\target\b3-4-env-1a\debug\deps\xiao_runtime-252b184bcc0896d3.exe)
+
+running 13 tests
+test environment::tests::gates_host_source_and_keeps_distinct_snapshots ... ok
+test environment::tests::get_set_unset_return_owned_values ... ok
+test environment::tests::interruptions_preserve_entries_and_budget ... ok
+test environment::tests::output_allocation_failure_preserves_the_snapshot ... ok
+test environment::tests::platform_name_equivalence_governs_duplicate_lookup_and_removal ... ok
+test environment::tests::rejects_invalid_names_and_values ... ok
+test environment::tests::rejects_invalid_native_unicode ... ok
+test environment::tests::shares_committed_mutations_only_within_one_run ... ok
+test environment::tests::byte_limits_include_exact_name_and_value_boundaries ... ok
+test abi::tests::diagnostic_ready_failure_cleans_session_and_environment ... ok
+test environment::tests::validates_types_authorization_arguments_and_budget_before_checkpoint ... ok
+test environment::tests::total_budget_accounts_for_replacement_and_failure ... ok
+test environment::tests::pair_budget_counts_only_committed_names ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 288 filtered out; finished in 0.02s
+

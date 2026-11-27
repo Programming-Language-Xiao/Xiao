@@ -345,7 +345,7 @@ fn cmath_unknown_intrinsic_ids_are_rejected_before_encoding() {
         .find(|(_, function)| function.name == case.function)
         .unwrap();
 
-    for id in [60, 100, u32::MAX] {
+    for id in [63, 100, u32::MAX] {
         let mut invalid = tac.clone();
         let invalid_signature = invalid.signatures.intern(CallSig::intrinsic(id));
         let function = &mut invalid.functions[function_index];

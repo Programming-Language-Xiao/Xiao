@@ -77,8 +77,8 @@ pub use protocol::{
     ProtocolBackendLocation, ProtocolDiagnostic, ProtocolDiagnosticActivation, ProtocolError,
     ProtocolErrorBody, ProtocolEvent, ProtocolMetrics, ProtocolParam, ProtocolReport,
     ProtocolRequest, ProtocolResponse, ProtocolRuntimeConfig, ProtocolSpan, ProtocolStackFrame,
-    ProtocolTarget, ProtocolValue, REQUEST_ERROR_CODE, RunOptions, SourceIdentity, ToolchainSpec,
-    ToolchainVersionsSpec, UNSUPPORTED_OPERATION_CODE, VERSION_MISMATCH_CODE, core_crash_response,
-    decode_frame, dispatch, encode_frame, read_frame, read_request, serve, serve_stdio,
-    write_frame,
+    ProtocolTarget, ProtocolValue, REQUEST_ERROR_CODE, RunEnvironment, RunOptions, SourceIdentity,
+    ToolchainSpec, ToolchainVersionsSpec, UNSUPPORTED_OPERATION_CODE, VERSION_MISMATCH_CODE,
+    core_crash_response, decode_frame, dispatch, encode_frame, read_frame, read_request, serve,
+    serve_stdio, write_frame,
 };

@@ -141,7 +141,7 @@ fn reserved_intrinsic_ids_fail_before_execution() {
             .iter()
             .any(|sig| sig.intrinsic_id() == Some(50))
     );
-    for id in 60..=63 {
+    for id in [63] {
         let mut invalid = tac.clone();
         let mut signatures = xiao_bytecode::sig::CallSigTable::new();
         for signature in tac.signatures.iter() {

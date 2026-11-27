@@ -20,7 +20,7 @@ pub(crate) fn require_process(capabilities: u64) -> RuntimeResult<()> {
 }
 
 /// 按静态契约验证冻结的能力位，不执行任何宿主操作。
-fn require_capability(capabilities: u64, capability: Capability) -> RuntimeResult<()> {
+pub(crate) fn require_capability(capabilities: u64, capability: Capability) -> RuntimeResult<()> {
     if validate_capability_mask(capabilities).is_err() {
         return Err(RuntimeError::invalid_value("能力掩码包含未知位"));
     }

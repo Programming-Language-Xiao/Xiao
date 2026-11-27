@@ -189,6 +189,35 @@ fn main() {
                     assert_eq!(row.capability, "filesystem");
                     assert_eq!(row.error, "runtime.type_mismatch");
                 }
+                "env" => {
+                    let (binding, arity, parameter, result, effect) = match row.id {
+                        60 => (
+                            "env_get",
+                            "one",
+                            "str",
+                            "str_array",
+                            "reads_environment_and_allocates",
+                        ),
+                        61 => (
+                            "env_set",
+                            "two",
+                            "two_strings",
+                            "none",
+                            "writes_environment",
+                        ),
+                        62 => ("env_unset", "one", "str", "bool", "writes_environment"),
+                        _ => panic!("env ID 必须为 60～62"),
+                    };
+                    assert_eq!(row.name, format!("os_{binding}"));
+                    assert_eq!(row.vm_binding, binding);
+                    assert_eq!(row.abi_binding, binding);
+                    assert_eq!(row.arity, arity);
+                    assert_eq!(row.parameter_type, parameter);
+                    assert_eq!(row.return_type, result);
+                    assert_eq!(row.effect, effect);
+                    assert_eq!(row.capability, "environment");
+                    assert_eq!(row.error, "runtime.type_mismatch");
+                }
                 "lfloat_divide" => {
                     assert_eq!(row.id, 33);
                     assert_eq!(row.arity, "four");
@@ -388,8 +417,8 @@ fn main() {
         } else {
             match row.status.as_str() {
                 "reserved" => {
-                    assert!((60..=63).contains(&row.id), "预登记的 ID 必须为 60～63");
-                    assert!(row.name.starts_with("os_"));
+                    assert_eq!(row.id, 63, "预登记的 ID 必须为 63");
+                    assert_eq!(row.name, "os_log_write");
                     assert_eq!(row.kind, "reserved");
                     assert!(
                         [

@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\Xiao\core\rust\target\b3-4-env-1a\capture-baseline.py", line 55, in <module>
+    assert active == list(range(1, 60)) and reserved == list(range(60, 64)) and tombstone == [100]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
