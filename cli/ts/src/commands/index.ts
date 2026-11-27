@@ -7,7 +7,7 @@ import { findProjectConfig, writeConfigValue, type ConfigEditorOptions } from ".
 import { resolveEffectiveLocale, type LocaleContext } from "../config/locale.ts";
 import { resolveOptimization } from "../config/optimization.ts";
 import { ProtocolClient, type CoreClientOptions } from "../protocol/client.ts";
-import type { ToolchainSpec } from "../protocol/messages.ts";
+import { CAPABILITY_ENVIRONMENT, DEFAULT_CAPABILITY_MASK, type ToolchainSpec } from "../protocol/messages.ts";
 import { renderCliError, renderProtocolResponse, CLI_EXIT_CODES, type DiagnosticRenderOptions, type RenderedDiagnostic } from "../diagnostics/render.ts";
 import { helpText as parserHelpText, type ParsedCommand } from "./parser.ts";
 import { discoverProjectTests, testModuleName } from "./test-discovery.ts";
@@ -241,6 +241,11 @@ export function helpText(locale?: LocaleContext["tag"]): string {
   return parserHelpText(locale);
 }
 
+/** 仅在命令请求环境访问时覆盖核心的默认能力掩码。 */
+function requestedCapabilities(allowEnvironment: boolean): number | undefined {
+  return allowEnvironment ? DEFAULT_CAPABILITY_MASK | CAPABILITY_ENVIRONMENT : undefined;
+}
+
 /** 读取源码并通过协议客户端执行 `run`。 */
 async function executeRun(command: Extract<ParsedCommand, { kind: "run" }>, context: CommandContext): Promise<RenderedDiagnostic> {
   const cwd = context.cwd ?? process.cwd();
@@ -276,6 +281,7 @@ async function executeRun(command: Extract<ParsedCommand, { kind: "run" }>, cont
       spawnProcess: context.spawnProcess,
     });
     const result = await client.runSource(source, {
+      capabilities: requestedCapabilities(command.allowEnvironment),
       arguments: snapshotForRun(command.file, command.applicationArguments ?? []),
       path,
       module: moduleFromPath(path),
@@ -328,6 +334,7 @@ async function executeXiaoc(command: Extract<ParsedCommand, { kind: "run" }>, co
       spawnProcess: context.spawnProcess,
     });
     const result = await client.runXiaoc(path, {
+      capabilities: requestedCapabilities(command.allowEnvironment),
       arguments: snapshotForRun(command.file, command.applicationArguments ?? []),
       debug: command.options.debug,
       diagnostics: normalizedOptimization.config.diagnostics,
@@ -369,6 +376,7 @@ async function executeArchive(command: Extract<ParsedCommand, { kind: "xar" }>, 
       spawnProcess: context.spawnProcess,
     });
     const result = await client.runArchive(path, {
+      capabilities: requestedCapabilities(command.allowEnvironment),
       arguments: snapshotForRun(command.file, command.applicationArguments ?? []),
       optimizationLevel: normalizedOptimization.level,
       debug: command.options.debug,
@@ -436,6 +444,7 @@ async function executeBuild(command: Extract<ParsedCommand, { kind: "build" }>, 
       spawnProcess: context.spawnProcess,
     });
     const result = await client.buildSource(source, {
+      capabilities: requestedCapabilities(command.allowEnvironment),
       path,
       module: moduleFromPath(path),
       optimizationLevel: normalizedOptimization.level,

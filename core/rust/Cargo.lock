@@ -596,6 +596,7 @@ dependencies = [
 name = "xiao-codegen-llvm"
 version = "0.1.0"
 dependencies = [
+ "getrandom",
  "serde",
  "sha2",
  "xiao-diagnostics",

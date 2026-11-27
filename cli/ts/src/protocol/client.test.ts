@@ -400,13 +400,13 @@ describe("协议客户端", () => {
     };
     const result = await client.buildSource("value = 1\n", {
       path: "main.xiao", output: "build/main.exe", llvmIrOutput: "build/main.ll",
-      toolchain, debug: true, configText: "[Runtime]\ncall_stack_depth = 64\n", locale: "en-US",
+      toolchain, capabilities: 0xff, debug: true, configText: "[Runtime]\ncall_stack_depth = 64\n", locale: "en-US",
     });
     expect(result.response.type).toBe("result");
     expect(fake?.requests.find((value) => value.type === "build")).toMatchObject({
       type: "build", source: { path: "main.xiao", text: "value = 1\n" },
       output: "build/main.exe", llvm_ir_output: "build/main.ll", config_text: "[Runtime]\ncall_stack_depth = 64\n",
-      locale: "en-US",
+      locale: "en-US", capabilities: 0xff,
       optimization: { level: 0, debug: true },
     });
   });

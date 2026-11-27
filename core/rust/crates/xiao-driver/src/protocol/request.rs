@@ -498,6 +498,12 @@ pub enum ProtocolRequest {
         target: ProtocolTarget,
         /// 优化/调试配置。
         optimization: OptimizationConfig,
+        /// 原生产物启动时允许的能力位；旧请求省略时使用 `0x7F`。
+        #[serde(
+            default = "default_capabilities",
+            skip_serializing_if = "is_default_capabilities"
+        )]
+        capabilities: u64,
         /// 源码与模块身份。
         source: SourceIdentity,
         /// 产物输出路径。

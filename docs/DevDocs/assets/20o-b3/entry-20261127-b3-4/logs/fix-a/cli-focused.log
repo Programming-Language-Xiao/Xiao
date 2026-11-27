@@ -1,0 +1,60 @@
+命令 bun test cli/ts/src/commands/parser.test.ts cli/ts/src/commands/index.test.ts cli/ts/src/protocol/client.test.ts
+开始 2026-11-27T10:20:51.6913452+00:00
+bun test v1.4.0 (34cbb9a40)
+
+cli\ts\src\commands\index.test.ts:
+(pass) 三种运行请求只在显式授权时发送位 7，并保留应用参数 [88.27ms]
+(pass) 命令取消接线 > build -xar 复用输入路由，只发送归档请求并绕过 LLVM 发现 [25.88ms]
+(pass) 命令取消接线 > sync 激活传 Rust 路径，install 与 i 完全共用协议，不写激活文件 [21.23ms]
+(pass) 命令取消接线 > install/i 仅从当前目录或显式路径读取配置，不向上发现 [15.72ms]
+(pass) 命令取消接线 > 锁和依赖编辑操作传递精确参数且不触发激活 [15.97ms]
+(pass) 命令取消接线 > 预取消信号沿 runSource 传递并在启动核心前返回稳定错误 [15.07ms]
+(pass) 命令取消接线 > run -O2 只读取配置和锁文件，不改写内容或 mtime [14.56ms]
+(pass) 命令取消接线 > 项目没有测试文件时返回 CLI 自身的 usage 诊断 [11.67ms]
+(pass) 命令取消接线 > 项目测试源码读取失败返回 CLI 文件诊断，不伪装成核心失败 [19.94ms]
+(pass) 命令取消接线 > venv 从嵌套目录发现项目根、写入元数据并报告重复创建 [19.19ms]
+(pass) 命令取消接线 > venv 默认目录回退 cwd；shell-init 与直接 deactivate 不改 Shell [16.67ms]
+
+cli\ts\src\commands\parser.test.ts:
+(pass) xiao 命令解析 > 同步模式互斥，install/i 共享命令形状 [0.48ms]
+(pass) xiao 命令解析 > 锁定与依赖编辑命令的参数边界 [0.28ms]
+(pass) xiao 命令解析 > 支持 run、源码快捷方式和全局输出选项 [0.46ms]
+(pass) xiao 命令解析 > 两种归档运行形式及选项顺序保持同一命令 [0.17ms]
+(pass) xiao 命令解析 > 仅解析首个 -- 前的启动选项 [0.19ms]
+(pass) xiao 命令解析 > 环境授权与优化、应用参数共存，并在两种语言的帮助中列出 [0.37ms]
+(pass) xiao 命令解析 > 单行 REPL 与多行文件入口互不混淆 [0.16ms]
+(pass) xiao 命令解析 > 五个入口在没有显式参数时统一保留 O0 缺省 [0.29ms]
+(pass) xiao 命令解析 > build 默认产物、LLVM 输出和优化级别保持冻结 [0.17ms]
+(pass) xiao 命令解析 > build -xar 默认同目录输出且拒绝原生输出选项与重复开关 [0.10ms]
+(pass) xiao 命令解析 > 环境命令解析默认名、显式名、Shell 和取消激活 [0.29ms]
+(pass) xiao 命令解析 > 非法参数不依赖本地化文本判断 [0.17ms]
+(pass) xiao 命令解析 > 18B 只新增 verify/cache 顶层命令 [0.50ms]
+(pass) xiao 命令解析 > 18C 文件关联动作和非交互详细选项保持稳定 [0.28ms]
+
+cli\ts\src\protocol\client.test.ts:
+(pass) 协议客户端 > 核心发现期间取消不会启动进程 [0.39ms]
+(pass) 协议客户端 > 握手前取消不会发送尚未存在的运行请求 [2.04ms]
+(pass) 协议客户端 > 运行帧写入期间取消仍会发送取消帧 [1.51ms]
+(pass) 协议客户端 > 旧核心未声明 package 能力时不发送新请求 [1.82ms]
+(pass) 协议客户端 > 旧核心未声明 build_archive 时拒绝构建且不发送未知请求 [1.01ms]
+(pass) 协议客户端 > 旧核心缺少 arguments 时拒绝三种携带快照的运行请求 [2.85ms]
+(pass) 协议客户端 > 握手支持 arguments 时传输调用时的快照 [1.20ms]
+(pass) 协议客户端 > 旧核心只声明 package 而无 repl_packages 时关闭进程并降级为空视图 [1.38ms]
+(pass) 协议客户端 > 先握手，再按 request_id 取得运行结果并关闭核心 [1.01ms]
+(pass) 协议客户端 > keepAlive 会复用核心和单次握手，显式 shutdown 才关闭 [1.33ms]
+(pass) 协议客户端 > repl_packages 同一环境键只发送一次并允许并发调用共享结果 [1.60ms]
+(pass) 协议客户端 > repl_packages 返回错误后下次会重试而不复用旧诊断 [1.45ms]
+(pass) 协议客户端 > 同一客户端的多个调用按提交顺序串行发送 [1.27ms]
+(pass) 协议客户端 > 通信失败后可重新握手，旧核心的包视图缓存不会复用 [2.33ms]
+(pass) 协议客户端 > 关闭后不能悄悄重启核心 [0.22ms]
+(pass) 协议客户端 > debug 位和诊断配置按结构化字段传给 Rust 核心 [1.13ms]
+(pass) 协议客户端 > buildSource 使用真实源码并传递工具链、配置和输出路径 [1.33ms]
+(pass) 协议客户端 > testSources 按输入顺序批量传递源码和每用例期限 [1.32ms]
+(pass) 协议客户端 > environmentMetadata 传递项目布局、配置和工具链并返回元数据 [1.16ms]
+
+ 44 pass
+ 0 fail
+ 241 expect() calls
+Ran 44 tests across 3 files. [1155.00ms]
+结束 2026-11-27T10:20:53.1274171+00:00
+退出码 0

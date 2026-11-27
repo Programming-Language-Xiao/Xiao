@@ -5,8 +5,8 @@ use std::sync::Arc;
 
 use super::{abi_value_validation::validate_structure, *};
 use crate::environment::{EnvironmentSnapshot, Failure, Operation, SnapshotError};
-use xiao_intrinsics::validate_capability_mask;
-use xiao_runtime_abi::NATIVE_ENVIRONMENT_STDIN;
+use xiao_intrinsics::{CAPABILITY_ENVIRONMENT, validate_capability_mask};
+use xiao_runtime_abi::{NATIVE_ENVIRONMENT_NONCE_ENV, NATIVE_ENVIRONMENT_STDIN_PREFIX};
 
 thread_local! {
     static ENTRY_ENVIRONMENT: RefCell<Option<Arc<NativeEnvironment>>> = const { RefCell::new(None) };
@@ -67,15 +67,12 @@ pub extern "C" fn xiao_runtime_env_run_native(
     let Some(entry) = entry else {
         return 2;
     };
-    let injected = std::env::args_os()
-        .nth(1)
-        .is_some_and(|arg| arg == NATIVE_ENVIRONMENT_STDIN);
-    let snapshot = if injected {
-        validate_capability_mask(capabilities)
-            .map_err(SnapshotError::InvalidCapabilities)
-            .and_then(|_| read_injected_environment())
-    } else {
-        EnvironmentSnapshot::capture_host(capabilities)
+    let (injected, snapshot) = match validate_capability_mask(capabilities) {
+        Err(error) => (false, Err(SnapshotError::InvalidCapabilities(error))),
+        Ok(()) if capabilities & CAPABILITY_ENVIRONMENT != 0 && has_environment_handshake() => {
+            (true, read_injected_environment())
+        }
+        Ok(()) => (false, EnvironmentSnapshot::capture_host(capabilities)),
     };
     run_entry(
         || {
@@ -97,6 +94,21 @@ pub extern "C" fn xiao_runtime_env_run_native(
         snapshot,
         capabilities,
     )
+}
+
+/// 仅消费与子进程私有环境变量匹配的握手参数。
+fn has_environment_handshake() -> bool {
+    let arg = std::env::args_os().nth(1);
+    let Some(nonce) = arg
+        .as_deref()
+        .and_then(std::ffi::OsStr::to_str)
+        .and_then(|arg| arg.strip_prefix(NATIVE_ENVIRONMENT_STDIN_PREFIX))
+    else {
+        return false;
+    };
+    nonce.len() == 32
+        && nonce.bytes().all(|byte| byte.is_ascii_hexdigit())
+        && std::env::var(NATIVE_ENVIRONMENT_NONCE_ENV).is_ok_and(|expected| expected == nonce)
 }
 
 /// 驱动发送经接纳的名值对。JSON 转义至多展开六倍，另留出数组结构的字节。

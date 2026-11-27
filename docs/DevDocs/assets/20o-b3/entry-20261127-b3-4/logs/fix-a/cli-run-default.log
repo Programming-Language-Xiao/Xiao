@@ -1,0 +1,5 @@
+命令 bun cli/ts/src/main.ts run core/rust/target/fix-a-native/marker-probe.xiao -- --__xiao-run-environment-stdin tail
+开始 2026-11-27T10:23:32.8290109+00:00
+X11-CLI-CORE-002: 无法启动 xiao-core：Error: EPERM: operation not permitted, uv_spawn 'D:\project\Xiao\Xiao\core\rust\target\debug\xiao-core.exe'
+结束 2026-11-27T10:23:33.0934094+00:00
+退出码 4

@@ -7,6 +7,7 @@ use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use xiao_ir::IrProgram;
+use xiao_runtime_abi::{NATIVE_ENVIRONMENT_NONCE_ENV, NATIVE_ENVIRONMENT_STDIN_PREFIX};
 
 use crate::CODEGEN_VERSION;
 use crate::artifact::{ArtifactRuntimeComposition, verify_artifact_with_link_evidence};
@@ -358,9 +359,16 @@ impl NativeRun {
         };
         let mut command = Command::new(&self.executable);
         let output = if let Some(data) = environment {
+            let mut bytes = [0; 16];
+            getrandom::getrandom(&mut bytes).map_err(|error| CodegenError::Io {
+                path: self.executable.clone(),
+                message: format!("无法生成原生环境注入随机数：{error}"),
+            })?;
+            let nonce = format!("{:032x}", u128::from_be_bytes(bytes));
             command
-                .arg(xiao_runtime_abi::NATIVE_ENVIRONMENT_STDIN)
+                .arg(format!("{NATIVE_ENVIRONMENT_STDIN_PREFIX}{nonce}"))
                 .args(args)
+                .env(NATIVE_ENVIRONMENT_NONCE_ENV, nonce)
                 .stdin(Stdio::piped())
                 .stdout(Stdio::piped())
                 .stderr(Stdio::piped());

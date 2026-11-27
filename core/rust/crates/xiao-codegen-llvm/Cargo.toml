@@ -14,6 +14,7 @@ workspace = true
 path = "src/lib.rs"
 
 [dependencies]
+getrandom = "0.2"
 xiao-diagnostics = { path = "../xiao-diagnostics" }
 xiao-intrinsics = { path = "../xiao-intrinsics" }
 xiao-ir = { path = "../xiao-ir" }

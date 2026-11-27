@@ -1,0 +1,7 @@
+命令 cmd /d /c core\rust\target\fix-a-native\marker-probe.exe --__xiao-run-environment-stdin tail < NUL
+开始 2026-11-27T10:25:01.4008397+00:00
+probe-host
+--__xiao-run-environment-stdin
+tail
+结束 2026-11-27T10:25:02.2670052+00:00
+退出码 0

@@ -63,11 +63,16 @@ export interface RunArguments {
   argv: readonly string[];
 }
 
+/** 运行或构建省略能力字段时，核心采用的冻结掩码。 */
+export const DEFAULT_CAPABILITY_MASK = 0x7f;
+/** 授权访问单次运行的环境快照。 */
+export const CAPABILITY_ENVIRONMENT = 1 << 7;
+
 /** VM 请求的冻结运行选项。 */
 export interface RunOptions {
   /** 可选运行参数快照。 */
   arguments?: RunArguments;
-  /** 本次运行允许的能力位；省略时采用核心全开默认值。 */
+  /** 省略时使用 `0x7F`。环境访问需要显式授予位 7。 */
   capabilities?: number;
   max_call_depth: number;
   event_capacity: number;
@@ -194,6 +199,8 @@ export interface BuildRequest {
   locale?: string | null;
   target: ProtocolTarget;
   optimization: OptimizationConfig;
+  /** 原生产物启动时允许的能力位；省略时使用 `0x7F`。 */
+  capabilities?: number;
   source: SourceIdentity;
   output: string;
   llvm_ir_output: string | null;

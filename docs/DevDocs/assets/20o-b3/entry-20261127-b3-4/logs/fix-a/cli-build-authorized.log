@@ -1,0 +1,5 @@
+命令 bun cli/ts/src/main.ts build core/rust/target/fix-a-native/marker-probe.xiao --allow-environment -o core/rust/target/fix-a-native/marker-probe.exe --emit-llvm core/rust/target/fix-a-native/marker-probe.ll --json
+开始 2026-11-27T10:23:33.3371892+00:00
+{"type":"error","code":"X11-CLI-TOOLCHAIN-OVERRIDE-001","message":"显式 clang 路径不可用：D:\\msys64\\ucrt64\\bin\\clang.exe","details":{"tool":"clang","path":"D:\\msys64\\ucrt64\\bin\\clang.exe","source":"override","candidates":[{"tool":"clang","path":"D:\\msys64\\ucrt64\\bin\\clang.exe","source":"override","status":"unusable","reason":"Error: EPERM: operation not permitted, uv_spawn 'C:\\Windows\\system32\\cmd.exe'"}]},"exit_code":70}
+结束 2026-11-27T10:23:33.5295940+00:00
+退出码 70

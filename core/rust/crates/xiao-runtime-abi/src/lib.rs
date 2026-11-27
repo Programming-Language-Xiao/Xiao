@@ -25,9 +25,12 @@ pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
 pub const ABI_MINOR_VERSION: u32 = 20;
 
-/// 原生驱动与启动适配器之间的私有 stdin 注入标记。
+/// 原生驱动向启动适配器传递单次 stdin 注入随机数的参数前缀。
 #[doc(hidden)]
-pub const NATIVE_ENVIRONMENT_STDIN: &str = "--__xiao-run-environment-stdin";
+pub const NATIVE_ENVIRONMENT_STDIN_PREFIX: &str = "--__xiao-run-environment-stdin=";
+/// 原生子进程必须在此变量中收到同一个随机数。
+#[doc(hidden)]
+pub const NATIVE_ENVIRONMENT_NONCE_ENV: &str = "XIAO_INTERNAL_RUN_ENVIRONMENT_NONCE";
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。

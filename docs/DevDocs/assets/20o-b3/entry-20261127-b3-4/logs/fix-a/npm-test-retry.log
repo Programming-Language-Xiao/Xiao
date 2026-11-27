@@ -1,0 +1,357 @@
+命令 npm --prefix cli/ts test
+开始 2026-11-27T10:22:04.8359575+00:00
+
+> @xiao/cli@0.1.0 test
+> bun test
+
+bun test v1.4.0 (34cbb9a40)
+
+src\i18n.test.ts:
+(pass) CLI 状态消息保留双语文本并且不二次解析参数 [0.59ms]
+
+src\main.test.ts:
+(pass) CLI 入口 > 运行入口仅以项目优先的规范语言发请求，配置无效时不启动核心 [51.45ms]
+(pass) CLI 入口 > 无参数进入单行会话：执行、显示错误后继续，EOF 正常退出 [38.21ms]
+(pass) CLI 入口 > --inLF 执行完整缓冲区时沿用 CLI 核心注入 [35.96ms]
+(pass) CLI 入口 > --inLF 取消后回到单行时复用同一个核心会话 [13.82ms]
+(pass) CLI 入口 > --inLF 缺失文件立即绑定，首次保存直接创建文件 [21.39ms]
+(pass) CLI 入口 > --inLF 拒绝非法 UTF-8 文件，不进入 raw mode [10.57ms]
+(pass) CLI 入口 > 非 raw mode 多行入口给稳定诊断；机器 JSON 模式不启动交互会话 [8.00ms]
+(pass) CLI 入口 > 配置启用但未装 Git 时不阻断提示符，可从调试输出查询原因 [12.48ms]
+(pass) CLI 入口 > 全局配置启用 Git 摘要，分支计数随每次提示符刷新；项目配置可覆盖 [29.59ms]
+(pass) CLI 入口 > 机器模式使用项目测试协议返回的失败进程码 [21.97ms]
+(pass) CLI 入口 > 管道接收端关闭时吞掉 EPIPE [0.38ms]
+
+src\commands\index.test.ts:
+(pass) 三种运行请求只在显式授权时发送位 7，并保留应用参数 [72.17ms]
+(pass) 命令取消接线 > build -xar 复用输入路由，只发送归档请求并绕过 LLVM 发现 [25.17ms]
+(pass) 命令取消接线 > sync 激活传 Rust 路径，install 与 i 完全共用协议，不写激活文件 [21.50ms]
+(pass) 命令取消接线 > install/i 仅从当前目录或显式路径读取配置，不向上发现 [14.02ms]
+(pass) 命令取消接线 > 锁和依赖编辑操作传递精确参数且不触发激活 [19.56ms]
+(pass) 命令取消接线 > 预取消信号沿 runSource 传递并在启动核心前返回稳定错误 [23.36ms]
+(pass) 命令取消接线 > run -O2 只读取配置和锁文件，不改写内容或 mtime [16.76ms]
+(pass) 命令取消接线 > 项目没有测试文件时返回 CLI 自身的 usage 诊断 [12.34ms]
+(pass) 命令取消接线 > 项目测试源码读取失败返回 CLI 文件诊断，不伪装成核心失败 [12.33ms]
+(pass) 命令取消接线 > venv 从嵌套目录发现项目根、写入元数据并报告重复创建 [20.58ms]
+(pass) 命令取消接线 > venv 默认目录回退 cwd；shell-init 与直接 deactivate 不改 Shell [15.76ms]
+
+src\commands\input-routing.test.ts:
+(pass) 18A 输入路由 > 按意图区分 config、main 源码、普通源码、xiaoc 和 xar [0.12ms]
+(pass) 18A 输入路由 > 互斥、缺失意图和 build 产物输入都有稳定诊断 [0.23ms]
+
+src\commands\parser.test.ts:
+(pass) xiao 命令解析 > 同步模式互斥，install/i 共享命令形状 [0.41ms]
+(pass) xiao 命令解析 > 锁定与依赖编辑命令的参数边界 [0.29ms]
+(pass) xiao 命令解析 > 支持 run、源码快捷方式和全局输出选项 [0.23ms]
+(pass) xiao 命令解析 > 两种归档运行形式及选项顺序保持同一命令 [0.16ms]
+(pass) xiao 命令解析 > 仅解析首个 -- 前的启动选项 [0.26ms]
+(pass) xiao 命令解析 > 环境授权与优化、应用参数共存，并在两种语言的帮助中列出 [0.39ms]
+(pass) xiao 命令解析 > 单行 REPL 与多行文件入口互不混淆 [0.19ms]
+(pass) xiao 命令解析 > 五个入口在没有显式参数时统一保留 O0 缺省 [0.30ms]
+(pass) xiao 命令解析 > build 默认产物、LLVM 输出和优化级别保持冻结 [0.18ms]
+(pass) xiao 命令解析 > build -xar 默认同目录输出且拒绝原生输出选项与重复开关 [0.24ms]
+(pass) xiao 命令解析 > 环境命令解析默认名、显式名、Shell 和取消激活 [0.53ms]
+(pass) xiao 命令解析 > 非法参数不依赖本地化文本判断 [0.30ms]
+(pass) xiao 命令解析 > 18B 只新增 verify/cache 顶层命令 [0.71ms]
+(pass) xiao 命令解析 > 18C 文件关联动作和非交互详细选项保持稳定 [0.32ms]
+
+src\commands\test-discovery.test.ts:
+(pass) 项目测试发现 > 递归发现 xiao 文件并按项目相对路径排序 [14.42ms]
+(pass) 项目测试发现 > 没有 tests 目录或测试文件时返回稳定命令错误 [6.39ms]
+
+src\config\editor.test.ts:
+(pass) config.xiao CLI 写回 > 只修改目标字面量并保留注释、无关字段和换行 [17.88ms]
+(pass) config.xiao CLI 写回 > 非法路径和值在写文件前拒绝 [0.37ms]
+(pass) config.xiao CLI 写回 > 发现非规范大小写配置文件时给出稳定诊断 [4.33ms]
+(pass) config.xiao CLI 写回 > 临时文件写入中断返回稳定错误且不覆盖原文 [7.15ms]
+(pass) config.xiao CLI 写回 > 损坏的静态容器不会被 CLI 悄悄改写 [4.81ms]
+
+src\config\locale.test.ts:
+(pass) 11C 生效语言 > 项目覆盖全局、别名规范化、缺省为中文 [14.43ms]
+(pass) 11C 生效语言 > 拒绝非字符串、非法标签及重复键 [17.51ms]
+(pass) 11C 生效语言 > 全局文件无效时诊断指向全局来源，项目覆盖时不解析它 [10.79ms]
+
+src\config\optimization.test.ts:
+(pass) 18A 优化归一化 > 只接受 O0 到 O3 [0.11ms]
+(pass) 18A 优化归一化 > 命令行 > 项目 > 全局 > O0，且列表稳定排序去重 [0.16ms]
+(pass) 18A 优化归一化 > 配置解析是静态的，并保留 13A 字段名 [0.42ms]
+(pass) 18A 优化归一化 > 18C [debug] 配置只提供诊断设置，由 -debug 决定是否激活窗口 [0.54ms]
+(pass) 18A 优化归一化 > 归一化 O2 不写回项目配置或锁文件 [8.70ms]
+
+src\diagnostics\render.test.ts:
+(pass) CLI 诊断呈现 > 退出码直接来自协议字段，JSON 不混入 ANSI [0.14ms]
+(pass) CLI 诊断呈现 > 非 TTY 人类错误为纯文本 [0.07ms]
+(pass) CLI 诊断呈现 > 核心发现 JSON 诊断保留候选来源 [0.16ms]
+(pass) CLI 诊断呈现 > 人类模式展示项目测试统计、路径和结构化诊断 [0.44ms]
+(pass) CLI 诊断呈现 > 本地化 text 只影响终端文本，机器字段保持原样 [0.53ms]
+(pass) CLI 诊断呈现 > 测试统计标签随 CLI 语言切换 [0.06ms]
+(pass) CLI 诊断呈现 > 构建成功展示链接后产物的 Runtime 事实 [0.14ms]
+(pass) CLI 诊断呈现 > 原生构建如实标注优化由 clang 完成、Xiao Pass 是否注册 [0.18ms]
+(pass) CLI 诊断呈现 > verify 只展示 Rust 生成的发布报告字段 [0.17ms]
+
+src\environments\activation.test.ts:
+(pass) absolute 向量经当前平台 Shell 校验并清理文件 [4267.77ms]
+(pass) no-final-newline 向量经当前平台 Shell 校验并清理文件 [3556.02ms]
+(pass) third-line 向量经当前平台 Shell 校验并清理文件 [3765.18ms]
+(pass) relative 向量经当前平台 Shell 校验并清理文件 [3612.69ms]
+(pass) wrong-variable 向量经当前平台 Shell 校验并清理文件 [3697.20ms]
+(pass) embedded-newline 向量经当前平台 Shell 校验并清理文件 [3710.36ms]
+(pass) quote 向量经当前平台 Shell 校验并清理文件 [3625.39ms]
+(pass) control-character 向量经当前平台 Shell 校验并清理文件 [3790.64ms]
+(pass) extra-empty-line 向量经当前平台 Shell 校验并清理文件 [3874.61ms]
+(skip) zsh 在安装时复用白名单并可取消激活
+(skip) fish 在安装时复用白名单并可取消激活
+(skip) fish 激活切换后恢复用户原函数，未激活取消无副作用
+(pass) 失败命令也清理文件并保持 Shell 未激活 [4122.36ms]
+(pass) 前置全局选项能激活、取消激活，帮助请求不会更改环境 [15863.34ms]
+(pass) PowerShell 钩子失败时保留非零进程码，成功时不混入数字输出 [4289.92ms]
+(skip) 可选 MSYS Bash 在 Windows 同样按白名单激活和拒绝注入
+(pass) CLI 写入与 Shell 读取遵循相同白名单 [11.04ms]
+
+src\environments\index.test.ts:
+(pass) 项目环境边界 > 默认和显式目录遵循冻结规则 [0.27ms]
+(pass) 项目环境边界 > 提示符状态重复激活、切换和取消不叠加 [0.65ms]
+(pass) 项目环境边界 > 未激活时取消不改用户原有的美元符提示符 [0.07ms]
+(pass) 项目环境边界 > 前缀颜色遵守非 TTY、NO_COLOR、dumb 和 never 降级 [0.10ms]
+(pass) 项目环境边界 > Shell 钩子不改 profile，cmd 明确降级 [0.25ms]
+(pass) 项目环境边界 > 去除带 ANSI 的旧前缀不破坏原提示符 [0.27ms]
+
+src\environments\profile.test.ts:
+(pass) 安装显式备份、重复无叠加、移除只删标记块并保留原换行 [34.58ms]
+(pass) 默认目标按 Shell 规则选择，fish 缺少父目录明确失败且不创建 [20.74ms]
+(pass) 移除时保留标记块之后的用户配置且不将两段配置粘连 [25.71ms]
+(pass) 行内伪结束标记不能被当作完整块而误删用户配置 [6.45ms]
+(pass) 畸形标记、非绝对路径和无目标的 PowerShell 安装明确失败 [7.47ms]
+
+src\environments\shell-vectors.test.ts:
+(pass) bash 消费同一份两行白名单向量 [0.39ms]
+(pass) zsh 消费同一份两行白名单向量 [0.62ms]
+(pass) fish 消费同一份两行白名单向量 [0.03ms]
+(pass) powershell 消费同一份两行白名单向量 [0.06ms]
+
+src\platform\atomic-write.test.ts:
+(pass) 临时文件使用目标前缀，成功替换后不遗留文件 [13.11ms]
+(pass) 覆盖替换中途失败回滚旧文件并清理临时文件 [16.97ms]
+(pass) 新文件已到位后备份清理失败不再误报保存失败 [16.66ms]
+(pass) 替换和回滚都失败时指出原文件的备份位置 [14.67ms]
+
+src\platform\core.test.ts:
+(pass) xiao-core 平台接线 > 主机目标字段与平台文件格式一致 [0.20ms]
+(pass) xiao-core 平台接线 > 显式覆盖路径不存在时使用稳定诊断 [1.20ms]
+(pass) xiao-core 平台接线 > 生产同目录候选优先于 PATH 和开发回环 [2181.11ms]
+(pass) xiao-core 平台接线 > 没有仓库根时不把开发候选混入生产诊断 [7.14ms]
+(pass) xiao-core 平台接线 > 开发回环候选带有 development 来源标记 [1112.54ms]
+
+src\platform\file-association.test.ts:
+(pass) .xar 文件关联契约 > 三平台只生成设计，不执行安装副作用 [0.37ms]
+(pass) .xar 文件关联契约 > 双击契约不依赖 cwd，参数、IO 和退出码与命令行一致 [0.22ms]
+(pass) .xar 文件关联契约 > 未安装关联时的提示保持双语且不承诺自包含 Runtime [0.13ms]
+(pass) .xar 文件关联契约 > Linux 安装、检查、重复执行和移除都走用户目录且检查无副作用 [40.47ms]
+(pass) .xar 文件关联契约 > Windows 和 macOS 执行体使用可注入平台命令并保留卸载路径 [1138.63ms]
+
+src\platform\packaging.test.ts:
+(pass) CLI 独立打包目标 > 目标参数与 Rust 目标描述保持一致 [0.44ms]
+(pass) CLI 独立打包目标 > 默认目标、参数和非法目标保持稳定形状 [0.54ms]
+
+src\platform\toolchain.test.ts:
+(pass) 主机工具链发现 > 显式 clang 无效时不回退到 PATH 候选，并保留 override 来源 [12.45ms]
+(pass) 主机工具链发现 > 显式 clang 始终执行所选路径而不是工作目录中的同名文件 [109.76ms]
+(pass) 主机工具链发现 > 低于 llvm-toolchain.toml 门槛的 clang 稳定拒绝 [114.29ms]
+(pass) 主机工具链发现 > 版本报告的目标与请求目标冲突时在发现阶段拒绝 [111.66ms]
+(pass) 主机工具链发现 > debug 的显式诊断组件路径无效时不回退到 PATH [116.67ms]
+(pass) 主机工具链发现 > 真实链接探测失败时给出 LINK 诊断 [206.68ms]
+(pass) 主机工具链发现 > 通过编译/链接探测后返回工具链描述 [313.84ms]
+(pass) 主机工具链发现 > 版本主版本解析保持稳定 [0.28ms]
+(skip) 主机工具链发现 > 环境门控：使用真实 clang 完成目标探测
+
+src\protocol\client.test.ts:
+(pass) 协议客户端 > 核心发现期间取消不会启动进程 [0.72ms]
+(pass) 协议客户端 > 握手前取消不会发送尚未存在的运行请求 [5.13ms]
+(pass) 协议客户端 > 运行帧写入期间取消仍会发送取消帧 [2.49ms]
+(pass) 协议客户端 > 旧核心未声明 package 能力时不发送新请求 [2.38ms]
+(pass) 协议客户端 > 旧核心未声明 build_archive 时拒绝构建且不发送未知请求 [1.41ms]
+(pass) 协议客户端 > 旧核心缺少 arguments 时拒绝三种携带快照的运行请求 [4.39ms]
+(pass) 协议客户端 > 握手支持 arguments 时传输调用时的快照 [2.03ms]
+(pass) 协议客户端 > 旧核心只声明 package 而无 repl_packages 时关闭进程并降级为空视图 [1.49ms]
+(pass) 协议客户端 > 先握手，再按 request_id 取得运行结果并关闭核心 [1.27ms]
+(pass) 协议客户端 > keepAlive 会复用核心和单次握手，显式 shutdown 才关闭 [1.58ms]
+(pass) 协议客户端 > repl_packages 同一环境键只发送一次并允许并发调用共享结果 [1.94ms]
+(pass) 协议客户端 > repl_packages 返回错误后下次会重试而不复用旧诊断 [1.66ms]
+(pass) 协议客户端 > 同一客户端的多个调用按提交顺序串行发送 [1.37ms]
+(pass) 协议客户端 > 通信失败后可重新握手，旧核心的包视图缓存不会复用 [3.07ms]
+(pass) 协议客户端 > 关闭后不能悄悄重启核心 [0.35ms]
+(pass) 协议客户端 > debug 位和诊断配置按结构化字段传给 Rust 核心 [1.33ms]
+(pass) 协议客户端 > buildSource 使用真实源码并传递工具链、配置和输出路径 [1.74ms]
+(pass) 协议客户端 > testSources 按输入顺序批量传递源码和每用例期限 [2.09ms]
+(pass) 协议客户端 > environmentMetadata 传递项目布局、配置和工具链并返回元数据 [1.68ms]
+
+src\protocol\protocol.test.ts:
+(pass) X0-A 长度前缀协议 > 共享本地化运行夹具保留 locale 请求与可选 text 响应 [3.01ms]
+(pass) X0-A 长度前缀协议 > REPL 包视图请求和接口响应共用 Rust 夹具，且不复用包管理请求 [1.68ms]
+(pass) X0-A 长度前缀协议 > 包请求共享夹具保留目标环境和锁定开关 [0.96ms]
+(pass) X0-A 长度前缀协议 > 共享 hello fixture 可编码、解码并验证消息形状 [0.90ms]
+(pass) X0-A 长度前缀协议 > 共享 response fixture 可被解析，且前缀只计算 JSON 负载 [0.88ms]
+(pass) X0-A 长度前缀协议 > 截断长度字段与过大长度都返回稳定错误码 [0.38ms]
+(pass) X0-A 长度前缀协议 > debug 请求保留诊断等级和聚焦规则 [0.91ms]
+(pass) X0-A 长度前缀协议 > 项目测试请求保留发现顺序、每用例源码和超时 [0.92ms]
+(pass) X0-A 长度前缀协议 > 项目测试响应保留聚合退出码和逐用例结构化结果 [1.09ms]
+
+src\repl\commands.test.ts:
+(pass) !outLF! 独占行触发后从源码与行号映射剔除 [0.30ms]
+(pass) !save! 独占行触发后从源码与行号映射剔除 [0.08ms]
+(pass) !panel! 独占行触发后从源码与行号映射剔除 [0.02ms]
+(pass) !ovr! 复用控制分派表并只切换覆盖状态 [0.12ms]
+(pass) 普通源码、带空白的控制词不被识别；唯一控制行移除后保留空缓冲 [0.13ms]
+
+src\repl\confirm.test.ts:
+(pass) 确认标题嵌入分隔线，独立提示符和三行随宽度调整 [1.53ms]
+(pass) 8 列确认态共享规格与实际渲染一致 [0.16ms]
+(pass) 20 列确认态共享规格与实际渲染一致 [0.18ms]
+(pass) 40 列确认态共享规格与实际渲染一致 [0.33ms]
+(pass) 分隔线使用灰色，独立提示符使用 #DCDCAD，去色后布局不变 [0.80ms]
+(pass) 中文确认标题不改变三行宽度 [0.39ms]
+
+src\repl\editor.test.ts:
+(pass) 多行粘贴保留真实换行、缩进和字素位置 [0.80ms]
+(pass) Enter、行首退格与行尾 Delete 只改变真实换行 [0.66ms]
+(pass) 上下移动经过短行后记住目标列，按词操作基础分类明确 [0.93ms]
+(pass) Ctrl+W/K/U 更新唯一 kill 缓冲，Ctrl+Y 贴回最近内容 [0.37ms]
+(pass) 空缓冲 Ctrl+D 是 EOF，非空 Delete；Ctrl+C 清空而 Esc 无操作 [0.17ms]
+(pass) 99999 行上限对 Enter 和粘贴原子拒绝 [0.38ms]
+(pass) 覆盖模式替换当前字素，行尾追加且不吞掉真实换行 [0.33ms]
+(pass) Shift 方向键扩展选区，普通方向键折叠到对应端点 [0.29ms]
+(pass) 跨逻辑行选区可复制、剪切并用粘贴替换，kill 缓冲共用一份剪贴板 [0.33ms]
+(pass) Ctrl+Shift+A 全选，选区删除不改变剪贴板，editorSource 不带编辑状态 [0.18ms]
+
+src\repl\file.test.ts:
+(pass) 载入 CRLF、CR 和 LF 并保留缩进与尾换行 [7.56ms]
+(pass) 合法 UTF-8 BOM 可读，保存后按无 BOM 约定写出 [12.20ms]
+(pass) 非法 UTF-8 与破坏行结构的控制字节分属编码和换行诊断 [14.43ms]
+(pass) 当前只接受 .xiao；权限与路径错误分开报告 [1.22ms]
+(pass) 写出固定 UTF-8 无 BOM 和 LF，写前拒绝控制字符与非法 Unicode [10.04ms]
+
+src\repl\keys.test.ts:
+(pass) 传统 Enter 只能新建逻辑行，Kitty 回复本身不是输入 [1.04ms]
+(pass) 跨块 CSI、UTF-8、Esc 和退格不丢失也不拆坏字符 [0.50ms]
+(pass) 括号粘贴保留真实换行缩进，不把粘贴内容中的控制字节当编辑键 [0.23ms]
+(pass) 传统方向、Home/End、删除和 Alt 词操作稳定识别 [0.17ms]
+(pass) I1c 按键包含 Ins、Shift 选择、Ctrl 导航、Kitty 剪贴板和 SGR 鼠标 [0.25ms]
+
+src\repl\multiline.test.ts:
+(pass) raw mode 保留真实多行、剔除 !outLF!，Ctrl+C 恢复状态并返回新提示符码 [10.18ms]
+(pass) 空缓冲 Ctrl+D 结束多行会话并恢复 raw mode [3.46ms]
+(pass) 文件入口载入逻辑行并立即绑定，源码不含原始 CRLF [12.73ms]
+(pass) 未绑定保存剔除控制行，建立绑定后再次保存直接写回 [34.40ms]
+(pass) 首次保存到已有 .xiao 文件直接覆盖且不进入运行确认 [23.10ms]
+(pass) 未绑定缓冲区的 Kitty Ctrl+Shift+S 进入路径保存 [20.85ms]
+(pass) 同一输入块不能绕过保存界面，q 和 Esc 无损取消 [101.31ms]
+(pass) !panel! 剔除控制行，面板输入与回车不进入源码 [87.09ms]
+(pass) 同一输入块里的面板键不能在界面出现前立刻关闭面板 [31.18ms]
+(pass) Kitty 面板键可开关，关闭后保留文件绑定和编辑位置 [35.52ms]
+(pass) 临时 raw 面板从独立入口打开，Esc 结束后恢复终端 [76.01ms]
+(pass) 已载入文件用 Kitty 保存键直接写回，不进入路径界面 [37.27ms]
+(pass) 运行完整缓冲区后仍保留文件绑定并可直接保存 [60.70ms]
+(pass) 已绑定保存失败保留原文件、绑定与缓冲区并显示路径和原因 [34.70ms]
+(pass) 一行高终端的保存失败不生成越界光标坐标 [32.85ms]
+(pass) 首次保存失败仍未绑定，保留路径输入供修复后重试 [23.88ms]
+(pass) raw mode 启动失败时仍尝试恢复终端 [3.75ms]
+(pass) Ctrl+D 完成后排队的数据不会污染已结束的编辑状态 [3.57ms]
+(pass) 括号粘贴中以换行结束的控制行按 Enter 语义剔除 [8.35ms]
+(pass) 确认态忽略源码字符，Esc 无损取消且不执行 [82.01ms]
+(pass) 同一输入块中的第二个 Enter 不得绕过可见确认态 [9.27ms]
+(pass) 确认后调用完整源码并恢复覆盖模式、剪贴板和光标 [29.65ms]
+(pass) 执行期 SIGINT 只取消本次运行，缓冲区和光标可继续编辑 [14.31ms]
+(pass) 确认态尺寸变化重画标题，输出期间不重排历史内容 [32.16ms]
+(pass) 核心执行失败仍结束输出段并保留编辑状态 [21.11ms]
+(pass) SGR 鼠标点击和拖动建立选区，滚轮忽略且退出关闭鼠标上报 [11.62ms]
+(pass) 未确认 Kitty 能力时 Shift+Enter 不进入运行分派 [4.29ms]
+(pass) Kitty 所有按键确认后 Shift+Enter 进入确认态 [8.21ms]
+(pass) --inLF 通过 CLI 入口进入 raw mode，而不是走旧的占位诊断 [4.11ms]
+(pass) --inLF 的 Ctrl+C 回到单行会话，EOF 再结束 [7.82ms]
+
+src\repl\output.test.ts:
+(pass) 输出段只追加分隔线、长输出和摘要，完全不清屏 [1.02ms]
+(pass) raw mode 输出统一 CRLF，旧核心缺失内存字段不伪报为零 [0.16ms]
+
+src\repl\panel.test.ts:
+(pass) 中文面板标题仍使用固定控制词 [0.26ms]
+(pass) 面板键入仅改变临时状态，Enter 无动作，Esc 与快捷键关闭 [0.26ms]
+(pass) 面板标题和两条分隔线自适应，并复用确认态配色 [0.80ms]
+(pass) 8 列空面板与共享规格一致 [0.22ms]
+(pass) 20 列空面板与共享规格一致 [0.13ms]
+(pass) 40 列空面板与共享规格一致 [0.08ms]
+(pass) 长输入只在面板内水平滚动，极矮终端不写越界行 [0.69ms]
+(pass) 大段粘贴不使用参数展开且只渲染光标附近的输入 [217.05ms]
+(pass) 中文输入的中间光标保持字素与显示列对齐 [0.45ms]
+(pass) 组合字符插入后光标仍在字素边界，退格可删除整体 [0.33ms]
+
+src\repl\render.test.ts:
+(pass) empty 行号与软换行只影响画面 [0.25ms]
+(pass) exact-width 行号与软换行只影响画面 [0.05ms]
+(pass) soft-wrap 行号与软换行只影响画面 [0.11ms]
+(pass) double-width 行号与软换行只影响画面 [0.07ms]
+(pass) combining 行号与软换行只影响画面 [0.02ms]
+(pass) 双宽字符恰满一行不生成空续行，光标与视口保持有效 [0.16ms]
+(pass) 灰色分隔符真彩色、256/16 色回退和四种无色条件都不改变布局 [0.39ms]
+(pass) 物理行来源可把中文点击映射到字素边界，双宽字符后半格归前 [0.26ms]
+(pass) 选区绘制只增加背景色，不改变去色后的源码布局 [0.34ms]
+
+src\repl\save.test.ts:
+(pass) 保存路径支持字素编辑、粘贴与 q/ESC 取消 [0.28ms]
+(pass) 保存标题、独立提示符和水平滚动路径适配窄终端 [0.46ms]
+(pass) 中文保存标题及校验错误走同一语言 [0.16ms]
+(pass) 8 列保存态共享规格与实际渲染一致 [0.13ms]
+(pass) 20 列保存态共享规格与实际渲染一致 [0.19ms]
+(pass) 40 列保存态共享规格与实际渲染一致 [0.21ms]
+(pass) 保存提示符复用确认态配色，错误不超过终端高度 [2.44ms]
+(pass) 大段路径粘贴不会因参数展开溢出，输入窗口保持有界 [215.22ms]
+(pass) 保存路径的组合字符插入后可按一个字素退格 [0.32ms]
+
+src\repl\session.test.ts:
+(pass) 独占 !inLF! 不交给核心，raw mode 结束后不重复版权行并可继续单行 [22.93ms]
+(pass) !inLF! 后空缓冲 Ctrl+D 结束整个会话，不重新进入单行 [7.60ms]
+(pass) 单行 !panel! 临时接管 raw mode，Esc 后回单行且不执行控制词 [82.73ms]
+(pass) 单行面板识别 Kitty 面板键关闭后回到 readline [80.20ms]
+(pass) 单行临时面板遇到 EOF 直接退出并恢复 raw mode [8.54ms]
+(pass) 传统 Ctrl+P 不被猜成单行面板入口 [8.03ms]
+(pass) 非 raw 输入的单行 !panel! 给出稳定终端诊断，不发给核心 [5.29ms]
+
+src\ui\git.test.ts:
+(pass) 分支计数由单次 porcelain v2 查询得到，且每次提示符可重新探测 [0.80ms]
+(pass) 无上游分支不捏造 +0/-0 计数 [0.07ms]
+(pass) 冷进程首次探测及时返回真实无上游分支 [1286.60ms]
+(pass) Git 缺失、非仓库和超时都保留可查询诊断，且超时不等待任务结束 [12.37ms]
+
+src\ui\prompt.test.ts:
+(pass) 版权与版本固定为两行 [0.07ms]
+(pass) windows 路径、环境名与 [X> 排列一致 [0.11ms]
+(pass) linux 路径、环境名与 [X> 排列一致 [0.02ms]
+(pass) macos 路径、环境名与 [X> 排列一致 [0.05ms]
+(pass) 无上游只显示分支，有上游才显示领先落后 [0.11ms]
+(pass) 非 TTY、NO_COLOR、dumb 与 never 必须完全不输出 ANSI [0.16ms]
+(pass) 显式 always 在非 TTY 下仍保留提示符颜色 [0.08ms]
+(pass) 真彩色与 256/16 色回退保持文本相同，分支颜色按规范区分 [0.24ms]
+
+src\ui\terminal.test.ts:
+(pass) 两步查询仅在确认 bit8 后开启 Shift+Enter [0.18ms]
+(pass) 查询或确认超时均禁用组合键并恢复推入的终端状态 [0.22ms]
+(pass) 鼠标上报开关使用 SGR 并按相反顺序恢复 [0.04ms]
+
+src\ui\ui.test.ts:
+(pass) CLI 呈现层 > 中文和 emoji 使用显示列宽而不是 UTF-16 长度 [0.29ms]
+(pass) CLI 呈现层 > 默认非 TTY 和 NO_COLOR 不输出 ANSI，always 可显式覆盖 [0.27ms]
+
+5 tests skipped:
+(skip) zsh 在安装时复用白名单并可取消激活
+(skip) fish 在安装时复用白名单并可取消激活
+(skip) fish 激活切换后恢复用户原函数，未激活取消无副作用
+(skip) 可选 MSYS Bash 在 Windows 同样按白名单激活和拒绝注入
+(skip) 主机工具链发现 > 环境门控：使用真实 clang 完成目标探测
+
+ 258 pass
+ 5 skip
+ 0 fail
+ 1203 expect() calls
+Ran 263 tests across 36 files. [67.68s]
+结束 2026-11-27T10:23:13.5644077+00:00
+退出码 0

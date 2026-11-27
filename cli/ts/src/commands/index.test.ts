@@ -59,7 +59,7 @@ class EnvironmentFakeCore extends EventEmitter {
     if (request.type === "hello") {
       this.stdout.write(Buffer.from(encodeFrame({
         type: "hello", request_id: request.request_id, accepted: true, protocol_version: 1,
-       core_version: 1, versions: {}, capabilities: ["run", "arguments", "environment", "package", "build_archive"], error: null,
+        core_version: 1, versions: {}, capabilities: ["run", "run_xiaoc", "run_archive", "arguments", "environment", "package", "build_archive"], error: null,
       })));
     } else if (request.type === "environment") {
       const logicalName = typeof request.logical_name === "string" ? request.logical_name : "venv";
@@ -92,9 +92,9 @@ class EnvironmentFakeCore extends EventEmitter {
         exit_name: "success", diagnostics: [], report: null, events: [], metrics: null, artifact: null,
         value: { kind: "archive_build", value: JSON.stringify({ output: request.output, digest: "test-digest", verified: true, modules: [] }) },
       })));
-    } else if (request.type === "run") {
+    } else if (request.type === "run" || request.type === "run_xiaoc" || request.type === "run_archive") {
       this.stdout.write(Buffer.from(encodeFrame({
-        type: "result", request_id: request.request_id, operation: "run", exit_code: 0,
+        type: "result", request_id: request.request_id, operation: request.type, exit_code: 0,
         exit_name: "success", diagnostics: [], report: null, events: [], metrics: null, value: null, artifact: null,
       })));
     } else if (request.type === "shutdown") {
@@ -127,6 +127,39 @@ function environmentContext() {
     spawnProcess: () => fake as never,
   };
 }
+
+test("三种运行请求只在显式授权时发送位 7，并保留应用参数", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "xiao-cli-allow-environment-"));
+  try {
+    await writeFile(join(directory, "main.xiao"), "print(1)\n");
+    for (const { launch, file, type } of [
+      { launch: ["run", "main.xiao"], file: "main.xiao", type: "run" },
+      { launch: ["run", "main.xiaoc"], file: "main.xiaoc", type: "run_xiaoc" },
+      { launch: ["run", "-xar", "main.xar"], file: "main.xar", type: "run_archive" },
+    ]) {
+      for (const authorized of [false, true]) {
+        const context = environmentContext();
+        const argv = ["--allow-environment", "two words"];
+        const flags = authorized ? ["--allow-environment"] : [];
+        const command = parseArguments([...launch, ...flags, "--", ...argv]);
+        const result = await executeCommand(command, {
+          ...context, cwd: directory, env: { ...process.env, XIAO_HOME: join(directory, "home") },
+        });
+        expect(result.exitCode).toBe(0);
+        const request = context.fake.requests.find((value) => value.type === type);
+        expect(request?.options).toMatchObject({ arguments: { program_name: file, argv } });
+        expect(request?.options).not.toHaveProperty("environment");
+        if (authorized) {
+          expect(request?.options).toHaveProperty("capabilities", 0xff);
+        } else {
+          expect(request?.options).not.toHaveProperty("capabilities");
+        }
+      }
+    }
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
 
 describe("命令取消接线", () => {
   test("build -xar 复用输入路由，只发送归档请求并绕过 LLVM 发现", async () => {

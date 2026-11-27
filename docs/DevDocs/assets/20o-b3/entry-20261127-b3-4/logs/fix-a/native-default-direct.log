@@ -1,0 +1,8 @@
+命令 cmd /d /c core\rust\target\fix-a-native\marker-probe-default.exe --__xiao-run-environment-stdin tail < NUL
+开始 2026-11-27T10:25:02.2741964+00:00
+xiao-error class=recoverable code=X06-RUNTIME-026 message_id=runtime.capability_unavailable params={} span=38..54 exit_code=3
+error [X06-RUNTIME-026]: 当前能力上下文不允许此外部操作
+at bytes 38..54
+at stdlib.env::get (User)
+结束 2026-11-27T10:25:03.5247904+00:00
+退出码 3

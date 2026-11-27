@@ -4,6 +4,8 @@ import { cliMessage } from "../i18n.ts";
 import type { SupportedLocale } from "../config/locale.ts";
 import { parseOptimizationLevel, type OptimizationLevel } from "../config/optimization.ts";
 
+const ALLOW_ENVIRONMENT = "--allow-environment";
+
 /** 全局 CLI 选项。 */
 export interface GlobalCliOptions {
   /** 颜色模式。 */
@@ -25,14 +27,14 @@ export type ShellName = "bash" | "zsh" | "fish" | "powershell" | "cmd";
 export type ParsedCommand =
   | { kind: "help"; options: GlobalCliOptions }
   | { kind: "version"; options: GlobalCliOptions }
-  | { kind: "run"; file: string; applicationArguments?: readonly string[]; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
-  | { kind: "xar"; file: string; applicationArguments?: readonly string[]; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
+  | { kind: "run"; file: string; applicationArguments?: readonly string[]; allowEnvironment: boolean; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
+  | { kind: "xar"; file: string; applicationArguments?: readonly string[]; allowEnvironment: boolean; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
   | { kind: "config"; key: string; value: string; global: boolean; options: GlobalCliOptions }
   | { kind: "verify"; file: string; detail: boolean; options: GlobalCliOptions }
   | { kind: "cache"; action: "list" | "verify" | "rebuild" | "clean"; apply: boolean; projectPath?: string; archivePaths: string[]; references: string[]; options: GlobalCliOptions }
   | { kind: "association"; action: "install" | "check" | "uninstall"; platform?: "win32" | "linux" | "darwin"; executable?: string; options: GlobalCliOptions }
   | { kind: "test"; project?: string; timeoutMs?: number; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
-  | { kind: "build"; file: string; output: string; llvmIrOutput: string | null; xar: boolean; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; args: readonly string[]; options: GlobalCliOptions }
+  | { kind: "build"; file: string; output: string; llvmIrOutput: string | null; xar: boolean; allowEnvironment: boolean; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; args: readonly string[]; options: GlobalCliOptions }
   | { kind: "venv"; name?: string; options: GlobalCliOptions }
   | { kind: "sync"; keepExtra: boolean; locked: boolean; frozen: boolean; options: GlobalCliOptions }
   | { kind: "install"; project?: string; options: GlobalCliOptions }
@@ -135,6 +137,7 @@ function parseCommand(argv: readonly string[]): ParsedCommand {
   if (command.endsWith(".xiao")) {
     let optimizationLevel: OptimizationLevel = 0;
     let optimizationExplicit = false;
+    const allowEnvironment = rest.includes(ALLOW_ENVIRONMENT);
     let archive = false;
     for (const argument of rest) {
       if (argument === "-xar") {
@@ -143,13 +146,13 @@ function parseCommand(argv: readonly string[]): ParsedCommand {
       } else if (argument.startsWith("-O")) {
         optimizationLevel = parseOptimizationLevel(argument);
         optimizationExplicit = true;
-      } else {
-        throw new CliArgumentError("源码快捷运行只接受一个 .xiao 文件和可选优化级别");
+      } else if (argument !== ALLOW_ENVIRONMENT) {
+        throw new CliArgumentError("源码快捷运行接受一个 .xiao 文件、优化级别和 --allow-environment");
       }
     }
     return archive
-      ? { kind: "xar", file: command, optimizationLevel, optimizationExplicit, options }
-      : { kind: "run", file: command, optimizationLevel, optimizationExplicit, options };
+      ? { kind: "xar", file: command, allowEnvironment, optimizationLevel, optimizationExplicit, options }
+      : { kind: "run", file: command, allowEnvironment, optimizationLevel, optimizationExplicit, options };
   }
   if (command.startsWith("-")) throw new CliArgumentError(`未知选项：${command}`);
   throw new CliArgumentError(`未知命令：${command}`);
@@ -160,7 +163,7 @@ function parseArchive(args: readonly string[], options: GlobalCliOptions): Parse
   let optimizationLevel: OptimizationLevel = 0;
   let optimizationExplicit = false;
   const values = args.filter((argument) => {
-    if (argument === "-xar" || argument === "run") return false;
+    if (argument === "-xar" || argument === "run" || argument === ALLOW_ENVIRONMENT) return false;
     if (argument.startsWith("-O")) {
       optimizationLevel = parseOptimizationLevel(argument);
       optimizationExplicit = true;
@@ -174,7 +177,7 @@ function parseArchive(args: readonly string[], options: GlobalCliOptions): Parse
   if (!values[0].toLowerCase().endsWith(".xar")) {
     throw new CliArgumentError("-xar 的输入必须是 .xar 归档");
   }
-  return { kind: "xar", file: values[0], optimizationLevel, optimizationExplicit, options };
+  return { kind: "xar", file: values[0], allowEnvironment: args.includes(ALLOW_ENVIRONMENT), optimizationLevel, optimizationExplicit, options };
 }
 
 /** 返回稳定帮助文本。 */
@@ -297,6 +300,7 @@ function parseRun(args: readonly string[], options: GlobalCliOptions): ParsedCom
   let optimizationLevel: OptimizationLevel = 0;
   let optimizationExplicit = false;
   const positional = args.filter((argument) => {
+    if (argument === ALLOW_ENVIRONMENT) return false;
     if (argument.startsWith("-O")) {
       optimizationLevel = parseOptimizationLevel(argument);
       optimizationExplicit = true;
@@ -309,7 +313,7 @@ function parseRun(args: readonly string[], options: GlobalCliOptions): ParsedCom
   if (!lower.endsWith(".xiao") && !lower.endsWith(".xiaoc")) {
     throw new CliArgumentError("run 的输入必须是 .xiao 或 .xiaoc 文件");
   }
-  return { kind: "run", file: positional[0], optimizationLevel, optimizationExplicit, options };
+  return { kind: "run", file: positional[0], allowEnvironment: args.includes(ALLOW_ENVIRONMENT), optimizationLevel, optimizationExplicit, options };
 }
 
 /** 解析已经冻结的原生/归档构建参数。 */
@@ -317,11 +321,16 @@ function parseBuild(args: readonly string[], options: GlobalCliOptions): ParsedC
   let output: string | undefined;
   let llvmIrOutput: string | null = null;
   let xar = false;
+  let allowEnvironment = false;
   let optimizationLevel: OptimizationLevel = 0;
   let optimizationExplicit = false;
   const positional: string[] = [];
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
+    if (argument === ALLOW_ENVIRONMENT) {
+      allowEnvironment = true;
+      continue;
+    }
     if (argument === "-xar") {
       if (xar) throw new CliArgumentError("-xar 不可重复");
       xar = true;
@@ -365,6 +374,7 @@ function parseBuild(args: readonly string[], options: GlobalCliOptions): ParsedC
   const file = positional[0];
   if (!file.toLowerCase().endsWith(".xiao")) throw new CliArgumentError("build 的输入必须是 .xiao 文件");
   if (xar && llvmIrOutput !== null) throw new CliArgumentError("build -xar 不支持 --emit-llvm");
+  if (xar && allowEnvironment) throw new CliArgumentError("归档的 --allow-environment 应用于 xiao run -xar");
   const stem = file.replaceAll("\\", "/").slice(file.replaceAll("\\", "/").lastIndexOf("/") + 1).replace(/\.xiao$/iu, "") || "main";
   const defaultName = process.platform === "win32" ? `${stem}.exe` : stem;
   return {
@@ -373,6 +383,7 @@ function parseBuild(args: readonly string[], options: GlobalCliOptions): ParsedC
     output: output ?? (xar ? file.replace(/\.xiao$/iu, ".xar") : `build/${defaultName}`),
     llvmIrOutput,
     xar,
+    allowEnvironment,
     optimizationLevel,
     optimizationExplicit,
     args,

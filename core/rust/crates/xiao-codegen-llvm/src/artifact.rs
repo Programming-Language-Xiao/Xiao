@@ -393,7 +393,7 @@ pub(crate) fn verify_artifact_with_link_evidence(
         ));
     }
     if verification == ArtifactVerification::Complete {
-        if evidence.is_some() && !unclassified_symbols.is_empty() {
+        if inspection.object_format == ObjectFormat::Coff && !unclassified_symbols.is_empty() {
             return Err(artifact_error(
                 path,
                 format!(
@@ -1755,11 +1755,12 @@ mod tests {
     use std::path::Path;
 
     use super::{
-        ArtifactAcceptanceMode, ArtifactRuntimeComposition, ArtifactVerification,
+        ArtifactAcceptanceMode, ArtifactRuntimeComposition, ArtifactVerification, CoffLinkEvidence,
         SymbolTableComparison, SymbolTableReport, SymbolTableStatus, byte_at,
         compare_symbol_table_reports, components_for_symbols, inspect_symbol_table,
         normalize_symbol, parse_artifact, reachable_runtime_components,
         unclassified_runtime_symbols, verify_artifact, verify_artifact_mode,
+        verify_artifact_with_link_evidence,
     };
     use crate::{ObjectFormat, TargetDescription};
 
@@ -1971,7 +1972,7 @@ entry:
     /// 解析受控 PE/COFF 夹具中的 Runtime 符号。
     #[test]
     fn parses_controlled_pe_coff_symbols() {
-        let bytes = pe_fixture("xiao_runtime_value_int");
+        let bytes = pe_fixture(&["xiao_runtime_value_int"]);
         let inspection = parse_artifact(
             Path::new("pe-fixture"),
             &bytes,
@@ -1980,6 +1981,71 @@ entry:
         .expect("PE/COFF 夹具应通过");
         assert_eq!(inspection.object_format, ObjectFormat::Coff);
         assert!(inspection.has_symbol("xiao_runtime_value_int"));
+    }
+
+    #[test]
+    fn readable_coff_rejects_unclassified_runtime_symbol() {
+        let unknown = "xiao_runtime_future_feature";
+        let bytes = pe_fixture(&["xiao_runtime_env_get", unknown]);
+        let target = TargetDescription::windows_x86_64();
+        let inspection = parse_artifact(Path::new("pe-readable"), &bytes, &target).unwrap();
+        assert!(inspection.symbol_table_readable);
+        assert_eq!(components_for_symbols(&inspection.symbols), ["env"]);
+
+        let error = verify_fixture("pe-unclassified", &bytes, &target, &["env"], false)
+            .expect_err("可读 COFF 符号表中的未分类 Runtime 符号必须被拒绝");
+        assert!(
+            error
+                .to_string()
+                .contains(&format!("未分类的 Runtime 符号：{unknown}"))
+        );
+    }
+
+    #[test]
+    fn bound_coff_map_rejects_unclassified_runtime_symbol() {
+        let unknown = "xiao_runtime_future_feature";
+        let target = TargetDescription::windows_x86_64();
+        let mut bytes = pe_fixture(&[]);
+        put_u16(&mut bytes, 0x46, 1);
+        put_u64(&mut bytes, 0x70, 0x1_4000_0000);
+        put_u32(&mut bytes, 0x148 + 8, 0x100);
+        put_u32(&mut bytes, 0x148 + 12, 0x1000);
+        let inspection = parse_artifact(Path::new("pe-stripped"), &bytes, &target).unwrap();
+        assert!(!inspection.symbol_table_readable);
+
+        let path =
+            std::env::temp_dir().join(format!("xiao-artifact-map-{}.exe", std::process::id()));
+        let map = path.with_extension("map");
+        std::fs::write(&path, bytes).unwrap();
+        std::fs::write(
+            &map,
+            format!(
+                "Timestamp is 0\n\
+                     Preferred load address is 0000000140000000\n\
+                     Address Publics by Value Rva+Base\n\
+                     0001:00000000 xiao_runtime_env_get 0000000140001000\n\
+                     0001:00000010 {unknown} 0000000140001010\n\
+                     entry point at 0001:00000000\n"
+            ),
+        )
+        .unwrap();
+        let evidence = CoffLinkEvidence::read(&path, &map, &map).unwrap();
+        assert_eq!(components_for_symbols(&evidence.symbols), ["env"]);
+        let result = verify_artifact_with_link_evidence(
+            &path,
+            &target,
+            &["env".to_owned()],
+            false,
+            Some(&evidence),
+        );
+        let _ = std::fs::remove_file(&path);
+        let _ = std::fs::remove_file(&map);
+        let error = result.expect_err("绑定 map 中的未分类 Runtime 符号必须被拒绝");
+        assert!(
+            error
+                .to_string()
+                .contains(&format!("未分类的 Runtime 符号：{unknown}"))
+        );
     }
 
     /// 拒绝纯静态产物中意外出现 Runtime 符号。
@@ -2038,7 +2104,7 @@ entry:
             ),
             (
                 "pe",
-                pe_fixture("xiao_runtime_array_new"),
+                pe_fixture(&["xiao_runtime_array_new"]),
                 TargetDescription::windows_x86_64(),
             ),
         ];
@@ -2141,13 +2207,13 @@ entry:
         let target = TargetDescription::windows_x86_64();
         let readable = inspect_fixture_symbol_table(
             "pe-readable-symbols",
-            &pe_fixture("xiao_runtime_value_int"),
+            &pe_fixture(&["xiao_runtime_value_int"]),
             &target,
         )
         .expect("带 COFF 表的 PE 应可读");
         assert_eq!(readable.status, SymbolTableStatus::Readable);
 
-        let mut stripped = pe_fixture("xiao_runtime_value_int");
+        let mut stripped = pe_fixture(&["xiao_runtime_value_int"]);
         put_u32(&mut stripped, 0x4c, 0);
         put_u32(&mut stripped, 0x50, 0);
         let unavailable = inspect_fixture_symbol_table("pe-no-coff-symbols", &stripped, &target)
@@ -2377,25 +2443,38 @@ entry:
         bytes
     }
 
-    /// 构造包含一个符号的最小 PE/COFF 夹具。
-    fn pe_fixture(symbol: &str) -> Vec<u8> {
-        let strings = format!("\0\0\0\0{symbol}\0").into_bytes();
+    /// 构造带给定符号表的最小 PE/COFF 夹具。
+    fn pe_fixture(symbols: &[&str]) -> Vec<u8> {
         let optional_offset = 0x58;
-        let symbol_offset = optional_offset + 0xf0;
-        let string_offset = symbol_offset + 18;
-        let mut bytes = vec![0_u8; 0x240];
+        let optional_size = 0xf0;
+        let symbol_offset = optional_offset + optional_size;
+        let string_offset = symbol_offset + symbols.len() * 18;
+        let mut bytes = vec![0_u8; 0x240.max(string_offset + 4)];
         bytes[..2].copy_from_slice(b"MZ");
         put_u32(&mut bytes, 0x3c, 0x40);
         bytes[0x40..0x44].copy_from_slice(b"PE\0\0");
         put_u16(&mut bytes, 0x44, 0x8664);
-        put_u32(&mut bytes, 0x4c, symbol_offset as u32);
-        put_u32(&mut bytes, 0x50, 1);
-        put_u16(&mut bytes, 0x54, 0xf0);
+        put_u16(&mut bytes, 0x54, optional_size as u16);
         put_u16(&mut bytes, optional_offset, 0x20b);
         put_u32(&mut bytes, optional_offset + 108, 0);
-        put_u32(&mut bytes, symbol_offset + 4, 4);
-        put_u32(&mut bytes, string_offset, strings.len() as u32);
-        bytes[string_offset + 4..string_offset + strings.len()].copy_from_slice(&strings[4..]);
+        if !symbols.is_empty() {
+            put_u32(&mut bytes, 0x4c, symbol_offset as u32);
+            put_u32(&mut bytes, 0x50, symbols.len() as u32);
+            let mut strings = vec![0; 4];
+            for (index, symbol) in symbols.iter().enumerate() {
+                put_u32(
+                    &mut bytes,
+                    symbol_offset + index * 18 + 4,
+                    strings.len() as u32,
+                );
+                strings.extend_from_slice(symbol.as_bytes());
+                strings.push(0);
+            }
+            let string_size = strings.len();
+            put_u32(&mut strings, 0, string_size as u32);
+            bytes.resize(bytes.len().max(string_offset + string_size), 0);
+            bytes[string_offset..string_offset + string_size].copy_from_slice(&strings);
+        }
         bytes
     }
 

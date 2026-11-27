@@ -12,7 +12,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use xiao_artifacts::{
     ArchiveEntry, ArchiveIndex, ArtifactStore, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR, ObjectKind,
 };
-use xiao_intrinsics::CAPABILITY_ENVIRONMENT;
+use xiao_intrinsics::{CAPABILITY_ENVIRONMENT, DEFAULT_CAPABILITY_MASK};
 use xiao_runtime::{
     RuntimeValue, StringHandle,
     environment::{EnvironmentSnapshot, Operation},
@@ -1179,6 +1179,7 @@ fn build_request_round_trips_toolchain_and_config_fields() {
             debug: true,
             diagnostics: None,
         },
+        capabilities: DEFAULT_CAPABILITY_MASK | CAPABILITY_ENVIRONMENT,
         source: SourceIdentity {
             module: "main".to_owned(),
             path: Some("main.xiao".to_owned()),
@@ -1210,6 +1211,7 @@ fn build_request_round_trips_toolchain_and_config_fields() {
     let mut legacy = serde_json::to_value(&request).expect("编码旧 build 形状");
     let object = legacy.as_object_mut().expect("build 请求对象");
     object.remove("config_text");
+    object.remove("capabilities");
     let toolchain = object
         .get_mut("toolchain")
         .and_then(Value::as_object_mut)
@@ -1225,6 +1227,7 @@ fn build_request_round_trips_toolchain_and_config_fields() {
     let ProtocolRequest::Build {
         toolchain,
         config_text,
+        capabilities,
         ..
     } = legacy
     else {
@@ -1234,6 +1237,7 @@ fn build_request_round_trips_toolchain_and_config_fields() {
     assert_eq!(toolchain.diagnostics_path, None);
     assert_eq!(toolchain.versions.rustc, None);
     assert_eq!(config_text, None);
+    assert_eq!(capabilities, DEFAULT_CAPABILITY_MASK);
 }
 
 #[test]
@@ -1253,6 +1257,7 @@ fn build_rejects_unknown_target_before_toolchain() {
             object_format: "elf".to_owned(),
         },
         optimization: OptimizationConfig::default(),
+        capabilities: DEFAULT_CAPABILITY_MASK,
         source: SourceIdentity {
             module: "main".to_owned(),
             path: Some("main.xiao".to_owned()),
@@ -1423,6 +1428,7 @@ fn debug_build_requires_diagnostics_path() {
             debug: true,
             diagnostics: None,
         },
+        capabilities: DEFAULT_CAPABILITY_MASK,
         source: SourceIdentity {
             module: "main".to_owned(),
             path: None,

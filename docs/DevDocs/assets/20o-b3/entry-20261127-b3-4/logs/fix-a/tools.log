@@ -1,0 +1,11 @@
+命令 rustc +1.96.0 -Vv
+开始 2026-11-27T10:20:18.1010070+00:00
+rustc 1.96.0 (ac68faa20 2026-05-25)
+binary: rustc
+commit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96
+commit-date: 2026-05-25
+host: x86_64-pc-windows-msvc
+release: 1.96.0
+LLVM version: 22.1.2
+结束 2026-11-27T10:20:18.3786465+00:00
+退出码 0

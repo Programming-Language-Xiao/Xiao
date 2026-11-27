@@ -1,0 +1,7 @@
+from std.env import get
+from std.args import argv
+for value in get("XIAO_FIX_A_SAMPLE")
+    print(value)
+for value in argv()
+    print(value)
+SHA-256 9BED1C62BDA594BA7332D31D2D6BAA28EC717E84C37137A001BA09BE4D258774

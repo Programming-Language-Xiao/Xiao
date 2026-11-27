@@ -1,8 +1,7 @@
 use std::collections::BTreeMap;
 use std::fs;
-use std::io::Write;
-use std::path::{Path, PathBuf};
-use std::process::{Command, Output, Stdio};
+use std::path::Path;
+use std::process::{Command, Output};
 
 use xiao_codegen_llvm::{
     ArtifactVerification, CODEGEN_VERSION, CodegenOptions, NativeArtifact, NativeRuntimeSupport,
@@ -11,24 +10,17 @@ use xiao_codegen_llvm::{
 use xiao_driver::{
     FrontendNativeDriver, FrontendRequest, NativeBuildRequest, ProtocolResponse, dispatch,
 };
+use xiao_intrinsics::CAPABILITY_PROCESS;
+use xiao_runtime_abi::{NATIVE_ENVIRONMENT_NONCE_ENV, NATIVE_ENVIRONMENT_STDIN_PREFIX};
 
+use super::native_artifact::{record, run_injected, toolchain};
 use super::{
     CANCEL, DROP_ENV, ENV, GOLDEN, LOOKUP, NAME, READ_WRITE, STDOUT, options, request, stdout,
     test_dir,
 };
 
-fn toolchain(target: &TargetDescription) -> Toolchain {
-    let required = |name: &str| PathBuf::from(std::env::var_os(name).expect(name));
-    assert_eq!(std::env::var("XIAO_TARGET_TRIPLE").unwrap(), target.triple);
-    Toolchain::new(required("XIAO_CLANG"))
-        .with_llvm_as(required("XIAO_LLVM_AS"))
-        .with_llc(required("XIAO_LLC"))
-        .with_runtime_library(required("XIAO_RUNTIME_LIBRARY"))
-        .probe_native_static_libraries("rustc", target)
-        .unwrap()
-        .probe_versions()
-        .unwrap()
-}
+const LEGACY_MARKER: &str = "--__xiao-run-environment-stdin";
+const PRINT_ARGV: &str = "from std.args import argv\nfor value in argv()\n    print(value)\n";
 
 fn build_request(
     root: &Path,
@@ -78,15 +70,7 @@ fn run_artifact(
     #[cfg(windows)]
     command.env("=C:", r"C:\work");
     let output = if let Some(bytes) = injected {
-        let mut child = command
-            .arg(xiao_runtime_abi::NATIVE_ENVIRONMENT_STDIN)
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .unwrap();
-        child.stdin.take().unwrap().write_all(bytes).unwrap();
-        child.wait_with_output().unwrap()
+        run_injected(&mut command, bytes)
     } else {
         command.output().unwrap()
     };
@@ -221,6 +205,9 @@ fn native_env_o0_o3_matches_vm_and_owns_outputs() {
             let build = build_request(&root, &case, source, &target, &tools, optimization, mask);
             let result = driver.build(&build).unwrap();
             let output = run_artifact(&result.native, &case, true, mask == STDOUT, None);
+            if label == "denied" {
+                record(&case, source, &build, &result.native, &output);
+            }
             assert_eq!(
                 output.status.code(),
                 Some(i32::from(exit_code)),
@@ -270,18 +257,6 @@ fn native_env_entry_resolves_host_and_explicit_inputs() {
             .contains("X09-DRIVER-007")
     );
 
-    let mask = ENV | STDOUT | xiao_intrinsics::CAPABILITY_PROCESS;
-    let managed =
-        format!("{LOOKUP}from std.args import argv\nfor value in argv()\n    print(value)\n");
-    let build = build_request(&root, "managed", &managed, &target, &tools, 0, mask);
-    let input = options(Some(vec![(NAME.into(), "managed-native".into())]), mask);
-    let output = driver
-        .run_application(&build, &input, ["application-argument"])
-        .unwrap();
-    assert_eq!(output.status, Some(0), "{output:?}");
-    assert_eq!(output.stdout, "managed-native\napplication-argument\n");
-    assert!(output.stderr.is_empty());
-
     let build = build_request(&root, "static", "result = 1\n", &target, &tools, 0, ENV);
     let artifact = driver.build(&build).unwrap().native;
     assert!(artifact.module.text.starts_with("; Xiao N0-A LLVM module"));
@@ -301,6 +276,61 @@ fn native_env_entry_resolves_host_and_explicit_inputs() {
     let output = run_artifact(&artifact, "drop", false, true, Some(b"[]"));
     assert_eq!(output.status.code(), Some(0), "{output:?}");
     assert_eq!(output.stdout, b"seen-by-drop\n");
+}
+
+#[test]
+#[ignore = "需要本批 release Runtime 和固定 LLVM 工具"]
+fn native_env_preserves_legacy_marker_as_first_argument() {
+    let target = TargetDescription::host();
+    let tools = toolchain(&target);
+    let root = test_dir();
+    let source = format!("{LOOKUP}{PRINT_ARGV}");
+    let mask = ENV | STDOUT | CAPABILITY_PROCESS;
+    let build = build_request(&root, "legacy-marker", &source, &target, &tools, 0, mask);
+    let artifact = FrontendNativeDriver::new().build(&build).unwrap().native;
+
+    let mismatched = format!("{NATIVE_ENVIRONMENT_STDIN_PREFIX}00000000000000000000000000000000");
+    for argument in [LEGACY_MARKER, &mismatched] {
+        let output = Command::new(&artifact.executable)
+            .env_clear()
+            .env(NAME, "host-native")
+            .env(
+                NATIVE_ENVIRONMENT_NONCE_ENV,
+                "0123456789abcdef0123456789abcdef",
+            )
+            .args([argument, "tail"])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(0), "{output:?}");
+        assert_eq!(
+            output.stdout,
+            format!("host-native\n{argument}\ntail\n").as_bytes()
+        );
+        assert!(output.stderr.is_empty());
+        println!("{} 首参 {argument:?} 退出 0", artifact.executable.display());
+    }
+}
+
+#[test]
+#[ignore = "需要本批 release Runtime 和固定 LLVM 工具"]
+fn native_env_driver_injects_snapshot_with_random_nonce() {
+    let target = TargetDescription::host();
+    let tools = toolchain(&target);
+    let root = test_dir();
+    let source = format!("{LOOKUP}{PRINT_ARGV}");
+    let mask = ENV | STDOUT | CAPABILITY_PROCESS;
+    let build = build_request(&root, "managed", &source, &target, &tools, 0, mask);
+    let input = options(Some(vec![(NAME.into(), "managed-native".into())]), mask);
+    let output = FrontendNativeDriver::new()
+        .run_application(&build, &input, [LEGACY_MARKER, "tail"])
+        .unwrap();
+    assert_eq!(output.status, Some(0), "{output:?}");
+    assert_eq!(
+        output.stdout,
+        format!("managed-native\n{LEGACY_MARKER}\ntail\n")
+    );
+    assert!(output.stderr.is_empty());
+    println!("驱动随机数注入退出 0，输出 {:?}", output.stdout);
 }
 
 #[test]

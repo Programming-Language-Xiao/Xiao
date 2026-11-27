@@ -1,0 +1,5 @@
+命令 bun cli/ts/src/main.ts run core/rust/target/fix-a-native/marker_probe.xiao -- --__xiao-run-environment-stdin tail
+开始 2026-11-27T10:25:51.0059238+00:00
+X05-MODULE-002: 文件不能映射为模块名称: marker-probe.xiao
+结束 2026-11-27T10:25:58.7702961+00:00
+退出码 1

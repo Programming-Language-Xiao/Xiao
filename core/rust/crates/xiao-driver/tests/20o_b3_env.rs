@@ -2,9 +2,7 @@
 
 use std::fs;
 use std::io::{Cursor, Write};
-use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use std::sync::atomic::{AtomicU32, Ordering};
 
 use xiao_driver::{
     ArchiveBuildRequest, CORE_VERSION, CancellationToken, FrontendCompiler, FrontendRequest,
@@ -72,6 +70,9 @@ join(thread)
 
 #[path = "support/b3_env_native.rs"]
 mod native;
+#[path = "support/b3_env_artifact.rs"]
+mod native_artifact;
+use native_artifact::test_dir;
 
 fn options(environment: Option<Vec<(String, String)>>, capabilities: u64) -> RunOptions {
     RunOptions {
@@ -128,21 +129,6 @@ fn rejected(response: ProtocolResponse, code: &str) {
     assert_eq!(exit_code, 2);
     assert_eq!(error.code, code, "{error:?}");
     assert!(report.is_none());
-}
-
-fn test_dir() -> PathBuf {
-    static NEXT: AtomicU32 = AtomicU32::new(0);
-    let base =
-        std::env::var_os("XIAO_B3_ENV_TEST_ROOT").map_or_else(std::env::temp_dir, PathBuf::from);
-    loop {
-        let id = NEXT.fetch_add(1, Ordering::Relaxed);
-        let path = base.join(format!("xiao-b3-env-{}-{id}", std::process::id()));
-        match fs::create_dir(&path) {
-            Ok(()) => return path,
-            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
-            Err(error) => panic!("{path:?}: {error}"),
-        }
-    }
 }
 
 #[test]

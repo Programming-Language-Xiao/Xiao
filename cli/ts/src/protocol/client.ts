@@ -43,6 +43,8 @@ export interface CoreClientOptions extends CoreDiscoveryOptions {
 export interface SourceRunOptions {
   /** 由宿主提供的本次运行参数。 */
   arguments?: RunArguments;
+  /** 本次运行允许的能力位，省略时由核心使用 `0x7F`。 */
+  capabilities?: number;
   /** 逻辑模块名，默认使用文件基名。 */
   module?: string;
   /** 源文件路径；用于诊断位置和协议 source.path。 */
@@ -79,7 +81,7 @@ export interface SourceRunOptions {
 export interface ArchiveRunOptions {
   /** 由宿主提供的本次运行参数。 */
   arguments?: RunArguments;
-  /** 本次归档运行允许的冻结能力位；省略时全开。 */
+  /** 本次归档运行允许的能力位，省略时由核心使用 `0x7F`。 */
   capabilities?: number;
   /** VM 调用深度。 */
   maxCallDepth?: number;
@@ -107,6 +109,8 @@ export interface ArchiveRunOptions {
 export interface XiaocRunOptions {
   /** 由宿主提供的本次运行参数。 */
   arguments?: RunArguments;
+  /** 本次运行允许的能力位，省略时由核心使用 `0x7F`。 */
+  capabilities?: number;
   /** VM 调用深度。 */
   maxCallDepth?: number;
   /** 事件容量。 */
@@ -170,6 +174,8 @@ export interface SourceBuildOptions {
   runtimeVersion?: string;
   /** 18A 归一化的优化级别。 */
   optimizationLevel?: OptimizationLevel;
+  /** 原生产物启动时允许的能力位，省略时由核心使用 `0x7F`。 */
+  capabilities?: number;
   /** 原生可执行输出路径。 */
   output: string;
   /** 可选 LLVM 文本输出路径。 */
@@ -328,6 +334,7 @@ export class ProtocolClient {
       optimization: { level: options.optimizationLevel ?? 0, debug: options.debug ?? false, diagnostics: options.diagnostics ?? null },
       source: { module, path: sourcePath, text: sourceText },
       options: {
+        ...(options.capabilities === undefined ? {} : { capabilities: options.capabilities }),
         arguments: snapshotArguments(options.arguments),
         max_call_depth: options.maxCallDepth ?? 1024,
         event_capacity: options.eventCapacity ?? 256,
@@ -375,6 +382,7 @@ export class ProtocolClient {
       diagnostics: options.diagnostics ?? null,
       debug: options.debug ?? false,
       options: {
+        ...(options.capabilities === undefined ? {} : { capabilities: options.capabilities }),
         arguments: snapshotArguments(options.arguments),
         max_call_depth: options.maxCallDepth ?? 1024,
         event_capacity: options.eventCapacity ?? 256,
@@ -445,6 +453,7 @@ export class ProtocolClient {
       ...(options.locale === undefined ? {} : { locale: options.locale }),
       target,
       optimization: { level: options.optimizationLevel ?? 0, debug: options.debug ?? false, diagnostics: options.diagnostics ?? null },
+      ...(options.capabilities === undefined ? {} : { capabilities: options.capabilities }),
       source: { module, path: sourcePath, text: sourceText },
       output: options.output,
       llvm_ir_output: options.llvmIrOutput ?? null,

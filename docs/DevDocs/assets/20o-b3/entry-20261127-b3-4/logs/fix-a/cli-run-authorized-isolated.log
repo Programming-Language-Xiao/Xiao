@@ -1,0 +1,12 @@
+命令 bun D:\project\Xiao\Xiao\cli\ts\src\main.ts run marker_probe.xiao --allow-environment -- --__xiao-run-environment-stdin tail
+开始 2026-11-27T10:27:59.9132399+00:00
+状态  退出码
+----  ------
+成功  0     
+缓存 hit  xiaoc  摘要 2b3a9f2bdd48523451bd81aacf7372d94f2cbd46375892805719843398099305  校验 verified
+优化 O0：已执行 0/5 个 Pass
+probe-host
+--__xiao-run-environment-stdin
+tail
+结束 2026-11-27T10:28:12.4127148+00:00
+退出码 0

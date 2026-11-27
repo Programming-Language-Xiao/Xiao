@@ -38,6 +38,7 @@ struct BuildInputs {
     locale: Option<String>,
     target: ProtocolTarget,
     optimization: OptimizationConfig,
+    capabilities: u64,
     source: SourceIdentity,
     output: String,
     llvm_ir_output: Option<String>,
@@ -106,6 +107,7 @@ pub(super) fn build_response(
     locale: Option<String>,
     target: ProtocolTarget,
     optimization: OptimizationConfig,
+    capabilities: u64,
     source: SourceIdentity,
     output: String,
     llvm_ir_output: Option<String>,
@@ -128,6 +130,7 @@ pub(super) fn build_response(
         locale,
         target,
         optimization,
+        capabilities,
         source,
         output,
         llvm_ir_output,
@@ -156,6 +159,7 @@ fn prepare_build(request_id: &str, inputs: BuildInputs) -> Result<BuildPlan, Pro
         locale,
         target,
         optimization,
+        capabilities,
         source,
         output,
         llvm_ir_output,
@@ -163,10 +167,18 @@ fn prepare_build(request_id: &str, inputs: BuildInputs) -> Result<BuildPlan, Pro
         config_text,
     } = inputs;
 
-    clear_activation(&output, request_id)?;
     let target_description = target
         .to_target()
         .map_err(|error| protocol_error_response(Some(request_id.to_owned()), &error))?;
+    let codegen_options = CodegenOptions::for_target(target_description.clone())
+        .with_capabilities(capabilities)
+        .map_err(|error| {
+            protocol_error_response(
+                Some(request_id.to_owned()),
+                &ProtocolError::request("capabilities", error.to_string()),
+            )
+        })?;
+    clear_activation(&output, request_id)?;
     let diagnostics_source = toolchain_spec.diagnostics_path.clone();
     let diagnostics_path = diagnostics_source
         .as_deref()
@@ -176,15 +188,14 @@ fn prepare_build(request_id: &str, inputs: BuildInputs) -> Result<BuildPlan, Pro
     let frozen_config = freeze_runtime_config(&output, config_text.as_deref())
         .map_err(|error| protocol_error_response(Some(request_id.to_owned()), &error))?;
     let frontend = frontend_request(&source, &language_version, &target, locale.as_deref());
-    let mut request =
-        NativeBuildRequest::new(frontend, target_description.clone(), toolchain, output)
-            .with_codegen_options(build_codegen_options(
-                &optimization,
-                diagnostics_path.as_deref(),
-                locale.as_deref(),
-                request_id,
-                target_description,
-            )?);
+    let mut request = NativeBuildRequest::new(frontend, target_description, toolchain, output)
+        .with_codegen_options(build_codegen_options(
+            &optimization,
+            diagnostics_path.as_deref(),
+            locale.as_deref(),
+            request_id,
+            codegen_options,
+        )?);
     if let Some(path) = &llvm_ir_output {
         request = request.with_llvm_ir_output(path);
     }
@@ -207,9 +218,8 @@ fn build_codegen_options(
     diagnostics_path: Option<&str>,
     locale: Option<&str>,
     request_id: &str,
-    target: TargetDescription,
+    options: CodegenOptions,
 ) -> Result<CodegenOptions, ProtocolResponse> {
-    let options = CodegenOptions::for_target(target);
     let options = match options.with_optimization_level(optimization.level) {
         Ok(options) => options,
         Err(error) => {

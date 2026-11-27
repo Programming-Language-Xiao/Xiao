@@ -1,0 +1,8 @@
+命令 bun D:\project\Xiao\Xiao\cli\ts\src\main.ts run marker_probe.xiao -- --__xiao-run-environment-stdin tail
+开始 2026-11-27T10:27:47.8516848+00:00
+X06-RUNTIME-026: 当前能力上下文不允许此外部操作
+缓存 written  xiaoc  摘要 2b3a9f2bdd48523451bd81aacf7372d94f2cbd46375892805719843398099305  校验 verified
+重新物化：cache_miss
+优化 O0：已执行 0/5 个 Pass
+结束 2026-11-27T10:27:59.8848846+00:00
+退出码 3

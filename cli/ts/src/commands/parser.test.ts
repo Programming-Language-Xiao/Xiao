@@ -2,7 +2,7 @@
 
 import { describe, expect, test } from "bun:test";
 
-import { CliArgumentError, parseArguments } from "./parser.ts";
+import { CliArgumentError, helpText, parseArguments } from "./parser.ts";
 
 describe("xiao 命令解析", () => {
   test("同步模式互斥，install/i 共享命令形状", () => {
@@ -56,6 +56,23 @@ describe("xiao 命令解析", () => {
       });
     }
     expect(parseArguments(["run", "./main.xiao", "--"])).toMatchObject({ applicationArguments: [] });
+  });
+
+  test("环境授权与优化、应用参数共存，并在两种语言的帮助中列出", () => {
+    expect(parseArguments(["run", "main.xiao", "--", "--allow-environment"])).toMatchObject({
+      allowEnvironment: false, applicationArguments: ["--allow-environment"],
+    });
+    expect(parseArguments(["run", "--allow-environment", "main.xiao", "-O2", "--", "--allow-environment", "a b"])).toMatchObject({
+      allowEnvironment: true, optimizationLevel: 2, applicationArguments: ["--allow-environment", "a b"],
+    });
+    expect(parseArguments(["build", "main.xiao"])).toMatchObject({ allowEnvironment: false });
+    expect(parseArguments(["build", "main.xiao", "--allow-environment", "-o", "app"])).toMatchObject({
+      allowEnvironment: true, output: "app",
+    });
+    for (const locale of ["zh-CN", "en-US"] as const) {
+      expect(helpText(locale)).toMatch(/xiao run <file\.xiao\|file\.xiaoc>[^\n]*\[--allow-environment\]/u);
+      expect(helpText(locale)).toMatch(/xiao build -o[^\n]*\[--allow-environment\]/u);
+    }
   });
 
   test("单行 REPL 与多行文件入口互不混淆", () => {
