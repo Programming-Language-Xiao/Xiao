@@ -11,8 +11,8 @@
 | B6-1 | `restricted/stage_passed=false`；三平台功能通过；Windows COFF `UnverifiedCoffExports`；Linux Clippy 历史未执行 |
 | B6-2 | `perf_pass=true`，三平台 9 组×183 项、8,235 个独立进程，绑定 `79ea0375`；source-boundary 证明随交接引用 |
 | B6-3 | `boundary_passed=true`，三平台 85×9=765 次，C ABI 11 项/平台，绑定 `58176ff5`；Windows COFF 未验证 |
-| B6-4 | 受限交接；`b6_4_passed=false`、`original_passed=false`、`followup_passed=false`、`windows_coff_verified=false`、`22d_open=true` |
-| 22D | 三处间歇性释放差分未归因：`native-lock-wait-027`、`xcon-bounded-string-success`、`spawn-join-str-multiargument` |
+| B6-4 | 受限交接快照记录 `b6_4_passed=false`、`original_passed=false`、`followup_passed=false`、`windows_coff_verified=false`、`22d_open=true` |
+| 22D | B6-5 收口时，22D 仍开放，三处间歇性释放差分 `native-lock-wait-027`、`xcon-bounded-string-success`、`spawn-join-str-multiargument` 尚未归因。22D 后续由 FIX.2 于 2026-11-27 关闭。[22D-FIX.2 收口](22d-fix2-release-order-stability-plan.md) |
 | Windows COFF | `windows_coff_verified=false`；B6-1/B6-3/B6-4 均不得写成 `Complete` |
 | 当前产品 | ABI 1.19、生成器 22、标准库接口 1、intrinsic 1～48、ID 100 墓碑；B6-5 开工时固定最终受保护产品树 |
 | 本批目标 | 汇总 B6 各阶段、对账证据与平台范围、跑最终工程门禁、形成 B7 入口和 B2-C 交接清单 |
@@ -70,7 +70,7 @@ b6_5_passed =
 `b6_5_passed=true` 只表示“收口证据、最终工程门禁和交接完成”，不表示 B6 通过，也不表示 `perf_pass` 覆盖最终树。B6-5 证据和状态必须同时写明：
 
 - `open_items_assigned=true` 才允许 B7 入口；
-- 22D → B7；
+- B6-5 收口时，22D 交 B7 追踪。
 - Windows COFF → B2-C；
 - B6-1 Linux Clippy 历史缺项 → B7-4 最终工程门禁；
 - `b7_entry_ready` 只有在 `b6_5_passed && open_items_assigned`，且 `b6_accepted` 已按四个阶段的正式回执明确（当前为 false，不得写成 true）时才能为 true。
@@ -104,7 +104,7 @@ b6_5_passed =
 1. B6-1：保留 `restricted/stage_passed=false`、三平台功能通过、Windows COFF 未验证、Linux Clippy 历史未执行；不得用 B6-4 的 Linux Clippy 或 B6-5 最终门禁改写 B6-1 历史；
 2. B6-2：保留 `perf_pass=true` 和 `79ea0375` 绑定；核对九组×183、8,235 进程、全转义 URL、O0/O3、内存/翻倍比和 source-boundary；差异触及性能路径时只补测受影响项，不重跑全量；
 3. B6-3：保留 `boundary_passed=true` 和 `58176ff5` 绑定；核对 765 次、C ABI 11 项/平台、B1/B4 回归和 28/28 回放；差异触及边界路径时只补验受影响项；
-4. B6-4：保留五字段和原始/后续区分；核对 `original_passed=false`、`followup_passed=false`、`windows_coff_verified=false`、`22d_open=true`、Linux 164 导出、Windows 定向 Clippy、Windows 22D 三处失败；
+4. B6-4：保留交接快照的五字段，区分原始执行和后续复验。核对 `original_passed=false`、`followup_passed=false`、`windows_coff_verified=false`、`22d_open=true`、Linux 164 导出、Windows 定向 Clippy、Windows 22D 三处失败；
 5. B5：固定 1.19/21 矩阵只作历史输入；当前 1.19/22 与 21→22 增量分层引用，不把 B5 历史矩阵写成 B6-5 成绩；
 6. 22D：列出三处失败、原始轨迹和复现条件，归 B7；B6-5 不做新归因，不把失败改记为不可验证；
 7. Windows COFF：列 B6-1/B6-3/B6-4 的实际等级和缺项，归 B2-C；不把 Windows 功能通过写成 COFF `Complete`；
@@ -134,7 +134,7 @@ bun tools/repo-check/src/cli.ts all
 
 ### B6-5D：状态派生与交接状态
 
-1. 生成 B6-5 状态文件，至少包含：
+1. 生成 B6-5 状态文件，至少记录以下收口快照字段。
 
 ```text
 b6_5_passed
@@ -216,7 +216,7 @@ B6-5 完成后，B7 按以下入口接收：
 - B6-2 `perf_pass=true` 绑定 `79ea0375`，附最终树差异结论；
 - B6-3 `boundary_passed=true` 绑定 `58176ff5`，附最终树差异结论；
 - B6-4 五字段受限交接；
-- 22D 三处失败 → B7；
+- B6-5 收口时，22D 三处失败交 B7 追踪。
 - Windows COFF → B2-C；
 - B6-1 Linux Clippy 历史缺项 → B7-4 最终工程门禁。
 

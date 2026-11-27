@@ -64,7 +64,7 @@ C0～C3可以采集并记录失败或不可验证结果；只有全部必测功�
 ### 2.1 B2-C 开工单（2026-11-22）
 
 1. **固定入口**：B7 最终产品 `e79fab3c`、树 `80be41ee`、两个 Cargo.lock、Runtime、Rust 1.96.0、平台 LLVM/链接器和目标三重；B2-C 的 C0 只固定基线，不改产品。
-2. **继承状态**：`b7_passed=true`、`b2c_entry_ready=true`；B6 仍为 `b6_accepted=false`，`22d_open=true`，`windows_coff_verified=false`，`b6_3_final_tree_covered=false`。B2-C 不得把历史债务或未验证平台写成通过。
+2. **继承状态**：`b7_passed=true`、`b2c_entry_ready=true`。B7 向 B2-C 交接时的快照记录 `b6_accepted=false`、`22d_open=true`、`windows_coff_verified=false`、`b6_3_final_tree_covered=false`。B2-C 不得把历史债务或未验证平台写成通过。22D 已于 2026-11-27 由 FIX.2 关闭。[22D-FIX.2 收口](22d-fix2-release-order-stability-plan.md)
 3. **最终公共范围**：ABI 1.19、生成器 22、接口 1、intrinsic 1～48/ID 100；`std.cmath`/`stdlib.cmath` 15 包装、`lfloat_divide` 与 lint/lfloat 新增范围；B1 七库既有公开面。
 4. **完整 721**：C1 在新快照实际重跑 B1 七库 721 条 F10；不读取旧 721 作为本轮成绩，不复用历史可执行文件或报告。
 5. **最终平台**：C3 收齐 Windows/Linux/macOS 实际公共候选产物、版本/缓存/拒绝矩阵和 B6 新增数值负载；Windows COFF 与 B6-3 最终树 Windows/macOS 原生产物验证必须在本批补验。
@@ -197,7 +197,7 @@ b2c_started = C0 已实际执行
 6. 旧721/历史债务/A0失败未改写；
 7. 固定Git对象只读审计与自反例通过；B2最终收口报告、原始来源和后续入口明确；
 8. 没有把内部证据写成未完成的三平台/721发布；
-9. B2-C 状态骨架由 C0～C5 证据派生，`b2c_passed`、`b2c_started` 与 B7 交接字段一致；`22d_open`、Windows COFF、B6-3 最终树缺项按原归属保留，不因 B2-C 公共收口被关闭。
+9. B2-C 状态骨架由 C0～C5 证据派生，`b2c_passed`、`b2c_started` 与 B7 交接字段一致。B2-C 公共收口时，交接快照中的 `22d_open`、Windows COFF 和 B6-3 最终树缺项按原归属保留。
 
 ## 六、风险与禁止
 

@@ -13,7 +13,7 @@
 | --- | --- |
 | B4 | B4-5以cfa79381产品和新Runtime重跑，内部language_available=true；最终签收以重开证据的文档回执与封存审计通过为准 |
 | B5历史矩阵 | ABI1.19/21产品71e611f8、最终测试5864cbde；版本/缓存/C ABI与串行workspace通过，原默认workspace失败保留；URL优化后的当前22完整workspace已通过，B5已通过四类证据联合收口 |
-| B6 | B6-1 为 `restricted/stage_passed=false`，三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 的 1,647 项测量仍绑定 `79ea0375`，最终树为源码路径覆盖。B6-3 的 765 次边界执行仍绑定 `58176ff5`，最终树 Linux 已定向补验，Windows/macOS 产物待 B2-C。B6-4 受限交接，`b6_4_passed=false`、`original_passed=false`、`followup_passed=false`、`windows_coff_verified=false`、`22d_open=true`。B6-5 内部收口完成，`b6_5_passed=true`、`b6_accepted=false`。[B6-5 收口](assets/20o-b2-b/entry-20261120-b6-5/README.md) · [B6-4 交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) |
+| B6 | B6-1 为 `restricted/stage_passed=false`，三平台功能通过，Windows COFF 导出完整性未验证，Linux Clippy 当时未执行。B6-2 的 1,647 项测量仍绑定 `79ea0375`，最终树为源码路径覆盖。B6-3 的 765 次边界执行仍绑定 `58176ff5`，最终树 Linux 已定向补验，Windows/macOS 产物待 B2-C。B6-4 受限交接快照记录 `b6_4_passed=false`、`original_passed=false`、`followup_passed=false`、`windows_coff_verified=false`、`22d_open=true`。B6-5 内部收口完成，`b6_5_passed=true`、`b6_accepted=false`。[B6-5 收口](assets/20o-b2-b/entry-20261120-b6-5/README.md) · [B6-4 交接状态](assets/20o-b2-b/entry-20261119-b6-4-followup/status.json) |
 | 当前版本 | 固定 `e79fab3c`，ABI 1.19、生成器 22、接口 1、intrinsic 1～48。B5 固定 1.19/21 矩阵与 21→22 增量分列 |
 | 本批目标 | B1 20入口回归、A0～A7与B0～B6证据对账、语言/教程/registry边界、B2-C交接 |
 | 未做 | B2-C 721、最终三平台公共产物、registry/教程 verified、历史债务关闭 |
@@ -62,13 +62,13 @@ B7 只更新收口文档和本批证据，回归复用前序测试。若发现�
 ### 2.1 B7 开工单（2026-11-22）
 
 1. **固定入口**：产品提交 `e79fab3c`、受保护树 `80be41ee`、两个 Cargo.lock、Runtime、Rust 1.96.0、平台 LLVM/链接器和目标三重；B7 只做文档与证据，不改产品。
-2. **继承状态**：`b6_5_passed=true`、`b7_entry_ready=true`、`b6_accepted=false`；B6-4 五字段为 `b6_4_passed=false`、`original_passed=false`、`followup_passed=false`、`windows_coff_verified=false`、`22d_open=true`。
+2. **继承状态**：`b6_5_passed=true`、`b7_entry_ready=true`、`b6_accepted=false`；B6-4 交接快照的五字段为 `b6_4_passed=false`、`original_passed=false`、`followup_passed=false`、`windows_coff_verified=false`、`22d_open=true`。
 3. **B6 阶段输入**：B6-1 为 `restricted/stage_passed=false`；B6-2 `perf_pass=true` 绑定 `79ea0375`，最终树为源码路径覆盖；B6-3 `boundary_passed=true` 绑定 `58176ff5`，最终树 Linux 已定向补验、Windows/macOS 产物待 B2-C；B6-5 `b6_3_final_tree_covered=false`。
-4. **开放项**：22D 三处释放差分归 B7；Windows COFF 与最终树 Windows/macOS 原生产物验证归 B2-C；B6-1 Linux Clippy 历史 `not_run` 由 B7-4 另存最终门禁回执，不回填历史。
+4. **开放项**：B7 开工时，22D 三处释放差分已交 B7 追踪。Windows COFF 与最终树 Windows/macOS 原生产物验证归 B2-C；B6-1 Linux Clippy 历史 `not_run` 由 B7-4 另存最终门禁回执，不回填历史。
 5. **B1 冻结**：B1 七库源码、错误表、预算、URL 60 秒窗口和调度释放断言不变；B7 只重生成回归产物，不改 B1 产品。
 6. **证据入口**：新建 `assets/20o-b2-b/entry-20261122-b7/`；B6-5 交接清单、B6-4 状态、B6-2/B6-3 固定证据按 SHA-256 读取，历史目录只读。
 7. **任务根**：唯一源码/target/Runtime/缓存/输出根，每平台、后端、优化级别、B1 入口和验证批次独占路径；执行前后复核源码身份。
-8. **结论字段**：`b7_passed` 只表示 B2-B 内部收口证据、B1 回归、语言边界和工程门禁完成；`b2c_entry_ready = b7_passed && open_items_assigned`。`b7_passed=true` 不得改写 `b6_accepted=false`、`22d_open=true`、`windows_coff_verified=false` 或 `b6_3_final_tree_covered=false`。
+8. **结论字段**：`b7_passed` 只表示 B2-B 内部收口证据、B1 回归、语言边界和工程门禁完成；`b2c_entry_ready = b7_passed && open_items_assigned`。`b7_passed=true` 不得改写 B6-5 交接快照中的 `b6_accepted=false`、`22d_open=true`、`windows_coff_verified=false` 或 `b6_3_final_tree_covered=false`。
 
 ### 2.2 B7 结论字段
 
@@ -82,7 +82,7 @@ b7_passed =
 b2c_entry_ready = b7_passed and open_items_assigned
 ```
 
-`b7_passed` 是 B2-B 内部收口结论，不是 B2-C 最终发布，也不是三平台公共产物通过。B7 证据必须同时保留 B6-5 交接的 `b6_accepted=false`、`22d_open=true`、`windows_coff_verified=false` 和 `b6_3_final_tree_covered=false`；22D、Windows COFF 和最终树 Windows/macOS 产物验证分别继续归 B7/B2-C。只有 `b7_passed=true` 且开放项归属完整，`b2c_entry_ready` 才能为 true。
+`b7_passed` 是 B2-B 内部收口结论，不是 B2-C 最终发布，也不是三平台公共产物通过。B7 证据必须同时保留 B6-5 交接快照中的 `b6_accepted=false`、`22d_open=true`、`windows_coff_verified=false` 和 `b6_3_final_tree_covered=false`。B7 收口时，22D 仍在追踪，Windows COFF 和最终树 Windows/macOS 产物验证归 B2-C。只有 `b7_passed=true` 且开放项归属完整，`b2c_entry_ready` 才能为 true。22D 已于 2026-11-27 由 FIX.2 关闭。[22D-FIX.2 收口](22d-fix2-release-order-stability-plan.md)
 
 ## 三、分批执行
 
@@ -148,7 +148,7 @@ cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver 
 4. 按实际平台范围保存性能/资源/拒绝矩阵；B6不可验证项不能因B7审计或CI整体绿色改成通过，失败不得改写为不可验证；
 5. 使用Rust1.96.0和受控Cargo环境运行完整workspace gates：`cargo +1.96.0 test --manifest-path core/rust/Cargo.toml --workspace --locked`、`cargo +1.96.0 clippy --manifest-path core/rust/Cargo.toml --workspace --all-targets --locked -- -D warnings`、`cargo +1.96.0 fmt --manifest-path core/rust/Cargo.toml --all -- --check`、`bun run check:lock`、`bun tools/repo-check/src/cli.ts all`；最大负载仍由独立release测量入口处理；
 6. 不修改工作流阈值/超时或删除失败样本；
-7. B6-1 Linux Clippy 历史 `not_run` 不得回填；B7 最终 Linux Clippy 另存新回执。B6-3 最终树 Windows/macOS 产物验证和 Windows COFF 归 B2-C，22D 归 B7 追踪；不得把任一缺项改成通过。
+7. B6-1 Linux Clippy 历史 `not_run` 不得回填；B7 最终 Linux Clippy 另存新回执。B6-3 最终树 Windows/macOS 产物验证和 Windows COFF 归 B2-C。B7 收口时仍在追踪 22D。不得把任一缺项改成通过。
 
 退出：CI/平台/门禁证据完整；未执行项明确。
 
@@ -157,7 +157,7 @@ cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver 
 1. 固定B2-B最终1.19/22源码/证据/平台边界，并单列B5历史1.19/21矩阵与21→22增量；
 2. 列出 B2-C 必须执行的完整 721、三平台公共产物、最终教程/registry、B6 新增数值负载和 B6-5 交接的开放项；
 3. 列出未验证平台/性能的具体负载与补验要求、历史债务独立身份，不能只写“无三平台声明”就跳过缺项；
-4. 复核旧 721 未跑、registry 未升级、历史债务未关闭；确认 `b6_accepted=false`、`22d_open=true`、`windows_coff_verified=false`、`b6_3_final_tree_covered=false` 未被改写；
+4. 复核旧 721 未跑、registry 未升级、历史债务未关闭。确认 B6-5 交接快照中的 `b6_accepted=false`、`22d_open=true`、`windows_coff_verified=false`、`b6_3_final_tree_covered=false` 未被改写；
 5. 形成 B2-C 入口清单，并派生 `b2c_entry_ready`；B2-C 仍未开始。
 
 退出：B2-C入口明确且未开始；B2-B内部收口按已验证范围记录。若带不可验证项交接，须注明受限范围与必补项，不声明相应性能或三平台通过；实测失败须解决或取得对应裁定后才能签收验收结论。
@@ -187,7 +187,7 @@ cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver 
 6. 旧721未运行、历史债务未关闭；
 7. B2-C未开始；B2-B内部1.19/22收口结论与功能、性能和平台覆盖一致；B5历史1.19/21矩阵及增量证据分层引用；
 8. B2-C最终721/三平台/教程/registry未完成；
-9. B7 状态骨架由固定证据派生，`b7_passed`、`b2c_entry_ready` 与证据一致；B6-5 的 `b6_accepted=false`、`22d_open=true`、`windows_coff_verified=false`、`b6_3_final_tree_covered=false` 未被改写。
+9. B7 状态骨架由固定证据派生，`b7_passed`、`b2c_entry_ready` 与证据一致。B6-5 交接快照中的 `b6_accepted=false`、`22d_open=true`、`windows_coff_verified=false`、`b6_3_final_tree_covered=false` 未被改写。
 
 ## 六、风险与禁止
 
@@ -203,7 +203,7 @@ cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver 
 
 ## 七、交接
 
-B7完成后进入[B2-C 最终公共收口规划](20o-b2-c-final-closeout-plan.md)：以届时固定的最终快照（当前预期1.19/22）完成721、三平台公共产物、最终教程/registry与发布收口。B2-C未完成前，B2-B仍只是内部收口。B7 交接同时保留 `b7_passed`、`b2c_entry_ready` 和 B6-5 的 `b6_accepted=false`、`22d_open=true`、`windows_coff_verified=false`、`b6_3_final_tree_covered=false`。
+B7完成后进入[B2-C 最终公共收口规划](20o-b2-c-final-closeout-plan.md)：以届时固定的最终快照（当前预期1.19/22）完成721、三平台公共产物、最终教程/registry与发布收口。B2-C未完成前，B2-B仍只是内部收口。B7 交接同时保留 `b7_passed`、`b2c_entry_ready` 和 B6-5 交接快照中的 `b6_accepted=false`、`22d_open=true`、`windows_coff_verified=false`、`b6_3_final_tree_covered=false`。
 
 新 Agent 先读：
 
