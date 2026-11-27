@@ -1,0 +1,55 @@
+   Compiling xiao-intrinsics v0.1.0 (/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source/core/rust/crates/xiao-intrinsics)
+   Compiling xiao-types v0.1.0 (/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source/core/rust/crates/xiao-types)
+   Compiling xiao-lifetime v0.1.0 (/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source/core/rust/crates/xiao-lifetime)
+   Compiling xiao-ir v0.1.0 (/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source/core/rust/crates/xiao-ir)
+   Compiling xiao-optimizer v0.1.0 (/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source/core/rust/crates/xiao-optimizer)
+   Compiling xiao-runtime v0.1.0 (/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source/core/rust/crates/xiao-runtime)
+   Compiling xiao-bytecode v0.1.0 (/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source/core/rust/crates/xiao-bytecode)
+   Compiling xiao-codegen-llvm v0.1.0 (/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source/core/rust/crates/xiao-codegen-llvm)
+   Compiling xiao-artifacts v0.1.0 (/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source/core/rust/crates/xiao-artifacts)
+   Compiling xiao-package v0.1.0 (/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source/core/rust/crates/xiao-package)
+   Compiling xiao-vm v0.1.0 (/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source/core/rust/crates/xiao-vm)
+   Compiling xiao-xar v0.1.0 (/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source/core/rust/crates/xiao-xar)
+   Compiling xiao-driver v0.1.0 (/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source/core/rust/crates/xiao-driver)
+    Finished `release` profile [optimized] target(s) in 2m 14s
+     Running tests/20o_b3_env.rs (/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/linux-ubuntu/target/x86_64-unknown-linux-gnu/release/deps/20o_b3_env-7cb3a9e628850a4a)
+
+running 3 tests
+test native::native_env_entry_resolves_host_and_explicit_inputs ... 环境原生启动任务目录 /mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/linux-ubuntu/test-runs/xiao-b3-env-9916-0
+环境原生 direct-valid 退出 Some(0)，输出 12 字节，诊断 0 字节
+环境原生 direct-invalid 退出 Some(2)，输出 0 字节，诊断 53 字节
+环境原生 injected 退出 Some(0)，输出 16 字节，诊断 0 字节
+环境原生 injected-limit 退出 Some(2)，输出 0 字节，诊断 47 字节
+环境原生 static-invalid-host 退出 Some(2)，输出 0 字节，诊断 53 字节
+环境原生 static-injected-empty 退出 Some(0)，输出 0 字节，诊断 0 字节
+环境原生 drop 退出 Some(0)，输出 13 字节，诊断 0 字节
+ok
+test native::native_env_o0_o3_matches_vm_and_owns_outputs ... 环境原生任务目录 /mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/linux-ubuntu/test-runs/xiao-b3-env-9916-1，目标 x86_64-unknown-linux-gnu
+环境原生 operations-o0 退出 Some(0)，输出 43 字节，诊断 0 字节
+环境原生释放追踪 Some("operations-o0.release.tsv")，22 个对象各销毁一次
+环境生成身份 xiao-codegen-27-c5bdb0b8bed53116 工具指纹 xiao-fnv1a64-c27681655aa6a7ce 声明及观察组件 ["env", "rc", "value", "weak"] COFF None
+环境原生 denied-o0 退出 Some(3)，输出 0 字节，诊断 239 字节
+B3-4-ENV-NATIVE {"artifact_sha256":"bae6415c3b314971cba33a150f2a90ca3a7df54c16900f47e60b0addb3f0c00a","capabilities":32,"case":"denied-o0","codegen_fingerprint":"xiao-codegen-27-cd2c7319bc0506c3","coff_artifact_sha256":null,"coff_map":null,"coff_map_sha256":null,"declared_components":["env","rc","value","weak"],"dependencies":["ld-linux-x86-64.so.2","libc.so.6","libgcc_s.so.1","libm.so.6"],"exit":3,"generator":27,"object_format":"Elf","observed_components":["env","rc","value","weak"],"optimization":0,"path":"/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/linux-ubuntu/test-runs/xiao-b3-env-9916-1/denied-o0","runtime_abi":65556,"runtime_symbols":["xiao_runtime_abi_is_compatible","xiao_runtime_env_get","xiao_runtime_error_attach_span","xiao_runtime_error_checkpoint_reset","xiao_runtime_error_class","xiao_runtime_error_clear","xiao_runtime_error_exit_code","xiao_runtime_error_push_native_frame","xiao_runtime_error_report","xiao_runtime_fatal_abi","xiao_runtime_language_context_set","xiao_runtime_release","xiao_runtime_release_trace_begin","xiao_runtime_release_trace_flush","xiao_runtime_retain","xiao_runtime_string_new","xiao_runtime_value_copy","xiao_runtime_value_release_strong","xiao_runtime_value_str_owned","xiao_runtime_weak_release","xiao_runtime_weak_retain"],"source_sha256":"116c4e04af8801fac4cbefd30a32b7074128e66cd44e3ecedb0c568c764a5da2","stdlib_interface":1,"target":"x86_64-unknown-linux-gnu","toolchain_fingerprint":"xiao-fnv1a64-c27681655aa6a7ce","unclassified_runtime_symbols":[],"verification":"complete"}
+环境原生释放追踪 Some("denied-o0.release.tsv")，1 个对象各销毁一次
+环境原生 invalid-o0 退出 Some(3)，输出 0 字节，诊断 278 字节
+环境原生释放追踪 Some("invalid-o0.release.tsv")，1 个对象各销毁一次
+环境原生 limit-o0 退出 Some(3)，输出 0 字节，诊断 237 字节
+环境原生释放追踪 Some("limit-o0.release.tsv")，2 个对象各销毁一次
+环境原生 operations-o3 退出 Some(0)，输出 43 字节，诊断 0 字节
+环境原生释放追踪 Some("operations-o3.release.tsv")，22 个对象各销毁一次
+环境生成身份 xiao-codegen-27-c710bd143ee1b0a9 工具指纹 xiao-fnv1a64-1800e9858c5d1155 声明及观察组件 ["env", "rc", "value", "weak"] COFF None
+环境原生 denied-o3 退出 Some(3)，输出 0 字节，诊断 239 字节
+B3-4-ENV-NATIVE {"artifact_sha256":"6fac0478115f571b05c85c5c6833a9a59da10b6cd097f51b535d1d45c49e3e7d","capabilities":32,"case":"denied-o3","codegen_fingerprint":"xiao-codegen-27-4fb0ffaf13786898","coff_artifact_sha256":null,"coff_map":null,"coff_map_sha256":null,"declared_components":["env","rc","value","weak"],"dependencies":["ld-linux-x86-64.so.2","libc.so.6","libgcc_s.so.1","libm.so.6"],"exit":3,"generator":27,"object_format":"Elf","observed_components":["env","rc","value","weak"],"optimization":3,"path":"/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/linux-ubuntu/test-runs/xiao-b3-env-9916-1/denied-o3","runtime_abi":65556,"runtime_symbols":["xiao_runtime_abi_is_compatible","xiao_runtime_env_get","xiao_runtime_error_attach_span","xiao_runtime_error_checkpoint_reset","xiao_runtime_error_class","xiao_runtime_error_clear","xiao_runtime_error_exit_code","xiao_runtime_error_push_native_frame","xiao_runtime_error_report","xiao_runtime_fatal_abi","xiao_runtime_language_context_set","xiao_runtime_release","xiao_runtime_release_trace_begin","xiao_runtime_release_trace_flush","xiao_runtime_retain","xiao_runtime_string_new","xiao_runtime_value_copy","xiao_runtime_value_release_strong","xiao_runtime_value_str_owned","xiao_runtime_weak_release","xiao_runtime_weak_retain"],"source_sha256":"116c4e04af8801fac4cbefd30a32b7074128e66cd44e3ecedb0c568c764a5da2","stdlib_interface":1,"target":"x86_64-unknown-linux-gnu","toolchain_fingerprint":"xiao-fnv1a64-1800e9858c5d1155","unclassified_runtime_symbols":[],"verification":"complete"}
+环境原生释放追踪 Some("denied-o3.release.tsv")，1 个对象各销毁一次
+环境原生 invalid-o3 退出 Some(3)，输出 0 字节，诊断 278 字节
+环境原生释放追踪 Some("invalid-o3.release.tsv")，1 个对象各销毁一次
+环境原生 limit-o3 退出 Some(3)，输出 0 字节，诊断 237 字节
+环境原生释放追踪 Some("limit-o3.release.tsv")，2 个对象各销毁一次
+ok
+test native::native_env_worker_shares_snapshot_and_cancels_like_vm ... 环境原生并发任务目录 /mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/linux-ubuntu/test-runs/xiao-b3-env-9916-2
+环境原生 cancel-o0 退出 Some(3)，输出 27 字节，诊断 227 字节
+环境原生 cancel-o3 退出 Some(3)，输出 27 字节，诊断 236 字节
+ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 210.52s
+

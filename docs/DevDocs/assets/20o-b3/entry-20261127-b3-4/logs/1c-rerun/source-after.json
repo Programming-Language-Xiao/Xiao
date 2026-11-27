@@ -1,0 +1,19 @@
+{
+  "source_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "tree": "b73b72f6d0d90ca43a8dd37a133842a9eeb95d6f",
+  "source_unchanged": true,
+  "runtime_unchanged": true,
+  "overlay_unchanged": true,
+  "checked_files": 7890,
+  "tracked_diff": "",
+  "locks": {
+    "core/rust/Cargo.lock": {
+      "bytes": 19622,
+      "sha256": "b00b3e3f6d048f87f83128a2ccceeabe97ccdf375b4362a1bc1cdae653ad7405"
+    },
+    "tests/benchmarks/Cargo.lock": {
+      "bytes": 19226,
+      "sha256": "4de67a7f69935c83df26daf9d9949c93dbd57d99e53617c630f8bcf749970d5a"
+    }
+  }
+}

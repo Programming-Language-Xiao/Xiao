@@ -1,0 +1,16 @@
+command=wsl.exe --distribution Ubuntu-26.04 --exec /usr/bin/python3 -B /mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/linux_local.py ubuntu
+ubuntu tool-rustc exit=0
+ubuntu tool-cargo exit=0
+ubuntu tool-clang exit=0
+ubuntu tool-llvm-as exit=0
+ubuntu tool-llc exit=0
+ubuntu tool-ld exit=0
+ubuntu offline-metadata exit=0
+ubuntu runtime-build exit=0
+ubuntu tutorial-vm exit=0
+ubuntu tutorial-native exit=0
+ubuntu env exit=0
+ubuntu env-native exit=0
+ubuntu runtime-env exit=0
+wsl: Duplicated config key 'boot.systemd' in /etc/wsl.conf:7 (Conflicting key: 'boot.systemd' in /etc/wsl.conf:2)
+exit=0

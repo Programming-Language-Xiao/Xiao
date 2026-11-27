@@ -1,0 +1,146 @@
+{
+  "c-abi-compile": {
+    "command": "D:\\msys64\\ucrt64\\bin\\clang.exe -target x86_64-pc-windows-msvc -std=c11 -Wall -Wextra -Werror D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1b\\c-abi-probe.c D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\runtime\\xiao_runtime.lib -Xlinker kernel32.lib -Xlinker ntdll.lib -Xlinker userenv.lib -Xlinker ws2_32.lib -Xlinker dbghelp.lib -Xlinker /NODEFAULTLIB:msvcrt -o D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\env-c-abi-probe.exe",
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source",
+    "elapsed_seconds": 2.163,
+    "exit": 0,
+    "log": {
+      "bytes": 0,
+      "path": "c-abi-compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "started_at": "2026-11-27T09:36:35.071302+00:00"
+  },
+  "c-abi-run": {
+    "command": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\env-c-abi-probe.exe",
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source",
+    "elapsed_seconds": 0.049,
+    "exit": 0,
+    "log": {
+      "bytes": 84,
+      "path": "c-abi-run.log",
+      "sha256": "eb277920c31414b78f29a6ea5286f86f4315b86c01235780da6ffdfea275d89f"
+    },
+    "started_at": "2026-11-27T09:36:37.237574+00:00"
+  },
+  "env": {
+    "command": "cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b3_env -- --nocapture",
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source",
+    "elapsed_seconds": 10.015,
+    "exit": 0,
+    "log": {
+      "bytes": 1797,
+      "path": "env.log",
+      "sha256": "7b9496b5ab3c54266c3caa7da44144895e532522796595e6413a1c81ad8be921"
+    },
+    "started_at": "2026-11-27T09:02:30.463083+00:00"
+  },
+  "env-native": {
+    "command": "cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b3_env -- --ignored --nocapture --test-threads=1",
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source",
+    "elapsed_seconds": 37.323,
+    "exit": 0,
+    "log": {
+      "bytes": 7470,
+      "path": "env-native.log",
+      "sha256": "62431d60a995b0f4e6a0807fdca805682932ec953e5e546da212f3639a6b32e7"
+    },
+    "started_at": "2026-11-27T09:02:40.480149+00:00"
+  },
+  "fmt": {
+    "command": "cargo +1.96.0 fmt --manifest-path core/rust/Cargo.toml --all -- --check",
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source",
+    "elapsed_seconds": 4.97,
+    "exit": 0,
+    "log": {
+      "bytes": 0,
+      "path": "fmt.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "started_at": "2026-11-27T09:16:59.995875+00:00"
+  },
+  "runtime-env": {
+    "command": "cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-runtime --lib env -- --nocapture --test-threads=1",
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source",
+    "elapsed_seconds": 18.178,
+    "exit": 0,
+    "log": {
+      "bytes": 3842,
+      "path": "runtime-env.log",
+      "sha256": "d203d481ee2c01b5af0d214b5ce4c0b518b263e631bfd4b8280ac1020f8f9bb5"
+    },
+    "started_at": "2026-11-27T09:03:17.805276+00:00"
+  },
+  "tutorial-native": {
+    "command": "cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b3_env_tutorial -- --ignored --nocapture --test-threads=1",
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source",
+    "elapsed_seconds": 10.316,
+    "exit": 0,
+    "log": {
+      "bytes": 8805,
+      "path": "tutorial-native.log",
+      "sha256": "e59c9cf1f0ed81592e31b98c5cd3b408655e9fb726283e420e7d813978c187a5"
+    },
+    "started_at": "2026-11-27T09:02:10.454872+00:00"
+  },
+  "tutorial-native-exact": {
+    "command": "cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b3_env_tutorial env_tutorial_matches_native_golden -- --exact --ignored --nocapture --test-threads=1",
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source",
+    "elapsed_seconds": 9.686,
+    "exit": 0,
+    "log": {
+      "bytes": 8813,
+      "path": "tutorial-native-exact.log",
+      "sha256": "c584ceda244bd4c784ff229e33cb0720c9c8f8243578ba36410ff1610c52e93a"
+    },
+    "started_at": "2026-11-27T09:02:20.773629+00:00"
+  },
+  "tutorial-vm": {
+    "command": "cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b3_env_tutorial -- --nocapture",
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source",
+    "elapsed_seconds": 76.274,
+    "exit": 0,
+    "log": {
+      "bytes": 5327,
+      "path": "tutorial-vm.log",
+      "sha256": "26817fb6444e95d047492c0129d45166fdcf2426df898c314c2e0555e7636d68"
+    },
+    "started_at": "2026-11-27T09:00:52.057629+00:00"
+  },
+  "tutorial-vm-exact": {
+    "command": "cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b3_env_tutorial env_tutorial_matches_vm_golden -- --exact --nocapture",
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source",
+    "elapsed_seconds": 2.118,
+    "exit": 0,
+    "log": {
+      "bytes": 602,
+      "path": "tutorial-vm-exact.log",
+      "sha256": "d95c8001dde56ef1151332eea35891c030d44a448ec4910a5cea7b479bc91cd8"
+    },
+    "started_at": "2026-11-27T09:02:08.333406+00:00"
+  },
+  "tutorial-vm-release": {
+    "command": "cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b3_env_tutorial --release env_tutorial_matches_vm_golden -- --exact --nocapture",
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source",
+    "elapsed_seconds": 215.112,
+    "exit": 0,
+    "log": {
+      "bytes": 5209,
+      "path": "tutorial-vm-release.log",
+      "sha256": "322dd7c44c4387e82d6a060542de6e401e055616d082f281e388e357b4a935e2"
+    },
+    "started_at": "2026-11-27T09:17:44.757124+00:00"
+  },
+  "workspace": {
+    "command": "cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml --workspace",
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source",
+    "elapsed_seconds": 804.008,
+    "exit": 0,
+    "log": {
+      "bytes": 181426,
+      "path": "workspace.log",
+      "sha256": "11215d0bc45e81922a19fb96ff5a3c4d6bb3ceb1c16940ec5d5438726303e272"
+    },
+    "started_at": "2026-11-27T09:03:35.985766+00:00"
+  }
+}

@@ -1,0 +1,48 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.50s
+     Running tests\20o_b3_env.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\target\x86_64-pc-windows-msvc\debug\deps\20o_b3_env-6ae4bcfec0560896.exe)
+
+running 5 tests
+test native::native_env_driver_injects_snapshot_with_random_nonce ... 驱动随机数注入退出 0，输出 "managed-native\n--__xiao-run-environment-stdin\ntail\n"
+ok
+test native::native_env_entry_resolves_host_and_explicit_inputs ... 环境原生启动任务目录 D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\test-runs\xiao-b3-env-25604-1
+环境原生 direct-valid 退出 Some(0)，输出 12 字节，诊断 0 字节
+环境原生 direct-invalid 退出 Some(2)，输出 0 字节，诊断 53 字节
+环境原生 injected 退出 Some(0)，输出 16 字节，诊断 0 字节
+环境原生 injected-limit 退出 Some(2)，输出 0 字节，诊断 47 字节
+环境原生 static-invalid-host 退出 Some(2)，输出 0 字节，诊断 53 字节
+环境原生 static-injected-empty 退出 Some(0)，输出 0 字节，诊断 0 字节
+环境原生 drop 退出 Some(0)，输出 13 字节，诊断 0 字节
+ok
+test native::native_env_o0_o3_matches_vm_and_owns_outputs ... 环境原生任务目录 D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\test-runs\xiao-b3-env-25604-2，目标 x86_64-pc-windows-msvc
+环境原生 operations-o0 退出 Some(0)，输出 43 字节，诊断 0 字节
+环境原生释放追踪 Some("operations-o0.release.tsv")，22 个对象各销毁一次
+环境生成身份 xiao-codegen-27-024ada7077324dba 工具指纹 xiao-fnv1a64-dcb613e9b9d8b8e0 声明及观察组件 ["env", "rc", "value", "weak"] COFF Some(CoffLinkIdentity { map_path: "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-25604-2\\operations-o0.exe.map", artifact_sha256: "fb95a5e1a0dea1188759f2e21b6698ca98229e00cd961d48ed585a2e1e11f3a4", map_sha256: "47af8c913098c271ea8a1250a6674c70e91f868f0fab895190c8ba542b0554bf" })
+环境原生 denied-o0 退出 Some(3)，输出 0 字节，诊断 239 字节
+B3-4-ENV-NATIVE {"artifact_sha256":"4f971cf1aa3841db9e3b1d215411132e128770ab443a9dc069d6653ac3be67ee","capabilities":32,"case":"denied-o0","codegen_fingerprint":"xiao-codegen-27-2e3aba0bcc6aaf79","coff_artifact_sha256":"4f971cf1aa3841db9e3b1d215411132e128770ab443a9dc069d6653ac3be67ee","coff_map":"D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-25604-2\\denied-o0.exe.map","coff_map_sha256":"f7e5f505ced6a3c9bc69bb3125ce9e56a3225d6806d22593fdd1a99c3d956014","declared_components":["env","rc","value","weak"],"dependencies":["KERNEL32.dll","api-ms-win-core-synch-l1-2-0.dll","bcryptprimitives.dll","ntdll.dll"],"exit":3,"generator":27,"object_format":"Coff","observed_components":["env","rc","value","weak"],"optimization":0,"path":"D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-25604-2\\denied-o0.exe","runtime_abi":65556,"runtime_symbols":["xiao_runtime_abi_is_compatible","xiao_runtime_env_get","xiao_runtime_error_attach_span","xiao_runtime_error_checkpoint_reset","xiao_runtime_error_class","xiao_runtime_error_clear","xiao_runtime_error_exit_code","xiao_runtime_error_push_native_frame","xiao_runtime_error_report","xiao_runtime_fatal_abi","xiao_runtime_language_context_set","xiao_runtime_release","xiao_runtime_release_trace_begin","xiao_runtime_release_trace_flush","xiao_runtime_retain","xiao_runtime_string_new","xiao_runtime_value_copy","xiao_runtime_value_release_strong","xiao_runtime_value_str_owned","xiao_runtime_weak_release","xiao_runtime_weak_retain"],"source_sha256":"116c4e04af8801fac4cbefd30a32b7074128e66cd44e3ecedb0c568c764a5da2","stdlib_interface":1,"target":"x86_64-pc-windows-msvc","toolchain_fingerprint":"xiao-fnv1a64-dcb613e9b9d8b8e0","unclassified_runtime_symbols":[],"verification":"complete"}
+环境原生释放追踪 Some("denied-o0.release.tsv")，1 个对象各销毁一次
+环境原生 invalid-o0 退出 Some(3)，输出 0 字节，诊断 278 字节
+环境原生释放追踪 Some("invalid-o0.release.tsv")，1 个对象各销毁一次
+环境原生 limit-o0 退出 Some(3)，输出 0 字节，诊断 237 字节
+环境原生释放追踪 Some("limit-o0.release.tsv")，2 个对象各销毁一次
+环境原生 operations-o3 退出 Some(0)，输出 43 字节，诊断 0 字节
+环境原生释放追踪 Some("operations-o3.release.tsv")，22 个对象各销毁一次
+环境生成身份 xiao-codegen-27-95aa0b5f1958b467 工具指纹 xiao-fnv1a64-1e84fc5fba2603d7 声明及观察组件 ["env", "rc", "value", "weak"] COFF Some(CoffLinkIdentity { map_path: "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-25604-2\\operations-o3.exe.map", artifact_sha256: "7ebafb64365063afc7617e9405ef9842290ab49f59610ca5244b74bd64ec31d2", map_sha256: "bc939fa665ca833136f1d71a6e60529870a3d954b10e88c3f86d3f8da91c9ba3" })
+环境原生 denied-o3 退出 Some(3)，输出 0 字节，诊断 239 字节
+B3-4-ENV-NATIVE {"artifact_sha256":"a8112317b0f7193e438f234358d229ec7e676ac0482b39d32345000b668896f9","capabilities":32,"case":"denied-o3","codegen_fingerprint":"xiao-codegen-27-d793f90d3ab7452c","coff_artifact_sha256":"a8112317b0f7193e438f234358d229ec7e676ac0482b39d32345000b668896f9","coff_map":"D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-25604-2\\denied-o3.exe.map","coff_map_sha256":"442efea4a7f638b1e51c0c2ca62a0b052e3bbfcbe1d9cbac9ff533ba5b3b59b0","declared_components":["env","rc","value","weak"],"dependencies":["KERNEL32.dll","api-ms-win-core-synch-l1-2-0.dll","bcryptprimitives.dll","ntdll.dll"],"exit":3,"generator":27,"object_format":"Coff","observed_components":["env","rc","value","weak"],"optimization":3,"path":"D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-25604-2\\denied-o3.exe","runtime_abi":65556,"runtime_symbols":["xiao_runtime_abi_is_compatible","xiao_runtime_env_get","xiao_runtime_error_attach_span","xiao_runtime_error_checkpoint_reset","xiao_runtime_error_class","xiao_runtime_error_clear","xiao_runtime_error_exit_code","xiao_runtime_error_push_native_frame","xiao_runtime_error_report","xiao_runtime_fatal_abi","xiao_runtime_language_context_set","xiao_runtime_release","xiao_runtime_release_trace_begin","xiao_runtime_release_trace_flush","xiao_runtime_retain","xiao_runtime_string_new","xiao_runtime_value_copy","xiao_runtime_value_release_strong","xiao_runtime_value_str_owned","xiao_runtime_weak_release","xiao_runtime_weak_retain"],"source_sha256":"116c4e04af8801fac4cbefd30a32b7074128e66cd44e3ecedb0c568c764a5da2","stdlib_interface":1,"target":"x86_64-pc-windows-msvc","toolchain_fingerprint":"xiao-fnv1a64-1e84fc5fba2603d7","unclassified_runtime_symbols":[],"verification":"complete"}
+环境原生释放追踪 Some("denied-o3.release.tsv")，1 个对象各销毁一次
+环境原生 invalid-o3 退出 Some(3)，输出 0 字节，诊断 278 字节
+环境原生释放追踪 Some("invalid-o3.release.tsv")，1 个对象各销毁一次
+环境原生 limit-o3 退出 Some(3)，输出 0 字节，诊断 237 字节
+环境原生释放追踪 Some("limit-o3.release.tsv")，2 个对象各销毁一次
+ok
+test native::native_env_preserves_legacy_marker_as_first_argument ... D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\test-runs\xiao-b3-env-25604-3\legacy-marker.exe 首参 "--__xiao-run-environment-stdin" 退出 0
+D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\test-runs\xiao-b3-env-25604-3\legacy-marker.exe 首参 "--__xiao-run-environment-stdin=00000000000000000000000000000000" 退出 0
+ok
+test native::native_env_worker_shares_snapshot_and_cancels_like_vm ... 环境原生并发任务目录 D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\test-runs\xiao-b3-env-25604-4
+环境原生 cancel-o0 退出 Some(3)，输出 27 字节，诊断 227 字节
+环境原生 cancel-o3 退出 Some(3)，输出 27 字节，诊断 236 字节
+ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 51.13s
+

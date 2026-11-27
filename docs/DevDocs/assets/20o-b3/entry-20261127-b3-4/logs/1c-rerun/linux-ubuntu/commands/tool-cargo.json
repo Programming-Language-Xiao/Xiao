@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "-V"
+  ],
+  "cwd": "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun/src",
+  "exit": 0,
+  "started_at": "2026-11-27T10:53:30.903209+00:00",
+  "elapsed_seconds": 0.189,
+  "log": {
+    "path": "tool-cargo.log",
+    "bytes": 36,
+    "sha256": "b6ef6807dd96d18b833474ad68e7a23a29e562a29c67afa71a59fb9a73df0068"
+  }
+}

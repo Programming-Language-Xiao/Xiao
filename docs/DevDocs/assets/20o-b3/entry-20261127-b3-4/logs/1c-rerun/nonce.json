@@ -1,0 +1,56 @@
+{
+  "source_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "tree": "b73b72f6d0d90ca43a8dd37a133842a9eeb95d6f",
+  "target": "x86_64-pc-windows-msvc",
+  "runtime_sha256": "fe42ae1385a46d65d3e6882b9120ade253033fdf17c45101b57e812f7b815089",
+  "nonce_source": "Python secrets.token_hex(16)",
+  "cases": {
+    "env-std-o0": {
+      "path": "nonce/env-std-o0/receipt.json",
+      "bytes": 1345,
+      "sha256": "52b5d2a220312c428636a5b3f4bd209f0a7de1fbf609c4cef380207190d0bc23",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "env-std-o3": {
+      "path": "nonce/env-std-o3/receipt.json",
+      "bytes": 1345,
+      "sha256": "06d6f2bfa58176c25b20fb552e581ba864f5c3998ec7ed3ca9c9f08ecc3380a6",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "env-stdlib-o0": {
+      "path": "nonce/env-stdlib-o0/receipt.json",
+      "bytes": 1366,
+      "sha256": "ba0332946a2a2be0db557c3ea2fc0854eccdb866f9c8d2d7acae013c524526b4",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "env-stdlib-o3": {
+      "path": "nonce/env-stdlib-o3/receipt.json",
+      "bytes": 1366,
+      "sha256": "963a3d880d31f493679a495396034ab33404ae381b187da09033fb351a0cdfd8",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "legacy-direct": {
+      "path": "nonce/legacy-direct/receipt.json",
+      "bytes": 1292,
+      "sha256": "c5281b83a92ea9a68a110b3cdc80d955d8f3e36609b6409f597bbb6041c80dc8",
+      "exit": 0,
+      "diagnostic": null
+    },
+    "legacy-with-random-handshake": {
+      "path": "nonce/legacy-with-random-handshake/receipt.json",
+      "bytes": 1408,
+      "sha256": "927f52dace1391e3005a937ccaf191c283ef047c34f47580fdd4c5cecea71864",
+      "exit": 0,
+      "diagnostic": null
+    }
+  },
+  "product_driver_log": {
+    "path": "env-native.log",
+    "bytes": 8197,
+    "sha256": "ff9013d6fdbec56f6a3bf42f822545fcdee34f65b034acd6d46abac99c9ce3cb"
+  }
+}

@@ -1,0 +1,4 @@
+command=wsl.exe --distribution Ubuntu-26.04 --exec /usr/bin/uname -m
+拒绝访问。 
+错误代码: Wsl/Service/E_ACCESSDENIED
+exit=4294967295

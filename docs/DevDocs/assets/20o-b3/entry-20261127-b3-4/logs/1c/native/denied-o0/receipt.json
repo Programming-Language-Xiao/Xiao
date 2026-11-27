@@ -1,0 +1,71 @@
+{
+  "actual_exit": 3,
+  "application_command": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\test-runs\\xiao-b3-env-66960-1\\denied-o0.exe"
+  ],
+  "backend": "native",
+  "canonical_module": "stdlib.env",
+  "capabilities": "0x20",
+  "cargo": {
+    "command": "cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b3_env -- --ignored --nocapture --test-threads=1",
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source",
+    "elapsed_seconds": 37.323,
+    "exit": 0,
+    "log": {
+      "bytes": 7470,
+      "path": "env-native.log",
+      "sha256": "62431d60a995b0f4e6a0807fdca805682932ec953e5e546da212f3639a6b32e7"
+    },
+    "started_at": "2026-11-27T09:02:40.480149+00:00"
+  },
+  "case": "denied-o0",
+  "clang_link": {
+    "line": 56,
+    "path": "clang-commands.log"
+  },
+  "diagnostic": "X06-RUNTIME-026",
+  "expected_diagnostic": "X06-RUNTIME-026",
+  "expected_exit": 2,
+  "files": {
+    "artifact": {
+      "bytes": 818688,
+      "path": "native/denied-o0/denied-o0.exe",
+      "sha256": "cb4339e22f46ab370972d4bc802827a07e462e506e4e98f9c98b80568ac045c4"
+    },
+    "map": {
+      "bytes": 1794329,
+      "path": "native/denied-o0/denied-o0.exe.map",
+      "sha256": "1b3ad55f3c48bcca74cc305fa1053953a618baad5b82746cdd829fbf1fb8757e"
+    },
+    "stderr": {
+      "bytes": 239,
+      "path": "native/denied-o0/denied-o0.stderr",
+      "sha256": "9c3ee9e8020e3858b09278e4baff407f62f4f469f4c4fd18db702aad7035edd2"
+    },
+    "stdout": {
+      "bytes": 0,
+      "path": "native/denied-o0/denied-o0.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "first_failure": {
+    "actual_exit": 3,
+    "code": "X06-RUNTIME-026",
+    "expected_exit": 2,
+    "stage": "process_exit"
+  },
+  "generator": 27,
+  "import": "std.env",
+  "optimization": 0,
+  "original_task_directory": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\test-runs\\xiao-b3-env-66960-1",
+  "passed": false,
+  "runtime_sha256": "2dba315ba4aa6353b45eb21b704999936a9d8370ba21b7171f3f32e1d83577ef",
+  "snapshot": "omitted",
+  "source_commit": "0e983b0f6a3c1104f07541460d029d0ffc4bfd17",
+  "target": "x86_64-pc-windows-msvc",
+  "tree": "14a2e5391e86465c5d334d75d2bef72e0db256a4",
+  "verification": {
+    "level": "complete",
+    "path": "native/denied-o0/verification.json"
+  }
+}

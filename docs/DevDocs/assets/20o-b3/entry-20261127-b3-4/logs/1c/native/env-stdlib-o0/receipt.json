@@ -1,0 +1,67 @@
+{
+  "actual_exit": 0,
+  "application_command": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\test-runs\\xiao-b3-env-65528-0\\env-stdlib-o0\\env-stdlib-o0.exe",
+    "--__xiao-run-environment-stdin"
+  ],
+  "backend": "native",
+  "canonical_module": "stdlib.env",
+  "capabilities": "0xA0",
+  "cargo": {
+    "command": "cargo +1.96.0 test --locked --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b3_env_tutorial env_tutorial_matches_native_golden -- --exact --ignored --nocapture --test-threads=1",
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source",
+    "elapsed_seconds": 9.686,
+    "exit": 0,
+    "log": {
+      "bytes": 8813,
+      "path": "tutorial-native-exact.log",
+      "sha256": "c584ceda244bd4c784ff229e33cb0720c9c8f8243578ba36410ff1610c52e93a"
+    },
+    "started_at": "2026-11-27T09:02:20.773629+00:00"
+  },
+  "case": "env-stdlib-o0",
+  "clang_link": {
+    "line": 28,
+    "path": "clang-commands.log"
+  },
+  "diagnostic": null,
+  "expected_diagnostic": null,
+  "expected_exit": 0,
+  "files": {
+    "artifact": {
+      "bytes": 1347072,
+      "path": "native/env-stdlib-o0/env-stdlib-o0.exe",
+      "sha256": "ddf84d3aa56432a233411903fa7a1e141c65f005a46f0ad7f422f8386d77bc91"
+    },
+    "map": {
+      "bytes": 2501771,
+      "path": "native/env-stdlib-o0/env-stdlib-o0.exe.map",
+      "sha256": "7d6d52b6ae8d2ec50d87921ade0801dc5a6a5c8c51e48878469289835a885001"
+    },
+    "stderr": {
+      "bytes": 0,
+      "path": "native/env-stdlib-o0/env-stdlib-o0.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 55,
+      "path": "native/env-stdlib-o0/env-stdlib-o0.stdout",
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    }
+  },
+  "first_failure": null,
+  "generator": 27,
+  "import": "stdlib.env",
+  "optimization": 0,
+  "original_task_directory": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\test-runs\\xiao-b3-env-65528-0\\env-stdlib-o0",
+  "passed": true,
+  "runtime_sha256": "2dba315ba4aa6353b45eb21b704999936a9d8370ba21b7171f3f32e1d83577ef",
+  "snapshot": "tutorial.input.json 的 environment 数组",
+  "source_commit": "0e983b0f6a3c1104f07541460d029d0ffc4bfd17",
+  "target": "x86_64-pc-windows-msvc",
+  "tree": "14a2e5391e86465c5d334d75d2bef72e0db256a4",
+  "verification": {
+    "level": "complete",
+    "path": "native/env-stdlib-o0/verification.json"
+  }
+}

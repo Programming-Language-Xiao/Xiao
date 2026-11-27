@@ -1,0 +1,51 @@
+   Compiling serde_json v1.0.151
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-i18n)
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-syntax)
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-types)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-modules)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-lifetime)
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-ir)
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-optimizer)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-codegen-llvm)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 26.89s
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\target\x86_64-pc-windows-msvc\debug\deps\xiao_codegen_llvm-524b7644dc43f865.exe)
+
+running 4 tests
+test artifact::tests::parses_controlled_pe_coff_symbols ... ok
+test artifact::tests::readable_coff_rejects_unclassified_runtime_symbol ... ok
+test artifact::tests::bound_coff_map_rejects_unclassified_runtime_symbol ... ok
+test artifact::tests::pe_symbol_table_status_reflects_actual_coff_table ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 57 filtered out; finished in 1.34s
+
+     Running tests\15e_ci_gated.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\target\x86_64-pc-windows-msvc\debug\deps\15e_ci_gated-5df85530ef13a74f.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests\n0_a.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\target\x86_64-pc-windows-msvc\debug\deps\n0_a-357bbdac50ef53f3.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 24 filtered out; finished in 0.00s
+
+     Running tests\n0_b_dynamic.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\target\x86_64-pc-windows-msvc\debug\deps\n0_b_dynamic-7fb0c626ea9e5867.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+     Running tests\n0_c_errors.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\target\x86_64-pc-windows-msvc\debug\deps\n0_c_errors-0497669ba6cd1ea0.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+     Running tests\stdlib_bindings.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\target\x86_64-pc-windows-msvc\debug\deps\stdlib_bindings-b55b4fc025d2ea60.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+

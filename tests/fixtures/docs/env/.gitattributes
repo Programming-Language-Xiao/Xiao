@@ -1,0 +1,2 @@
+*.stdout text eol=lf
+*.input.json text eol=lf

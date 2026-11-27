@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "-vV"
+  ],
+  "cwd": "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun/src",
+  "exit": 0,
+  "started_at": "2026-11-27T10:53:30.555309+00:00",
+  "elapsed_seconds": 0.29,
+  "log": {
+    "path": "tool-rustc.log",
+    "bytes": 196,
+    "sha256": "f64c55ed9f210d80a9b248206104a47175faf5ec94a093e4ad132549209089fc"
+  }
+}

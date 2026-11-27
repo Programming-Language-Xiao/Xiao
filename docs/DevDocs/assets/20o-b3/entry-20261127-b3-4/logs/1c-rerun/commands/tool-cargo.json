@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+    "-V"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\src",
+  "target": "x86_64-pc-windows-msvc",
+  "exit": 0,
+  "started_at": "2026-11-27T10:52:48.345860+00:00",
+  "elapsed_seconds": 0.056,
+  "environment": {},
+  "log": {
+    "path": "tool-cargo.log",
+    "bytes": 36,
+    "sha256": "b6ef6807dd96d18b833474ad68e7a23a29e562a29c67afa71a59fb9a73df0068"
+  }
+}

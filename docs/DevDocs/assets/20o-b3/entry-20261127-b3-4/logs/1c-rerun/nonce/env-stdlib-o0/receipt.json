@@ -1,0 +1,37 @@
+{
+  "artifact": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c-rerun\\native\\env-stdlib-o0\\env-stdlib-o0.exe",
+    "bytes": 1348608,
+    "sha256": "aadb308d1ec661aff8875780c5cb74e1a0ade5a8ba72a6c8c3127b6e0da51251"
+  },
+  "argv": [
+    "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c-rerun\\native\\env-stdlib-o0\\env-stdlib-o0.exe",
+    "--__xiao-run-environment-stdin=4a3a6162ae62cc256ba1b16cae7cb5dd"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c-rerun\\nonce\\env-stdlib-o0",
+  "stdin": {
+    "bytes": 38,
+    "sha256": "4e364ac487566cda95cc9f1ddf64079141e25480b1b276f3acf637dfabd7e434"
+  },
+  "environment": {
+    "XIAO_B3_TUTORIAL_VALUE": "synthetic-host",
+    "XIAO_INTERNAL_RUN_ENVIRONMENT_NONCE": "4a3a6162ae62cc256ba1b16cae7cb5dd"
+  },
+  "exit": 0,
+  "expected_exit": 0,
+  "diagnostic": null,
+  "expected_diagnostic": null,
+  "outputs": {
+    "stdout": {
+      "path": "nonce/env-stdlib-o0/stdout.bin",
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    },
+    "stderr": {
+      "path": "nonce/env-stdlib-o0/stderr.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "passed": true
+}

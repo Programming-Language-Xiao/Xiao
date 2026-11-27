@@ -1,6 +1,6 @@
 # 20O-B3-4. `env` 实施规划
 
-> **状态（2026-11-27）**　`b3_4_started=true`、`b3_4_passed=false`、`b3_4_entry_ready=true`。B3-4A～C 已实施，B3-4D/E 未完成。入口产品 `3506455e`（`3506455ee5839214082df15af4c760f8d0361e66`）；B3-4C 当前工作树为 ABI 1.20、生成器 27、标准库接口 1。[22D/FIX.2 状态回执] · [B3-4A/B 证据](assets/20o-b3/entry-20261127-b3-4/REPORT.md) · [B3-4C 证据](assets/20o-b3/entry-20261127-b3-4/REPORT-1B.md)
+> **状态（2026-11-27）**　`b3_4_started=true`、`b3_4_passed=false`、`b3_4_entry_ready=true`。B3-4A～C 已实施；B3-4D 修复后本地复跑通过（Windows 与 Ubuntu WSL 教程、六份 Windows COFF、权限 026/退出 3），macOS、CI 与性能回执仍缺，B3-4E 未完成。入口产品 `3506455e`（`3506455ee5839214082df15af4c760f8d0361e66`）；B3-4C 修复产品 `00766ca3`，当前工作树为 ABI 1.20、生成器 27、标准库接口 1。[22D/FIX.2 状态回执] · [B3-4A/B 证据](assets/20o-b3/entry-20261127-b3-4/REPORT.md) · [B3-4C 证据](assets/20o-b3/entry-20261127-b3-4/REPORT-1B.md) · [B3-4C 修复](assets/20o-b3/entry-20261127-b3-4/REPORT-FIX-A.md) · [B3-4D 复跑](assets/20o-b3/entry-20261127-b3-4/REPORT-1C-RERUN.md)
 >
 > **入口依据**　B3-3 已收口（`b3_3_passed=true`）。22D/FIX.2 已收口（`22d_open=false`），固定产品通过严格源码审计与 fs 三平台复验，Windows 六份 fs 产物获产品级 COFF `Complete`。这些回执共同派生 `b3_4_entry_ready=true`。[B3-3 收口] · [B3-3 实施规划] · [22D/FIX.2 严格审计]
 >
@@ -142,8 +142,25 @@ Windows 六份 env 产物按 B3-3 的覆盖组合安排。两种导入各在 O0/
 同日完成 B3-4C：VM/TAC、LLVM、三个 `xiao_runtime_env_*` C ABI、源码/字节码/归档/原生入口
 快照接线和 `std.env`/`stdlib.env` 双路径已落地；按 B3-4-GEN 升生成器 27。最终 workspace
 196 组、1,821 通过、0 失败、58 忽略；专项、原生 O0/O3、C 探针和工具链回执见
-[B3-4C 报告](assets/20o-b3/entry-20261127-b3-4/REPORT-1B.md)。B3-4D/E 的教程、三平台和
-证据收口尚未开始。[B3-4A/B 证据](assets/20o-b3/entry-20261127-b3-4/REPORT.md)
+[B3-4C 报告](assets/20o-b3/entry-20261127-b3-4/REPORT-1B.md)。[B3-4A/B 证据](assets/20o-b3/entry-20261127-b3-4/REPORT.md)
+
+同日 B3-4C 复审确认三个阻塞：原生注入只看固定 `argv[1]`、公开 CLI 无位 7 授权、可读
+COFF 符号表路径会漏判未分类 Runtime 符号。`B3-4C-FIX-A` 改为随机 nonce 加私有环境变量
+握手，新增 `--allow-environment`，并让两条 COFF 证据路径都拒绝未分类符号；workspace
+197 组、1,824 通过、0 失败、61 忽略，提交 `00766ca3`。
+[修复报告](assets/20o-b3/entry-20261127-b3-4/REPORT-FIX-A.md)
+
+修复前 `0e983b0f` 的 B3-4D 本地证据保留在 `REPORT-1C.md`/`logs/1c/`，只作历史对照。
+修复后在 `00766ca3` 的独立源码树上复跑：Windows 与 Ubuntu WSL 的 VM 双导入、原生
+O0/O3 均逐字匹配 55 字节黄金；Windows 六份新产物获产品级 COFF `Complete`，回执绑定
+产物、map、链接轨迹和产品验证；权限负例运行期报 `X06-RUNTIME-026`、退出 3，执行前
+快照 `X09-DRIVER-006/007` 退出 2；新 nonce 握手生效且旧标记可作普通首参。workspace
+197 组、1,824 通过、0 失败、61 忽略。macOS 记 `unverifiable`，CI 与 §五性能五批采样
+仍缺，归 B3-4E。[复跑报告](assets/20o-b3/entry-20261127-b3-4/REPORT-1C-RERUN.md)
+
+FIX-A 仍存三项风险：原生 `run_application` 未消费 `timeout_ms`，env C ABI 安全点只覆盖
+任务取消；跨平台链接依赖只实测 Windows；注入载荷先完整解码 JSON 再检查 1 MiB 配额。
+前两项与 B3-4E 的平台矩阵合并处理，第三项在 B3-4C-FIX-B 修正。
 
 B3-4C 升生成器 27 后，B3-1/B3-2/B3-3 的原生证据仍绑定各自历史产品与生成器 26
 （B3-3 为 `3506455e`），不得把它们写成当前 27 产品的六模块验收。B3-4D/E 只声明 env；

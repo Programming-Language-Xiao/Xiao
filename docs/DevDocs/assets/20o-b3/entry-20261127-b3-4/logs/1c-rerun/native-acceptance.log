@@ -1,0 +1,6 @@
+env-std-o0 COFF Complete exit=0 diagnostic=-
+env-std-o3 COFF Complete exit=0 diagnostic=-
+env-stdlib-o0 COFF Complete exit=0 diagnostic=-
+env-stdlib-o3 COFF Complete exit=0 diagnostic=-
+denied-o0 COFF Complete exit=3 diagnostic=X06-RUNTIME-026
+denied-o3 COFF Complete exit=3 diagnostic=X06-RUNTIME-026

@@ -1,0 +1,82 @@
+{
+  "case": "env-stdlib-o0",
+  "source_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "tree": "b73b72f6d0d90ca43a8dd37a133842a9eeb95d6f",
+  "target": "x86_64-pc-windows-msvc",
+  "runtime": {
+    "path": "runtime.json",
+    "bytes": 480,
+    "sha256": "531891b36662bb490ffbc2be5bfb3ee17cec5e9f51b706749f5f54618dd923f0",
+    "runtime_sha256": "fe42ae1385a46d65d3e6882b9120ade253033fdf17c45101b57e812f7b815089"
+  },
+  "toolchain": {
+    "path": "toolchain.json",
+    "bytes": 3013,
+    "sha256": "81f17a12761867ae974844d19fe4b7a9ab32dad84a44ef2c2d8786ec8c28bf90"
+  },
+  "backend": "native",
+  "optimization": 0,
+  "import": "stdlib.env",
+  "canonical_module": "stdlib.env",
+  "capabilities": 160,
+  "source_sha256": "a8cb3149daec0193db2de4b6d42752c38812965de8e624f4a106c879de5c6e1d",
+  "original_task_directory": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-32476-0\\env-stdlib-o0",
+  "command": {
+    "path": "commands/tutorial-native.json",
+    "bytes": 951,
+    "sha256": "5b6a727da89072c3cb9db568947b704ba97283ef7e19a37b56c048e037f12051"
+  },
+  "application_argv": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-32476-0\\env-stdlib-o0\\env-stdlib-o0.exe",
+    "--__xiao-run-environment-stdin=0123456789abcdef0123456789abcdef"
+  ],
+  "snapshot": {
+    "fixture": "tests/fixtures/docs/env/tutorial.input.json",
+    "launch_nonce": {
+      "XIAO_INTERNAL_RUN_ENVIRONMENT_NONCE": "0123456789abcdef0123456789abcdef"
+    },
+    "stdin": {
+      "bytes": 38,
+      "sha256": "4e364ac487566cda95cc9f1ddf64079141e25480b1b276f3acf637dfabd7e434"
+    }
+  },
+  "exit": 0,
+  "diagnostic": null,
+  "files": {
+    "artifact": {
+      "path": "native/env-stdlib-o0/env-stdlib-o0.exe",
+      "bytes": 1348608,
+      "sha256": "aadb308d1ec661aff8875780c5cb74e1a0ade5a8ba72a6c8c3127b6e0da51251"
+    },
+    "map": {
+      "path": "native/env-stdlib-o0/env-stdlib-o0.exe.map",
+      "bytes": 2502503,
+      "sha256": "fe9d136762d1f4d571bce8507b977606a0d24a37656b1040d0b52e900ef70f1e"
+    },
+    "stdout": {
+      "path": "native/env-stdlib-o0/env-stdlib-o0.stdout",
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    },
+    "stderr": {
+      "path": "native/env-stdlib-o0/env-stdlib-o0.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "clang_link": {
+    "path": "tutorial-native-clang.log",
+    "bytes": 9209,
+    "sha256": "8af21a2428d547b734cf09ffd04cbb21978187f66eb01eac25fed48ef9d6cf88",
+    "clang_cc1_line": 10,
+    "msvc_link_line": 12
+  },
+  "verification": {
+    "path": "native/env-stdlib-o0/verification.json",
+    "bytes": 2412,
+    "sha256": "e52492c94d669cdb5e9187022f95e5e70bb0579d26865d6c7ccef845ec497833",
+    "level": "Complete",
+    "log_line": 88,
+    "log_path": "tutorial-native.log"
+  }
+}

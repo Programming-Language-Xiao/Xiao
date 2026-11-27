@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "C:\\Windows\\System32\\wsl.exe",
+    "--list",
+    "--verbose"
+  ],
+  "exit": 4294967295,
+  "log": "wsl-list-sandbox.log"
+}

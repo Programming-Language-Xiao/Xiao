@@ -1,0 +1,11 @@
+{
+  "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+  "profile": "release",
+  "rust": "1.96.0",
+  "target": "x86_64-pc-windows-msvc",
+  "source_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "tree": "b73b72f6d0d90ca43a8dd37a133842a9eeb95d6f",
+  "command": "commands/runtime-build.json",
+  "bytes": 27833734,
+  "sha256": "fe42ae1385a46d65d3e6882b9120ade253033fdf17c45101b57e812f7b815089"
+}

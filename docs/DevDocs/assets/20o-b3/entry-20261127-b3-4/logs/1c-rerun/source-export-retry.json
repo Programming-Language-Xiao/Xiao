@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "cmd.exe",
+    "/d",
+    "/c",
+    "git",
+    "-c",
+    "core.autocrlf=false",
+    "-c",
+    "core.eol=lf",
+    "archive",
+    "--format=tar",
+    "00766ca38c478608ee6d979824236f77cd74c00e"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "exit": 0,
+  "started_at": "2026-11-27T10:49:57.171930+00:00",
+  "archive": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\source-exact.tar",
+    "bytes": 621312000,
+    "sha256": "25d4e4e4c6cffd371a373a4c896d61eee5113cd0b6c06cab23bc2947455a8767"
+  },
+  "stderr": {
+    "path": "source-export-retry.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

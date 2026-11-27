@@ -1,0 +1,9 @@
+env-std-o0 COFF complete exit=0 expected=0 code=None
+env-std-o3 COFF complete exit=0 expected=0 code=None
+env-stdlib-o0 COFF complete exit=0 expected=0 code=None
+env-stdlib-o3 COFF complete exit=0 expected=0 code=None
+denied-o0 COFF complete exit=3 expected=2 code=X06-RUNTIME-026
+denied-o3 COFF complete exit=3 expected=2 code=X06-RUNTIME-026
+denied-o0 retry exit=3 expected=2
+denied-o3 retry exit=3 expected=2
+exit=1

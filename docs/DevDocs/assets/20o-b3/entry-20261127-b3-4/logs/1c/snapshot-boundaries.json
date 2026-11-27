@@ -1,0 +1,680 @@
+{
+  "cases": [
+    {
+      "artifact": {
+        "bytes": 1347072,
+        "path": "native/env-std-o0/env-std-o0.exe",
+        "sha256": "91943721e8151cf3d32f2157a2d88a87722797f9eb88f641f909609972d5015c"
+      },
+      "case": "name-255",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o0\\env-std-o0.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 0,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o0/name-255/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o0/name-255/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 301
+    },
+    {
+      "artifact": {
+        "bytes": 1347072,
+        "path": "native/env-std-o0/env-std-o0.exe",
+        "sha256": "91943721e8151cf3d32f2157a2d88a87722797f9eb88f641f909609972d5015c"
+      },
+      "case": "name-256",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o0\\env-std-o0.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 0,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o0/name-256/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o0/name-256/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 302
+    },
+    {
+      "artifact": {
+        "bytes": 1347072,
+        "path": "native/env-std-o0/env-std-o0.exe",
+        "sha256": "91943721e8151cf3d32f2157a2d88a87722797f9eb88f641f909609972d5015c"
+      },
+      "case": "name-257",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o0\\env-std-o0.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": "X09-DRIVER-007",
+      "exit": 2,
+      "optimization": 0,
+      "outputs": {
+        "stderr": {
+          "bytes": 47,
+          "path": "snapshot-boundaries/o0/name-257/stderr.bin",
+          "sha256": "962e168ac7124092a569905b8c20f471684a3b1b77450889dce27f19a80bb158"
+        },
+        "stdout": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o0/name-257/stdout.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "wire_bytes": 303
+    },
+    {
+      "artifact": {
+        "bytes": 1347072,
+        "path": "native/env-std-o0/env-std-o0.exe",
+        "sha256": "91943721e8151cf3d32f2157a2d88a87722797f9eb88f641f909609972d5015c"
+      },
+      "case": "value-65535",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o0\\env-std-o0.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 0,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o0/value-65535/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o0/value-65535/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 65586
+    },
+    {
+      "artifact": {
+        "bytes": 1347072,
+        "path": "native/env-std-o0/env-std-o0.exe",
+        "sha256": "91943721e8151cf3d32f2157a2d88a87722797f9eb88f641f909609972d5015c"
+      },
+      "case": "value-65536",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o0\\env-std-o0.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 0,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o0/value-65536/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o0/value-65536/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 65587
+    },
+    {
+      "artifact": {
+        "bytes": 1347072,
+        "path": "native/env-std-o0/env-std-o0.exe",
+        "sha256": "91943721e8151cf3d32f2157a2d88a87722797f9eb88f641f909609972d5015c"
+      },
+      "case": "value-65537",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o0\\env-std-o0.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": "X09-DRIVER-007",
+      "exit": 2,
+      "optimization": 0,
+      "outputs": {
+        "stderr": {
+          "bytes": 47,
+          "path": "snapshot-boundaries/o0/value-65537/stderr.bin",
+          "sha256": "962e168ac7124092a569905b8c20f471684a3b1b77450889dce27f19a80bb158"
+        },
+        "stdout": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o0/value-65537/stdout.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "wire_bytes": 65588
+    },
+    {
+      "artifact": {
+        "bytes": 1347072,
+        "path": "native/env-std-o0/env-std-o0.exe",
+        "sha256": "91943721e8151cf3d32f2157a2d88a87722797f9eb88f641f909609972d5015c"
+      },
+      "case": "pairs-1023",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o0\\env-std-o0.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 0,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o0/pairs-1023/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o0/pairs-1023/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 15368
+    },
+    {
+      "artifact": {
+        "bytes": 1347072,
+        "path": "native/env-std-o0/env-std-o0.exe",
+        "sha256": "91943721e8151cf3d32f2157a2d88a87722797f9eb88f641f909609972d5015c"
+      },
+      "case": "pairs-1024",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o0\\env-std-o0.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 0,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o0/pairs-1024/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o0/pairs-1024/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 15383
+    },
+    {
+      "artifact": {
+        "bytes": 1347072,
+        "path": "native/env-std-o0/env-std-o0.exe",
+        "sha256": "91943721e8151cf3d32f2157a2d88a87722797f9eb88f641f909609972d5015c"
+      },
+      "case": "pairs-1025",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o0\\env-std-o0.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": "X09-DRIVER-007",
+      "exit": 2,
+      "optimization": 0,
+      "outputs": {
+        "stderr": {
+          "bytes": 47,
+          "path": "snapshot-boundaries/o0/pairs-1025/stderr.bin",
+          "sha256": "962e168ac7124092a569905b8c20f471684a3b1b77450889dce27f19a80bb158"
+        },
+        "stdout": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o0/pairs-1025/stdout.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "wire_bytes": 15398
+    },
+    {
+      "artifact": {
+        "bytes": 1347072,
+        "path": "native/env-std-o0/env-std-o0.exe",
+        "sha256": "91943721e8151cf3d32f2157a2d88a87722797f9eb88f641f909609972d5015c"
+      },
+      "case": "total-1048575",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o0\\env-std-o0.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 0,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o0/total-1048575/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o0/total-1048575/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 1048712
+    },
+    {
+      "artifact": {
+        "bytes": 1347072,
+        "path": "native/env-std-o0/env-std-o0.exe",
+        "sha256": "91943721e8151cf3d32f2157a2d88a87722797f9eb88f641f909609972d5015c"
+      },
+      "case": "total-1048576",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o0\\env-std-o0.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 0,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o0/total-1048576/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o0/total-1048576/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 1048713
+    },
+    {
+      "artifact": {
+        "bytes": 1347072,
+        "path": "native/env-std-o0/env-std-o0.exe",
+        "sha256": "91943721e8151cf3d32f2157a2d88a87722797f9eb88f641f909609972d5015c"
+      },
+      "case": "total-1048577",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o0\\env-std-o0.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": "X09-DRIVER-007",
+      "exit": 2,
+      "optimization": 0,
+      "outputs": {
+        "stderr": {
+          "bytes": 47,
+          "path": "snapshot-boundaries/o0/total-1048577/stderr.bin",
+          "sha256": "962e168ac7124092a569905b8c20f471684a3b1b77450889dce27f19a80bb158"
+        },
+        "stdout": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o0/total-1048577/stdout.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "wire_bytes": 1048714
+    },
+    {
+      "artifact": {
+        "bytes": 1344512,
+        "path": "native/env-std-o3/env-std-o3.exe",
+        "sha256": "add2d72564aa814f7dd144fb64bd899d29367631892f40c9a6edeadc6cb1fcf9"
+      },
+      "case": "name-255",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o3\\env-std-o3.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 3,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o3/name-255/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o3/name-255/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 301
+    },
+    {
+      "artifact": {
+        "bytes": 1344512,
+        "path": "native/env-std-o3/env-std-o3.exe",
+        "sha256": "add2d72564aa814f7dd144fb64bd899d29367631892f40c9a6edeadc6cb1fcf9"
+      },
+      "case": "name-256",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o3\\env-std-o3.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 3,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o3/name-256/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o3/name-256/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 302
+    },
+    {
+      "artifact": {
+        "bytes": 1344512,
+        "path": "native/env-std-o3/env-std-o3.exe",
+        "sha256": "add2d72564aa814f7dd144fb64bd899d29367631892f40c9a6edeadc6cb1fcf9"
+      },
+      "case": "name-257",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o3\\env-std-o3.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": "X09-DRIVER-007",
+      "exit": 2,
+      "optimization": 3,
+      "outputs": {
+        "stderr": {
+          "bytes": 47,
+          "path": "snapshot-boundaries/o3/name-257/stderr.bin",
+          "sha256": "962e168ac7124092a569905b8c20f471684a3b1b77450889dce27f19a80bb158"
+        },
+        "stdout": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o3/name-257/stdout.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "wire_bytes": 303
+    },
+    {
+      "artifact": {
+        "bytes": 1344512,
+        "path": "native/env-std-o3/env-std-o3.exe",
+        "sha256": "add2d72564aa814f7dd144fb64bd899d29367631892f40c9a6edeadc6cb1fcf9"
+      },
+      "case": "value-65535",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o3\\env-std-o3.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 3,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o3/value-65535/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o3/value-65535/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 65586
+    },
+    {
+      "artifact": {
+        "bytes": 1344512,
+        "path": "native/env-std-o3/env-std-o3.exe",
+        "sha256": "add2d72564aa814f7dd144fb64bd899d29367631892f40c9a6edeadc6cb1fcf9"
+      },
+      "case": "value-65536",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o3\\env-std-o3.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 3,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o3/value-65536/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o3/value-65536/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 65587
+    },
+    {
+      "artifact": {
+        "bytes": 1344512,
+        "path": "native/env-std-o3/env-std-o3.exe",
+        "sha256": "add2d72564aa814f7dd144fb64bd899d29367631892f40c9a6edeadc6cb1fcf9"
+      },
+      "case": "value-65537",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o3\\env-std-o3.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": "X09-DRIVER-007",
+      "exit": 2,
+      "optimization": 3,
+      "outputs": {
+        "stderr": {
+          "bytes": 47,
+          "path": "snapshot-boundaries/o3/value-65537/stderr.bin",
+          "sha256": "962e168ac7124092a569905b8c20f471684a3b1b77450889dce27f19a80bb158"
+        },
+        "stdout": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o3/value-65537/stdout.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "wire_bytes": 65588
+    },
+    {
+      "artifact": {
+        "bytes": 1344512,
+        "path": "native/env-std-o3/env-std-o3.exe",
+        "sha256": "add2d72564aa814f7dd144fb64bd899d29367631892f40c9a6edeadc6cb1fcf9"
+      },
+      "case": "pairs-1023",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o3\\env-std-o3.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 3,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o3/pairs-1023/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o3/pairs-1023/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 15368
+    },
+    {
+      "artifact": {
+        "bytes": 1344512,
+        "path": "native/env-std-o3/env-std-o3.exe",
+        "sha256": "add2d72564aa814f7dd144fb64bd899d29367631892f40c9a6edeadc6cb1fcf9"
+      },
+      "case": "pairs-1024",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o3\\env-std-o3.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 3,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o3/pairs-1024/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o3/pairs-1024/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 15383
+    },
+    {
+      "artifact": {
+        "bytes": 1344512,
+        "path": "native/env-std-o3/env-std-o3.exe",
+        "sha256": "add2d72564aa814f7dd144fb64bd899d29367631892f40c9a6edeadc6cb1fcf9"
+      },
+      "case": "pairs-1025",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o3\\env-std-o3.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": "X09-DRIVER-007",
+      "exit": 2,
+      "optimization": 3,
+      "outputs": {
+        "stderr": {
+          "bytes": 47,
+          "path": "snapshot-boundaries/o3/pairs-1025/stderr.bin",
+          "sha256": "962e168ac7124092a569905b8c20f471684a3b1b77450889dce27f19a80bb158"
+        },
+        "stdout": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o3/pairs-1025/stdout.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "wire_bytes": 15398
+    },
+    {
+      "artifact": {
+        "bytes": 1344512,
+        "path": "native/env-std-o3/env-std-o3.exe",
+        "sha256": "add2d72564aa814f7dd144fb64bd899d29367631892f40c9a6edeadc6cb1fcf9"
+      },
+      "case": "total-1048575",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o3\\env-std-o3.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 3,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o3/total-1048575/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o3/total-1048575/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 1048712
+    },
+    {
+      "artifact": {
+        "bytes": 1344512,
+        "path": "native/env-std-o3/env-std-o3.exe",
+        "sha256": "add2d72564aa814f7dd144fb64bd899d29367631892f40c9a6edeadc6cb1fcf9"
+      },
+      "case": "total-1048576",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o3\\env-std-o3.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": null,
+      "exit": 0,
+      "optimization": 3,
+      "outputs": {
+        "stderr": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o3/total-1048576/stderr.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 55,
+          "path": "snapshot-boundaries/o3/total-1048576/stdout.bin",
+          "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+        }
+      },
+      "wire_bytes": 1048713
+    },
+    {
+      "artifact": {
+        "bytes": 1344512,
+        "path": "native/env-std-o3/env-std-o3.exe",
+        "sha256": "add2d72564aa814f7dd144fb64bd899d29367631892f40c9a6edeadc6cb1fcf9"
+      },
+      "case": "total-1048577",
+      "command": [
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c\\native\\env-std-o3\\env-std-o3.exe",
+        "--__xiao-run-environment-stdin"
+      ],
+      "diagnostic": "X09-DRIVER-007",
+      "exit": 2,
+      "optimization": 3,
+      "outputs": {
+        "stderr": {
+          "bytes": 47,
+          "path": "snapshot-boundaries/o3/total-1048577/stderr.bin",
+          "sha256": "962e168ac7124092a569905b8c20f471684a3b1b77450889dce27f19a80bb158"
+        },
+        "stdout": {
+          "bytes": 0,
+          "path": "snapshot-boundaries/o3/total-1048577/stdout.bin",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "wire_bytes": 1048714
+    }
+  ],
+  "runtime_sha256": "2dba315ba4aa6353b45eb21b704999936a9d8370ba21b7171f3f32e1d83577ef",
+  "source_commit": "0e983b0f6a3c1104f07541460d029d0ffc4bfd17",
+  "target": "x86_64-pc-windows-msvc",
+  "tree": "14a2e5391e86465c5d334d75d2bef72e0db256a4"
+}

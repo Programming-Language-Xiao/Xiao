@@ -1,0 +1,25 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--offline",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--workspace",
+    "--target",
+    "x86_64-pc-windows-msvc"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\src",
+  "target": "x86_64-pc-windows-msvc",
+  "exit": 0,
+  "started_at": "2026-11-27T11:00:50.489658+00:00",
+  "elapsed_seconds": 1054.056,
+  "environment": {},
+  "log": {
+    "path": "workspace.log",
+    "bytes": 186039,
+    "sha256": "52701e363174f12b428cdb473e65cabd19fb2b128e7e58621849ca644abdf5e2"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "--version"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\src",
+  "target": "x86_64-pc-windows-msvc",
+  "exit": 0,
+  "started_at": "2026-11-27T10:52:48.449219+00:00",
+  "elapsed_seconds": 0.079,
+  "environment": {},
+  "log": {
+    "path": "tool-clang.log",
+    "bytes": 190,
+    "sha256": "5c075035dbde6a78b05a8d921e0769dd24814486efecbcdbe7035527701858b2"
+  }
+}

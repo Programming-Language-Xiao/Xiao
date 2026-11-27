@@ -1,0 +1,72 @@
+{
+  "case": "denied-o3",
+  "source_commit": "00766ca38c478608ee6d979824236f77cd74c00e",
+  "tree": "b73b72f6d0d90ca43a8dd37a133842a9eeb95d6f",
+  "target": "x86_64-pc-windows-msvc",
+  "runtime": {
+    "path": "runtime.json",
+    "bytes": 480,
+    "sha256": "531891b36662bb490ffbc2be5bfb3ee17cec5e9f51b706749f5f54618dd923f0",
+    "runtime_sha256": "fe42ae1385a46d65d3e6882b9120ade253033fdf17c45101b57e812f7b815089"
+  },
+  "toolchain": {
+    "path": "toolchain.json",
+    "bytes": 3013,
+    "sha256": "81f17a12761867ae974844d19fe4b7a9ab32dad84a44ef2c2d8786ec8c28bf90"
+  },
+  "backend": "native",
+  "optimization": 3,
+  "import": "std.env",
+  "canonical_module": "stdlib.env",
+  "capabilities": 32,
+  "source_sha256": "116c4e04af8801fac4cbefd30a32b7074128e66cd44e3ecedb0c568c764a5da2",
+  "original_task_directory": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-25604-2",
+  "command": {
+    "path": "commands/env-native.json",
+    "bytes": 874,
+    "sha256": "fbb3aa5fc6386192455774948a68c30466a8604b955f9ccb508dd333d4572f28"
+  },
+  "application_argv": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-25604-2\\denied-o3.exe"
+  ],
+  "snapshot": null,
+  "exit": 3,
+  "diagnostic": "X06-RUNTIME-026",
+  "files": {
+    "artifact": {
+      "path": "native/denied-o3/denied-o3.exe",
+      "bytes": 818176,
+      "sha256": "a8112317b0f7193e438f234358d229ec7e676ac0482b39d32345000b668896f9"
+    },
+    "map": {
+      "path": "native/denied-o3/denied-o3.exe.map",
+      "bytes": 1794587,
+      "sha256": "442efea4a7f638b1e51c0c2ca62a0b052e3bbfcbe1d9cbac9ff533ba5b3b59b0"
+    },
+    "stdout": {
+      "path": "native/denied-o3/denied-o3.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stderr": {
+      "path": "native/denied-o3/denied-o3.stderr",
+      "bytes": 239,
+      "sha256": "9c3ee9e8020e3858b09278e4baff407f62f4f469f4c4fd18db702aad7035edd2"
+    }
+  },
+  "clang_link": {
+    "path": "env-native-clang.log",
+    "bytes": 34005,
+    "sha256": "080b892fdd35af9307f4208b541541fc5a5e33d2b73b438bbc6b5a3aa491332e",
+    "clang_cc1_line": 38,
+    "msvc_link_line": 40
+  },
+  "verification": {
+    "path": "native/denied-o3/verification.json",
+    "bytes": 2057,
+    "sha256": "fd5b2316032130d1dd788d88427838a786b7ce69aeb9fe6068912f07c6f4fc39",
+    "level": "Complete",
+    "log_line": 32,
+    "log_path": "env-native.log"
+  }
+}

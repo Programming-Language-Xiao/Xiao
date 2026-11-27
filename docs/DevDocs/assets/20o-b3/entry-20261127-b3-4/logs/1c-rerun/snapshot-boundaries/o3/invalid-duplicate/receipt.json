@@ -1,0 +1,37 @@
+{
+  "artifact": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c-rerun\\native\\env-std-o3\\env-std-o3.exe",
+    "bytes": 1345536,
+    "sha256": "48170de9ccae496f39ba37024d8e323ac552dc9ee3972b64ac27468109cb9405"
+  },
+  "argv": [
+    "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c-rerun\\native\\env-std-o3\\env-std-o3.exe",
+    "--__xiao-run-environment-stdin=b75f605d988a37d902518c5aca0ea604"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c-rerun\\snapshot-boundaries\\o3\\invalid-duplicate",
+  "stdin": {
+    "bytes": 77,
+    "sha256": "5595c92550d792ad9c5129eb20c5966b29886d8959ab7e6cd537c05b937a3484"
+  },
+  "environment": {
+    "XIAO_B3_TUTORIAL_VALUE": "synthetic-host",
+    "XIAO_INTERNAL_RUN_ENVIRONMENT_NONCE": "b75f605d988a37d902518c5aca0ea604"
+  },
+  "exit": 2,
+  "expected_exit": 2,
+  "diagnostic": "X09-DRIVER-006",
+  "expected_diagnostic": "X09-DRIVER-006",
+  "outputs": {
+    "stdout": {
+      "path": "snapshot-boundaries/o3/invalid-duplicate/stdout.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stderr": {
+      "path": "snapshot-boundaries/o3/invalid-duplicate/stderr.bin",
+      "bytes": 44,
+      "sha256": "3a16b9f163615f8216ed64ec76b0fe1d06d0424123df03f6c3edc61580765151"
+    }
+  },
+  "passed": true
+}

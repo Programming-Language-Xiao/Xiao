@@ -1,0 +1,74 @@
+{
+  "architecture": "X64",
+  "msvc_sdk": {
+    "lib": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\ucrt\\x64;D:\\Windows Kits\\10\\Lib\\10.0.26100.0\\um\\x64",
+    "sdk": "D:\\Windows Kits\\10",
+    "sdk_version": "10.0.26100.0",
+    "vc_tools": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231"
+  },
+  "native_environment": {
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\runtime\\xiao_runtime.lib",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc"
+  },
+  "os_description": "Microsoft Windows 10.0.26200",
+  "runner": "Windows-11-10.0.26200-SP0",
+  "runtime_build": {
+    "bytes": 27829940,
+    "origin": "B3-4C 发布构建",
+    "original_receipt": "../1b/runtime-release-final-sha256.log",
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\runtime\\xiao_runtime.lib",
+    "profile": "release",
+    "rust": "1.96.0",
+    "sha256": "2dba315ba4aa6353b45eb21b704999936a9d8370ba21b7171f3f32e1d83577ef",
+    "target": "x86_64-pc-windows-msvc"
+  },
+  "target": "x86_64-pc-windows-msvc",
+  "tools": {
+    "cargo": {
+      "bytes": 31347200,
+      "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+      "sha256": "122f18d28a63fa358f3db266abee1ff1d8aabf0ab7f2dd9ac38a38da99977ae5",
+      "version": "cargo 1.96.0 (30a34c682 2026-05-25)",
+      "version_exit": 0
+    },
+    "clang": {
+      "bytes": 157296,
+      "path": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+      "sha256": "574047f1b98d62bea1da8ae9340fea1ef06d262c3186e1d72d87e5401166c833",
+      "version": "clang version 22.1.2 (https://github.com/msys2/MINGW-packages 4f19d31560faf73257116b7c95f0b322ba83d720)",
+      "version_exit": 0
+    },
+    "link": {
+      "bytes": 3701088,
+      "file_version": "14.51.36256.0",
+      "path": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+      "sha256": "3ef8fcf80d409fab22ddd89ee19249f31a26ad9914d3e3e48573c30998fa24de",
+      "version": "Microsoft (R) Incremental Linker Version 14.51.36256.0",
+      "version_exit": 1100
+    },
+    "llc": {
+      "bytes": 211961,
+      "path": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+      "sha256": "df1409fabacdc625b2c2fefe50712de4ba140e07bf2bb4192101189498152869",
+      "version": "LLVM version 22.1.2",
+      "version_exit": 0
+    },
+    "llvm-as": {
+      "bytes": 40741,
+      "path": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+      "sha256": "63f559db3d87798fa4f26923c4cd5839ddc41b40905d884ee341c74a8bd858e9",
+      "version": "LLVM version 22.1.2",
+      "version_exit": 0
+    },
+    "rustc": {
+      "bytes": 111104,
+      "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+      "sha256": "acb138286bbe20c6cf3ec39a7e0a68c3fab0cd949baa2912cf466514d0d531ab",
+      "version": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+      "version_exit": 0
+    }
+  }
+}

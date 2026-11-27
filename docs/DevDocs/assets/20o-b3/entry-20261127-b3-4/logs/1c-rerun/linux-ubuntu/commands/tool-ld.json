@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/usr/bin/x86_64-linux-gnu-ld.bfd",
+    "--version"
+  ],
+  "cwd": "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun/src",
+  "exit": 0,
+  "started_at": "2026-11-27T10:53:32.328017+00:00",
+  "elapsed_seconds": 0.056,
+  "log": {
+    "path": "tool-ld.log",
+    "bytes": 281,
+    "sha256": "90619b44f5e33d31b24e5eaefa374736e4db86d56a01e8b1f6ceb0b4c2cab821"
+  }
+}

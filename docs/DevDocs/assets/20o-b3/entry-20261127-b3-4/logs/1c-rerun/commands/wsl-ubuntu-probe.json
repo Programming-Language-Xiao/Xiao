@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "C:\\Windows\\System32\\wsl.exe",
+    "--distribution",
+    "Ubuntu-26.04",
+    "--exec",
+    "/usr/bin/uname",
+    "-a"
+  ],
+  "exit": 0,
+  "log": {
+    "path": "wsl-ubuntu-probe.log",
+    "bytes": 238,
+    "sha256": "85ba238307a8c3371f7d3d0c042bc2f7ad58f4fcaf910e2e9469fe6087b6af32"
+  }
+}

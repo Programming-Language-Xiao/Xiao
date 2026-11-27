@@ -1,0 +1,93 @@
+   Compiling serde_core v1.0.229
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.24
+   Compiling cfg-if v1.0.5
+   Compiling zmij v1.0.23
+   Compiling serde v1.0.229
+   Compiling version_check v0.9.5
+   Compiling itoa v1.0.18
+   Compiling generic-array v0.14.7
+   Compiling typenum v1.20.1
+   Compiling syn v3.0.5
+   Compiling serde_json v1.0.151
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling memchr v2.8.3
+   Compiling digest v0.10.7
+   Compiling cpufeatures v0.2.17
+   Compiling xiao-runtime-abi v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-runtime-abi)
+   Compiling sha2 v0.10.9
+   Compiling serde_derive v1.0.229
+   Compiling xiao-source v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-source)
+   Compiling autocfg v1.5.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling shlex v2.0.1
+   Compiling num-traits v0.2.19
+   Compiling cc v1.5.1
+   Compiling getrandom v0.2.17
+   Compiling libm v0.2.16
+   Compiling zeroize v1.9.0
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling rustls-pki-types v1.15.1
+   Compiling ring v0.17.14
+   Compiling num-integer v0.1.47
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-i18n)
+   Compiling bigdecimal v0.4.11
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-intrinsics)
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-syntax)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-modules)
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-types)
+   Compiling untrusted v0.9.0
+   Compiling httparse v1.10.1
+   Compiling libc v0.2.189
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-standard-library)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-lifetime)
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-ir)
+   Compiling num-bigint v0.4.8
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-optimizer)
+   Compiling log v0.4.34
+   Compiling bytes v1.12.1
+   Compiling rustls v0.23.45
+   Compiling crc32fast v1.5.2
+   Compiling http v1.5.0
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-bytecode)
+   Compiling windows-targets v0.52.6
+   Compiling xiao-lock v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-lock)
+   Compiling adler2 v2.0.1
+   Compiling base64 v0.23.1
+   Compiling once_cell v1.21.4
+   Compiling simd-adler32 v0.3.10
+   Compiling subtle v2.6.1
+   Compiling miniz_oxide v0.9.1
+   Compiling ureq-proto v0.6.4
+   Compiling windows-sys v0.52.0
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-runtime)
+   Compiling xiao-config v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-config)
+   Compiling webpki-roots v1.0.9
+   Compiling filetime v0.2.29
+   Compiling percent-encoding v2.3.2
+   Compiling utf8-zero v0.8.1
+   Compiling tar v0.4.46
+   Compiling flate2 v1.1.10
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-artifacts)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-xar)
+   Compiling rustls-webpki v0.103.15
+   Compiling ureq v3.4.2
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\src\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 26s
+     Running tests\20o_b3_env_tutorial.rs (D:\project\Xiao\.xiao-orchestrator\evidence\b3-4d-rerun\target\x86_64-pc-windows-msvc\debug\deps\20o_b3_env_tutorial-4eb1c71fcc9749ec.exe)
+
+running 1 test
+test env_tutorial_matches_native_golden ... B3-4-ENV-NATIVE {"artifact_sha256":"58e691c22c53b66b1f9be27ccd9cfbc3f994471737c60b8053df3c964de50d65","capabilities":160,"case":"env-std-o0","codegen_fingerprint":"xiao-codegen-27-024ada7077324dba","coff_artifact_sha256":"58e691c22c53b66b1f9be27ccd9cfbc3f994471737c60b8053df3c964de50d65","coff_map":"D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-32476-0\\env-std-o0\\env-std-o0.exe.map","coff_map_sha256":"90f8c25a144df555ee21b30eca7db64b53f090d09b72e065385c889adab51a7b","declared_components":["env","rc","value","weak"],"dependencies":["KERNEL32.dll","api-ms-win-core-synch-l1-2-0.dll","bcryptprimitives.dll","ntdll.dll"],"exit":0,"generator":27,"object_format":"Coff","observed_components":["env","rc","value","weak"],"optimization":0,"path":"D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-32476-0\\env-std-o0\\env-std-o0.exe","runtime_abi":65556,"runtime_symbols":["xiao_runtime_abi_is_compatible","xiao_runtime_dynamic_check","xiao_runtime_env_get","xiao_runtime_env_run_native","xiao_runtime_env_set","xiao_runtime_env_unset","xiao_runtime_error_attach_span","xiao_runtime_error_checkpoint_reset","xiao_runtime_error_class","xiao_runtime_error_clear","xiao_runtime_error_exit_code","xiao_runtime_error_push_native_frame","xiao_runtime_error_report","xiao_runtime_fatal_abi","xiao_runtime_language_context_set","xiao_runtime_print_values_with_capabilities","xiao_runtime_release","xiao_runtime_release_trace_begin","xiao_runtime_release_trace_flush","xiao_runtime_retain","xiao_runtime_string_new","xiao_runtime_value_binary","xiao_runtime_value_copy","xiao_runtime_value_iter_get","xiao_runtime_value_iter_len","xiao_runtime_value_none","xiao_runtime_value_release_strong","xiao_runtime_value_str_owned","xiao_runtime_weak_release","xiao_runtime_weak_retain"],"source_sha256":"9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb","stdlib_interface":1,"target":"x86_64-pc-windows-msvc","toolchain_fingerprint":"xiao-fnv1a64-dcb613e9b9d8b8e0","unclassified_runtime_symbols":[],"verification":"complete"}
+B3-4-ENV-NATIVE {"artifact_sha256":"48170de9ccae496f39ba37024d8e323ac552dc9ee3972b64ac27468109cb9405","capabilities":160,"case":"env-std-o3","codegen_fingerprint":"xiao-codegen-27-95aa0b5f1958b467","coff_artifact_sha256":"48170de9ccae496f39ba37024d8e323ac552dc9ee3972b64ac27468109cb9405","coff_map":"D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-32476-0\\env-std-o3\\env-std-o3.exe.map","coff_map_sha256":"6f8cacdb579df1d1d17e75165284ce223a0afc579c9dcd765e34bee99832d769","declared_components":["env","rc","value","weak"],"dependencies":["KERNEL32.dll","api-ms-win-core-synch-l1-2-0.dll","bcryptprimitives.dll","ntdll.dll"],"exit":0,"generator":27,"object_format":"Coff","observed_components":["env","rc","value","weak"],"optimization":3,"path":"D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-32476-0\\env-std-o3\\env-std-o3.exe","runtime_abi":65556,"runtime_symbols":["xiao_runtime_abi_is_compatible","xiao_runtime_dynamic_check","xiao_runtime_env_get","xiao_runtime_env_run_native","xiao_runtime_env_set","xiao_runtime_env_unset","xiao_runtime_error_attach_span","xiao_runtime_error_checkpoint_reset","xiao_runtime_error_class","xiao_runtime_error_clear","xiao_runtime_error_exit_code","xiao_runtime_error_push_native_frame","xiao_runtime_error_report","xiao_runtime_fatal_abi","xiao_runtime_language_context_set","xiao_runtime_print_values_with_capabilities","xiao_runtime_release","xiao_runtime_release_trace_begin","xiao_runtime_release_trace_flush","xiao_runtime_retain","xiao_runtime_string_new","xiao_runtime_value_binary","xiao_runtime_value_copy","xiao_runtime_value_iter_get","xiao_runtime_value_iter_len","xiao_runtime_value_none","xiao_runtime_value_release_strong","xiao_runtime_value_str_owned","xiao_runtime_weak_release","xiao_runtime_weak_retain"],"source_sha256":"9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb","stdlib_interface":1,"target":"x86_64-pc-windows-msvc","toolchain_fingerprint":"xiao-fnv1a64-1e84fc5fba2603d7","unclassified_runtime_symbols":[],"verification":"complete"}
+B3-4-ENV-NATIVE {"artifact_sha256":"aadb308d1ec661aff8875780c5cb74e1a0ade5a8ba72a6c8c3127b6e0da51251","capabilities":160,"case":"env-stdlib-o0","codegen_fingerprint":"xiao-codegen-27-024ada7077324dba","coff_artifact_sha256":"aadb308d1ec661aff8875780c5cb74e1a0ade5a8ba72a6c8c3127b6e0da51251","coff_map":"D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-32476-0\\env-stdlib-o0\\env-stdlib-o0.exe.map","coff_map_sha256":"fe9d136762d1f4d571bce8507b977606a0d24a37656b1040d0b52e900ef70f1e","declared_components":["env","rc","value","weak"],"dependencies":["KERNEL32.dll","api-ms-win-core-synch-l1-2-0.dll","bcryptprimitives.dll","ntdll.dll"],"exit":0,"generator":27,"object_format":"Coff","observed_components":["env","rc","value","weak"],"optimization":0,"path":"D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-32476-0\\env-stdlib-o0\\env-stdlib-o0.exe","runtime_abi":65556,"runtime_symbols":["xiao_runtime_abi_is_compatible","xiao_runtime_dynamic_check","xiao_runtime_env_get","xiao_runtime_env_run_native","xiao_runtime_env_set","xiao_runtime_env_unset","xiao_runtime_error_attach_span","xiao_runtime_error_checkpoint_reset","xiao_runtime_error_class","xiao_runtime_error_clear","xiao_runtime_error_exit_code","xiao_runtime_error_push_native_frame","xiao_runtime_error_report","xiao_runtime_fatal_abi","xiao_runtime_language_context_set","xiao_runtime_print_values_with_capabilities","xiao_runtime_release","xiao_runtime_release_trace_begin","xiao_runtime_release_trace_flush","xiao_runtime_retain","xiao_runtime_string_new","xiao_runtime_value_binary","xiao_runtime_value_copy","xiao_runtime_value_iter_get","xiao_runtime_value_iter_len","xiao_runtime_value_none","xiao_runtime_value_release_strong","xiao_runtime_value_str_owned","xiao_runtime_weak_release","xiao_runtime_weak_retain"],"source_sha256":"a8cb3149daec0193db2de4b6d42752c38812965de8e624f4a106c879de5c6e1d","stdlib_interface":1,"target":"x86_64-pc-windows-msvc","toolchain_fingerprint":"xiao-fnv1a64-dcb613e9b9d8b8e0","unclassified_runtime_symbols":[],"verification":"complete"}
+B3-4-ENV-NATIVE {"artifact_sha256":"0789a9e3cff7c5134aba295952a703912e75bed612e7b2e8771bcf64f7bfe548","capabilities":160,"case":"env-stdlib-o3","codegen_fingerprint":"xiao-codegen-27-95aa0b5f1958b467","coff_artifact_sha256":"0789a9e3cff7c5134aba295952a703912e75bed612e7b2e8771bcf64f7bfe548","coff_map":"D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-32476-0\\env-stdlib-o3\\env-stdlib-o3.exe.map","coff_map_sha256":"151d58d68f6b128a017c3e0c7375f3b9dc66c6aa1827b9fd97aa5e34c06f4249","declared_components":["env","rc","value","weak"],"dependencies":["KERNEL32.dll","api-ms-win-core-synch-l1-2-0.dll","bcryptprimitives.dll","ntdll.dll"],"exit":0,"generator":27,"object_format":"Coff","observed_components":["env","rc","value","weak"],"optimization":3,"path":"D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-32476-0\\env-stdlib-o3\\env-stdlib-o3.exe","runtime_abi":65556,"runtime_symbols":["xiao_runtime_abi_is_compatible","xiao_runtime_dynamic_check","xiao_runtime_env_get","xiao_runtime_env_run_native","xiao_runtime_env_set","xiao_runtime_env_unset","xiao_runtime_error_attach_span","xiao_runtime_error_checkpoint_reset","xiao_runtime_error_class","xiao_runtime_error_clear","xiao_runtime_error_exit_code","xiao_runtime_error_push_native_frame","xiao_runtime_error_report","xiao_runtime_fatal_abi","xiao_runtime_language_context_set","xiao_runtime_print_values_with_capabilities","xiao_runtime_release","xiao_runtime_release_trace_begin","xiao_runtime_release_trace_flush","xiao_runtime_retain","xiao_runtime_string_new","xiao_runtime_value_binary","xiao_runtime_value_copy","xiao_runtime_value_iter_get","xiao_runtime_value_iter_len","xiao_runtime_value_none","xiao_runtime_value_release_strong","xiao_runtime_value_str_owned","xiao_runtime_weak_release","xiao_runtime_weak_retain"],"source_sha256":"a8cb3149daec0193db2de4b6d42752c38812965de8e624f4a106c879de5c6e1d","stdlib_interface":1,"target":"x86_64-pc-windows-msvc","toolchain_fingerprint":"xiao-fnv1a64-1e84fc5fba2603d7","unclassified_runtime_symbols":[],"verification":"complete"}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 12.36s
+

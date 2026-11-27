@@ -1,0 +1,20 @@
+command=wsl.exe --distribution Ubuntu-26.04 --exec /bin/bash /mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/linux_toolchain_paths.sh
+found=/home/xiaoczx/.cargo/bin/rustup
+1.96.0-x86_64-unknown-linux-gnu (active, default)
+found=/home/xiaoczx/.cargo/bin/rustc
+found=/home/xiaoczx/.cargo/bin/cargo
+found=/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc
+found=/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo
+standard rust paths checked
+wsl: Duplicated config key 'boot.systemd' in /etc/wsl.conf:7 (Conflicting key: 'boot.systemd' in /etc/wsl.conf:2)
+exit=0
+command=wsl.exe --distribution archlinux --exec /bin/bash /mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/linux_toolchain_paths.sh
+found=/root/.cargo/bin/rustup
+1.96.0-x86_64-unknown-linux-gnu (active, default)
+found=/root/.cargo/bin/rustc
+found=/root/.cargo/bin/cargo
+found=/root/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc
+found=/root/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo
+standard rust paths checked
+
+exit=0

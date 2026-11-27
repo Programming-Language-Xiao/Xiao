@@ -1,0 +1,39 @@
+{
+  "artifact": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-25604-3\\legacy-marker.exe",
+    "bytes": 1168896,
+    "sha256": "3e06f9f0834d4dfc471d30595036b34b79eae92a68fd3962b122b85e3f480f5c"
+  },
+  "argv": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\test-runs\\xiao-b3-env-25604-3\\legacy-marker.exe",
+    "--__xiao-run-environment-stdin=cb5e4789eebb791454e0dbc4a2af7967",
+    "--__xiao-run-environment-stdin",
+    "tail"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c-rerun\\nonce\\legacy-with-random-handshake",
+  "stdin": {
+    "bytes": 39,
+    "sha256": "90d32efdf6efa65e75f967e3bdbef9d2ece09d7786b444c92dd64751ea2b595c"
+  },
+  "environment": {
+    "XIAO_B3_TEST_ENV": "host-native",
+    "XIAO_INTERNAL_RUN_ENVIRONMENT_NONCE": "cb5e4789eebb791454e0dbc4a2af7967"
+  },
+  "exit": 0,
+  "expected_exit": 0,
+  "diagnostic": null,
+  "expected_diagnostic": null,
+  "outputs": {
+    "stdout": {
+      "path": "nonce/legacy-with-random-handshake/stdout.bin",
+      "bytes": 51,
+      "sha256": "26cea2bf1e3369547e223afc23629228454f38c2929ec7f2e3ffaabe48032421"
+    },
+    "stderr": {
+      "path": "nonce/legacy-with-random-handshake/stderr.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "passed": true
+}

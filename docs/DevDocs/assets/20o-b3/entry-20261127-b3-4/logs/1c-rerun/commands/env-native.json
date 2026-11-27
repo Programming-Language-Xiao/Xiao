@@ -1,0 +1,35 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--offline",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b3_env",
+    "--target",
+    "x86_64-pc-windows-msvc",
+    "--",
+    "--ignored",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\src",
+  "target": "x86_64-pc-windows-msvc",
+  "exit": 0,
+  "started_at": "2026-11-27T10:54:33.437101+00:00",
+  "elapsed_seconds": 56.116,
+  "environment": {
+    "CC_PRINT_OPTIONS": "1",
+    "CC_PRINT_OPTIONS_FILE": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261127-b3-4\\logs\\1c-rerun\\env-native-clang.log"
+  },
+  "log": {
+    "path": "env-native.log",
+    "bytes": 8197,
+    "sha256": "ff9013d6fdbec56f6a3bf42f822545fcdee34f65b034acd6d46abac99c9ce3cb"
+  }
+}

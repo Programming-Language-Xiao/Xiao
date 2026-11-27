@@ -1,0 +1,48 @@
+command=wsl.exe --distribution Ubuntu-26.04 --exec /bin/bash /mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/linux_probe.sh
+Ubuntu 26.04 LTS
+x86_64
+source_visible=yes
+missing=rustup
+missing=rustc
+missing=cargo
+/usr/bin/clang
+/usr/bin/llvm-as
+/usr/bin/llc
+/usr/bin/ld
+Ubuntu clang version 21.1.8 (6ubuntu1)
+Target: x86_64-pc-linux-gnu
+Thread model: posix
+InstalledDir: /usr/lib/llvm-21/bin
+Ubuntu LLVM version 21.1.8
+  Optimized build.
+Ubuntu LLVM version 21.1.8
+  Optimized build.
+  Default target: x86_64-pc-linux-gnu
+  Host CPU: znver5
+wsl: Duplicated config key 'boot.systemd' in /etc/wsl.conf:7 (Conflicting key: 'boot.systemd' in /etc/wsl.conf:2)
+exit=0
+command=wsl.exe --distribution archlinux --exec /bin/bash /mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/linux_probe.sh
+Arch Linux
+x86_64
+source_visible=yes
+missing=rustup
+missing=rustc
+missing=cargo
+/usr/sbin/clang
+/usr/sbin/llvm-as
+/usr/sbin/llc
+/usr/sbin/ld
+clang version 22.1.8
+Target: x86_64-pc-linux-gnu
+Thread model: posix
+InstalledDir: /usr/bin
+LLVM (http://llvm.org/):
+  LLVM version 22.1.8
+  Optimized build.
+LLVM (http://llvm.org/):
+  LLVM version 22.1.8
+  Optimized build.
+  Default target: x86_64-pc-linux-gnu
+  Host CPU: znver5
+
+exit=0

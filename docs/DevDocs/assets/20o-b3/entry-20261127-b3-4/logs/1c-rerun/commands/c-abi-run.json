@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\env-c-abi-probe.exe"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\src",
+  "target": "x86_64-pc-windows-msvc",
+  "exit": 0,
+  "started_at": "2026-11-27T10:56:40.688048+00:00",
+  "elapsed_seconds": 0.049,
+  "environment": {},
+  "log": {
+    "path": "c-abi-run.log",
+    "bytes": 84,
+    "sha256": "eb277920c31414b78f29a6ea5286f86f4315b86c01235780da6ffdfea275d89f"
+  }
+}

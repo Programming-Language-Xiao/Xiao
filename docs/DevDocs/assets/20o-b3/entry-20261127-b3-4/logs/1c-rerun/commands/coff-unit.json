@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--offline",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-codegen-llvm",
+    "--target",
+    "x86_64-pc-windows-msvc",
+    "coff_",
+    "--",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\src",
+  "target": "x86_64-pc-windows-msvc",
+  "exit": 0,
+  "started_at": "2026-11-27T10:55:37.881728+00:00",
+  "elapsed_seconds": 29.928,
+  "environment": {},
+  "log": {
+    "path": "coff-unit.log",
+    "bytes": 3216,
+    "sha256": "689fb6a17b7da83705dddeb321f2b1eca19de77ae2b0cc448931d0b7c7078e2a"
+  }
+}

@@ -1,0 +1,6 @@
+commit=0e983b0f6a3c1104f07541460d029d0ffc4bfd17
+tree=14a2e5391e86465c5d334d75d2bef72e0db256a4
+command=cmd /c git archive --format=tar --output=D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source.tar 0e983b0f6a3c1104f07541460d029d0ffc4bfd17
+archive_exit=0
+command=C:/Windows/system32/tar.exe -xf D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source.tar -C D:/project/Xiao/.xiao-orchestrator/evidence/b3-4-env-1c/source
+extract_exit=0

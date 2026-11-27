@@ -1,0 +1,4 @@
+首次 git archive 退出 0。默认 core.autocrlf=true 使导出的 .cargo/config.toml 包含 CRLF，和 Git blob 校验不符。
+实际导出文件 blob a7ff5aad2be92fb5375f57e3e70ca5e93b15cc3f
+固定提交 Git blob 373bc62d82ef32fbc2ba3ea6c00922064e62b995
+源码校验进程退出 1，未启动编译。重试仅对单次 git archive 指定 core.autocrlf=false 和 core.eol=lf。

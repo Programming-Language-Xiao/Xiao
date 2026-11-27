@@ -1,0 +1,33 @@
+{
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "test",
+    "--offline",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b3_env_tutorial",
+    "--target",
+    "x86_64-pc-windows-msvc",
+    "--release",
+    "env_tutorial_matches_vm_golden",
+    "--",
+    "--exact",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\src",
+  "target": "x86_64-pc-windows-msvc",
+  "exit": 0,
+  "started_at": "2026-11-27T10:56:24.431827+00:00",
+  "elapsed_seconds": 266.054,
+  "environment": {},
+  "log": {
+    "path": "tutorial-vm.log",
+    "bytes": 3995,
+    "sha256": "4603daf5f907b4b9eb298268dc2a9de43306e1477e011337662484fb8abb9614"
+  }
+}

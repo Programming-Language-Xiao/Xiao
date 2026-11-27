@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/usr/lib/llvm-21/bin/llvm-as",
+    "--version"
+  ],
+  "cwd": "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun/src",
+  "exit": 0,
+  "started_at": "2026-11-27T10:53:32.100555+00:00",
+  "elapsed_seconds": 0.059,
+  "log": {
+    "path": "tool-llvm-as.log",
+    "bytes": 46,
+    "sha256": "a6a1319a8940bb501c4b8413c97e0fa8648e8593f7fbdaedfd3a4ab41ee56092"
+  }
+}

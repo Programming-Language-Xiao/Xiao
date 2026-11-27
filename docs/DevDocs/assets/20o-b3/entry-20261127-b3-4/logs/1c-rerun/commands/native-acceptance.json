@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "D:\\msys64\\ucrt64\\bin\\python.exe",
+    "-B",
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\collect_windows.py",
+    "collect"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\src",
+  "target": "x86_64-pc-windows-msvc",
+  "exit": 0,
+  "started_at": "2026-11-27T10:57:07.745287+00:00",
+  "elapsed_seconds": 0.454,
+  "environment": {},
+  "log": {
+    "path": "native-acceptance.log",
+    "bytes": 308,
+    "sha256": "49982d1fde605b75bd2a563dd7c7d3e9d08f6d5c6661fe2a04fe4409cb5016bf"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "probe_source": {
+    "path": "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/1b/c-abi-probe.c",
+    "bytes": 3456,
+    "sha256": "d186f948ff0b3388e0df3391fc7dcbaaa2bccf61c17c0f153e386b013a42fa6c"
+  },
+  "probe_binary": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\env-c-abi-probe.exe",
+    "bytes": 713216,
+    "sha256": "a51936c854992af2a513ccb3c3c1d663cf782cf9396d0414cfa07af6e909eebc"
+  },
+  "runtime": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\target\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+    "bytes": 27833734,
+    "sha256": "fe42ae1385a46d65d3e6882b9120ade253033fdf17c45101b57e812f7b815089"
+  },
+  "target": "x86_64-pc-windows-msvc",
+  "compile_exit": 0,
+  "run_exit": 0
+}

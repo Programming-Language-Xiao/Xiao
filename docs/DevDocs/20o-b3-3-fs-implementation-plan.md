@@ -1,6 +1,6 @@
 # 20O-B3-3. `fs` 实施规划
 
-> **状态（2026-11-27）**　排他重命名修复 `2460e75f` 通过三平台专项。并发释放修复后的产品 `3506455e` 也通过 fs 排他重命名与三平台教程复验，Windows 六份产物达到产品级 COFF `Complete`。`b3_3_passed=true`、`b3_4_entry_ready=true`、`b3_4_started=false`。[原收口](assets/20o-b3/entry-20261125-b3-3-final/README.md) · [修复复验](assets/20o-b3/entry-20261126-b3-3-rename-fix/README.md) · [新产品复验](assets/22d-fix2/entry-20261126/README.md)
+> **状态（2026-11-27）**　排他重命名修复 `2460e75f` 通过三平台专项。并发释放修复后的产品 `3506455e` 也通过 fs 排他重命名与三平台教程复验，Windows 六份产物达到产品级 COFF `Complete`。`b3_3_passed=true`、`b3_4_entry_ready=true`、`b3_4_started=true`。[原收口](assets/20o-b3/entry-20261125-b3-3-final/README.md) · [修复复验](assets/20o-b3/entry-20261126-b3-3-rename-fix/README.md) · [新产品复验](assets/22d-fix2/entry-20261126/README.md)
 > **产品身份**　fs 使用 55～59。原生接线按补充裁定使用 ABI 1.20、生成器 25、标准库接口 1。[生成器裁定](assets/20o-b3/entry-20261125-b3-3/generator-decision.json)
 > **历史身份（2026-11-27 补记）**　B3-4C 已按 B3-4-GEN 升生成器 27。本页 `3506455e`/生成器 26（及原 B3-3 的 25）仍只代表 B3-3 历史证据；B3-4D/E 只声明 env，B3-7 在最终产品重跑六模块矩阵后再更新 fs 当前结论。
 > **Windows 产物政策（2026-11-22）**　自 B3 起，Windows 公共/发布产物必须产品级 COFF `Complete`，声明组件=观察组件；B3-3 只处理 fs 产物，完整公共矩阵留 B3-7。
@@ -18,7 +18,7 @@
 | 本批目标 | 激活 fs 55～59，实现普通宿主模式、原子写、枚举、删除、重命名、元数据和 C ABI；完成 VM/原生/教程/三平台证据 |
 | 本批不做 | env/log 实现、受限/沙箱模式、60～63 激活、registry/教程 verified、B3-4/B4、旧 721、历史债务 |
 | Windows COFF | fs 的 Windows 产物必须产品级 `Complete`；完整矩阵留 B3-7 |
-| 当前状态 | `b3_3_started=true`、`b3_3_passed=true`、`b3_4_entry_ready=true`、`b3_4_started=false` |
+| 当前状态 | `b3_3_started=true`、`b3_3_passed=true`、`b3_4_entry_ready=true`、`b3_4_started=true`；B3-4 见 [env 实施规划](20o-b3-4-env-implementation-plan.md) |
 
 B3-3 是 **fs 实施批**，不是六模块并行批。普通宿主模式是首批唯一模式；受限/沙箱模式在 B3-0C 已明确延期，不得在 B3-3 临时扩大能力。B3-3 完成后只声明 fs 内部可用，不升级教程或 registry verified。
 

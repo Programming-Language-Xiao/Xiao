@@ -1,0 +1,4 @@
+stdout
+拒绝访问。 
+错误代码: Wsl/EnumerateDistros/Service/E_ACCESSDENIED
+exit=4294967295

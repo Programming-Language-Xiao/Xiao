@@ -1,0 +1,31 @@
+{
+  "argv": [
+    "/home/xiaoczx/.cargo/bin/cargo",
+    "+1.96.0",
+    "test",
+    "--offline",
+    "--locked",
+    "--release",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--target",
+    "x86_64-unknown-linux-gnu",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b3_env",
+    "--",
+    "--ignored",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun/src",
+  "exit": 0,
+  "started_at": "2026-11-27T10:57:23.748512+00:00",
+  "elapsed_seconds": 25.445,
+  "log": {
+    "path": "env-native.log",
+    "bytes": 6688,
+    "sha256": "d98ff89f39e5a2c61174a09f531d23c753fc5c45aa72a570f2a97d1adc73b787"
+  }
+}

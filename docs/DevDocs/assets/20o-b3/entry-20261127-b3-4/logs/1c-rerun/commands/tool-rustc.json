@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+    "-vV"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\src",
+  "target": "x86_64-pc-windows-msvc",
+  "exit": 0,
+  "started_at": "2026-11-27T10:52:48.292778+00:00",
+  "elapsed_seconds": 0.048,
+  "environment": {},
+  "log": {
+    "path": "tool-rustc.log",
+    "bytes": 194,
+    "sha256": "2efe229f7908c2c19f459ca734101a5b35cb482476b8bee1357f94a18c766078"
+  }
+}

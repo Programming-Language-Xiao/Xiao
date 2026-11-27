@@ -1,0 +1,22 @@
+{
+  "actual_exit": 3,
+  "artifact_sha256": "cb4339e22f46ab370972d4bc802827a07e462e506e4e98f9c98b80568ac045c4",
+  "command": [
+    "native/denied-o0/denied-o0.exe"
+  ],
+  "diagnostic": "X06-RUNTIME-026",
+  "expected_exit": 2,
+  "outputs": {
+    "stderr": {
+      "bytes": 239,
+      "path": "native/denied-o0/retry.stderr",
+      "sha256": "9c3ee9e8020e3858b09278e4baff407f62f4f469f4c4fd18db702aad7035edd2"
+    },
+    "stdout": {
+      "bytes": 0,
+      "path": "native/denied-o0/retry.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "passed": false
+}

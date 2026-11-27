@@ -1,0 +1,84 @@
+{
+  "exported_files": 7853,
+  "fixed_runtime": {
+    "bytes": 27829940,
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\runtime\\xiao_runtime.lib",
+    "sha256": "2dba315ba4aa6353b45eb21b704999936a9d8370ba21b7171f3f32e1d83577ef"
+  },
+  "frozen_matrix": {
+    "bytes": 10750,
+    "commit": "5c8094ea3be277ceb0d34d106bc58e2b65651250",
+    "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials.json",
+    "sha256": "25665474f2f3df3783f19e244d6151b46f4c690c5cc4fc3d7ceb050656543f6a"
+  },
+  "locks": {
+    "core/rust/Cargo.lock": {
+      "bytes": 20482,
+      "sha256": "14498918cbdb58133bd5629f4efc9703bbd78f368353bea2a9502337a262a722"
+    },
+    "tests/benchmarks/Cargo.lock": {
+      "bytes": 20063,
+      "sha256": "ad3a5b9bb368818c3503a1eeea12f019e8f37663d7c9eed457bbb53bca29fdc9"
+    }
+  },
+  "source_commit": "0e983b0f6a3c1104f07541460d029d0ffc4bfd17",
+  "source_root": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c\\source",
+  "task_root": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4-env-1c",
+  "test_overlay": {
+    "core/rust/crates/xiao-driver/tests/20o_b3_env.rs": {
+      "bytes": 14484,
+      "sha256": "e9a215b119f6e9da43941e2356dc97c6f58bb9d9553f1d87d480ae9ff74fc453"
+    },
+    "core/rust/crates/xiao-driver/tests/20o_b3_env_tutorial.rs": {
+      "bytes": 5346,
+      "sha256": "8319ca3467246a814c13101a9f031c8f88942c70343d92bfac31f5066519d92e"
+    },
+    "core/rust/crates/xiao-driver/tests/support/b3_env_artifact.rs": {
+      "bytes": 4738,
+      "sha256": "89fc967718fcdccfc55decff3c7644d28c37119a0273b377524cd861b73975e4"
+    },
+    "core/rust/crates/xiao-driver/tests/support/b3_env_native.rs": {
+      "bytes": 12962,
+      "sha256": "6ae4117982d93198a6c22362d7529b9ff48a8b5822aeb93ef7ff1cd695318c8d"
+    },
+    "tests/fixtures/docs/env/.gitattributes": {
+      "bytes": 46,
+      "sha256": "275137a5faac6951e42d2f4214563ebf19d111d67c386646f32f8882ae0624b3"
+    },
+    "tests/fixtures/docs/env/tutorial.input.json": {
+      "bytes": 69,
+      "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+    },
+    "tests/fixtures/docs/env/tutorial.stdout": {
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    },
+    "tests/fixtures/docs/env/tutorial.xiao": {
+      "bytes": 467,
+      "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+    }
+  },
+  "tree": "14a2e5391e86465c5d334d75d2bef72e0db256a4",
+  "tutorial": {
+    "alias_source": {
+      "bytes": 470,
+      "sha256": "a8cb3149daec0193db2de4b6d42752c38812965de8e624f4a106c879de5c6e1d"
+    },
+    "golden": {
+      "bytes": 55,
+      "sha256": "2420b27b0eac750657ba5909a8928fdb74674104601c62ae2ef6d273f2ae5491"
+    },
+    "input": {
+      "bytes": 69,
+      "sha256": "f5233cf1df7c282e2e490cb092b835898882477c2cffe4c084ec194bac780522"
+    },
+    "source": {
+      "bytes": 467,
+      "sha256": "9ab09cf88eb5e4c16bc08a712f25e14739fee027074e014c8ff0e2ac7beedeeb"
+    }
+  },
+  "tutorial_origin": {
+    "commit": "7f1017b7ff0b7b0a89d11943d5d33e0b432d0b3f",
+    "path": "docs/DevDocs/assets/20o-b3/entry-20261123-b3-0c/candidates/tests/fixtures/docs/env/b3-0c-candidate"
+  }
+}

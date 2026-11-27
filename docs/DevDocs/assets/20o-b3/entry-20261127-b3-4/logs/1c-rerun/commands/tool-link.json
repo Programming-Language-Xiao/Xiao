@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "/?"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\src",
+  "target": "x86_64-pc-windows-msvc",
+  "exit": 1100,
+  "started_at": "2026-11-27T10:52:48.675086+00:00",
+  "elapsed_seconds": 0.095,
+  "environment": {},
+  "log": {
+    "path": "tool-link.log",
+    "bytes": 3664,
+    "sha256": "b20d1f9fbfbc9d2a128b9155c86382096cbf287085c7b72d7371ddf6b6a43bf1"
+  }
+}

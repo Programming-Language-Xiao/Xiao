@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "C:\\Windows\\System32\\wsl.exe",
+    "--distribution",
+    "Ubuntu-26.04",
+    "--exec",
+    "/usr/bin/python3",
+    "-B",
+    "/mnt/d/project/Xiao/.xiao-orchestrator/evidence/b3-4d-rerun/run_linux.py"
+  ],
+  "exit": 0,
+  "log": {
+    "path": "wsl-ubuntu-run.log",
+    "bytes": 693,
+    "sha256": "3b08540f4b020f829b26359e882c36f3049f761a74b15f863e2bda879fe2d9a6"
+  }
+}

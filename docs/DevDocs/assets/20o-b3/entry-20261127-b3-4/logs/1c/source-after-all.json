@@ -1,0 +1,36 @@
+{
+  "diff_check": "",
+  "fixtures_unchanged": true,
+  "locks": {
+    "core/rust/Cargo.lock": {
+      "content_matches_after_eol_normalization": true,
+      "git_blob": {
+        "bytes": 19608,
+        "sha256": "19d17bbf8fe496b3da3a41726f6b67ece508ab71526ba51f154971c754b7b439"
+      },
+      "tested_export": {
+        "bytes": 20482,
+        "sha256": "14498918cbdb58133bd5629f4efc9703bbd78f368353bea2a9502337a262a722"
+      }
+    },
+    "tests/benchmarks/Cargo.lock": {
+      "content_matches_after_eol_normalization": true,
+      "git_blob": {
+        "bytes": 19212,
+        "sha256": "352ac2e54642a9f90db55292b12b20de797bec64b839a8c8b80fc3ee07486159"
+      },
+      "tested_export": {
+        "bytes": 20063,
+        "sha256": "ad3a5b9bb368818c3503a1eeea12f019e8f37663d7c9eed457bbb53bca29fdc9"
+      }
+    }
+  },
+  "runtime_unchanged": true,
+  "source_commit": "0e983b0f6a3c1104f07541460d029d0ffc4bfd17",
+  "source_unchanged": true,
+  "tree": "14a2e5391e86465c5d334d75d2bef72e0db256a4",
+  "worktree_tracked_diff": [
+    "core/rust/crates/xiao-driver/tests/20o_b3_env.rs",
+    "core/rust/crates/xiao-driver/tests/support/b3_env_native.rs"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "D:\\msys64\\ucrt64\\bin\\python.exe",
+    "-B",
+    "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\replay_windows.py"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\src",
+  "target": "x86_64-pc-windows-msvc",
+  "exit": 0,
+  "started_at": "2026-11-27T10:57:08.398143+00:00",
+  "elapsed_seconds": 1.7,
+  "environment": {},
+  "log": {
+    "path": "nonce-and-snapshots.log",
+    "bytes": 1841,
+    "sha256": "73e3745a676d121cb3823bd380f112a431a609f9f4a84b5139add5fbd7cc791a"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "pwsh",
+    "-NoProfile",
+    "-NonInteractive",
+    "-Command",
+    "[Environment]::OSVersion.VersionString\n[System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()\n(Get-Item -LiteralPath 'C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe').VersionInfo.FileVersion"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\evidence\\b3-4d-rerun\\src",
+  "target": "x86_64-pc-windows-msvc",
+  "exit": 0,
+  "started_at": "2026-11-27T11:01:04.849616+00:00",
+  "elapsed_seconds": 0.794,
+  "environment": {},
+  "log": {
+    "path": "tool-host-msvc.log",
+    "bytes": 55,
+    "sha256": "13249abd2ed9a8adf52c71c450840d5d6d26ca1c9edf48bb5f834866158737fa"
+  }
+}
