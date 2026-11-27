@@ -228,11 +228,15 @@ def repeat(output, case, number, executable):
 
 
 def main():
+    global ROOT
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--repo", type=Path, default=ROOT, help="待测的干净源码树；默认当前仓库")
     parser.add_argument("--profile", choices=("matrix", "f1", "smoke"), default="matrix")
     parser.add_argument("--workers", type=int, default=1)
     args = parser.parse_args()
+    ROOT = args.repo.resolve()
+    require((ROOT / "core/rust/Cargo.toml").is_file(), "待测源码树缺少 Cargo.toml")
     output = args.output.resolve()
     git = ("cmd", "/c", "git") if os.name == "nt" else ("git",)
     require(not output.is_relative_to(ROOT), "矩阵输出必须位于仓库之外")

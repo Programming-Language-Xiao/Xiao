@@ -57,7 +57,16 @@ def reuse_round_files(source):
     return {second: json.dumps(first).encode()}
 
 
-def check_rejection(root, mutate, message):
+def remove_source_unchanged(source):
+    replacements = {}
+    for name in ("local/f1/matrix.json", "local/matrix/matrix.json"):
+        data = read_json(source, name)
+        data.pop("source_unchanged", None)
+        replacements[name] = json.dumps(data).encode()
+    return replacements
+
+
+def check_rejection(root, mutate, message, legacy_source=True):
     bundle = root / "evidence.zip"
     with ZipFile(HERE / "evidence.zip") as source, ZipFile(bundle, "w", ZIP_DEFLATED, compresslevel=1) as changed:
         replacements = mutate(source)
@@ -67,7 +76,7 @@ def check_rejection(root, mutate, message):
     status["evidence_sha256"] = digest(bundle.read_bytes())
     (root / "status.json").write_text(json.dumps(status), encoding="utf-8")
     try:
-        audit(root)
+        audit(root, legacy_source=legacy_source)
     except ValueError as error:
         require(message in str(error), f"拒绝原因不符：{error}")
         print(f"按预期拒绝：{message}")
@@ -76,8 +85,9 @@ def check_rejection(root, mutate, message):
 
 
 def main():
-    audit(HERE)
+    audit(HERE, legacy_source=True)
     with TemporaryDirectory(prefix="xiao-22d-audit-") as scratch:
+        check_rejection(Path(scratch), remove_source_unchanged, "缺少 source_unchanged=true", legacy_source=False)
         check_rejection(Path(scratch), remove_destroy, "释放生命周期无效")
         check_rejection(Path(scratch), repeat_fs_artifact, "fs 六个用例缺失或重复")
         check_rejection(Path(scratch), swap_fs_artifacts, "fs 产物与原生日志不符")

@@ -3,6 +3,9 @@
 import argparse
 import hashlib
 import json
+import os
+import re
+import subprocess
 from pathlib import Path, PurePosixPath
 from zipfile import ZipFile
 
@@ -19,6 +22,9 @@ TARGETS = {
     "linux": "x86_64-unknown-linux-gnu",
     "macos": "aarch64-apple-darwin",
 }
+GIT = ("cmd", "/c", "git") if os.name == "nt" else ("git",)
+PROJECTION_ACCEPTED = ["P-1", "P-7", "P-8"]
+PROJECTION_REJECTED = ["P-2", "P-3", "P-4", "P-5", "P-6", "P-9"]
 
 
 def digest(data):
@@ -27,6 +33,24 @@ def digest(data):
 
 def read_json(archive, name):
     return json.loads(archive.read(name))
+
+
+def git_text(*args):
+    return subprocess.check_output([*GIT, *args], cwd=samples.ROOT, text=True).strip()
+
+
+def git_bytes(*args):
+    return subprocess.check_output([*GIT, *args], cwd=samples.ROOT)
+
+
+def product_tree(product):
+    """固定产品提交的 Git tree；矩阵的 tree 必须与它一致。"""
+    return git_text("rev-parse", f"{product}:")
+
+
+def product_file(product, path):
+    """从固定产品提交读取文件，而不是从当前工作树读取。"""
+    return git_bytes("show", f"{product}:{path}")
 
 
 def check_file(archive, prefix, receipt):
@@ -42,10 +66,18 @@ def shared_lifecycles(raw):
     return sorted(actions for actions in objects.values() if actions[0] == "shared_release")
 
 
-def check_matrix(archive, prefix, expected, product, ci=None, platform=None):
+def check_matrix(archive, prefix, expected, product, ci=None, platform=None, strict_source=True):
     data = read_json(archive, f"{prefix}/matrix.json")
-    require(data["product"] == product and data["passed"] and data["runtime_unchanged"]
-            and data.get("source_unchanged", True), prefix)
+    expected_tree = product_tree(product)
+    require(data["product"] == product and data["tree"] == expected_tree
+            and data["passed"] and data["runtime_unchanged"], prefix)
+    source_unchanged = data.get("source_unchanged")
+    if strict_source:
+        require(source_unchanged is True, f"{prefix}: 缺少 source_unchanged=true")
+    else:
+        require(source_unchanged is not False, f"{prefix}: source_unchanged=false")
+        if source_unchanged is None:
+            print(f"LEGACY {prefix}: 未记录 source_unchanged，按历史口径复核")
     if ci:
         require(data["target"] == platform["target"] and data["ci"]["ImageVersion"] == platform["runner_image"]
                 and data["ci"]["GITHUB_SHA"] == ci["sha"]
@@ -75,7 +107,9 @@ def check_matrix(archive, prefix, expected, product, ci=None, platform=None):
 def check_fs(archive, platform, product, run):
     prefix = f"ci/fs/{platform}"
     data = read_json(archive, f"{prefix}/result.json")
-    require(data["passed"] and data["source_commit"] == product and len(data["artifacts"]) == 6
+    require(data["passed"] and data["source_commit"] == product
+            and data["source_tree"] == product_tree(product)
+            and len(data["artifacts"]) == 6
             and data["target"] == TARGETS[platform]
             and int(data["ci"]["GITHUB_RUN_ID"]) == run["run"]
             and int(data["ci"]["GITHUB_RUN_ATTEMPT"]) == run["attempt"], prefix)
@@ -103,7 +137,7 @@ def check_fs(archive, platform, product, run):
                 if line.startswith(b"B3-3-VERSION ")]
     require(versions == data["versions"], "fs 生成器兼容回执与原生日志不符")
     task_root = PurePosixPath(data["task_root"].replace("\\", "/"))
-    golden = (samples.ROOT / "tests/fixtures/docs/fs/tutorial.stdout").read_bytes()
+    golden = product_file(product, "tests/fixtures/docs/fs/tutorial.stdout")
     for row in data["artifacts"]:
         case = row["case"]
         denied = "denied" in case
@@ -184,24 +218,80 @@ def check_original_traces(archive):
                     and shared_lifecycles(trace) == [shared, shared] and item["terminal"] == [shared[1:]] * 2, prefix)
 
 
-def audit(root):
+def check_local_counts(archive, status):
+    local = status["local"]
+    text = archive.read("local/logs/workspace-local.log").decode("utf-8", errors="replace")
+    rows = re.findall(r"test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;", text)
+    require(len(rows) == local["workspace"]["groups"], "workspace 测试组数与本地日志不符")
+    require(sum(int(row[0]) for row in rows) == local["workspace"]["passed"]
+            and all(int(row[1]) == 0 for row in rows)
+            and sum(int(row[2]) for row in rows) == local["workspace"]["ignored"],
+            "workspace 通过/失败/忽略数与本地日志不符")
+    critical = archive.read("local/logs/critical-local.log").decode("utf-8", errors="replace")
+    require(f"running {local['runtime_unit_passed']} tests" in critical
+            and f"test result: ok. {local['runtime_unit_passed']} passed; 0 failed; 0 ignored;" in critical,
+            "Runtime 单测数与关键日志不符")
+    require(f"test result: ok. {local['vm_22c_passed']} passed; 0 failed; 0 ignored;" in critical,
+            "22C VM 回归数与关键日志不符")
+
+
+def check_status_fields(status, product):
+    require(status["product"] == product and status["b3_4_entry_product"] == product, "产品身份")
+    require(status["b3_3_passed"] is True and status["b3_4_entry_ready"] is True, "B3-3/B3-4 状态")
+    require(status["b3_4_started"] is False and status["22d_open"] is False, "阶段状态")
+    require(status["b6_4_passed"] is False and status["followup_passed"] is False
+            and status["windows_coff_verified"] is False, "B6-4 历史状态")
+    require(status["projection"]["accepted"] == PROJECTION_ACCEPTED
+            and status["projection"]["rejected"] == PROJECTION_REJECTED, "投影正反例状态")
+    require(status["f1"]["baseline_rounds"] == 100 and status["f1"]["postfix_rounds"] == 100
+            and status["f1"]["controlled_shared_terminals"] == {"before": 1, "after": 2, "vm": 2}, "F1 轮次/终态")
+    require(status["f2_f3"]["replayed_raw_pairs"] == 2
+            and status["f2_f3"]["destructions_per_backend"] == 3, "F2/F3 回放")
+    require(status["codegen"] == 26 and status["runtime_abi"] == "1.20"
+            and status["stdlib_interface"] == 1, "版本身份")
+
+
+def check_ci_runs(archive, ci):
+    for key in ("evidence", "maintenance", "workspace", "maintenance_documented"):
+        if key not in ci:
+            continue
+        row = ci[key]
+        data = read_json(archive, f"ci/runs/{row['run']}.json")
+        require(data["databaseId"] == row["run"] and data["conclusion"] == row["conclusion"] == "success"
+                and data["attempt"] == row["attempt"]
+                and data["headSha"] == row["sha"] and row["jobs"] == {
+                    job["name"]: job["databaseId"] for job in data["jobs"] if job["conclusion"] == "success"
+                } and all(job["status"] == "completed" and job["conclusion"] == "success" for job in data["jobs"]), key)
+    initial = ci.get("workspace_initial")
+    if initial:
+        data = read_json(archive, f"ci/runs/{initial['run']}.json")
+        require(data["databaseId"] == initial["run"] and data["conclusion"] == initial["conclusion"] == "failure"
+                and data["attempt"] == initial["attempt"] and data["headSha"] == initial["sha"]
+                and all(job["status"] == "completed" and job["conclusion"] == "failure" for job in data["jobs"]),
+                "workspace_initial")
+
+
+def audit(root, legacy_source=False):
     status = json.loads((root / "status.json").read_text(encoding="utf-8"))
     bundle = root / "evidence.zip"
     require(digest(bundle.read_bytes()) == status["evidence_sha256"], "证据归档摘要")
     product = status["product"]
     ci = status["ci"]
+    check_status_fields(status, product)
     with ZipFile(bundle) as archive:
         require(len(archive.namelist()) == len(set(archive.namelist())), "归档成员重复")
         check_original_traces(archive)
+        check_local_counts(archive, status)
         replay = archive.read("local/logs/critical-local.log")
         require(all(f"22D-PROJECTION P-{n}: ok".encode() in replay for n in range(1, 10))
-                and all(f"22D-REPLAY {case}: ok".encode() in replay for case in CASES[1:]), "投影回放")
-        check_matrix(archive, "local/f1", {LOCK_WAIT: 100}, product)
-        check_matrix(archive, "local/matrix", {None: 10, **dict.fromkeys(CASES, 50)}, product)
+                and all(f"22D-REPLAY {case}: ok".encode() for case in CASES[1:]), "投影回放")
+        check_matrix(archive, "local/f1", {LOCK_WAIT: 100}, product, strict_source=not legacy_source)
+        check_matrix(archive, "local/matrix", {None: 10, **dict.fromkeys(CASES, 50)}, product,
+                     strict_source=not legacy_source)
         for platform, singles in (("windows", 50), ("linux", 30), ("macos", 30)):
             metadata = status["platforms"][platform]
             grades = check_matrix(archive, f"ci/trace/{platform}", {None: 10, **dict.fromkeys(CASES, singles)},
-                                  product, ci["evidence"], metadata)
+                                  product, ci["evidence"], metadata, strict_source=False)
             require(grades == metadata["verification"] and metadata["fs_complete"] == 6
                     and metadata["rounds"] == {"full": 10, **dict.fromkeys(CASES, singles)}, platform)
             check_fs(archive, platform, product, ci["evidence"])
@@ -220,14 +310,7 @@ def audit(root):
                 for library in ("math", "statistics", "fmt", "hex", "base64", "url", "csv")
                 for level in (0, 3)
             ), f"{platform} B1 七库精确入口")
-        for key in ("evidence", "maintenance", "workspace"):
-            row = ci[key]
-            data = read_json(archive, f"ci/runs/{row['run']}.json")
-            require(data["databaseId"] == row["run"] and data["conclusion"] == row["conclusion"] == "success"
-                    and data["attempt"] == row["attempt"]
-                    and data["headSha"] == row["sha"] and row["jobs"] == {
-                        job["name"]: job["databaseId"] for job in data["jobs"] if job["conclusion"] == "success"
-                    } and all(job["status"] == "completed" and job["conclusion"] == "success" for job in data["jobs"]), key)
+        check_ci_runs(archive, ci)
         for platform, os_name in (("windows", "windows-2025"), ("linux", "ubuntu-24.04"), ("macos", "macos-15")):
             row = status["platforms"][platform]
             require(row["target"] == TARGETS[platform]
@@ -236,15 +319,16 @@ def audit(root):
                     and row["native_maintenance_job"] == ci["maintenance"]["jobs"][
                         f"Native differential regression ({'macOS' if platform == 'macos' else platform.title()})"],
                     f"{platform} 作业身份未绑定")
-    require(status["22d_open"] is False and status["b3_4_started"] is False, "阶段状态")
     print("22D-FIX.2 证据对账通过")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=HERE)
+    parser.add_argument("--legacy-source", action="store_true",
+                        help="仅用于 2026-11-26 历史归档；允许 local 矩阵缺少 source_unchanged")
     args = parser.parse_args()
-    audit(args.root.resolve())
+    audit(args.root.resolve(), legacy_source=args.legacy_source)
 
 
 if __name__ == "__main__":
