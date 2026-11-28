@@ -1,0 +1,5 @@
+source_commit=d6e5102767f4192416f507432e902884670d0bae
+cmd /c git archive --format=tar --output=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\d6e51027.tar d6e5102767f4192416f507432e902884670d0bae
+exit=0
+C:\Windows\System32\tar.exe -xf D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\d6e51027.tar -C D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\source
+exit=0

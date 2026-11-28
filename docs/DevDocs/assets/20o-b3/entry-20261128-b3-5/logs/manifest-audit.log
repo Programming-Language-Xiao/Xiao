@@ -1,0 +1,25 @@
+cwd=D:\project\Xiao\Xiao
+> D:\Programs\Python\Python312\python.exe -B -X utf8 -u D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\audit-delivery.py
+plan_exactly_one_line_added=true
+D:\project\Xiao\Xiao\core\rust\Cargo.lock 19660 28d38451ba0490b70d2d136bc3268acad8de02b5658bf826f842069019161c53
+D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\source-lf\core\rust\Cargo.lock 19660 28d38451ba0490b70d2d136bc3268acad8de02b5658bf826f842069019161c53
+D:\project\Xiao\Xiao\tests\benchmarks\Cargo.lock 19264 8ac4f16af6e8baf5b71e0e0b5d89397eb5ae7bf2e3cc5a96053683c6e8b4b577
+D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\source-lf\tests\benchmarks\Cargo.lock 19264 8ac4f16af6e8baf5b71e0e0b5d89397eb5ae7bf2e3cc5a96053683c6e8b4b577
+D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b3\entry-20261124-b3-0e\candidates\tests\fixtures\docs\log\tutorial.xiao 264 d7ec578f5f0177355a04f054831a5d1aac1b7ab0c24757e05f494992eedf5a8b
+D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\source-lf\docs\DevDocs\assets\20o-b3\entry-20261124-b3-0e\candidates\tests\fixtures\docs\log\tutorial.xiao 264 d7ec578f5f0177355a04f054831a5d1aac1b7ab0c24757e05f494992eedf5a8b
+D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b3\entry-20261124-b3-0e\candidates\tests\fixtures\docs\log\tutorial.input.json 41 30cf24e7a51b3e75a7ccda7f6448818dcbd4acb0b84e939e9e7083eeb019f129
+D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\source-lf\docs\DevDocs\assets\20o-b3\entry-20261124-b3-0e\candidates\tests\fixtures\docs\log\tutorial.input.json 41 30cf24e7a51b3e75a7ccda7f6448818dcbd4acb0b84e939e9e7083eeb019f129
+D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b3\entry-20261124-b3-0e\candidates\tests\fixtures\docs\log\tutorial.stdout 103 267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146
+D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\source-lf\docs\DevDocs\assets\20o-b3\entry-20261124-b3-0e\candidates\tests\fixtures\docs\log\tutorial.stdout 103 267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146
+alias 267 8e8097c106c0719b7cc568e6afc09c40c3dae0facc539a8f596dae6a02f01195
+D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\target\lf\release\xiao_runtime.lib 27869848 e1cc77ef7269b10e06850b4497ca8ab1e7eaff0235e50d97dea9709329c719f9
+D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\runtime\xiao_runtime.lib 27869848 e1cc77ef7269b10e06850b4497ca8ab1e7eaff0235e50d97dea9709329c719f9
+D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\target\lf\release\libxiao_runtime.rlib 7801406 873d67ecb36436a7044c8da43d1c10881ef94684e419e2f8b25c4944997f68b8
+D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\runtime\libxiao_runtime.rlib 7801406 873d67ecb36436a7044c8da43d1c10881ef94684e419e2f8b25c4944997f68b8
+intrinsic_snapshot_matches=true
+historical_ci_tools_match=true
+bun tools/repo-check/src/cli.ts docs exit=0
+bun tools/repo-check/src/cli.ts layout exit=0
+bun run check:coverage exit=0
+source_unchanged=true
+exit=0

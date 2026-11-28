@@ -1,0 +1,9 @@
+cwd=D:\project\Xiao\Xiao
+start=2026-11-28T12:14:57.0325944+08:00
+XIAO_RUST_DOC_ADAPTER=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\target\checks\debug\xiao-doc-coverage-rust.exe
+CARGO_TARGET_DIR=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\target\checks
+CARGO_HOME=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\cache\cargo-home
+> bun tools/repo-check/src/cli.ts docs
+通过：未发现 A0 规则问题。
+exit=0
+end=2026-11-28T12:15:06.7674332+08:00

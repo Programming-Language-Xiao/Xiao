@@ -1,0 +1,51 @@
+cwd=D:\project\Xiao\Xiao
+> cmd /c git rev-parse HEAD
+060f5c958d1b91ddc0088d270008762aac8fc9b7
+exit=0
+> cmd /c git diff --check
+warning: in the working copy of 'docs/DevDocs/20o-b3-5-log-implementation-plan.md', LF will be replaced by CRLF the next time Git touches it
+exit=0
+> cmd /c git status --short
+ M docs/DevDocs/20o-b3-5-log-implementation-plan.md
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/
+exit=0
+> cmd /c git status --short --untracked-files=all
+ M docs/DevDocs/20o-b3-5-log-implementation-plan.md
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/README.md
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/baseline.json
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/b3-4-negative-source.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/fixed-source-and-fixtures-final.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/fixed-source-and-fixtures.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/gate-adapter-build.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/gate-coverage.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/gate-docs.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/gate-first-shared-output.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/gate-layout.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/git-baseline.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/git-final.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/input-digests-final.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/input-digests.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/manifest-audit.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/runtime-build-identity.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/runtime-build-lf-identity.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/runtime-build-lf.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/runtime-build.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/runtime-digests.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/runtime-source-lf.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/runtime-source.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/tools-windows.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/tools-wsl-final.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/tools-wsl-login.log
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/tools-wsl.log
+exit=0
+> cmd /c git diff --cached --exit-code
+exit=0
+> cmd /c git diff --exit-code HEAD -- core/rust stdlib tests .github docs/module-registry.json docs/DevDocs/assets/20o-b3/entry-20261127-b3-4 docs/DevDocs/README.md
+exit=0
+> cmd /c git status --short --untracked-files=all -- core/rust stdlib tests .github docs/module-registry.json docs/DevDocs/assets/20o-b3/entry-20261127-b3-4 docs/DevDocs/README.md
+exit=0
+> cmd /c git diff --numstat HEAD -- docs/DevDocs/20o-b3-5-log-implementation-plan.md
+warning: in the working copy of 'docs/DevDocs/20o-b3-5-log-implementation-plan.md', LF will be replaced by CRLF the next time Git touches it
+1	0	docs/DevDocs/20o-b3-5-log-implementation-plan.md
+exit=0
+source_unchanged=true

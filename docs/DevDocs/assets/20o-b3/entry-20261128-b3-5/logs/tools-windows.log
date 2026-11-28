@@ -1,0 +1,302 @@
+date=2026-11-28T11:56:19.1932875+08:00
+cwd=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\source\core\rust
+Microsoft Windows NT 10.0.26200.0
+architecture=X64
+rustup D:\Program Files\.cargo\bin\rustup.exe
+cargo D:\Program Files\.cargo\bin\cargo.exe
+rustc D:\Program Files\.cargo\bin\rustc.exe
+llvm-config D:\msys64\ucrt64\bin\llvm-config.exe
+clang D:\msys64\ucrt64\bin\clang.exe
+llvm-as D:\msys64\ucrt64\bin\llvm-as.exe
+llc D:\msys64\ucrt64\bin\llc.exe
+ld D:\msys64\ucrt64\bin\ld.exe
+link D:\Program Files\Git\usr\bin\link.exe
+link C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\link.exe
+lib C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\lib.exe
+bun C:\Users\xiaoc\node_modules\bun\bin\bun.exe
+wc D:\Program Files\Git\usr\bin\wc.exe
+sha256sum D:\Program Files\Git\usr\bin\sha256sum.exe
+> D:\Program Files\.cargo\bin\rustup.exe show active-toolchain
+1.96.0-x86_64-pc-windows-msvc (overridden by 'D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\source\core\rust\rust-toolchain.toml')
+exit=0
+> D:\Program Files\.cargo\bin\rustup.exe which rustc
+C:\Users\xiaoc\.rustup\toolchains\1.96.0-x86_64-pc-windows-msvc\bin\rustc.exe
+exit=0
+> D:\Program Files\.cargo\bin\rustup.exe which cargo
+C:\Users\xiaoc\.rustup\toolchains\1.96.0-x86_64-pc-windows-msvc\bin\cargo.exe
+exit=0
+> C:\Users\xiaoc\.rustup\toolchains\1.96.0-x86_64-pc-windows-msvc\bin\rustc.exe -vV
+rustc 1.96.0 (ac68faa20 2026-05-25)
+binary: rustc
+commit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96
+commit-date: 2026-05-25
+host: x86_64-pc-windows-msvc
+release: 1.96.0
+LLVM version: 22.1.2
+exit=0
+> C:\Users\xiaoc\.rustup\toolchains\1.96.0-x86_64-pc-windows-msvc\bin\cargo.exe -Vv
+cargo 1.96.0 (30a34c682 2026-05-25)
+release: 1.96.0
+commit-hash: 30a34c6821b57de0aaec83a901aca39f88f6778c
+commit-date: 2026-05-25
+host: x86_64-pc-windows-msvc
+libgit2: 1.9.2 (sys:0.20.4 vendored)
+libcurl: 8.19.0-DEV (sys:0.4.87+curl-8.19.0 vendored ssl:Schannel)
+os: Windows 10.0.26200 (Windows 11 Professional) [64-bit]
+exit=0
+> D:\msys64\ucrt64\bin\llvm-config.exe --version
+22.1.2
+exit=0
+> D:\msys64\ucrt64\bin\clang.exe --version
+clang version 22.1.2 (https://github.com/msys2/MINGW-packages 4f19d31560faf73257116b7c95f0b322ba83d720)
+Target: x86_64-w64-windows-gnu
+Thread model: posix
+InstalledDir: D:/msys64/ucrt64/bin
+exit=0
+> D:\msys64\ucrt64\bin\llvm-as.exe --version
+LLVM (http://llvm.org/):
+  LLVM version 22.1.2
+  Optimized build.
+exit=0
+> D:\msys64\ucrt64\bin\llc.exe --version
+LLVM (http://llvm.org/):
+  LLVM version 22.1.2
+  Optimized build.
+  Default target: x86_64-w64-windows-gnu
+  Host CPU: znver5
+
+  Registered Targets:
+    aarch64     - AArch64 (little endian)
+    aarch64_32  - AArch64 (little endian ILP32)
+    aarch64_be  - AArch64 (big endian)
+    amdgcn      - AMD GCN GPUs
+    arm         - ARM
+    arm64       - ARM64 (little endian)
+    arm64_32    - ARM64 (little endian ILP32)
+    armeb       - ARM (big endian)
+    avr         - Atmel AVR Microcontroller
+    bpf         - BPF (host endian)
+    bpfeb       - BPF (big endian)
+    bpfel       - BPF (little endian)
+    hexagon     - Hexagon
+    lanai       - Lanai
+    loongarch32 - 32-bit LoongArch
+    loongarch64 - 64-bit LoongArch
+    mips        - MIPS (32-bit big endian)
+    mips64      - MIPS (64-bit big endian)
+    mips64el    - MIPS (64-bit little endian)
+    mipsel      - MIPS (32-bit little endian)
+    msp430      - MSP430 [experimental]
+    nvptx       - NVIDIA PTX 32-bit
+    nvptx64     - NVIDIA PTX 64-bit
+    ppc32       - PowerPC 32
+    ppc32le     - PowerPC 32 LE
+    ppc64       - PowerPC 64
+    ppc64le     - PowerPC 64 LE
+    r600        - AMD GPUs HD2XXX-HD6XXX
+    riscv32     - 32-bit RISC-V
+    riscv32be   - 32-bit big endian RISC-V
+    riscv64     - 64-bit RISC-V
+    riscv64be   - 64-bit big endian RISC-V
+    sparc       - Sparc
+    sparcel     - Sparc LE
+    sparcv9     - Sparc V9
+    spirv       - SPIR-V Logical
+    spirv32     - SPIR-V 32-bit
+    spirv64     - SPIR-V 64-bit
+    systemz     - SystemZ
+    thumb       - Thumb
+    thumbeb     - Thumb (big endian)
+    ve          - VE
+    wasm32      - WebAssembly 32-bit
+    wasm64      - WebAssembly 64-bit
+    x86         - 32-bit X86: Pentium-Pro and above
+    x86-64      - 64-bit X86: EM64T and AMD64
+    xcore       - XCore
+exit=0
+> D:\msys64\ucrt64\bin\ld.exe --version
+GNU ld (GNU Binutils) 2.46
+Copyright (C) 2026 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) a later version.
+This program has absolutely no warranty.
+exit=0
+> C:\Users\xiaoc\node_modules\bun\bin\bun.exe --version
+1.4.0
+exit=0
+> D:\Program Files\Git\usr\bin\wc.exe --version
+wc (GNU coreutils) 8.32
+Copyright (C) 2020 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by Paul Rubin and David MacKenzie.
+exit=0
+> D:\Program Files\Git\usr\bin\sha256sum.exe --version
+sha256sum (GNU coreutils) 8.32
+Copyright (C) 2020 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by Ulrich Drepper, Scott Miller, and David Madore.
+exit=0
+> C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\link.exe /?
+Microsoft (R) Incremental Linker Version 14.51.36256.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+ 用法: LINK [选项] [文件] [@commandfile]
+
+  选项:
+
+      /ALIGN:#
+      /ALLOWBIND[:NO]
+      /ALLOWISOLATION[:NO]
+   /APPCONTAINER[:NO]
+      /ASSEMBLYDEBUG[:DISABLE]
+   /ASSEMBLYLINKRESOURCE:文件名
+   /ASSEMBLYMODULE:文件名
+   /ASSEMBLYRESOURCE:文件名[,[名称][,PRIVATE]]
+   /BASE:{地址[,大小]|@文件名,键}
+      /CLRIMAGETYPE:{IJW|PURE|SAFE|SAFE32BITPREFERRED}
+   /CLRLOADEROPTIMIZATION:{MD|MDH|NONE|SD}
+      /CLRSUPPORTLASTERROR[:{NO|SYSTEMDLL}]
+      /CLRTHREADATTRIBUTE:{MTA|NONE|STA}
+      /CLRUNMANAGEDCODECHECK[:NO]
+      /DEBUG[:{FASTLINK|FULL|NONE}]
+   /DEF:文件名
+   /DEFAULTLIB:库
+      /DELAY:{NOBIND|UNLOAD}
+      /DELAYLOAD:dll
+      /DELAYSIGN[:NO]
+      /DEPENDENTLOADFLAG:flag
+      /DLL
+      /DRIVER[:{UPONLY|WDM}]
+      /DYNAMICBASE[:NO]
+      /DYNAMICDEOPT
+      /DYNAMICDEOPT:SUFFIX=extension
+      /DYNAMICDEOPT:SYNC
+      /DYNAMICDEOPT-ALLOWICF
+      /EMITVOLATILEMETADATA[:NO]
+      /ENTRY:symbol
+      /ERRORREPORT:{NONE|PROMPT|QUEUE|SEND}
+      /EXPORT:symbol
+      /EXPORTPADMIN[:size]
+      /FASTFAIL[:NO]
+      /FASTGENPROFILE[:{COUNTER32|COUNTER64|EXACT|MEMMAX=#|MEMMIN=#|NOEXACT|
+                        NOPATH|NOTRACKEH|PATH|PGD=filename|TRACKEH}]
+      /FILEALIGN:#
+      /FIXED[:NO]
+      /FORCE[:{MULTIPLE|UNRESOLVED}]
+   /FUNCTIONPADMIN[:大小]
+      /GUARD:{CF|NO}
+   /GENPROFILE[:{COUNTER32|COUNTER64|EXACT|MEMMAX=#|MEMMIN=#|NOEXACT|
+          NOPATH|NOTRACKEH|PATH|PGD=filename|TRACKEH}]
+   /HEAP:reserve[,commit]
+   /HIGHENTROPYVA[:NO]
+   /IDLOUT:文件名
+   /IGNORE:#
+      /IGNOREIDL
+      /ILK:filename
+   /IMPLIB:文件名
+   /INCLUDE:符号
+      /INCREMENTAL[:NO]
+   /INTEGRITYCHECK
+      /KERNEL
+   /KEYCONTAINER:name
+   /KEYFILE:文件名
+      /LARGEADDRESSAWARE[:NO]
+   /LIBPATH:目录
+      /LINKREPRO:dir
+      /LINKREPROFULLPATHRSP:filename
+      /LINKREPROTARGET:filename
+      /LTCG[:{INCREMENTAL|NOSTATUS|OFF|STATUS|}]
+      /LTCGOUT:filename
+      /MACHINE:{ARM64|ARM64EC|ARM64X|EBC|X64|X86}
+      /MANIFEST[:{EMBED[,ID=#]|NO}]
+   /MANIFESTDEPENDENCY:manifest dependency
+   /MANIFESTFILE:filename
+   /MANIFESTINPUT:文件名
+   /MANIFESTUAC[:{NO|UAC 片段}]
+   /MAP[:文件名]
+      /MAPINFO:{EXPORTS|PDATA}
+   /MERGE:from=to
+   /MIDL:@commandfile
+      /NATVIS:filename
+      /NOASSEMBLY
+   /NODEFAULTLIB[:库]
+      /NOENTRY
+      /NOEXP
+      /NOIMPLIB
+      /NOLOGO
+      /NXCOMPAT[:NO]
+      /OPT:{ICF[=iterations]|LBR|NOICF|NOLBR|NOREF|REF}
+   /ORDER:@文件名
+   /OUT:文件名
+   /PDB:文件名
+      /PDBINJECT:{MAPFILE}
+      /PDBSTRIPPED[:filename]
+      /PROFILE
+   /RELEASE
+   /SAFESEH[:NO]
+   /SECTION:名称,[[!]{DEKPRSW}][,ALIGN=#]
+      /SOURCELINK:filename
+      /SPD:filename
+      /SPDEMBED
+      /SPDIN:filename
+      /SPGO
+      /STACK:reserve[,commit]
+      /STUB:filename
+      /SUBSYSTEM:{BOOT_APPLICATION|CONSOLE|EFI_APPLICATION|
+                  EFI_BOOT_SERVICE_DRIVER|EFI_ROM|EFI_RUNTIME_DRIVER|
+                  NATIVE|POSIX|WINDOWS|WINDOWSCE}[,#[.##]]
+      /SWAPRUN:{CD|NET}
+      /TLBID:#
+      /TLBOUT:filename
+      /TIME
+      /TSAWARE[:NO]
+      /USEPROFILE[:{AGGRESSIVE|PGD=filename}]
+      /VERBOSE[:{CLR|ICF|INCR|LIB|REF|SAFESEH|UNUSEDDELAYLOAD|UNUSEDLIBS}]
+      /VERSION:#[.#]
+      /WINMD[:{NO|ONLY}]
+      /WINMDDELAYSIGN[:NO]
+      /WINMDFILE:filename
+      /WINMDKEYCONTAINER:name
+      /WINMDKEYFILE:filename
+      /WHOLEARCHIVE[:library]
+      /WX[:NO]
+      /WX[:nnnn[,nnnn...]]
+exit=1100
+> C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\lib.exe /?
+Microsoft (R) Library Manager Version 14.51.36256.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+用法: LIB [选项] [文件]
+
+  选项:
+
+   /DEF[:文件名]
+   /ERRORREPORT:{NONE|PROMPT|QUEUE|SEND}
+   /EXPORT:符号
+   /EXTRACT:成员名
+   /INCLUDE:符号
+   /LIBPATH:目录
+      /LINKREPRO:dir
+      /LINKREPROFULLPATHRSP:filename
+      /LINKREPROTARGET:filename
+   /LIST[:文件名]
+   /LTCG
+      /MACHINE:{ARM64|ARM64X|EBC|X64|X86}
+   /NAME:文件名
+   /NODEFAULTLIB[:库]
+   /NOLOGO
+   /OUT:文件名
+   /REMOVE:成员名
+   /SUBSYSTEM:{BOOT_APPLICATION|CONSOLE|EFI_APPLICATION|
+         EFI_BOOT_SERVICE_DRIVER|EFI_ROM|EFI_RUNTIME_DRIVER|
+         NATIVE|POSIX|WINDOWS|WINDOWSCE}[,#[.##]]
+   /VERBOSE
+   /WX[:NO]
+      /WX[:nnnn[,nnnn...]]
+exit=1100

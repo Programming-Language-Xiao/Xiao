@@ -1,0 +1,46 @@
+cwd=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a
+sha256sum=D:\Program Files\Git\usr\bin\sha256sum.exe
+wc=D:\Program Files\Git\usr\bin\wc.exe
+> Copy-Item -LiteralPath target/lf/release/xiao_runtime.lib -Destination runtime/xiao_runtime.lib
+> Get-FileHash -Algorithm SHA256 -LiteralPath target/lf/release/xiao_runtime.lib
+e1cc77ef7269b10e06850b4497ca8ab1e7eaff0235e50d97dea9709329c719f9
+> (Get-Item -LiteralPath target/lf/release/xiao_runtime.lib).Length
+27869848
+> sha256sum -- target/lf/release/xiao_runtime.lib
+e1cc77ef7269b10e06850b4497ca8ab1e7eaff0235e50d97dea9709329c719f9 *target/lf/release/xiao_runtime.lib
+exit=0
+> wc -c -- target/lf/release/xiao_runtime.lib
+27869848 target/lf/release/xiao_runtime.lib
+exit=0
+> Get-FileHash -Algorithm SHA256 -LiteralPath runtime/xiao_runtime.lib
+e1cc77ef7269b10e06850b4497ca8ab1e7eaff0235e50d97dea9709329c719f9
+> (Get-Item -LiteralPath runtime/xiao_runtime.lib).Length
+27869848
+> sha256sum -- runtime/xiao_runtime.lib
+e1cc77ef7269b10e06850b4497ca8ab1e7eaff0235e50d97dea9709329c719f9 *runtime/xiao_runtime.lib
+exit=0
+> wc -c -- runtime/xiao_runtime.lib
+27869848 runtime/xiao_runtime.lib
+exit=0
+> Copy-Item -LiteralPath target/lf/release/libxiao_runtime.rlib -Destination runtime/libxiao_runtime.rlib
+> Get-FileHash -Algorithm SHA256 -LiteralPath target/lf/release/libxiao_runtime.rlib
+873d67ecb36436a7044c8da43d1c10881ef94684e419e2f8b25c4944997f68b8
+> (Get-Item -LiteralPath target/lf/release/libxiao_runtime.rlib).Length
+7801406
+> sha256sum -- target/lf/release/libxiao_runtime.rlib
+873d67ecb36436a7044c8da43d1c10881ef94684e419e2f8b25c4944997f68b8 *target/lf/release/libxiao_runtime.rlib
+exit=0
+> wc -c -- target/lf/release/libxiao_runtime.rlib
+7801406 target/lf/release/libxiao_runtime.rlib
+exit=0
+> Get-FileHash -Algorithm SHA256 -LiteralPath runtime/libxiao_runtime.rlib
+873d67ecb36436a7044c8da43d1c10881ef94684e419e2f8b25c4944997f68b8
+> (Get-Item -LiteralPath runtime/libxiao_runtime.rlib).Length
+7801406
+> sha256sum -- runtime/libxiao_runtime.rlib
+873d67ecb36436a7044c8da43d1c10881ef94684e419e2f8b25c4944997f68b8 *runtime/libxiao_runtime.rlib
+exit=0
+> wc -c -- runtime/libxiao_runtime.rlib
+7801406 runtime/libxiao_runtime.rlib
+exit=0
+exit=0

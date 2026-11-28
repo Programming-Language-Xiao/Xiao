@@ -1,0 +1,405 @@
+cwd=D:\project\Xiao\Xiao
+> cmd /c git show --format=oneline --name-only aeb8422b
+aeb8422be2e2d260f283c3e6ecea0acec8080122 feat: 接通 B3-4 env intrinsic 与 Runtime 核心
+core/rust/crates/xiao-bytecode/src/encode/tests.rs
+core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs
+core/rust/crates/xiao-driver/src/lib.rs
+core/rust/crates/xiao-driver/src/protocol/request.rs
+core/rust/crates/xiao-driver/src/protocol_tests.rs
+core/rust/crates/xiao-driver/tests/20o_b2_b2_divide.rs
+core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs
+core/rust/crates/xiao-driver/tests/20o_b3_time_tutorial.rs
+core/rust/crates/xiao-intrinsics/build.rs
+core/rust/crates/xiao-intrinsics/intrinsics.json
+core/rust/crates/xiao-intrinsics/src/lib.rs
+core/rust/crates/xiao-runtime/src/environment.rs
+core/rust/crates/xiao-runtime/src/environment_tests.rs
+core/rust/crates/xiao-runtime/src/lib.rs
+core/rust/crates/xiao-runtime/src/resources.rs
+docs/DevDocs/20o-b3-4-env-implementation-plan.md
+docs/DevDocs/20o-b3-host-libraries-plan.md
+docs/DevDocs/README.md
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/README.md
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/REPORT.md
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/baseline.json
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/baseline-22d-audit.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/baseline-capture-attempt-1.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/baseline-capture-attempt-2.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/driver-22d-list-attempt-1.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/driver-22d-list-final.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/driver-env-after-fmt.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/driver-env-attempt-1.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/fmt-after-testfix.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/intrinsics-after-fmt.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/intrinsics-attempt-1.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/intrinsics-attempt-2.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/intrinsics-final.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/runtime-env-after-fmt.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/runtime-env-attempt-1.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/runtime-env-attempt-2.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/runtime-env-final.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/rustfmt.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/source-check-after.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/source-check-before.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/source-check-final.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/workspace-after-testfix.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/workspace-attempt-1.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/workspace-default-final.log
+docs/DevDocs/assets/20o-b3/entry-20261127-b3-4/logs/workspace-no-fail-fast.log
+exit=0
+> cmd /c git show --format=oneline aeb8422b -- core/rust/crates/xiao-bytecode/src/encode/tests.rs core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs core/rust/crates/xiao-driver/tests/20o_b2_b2_divide.rs core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs core/rust/crates/xiao-driver/tests/20o_b3_time_tutorial.rs
+aeb8422be2e2d260f283c3e6ecea0acec8080122 feat: 接通 B3-4 env intrinsic 与 Runtime 核心
+diff --git a/core/rust/crates/xiao-bytecode/src/encode/tests.rs b/core/rust/crates/xiao-bytecode/src/encode/tests.rs
+index ad000918..a4668c42 100644
+--- a/core/rust/crates/xiao-bytecode/src/encode/tests.rs
++++ b/core/rust/crates/xiao-bytecode/src/encode/tests.rs
+@@ -704,7 +704,7 @@ fn decoded_intrinsic_ids_are_checked_in_both_operand_widths() {
+         let valid = signature_bytes(34);
+         assert!(table.bytes.ends_with(&valid));
+         let end = starts[0] + table.bytes.len();
+-        for id in [60, 100, u32::MAX] {
++        for id in [63, 100, u32::MAX] {
+             let mut bytes = encoded.bytes.clone();
+             bytes.splice(end - valid.len()..end, signature_bytes(id));
+             let expected = EncodeError::InvalidFormat(format!("未知或已废弃的 intrinsic ID {id}"));
+diff --git a/core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs b/core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs
+index 3dffb716..9ca54d87 100644
+--- a/core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs
++++ b/core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs
+@@ -345,7 +345,7 @@ fn cmath_unknown_intrinsic_ids_are_rejected_before_encoding() {
+         .find(|(_, function)| function.name == case.function)
+         .unwrap();
+ 
+-    for id in [60, 100, u32::MAX] {
++    for id in [63, 100, u32::MAX] {
+         let mut invalid = tac.clone();
+         let invalid_signature = invalid.signatures.intern(CallSig::intrinsic(id));
+         let function = &mut invalid.functions[function_index];
+diff --git a/core/rust/crates/xiao-driver/tests/20o_b2_b2_divide.rs b/core/rust/crates/xiao-driver/tests/20o_b2_b2_divide.rs
+index ddaa9651..8182c310 100644
+--- a/core/rust/crates/xiao-driver/tests/20o_b2_b2_divide.rs
++++ b/core/rust/crates/xiao-driver/tests/20o_b2_b2_divide.rs
+@@ -71,7 +71,7 @@ fn lfloat_divide_requires_the_frozen_public_contract() {
+         assert_eq!(internal.capability, xiao_intrinsics::Capability::None);
+     }
+     assert!(
+-        xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(60).unwrap()).is_none()
++        xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(63).unwrap()).is_none()
+     );
+     assert!(
+         xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(100).unwrap()).is_none()
+diff --git a/core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs b/core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs
+index 05e7bcf5..f00aa049 100644
+--- a/core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs
++++ b/core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs
+@@ -249,7 +249,7 @@ fn vm_rejects_invalid_shapes_types_and_unknown_ids() {
+         for mutation in 0..6 {
+             let mut program = base.clone();
+             let unknown =
+-                (mutation == 5).then(|| program.signatures.intern(CallSig::intrinsic(60)));
++                (mutation == 5).then(|| program.signatures.intern(CallSig::intrinsic(63)));
+             let mut changed = false;
+             for instruction in program.functions[0]
+                 .blocks
+@@ -305,7 +305,7 @@ fn vm_rejects_invalid_shapes_types_and_unknown_ids() {
+         }
+     }
+     println!(
+-        "B4-2B-VM-NEGATIVE ids=15 dynamic_types=8 shape=checked reserved=60-rejected result=passed"
++        "B4-2B-VM-NEGATIVE ids=15 dynamic_types=8 shape=checked reserved=63-rejected result=passed"
+     );
+ }
+ 
+diff --git a/core/rust/crates/xiao-driver/tests/20o_b3_time_tutorial.rs b/core/rust/crates/xiao-driver/tests/20o_b3_time_tutorial.rs
+index 8c47b5ff..2a484a2b 100644
+--- a/core/rust/crates/xiao-driver/tests/20o_b3_time_tutorial.rs
++++ b/core/rust/crates/xiao-driver/tests/20o_b3_time_tutorial.rs
+@@ -141,7 +141,7 @@ fn reserved_intrinsic_ids_fail_before_execution() {
+             .iter()
+             .any(|sig| sig.intrinsic_id() == Some(50))
+     );
+-    for id in 60..=63 {
++    for id in [63] {
+         let mut invalid = tac.clone();
+         let mut signatures = xiao_bytecode::sig::CallSigTable::new();
+         for signature in tac.signatures.iter() {
+exit=0
+> cmd /c git diff --exit-code aeb8422b..d6e51027 -- core/rust/crates/xiao-bytecode/src/encode/tests.rs core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs core/rust/crates/xiao-driver/tests/20o_b2_b2_divide.rs core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs core/rust/crates/xiao-driver/tests/20o_b3_time_tutorial.rs
+diff --git a/core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs b/core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs
+index f00aa049..a4f3b7b6 100644
+--- a/core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs
++++ b/core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs
+@@ -139,7 +139,7 @@ fn all_direct_primitives_execute_in_source_and_production_xiaoc() {
+     assert!(result.result.is_success(), "{result:?}");
+     assert_eq!(output(&result.events), golden);
+     assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 20);
+-    assert_eq!(xiao_codegen_llvm::CODEGEN_VERSION, 26);
++    assert_eq!(xiao_codegen_llvm::CODEGEN_VERSION, 27);
+     println!("B4-2B-VM primitives=15 source=O0,O3 xiaoc=production result=passed");
+ }
+ 
+exit=1
+core/rust/crates/xiao-bytecode/src/encode/tests.rs:680-715
+680:fn decoded_intrinsic_ids_are_checked_in_both_operand_widths() {
+681:    for width in [OperandWidth::Leb128, OperandWidth::FixedU16] {
+682:        let mut program = all_ops_program();
+683:        program.signatures.intern(CallSig::intrinsic(34));
+684:        let encoded = encode(&program, width).expect("活动 ID 应可编码");
+685:        let mut table = Writer::new(width);
+686:        encode_signatures(&mut table, &program.signatures).expect("活动签名表应可编码");
+687:        let starts = encoded
+688:            .bytes
+689:            .windows(table.bytes.len())
+690:            .enumerate()
+691:            .filter_map(|(offset, bytes)| (bytes == table.bytes).then_some(offset))
+692:            .collect::<Vec<_>>();
+693:        assert_eq!(starts.len(), 1, "应唯一定位完整签名表，不能误改其它字段");
+694:
+695:        // 只替换刚追加的最后一条签名，不调用会提前拒绝未知 ID 的编码校验。
+696:        let signature_bytes = |id: u32| {
+697:            let mut writer = Writer::new(width);
+698:            writer.uleb(0); // 空形参表。
+699:            write_optional_index(&mut writer, Some(id & 0xffff)).unwrap();
+700:            write_optional_index(&mut writer, Some(id >> 16)).unwrap();
+701:            writer.byte(10); // IrType::Dynamic。
+702:            writer.bytes
+703:        };
+704:        let valid = signature_bytes(34);
+705:        assert!(table.bytes.ends_with(&valid));
+706:        let end = starts[0] + table.bytes.len();
+707:        for id in [63, 100, u32::MAX] {
+708:            let mut bytes = encoded.bytes.clone();
+709:            bytes.splice(end - valid.len()..end, signature_bytes(id));
+710:            let expected = EncodeError::InvalidFormat(format!("未知或已废弃的 intrinsic ID {id}"));
+711:            assert_eq!(decode(&bytes), Err(expected.clone()));
+712:            assert_eq!(decode_encoded(&bytes), Err(expected));
+713:        }
+714:    }
+715:}
+core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs:338-380
+338:fn cmath_unknown_intrinsic_ids_are_rejected_before_encoding() {
+339:    let (_, ir, tac, cases) = fixture();
+340:    let case = cases.first().expect("应存在 cmath 调用");
+341:    let (function_index, _) = tac
+342:        .functions
+343:        .iter()
+344:        .enumerate()
+345:        .find(|(_, function)| function.name == case.function)
+346:        .unwrap();
+347:
+348:    for id in [63, 100, u32::MAX] {
+349:        let mut invalid = tac.clone();
+350:        let invalid_signature = invalid.signatures.intern(CallSig::intrinsic(id));
+351:        let function = &mut invalid.functions[function_index];
+352:        let instruction = function
+353:            .blocks
+354:            .iter_mut()
+355:            .flat_map(|block| &mut block.instructions)
+356:            .find(|instruction| matches!(instruction.op, TacOp::Call { .. }))
+357:            .expect("应找到可替换的 intrinsic 调用");
+358:        let TacOp::Call { signature, .. } = &mut instruction.op else {
+359:            unreachable!();
+360:        };
+361:        *signature = invalid_signature;
+362:
+363:        let validation =
+364:            verify_production(&ir, &invalid).expect_err("生产校验必须拒绝未知/墓碑 intrinsic ID");
+365:        let reason = format!("未知或已废弃的 intrinsic ID {id}");
+366:        assert_eq!(validation.code, TAC_STRUCTURE_CODE);
+367:        assert!(
+368:            validation.message.ends_with(&reason),
+369:            "校验错误应指出 ID {id}：{validation}"
+370:        );
+371:        for width in [OperandWidth::Leb128, OperandWidth::FixedU16] {
+372:            assert_eq!(
+373:                encode(&invalid, width),
+374:                Err(EncodeError::InvalidFormat(reason.clone())),
+375:                "{width:?} 编码错误必须指出 ID {id}"
+376:            );
+377:        }
+378:        println!("B4-2A-NEGATIVE id={id} verifier=reject encoder=reject result=passed");
+379:    }
+380:}
+core/rust/crates/xiao-driver/tests/20o_b2_b2_divide.rs:26-80
+26:fn lfloat_divide_requires_the_frozen_public_contract() {
+27:    let valid = "lfloat_divide(lfloat(1),lfloat(2),3,\"half_even\")";
+28:    for expression in [
+29:        "lfloat_divide()",
+30:        "lfloat_divide(lfloat(1),lfloat(2),3)",
+31:        "lfloat_divide(1,lfloat(2),3,\"half_even\")",
+32:        "lfloat_divide(lfloat(1),1,3,\"half_even\")",
+33:        "lfloat_divide(lfloat(1),lfloat(2),sint(3),\"half_even\")",
+34:        "lfloat_divide(lfloat(1),lfloat(2),3,true)",
+35:        "lfloat_divide(lfloat(1),lfloat(2),3,\"half_even\",0)",
+36:        "lfloat_divide(numerator=lfloat(1),denominator=lfloat(2),precision=3,typo=\"half_even\")",
+37:        "lfloat_divide(lfloat(1),numerator=lfloat(2),precision=3,rounding=\"half_even\")",
+38:    ] {
+39:        assert!(
+40:            FrontendCompiler::new()
+41:                .compile(&FrontendRequest::from_text(format!(
+42:                    "print({expression})\n"
+43:                )))
+44:                .is_err(),
+45:            "{expression}"
+46:        );
+47:    }
+48:    assert!(
+49:        FrontendCompiler::new()
+50:            .compile(&FrontendRequest::from_text(format!("print({valid})\n")))
+51:            .is_ok()
+52:    );
+53:    let decl = xiao_intrinsics::by_name("lfloat_divide").unwrap();
+54:    assert_eq!(decl.id.get(), 33);
+55:    assert_eq!(decl.effects, xiao_intrinsics::Effects::Allocates);
+56:    assert_eq!(decl.capability, xiao_intrinsics::Capability::None);
+57:    for id in 34..=48 {
+58:        let internal =
+59:            xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(id).unwrap())
+60:                .expect("B3-3已登记34～48内部声明");
+61:        assert_eq!(internal.kind, xiao_intrinsics::IntrinsicKind::Cmath);
+62:        assert_eq!(
+63:            internal.signature.parameter,
+64:            xiao_intrinsics::ValueType::Float
+65:        );
+66:        assert_eq!(
+67:            internal.signature.return_type,
+68:            xiao_intrinsics::ValueType::Float
+69:        );
+70:        assert_eq!(internal.effects, xiao_intrinsics::Effects::Pure);
+71:        assert_eq!(internal.capability, xiao_intrinsics::Capability::None);
+72:    }
+73:    assert!(
+74:        xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(63).unwrap()).is_none()
+75:    );
+76:    assert!(
+77:        xiao_intrinsics::active_by_id(xiao_intrinsics::IntrinsicId::new(100).unwrap()).is_none()
+78:    );
+79:    assert_eq!(xiao_runtime_abi::ABI_MINOR_VERSION, 20);
+80:}
+core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs:216-307
+216:fn vm_rejects_invalid_shapes_types_and_unknown_ids() {
+217:    for (index, (name, entry)) in entries().into_iter().enumerate() {
+218:        let base = injection_program(index, false);
+219:        let parameters =
+220:            xiao_intrinsics::cmath_parameters(IntrinsicId::new(34 + index as u32).unwrap())
+221:                .unwrap();
+222:        for value in [
+223:            RuntimeValue::Int(1),
+224:            RuntimeValue::Sint(1),
+225:            RuntimeValue::Sfloat(1.0),
+226:            RuntimeValue::Lint("1".into()),
+227:            RuntimeValue::Lfloat("1".into()),
+228:            RuntimeValue::Bool(true),
+229:            RuntimeValue::None,
+230:            RuntimeValue::new_string("1").unwrap(),
+231:        ] {
+232:            for slot in 0..if matches!(entry, Entry::Binary(_)) {
+233:                2
+234:            } else {
+235:                1
+236:            } {
+237:                // 完整类型检查必须先于其余实参的 NaN 域错误。
+238:                let mut values =
+239:                    vec![RuntimeValue::Float(f64::NAN); base.functions[0].parameters.len()];
+240:                values[slot] = value.clone();
+241:                let result = injected(&base, &values, 0);
+242:                assert_eq!(
+243:                    result.result.error_code(),
+244:                    Some("X06-RUNTIME-002"),
+245:                    "{name}: {result:?}"
+246:                );
+247:            }
+248:        }
+249:        for mutation in 0..6 {
+250:            let mut program = base.clone();
+251:            let unknown =
+252:                (mutation == 5).then(|| program.signatures.intern(CallSig::intrinsic(63)));
+253:            let mut changed = false;
+254:            for instruction in program.functions[0]
+255:                .blocks
+256:                .iter_mut()
+257:                .flat_map(|b| &mut b.instructions)
+258:            {
+259:                if let TacOp::Call {
+260:                    signature,
+261:                    arguments,
+262:                    ..
+263:                } = &mut instruction.op
+264:                    && program
+265:                        .signatures
+266:                        .get(*signature)
+267:                        .unwrap()
+268:                        .intrinsic_id()
+269:                        .is_some_and(|id| id == 34 + index as u32)
+270:                {
+271:                    match mutation {
+272:                        0 => {
+273:                            arguments.pop();
+274:                        }
+275:                        1 => arguments.push(arguments[0].clone()),
+276:                        2 => arguments[0].name = Some("unknown".into()),
+277:                        3 if arguments.len() == 2 => {
+278:                            arguments[0].name = Some(parameters[0].0.into());
+279:                        }
+280:                        4 if arguments.len() == 2 => {
+281:                            for arg in arguments.iter_mut() {
+282:                                arg.name = Some(parameters[0].0.into());
+283:                            }
+284:                        }
+285:                        5 => *signature = unknown.unwrap(),
+286:                        _ => continue,
+287:                    }
+288:                    changed = true;
+289:                }
+290:            }
+291:            if !changed {
+292:                continue;
+293:            }
+294:            if mutation == 5 {
+295:                assert!(encode(&program, OperandWidth::Leb128).is_err());
+296:            } else {
+297:                let values = vec![RuntimeValue::Float(-1.0); base.functions[0].parameters.len()];
+298:                let result = injected(&program, &values, 0);
+299:                assert_eq!(
+300:                    result.result.error_code(),
+301:                    Some("X06-RUNTIME-002"),
+302:                    "{name} mutation={mutation}: {result:?}"
+303:                );
+304:            }
+305:        }
+306:    }
+307:    println!(
+core/rust/crates/xiao-driver/tests/20o_b3_time_tutorial.rs:134-166
+134:fn reserved_intrinsic_ids_fail_before_execution() {
+135:    let artifact = FrontendCompiler::new()
+136:        .compile(&FrontendRequest::from_text("os_time_monotonic(\"ns\")\n"))
+137:        .unwrap();
+138:    let tac = xiao_bytecode::lower_program(&artifact.ir);
+139:    assert!(
+140:        tac.signatures
+141:            .iter()
+142:            .any(|sig| sig.intrinsic_id() == Some(50))
+143:    );
+144:    for id in [63] {
+145:        let mut invalid = tac.clone();
+146:        let mut signatures = xiao_bytecode::sig::CallSigTable::new();
+147:        for signature in tac.signatures.iter() {
+148:            signatures.intern(if signature.intrinsic_id() == Some(50) {
+149:                xiao_bytecode::sig::CallSig::intrinsic(id)
+150:            } else {
+151:                signature.clone()
+152:            });
+153:        }
+154:        invalid.signatures = signatures;
+155:        assert!(xiao_bytecode::encode_xiaoc(&invalid, Default::default()).is_err());
+156:        let result = xiao_vm::run_request(&xiao_vm::RunRequest::new(&artifact.ir, &invalid));
+157:        assert!(!result.result.is_success(), "reserved {id}");
+158:        assert!(
+159:            result.events.iter().all(|event| !matches!(
+160:                event,
+161:                VmEvent::ModuleLoaded { .. } | VmEvent::IntrinsicOutput { .. }
+162:            )),
+163:            "reserved {id} reached the application: {result:?}"
+164:        );
+165:    }
+166:}

@@ -1,0 +1,83 @@
+cwd=D:\project\Xiao\Xiao
+sha256sum=D:\Program Files\Git\usr\bin\sha256sum.exe
+wc=D:\Program Files\Git\usr\bin\wc.exe
+> Get-FileHash -Algorithm SHA256 -LiteralPath core/rust/Cargo.lock
+28d38451ba0490b70d2d136bc3268acad8de02b5658bf826f842069019161c53
+> (Get-Item -LiteralPath core/rust/Cargo.lock).Length
+19660
+> sha256sum -- core/rust/Cargo.lock
+28d38451ba0490b70d2d136bc3268acad8de02b5658bf826f842069019161c53 *core/rust/Cargo.lock
+exit=0
+> wc -c -- core/rust/Cargo.lock
+19660 core/rust/Cargo.lock
+exit=0
+lf_archive_sha256=28d38451ba0490b70d2d136bc3268acad8de02b5658bf826f842069019161c53
+> Get-FileHash -Algorithm SHA256 -LiteralPath tests/benchmarks/Cargo.lock
+8ac4f16af6e8baf5b71e0e0b5d89397eb5ae7bf2e3cc5a96053683c6e8b4b577
+> (Get-Item -LiteralPath tests/benchmarks/Cargo.lock).Length
+19264
+> sha256sum -- tests/benchmarks/Cargo.lock
+8ac4f16af6e8baf5b71e0e0b5d89397eb5ae7bf2e3cc5a96053683c6e8b4b577 *tests/benchmarks/Cargo.lock
+exit=0
+> wc -c -- tests/benchmarks/Cargo.lock
+19264 tests/benchmarks/Cargo.lock
+exit=0
+lf_archive_sha256=8ac4f16af6e8baf5b71e0e0b5d89397eb5ae7bf2e3cc5a96053683c6e8b4b577
+> Get-FileHash -Algorithm SHA256 -LiteralPath docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.xiao
+d7ec578f5f0177355a04f054831a5d1aac1b7ab0c24757e05f494992eedf5a8b
+> (Get-Item -LiteralPath docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.xiao).Length
+264
+> sha256sum -- docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.xiao
+d7ec578f5f0177355a04f054831a5d1aac1b7ab0c24757e05f494992eedf5a8b *docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.xiao
+exit=0
+> wc -c -- docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.xiao
+264 docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.xiao
+exit=0
+lf_archive_sha256=d7ec578f5f0177355a04f054831a5d1aac1b7ab0c24757e05f494992eedf5a8b
+> Get-FileHash -Algorithm SHA256 -LiteralPath docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.input.json
+30cf24e7a51b3e75a7ccda7f6448818dcbd4acb0b84e939e9e7083eeb019f129
+> (Get-Item -LiteralPath docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.input.json).Length
+41
+> sha256sum -- docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.input.json
+30cf24e7a51b3e75a7ccda7f6448818dcbd4acb0b84e939e9e7083eeb019f129 *docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.input.json
+exit=0
+> wc -c -- docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.input.json
+41 docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.input.json
+exit=0
+lf_archive_sha256=30cf24e7a51b3e75a7ccda7f6448818dcbd4acb0b84e939e9e7083eeb019f129
+> Get-FileHash -Algorithm SHA256 -LiteralPath docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.stdout
+267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146
+> (Get-Item -LiteralPath docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.stdout).Length
+103
+> sha256sum -- docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.stdout
+267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146 *docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.stdout
+exit=0
+> wc -c -- docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.stdout
+103 docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.stdout
+exit=0
+lf_archive_sha256=267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146
+cwd=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\source
+> Get-FileHash -Algorithm SHA256 -LiteralPath core/rust/Cargo.lock
+f514ddb34b7784c61f5220d56554d382a849dd1222deec7d0b23d5d6f668c050
+> (Get-Item -LiteralPath core/rust/Cargo.lock).Length
+20539
+> sha256sum -- core/rust/Cargo.lock
+f514ddb34b7784c61f5220d56554d382a849dd1222deec7d0b23d5d6f668c050 *core/rust/Cargo.lock
+exit=0
+> wc -c -- core/rust/Cargo.lock
+20539 core/rust/Cargo.lock
+exit=0
+cwd=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\source
+> Get-FileHash -Algorithm SHA256 -LiteralPath tests/benchmarks/Cargo.lock
+fbde7dc465dfab4217aa6638336900a253061b4e9f46aa18428ebd528728bdc1
+> (Get-Item -LiteralPath tests/benchmarks/Cargo.lock).Length
+20120
+> sha256sum -- tests/benchmarks/Cargo.lock
+fbde7dc465dfab4217aa6638336900a253061b4e9f46aa18428ebd528728bdc1 *tests/benchmarks/Cargo.lock
+exit=0
+> wc -c -- tests/benchmarks/Cargo.lock
+20120 tests/benchmarks/Cargo.lock
+exit=0
+cwd=D:\project\Xiao\Xiao
+alias bytes=267 sha256=8e8097c106c0719b7cc568e6afc09c40c3dae0facc539a8f596dae6a02f01195
+exit=0

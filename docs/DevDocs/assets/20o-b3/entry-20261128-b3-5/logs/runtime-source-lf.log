@@ -1,0 +1,9 @@
+cmd /c git config --get core.autocrlf
+true
+exit=0
+cmd /c git -c core.autocrlf=false -c core.eol=lf archive --format=tar --output=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\d6e51027-lf.tar d6e5102767f4192416f507432e902884670d0bae
+exit=0
+C:\Windows\System32\tar.exe -xf D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\d6e51027-lf.tar -C D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\source-lf
+exit=0
+core/rust/Cargo.lock repo=28D38451BA0490B70D2D136BC3268ACAD8DE02B5658BF826F842069019161C53 archive_lf=28D38451BA0490B70D2D136BC3268ACAD8DE02B5658BF826F842069019161C53
+tests/benchmarks/Cargo.lock repo=8AC4F16AF6E8BAF5B71E0E0B5D89397EB5AE7BF2E3CC5A96053683C6E8B4B577 archive_lf=8AC4F16AF6E8BAF5B71E0E0B5D89397EB5AE7BF2E3CC5A96053683C6E8B4B577

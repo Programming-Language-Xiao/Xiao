@@ -1,0 +1,494 @@
+{
+  "schema_version": 1,
+  "batch": "B3-5A",
+  "recorded_at": "2026-11-28",
+  "product": {
+    "commit": "d6e5102767f4192416f507432e902884670d0bae",
+    "tree": "94940f30f9feeaf6b6fdbd389df372219ec70451"
+  },
+  "head": {
+    "commit": "060f5c958d1b91ddc0088d270008762aac8fc9b7",
+    "tree": "92cd601803657f318087576ac3c69b68cb3288f6",
+    "parent": "d6e5102767f4192416f507432e902884670d0bae",
+    "worktree_before": "clean",
+    "diff": {
+      "command": "cmd /c git diff --stat d6e51027..060f5c95",
+      "exit_code": 0,
+      "files_changed": 2,
+      "insertions": 126,
+      "deletions": 0,
+      "paths": [
+        {
+          "path": "docs/DevDocs/20o-b3-5-log-implementation-plan.md",
+          "change": "added",
+          "insertions": 125
+        },
+        {
+          "path": "docs/DevDocs/README.md",
+          "change": "modified",
+          "insertions": 1
+        }
+      ],
+      "log": "logs/git-baseline.log"
+    }
+  },
+  "locks": [
+    {
+      "path": "core/rust/Cargo.lock",
+      "bytes": 19660,
+      "sha256": "28d38451ba0490b70d2d136bc3268acad8de02b5658bf826f842069019161c53"
+    },
+    {
+      "path": "tests/benchmarks/Cargo.lock",
+      "bytes": 19264,
+      "sha256": "8ac4f16af6e8baf5b71e0e0b5d89397eb5ae7bf2e3cc5a96053683c6e8b4b577"
+    }
+  ],
+  "versions": {
+    "runtime_abi": {
+      "value": "1.20",
+      "major": {
+        "path": "core/rust/crates/xiao-runtime-abi/src/lib.rs",
+        "line": 24,
+        "constant": "ABI_MAJOR_VERSION"
+      },
+      "minor": {
+        "path": "core/rust/crates/xiao-runtime-abi/src/lib.rs",
+        "line": 26,
+        "constant": "ABI_MINOR_VERSION"
+      }
+    },
+    "code_generator": {
+      "value": 27,
+      "path": "core/rust/crates/xiao-codegen-llvm/src/lib.rs",
+      "line": 108,
+      "constant": "CODEGEN_VERSION"
+    },
+    "stdlib_interface": {
+      "value": 1,
+      "path": "core/rust/crates/xiao-standard-library/src/lib.rs",
+      "line": 53,
+      "constant": "STDLIB_INTERFACE_VERSION"
+    }
+  },
+  "intrinsic_numbering": {
+    "path": "core/rust/crates/xiao-intrinsics/intrinsics.json",
+    "schema_version": 1,
+    "declaration_count": 64,
+    "by_id": [
+      {
+        "first_id": 1,
+        "last_id": 62,
+        "status": "active",
+        "count": 62
+      },
+      {
+        "id": 63,
+        "name": "os_log_write",
+        "line": 66,
+        "status": "reserved",
+        "count": 1,
+        "arity": "none",
+        "parameter_type": "none",
+        "return_type": "none",
+        "vm_binding": "none",
+        "abi_binding": "none",
+        "effect": "none",
+        "capability": "none",
+        "error": "none"
+      },
+      {
+        "first_id": 64,
+        "last_id": 99,
+        "status": "unassigned",
+        "count": 0
+      },
+      {
+        "id": 100,
+        "name": "__reserved_100",
+        "line": 67,
+        "status": "tombstone",
+        "count": 1
+      }
+    ],
+    "differences": [],
+    "sorted_inventory_log": "logs/fixed-source-and-fixtures-final.log",
+    "negative_cases": {
+      "historical_commit": "aeb8422b",
+      "count": 5,
+      "current_id": 63,
+      "proposed_unknown_id": 64,
+      "tombstone_id": 100,
+      "log": "logs/b3-4-negative-source.log"
+    }
+  },
+  "capabilities": {
+    "clock": {
+      "bit": 1,
+      "mask": "0x02",
+      "path": "core/rust/crates/xiao-intrinsics/src/lib.rs",
+      "line": 157,
+      "constant": "CAPABILITY_CLOCK"
+    },
+    "stdout": {
+      "bit": 5,
+      "mask": "0x20",
+      "path": "core/rust/crates/xiao-intrinsics/src/lib.rs",
+      "line": 165,
+      "constant": "CAPABILITY_STDOUT"
+    },
+    "log_combined": {
+      "mask": "0x22",
+      "check_order": [
+        "clock",
+        "stdout"
+      ],
+      "derivation": "CAPABILITY_CLOCK | CAPABILITY_STDOUT"
+    },
+    "known": {
+      "mask": "0xFF",
+      "path": "core/rust/crates/xiao-intrinsics/src/lib.rs",
+      "line": 179,
+      "constant": "KNOWN_CAPABILITY_MASK"
+    },
+    "legacy_default": {
+      "mask": "0x7F",
+      "path": "core/rust/crates/xiao-intrinsics/src/lib.rs",
+      "line": 171,
+      "constant": "DEFAULT_CAPABILITY_MASK",
+      "line_end": 177,
+      "request_path": "core/rust/crates/xiao-driver/src/protocol/request.rs",
+      "reader_line": 243,
+      "serde_default_lines": [
+        218,
+        503
+      ]
+    }
+  },
+  "fixtures": {
+    "matrix": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials.json",
+    "fixture_commit": "5c8094ea3be277ceb0d34d106bc58e2b65651250",
+    "origin_commit": "7f1017b7ff0b7b0a89d11943d5d33e0b432d0b3f",
+    "files": [
+      {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.xiao",
+        "bytes": 264,
+        "sha256": "d7ec578f5f0177355a04f054831a5d1aac1b7ab0c24757e05f494992eedf5a8b"
+      },
+      {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.input.json",
+        "bytes": 41,
+        "sha256": "30cf24e7a51b3e75a7ccda7f6448818dcbd4acb0b84e939e9e7083eeb019f129"
+      },
+      {
+        "path": "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.stdout",
+        "bytes": 103,
+        "sha256": "267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146"
+      }
+    ],
+    "alias_source": {
+      "import": "stdlib.log",
+      "bytes": 267,
+      "sha256": "8e8097c106c0719b7cc568e6afc09c40c3dae0facc539a8f596dae6a02f01195"
+    },
+    "wall_clock_unix_ms": 946684800000,
+    "utc": "2000-01-01T00:00:00.000Z",
+    "timestamp_bytes": 24,
+    "golden_line_bytes": [
+      43,
+      16,
+      44
+    ],
+    "line_ending": "LF",
+    "diagnostics_line": "X06-RUNTIME-012",
+    "digest_log": "logs/input-digests-final.log",
+    "structure_log": "logs/fixed-source-and-fixtures-final.log"
+  },
+  "tools": {
+    "windows": {
+      "availability": "local",
+      "os": "Windows 11 10.0.26200.0",
+      "target": "x86_64-pc-windows-msvc",
+      "rustc": {
+        "version": "1.96.0",
+        "commit": "ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96",
+        "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+        "embedded_llvm": "22.1.2"
+      },
+      "cargo": {
+        "version": "1.96.0",
+        "commit": "30a34c6821b57de0aaec83a901aca39f88f6778c",
+        "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+        "proxy": "D:\\Program Files\\.cargo\\bin\\cargo.exe"
+      },
+      "llvm_config": {
+        "version": "22.1.2",
+        "path": "D:\\msys64\\ucrt64\\bin\\llvm-config.exe"
+      },
+      "clang": {
+        "version": "22.1.2",
+        "path": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+        "default_target": "x86_64-w64-windows-gnu"
+      },
+      "llvm_as": {
+        "version": "22.1.2",
+        "path": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe"
+      },
+      "llc": {
+        "version": "22.1.2",
+        "path": "D:\\msys64\\ucrt64\\bin\\llc.exe"
+      },
+      "linker": {
+        "version": "14.51.36256.0",
+        "path": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+        "help_exit_code": 1100
+      },
+      "gnu_ld": {
+        "version": "2.46",
+        "path": "D:\\msys64\\ucrt64\\bin\\ld.exe"
+      },
+      "log": "logs/tools-windows.log"
+    },
+    "ubuntu_wsl": {
+      "availability": "local",
+      "distribution": "Ubuntu-26.04",
+      "os": "Ubuntu 26.04 LTS",
+      "kernel": "6.6.114.1-microsoft-standard-WSL2",
+      "target": "x86_64-unknown-linux-gnu",
+      "rustc": {
+        "version": "1.96.0",
+        "commit": "ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96",
+        "path": "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "proxy": "/home/xiaoczx/.cargo/bin/rustc",
+        "embedded_llvm": "22.1.2"
+      },
+      "cargo": {
+        "version": "1.96.0",
+        "commit": "30a34c6821b57de0aaec83a901aca39f88f6778c",
+        "path": "/home/xiaoczx/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "proxy": "/home/xiaoczx/.cargo/bin/cargo"
+      },
+      "llvm_config": {
+        "version": "21.1.8",
+        "path": "/usr/bin/llvm-config",
+        "resolved_path": "/usr/lib/llvm-21/bin/llvm-config"
+      },
+      "clang": {
+        "version": "21.1.8",
+        "path": "/usr/bin/clang",
+        "resolved_path": "/usr/lib/llvm-21/bin/clang"
+      },
+      "llvm_as": {
+        "version": "21.1.8",
+        "path": "/usr/bin/llvm-as",
+        "resolved_path": "/usr/lib/llvm-21/bin/llvm-as"
+      },
+      "llc": {
+        "version": "21.1.8",
+        "path": "/usr/bin/llc",
+        "resolved_path": "/usr/lib/llvm-21/bin/llc"
+      },
+      "cc": {
+        "version": "GCC 15.2.0",
+        "path": "/usr/bin/cc",
+        "resolved_path": "/usr/bin/x86_64-linux-gnu-gcc-15"
+      },
+      "linker": {
+        "version": "GNU ld 2.46",
+        "path": "/usr/bin/ld",
+        "resolved_path": "/usr/bin/x86_64-linux-gnu-ld.bfd"
+      },
+      "lld": {
+        "version": "21.1.8",
+        "path": "/usr/bin/ld.lld",
+        "resolved_path": "/usr/lib/llvm-21/bin/lld"
+      },
+      "exit_code": 0,
+      "log": "logs/tools-wsl-login.log"
+    },
+    "macos": {
+      "availability": "ci_only",
+      "availability_zh": "仅 CI 可用",
+      "local_execution": false,
+      "batch_ci_execution": false,
+      "historical_ci": {
+        "commit": "18e7f4fa184575fef260b29ec2603cd975db7444",
+        "run": 46093774527,
+        "job": 140827942402,
+        "attempt": 2,
+        "runner": "macos-15-arm64",
+        "image_version": "20261123.0558.1",
+        "os": "macOS 15.8.2",
+        "target": "aarch64-apple-darwin",
+        "rustc": {
+          "version": "1.96.0",
+          "commit": "ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96",
+          "path": null,
+          "embedded_llvm": "22.1.2"
+        },
+        "cargo": {
+          "toolchain": "1.96.0",
+          "version_observed": null,
+          "path": null,
+          "proxy": "/opt/homebrew/opt/rustup/bin/cargo"
+        },
+        "llvm_config": {
+          "package_version": "23.1.6",
+          "path": null
+        },
+        "clang": {
+          "version": "23.1.6",
+          "path": "/opt/homebrew/opt/llvm/bin/clang"
+        },
+        "llvm_as": {
+          "package_version": "23.1.6",
+          "path": "/opt/homebrew/opt/llvm/bin/llvm-as"
+        },
+        "llc": {
+          "package_version": "23.1.6",
+          "path": "/opt/homebrew/opt/llvm/bin/llc"
+        },
+        "linker": {
+          "version": null,
+          "path": null,
+          "driver": "/opt/homebrew/opt/llvm/bin/clang"
+        },
+        "log": "../entry-20261127-b3-4/logs/1e-ci/macos-maintenance-attempt2.log"
+      },
+      "earlier_ci_tool_probe": {
+        "product_commit": "e79fab3cdd3ea9d3a7eff31f529dec2498434114",
+        "run": 45033610157,
+        "job": 137242370630,
+        "attempt": 1,
+        "runner_image_version": "20261118.0550.1",
+        "rustc": {
+          "version": "1.96.0",
+          "path": "/Users/runner/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustc"
+        },
+        "cargo": {
+          "version": "1.96.0",
+          "path": "/Users/runner/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo"
+        },
+        "clang": {
+          "version": "21.1.8",
+          "path": "/opt/homebrew/Cellar/llvm@21/21.1.8_1/bin/clang-21"
+        },
+        "llvm_as": {
+          "version": "21.1.8",
+          "path": "/opt/homebrew/Cellar/llvm@21/21.1.8_1/bin/llvm-as"
+        },
+        "llc": {
+          "version": "21.1.8",
+          "path": "/opt/homebrew/Cellar/llvm@21/21.1.8_1/bin/llc"
+        },
+        "linker": {
+          "version": "ld-1167.5",
+          "path": "/usr/bin/ld"
+        },
+        "entry": "../entry-20261122-b3-0/entry.json",
+        "archive": "../entry-20261122-b3-0/observations.zip",
+        "archive_inner_file": "environment.json"
+      }
+    }
+  },
+  "task_root": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a",
+    "repository": "D:\\project\\Xiao\\Xiao",
+    "source": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\source-lf",
+    "target": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\target",
+    "runtime": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\runtime",
+    "cache": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\cache",
+    "cargo_home": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\cache\\cargo-home",
+    "case_output": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\cases",
+    "log_directory": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\logs"
+  },
+  "runtime": {
+    "product_commit": "d6e5102767f4192416f507432e902884670d0bae",
+    "product_tree": "94940f30f9feeaf6b6fdbd389df372219ec70451",
+    "platform": "Windows",
+    "target": "x86_64-pc-windows-msvc",
+    "profile": "release",
+    "abi": "1.20",
+    "generator": 27,
+    "stdlib_interface": 1,
+    "features": "default",
+    "test_failpoints": false,
+    "command": "cargo build --release --locked -p xiao-runtime",
+    "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\source-lf\\core\\rust",
+    "cargo_target_dir": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\target\\lf",
+    "cargo_home": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\cache\\cargo-home",
+    "configured_linker": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "exit_code": 0,
+    "start": "2026-11-28T11:58:49.1941453+08:00",
+    "end": "2026-11-28T11:59:59.7160444+08:00",
+    "build_log": "logs/runtime-build-lf.log",
+    "identity_log": "logs/runtime-build-lf-identity.log",
+    "source_log": "logs/runtime-source-lf.log",
+    "digest_log": "logs/runtime-digests.log",
+    "artifacts": [
+      {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\target\\lf\\release\\xiao_runtime.lib",
+        "bytes": 27869848,
+        "sha256": "e1cc77ef7269b10e06850b4497ca8ab1e7eaff0235e50d97dea9709329c719f9",
+        "kind": "staticlib",
+        "runtime_copy": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\runtime\\xiao_runtime.lib"
+      },
+      {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\target\\lf\\release\\libxiao_runtime.rlib",
+        "bytes": 7801406,
+        "sha256": "873d67ecb36436a7044c8da43d1c10881ef94684e419e2f8b25c4944997f68b8",
+        "kind": "rlib",
+        "runtime_copy": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\runtime\\libxiao_runtime.rlib"
+      }
+    ],
+    "earlier_archive_build": {
+      "source": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\source",
+      "cargo_target_dir": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5a\\target",
+      "command": "cargo build --release --locked -p xiao-runtime",
+      "exit_code": 0,
+      "lock_eol": "CRLF",
+      "reason_rebuilt": "归档受 core.autocrlf 影响，锁文件与固定 Git 对象的字节不同",
+      "log": "logs/runtime-build.log",
+      "identity_log": "logs/runtime-build-identity.log"
+    }
+  },
+  "inherited_b1": {
+    "evidence": "../entry-20261122-b3-0/README.md",
+    "local_rerun": false,
+    "libraries": 7,
+    "entries": 20,
+    "resource_targets": 18,
+    "exact_entries": 2,
+    "count_guards": {
+      "total": 28,
+      "observed_outputs": 4,
+      "derived_cases": 24
+    }
+  },
+  "verification": {
+    "source_unchanged": true,
+    "source_scope_log": "logs/git-final.log",
+    "manifest_audit_log": "logs/manifest-audit.log",
+    "docs": {
+      "command": "bun tools/repo-check/src/cli.ts docs",
+      "exit_code": 0,
+      "log": "logs/gate-docs.log"
+    },
+    "layout": {
+      "command": "bun tools/repo-check/src/cli.ts layout",
+      "exit_code": 0,
+      "log": "logs/gate-layout.log"
+    },
+    "coverage": {
+      "command": "bun run check:coverage",
+      "exit_code": 0,
+      "warning": "A0-COVERAGE-002",
+      "log": "logs/gate-coverage.log"
+    },
+    "git_diff_check": {
+      "command": "cmd /c git diff --check",
+      "exit_code": 0,
+      "log": "logs/git-final.log"
+    }
+  }
+}

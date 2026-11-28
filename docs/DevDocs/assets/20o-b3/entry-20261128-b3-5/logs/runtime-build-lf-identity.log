@@ -1,0 +1,13 @@
+cwd=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\source-lf\core\rust
+command=cargo build --release --locked -p xiao-runtime
+cargo_proxy=D:\Program Files\.cargo\bin\cargo.exe
+CARGO_TARGET_DIR=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\target\lf
+CARGO_HOME=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\cache\cargo-home
+CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\link.exe
+CARGO_TERM_COLOR=never
+start=2026-11-28T11:58:49.1941453+08:00
+1.96.0-x86_64-pc-windows-msvc (overridden by 'D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\source-lf\core\rust\rust-toolchain.toml')
+C:\Users\xiaoc\.rustup\toolchains\1.96.0-x86_64-pc-windows-msvc\bin\cargo.exe
+C:\Users\xiaoc\.rustup\toolchains\1.96.0-x86_64-pc-windows-msvc\bin\rustc.exe
+exit=0
+end=2026-11-28T11:59:59.7160444+08:00

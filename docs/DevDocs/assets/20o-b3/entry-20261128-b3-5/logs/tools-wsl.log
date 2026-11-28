@@ -1,0 +1,92 @@
+date=2026-11-28T11:56:19.1578152+08:00
+> wsl.exe --list --verbose
+  NAME              STATE           VERSION
+* Ubuntu-26.04      Stopped         2
+  archlinux         Stopped         2
+  docker-desktop    Stopped         2
+exit=0
+> wsl.exe -d Ubuntu-26.04 --cd / -- bash -lc <probe below>
+cat /etc/os-release
+uname -srmo
+probe() {
+  local executable
+  executable=$(command -v "$1") || { printf "missing=%s\n" "$1"; return 1; }
+  printf "> %s %s\n" "$executable" "$2"
+  printf "resolved=%s\n" "$(readlink -f "$executable")"
+  "$executable" "$2"
+  printf "exit=%s\n" "$?"
+}
+printf "> rustup show active-toolchain\n"
+rustup show active-toolchain
+printf "exit=%s\n" "$?"
+for name in rustc cargo; do
+  printf "> rustup which %s\n" "$name"
+  rustup which "$name"
+  printf "exit=%s\n" "$?"
+done
+probe rustc -vV
+probe cargo -Vv
+for name in llvm-config clang llvm-as llc cc ld ld.lld; do
+  probe "$name" --version
+done
+wsl: Duplicated config key 'boot.systemd' in /etc/wsl.conf:7 (Conflicting key: 'boot.systemd' in /etc/wsl.conf:2)
+PRETTY_NAME="Ubuntu 26.04 LTS"
+NAME="Ubuntu"
+VERSION_ID="26.04"
+VERSION="26.04 (Resolute Raccoon)"
+VERSION_CODENAME=resolute
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=resolute
+LOGO=ubuntu-logo
+Linux 6.6.114.1-microsoft-standard-WSL2 x86_64 GNU/Linux
+> rustup show active-toolchain
+1.96.0-x86_64-unknown-linux-gnu (default)
+exit=0
+> rustup which 
+error: unknown binary '' in toolchain '1.96.0-x86_64-unknown-linux-gnu'
+exit=0
+> rustup which 
+error: unknown binary '' in toolchain '1.96.0-x86_64-unknown-linux-gnu'
+exit=0
+>  
+resolved=/
+bash: line 9: : command not found
+exit=0
+>  
+resolved=/
+bash: line 9: : command not found
+exit=0
+>  
+resolved=/
+bash: line 9: : command not found
+exit=0
+>  
+resolved=/
+bash: line 9: : command not found
+exit=0
+>  
+resolved=/
+bash: line 9: : command not found
+exit=0
+>  
+resolved=/
+bash: line 9: : command not found
+exit=0
+>  
+resolved=/
+bash: line 9: : command not found
+exit=0
+>  
+resolved=/
+bash: line 9: : command not found
+exit=0
+>  
+resolved=/
+bash: line 9: : command not found
+exit=0
+wsl_exit=0

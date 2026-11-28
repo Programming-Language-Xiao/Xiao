@@ -1,0 +1,13 @@
+cwd=D:\project\Xiao\Xiao
+sha256sum=D:\Program Files\Git\usr\bin\sha256sum.exe
+wc=D:\Program Files\Git\usr\bin\wc.exe
+> Get-FileHash -Algorithm SHA256 -LiteralPath core/rust/Cargo.lock
+28d38451ba0490b70d2d136bc3268acad8de02b5658bf826f842069019161c53
+> (Get-Item -LiteralPath core/rust/Cargo.lock).Length
+19660
+> sha256sum -- core/rust/Cargo.lock
+28d38451ba0490b70d2d136bc3268acad8de02b5658bf826f842069019161c53 *core/rust/Cargo.lock
+exit=0
+> wc -c -- core/rust/Cargo.lock
+19660 core/rust/Cargo.lock
+exit=0

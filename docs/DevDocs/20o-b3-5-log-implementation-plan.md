@@ -59,6 +59,7 @@ int32_t xiao_runtime_log_write(
 - **范围**　固定入口提交/tree、Rust workspace 与 benchmarks 两份 Cargo 锁、版本、编号和权限表，记录三平台可用的工具及 B3-0E log 夹具摘要。建立独立任务根和 target、Runtime、缓存、用例输出目录。盘点 B3-4 将 60 改为 63 的五项负例，明确在 63 激活后以未知号和既有墓碑继续覆盖相应拒绝路径。[B3-4A/B 实施报告](assets/20o-b3/entry-20261127-b3-4/REPORT.md) · [B3-0E 夹具矩阵](assets/20o-b3/entry-20261124-b3-0e/tutorials.json)
 - **验证与产出**　基线回执列出 63 保留、1～62 活动、100 墓碑，核对工具、锁与冻结字节。B1 七库 20 入口、18 项资源、双精确入口和 28 守卫沿原证据核对，其中 4 项实测、24 项派生。[B3-0A 原始证据](assets/20o-b3/entry-20261122-b3-0/README.md)
 - **禁止**　提前激活 63、分配其他 ID、改变版本、把前批证据登记为 log 实测。
+- [B3-5A 基线与编号回执](assets/20o-b3/entry-20261128-b3-5/README.md)
 
 ### B3-5B　Runtime 与 VM
 

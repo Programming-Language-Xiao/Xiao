@@ -1,0 +1,117 @@
+cwd=D:\project\Xiao\Xiao
+> D:\Programs\Python\Python312\python.exe -B -X utf8 -u D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a\inspect-baseline.py D:\project\Xiao\Xiao D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5a
+core/rust/Cargo.lock git-blob / LF archive {'bytes': 19660, 'sha256': '28d38451ba0490b70d2d136bc3268acad8de02b5658bf826f842069019161c53'} checkout_exact True
+first archive {'bytes': 20539, 'sha256': 'f514ddb34b7784c61f5220d56554d382a849dd1222deec7d0b23d5d6f668c050'} CRLF 879
+tests/benchmarks/Cargo.lock git-blob / LF archive {'bytes': 19264, 'sha256': '8ac4f16af6e8baf5b71e0e0b5d89397eb5ae7bf2e3cc5a96053683c6e8b4b577'} checkout_exact True
+first archive {'bytes': 20120, 'sha256': 'fbde7dc465dfab4217aa6638336900a253061b4e9f46aa18428ebd528728bdc1'} CRLF 856
+core/rust/crates/xiao-intrinsics/intrinsics.json git-blob / LF archive {'bytes': 17189, 'sha256': '4246b068bbe6a2a5ea9dd3212823983e5d4ed30da56751b63a7530b21cfe4da1'} checkout_exact False
+1 int active
+2 sint active
+3 lint active
+4 float active
+5 sfloat active
+6 lfloat active
+7 str active
+8 bool active
+9 set active
+10 Error active
+11 XiaoError active
+12 ArithmeticError active
+13 MemoryError active
+14 TableError active
+15 ConcurrencyError active
+16 ResourceError active
+17 TypeError active
+18 FatalError active
+19 print active
+20 input active
+21 chr active
+22 os_open_file active
+23 os_open_directory active
+24 os_close active
+25 os_read_text active
+26 os_spawn active
+27 os_wait active
+28 os_close_process active
+29 set_add active
+30 set_remove active
+31 array_push active
+32 error_code active
+33 lfloat_divide active
+34 cmath_sqrt active
+35 cmath_floor active
+36 cmath_ceil active
+37 cmath_round active
+38 cmath_trunc active
+39 cmath_abs active
+40 cmath_min active
+41 cmath_max active
+42 cmath_pow active
+43 cmath_sin active
+44 cmath_cos active
+45 cmath_tan active
+46 cmath_exp active
+47 cmath_ln active
+48 cmath_log10 active
+49 os_time_utc_now active
+50 os_time_monotonic active
+51 os_time_format_utc active
+52 os_time_sleep active
+53 os_args_program_name active
+54 os_args_argv active
+55 os_fs_write_text active
+56 os_fs_list_dir active
+57 os_fs_remove active
+58 os_fs_rename active
+59 os_fs_metadata active
+60 os_env_get active
+61 os_env_set active
+62 os_env_unset active
+63 os_log_write reserved
+100 __reserved_100 tombstone
+63.arity=none
+63.parameter_type=none
+63.return_type=none
+63.vm_binding=none
+63.abi_binding=none
+63.effect=none
+63.capability=none
+63.error=none
+counts {'active': 62, 'reserved': 1, 'tombstone': 1}
+unassigned_between_63_and_100 [64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99]
+numbering_diff=[]
+core/rust/crates/xiao-runtime-abi/src/lib.rs git-blob / LF archive {'bytes': 73828, 'sha256': '14ee72165b800105e8d635d666374d170b198504dffcacb1a3d2d7e48187054a'} checkout_exact True
+core/rust/crates/xiao-runtime-abi/src/lib.rs:24 pub const ABI_MAJOR_VERSION: u32 = 1;
+core/rust/crates/xiao-runtime-abi/src/lib.rs:26 pub const ABI_MINOR_VERSION: u32 = 20;
+core/rust/crates/xiao-codegen-llvm/src/lib.rs git-blob / LF archive {'bytes': 9563, 'sha256': '7689e7bf2c782359d536327b11d27fbaa3ac61c69deb2b332afea0d11343f111'} checkout_exact True
+core/rust/crates/xiao-codegen-llvm/src/lib.rs:108 pub const CODEGEN_VERSION: u32 = 27;
+core/rust/crates/xiao-standard-library/src/lib.rs git-blob / LF archive {'bytes': 3398, 'sha256': '801a884293f29f54e61ffc6a05a1836e639cffcd78a6eb7a12f4d931f65dd1f5'} checkout_exact True
+core/rust/crates/xiao-standard-library/src/lib.rs:53 pub const STDLIB_INTERFACE_VERSION: u32 = 1;
+core/rust/crates/xiao-intrinsics/src/lib.rs git-blob / LF archive {'bytes': 40879, 'sha256': '26175f10b36f1e2a568cc0b281c4ab517e36fb182b6db04f8bdba44037128580'} checkout_exact True
+core/rust/crates/xiao-intrinsics/src/lib.rs:155 CAPABILITY_FILESYSTEM 0x01
+core/rust/crates/xiao-intrinsics/src/lib.rs:157 CAPABILITY_CLOCK 0x02
+core/rust/crates/xiao-intrinsics/src/lib.rs:159 CAPABILITY_PROCESS 0x04
+core/rust/crates/xiao-intrinsics/src/lib.rs:161 CAPABILITY_NETWORK 0x08
+core/rust/crates/xiao-intrinsics/src/lib.rs:163 CAPABILITY_NATIVE_EXTENSION 0x10
+core/rust/crates/xiao-intrinsics/src/lib.rs:165 CAPABILITY_STDOUT 0x20
+core/rust/crates/xiao-intrinsics/src/lib.rs:167 CAPABILITY_STDIN 0x40
+core/rust/crates/xiao-intrinsics/src/lib.rs:169 CAPABILITY_ENVIRONMENT 0x80
+core/rust/crates/xiao-intrinsics/src/lib.rs:171 DEFAULT_CAPABILITY_MASK 0x7f
+core/rust/crates/xiao-intrinsics/src/lib.rs:179 KNOWN_CAPABILITY_MASK 0xff
+derived clock | stdout = 0x22
+core/rust/crates/xiao-driver/src/protocol/request.rs git-blob / LF archive {'bytes': 24606, 'sha256': '93964f0a8999a7cdfdb33559de8ab05e578dbe7cf27b4a24854823559450ac41'} checkout_exact True
+core/rust/crates/xiao-driver/src/protocol/request.rs:218 default = "default_capabilities",
+core/rust/crates/xiao-driver/src/protocol/request.rs:242 fn default_capabilities() -> u64 {
+core/rust/crates/xiao-driver/src/protocol/request.rs:243 xiao_intrinsics::DEFAULT_CAPABILITY_MASK
+core/rust/crates/xiao-driver/src/protocol/request.rs:503 default = "default_capabilities",
+docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials.json git-blob / LF archive {'bytes': 10750, 'sha256': '25665474f2f3df3783f19e244d6151b46f4c690c5cc4fc3d7ceb050656543f6a'} checkout_exact True
+docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.xiao git-blob / LF archive {'bytes': 264, 'sha256': 'd7ec578f5f0177355a04f054831a5d1aac1b7ab0c24757e05f494992eedf5a8b'} checkout_exact True
+docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.input.json git-blob / LF archive {'bytes': 41, 'sha256': '30cf24e7a51b3e75a7ccda7f6448818dcbd4acb0b84e939e9e7083eeb019f129'} checkout_exact True
+docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.stdout git-blob / LF archive {'bytes': 103, 'sha256': '267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146'} checkout_exact True
+derived stdlib.log alias {'bytes': 267, 'sha256': '8e8097c106c0719b7cc568e6afc09c40c3dae0facc539a8f596dae6a02f01195'}
+wall_clock_unix_ms 946684800000 utc 2000-01-01T00:00:00.000Z timestamp_bytes 24
+INFO  24 + 1 + 4 + 1 + 12 + 1 = 43
+X06-RUNTIME-012  15 + 1 = 16
+ERROR 24 + 1 + 5 + 1 + 12 + 1 = 44
+golden bytes 103
+exit=0

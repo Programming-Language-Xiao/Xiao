@@ -1,0 +1,38 @@
+cwd=D:\project\Xiao\Xiao
+> cmd /c git status --short
+exit=0
+> cmd /c git rev-parse HEAD
+060f5c958d1b91ddc0088d270008762aac8fc9b7
+exit=0
+> cmd /c git show -s --format=raw d6e51027 060f5c95
+commit d6e5102767f4192416f507432e902884670d0bae
+tree 94940f30f9feeaf6b6fdbd389df372219ec70451
+parent 18e7f4fa184575fef260b29ec2603cd975db7444
+author xiaoCZX <xiaochengzhixue@outlook.com> 1795835350 +0800
+committer xiaoCZX <xiaochengzhixue@outlook.com> 1795835350 +0800
+
+    test: 收口 B3-4E macOS VM 与五批性能
+    
+    attempt 2 的 macOS VM 教程、原生 O0/O3 和五批性能通过；保留 attempt 1 的 3.3616 翻倍比失败对照；B3-4 置为收口并准备 B3-5 入口。
+
+commit 060f5c958d1b91ddc0088d270008762aac8fc9b7
+tree 92cd601803657f318087576ac3c69b68cb3288f6
+parent d6e5102767f4192416f507432e902884670d0bae
+author xiaoCZX <xiaochengzhixue@outlook.com> 1795836478 +0800
+committer xiaoCZX <xiaochengzhixue@outlook.com> 1795836478 +0800
+
+    docs: 新增 B3-5 log 实施规划
+    
+    入口绑定 d6e51027／ABI 1.20／生成器 27；63 os_log_write 保持 reserved，
+    规划 B3-5A～E 分批、0x22 联合能力、限额与运行控制、C ABI 与版本裁定。
+    README 索引补充入链，docs/layout/coverage 门禁通过。
+exit=0
+> cmd /c git diff --stat d6e51027..060f5c95
+ docs/DevDocs/20o-b3-5-log-implementation-plan.md | 125 +++++++++++++++++++++++
+ docs/DevDocs/README.md                           |   1 +
+ 2 files changed, 126 insertions(+)
+exit=0
+> cmd /c git diff --name-status d6e51027..060f5c95
+A	docs/DevDocs/20o-b3-5-log-implementation-plan.md
+M	docs/DevDocs/README.md
+exit=0
