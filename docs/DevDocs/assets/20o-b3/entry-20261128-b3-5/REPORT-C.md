@@ -211,6 +211,9 @@ Windows 可执行文件、原始 LLVM IR、MSVC map、`verification.json`、stdo
 
 ## 首败与复跑
 
+- CI 首跑的三平台原生作业把日志教程和共享配额用例链接到发布档 Runtime，固定时钟未生效，
+  教程黄金与 VM 比较失败。工作流改为额外构建独立的 `test-failpoints` Runtime 并设置
+  `XIAO_FIXED_RUNTIME_LIBRARY`；本地教程与配额两项在固定 Runtime 上复跑通过，CI 待重跑。
 - 28 的兼容矩阵首轮使用了带连字符的源文件名。归档构建按模块命名规则退出 101。
   使用固定的 `main.xiao` 路径和相同源码字节重试，两个版本均成功构建。
   取证脚本随后修正了协议的退出码字段位置和必需运行选项。CLI 首轮漏传 `-xar`，

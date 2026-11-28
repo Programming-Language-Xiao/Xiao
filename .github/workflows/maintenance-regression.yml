@@ -266,13 +266,17 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'rustc host probe failed' }
           cargo build --manifest-path core/rust/Cargo.toml --release -p xiao-runtime
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # 固定时钟教程与配额对照使用独立 test-failpoints Runtime，不替换发布档。
+          cargo build --manifest-path core/rust/Cargo.toml --release -p xiao-runtime --features test-failpoints --target-dir core/rust/target/fixed
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo build --manifest-path core/rust/Cargo.toml -p xiao-diagnostics
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $env:XIAO_RUNTIME_LIBRARY = Join-Path $pwd 'core/rust/target/release/xiao_runtime.lib'
+          $env:XIAO_FIXED_RUNTIME_LIBRARY = Join-Path $pwd 'core/rust/target/fixed/release/xiao_runtime.lib'
           $env:XIAO_DIAGNOSTICS_PATH = Join-Path $pwd 'core/rust/target/debug/xiao-diagnostics.exe'
           $env:XIAO_DIAGNOSTICS_HOLD_MS = '0'
           $env:XIAO_FLOAT_EQUALITY_OUTPUT = Join-Path $env:RUNNER_TEMP "float-equality-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT-$env:RUNNER_OS"
-          foreach ($artifact in @($env:XIAO_RUNTIME_LIBRARY, $env:XIAO_DIAGNOSTICS_PATH)) {
+          foreach ($artifact in @($env:XIAO_RUNTIME_LIBRARY, $env:XIAO_FIXED_RUNTIME_LIBRARY, $env:XIAO_DIAGNOSTICS_PATH)) {
             if (-not (Test-Path $artifact)) { throw "Required artifact missing: $artifact" }
           }
           if ($env:XIAO_B2_A_PERF -eq '1') {
@@ -360,12 +364,16 @@ jobs:
           test -n "$XIAO_TARGET_TRIPLE"
           test -x "$XIAO_STRIP"
           cargo build --manifest-path core/rust/Cargo.toml --release -p xiao-runtime
+          # 固定时钟教程与配额对照使用独立 test-failpoints Runtime，不替换发布档。
+          cargo build --manifest-path core/rust/Cargo.toml --release -p xiao-runtime --features test-failpoints --target-dir core/rust/target/fixed
           cargo build --manifest-path core/rust/Cargo.toml -p xiao-diagnostics
           export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
+          export XIAO_FIXED_RUNTIME_LIBRARY="$PWD/core/rust/target/fixed/release/libxiao_runtime.a"
           export XIAO_DIAGNOSTICS_PATH="$PWD/core/rust/target/debug/xiao-diagnostics"
           export XIAO_DIAGNOSTICS_HOLD_MS=0
           export XIAO_FLOAT_EQUALITY_OUTPUT="$RUNNER_TEMP/float-equality-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${RUNNER_OS}"
           test -f "$XIAO_RUNTIME_LIBRARY"
+          test -f "$XIAO_FIXED_RUNTIME_LIBRARY"
           test -x "$XIAO_DIAGNOSTICS_PATH"
           if [ "$XIAO_B2_A_PERF" = '1' ]; then
             cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_a_resources --test 20o_b2_a_performance_protocol
@@ -432,12 +440,16 @@ jobs:
           test -x "$XIAO_LLC"
           test -x "$XIAO_STRIP"
           cargo build --manifest-path core/rust/Cargo.toml --release -p xiao-runtime
+          # 固定时钟教程与配额对照使用独立 test-failpoints Runtime，不替换发布档。
+          cargo build --manifest-path core/rust/Cargo.toml --release -p xiao-runtime --features test-failpoints --target-dir core/rust/target/fixed
           cargo build --manifest-path core/rust/Cargo.toml -p xiao-diagnostics
           export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
+          export XIAO_FIXED_RUNTIME_LIBRARY="$PWD/core/rust/target/fixed/release/libxiao_runtime.a"
           export XIAO_DIAGNOSTICS_PATH="$PWD/core/rust/target/debug/xiao-diagnostics"
           export XIAO_DIAGNOSTICS_HOLD_MS=0
           export XIAO_FLOAT_EQUALITY_OUTPUT="$RUNNER_TEMP/float-equality-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${RUNNER_OS}"
           test -f "$XIAO_RUNTIME_LIBRARY"
+          test -f "$XIAO_FIXED_RUNTIME_LIBRARY"
           test -x "$XIAO_DIAGNOSTICS_PATH"
           if [ "$XIAO_B2_A_PERF" = '1' ]; then
             cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_a_resources --test 20o_b2_a_performance_protocol

@@ -61,14 +61,27 @@ fn case_dir(name: &str) -> PathBuf {
 }
 
 /// 以显式工具、目标、能力和优化档构建。
-fn request(root: &Path, name: &str, source: &str, mask: u64, level: u8) -> NativeBuildRequest {
+fn request(
+    root: &Path,
+    name: &str,
+    source: &str,
+    mask: u64,
+    level: u8,
+    fixed_clock: bool,
+) -> NativeBuildRequest {
     let target = TargetDescription::host();
     assert_eq!(target.triple, std::env::var("XIAO_TARGET_TRIPLE").unwrap());
     let required = |name| PathBuf::from(std::env::var_os(name).expect(name));
+    let runtime = if fixed_clock {
+        std::env::var_os("XIAO_FIXED_RUNTIME_LIBRARY")
+            .map_or_else(|| required("XIAO_RUNTIME_LIBRARY"), PathBuf::from)
+    } else {
+        required("XIAO_RUNTIME_LIBRARY")
+    };
     let tools = Toolchain::new(required("XIAO_CLANG"))
         .with_llvm_as(required("XIAO_LLVM_AS"))
         .with_llc(required("XIAO_LLC"))
-        .with_runtime_library(required("XIAO_RUNTIME_LIBRARY"))
+        .with_runtime_library(runtime)
         .probe_native_static_libraries("rustc", &target)
         .unwrap()
         .probe_versions()
@@ -217,7 +230,7 @@ fn log_tutorial_matches_native_golden() {
         assert_eq!(GOLDEN.len(), 103);
         for level in [0, 3] {
             let name = format!("{alias}-o{level}");
-            let build = request(&root, &name, &source, MASK, level);
+            let build = request(&root, &name, &source, MASK, level, true);
             let artifact = FrontendNativeDriver::new().build(&build).unwrap().native;
             let trace = root.join(format!("{name}.release.tsv"));
             let output = run_fixed(&artifact, &trace, "");
@@ -238,7 +251,7 @@ fn log_native_enforces_each_bit_and_releases_inputs() {
     for level in [0, 3] {
         for mask in [0, CAPABILITY_CLOCK, CAPABILITY_STDOUT] {
             let name = format!("missing-{mask}-o{level}");
-            let build = request(&root, &name, LOG_ONLY, mask, level);
+            let build = request(&root, &name, LOG_ONLY, mask, level, false);
             let artifact = FrontendNativeDriver::new().build(&build).unwrap().native;
             let trace = root.join(format!("{name}.release.tsv"));
             let output = run_fixed(&artifact, &trace, "");
@@ -268,7 +281,7 @@ fn log_native_tasks_share_run_quota() {
     assert_eq!(stdout.iter().filter(|&&byte| byte == b'\n').count(), 1024);
     for level in [0, 3] {
         let name = format!("quota-o{level}");
-        let build = request(&root, &name, SHARED, MASK, level);
+        let build = request(&root, &name, SHARED, MASK, level, true);
         let artifact = FrontendNativeDriver::new().build(&build).unwrap().native;
         for pass in 1..=2 {
             let trace = root.join(format!("{name}-{pass}.release.tsv"));
@@ -363,7 +376,7 @@ fn log_native_control_reaches_generated_code() {
     let driver = FrontendNativeDriver::new();
     for level in [0, 3] {
         let name = format!("control-o{level}");
-        let build = request(&root, &name, CONTROLLED, MASK, level);
+        let build = request(&root, &name, CONTROLLED, MASK, level, false);
         let run = RunOptions {
             capabilities: MASK,
             ..RunOptions::default()
@@ -383,7 +396,14 @@ fn log_native_control_reaches_generated_code() {
         assert!(result.stdout.is_empty());
         assert!(!build.output.exists());
 
-        let driver_build = request(&root, &format!("{name}-driver"), CONTROLLED, MASK, level);
+        let driver_build = request(
+            &root,
+            &format!("{name}-driver"),
+            CONTROLLED,
+            MASK,
+            level,
+            false,
+        );
         let token = CancellationToken::new();
         let active = std::thread::scope(|scope| {
             let args = std::iter::once_with(|| {
