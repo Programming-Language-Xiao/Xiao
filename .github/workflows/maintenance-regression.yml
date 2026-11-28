@@ -201,7 +201,7 @@ jobs:
           - name: macOS
             os: macos-15
     runs-on: ${{ matrix.os }}
-    timeout-minutes: ${{ github.event_name == 'workflow_dispatch' && inputs.b1_f10 && 60 || github.event_name == 'workflow_dispatch' && inputs.b2_a_perf && 40 || 20 }}
+    timeout-minutes: ${{ github.event_name == 'workflow_dispatch' && inputs.b1_f10 && 60 || github.event_name == 'workflow_dispatch' && inputs.b2_a_perf && 40 || 30 }}
     defaults:
       run:
         shell: pwsh
@@ -504,6 +504,33 @@ jobs:
         with:
           name: b1-f10-native-${{ matrix.name }}
           path: b1-f10-native.json
+          if-no-files-found: warn
+
+      - name: Run B3-4E macOS env coverage
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          llvm_root="$(brew --prefix llvm)"
+          export XIAO_CLANG="$llvm_root/bin/clang"
+          export XIAO_LLVM_AS="$llvm_root/bin/llvm-as"
+          export XIAO_LLC="$llvm_root/bin/llc"
+          export XIAO_TARGET_TRIPLE="$(rustc -vV | sed -n 's/^host: //p')"
+          export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
+          test -f "$XIAO_RUNTIME_LIBRARY"
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b3_env_tutorial env_tutorial_matches_vm_golden -- --exact --nocapture
+          perf_root="$RUNNER_TEMP/b3-env-perf-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          mkdir -p "$perf_root"
+          runtime_sha="$(shasum -a 256 "$XIAO_RUNTIME_LIBRARY" | awk '{print $1}')"
+          python3 -c 'import json,sys; json.dump({"baseline_commit":sys.argv[1],"product_commit":sys.argv[1],"target":sys.argv[2],"runtime":{"sha256":sys.argv[3]},"toolchain":{"runner":"github-actions","rust":"1.96.0"}},open(sys.argv[4],"w"))' "$GITHUB_SHA" "$XIAO_TARGET_TRIPLE" "$runtime_sha" "$perf_root/identity.json"
+          cargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --bin b3_env_performance -- --output-dir "$perf_root/output" --artifact-dir "$perf_root/artifacts" --identity "$perf_root/identity.json"
+
+      - name: Upload B3-4E env performance
+        if: always() && runner.os == 'macOS'
+        uses: actions/upload-artifact@v7
+        with:
+          name: b3-4e-env-performance-macos-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/b3-env-perf-${{ github.run_id }}-${{ github.run_attempt }}
           if-no-files-found: warn
 
       - name: Run 20D and 20E resource, process and archive fixtures (Windows)
