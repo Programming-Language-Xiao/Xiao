@@ -1,0 +1,43 @@
+cwd=D:\project\Xiao\Xiao\core\rust
+command=cargo test --locked -p xiao-driver --test 20o_b2_b2_divide --test 20o_b2_b4_cmath_vm --test 20o_b3_time_tutorial
+start=2026-11-28T13:02:31.170592+08:00
+CARGO_TARGET_DIR=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target
+CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\link.exe
+CARGO_TERM_COLOR=never
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.06s
+     Running tests\20o_b2_b2_divide.rs (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target\debug\deps\20o_b2_b2_divide-e3589cc525196e16.exe)
+
+running 3 tests
+test lfloat_divide_matches_native_golden_outputs ... ignored, 需要本任务新Runtime和显式LLVM工具链；维护原生精确入口调用相同套件
+test lfloat_divide_requires_the_frozen_public_contract ... ok
+test lfloat_divide_has_vm_golden_outputs ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.90s
+
+     Running tests\20o_b2_b4_cmath_vm.rs (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target\debug\deps\20o_b2_b4_cmath_vm-480a7e86bc65076f.exe)
+
+running 7 tests
+test all_direct_primitives_execute_in_source_and_production_xiaoc ... ok
+test named_argument_expression_failures_keep_source_evaluation_order ... ok
+test vm_calls_leave_runtime_abi_pending_error_unchanged ... ok
+test failing_cmath_calls_do_not_leak_heap_arguments_or_partial_results ... ok
+test domain_errors_keep_decoded_span_and_observable_cleanup ... ok
+test vm_rejects_invalid_shapes_types_and_unknown_ids ... ok
+test decoded_vm_calls_match_runtime_bits_and_errors_for_all_ids ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+     Running tests\20o_b3_time_tutorial.rs (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target\debug\deps\20o_b3_time_tutorial-47581e36d76e458b.exe)
+
+running 4 tests
+test unknown_intrinsic_id_fails_before_execution ... ok
+test time_driver_control_interrupts_a_long_sleep ... ok
+test time_tutorial_matches_vm_golden ... ok
+test time_vm_errors_and_child_clock_follow_the_frozen_contract ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.04s
+
+
+exit=0
+end=2026-11-28T13:02:43.832779+08:00

@@ -1,0 +1,9 @@
+cwd=D:\project\Xiao\Xiao\core\rust
+command=python D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5b/audit.py runtime
+start=2026-11-28T13:17:08.866643+08:00
+D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target\release\xiao_runtime.lib 27882502 ee0c887a737fc796450a53d88398c04d5ef95dfa25d816d91b8aae71ba663065
+D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target\release\libxiao_runtime.rlib 7911868 36a2ca50efc606cdd29835fefb328274c8d671abf90ffe78692fa4993c32588d
+llvm-nm: xiao_runtime_time_utc_now=defined xiao_runtime_log_write=absent
+
+exit=0
+end=2026-11-28T13:17:09.787253+08:00

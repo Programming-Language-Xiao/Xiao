@@ -65,6 +65,7 @@ pub enum IntrinsicKind {
     Args,
     Fs,
     Env,
+    Log,
     Print,
     Input,
     ResourceOpenFile,
@@ -112,6 +113,7 @@ pub enum ValueType {
     TimeValueAndUnit,
     TwoStrings,
     TwoStringsAndBool,
+    ThreeStrings,
     Error,
     File,
     Directory,
@@ -133,6 +135,7 @@ pub enum Effects {
     WaitsProcess,
     ReleasesProcess,
     ReadsClock,
+    ReadsClockAndWritesStdout,
     ReadsArguments,
     ReadsEnvironmentAndAllocates,
     WritesEnvironment,
@@ -149,6 +152,7 @@ pub enum Capability {
     Process,
     Clock,
     Environment,
+    ClockAndStdout,
 }
 
 /// 文件系统能力位。
@@ -199,7 +203,7 @@ impl std::fmt::Display for CapabilityMaskError {
 impl std::error::Error for CapabilityMaskError {}
 
 impl Capability {
-    /// 返回能力对应的位；`none` 不要求任何位。
+    /// 返回必须同时授予的位掩码，`none` 对应空要求。
     #[must_use]
     pub const fn bit(self) -> Option<u64> {
         match self {
@@ -210,7 +214,19 @@ impl Capability {
             Self::Process => Some(CAPABILITY_PROCESS),
             Self::Clock => Some(CAPABILITY_CLOCK),
             Self::Environment => Some(CAPABILITY_ENVIRONMENT),
+            Self::ClockAndStdout => Some(CAPABILITY_CLOCK | CAPABILITY_STDOUT),
         }
+    }
+
+    /// 返回首项缺失的能力，联合要求依次核对 clock 与 stdout。
+    #[must_use]
+    pub fn missing_from(self, granted: u64) -> Option<Self> {
+        if self == Self::ClockAndStdout {
+            return Self::Clock
+                .missing_from(granted)
+                .or_else(|| Self::Stdout.missing_from(granted));
+        }
+        self.bit().filter(|&bit| granted & bit != bit).map(|_| self)
     }
 
     /// 返回稳定的能力名称。
@@ -224,6 +240,7 @@ impl Capability {
             Self::Process => "process",
             Self::Clock => "clock",
             Self::Environment => "environment",
+            Self::ClockAndStdout => "clock_and_stdout",
         }
     }
 }
@@ -277,6 +294,7 @@ pub enum VmBinding {
     EnvGet,
     EnvSet,
     EnvUnset,
+    LogWrite,
     Print,
     Input,
     ResourceOpenFile,
@@ -416,6 +434,19 @@ pub const fn env_parameters(id: IntrinsicId) -> Option<&'static [(&'static str, 
     }
 }
 
+/// log 位置与命名参数共同使用的冻结形参表。
+#[must_use]
+pub const fn log_parameters(id: IntrinsicId) -> Option<&'static [(&'static str, ValueType)]> {
+    match id.get() {
+        63 => Some(&[
+            ("level", ValueType::Str),
+            ("message", ValueType::Str),
+            ("target", ValueType::Str),
+        ]),
+        _ => None,
+    }
+}
+
 impl AbiBinding {
     /// time 的链接符号，其他绑定沿各自入口发射。
     #[must_use]
@@ -501,6 +532,33 @@ pub struct IntrinsicDecl {
 
 include!(concat!(env!("OUT_DIR"), "/intrinsics_generated.rs"));
 
+/// 63 的冻结 VM 声明，供运行期表核对和反例使用。
+const LOG_DECLARATION: IntrinsicDecl = IntrinsicDecl {
+    id: IntrinsicId::new_unchecked(63),
+    public_name: "os_log_write",
+    kind: IntrinsicKind::Log,
+    signature: Signature {
+        arity: Arity::Three,
+        parameter: ValueType::ThreeStrings,
+        return_type: ValueType::None,
+    },
+    effects: Effects::ReadsClockAndWritesStdout,
+    capability: Capability::ClockAndStdout,
+    error_code: "runtime.type_mismatch",
+    vm_binding: VmBinding::LogWrite,
+    abi_binding: AbiBinding::None,
+    status: DeclarationStatus::Active,
+};
+
+/// 核对日志的编号、签名、效果、权限和后端绑定。
+fn validate_log_declaration(declaration: &IntrinsicDecl) -> Result<(), ContractError> {
+    if *declaration == LOG_DECLARATION {
+        Ok(())
+    } else {
+        Err(ContractError::SignatureMismatch(declaration.id))
+    }
+}
+
 /// 返回全部声明；顺序是声明文件顺序，不能用于身份分派。
 pub const fn declarations() -> &'static [IntrinsicDecl] {
     DECLARATIONS
@@ -529,6 +587,9 @@ pub fn validate_table() -> Result<(), ContractError> {
         }
         if !ids.insert(declaration.id) {
             return Err(ContractError::DuplicateId(declaration.id));
+        }
+        if declaration.id == LOG_DECLARATION.id || declaration.kind == IntrinsicKind::Log {
+            validate_log_declaration(declaration)?;
         }
         if declaration.status == DeclarationStatus::Active {
             if !names.insert(declaration.public_name) {
@@ -791,6 +852,9 @@ pub fn validate_table() -> Result<(), ContractError> {
             }
         }
     }
+    if !ids.contains(&LOG_DECLARATION.id) {
+        return Err(ContractError::UnknownId(LOG_DECLARATION.id));
+    }
     Ok(())
 }
 
@@ -874,7 +938,7 @@ mod tests {
             .map(|d| d.id.get())
             .collect();
         active.sort_unstable();
-        assert_eq!(active, (1..=62).collect::<Vec<_>>());
+        assert_eq!(active, (1..=63).collect::<Vec<_>>());
         for (index, &(name, vm, abi)) in CMATH_DECLARATIONS.iter().enumerate() {
             let id = IntrinsicId::new(34 + index as u32).unwrap();
             let declaration = active_by_id(id).unwrap();
@@ -1003,14 +1067,87 @@ mod tests {
         assert!(validate_capability_mask(1 << 8).is_err());
     }
     #[test]
-    fn log_id_retains_reserved_identity() {
+    /// 校验活动绑定及联合能力的首个缺位。
+    fn log_id_has_an_active_vm_only_contract() {
         let id = IntrinsicId::new(63).unwrap();
-        let declaration = by_id(id).unwrap();
-        assert_eq!(declaration.status, DeclarationStatus::Reserved);
-        assert_eq!(declaration.vm_binding, VmBinding::None);
-        assert_eq!(declaration.abi_binding, AbiBinding::None);
-        assert!(active_by_id(id).is_none());
-        assert!(by_name(declaration.public_name).is_none());
+        let declaration = active_by_id(id).unwrap();
+        assert_eq!(by_name("os_log_write"), Some(declaration));
+        validate_log_declaration(declaration).unwrap();
+        assert_eq!(
+            log_parameters(id).unwrap(),
+            [
+                ("level", ValueType::Str),
+                ("message", ValueType::Str),
+                ("target", ValueType::Str)
+            ]
+        );
+        assert_eq!(declaration.capability.bit(), Some(0x22));
+        for (granted, missing) in [
+            (0, Some(Capability::Clock)),
+            (CAPABILITY_STDOUT, Some(Capability::Clock)),
+            (CAPABILITY_CLOCK, Some(Capability::Stdout)),
+            (0x22, None),
+            (DEFAULT_CAPABILITY_MASK, None),
+        ] {
+            assert_eq!(declaration.capability.missing_from(granted), missing);
+        }
+    }
+
+    #[test]
+    /// 拒绝签名、能力、效果和后端绑定的漂移。
+    fn log_declaration_rejects_incorrect_shape() {
+        for invalid in [
+            IntrinsicDecl {
+                status: DeclarationStatus::Reserved,
+                ..LOG_DECLARATION
+            },
+            IntrinsicDecl {
+                kind: IntrinsicKind::Env,
+                ..LOG_DECLARATION
+            },
+            IntrinsicDecl {
+                signature: Signature {
+                    arity: Arity::Two,
+                    ..LOG_DECLARATION.signature
+                },
+                ..LOG_DECLARATION
+            },
+            IntrinsicDecl {
+                signature: Signature {
+                    parameter: ValueType::TwoStringsAndBool,
+                    ..LOG_DECLARATION.signature
+                },
+                ..LOG_DECLARATION
+            },
+            IntrinsicDecl {
+                signature: Signature {
+                    return_type: ValueType::Str,
+                    ..LOG_DECLARATION.signature
+                },
+                ..LOG_DECLARATION
+            },
+            IntrinsicDecl {
+                capability: Capability::Clock,
+                ..LOG_DECLARATION
+            },
+            IntrinsicDecl {
+                effects: Effects::WritesStdout,
+                ..LOG_DECLARATION
+            },
+            IntrinsicDecl {
+                vm_binding: VmBinding::None,
+                ..LOG_DECLARATION
+            },
+            IntrinsicDecl {
+                abi_binding: AbiBinding::Print,
+                ..LOG_DECLARATION
+            },
+        ] {
+            assert_eq!(
+                validate_log_declaration(&invalid),
+                Err(ContractError::SignatureMismatch(invalid.id))
+            );
+        }
     }
 
     #[test]

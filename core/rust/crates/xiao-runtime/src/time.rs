@@ -231,6 +231,17 @@ pub fn sleep_duration(duration: i64, unit: TimeUnit) -> RuntimeResult<Duration> 
 
 /// 前推格里高利历的 UTC 文本。按单位固定输出 24 或 30 字节。
 pub fn format_utc(unix_time: i64, unit: TimeUnit) -> RuntimeResult<StringHandle> {
+    with_utc_format(unix_time, unit, |format| {
+        StringHandle::new(format.to_string())
+    })
+}
+
+/// 将同一个 UTC 格式写入调用方的受控缓冲区。
+pub(crate) fn with_utc_format<T>(
+    unix_time: i64,
+    unit: TimeUnit,
+    format: impl FnOnce(std::fmt::Arguments<'_>) -> RuntimeResult<T>,
+) -> RuntimeResult<T> {
     let (scale, precision) = match unit {
         TimeUnit::Milliseconds => {
             if !(-62_135_596_800_000..=253_402_300_799_999).contains(&unix_time) {
@@ -247,7 +258,7 @@ pub fn format_utc(unix_time: i64, unit: TimeUnit) -> RuntimeResult<StringHandle>
     let hour = time / 3_600;
     let minute = time % 3_600 / 60;
     let second = time % 60;
-    StringHandle::new(format!(
+    format(format_args!(
         "{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}.{fraction:0precision$}Z"
     ))
 }

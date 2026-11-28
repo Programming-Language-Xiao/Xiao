@@ -1,0 +1,18 @@
+cwd=D:\project\Xiao\Xiao\core\rust
+command=cargo test --locked -p xiao-bytecode --lib decoded_intrinsic_ids_are_checked_in_both_operand_widths
+start=2026-11-28T13:02:18.779221+08:00
+CARGO_TARGET_DIR=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target
+CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\link.exe
+CARGO_TERM_COLOR=never
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.05s
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target\debug\deps\xiao_bytecode-8ab4af815e0178f6.exe)
+
+running 1 test
+test encode::tests::decoded_intrinsic_ids_are_checked_in_both_operand_widths ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 32 filtered out; finished in 0.01s
+
+
+exit=0
+end=2026-11-28T13:02:27.059030+08:00

@@ -1,0 +1,10 @@
+cwd=D:\project\Xiao\Xiao
+command=bun tools/repo-check/src/cli.ts layout
+start=2026-11-28T13:08:33.285920+08:00
+CARGO_TARGET_DIR=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target
+CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\link.exe
+CARGO_TERM_COLOR=never
+通过：未发现 A0 规则问题。
+
+exit=0
+end=2026-11-28T13:08:44.967071+08:00

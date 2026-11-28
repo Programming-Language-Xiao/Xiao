@@ -3,6 +3,25 @@
   "schemaVersion": 1,
   "modules": [
     {
+      "id": "stdlib.log",
+      "stage": "20O-B3-5",
+      "status": "planned",
+      "code": [
+        "stdlib/log.xiao",
+        "core/rust/crates/xiao-runtime/src/log.rs",
+        "core/rust/crates/xiao-vm/src/semantics/log_intrinsics.rs"
+      ],
+      "tests": [
+        "core/rust/crates/xiao-runtime/src/log_tests.rs",
+        "core/rust/crates/xiao-vm/src/semantics/log_intrinsics_tests.rs",
+        "core/rust/crates/xiao-driver/tests/20o_b3_log_vm.rs"
+      ],
+      "usedocs": [
+        "docs/DevDocs/20o-b3-5-log-implementation-plan.md",
+        "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials/log.md"
+      ]
+    },
+    {
       "id": "stdlib.env",
       "stage": "20O-B3-4",
       "status": "planned",

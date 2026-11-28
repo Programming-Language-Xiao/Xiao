@@ -1,0 +1,32 @@
+cwd=D:\project\Xiao\Xiao\core\rust
+command=cargo test --locked -p xiao-vm --lib log_intrinsics:: -- --nocapture
+start=2026-11-28T13:00:18.249263+08:00
+CARGO_TARGET_DIR=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target
+CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\link.exe
+CARGO_TERM_COLOR=never
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-ir)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 36.56s
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target\debug\deps\xiao_vm-771311498f5269b5.exe)
+
+running 4 tests
+test semantics::exec::log_intrinsics::tests::vm_reports_a_closed_pipe_as_output_failure ... ok
+test semantics::exec::log_intrinsics::tests::vm_reports_admission_write_and_flush_failures_at_the_call_site ... ok
+test semantics::exec::log_intrinsics::tests::vm_task_cancellation_from_output_is_delivered_by_join ... ok
+test semantics::exec::log_intrinsics::tests::vm_run_controls_leave_written_bytes_and_finish_cleanup ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 35 filtered out; finished in 1.01s
+
+
+exit=0
+end=2026-11-28T13:00:56.944733+08:00

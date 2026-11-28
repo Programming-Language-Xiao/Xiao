@@ -15,8 +15,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::rc::Rc;
 use std::sync::Arc;
 use xiao_bytecode::{
-    BlockId, FuncId, PcMap, TacArgument, TacFunction, TacHandler, TacInstr, TacOp, TacProgram,
-    VReg, build_pc_map,
+    BlockId, FuncId, PcMap, TacFunction, TacHandler, TacInstr, TacOp, TacProgram, VReg,
+    build_pc_map,
 };
 use xiao_diagnostics::{
     BackendLocation, CONTAINER_HASHABILITY_CODE, DiagnosticParam, FatalError, ITERABLE_CODE,
@@ -40,6 +40,8 @@ mod concurrent;
 mod env_intrinsics;
 #[path = "fs_intrinsics.rs"]
 mod fs_intrinsics;
+#[path = "log_intrinsics.rs"]
+mod log_intrinsics;
 /// 模块初始化与上下文切换。
 #[path = "module_exec.rs"]
 mod module_exec;
@@ -226,6 +228,9 @@ pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     clock: Arc<xiao_runtime::time::TimeContext>,
     arguments_snapshot: Option<Arc<ArgumentsSnapshot>>,
     environment_snapshot: Arc<xiao_runtime::environment::EnvironmentSnapshot>,
+    log: Option<Arc<log_intrinsics::RunLog>>,
+    log_capture: Option<log_intrinsics::LogCapture>,
+    next_log_output: Option<Box<dyn xiao_runtime::log::LogOutput + Send>>,
 }
 
 struct ModuleInstance {
@@ -280,6 +285,9 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             clock: Arc::new(xiao_runtime::time::TimeContext::host()),
             arguments_snapshot: None,
             environment_snapshot: Arc::default(),
+            log: None,
+            log_capture: None,
+            next_log_output: None,
         }
     }
 
@@ -391,6 +399,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             return (RunResult::Fatal(fatal), None);
         }
         self.clock = xiao_runtime::time::TimeContext::for_vm_run();
+        self.begin_log_output();
         self.sink.record(VmEvent::ModuleLoaded {
             module: self.metadata.module_name.clone(),
         });
@@ -404,6 +413,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 .and_then(|value| value)
         };
         self.finish_concurrency(&outcome);
+        self.finish_log_output();
         match outcome {
             Ok(value) => (RunResult::Success, value),
             Err(Fault::Error(error)) => {
@@ -1859,18 +1869,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         Ok(values)
     }
 
-    /// 求值一组实参。
-    fn bind(&mut self, arguments: &[TacArgument]) -> Result<Vec<BoundArgument>, Fault> {
-        let mut bound = Vec::with_capacity(arguments.len());
-        for argument in arguments {
-            bound.push(BoundArgument {
-                keyword: argument.name.clone(),
-                value: self.read(argument.value)?,
-            });
-        }
-        Ok(bound)
-    }
-
     /// 按稳定 ID 校验声明并执行绑定的宿主能力。
     fn execute_intrinsic(
         &mut self,
@@ -1889,6 +1887,9 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         }
         if declaration.kind == xiao_intrinsics::IntrinsicKind::Env {
             return self.execute_env(declaration, arguments, span);
+        }
+        if declaration.vm_binding == VmBinding::LogWrite {
+            return self.execute_log(declaration, arguments, span);
         }
         if matches!(
             declaration.vm_binding,
@@ -1919,11 +1920,9 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 .map(Some)
                 .map_err(|error| attach_fault_span(Fault::Error(error), span.start, span.end));
         }
-        if let Some(bit) = declaration.capability.bit()
-            && self.capabilities & bit == 0
-        {
+        if let Some(missing) = declaration.capability.missing_from(self.capabilities) {
             return Err(Fault::Error(XiaoError::capability_unavailable(
-                declaration.capability.as_str(),
+                missing.as_str(),
             )));
         }
         if declaration.kind == xiao_intrinsics::IntrinsicKind::Cmath {
@@ -2078,7 +2077,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                     .collect::<Result<Vec<_>, _>>()?
                     .join(" ");
                 text.push('\n');
-                self.sink.record(VmEvent::IntrinsicOutput { text });
+                self.record_output_event(VmEvent::IntrinsicOutput { text });
                 Ok(Some(RuntimeValue::None))
             }
             VmBinding::Input => {
@@ -2107,7 +2106,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                         )));
                     }
                     let prompt = intrinsic_value_text(&prompt.value)?;
-                    self.sink.record(VmEvent::IntrinsicOutput { text: prompt });
+                    self.record_output_event(VmEvent::IntrinsicOutput { text: prompt });
                 }
                 let mut line = String::new();
                 let bytes = std::io::stdin()

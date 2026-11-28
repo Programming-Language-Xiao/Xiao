@@ -37,6 +37,8 @@ pub mod containers;
 pub mod errors;
 /// 由 VM 和 C ABI 共用的文件系统路径操作。
 pub mod filesystem;
+/// 单次运行的日志配额与串行输出。
+pub mod log;
 /// 不透明对象头、强/弱句柄和引用计数策略。
 pub mod memory;
 /// VM 与 Runtime ABI 共用的资源操作与能力检查。

@@ -113,6 +113,11 @@ impl CancellationSource {
         self.deadline
             .is_some_and(|deadline| Instant::now() >= deadline)
     }
+
+    /// 供宿主等待限制每次轮询的时长。
+    pub(crate) const fn deadline(&self) -> Option<Instant> {
+        self.deadline
+    }
 }
 
 /// 规范化运行参数的验证错误。

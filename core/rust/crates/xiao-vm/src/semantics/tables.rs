@@ -20,6 +20,7 @@ pub(super) struct TableContext {
     pending: RefCell<Vec<Fault>>,
     events: RefCell<Vec<VmEvent>>,
     metrics: Cell<VmMetrics>,
+    pub(super) log: RefCell<std::sync::Weak<log_intrinsics::RunLog>>,
 }
 
 impl Default for TableContext {
@@ -34,6 +35,7 @@ impl Default for TableContext {
             pending: RefCell::new(Vec::new()),
             events: RefCell::new(Vec::new()),
             metrics: Cell::new(VmMetrics::default()),
+            log: RefCell::default(),
         }
     }
 }
@@ -137,6 +139,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 vm.concurrency = Rc::clone(&concurrency);
                 vm.capabilities = capabilities;
                 vm.clock = clock.clone();
+                vm.log = context.log.borrow().upgrade();
                 if let Some(snapshot) = environment.upgrade() {
                     vm.environment_snapshot = snapshot;
                 }
@@ -243,7 +246,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
     pub(super) fn sync_table_events(&mut self) {
         let events = std::mem::take(&mut *self.session.tables.events.borrow_mut());
         for event in events {
-            self.sink.record(event);
+            self.record_output_event(event);
         }
         self.metrics = add_metrics(
             self.metrics,

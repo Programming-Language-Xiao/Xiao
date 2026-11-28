@@ -166,6 +166,11 @@ pub trait VmEventSink {
     /// 记录一条事件。
     fn record(&mut self, event: VmEvent);
 
+    /// 交付已在运行输出端同步写入的日志，供运行结果使用。
+    fn record_log_output(&mut self, text: String) {
+        self.record(VmEvent::IntrinsicOutput { text });
+    }
+
     /// 记录 detached 失败；有界 sink 无法保留时返回 false，调用者可将错误留在进程通道。
     fn record_detached_failure(
         &mut self,
@@ -247,6 +252,7 @@ pub struct BoundedSink {
     capacity: usize,
     events: Vec<VmEvent>,
     dropped_events: usize,
+    log_records: usize,
 }
 
 impl BoundedSink {
@@ -257,6 +263,7 @@ impl BoundedSink {
             capacity,
             events: Vec::with_capacity(capacity.min(DEFAULT_EVENT_CAPACITY)),
             dropped_events: 0,
+            log_records: 0,
         }
     }
 
@@ -278,7 +285,7 @@ impl BoundedSink {
         self.dropped_events
     }
 
-    /// 返回当前保留的事件。
+    /// 返回当前保留的事件和已交付的 stdout 日志。
     #[must_use]
     pub fn events(&self) -> &[VmEvent] {
         &self.events
@@ -296,7 +303,7 @@ impl BoundedSink {
             self.dropped_events = self.dropped_events.saturating_add(1);
             return;
         }
-        if self.events.len() >= self.capacity {
+        if self.at_capacity() {
             if let Some(index) = self
                 .events
                 .iter()
@@ -320,12 +327,17 @@ impl BoundedSink {
             dropped_events: self.dropped_events,
         });
     }
+
+    /// 日志已经受运行输出配额约束，调试事件容量仅统计其余事件。
+    fn at_capacity(&self) -> bool {
+        self.events.len() - self.log_records >= self.capacity
+    }
 }
 
 impl VmEventSink for BoundedSink {
     /// 在容量内保留事件，超限时按丢弃新事件策略记账。
     fn record(&mut self, event: VmEvent) {
-        if self.events.len() < self.capacity {
+        if !self.at_capacity() {
             self.events.push(event);
         } else if is_priority_event(&event) {
             if let Some(index) = self
@@ -344,11 +356,17 @@ impl VmEventSink for BoundedSink {
         }
     }
 
+    /// 保留已受日志配额约束的 stdout 记录。
+    fn record_log_output(&mut self, text: String) {
+        self.events.push(VmEvent::IntrinsicOutput { text });
+        self.log_records += 1;
+    }
+
     fn record_detached_failure(
         &mut self,
         detached: xiao_runtime::VmDetachedError,
     ) -> Result<(), xiao_runtime::VmDetachedError> {
-        if self.events.len() >= self.capacity {
+        if self.at_capacity() {
             if let Some(index) = self
                 .events
                 .iter()

@@ -249,7 +249,7 @@ fn vm_rejects_invalid_shapes_types_and_unknown_ids() {
         for mutation in 0..6 {
             let mut program = base.clone();
             let unknown =
-                (mutation == 5).then(|| program.signatures.intern(CallSig::intrinsic(63)));
+                (mutation == 5).then(|| program.signatures.intern(CallSig::intrinsic(64)));
             let mut changed = false;
             for instruction in program.functions[0]
                 .blocks
@@ -305,7 +305,7 @@ fn vm_rejects_invalid_shapes_types_and_unknown_ids() {
         }
     }
     println!(
-        "B4-2B-VM-NEGATIVE ids=15 dynamic_types=8 shape=checked reserved=63-rejected result=passed"
+        "B4-2B-VM-NEGATIVE ids=15 dynamic_types=8 shape=checked unknown=64-rejected result=passed"
     );
 }
 

@@ -200,7 +200,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
         };
         self.sink.record_dropped_events(dropped);
         for event in pending {
-            self.sink.record(event);
+            self.record_output_event(event);
         }
         for detached in detached {
             if let Err(detached) = self.sink.record_detached_failure(detached) {
@@ -415,6 +415,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 let clock = Arc::clone(&self.clock);
                 let arguments_snapshot = self.arguments_snapshot.clone();
                 let environment_snapshot = Arc::clone(&self.environment_snapshot);
+                let log = self.log.clone();
                 let events = Arc::clone(&self.concurrency.events);
                 let events_for_child = Arc::clone(&events);
                 let return_runtime_id = current.id();
@@ -442,6 +443,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                         clock,
                         arguments_snapshot,
                         environment_snapshot,
+                        log,
                         events_for_child,
                         task_runtime,
                         return_runtime_id,
@@ -828,6 +830,7 @@ fn execute_child(
     clock: Arc<xiao_runtime::time::TimeContext>,
     arguments_snapshot: Option<Arc<xiao_runtime::arguments::ArgumentsSnapshot>>,
     environment_snapshot: Arc<xiao_runtime::environment::EnvironmentSnapshot>,
+    log: Option<Arc<log_intrinsics::RunLog>>,
     events: Arc<Mutex<ChildEvents>>,
     runtime: RuntimeHandle,
     return_runtime_id: u64,
@@ -853,6 +856,7 @@ fn execute_child(
     vm.clock = clock;
     vm.arguments_snapshot = arguments_snapshot;
     vm.environment_snapshot = environment_snapshot;
+    vm.set_shared_log(log);
     vm.cancellation = external;
     vm.module_loader = Some(&loader);
     let bound = arguments

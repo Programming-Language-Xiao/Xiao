@@ -31,6 +31,7 @@
 - [`args`](args.md) 提供程序名和参数快照，[`cli`](cli.md) 提供纯 Xiao 参数分组。两项登记为 `planned`。[实施进度](../docs/DevDocs/20o-b3-2-args-cli-implementation-plan.md)
 
 - [`fs`](fs.md) 提供普通宿主模式下的路径操作，登记为 `planned`。[实施进度](../docs/DevDocs/20o-b3-3-fs-implementation-plan.md)
+- `std.log` 和 `stdlib.log` 共用规范身份 `stdlib.log`，提供 `write(str level, str message, str target) -> none`。VM 运行内按记录写入并刷新 stdout，登记为 `planned`。[标准库源码](log.xiao) · [实施进度](../docs/DevDocs/20o-b3-5-log-implementation-plan.md)
 
 `stdlib.xiao-standard-library` 的 registry 条目是工具链骨架登记，维持 `draft`；它不适用
 `verified` 状态。20C/20M 可交付模块登记在 `stdlib.xiao-standard-library-first-modules`；

@@ -42,6 +42,10 @@ fn main() {
             "重复的 intrinsic 名称 {}",
             row.name
         );
+        if row.id == 63 {
+            assert_eq!(row.kind, "log");
+            assert_eq!(row.status, "active");
+        }
         if row.status == "active" {
             assert_ne!(
                 row.vm_binding, "none",
@@ -216,6 +220,18 @@ fn main() {
                     assert_eq!(row.return_type, result);
                     assert_eq!(row.effect, effect);
                     assert_eq!(row.capability, "environment");
+                    assert_eq!(row.error, "runtime.type_mismatch");
+                }
+                "log" => {
+                    assert_eq!(row.id, 63);
+                    assert_eq!(row.name, "os_log_write");
+                    assert_eq!(row.arity, "three");
+                    assert_eq!(row.parameter_type, "three_strings");
+                    assert_eq!(row.return_type, "none");
+                    assert_eq!(row.vm_binding, "log_write");
+                    assert_eq!(row.abi_binding, "none");
+                    assert_eq!(row.effect, "reads_clock_and_writes_stdout");
+                    assert_eq!(row.capability, "clock_and_stdout");
                     assert_eq!(row.error, "runtime.type_mismatch");
                 }
                 "lfloat_divide" => {
@@ -416,27 +432,6 @@ fn main() {
             }
         } else {
             match row.status.as_str() {
-                "reserved" => {
-                    assert_eq!(row.id, 63, "预登记的 ID 必须为 63");
-                    assert_eq!(row.name, "os_log_write");
-                    assert_eq!(row.kind, "reserved");
-                    assert!(
-                        [
-                            &row.arity,
-                            &row.parameter_type,
-                            &row.return_type,
-                            &row.vm_binding,
-                            &row.abi_binding,
-                            &row.effect,
-                            &row.capability,
-                            &row.error
-                        ]
-                        .into_iter()
-                        .all(|field| field == "none"),
-                        "预登记 intrinsic 不得带活动签名或后端绑定: {}",
-                        row.name
-                    );
-                }
                 "tombstone" => assert!(
                     row.name.starts_with("__reserved_"),
                     "墓碑名称必须明确保留: {}",
@@ -446,6 +441,7 @@ fn main() {
             }
         }
     }
+    assert!(ids.contains(&63), "缺少日志 intrinsic 63");
     let out = PathBuf::from(env::var_os("OUT_DIR").expect("OUT_DIR 缺失"));
     let mut generated = String::new();
     generated.push_str("pub static DECLARATIONS: &[IntrinsicDecl] = &[\n");

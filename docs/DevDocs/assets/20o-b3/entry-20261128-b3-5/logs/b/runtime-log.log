@@ -1,0 +1,66 @@
+cwd=D:\project\Xiao\Xiao\core\rust
+command=cargo test --locked -p xiao-runtime --lib log::
+start=2026-11-28T12:51:47.090895+08:00
+CARGO_TARGET_DIR=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target
+CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\link.exe
+CARGO_TERM_COLOR=never
+   Compiling version_check v0.9.5
+   Compiling typenum v1.20.1
+   Compiling autocfg v1.5.1
+   Compiling cpufeatures v0.2.17
+   Compiling cfg-if v1.0.5
+   Compiling xiao-runtime-abi v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime-abi)
+   Compiling generic-array v0.14.7
+   Compiling xiao-source v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-source)
+   Compiling num-traits v0.2.19
+   Compiling libm v0.2.16
+   Compiling bigdecimal v0.4.11
+   Compiling libc v0.2.189
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling digest v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling num-integer v0.1.47
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-i18n)
+   Compiling num-bigint v0.4.8
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-syntax)
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.41s
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target\debug\deps\xiao_runtime-f03f0f2ffd7086a6.exe)
+
+running 11 tests
+test log::tests::controls_and_operation_timeout_apply_before_and_after_delivery_starts ... ok
+test log::tests::exact_and_legacy_capability_masks_are_accepted ... ok
+test log::tests::four_levels_empty_and_multibyte_messages_use_fixed_utc_and_flush ... ok
+test log::tests::message_and_encoded_byte_limits_include_the_boundary ... ok
+test log::tests::rejected_admission_and_failed_io_keep_the_right_quota_and_bytes ... ok
+test log::tests::signature_capabilities_parameters_and_budget_precede_host_access ... FAILED
+test log::tests::attempts_include_1023_and_1024_and_reject_1025 ... ok
+test log::tests::wall_samples_can_go_back_and_clock_conversion_and_allocation_errors_propagate ... ok
+test log::tests::cumulative_bytes_include_separators_and_reject_one_over ... ok
+test log::tests::waiting_for_output_checks_control_and_deadline_without_reading_wall_clock ... ok
+test log::tests::concurrent_writers_share_quotas_and_flush_whole_records_in_delivery_order ... ok
+
+failures:
+
+---- log::tests::signature_capabilities_parameters_and_budget_precede_host_access stdout ----
+
+thread 'log::tests::signature_capabilities_parameters_and_budget_precede_host_access' (49664) panicked at crates\xiao-runtime\src\log_tests.rs:175:9:
+assertion `left == right` failed
+  left: None
+ right: Some(Text("clock"))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    log::tests::signature_capabilities_parameters_and_budget_precede_host_access
+
+test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 307 filtered out; finished in 0.09s
+
+error: test failed, to rerun pass `-p xiao-runtime --lib`
+
+exit=101
+end=2026-11-28T12:52:12.754286+08:00

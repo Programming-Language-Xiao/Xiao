@@ -116,6 +116,7 @@ const EXECUTABLE_STANDARD_MODULES: &[&str] = &[
     "env",
     "fs",
     "hex",
+    "log",
     "math",
     "os",
     "path",

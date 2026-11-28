@@ -1,6 +1,23 @@
 //! TAC 运行期的位置、关键字和变长实参绑定。
 
-use super::{BoundArgument, Carrier, Fault, Frame, RuntimeValue, TacFunction, TacProgram};
+use super::{
+    BoundArgument, Carrier, Fault, Frame, RuntimeValue, TacFunction, TacProgram, Vm, VmEventSink,
+};
+use xiao_bytecode::TacArgument;
+
+impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
+    /// 按 TAC 顺序求值实参，保留给绑定器使用的关键字。
+    pub(super) fn bind(&mut self, arguments: &[TacArgument]) -> Result<Vec<BoundArgument>, Fault> {
+        let mut bound = Vec::with_capacity(arguments.len());
+        for argument in arguments {
+            bound.push(BoundArgument {
+                keyword: argument.name.clone(),
+                value: self.read(argument.value)?,
+            });
+        }
+        Ok(bound)
+    }
+}
 
 /// 按调用签名把实参绑定到形参寄存器。
 ///

@@ -1,0 +1,31 @@
+cwd=D:\project\Xiao\Xiao\core\rust
+command=cargo test --locked -p xiao-runtime --lib log::
+start=2026-11-28T12:59:58.729696+08:00
+CARGO_TARGET_DIR=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target
+CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\link.exe
+CARGO_TERM_COLOR=never
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-intrinsics)
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18.97s
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target\debug\deps\xiao_runtime-f03f0f2ffd7086a6.exe)
+
+running 11 tests
+test log::tests::controls_and_operation_timeout_apply_before_and_after_delivery_starts ... ok
+test log::tests::exact_and_legacy_capability_masks_are_accepted ... ok
+test log::tests::four_levels_empty_and_multibyte_messages_use_fixed_utc_and_flush ... ok
+test log::tests::message_and_encoded_byte_limits_include_the_boundary ... ok
+test log::tests::rejected_admission_and_failed_io_keep_the_right_quota_and_bytes ... ok
+test log::tests::signature_capabilities_parameters_and_budget_precede_host_access ... ok
+test log::tests::attempts_include_1023_and_1024_and_reject_1025 ... ok
+test log::tests::wall_samples_can_go_back_and_clock_conversion_and_allocation_errors_propagate ... ok
+test log::tests::cumulative_bytes_include_separators_and_reject_one_over ... ok
+test log::tests::waiting_for_output_checks_control_and_deadline_without_reading_wall_clock ... ok
+test log::tests::concurrent_writers_share_quotas_and_flush_whole_records_in_delivery_order ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 307 filtered out; finished in 0.12s
+
+
+exit=0
+end=2026-11-28T13:00:18.134149+08:00

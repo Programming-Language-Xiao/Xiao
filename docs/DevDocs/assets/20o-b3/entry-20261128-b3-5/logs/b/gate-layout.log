@@ -1,0 +1,147 @@
+cwd=D:\project\Xiao\Xiao
+command=bun tools/repo-check/src/cli.ts layout
+start=2026-11-28T13:05:14.895401+08:00
+CARGO_TARGET_DIR=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target
+CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\link.exe
+CARGO_TERM_COLOR=never
+[error] A0-SIZE-001 core/rust/crates/xiao-vm/src/semantics/exec.rs 2511 行 / 上限 2500
+  单文件共 2511 行，超过上限 2500 行。 最大顶层节点 impl Vm 起于第 243 行，占 2023 行。
+  module call_arguments [第 11-11 行，共 1 行] mod
+  module array_intrinsics [第 35-35 行，共 1 行] mod
+  module concurrent [第 38-38 行，共 1 行] mod
+  module env_intrinsics [第 40-40 行，共 1 行] mod
+  module fs_intrinsics [第 42-42 行，共 1 行] mod
+  module log_intrinsics [第 44-44 行，共 1 行] mod
+  module module_exec [第 47-47 行，共 1 行] mod
+  module numeric_intrinsics [第 50-50 行，共 1 行] mod
+  module set_intrinsics [第 53-53 行，共 1 行] mod
+  module tables [第 56-56 行，共 1 行] mod
+  module time_intrinsics [第 58-58 行，共 1 行] mod
+  enum Fault [第 75-84 行，共 10 行] pub enum
+    variant Error [第 77-77 行，共 1 行] (XiaoError)
+    variant ConcurrencyCancelled [第 79-79 行，共 1 行] (XiaoError)
+    variant Fatal [第 81-81 行，共 1 行] (FatalError)
+    variant Cancelled [第 83-83 行，共 1 行] Cancelled,
+  struct BoundArgument [第 88-93 行，共 6 行] pub struct
+    field keyword [第 90-90 行，共 1 行] pub : Option<String>
+    field value [第 92-92 行，共 1 行] pub : RuntimeValue
+  enum Flow [第 96-112 行，共 17 行] enum
+    variant Next [第 98-98 行，共 1 行] Next,
+    variant Jump [第 100-100 行，共 1 行] (BlockId)
+    variant JumpWithFault [第 102-107 行，共 6 行] JumpWithFault {
+      field target [第 104-104 行，共 1 行] : BlockId
+      field kind [第 106-106 行，共 1 行] : String
+    variant Return [第 109-109 行，共 1 行] (Option<VReg>)
+    variant RetFromSub [第 111-111 行，共 1 行] RetFromSub,
+  enum RouteDecision [第 118-123 行，共 6 行] enum
+    variant Jump [第 120-120 行，共 1 行] (BlockId)
+    variant Flow [第 122-122 行，共 1 行] (Flow)
+  struct PendingFault [第 127-132 行，共 6 行] struct
+    field exit [第 129-129 行，共 1 行] : String
+    field origin [第 131-131 行，共 1 行] : BlockId
+  struct VmMetadata [第 136-143 行，共 8 行] pub(crate) struct
+    field module_name [第 138-138 行，共 1 行] pub(crate) : String
+    field source_name [第 140-140 行，共 1 行] pub(crate) : String
+    field entry_span [第 142-142 行，共 1 行] pub(crate) : Option<xiao_ir::IrSpan>
+  impl VmMetadata [第 145-163 行，共 19 行] impl
+    method new [第 147-157 行，共 11 行] pub(crate) fn(
+    method legacy [第 160-162 行，共 3 行] pub(crate) fn(program: &TacProgram) -> Self
+  struct VmSession [第 170-173 行，共 4 行] pub struct
+    field initialized_modules [第 171-171 行，共 1 行] : BTreeMap<String, ModuleInstance>
+    field tables [第 172-172 行，共 1 行] : std::rc::Rc<tables::TableContext>
+  impl VmSession [第 175-183 行，共 9 行] impl Default for
+    method default [第 177-182 行，共 6 行] fn() -> Self
+  impl VmSession [第 185-197 行，共 13 行] impl
+    method new [第 188-190 行，共 3 行] pub fn() -> Self
+    method is_healthy [第 194-196 行，共 3 行] pub fn(&self) -> bool
+  struct Vm [第 200-234 行，共 35 行] pub struct <'p, C: Carrier, S: VmEventSink>
+    field program [第 201-201 行，共 1 行] : &'p TacProgram
+    field active_program [第 202-202 行，共 1 行] : Option<Rc<TacProgram>>
+    field module_loader [第 203-203 行，共 1 行] : Option<&'p dyn ModuleLoader>
+    field session [第 204-204 行，共 1 行] : VmSession
+    field initializing_modules [第 205-205 行，共 1 行] : BTreeSet<String>
+    field current_module [第 206-206 行，共 1 行] : String
+    field current_exports [第 207-207 行，共 1 行] : Option<BTreeMap<String, RuntimeValue>>
+    field frames [第 208-208 行，共 1 行] : Vec<Frame<C>>
+    field sink [第 209-209 行，共 1 行] : S
+    field metrics [第 210-210 行，共 1 行] : VmMetrics
+    field options [第 211-211 行，共 1 行] : VmOptions
+    field pc_map [第 213-213 行，共 1 行] : Option<PcMap>
+    field pending_base [第 215-215 行，共 1 行] : usize
+    field metadata [第 217-217 行，共 1 行] : VmMetadata
+    field cancellation [第 219-219 行，共 1 行] : Option<CancellationSource>
+    field cancelled_fs_cleanup [第 221-221 行，共 1 行] : Option<XiaoError>
+    field checkpoint_counter [第 223-223 行，共 1 行] : Rc<Cell<u64>>
+    field capabilities [第 225-225 行，共 1 行] : u64
+    field concurrency [第 227-227 行，共 1 行] : Rc<concurrent::ConcurrentContext>
+    field clock [第 228-228 行，共 1 行] : Arc<xiao_runtime::time::TimeContext>
+    field arguments_snapshot [第 229-229 行，共 1 行] : Option<Arc<ArgumentsSnapshot>>
+    field environment_snapshot [第 230-230 行，共 1 行] : Arc<xiao_runtime::environment::EnvironmentSnapshot>
+    field log [第 231-231 行，共 1 行] : Option<Arc<log_intrinsics::RunLog>>
+    field log_capture [第 232-232 行，共 1 行] : Option<log_intrinsics::LogCapture>
+    field next_log_output [第 233-233 行，共 1 行] : Option<Box<dyn xiao_runtime::log::LogOutput + Send>>
+  struct ModuleInstance [第 236-241 行，共 6 行] struct
+    field program [第 237-237 行，共 1 行] : Rc<TacProgram>
+    field source_name [第 238-238 行，共 1 行] : String
+    field exports [第 239-239 行，共 1 行] : BTreeMap<String, RuntimeValue>
+    field instance_tables [第 240-240 行，共 1 行] : BTreeSet<String>
+  impl Vm [第 243-2265 行，共 2023 行] impl<'p, C: Carrier, S: EventSink> Vm<'p, C, S>
+    method new [第 245-254 行，共 10 行] pub fn(program: &'p TacProgram, options: VmOptions, sink: S) -> Self
+    method new_with_metadata [第 257-292 行，共 36 行] pub(crate) fn(
+    method new_with_seed [第 295-299 行，共 5 行] pub fn(program: &'p TacProgram, options: VmOptions, sink: S, seed: u128) -> Self
+    method metrics [第 303-305 行，共 3 行] pub const fn(&self) -> VmMetrics
+    method set_cancellation_source [第 308-310 行，共 3 行] pub(crate) fn(&mut self, cancellation: Option<CancellationSource>)
+    method take_cancelled_fs_cleanup [第 313-315 行，共 3 行] pub(crate) fn(&mut self) -> Option<xiao_diagnostics::ReportRecord>
+    method set_module_loader [第 317-319 行，共 3 行] pub(crate) fn(&mut self, loader: Option<&'p dyn ModuleLoader>)
+    method set_arguments_snapshot [第 322-324 行，共 3 行] pub(crate) fn(&mut self, snapshot: Option<Arc<ArgumentsSnapshot>>)
+    method set_environment_snapshot [第 326-331 行，共 6 行] pub(crate) fn(
+    method session_is_healthy [第 335-337 行，共 3 行] pub(crate) fn(&self) -> bool
+    method cancellation_checkpoint [第 340-354 行，共 15 行] fn(&self) -> Result<(), Fault>
+    method count_instruction [第 357-360 行，共 4 行] fn(&self)
+    method into_sink [第 364-366 行，共 3 行] pub fn(self) -> S
+    method into_parts [第 369-371 行，共 3 行] pub(crate) fn(self) -> (S, VmSession)
+    method run [第 374-376 行，共 3 行] pub fn(&mut self) -> RunResult
+    method run_with_value [第 379-382 行，共 4 行] pub(crate) fn(&mut self) -> (RunResult, Option<RuntimeValue>)
+    method run_with_arguments [第 388-441 行，共 54 行] pub(crate) fn(
+    method execute [第 444-529 行，共 86 行] fn(
+    method note_map_point [第 536-540 行，共 5 行] fn(&mut self, point: MapPoint)
+    method annotate_fault [第 549-605 行，共 57 行] fn(&mut self, fault: Fault, block: BlockId, instruction: usize) -> Fault
+    method run_blocks [第 608-683 行，共 76 行] fn(&mut self, function: &TacFunction) -> Result<Option<RuntimeValue>, Fault>
+    method step [第 686-1205 行，共 520 行] fn(&mut self, function: &TacFunction, instruction: &TacInstr) -> Result<Flow, Fault>
+    method run_subroutine [第 1212-1307 行，共 96 行] fn(
+    method route_fault [第 1313-1321 行，共 9 行] fn(
+    method route_concurrency_cancellation [第 1324-1399 行，共 76 行] fn(
+    method route_fault_scoped [第 1405-1635 行，共 231 行] fn(
+    method truncate_scope [第 1637-1643 行，共 7 行] fn(&mut self, scope: u32)
+    method scopes_until [第 1645-1659 行，共 15 行] fn(&self, target: u32, include_target: bool) -> Vec<u32>
+    method prune_handler_contexts [第 1661-1699 行，共 39 行] fn(&mut self, function: &TacFunction, target: BlockId)
+    method prune_scopes_for_target [第 1706-1720 行，共 15 行] fn(&mut self, function: &TacFunction, target: BlockId)
+    method run_plan [第 1722-1755 行，共 34 行] fn(&mut self, function: &TacFunction, scope: u32, exit: &str)
+    method unwind [第 1763-1792 行，共 30 行] fn(&mut self, fault: &Fault)
+    method run_cancelled_finalies [第 1794-1851 行，共 58 行] fn(&mut self, function: &TacFunction)
+    method collect [第 1853-1859 行，共 7 行] fn(&mut self, registers: &[VReg]) -> Result<Vec<RuntimeValue>, Fault>
+    method collect_entries [第 1861-1870 行，共 10 行] fn(
+    method bind [第 1873-1882 行，共 10 行] fn(&mut self, arguments: &[TacArgument]) -> Result<Vec<BoundArgument>, Fault>
+    method execute_intrinsic [第 1885-2226 行，共 342 行] fn(
+    method read [第 2229-2234 行，共 6 行] fn(&self, register: VReg) -> Result<RuntimeValue, Fault>
+    method take [第 2237-2245 行，共 9 行] fn(&mut self, register: VReg) -> Result<RuntimeValue, Fault>
+    method take_if_present [第 2248-2250 行，共 3 行] fn(&mut self, register: VReg) -> Option<RuntimeValue>
+    method write [第 2253-2257 行，共 5 行] fn(&mut self, register: VReg, value: RuntimeValue)
+    method write_operand [第 2260-2264 行，共 5 行] fn(&mut self, dst: Option<VReg>, value: RuntimeValue)
+  function intrinsic_value_text [第 2268-2270 行，共 3 行] fn(value: &RuntimeValue) -> Result<String, Fault>
+  function validate_resource_contract [第 2273-2297 行，共 25 行] fn(
+  function resource_argument [第 2300-2307 行，共 8 行] fn(arguments: &[BoundArgument]) -> Result<&RuntimeValue, Fault>
+  function scalar_type_for_value_type [第 2310-2322 行，共 13 行] fn(value_type: xiao_intrinsics::ValueType) -> Option<ScalarType>
+  function exit_for_instruction [第 2325-2334 行，共 10 行] fn(op: &TacOp) -> &'static str
+  function exit_name_for_flow [第 2341-2347 行，共 7 行] fn(flow: &Flow, fallback: &str) -> String
+  function runtime_check_code [第 2350-2371 行，共 22 行] fn(kind: &str) -> Option<&'static str>
+  function runtime_text [第 2374-2383 行，共 10 行] fn(value: &RuntimeValue) -> Result<String, Fault>
+  function attach_fault_span [第 2386-2394 行，共 9 行] fn(fault: Fault, start: usize, end: usize) -> Fault
+  function check_value [第 2397-2458 行，共 62 行] fn(kind: &str, value: &RuntimeValue, expected: Option<&xiao_ir::IrType>) -> bool
+  function check_set_membership [第 2461-2491 行，共 31 行] fn(value: &RuntimeValue, expected: Option<&xiao_ir::IrType>) -> bool
+  function runtime_matches_type [第 2494-2501 行，共 8 行] fn(value: &RuntimeValue, ty: &xiao_ir::IrType) -> bool
+  function integer_value [第 2504-2511 行，共 8 行] fn(value: &RuntimeValue) -> Option<i128>
+  修复：拆分文件或记录经过审核且四段完整的硬耦合豁免说明。
+
+exit=1
+end=2026-11-28T13:05:41.406837+08:00

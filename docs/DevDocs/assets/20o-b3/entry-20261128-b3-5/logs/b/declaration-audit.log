@@ -1,0 +1,120 @@
+cwd=D:\project\Xiao\Xiao
+command=python D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5b/audit.py
+start=2026-11-28T13:05:13.593017+08:00
+cmd /c git rev-parse HEAD
+cmd /c git log -1 --format=%T d6e51027
+head=93cddeb62011eef8afe490698033473b2b3cccb7
+product_tree=94940f30f9feeaf6b6fdbd389df372219ec70451
+cmd /c git show d6e51027:core/rust/crates/xiao-intrinsics/intrinsics.json
+{"id": 63, "name": "os_log_write", "kind": "log", "arity": "three", "parameter_type": "three_strings", "return_type": "none", "vm_binding": "log_write", "abi_binding": "none", "effect": "reads_clock_and_writes_stdout", "capability": "clock_and_stdout", "error": "runtime.type_mismatch", "status": "active"}
+active=1..63 unchanged=1..62,100
+cmd /c git show HEAD:core/rust/Cargo.lock
+Git:core/rust/Cargo.lock 19660 28d38451ba0490b70d2d136bc3268acad8de02b5658bf826f842069019161c53
+worktree:core/rust/Cargo.lock 19660 28d38451ba0490b70d2d136bc3268acad8de02b5658bf826f842069019161c53
+worktree LF normalized:core/rust/Cargo.lock 19660 28d38451ba0490b70d2d136bc3268acad8de02b5658bf826f842069019161c53
+cmd /c git show HEAD:tests/benchmarks/Cargo.lock
+Git:tests/benchmarks/Cargo.lock 19264 8ac4f16af6e8baf5b71e0e0b5d89397eb5ae7bf2e3cc5a96053683c6e8b4b577
+worktree:tests/benchmarks/Cargo.lock 19264 8ac4f16af6e8baf5b71e0e0b5d89397eb5ae7bf2e3cc5a96053683c6e8b4b577
+worktree LF normalized:tests/benchmarks/Cargo.lock 19264 8ac4f16af6e8baf5b71e0e0b5d89397eb5ae7bf2e3cc5a96053683c6e8b4b577
+docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.xiao 264 d7ec578f5f0177355a04f054831a5d1aac1b7ab0c24757e05f494992eedf5a8b
+docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.input.json 41 30cf24e7a51b3e75a7ccda7f6448818dcbd4acb0b84e939e9e7083eeb019f129
+docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/candidates/tests/fixtures/docs/log/tutorial.stdout 103 267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146
+stdlib alias source 267 8e8097c106c0719b7cc568e6afc09c40c3dae0facc539a8f596dae6a02f01195
+D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target\debug\build\xiao-intrinsics-987c8aca3ba0489b\build-script-build.exe cwd=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\intrinsic-contract-e03newux
+case=valid
+cargo:rerun-if-changed=intrinsics.json
+case_exit=0
+case=wrong status
+cargo:rerun-if-changed=intrinsics.json
+
+thread 'main' (7036) panicked at crates\xiao-intrinsics\build.rs:47:13:
+assertion `left == right` failed
+  left: "reserved"
+ right: "active"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+case_exit=101
+case=wrong kind
+cargo:rerun-if-changed=intrinsics.json
+
+thread 'main' (12092) panicked at crates\xiao-intrinsics\build.rs:46:13:
+assertion `left == right` failed
+  left: "env"
+ right: "log"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+case_exit=101
+case=wrong arity
+cargo:rerun-if-changed=intrinsics.json
+
+thread 'main' (50612) panicked at crates\xiao-intrinsics\build.rs:228:21:
+assertion `left == right` failed
+  left: "two"
+ right: "three"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+case_exit=101
+case=wrong parameter type
+cargo:rerun-if-changed=intrinsics.json
+
+thread 'main' (54204) panicked at crates\xiao-intrinsics\build.rs:229:21:
+assertion `left == right` failed
+  left: "two_strings_and_bool"
+ right: "three_strings"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+case_exit=101
+case=wrong result
+cargo:rerun-if-changed=intrinsics.json
+
+thread 'main' (50852) panicked at crates\xiao-intrinsics\build.rs:230:21:
+assertion `left == right` failed
+  left: "str"
+ right: "none"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+case_exit=101
+case=wrong effect
+cargo:rerun-if-changed=intrinsics.json
+
+thread 'main' (53124) panicked at crates\xiao-intrinsics\build.rs:233:21:
+assertion `left == right` failed
+  left: "writes_stdout"
+ right: "reads_clock_and_writes_stdout"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+case_exit=101
+case=missing capability bit
+cargo:rerun-if-changed=intrinsics.json
+
+thread 'main' (29636) panicked at crates\xiao-intrinsics\build.rs:234:21:
+assertion `left == right` failed
+  left: "clock"
+ right: "clock_and_stdout"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+case_exit=101
+case=wrong VM binding
+cargo:rerun-if-changed=intrinsics.json
+
+thread 'main' (45568) panicked at crates\xiao-intrinsics\build.rs:50:13:
+assertion `left != right` failed: 活动 intrinsic 缺少 VM 绑定: os_log_write
+  left: "none"
+ right: "none"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+case_exit=101
+case=wrong ABI binding
+cargo:rerun-if-changed=intrinsics.json
+
+thread 'main' (47964) panicked at crates\xiao-intrinsics\build.rs:232:21:
+assertion `left == right` failed
+  left: "print"
+ right: "none"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+case_exit=101
+case=wrong error identity
+cargo:rerun-if-changed=intrinsics.json
+
+thread 'main' (54740) panicked at crates\xiao-intrinsics\build.rs:235:21:
+assertion `left == right` failed
+  left: "none"
+ right: "runtime.type_mismatch"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+case_exit=101
+build contract: 1 accepted; 10 rejected
+
+exit=0
+end=2026-11-28T13:05:14.753692+08:00

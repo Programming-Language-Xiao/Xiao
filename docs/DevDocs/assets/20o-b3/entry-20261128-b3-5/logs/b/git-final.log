@@ -1,0 +1,90 @@
+cwd=D:\project\Xiao\Xiao
+command=python D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5b/audit.py scope
+start=2026-11-28T13:25:14.782466+08:00
+cmd /c git status --short
+ M core/rust/crates/xiao-bytecode/src/encode/tests.rs
+ M core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs
+ M core/rust/crates/xiao-driver/src/frontend.rs
+ M core/rust/crates/xiao-driver/src/module_loader.rs
+ M core/rust/crates/xiao-driver/tests/20o_b2_b2_divide.rs
+ M core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs
+ M core/rust/crates/xiao-driver/tests/20o_b3_time_tutorial.rs
+ M core/rust/crates/xiao-intrinsics/build.rs
+ M core/rust/crates/xiao-intrinsics/intrinsics.json
+ M core/rust/crates/xiao-intrinsics/src/lib.rs
+ M core/rust/crates/xiao-runtime/src/lib.rs
+ M core/rust/crates/xiao-runtime/src/resources.rs
+ M core/rust/crates/xiao-runtime/src/time.rs
+ M core/rust/crates/xiao-types/src/checker/expression.rs
+ M core/rust/crates/xiao-vm/src/run.rs
+ M core/rust/crates/xiao-vm/src/semantics/call_arguments.rs
+ M core/rust/crates/xiao-vm/src/semantics/concurrent.rs
+ M core/rust/crates/xiao-vm/src/semantics/exec.rs
+ M core/rust/crates/xiao-vm/src/semantics/tables.rs
+ M core/rust/crates/xiao-vm/src/sink.rs
+ M docs/DevDocs/20o-b3-5-log-implementation-plan.md
+ M docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/README.md
+ M docs/module-registry.json
+ M stdlib/README.md
+?? core/rust/crates/xiao-driver/tests/20o_b3_log_vm.rs
+?? core/rust/crates/xiao-runtime/src/log.rs
+?? core/rust/crates/xiao-runtime/src/log_tests.rs
+?? core/rust/crates/xiao-vm/src/semantics/log_intrinsics.rs
+?? core/rust/crates/xiao-vm/src/semantics/log_intrinsics_tests.rs
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/REPORT-B.md
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/b/
+?? stdlib/log.xiao
+cmd /c git diff --check
+warning: in the working copy of 'core/rust/crates/xiao-bytecode/src/encode/tests.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-driver/src/frontend.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-driver/src/module_loader.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-driver/tests/20o_b3_time_tutorial.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-intrinsics/build.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-intrinsics/src/lib.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-runtime/src/lib.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-runtime/src/time.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-types/src/checker/expression.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-vm/src/run.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-vm/src/semantics/call_arguments.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-vm/src/semantics/exec.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-vm/src/semantics/tables.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'core/rust/crates/xiao-vm/src/sink.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/DevDocs/20o-b3-5-log-implementation-plan.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'stdlib/README.md', LF will be replaced by CRLF the next time Git touches it
+cmd /c git diff --cached --name-only
+cmd /c git rev-parse --short=8 HEAD
+cmd /c git status --short --untracked-files=all
+scope=expected-only
+core/rust/crates/xiao-bytecode/src/encode/tests.rs 34444 01b0c36396a125a42a08dc3e11dfe225f55b7d6734f3d91080f33cf8b988382c
+core/rust/crates/xiao-bytecode/tests/b4_cmath_tac.rs 13106 b82dd474069a251dc86187e76fa9d9d6883c4a91f556184c36d85bdb7979d5db
+core/rust/crates/xiao-driver/src/frontend.rs 73339 4eb2e141bfbf8ecd688567bb4747ce6664d9f87d61d35975b98903ed1e478680
+core/rust/crates/xiao-driver/src/module_loader.rs 14694 1fc90a6e53d1a3006fe4416fb341aa68f77f0e7ba8ed34fc5bcc46815b4aa7bb
+core/rust/crates/xiao-driver/tests/20o_b2_b2_divide.rs 3346 3ee673f5ecace514089843c43608ceacd7befc536756495f53751d6376033329
+core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs 20601 59e418295fc6ad039c43148420c82d044bec544a330c2fcab894c543cbddefed
+core/rust/crates/xiao-driver/tests/20o_b3_log_vm.rs 12376 0e22ae2c891658aa91aad5ac6c2ed402b2849a7a2733b48c8cbfdf840a1e648a
+core/rust/crates/xiao-driver/tests/20o_b3_time_tutorial.rs 13579 a058fdd120ad6ef1808b8c353e9329daf15d2a33b4cee41d56f59438318cf070
+core/rust/crates/xiao-intrinsics/build.rs 22782 7bbfb7c378505a562148ec5a8c293c6246a7cecc9f20fe9bf286c1d8530975d9
+core/rust/crates/xiao-intrinsics/intrinsics.json 17320 846b77b00cb2942f4cd1fe5f9b683b21a0113d8ce7b57eaf9e47f639e552e852
+core/rust/crates/xiao-intrinsics/src/lib.rs 45438 3b8bfc04479eaa844fe6ba7b6753943cdec630c616c32c80e30d3839af350c91
+core/rust/crates/xiao-runtime/src/lib.rs 9075 3acedd00c133c4bf5da9584755c3cd1c310dbda3af281a11f5ddbfecb58a407c
+core/rust/crates/xiao-runtime/src/log.rs 11988 56ca35fe45519d6c02d52e4fbfba474374ebb3a78e5be998cda90ab4ade504a3
+core/rust/crates/xiao-runtime/src/log_tests.rs 19783 16e213516e43b923dc5df6ab6a34740e17f8ad7c95431ec1988dc7b478496d2e
+core/rust/crates/xiao-runtime/src/resources.rs 10782 df09a908543326f6e2aed3f68c18e680d56193a16e86442e4e41a641ae7b3e58
+core/rust/crates/xiao-runtime/src/time.rs 13394 a86e89ac2412034e015abce38dda6bd525a9e7294fea89b0a192b9119b3390a3
+core/rust/crates/xiao-types/src/checker/expression.rs 62447 991d5ba1b51b8abe755406f76d33c8f98675141c5cbf85e6b38fd61d3d147194
+core/rust/crates/xiao-vm/src/run.rs 31117 4fe593bc7b0a732ba435d2e6044c91b247f61a1b78b3bc5b928b076cb0e67e6f
+core/rust/crates/xiao-vm/src/semantics/call_arguments.rs 3770 a0ca81513ead7ad550ab2619a957aa94e63b454287a18f7dda9dea6e3a8a4d9f
+core/rust/crates/xiao-vm/src/semantics/concurrent.rs 48644 10a2db4afcadfbd65f447f4c11df1632cd738d81de9f4e735af1c6a5bbf700e0
+core/rust/crates/xiao-vm/src/semantics/exec.rs 106130 6b6de1cf163a655aa05bac474904cd2b72839470a8a41500a9a8b9f500473f39
+core/rust/crates/xiao-vm/src/semantics/log_intrinsics.rs 8005 555faa36b593db3f905face146b4563aba6c092086c5eb20884d0b9e9cfc609c
+core/rust/crates/xiao-vm/src/semantics/log_intrinsics_tests.rs 8745 b41ee566e5661b18f3be969adf91139e20c1706ff3d42eb3734d6543e84f9b46
+core/rust/crates/xiao-vm/src/semantics/tables.rs 14698 643e03d04a5dcefbc95d5e6c6e30fbe6284b0792173034c31bd8010151c78dff
+core/rust/crates/xiao-vm/src/sink.rs 12845 2a10b773846ac9f73e3f543fb6337425df7056c7f4e8a77f83a338d3cbd3a444
+stdlib/README.md 4541 e3a57a478e0cac76e6163a0f9da0b221a0f7b7d46f55b29403a9798564bbd337
+stdlib/log.xiao 95 59545fb45a0fc9fcfef8aa9882a676b3d0f1e68818b4186088e97b139ca8e047
+
+exit=0
+end=2026-11-28T13:25:15.967559+08:00

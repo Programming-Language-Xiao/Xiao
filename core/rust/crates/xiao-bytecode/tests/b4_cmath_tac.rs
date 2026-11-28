@@ -334,7 +334,7 @@ fn cmath_intrinsics_round_trip_tac_and_bytecode_without_version_changes() {
 }
 
 #[test]
-/// 预登记、墓碑与未知 ID 都必须被生产校验和编码入口拒绝。
+/// 墓碑与未知 ID 都必须被生产校验和编码入口拒绝。
 fn cmath_unknown_intrinsic_ids_are_rejected_before_encoding() {
     let (_, ir, tac, cases) = fixture();
     let case = cases.first().expect("应存在 cmath 调用");
@@ -345,7 +345,7 @@ fn cmath_unknown_intrinsic_ids_are_rejected_before_encoding() {
         .find(|(_, function)| function.name == case.function)
         .unwrap();
 
-    for id in [63, 100, u32::MAX] {
+    for id in [64, 100, u32::MAX] {
         let mut invalid = tac.clone();
         let invalid_signature = invalid.signatures.intern(CallSig::intrinsic(id));
         let function = &mut invalid.functions[function_index];

@@ -130,8 +130,8 @@ fn time_driver_control_interrupts_a_long_sleep() {
 }
 
 #[test]
-/// 预登记签名在生产 TAC 与编码准入点拒绝。
-fn reserved_intrinsic_ids_fail_before_execution() {
+/// 未知签名在生产 TAC 与编码准入点拒绝。
+fn unknown_intrinsic_id_fails_before_execution() {
     let artifact = FrontendCompiler::new()
         .compile(&FrontendRequest::from_text("os_time_monotonic(\"ns\")\n"))
         .unwrap();
@@ -141,7 +141,7 @@ fn reserved_intrinsic_ids_fail_before_execution() {
             .iter()
             .any(|sig| sig.intrinsic_id() == Some(50))
     );
-    for id in [63] {
+    for id in [64, 100, u32::MAX] {
         let mut invalid = tac.clone();
         let mut signatures = xiao_bytecode::sig::CallSigTable::new();
         for signature in tac.signatures.iter() {
@@ -154,13 +154,13 @@ fn reserved_intrinsic_ids_fail_before_execution() {
         invalid.signatures = signatures;
         assert!(xiao_bytecode::encode_xiaoc(&invalid, Default::default()).is_err());
         let result = xiao_vm::run_request(&xiao_vm::RunRequest::new(&artifact.ir, &invalid));
-        assert!(!result.result.is_success(), "reserved {id}");
+        assert!(!result.result.is_success(), "inactive {id}");
         assert!(
             result.events.iter().all(|event| !matches!(
                 event,
                 VmEvent::ModuleLoaded { .. } | VmEvent::IntrinsicOutput { .. }
             )),
-            "reserved {id} reached the application: {result:?}"
+            "inactive {id} reached the application: {result:?}"
         );
     }
 }

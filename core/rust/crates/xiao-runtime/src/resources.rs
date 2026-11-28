@@ -24,8 +24,8 @@ pub(crate) fn require_capability(capabilities: u64, capability: Capability) -> R
     if validate_capability_mask(capabilities).is_err() {
         return Err(RuntimeError::invalid_value("能力掩码包含未知位"));
     }
-    if capability.bit().is_some_and(|bit| capabilities & bit == 0) {
-        return Err(RuntimeError::capability_unavailable(capability.as_str()));
+    if let Some(missing) = capability.missing_from(capabilities) {
+        return Err(RuntimeError::capability_unavailable(missing.as_str()));
     }
     Ok(())
 }

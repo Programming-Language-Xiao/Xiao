@@ -1,0 +1,19 @@
+cwd=D:\project\Xiao\Xiao\core\rust
+command=cargo test --locked -p xiao-bytecode --test b4_cmath_tac
+start=2026-11-28T13:02:27.193160+08:00
+CARGO_TARGET_DIR=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target
+CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\link.exe
+CARGO_TERM_COLOR=never
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.54s
+     Running tests\b4_cmath_tac.rs (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target\debug\deps\b4_cmath_tac-e779a49ba742bebb.exe)
+
+running 2 tests
+test cmath_unknown_intrinsic_ids_are_rejected_before_encoding ... ok
+test cmath_intrinsics_round_trip_tac_and_bytecode_without_version_changes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+
+exit=0
+end=2026-11-28T13:02:31.047711+08:00

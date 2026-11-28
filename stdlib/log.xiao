@@ -1,0 +1,2 @@
+def write(str level, str message, str target) -> none
+    os_log_write(level, message, target)

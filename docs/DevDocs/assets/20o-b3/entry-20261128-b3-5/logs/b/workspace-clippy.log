@@ -1,0 +1,11 @@
+cwd=D:\project\Xiao\Xiao\core\rust
+command=cargo clippy --workspace --all-targets -- -D warnings
+start=2026-11-28T13:19:39.261277+08:00
+CARGO_TARGET_DIR=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target
+CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\link.exe
+CARGO_TERM_COLOR=never
+    Blocking waiting for file lock on build directory
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 20.73s
+
+exit=0
+end=2026-11-28T13:20:01.122865+08:00

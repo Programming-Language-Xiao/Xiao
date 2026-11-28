@@ -1,0 +1,29 @@
+cwd=D:\project\Xiao\Xiao\core\rust
+command=cargo test --locked -p xiao-driver --test 20o_b3_log_vm -- --nocapture
+start=2026-11-28T13:00:57.074084+08:00
+CARGO_TARGET_DIR=D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target
+CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\link.exe
+CARGO_TERM_COLOR=never
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 23.48s
+     Running tests\20o_b3_log_vm.rs (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5b\target\debug\deps\20o_b3_log_vm-5c982017fb964340.exe)
+
+running 7 tests
+test driver_control_uses_cancellation_before_an_expired_run ... ok
+test log_id_round_trips_through_both_widths_and_xiaoc ... ok
+test production_vm_checks_both_bits_and_keeps_the_intrinsic_call_span ... ok
+test table_drop_uses_the_same_log_output_and_catch_finally_keep_release_order ... ok
+B3-5B VM alias=std stdout_bytes=103 exact=true
+test protocol_process_keeps_stdout_capture_apart_from_stderr ... ok
+test child_writes_use_one_run_quota_and_capture_even_with_one_debug_event ... ok
+B3-5B VM alias=stdlib stdout_bytes=103 exact=true
+test log_tutorial_matches_vm_golden ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.75s
+
+
+exit=0
+end=2026-11-28T13:01:23.427435+08:00
