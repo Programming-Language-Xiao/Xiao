@@ -1,0 +1,1 @@
+{"baseline_commit": "18e7f4fa184575fef260b29ec2603cd975db7444", "product_commit": "18e7f4fa184575fef260b29ec2603cd975db7444", "target": "aarch64-apple-darwin", "runtime": {"sha256": "996cbda5187f810522efcb89edec8e6da52f6a03b711ca6fa2aa824139cbee5c"}, "toolchain": {"runner": "github-actions", "rust": "1.96.0"}}

@@ -1,0 +1,2898 @@
+{
+  "capabilities": 162,
+  "codegen": 27,
+  "complete": true,
+  "identity": {
+    "baseline_commit": "18e7f4fa184575fef260b29ec2603cd975db7444",
+    "product_commit": "18e7f4fa184575fef260b29ec2603cd975db7444",
+    "runtime": {
+      "sha256": "996cbda5187f810522efcb89edec8e6da52f6a03b711ca6fa2aa824139cbee5c"
+    },
+    "target": "aarch64-apple-darwin",
+    "toolchain": {
+      "runner": "github-actions",
+      "rust": "1.96.0"
+    }
+  },
+  "identity_sha256": "d351db0ff7c242170d8f722c6600324208e3b1ad84651f34f4f1d77f296e1d2a",
+  "passed": true,
+  "probe": false,
+  "protocol": {
+    "batches_per_case": 5,
+    "calibration_target_seconds": 0.1,
+    "fixed_calls_per_workload": 64,
+    "maximum_growth_factor": 16,
+    "maximum_repeats": 16777216,
+    "minimum_seconds": 0.05,
+    "release": true,
+    "warmup_repetitions": 1
+  },
+  "records": [
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5231,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-snapshot-256/batch-1.json",
+          "sha256": "876b77332aa8ae65dfe21ce28b420f72edec11709420a6417e263ef26c87c7d4"
+        },
+        {
+          "bytes": 5244,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-snapshot-256/batch-2.json",
+          "sha256": "4b324f1a8f0e358a4106e4ae854e28b9027a6cefcf8f5b7f677d43ce306ca6ab"
+        },
+        {
+          "bytes": 5223,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-snapshot-256/batch-3.json",
+          "sha256": "86ee2c7b28be9f590d1b7094db22f44543bb121608af1016c98af783cd9feeeb"
+        },
+        {
+          "bytes": 5232,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-snapshot-256/batch-4.json",
+          "sha256": "885b8af6b563f9519badb26eea7f51066aea8fb0dde791a5622007d55eab1829"
+        },
+        {
+          "bytes": 5234,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-snapshot-256/batch-5.json",
+          "sha256": "0635a2ff0a0d26a4dd32a64d51b0597a3ea53460d1d16c72e06e45653531736f"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9617328,
+        "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/b3_env_performance",
+        "sha256": "ae99513f9a6d3d7e24082dfdef8ee57f9d80c396f174f29970efe408fef2e754"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.000037148346590909236,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 20463616,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.00003684007705965913,
+        0.000037148346590909236,
+        0.000037024265269886355,
+        0.00003783877698863641,
+        0.000043746980468749996
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5564,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-snapshot-512/batch-1.json",
+          "sha256": "13e569075eba558b2a7d96414b5e7f9add6196fe6d3a2519eeef60de19f80cc6"
+        },
+        {
+          "bytes": 5228,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-snapshot-512/batch-2.json",
+          "sha256": "7e4988f2211eec170adb48a77368b30fa2f536c2fba3697b6d5ad0dc6a6de307"
+        },
+        {
+          "bytes": 5232,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-snapshot-512/batch-3.json",
+          "sha256": "6526ab66e87a93b76d18c7aac717d2c7028bb2b5c7947515c8bd8f746ce23c39"
+        },
+        {
+          "bytes": 5233,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-snapshot-512/batch-4.json",
+          "sha256": "266e1719fd698474879b4572d9cf0fe84053af0de480f917293fba6a2cd257b2"
+        },
+        {
+          "bytes": 5243,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-snapshot-512/batch-5.json",
+          "sha256": "64c31907a29045b3691ee3fd17bd46d67d08b8e4a049c80638b94243165a0c0d"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 2.7628277916443276,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9617328,
+        "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/b3_env_performance",
+        "sha256": "ae99513f9a6d3d7e24082dfdef8ee57f9d80c396f174f29970efe408fef2e754"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00010263448437499985,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 20463616,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.00009837207519531239,
+        0.00010263448437499985,
+        0.00010181058398437491,
+        0.00010459889453125003,
+        0.00010334826367187498
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5243,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-snapshot-1024/batch-1.json",
+          "sha256": "538f20a8f509957c416e6d80e19076ad5ada4033e690e4d89595dcdb7c628809"
+        },
+        {
+          "bytes": 5234,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-snapshot-1024/batch-2.json",
+          "sha256": "d96265a65b45f8060f753fe49d9591587a656cc5c4f38b3fb037d5a04752dba3"
+        },
+        {
+          "bytes": 5233,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-snapshot-1024/batch-3.json",
+          "sha256": "1e3f05d352cce879975983f5739af617741c19959c488534ba25792de2569ca1"
+        },
+        {
+          "bytes": 5240,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-snapshot-1024/batch-4.json",
+          "sha256": "23988b8870f3852754da52ce9af38cd6dade7c5052f49830cbdc95233056a446"
+        },
+        {
+          "bytes": 5234,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-snapshot-1024/batch-5.json",
+          "sha256": "15638629cf1cc5444f21ad98ccb8e5c074271b54bfcadafd03066f428c92823b"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 2.0937486821787354,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9617328,
+        "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/b3_env_performance",
+        "sha256": "ae99513f9a6d3d7e24082dfdef8ee57f9d80c396f174f29970efe408fef2e754"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00021489081640624995,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 20742144,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0001977132239583334,
+        0.00021489081640624995,
+        0.0002364107382812499,
+        0.00022198128906250012,
+        0.00021413401757812496
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4813,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-get-256/batch-1.json",
+          "sha256": "833b5bdc5852e14d77f4e7ac06e2973e31c9c03b5bad904fa47f3b82803528e9"
+        },
+        {
+          "bytes": 4813,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-get-256/batch-2.json",
+          "sha256": "b463e378ff1b8d725996f1060442d1765760b447f432ca0aaa7ffe88bb777d32"
+        },
+        {
+          "bytes": 5144,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-get-256/batch-3.json",
+          "sha256": "e5767c8f47a3c00436275ac9c2dc9a84559b4420d8c1fbc2c01ebad0c946314e"
+        },
+        {
+          "bytes": 4806,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-get-256/batch-4.json",
+          "sha256": "a984fa2dad9670851b8aa645957af41da98a08820cdac0767da0feb0add3f027"
+        },
+        {
+          "bytes": 5153,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-get-256/batch-5.json",
+          "sha256": "1b11631ea2226c8445826ef0e10a36a55927fef17181c66a979769485b5cdc00"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9617328,
+        "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/b3_env_performance",
+        "sha256": "ae99513f9a6d3d7e24082dfdef8ee57f9d80c396f174f29970efe408fef2e754"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0011502869312500004,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 21561344,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0011856562857142856,
+        0.0010618040312500002,
+        0.0010170160312499993,
+        0.0011544259464285715,
+        0.0011502869312500004
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5144,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-get-512/batch-1.json",
+          "sha256": "5d718673557d06e615b8040000954c2d951d2ca32fac8c33ad9a9376447948ef"
+        },
+        {
+          "bytes": 5133,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-get-512/batch-2.json",
+          "sha256": "cea0421f39797fd8366e7c880b78ba60280df3baaf5239f064f6cba3de5f420a"
+        },
+        {
+          "bytes": 4811,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-get-512/batch-3.json",
+          "sha256": "3c8904153e98a3f249f26913b5a7f6e38a5cf52b48691379666f41b267273fe2"
+        },
+        {
+          "bytes": 5153,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-get-512/batch-4.json",
+          "sha256": "ee04d9d7f8a2ce255133d573c94fddfd1c408940ee07bde13bb3f185b66e347b"
+        },
+        {
+          "bytes": 4822,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-get-512/batch-5.json",
+          "sha256": "87865dac6dfbc083ce288dccfa372d80e015dfbb9f93d4b18c5092e894c8fde0"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 1.1067548369140874,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9617328,
+        "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/b3_env_performance",
+        "sha256": "ae99513f9a6d3d7e24082dfdef8ee57f9d80c396f174f29970efe408fef2e754"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0012730856250000003,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 20512768,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0010253971093749992,
+        0.001513663293749999,
+        0.0014163792374999999,
+        0.0012730856250000003,
+        0.0011640546964285707
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4815,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-get-1024/batch-1.json",
+          "sha256": "023277350b65e5db3640efe6dd068d55f192119873899941431fab429196643c"
+        },
+        {
+          "bytes": 5153,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-get-1024/batch-2.json",
+          "sha256": "55b72bc9ad3499e335bc7cef35c850fd466bde37076a183d81a08405448d95d6"
+        },
+        {
+          "bytes": 4817,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-get-1024/batch-3.json",
+          "sha256": "1a2f4cce01bc3ce4424114ae0f6bada789f0e5c1c8a73e8ee0761d2154e035cd"
+        },
+        {
+          "bytes": 4826,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-get-1024/batch-4.json",
+          "sha256": "69d898434f390b4d1f251a3db4065e9ea58fdf1d29f3fc57570dfdc6377d42c8"
+        },
+        {
+          "bytes": 4825,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-get-1024/batch-5.json",
+          "sha256": "d3310cff97f20c5221cd07f5838224e20863fd295c6a6a66733abaa2a5463a21"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 0.8310190251343073,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9617328,
+        "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/b3_env_performance",
+        "sha256": "ae99513f9a6d3d7e24082dfdef8ee57f9d80c396f174f29970efe408fef2e754"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0010579583750000006,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 20398080,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.001231342875,
+        0.0011128997604166657,
+        0.0010579583750000006,
+        0.0010327027890625004,
+        0.0009336864196428574
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5138,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-set-256/batch-1.json",
+          "sha256": "3d1e782623ce7830b0fabf321a4fba897406e6da098d79be66b50b9b565e8f36"
+        },
+        {
+          "bytes": 5145,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-set-256/batch-2.json",
+          "sha256": "24dc4600ed9b2176da1ba649912d45ebeb9202022df3a606cbd9c3686df16bdd"
+        },
+        {
+          "bytes": 4820,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-set-256/batch-3.json",
+          "sha256": "2c91e8f89a9aceff7cde2f19412e176c60dd3211c5b9568748d42cf725e17398"
+        },
+        {
+          "bytes": 4805,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-set-256/batch-4.json",
+          "sha256": "1d03bc150949c8ca8aa980bc3ea2e342a2fad39bf2edb719ff669e167fdfcbb4"
+        },
+        {
+          "bytes": 4811,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-set-256/batch-5.json",
+          "sha256": "a72a780ea7cf0d1db78c642774fcca9a64f22925a9bfc300d0dcb668563adc31"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9617328,
+        "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/b3_env_performance",
+        "sha256": "ae99513f9a6d3d7e24082dfdef8ee57f9d80c396f174f29970efe408fef2e754"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0007871060250000001,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 19562496,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0008908456423611112,
+        0.0007315671339285715,
+        0.0006922618181818181,
+        0.0007871060250000001,
+        0.000788696409722222
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5152,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-set-512/batch-1.json",
+          "sha256": "4f007bc6f082cd22f693ff9f09be022d974e16de8cf6f5546cc2a9ba2fedb2df"
+        },
+        {
+          "bytes": 4807,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-set-512/batch-2.json",
+          "sha256": "31df624cf45e39dd2031e710cfec16a7c1d3be2ec7f9b249ddfb0b851f65f5c9"
+        },
+        {
+          "bytes": 4813,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-set-512/batch-3.json",
+          "sha256": "3618d0002f379b9dd4e18b1f2d4f2dff5b34292d61abad26518f4e2a134db8ef"
+        },
+        {
+          "bytes": 4813,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-set-512/batch-4.json",
+          "sha256": "0bfc21d769f52acec01c66f6450376ba27d0b9f5a5983616547c34a8165b6dea"
+        },
+        {
+          "bytes": 4791,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-set-512/batch-5.json",
+          "sha256": "75fb4f5cd1ea7f1f0ac56159c7b243e55ea5e48d8bba7a8db2ae0145d8f950c1"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 0.9627053137825715,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9617328,
+        "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/b3_env_performance",
+        "sha256": "ae99513f9a6d3d7e24082dfdef8ee57f9d80c396f174f29970efe408fef2e754"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0007577511527777777,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 19251200,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0007065298046874997,
+        0.0006768843375,
+        0.0008546614609375005,
+        0.0007577511527777777,
+        0.00081176093125
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5133,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-set-1024/batch-1.json",
+          "sha256": "17beee485d8c03e6b778405de08ad5c05cbd8591c8445478a8208fb14132b71f"
+        },
+        {
+          "bytes": 4799,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-set-1024/batch-2.json",
+          "sha256": "359721b2d4c6482ac5f5462cefb93cc8dc75f758c650ab86c1422c8dfadd7bbd"
+        },
+        {
+          "bytes": 4801,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-set-1024/batch-3.json",
+          "sha256": "3f6e35412900ee27b0ec9253365a467b982072eba81e6a6241bcde00d730f8c4"
+        },
+        {
+          "bytes": 4816,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-set-1024/batch-4.json",
+          "sha256": "6d2bc0698d7586b119a9f7190ee86265d8c3ea49bd7a91402c259120ef2e8241"
+        },
+        {
+          "bytes": 4817,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-set-1024/batch-5.json",
+          "sha256": "967960cbbfcb698620d17a70bcc6176e578ecaa9eea58e2dd46dbcf4702ed7ef"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 0.8834520692045178,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9617328,
+        "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/b3_env_performance",
+        "sha256": "ae99513f9a6d3d7e24082dfdef8ee57f9d80c396f174f29970efe408fef2e754"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0006694368238636364,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 18087936,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0007642922098214285,
+        0.0007877611874999999,
+        0.0006694368238636364,
+        0.0006660911312500004,
+        0.0006320252375000002
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4881,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-unset-256/batch-1.json",
+          "sha256": "f381be5a25a18d3d3b979b8716371f0003c2581a02c6a38fdd2fcd8e8aa012e8"
+        },
+        {
+          "bytes": 4881,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-unset-256/batch-2.json",
+          "sha256": "19341d36aacdbc930fab14ee1c3221ea5a3707d62088518a9323b2532041d915"
+        },
+        {
+          "bytes": 5198,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-unset-256/batch-3.json",
+          "sha256": "b7899f8e0ca4e04ee5dbd31aa0c65f5a2d8dabfa5a53de57ea97a8148d905764"
+        },
+        {
+          "bytes": 4882,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-unset-256/batch-4.json",
+          "sha256": "f734bb4368da40eeaa9fda4650c1cd8ee1ea9855acf7d3ba2312c10cf270dccc"
+        },
+        {
+          "bytes": 4881,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-unset-256/batch-5.json",
+          "sha256": "35f995ac7a6540371dcbc055150b0a308dca450f09b1a43e4d02608a704ba384"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9617328,
+        "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/b3_env_performance",
+        "sha256": "ae99513f9a6d3d7e24082dfdef8ee57f9d80c396f174f29970efe408fef2e754"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0006144419156249999,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 17268736,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.000616928068181818,
+        0.000624139448863636,
+        0.0006144419156249999,
+        0.0006091723579545455,
+        0.0006117353181818183
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4880,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-unset-512/batch-1.json",
+          "sha256": "4df754d594bf607ee01202b2c47d82762d413b3fd8700e802b8a3581a4f8477b"
+        },
+        {
+          "bytes": 5214,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-unset-512/batch-2.json",
+          "sha256": "f33cef6e64ca393a577917744c687db86ac491db49c3e04b6a932308b9edefec"
+        },
+        {
+          "bytes": 4857,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-unset-512/batch-3.json",
+          "sha256": "cf9ac155b4d122e8db9b685739ca6967315db7b8b1e3b75fdb313874df7bea17"
+        },
+        {
+          "bytes": 4882,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-unset-512/batch-4.json",
+          "sha256": "dd2ed6a5802ecb8e85d0936bae793859fe9d30feaff10a62647ae900244ddbc5"
+        },
+        {
+          "bytes": 4873,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-unset-512/batch-5.json",
+          "sha256": "0d9a7b55e2b5b60f910c958d5dd033434821fc6e1fd25762a4b89919083a5bda"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.028713408747602,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9617328,
+        "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/b3_env_performance",
+        "sha256": "ae99513f9a6d3d7e24082dfdef8ee57f9d80c396f174f29970efe408fef2e754"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0006320846375000002,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 19890176,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.000782536472222222,
+        0.0006308657118055558,
+        0.0006402702750000001,
+        0.0006320846375000002,
+        0.0006259205375000001
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4876,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-unset-1024/batch-1.json",
+          "sha256": "6c61588d496883d5f036faef1f12a3caf44379acc46914fdb8e6821c0794d3c4"
+        },
+        {
+          "bytes": 4877,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-unset-1024/batch-2.json",
+          "sha256": "ef78364b7b74580eb21c2ece1a52d7d6f36d46d8469f0fe1a71083b8cd711b95"
+        },
+        {
+          "bytes": 4873,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-unset-1024/batch-3.json",
+          "sha256": "bcc1223020fd964af78f4912c7d6586af790f408fd083bf97a7ed37b39b1120f"
+        },
+        {
+          "bytes": 4877,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-unset-1024/batch-4.json",
+          "sha256": "2d129b1b63dea7d8cece5ff819006eff3aa7ca156e1de5840d9726b198f4aec4"
+        },
+        {
+          "bytes": 4867,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-unset-1024/batch-5.json",
+          "sha256": "45cc522bd3113fe0d16896b59a7ddcc136c78a8dd9f0b6f74004b7c0af817fe6"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.048097346377921,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9617328,
+        "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/b3_env_performance",
+        "sha256": "ae99513f9a6d3d7e24082dfdef8ee57f9d80c396f174f29970efe408fef2e754"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0006624862312500003,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 18759680,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0006619987125000002,
+        0.0006660520249999997,
+        0.0006624862312500003,
+        0.0006607468749999999,
+        0.0007918916312499999
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 5095,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-full-replace-1024/batch-1.json",
+          "sha256": "1800778a43f1f84dd06a73768ed411be3159ac7c9f30236373e1b9bddc721e2b"
+        },
+        {
+          "bytes": 5426,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-full-replace-1024/batch-2.json",
+          "sha256": "a33600bf7dec0bc32f3ff9ac25bb264ce2afa3144ab9a2588628582152d17312"
+        },
+        {
+          "bytes": 5426,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-full-replace-1024/batch-3.json",
+          "sha256": "e2980803b692a7d16ccd4af4d91245321778e58eacc42ba6805a0c9254319146"
+        },
+        {
+          "bytes": 5426,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-full-replace-1024/batch-4.json",
+          "sha256": "102c6ad173fb943af1c634fa0757cfbcce51c909869cbdd915a1616bc634b84b"
+        },
+        {
+          "bytes": 5096,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-full-replace-1024/batch-5.json",
+          "sha256": "7b1785f250741af415bc6f145ae0483a4ed5e3a0dfe96a88960e589d174353ac"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18572,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/full-replace/measurement.xiaoc",
+        "sha256": "41b3ce0fe042aaa08002e366f65f261413f9a082ae56cd9d71937c3c13811c8e"
+      },
+      "case": "full-replace",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9617328,
+        "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/b3_env_performance",
+        "sha256": "ae99513f9a6d3d7e24082dfdef8ee57f9d80c396f174f29970efe408fef2e754"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.0006839327187499997,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 20152320,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.000844704346590909,
+        0.0006658011132812504,
+        0.0006839327187499997,
+        0.0006849233928571432,
+        0.0006263349772727277
+      ],
+      "source": {
+        "bytes": 3016,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/full-replace/measurement.xiao",
+        "sha256": "0c8eb78116619c71030e909170c35457e0d219a8a8db6ba15946752a68df3c4c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "vm",
+      "batches": [
+        {
+          "bytes": 4982,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-overflow-1024/batch-1.json",
+          "sha256": "33532575cc7f83d7a3134366c35f4ed387f90796ad6ff8e83ec78e8349d49f17"
+        },
+        {
+          "bytes": 4962,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-overflow-1024/batch-2.json",
+          "sha256": "dc0e9d554c439bc569c29426b546649040d09a44157067909519580b90536365"
+        },
+        {
+          "bytes": 4973,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-overflow-1024/batch-3.json",
+          "sha256": "5de4b11743a2f05d4cd832df7a613e0d2a4d294c0136d7b094a0e643e113e4ca"
+        },
+        {
+          "bytes": 5304,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-overflow-1024/batch-4.json",
+          "sha256": "bb8a25e41999b0fd89cee82da986371b8fddd3f9746d4098bd7d6992da181bfb"
+        },
+        {
+          "bytes": 4982,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/vm-overflow-1024/batch-5.json",
+          "sha256": "f6b98796edb47e67980e1c0947dddc43a129871fc8bf604b6e4fe8c995bdb458"
+        }
+      ],
+      "bytecode": {
+        "bytes": 26444,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/overflow/measurement.xiaoc",
+        "sha256": "9fe8cbe3ac8cdabd8b4f5896a484f66be03ef8011851901d12735d560ae6c7f1"
+      },
+      "case": "overflow",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 9617328,
+        "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/b3_env_performance",
+        "sha256": "ae99513f9a6d3d7e24082dfdef8ee57f9d80c396f174f29970efe408fef2e754"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.0008790263593750002,
+      "memory_limit_bytes": 67108864,
+      "optimization": null,
+      "resident_increment_upper_bytes": 20152320,
+      "seconds_limit": 10.0,
+      "seconds_per_workload": [
+        0.0008298037343749997,
+        0.000932131546875,
+        0.0008366151875000001,
+        0.0009492551927083332,
+        0.0008790263593750002
+      ],
+      "source": {
+        "bytes": 4455,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/overflow/measurement.xiao",
+        "sha256": "b851b65d790ce89cc99e9db1e13c4d00343e8901ebceb5ce70f441f1da79206a"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3971,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-snapshot-256/batch-1.json",
+          "sha256": "e10bde99dcc31494cbea42aef2b05dd00d3a008f1a57b416b000dab1f2f018da"
+        },
+        {
+          "bytes": 3972,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-snapshot-256/batch-2.json",
+          "sha256": "242993eed222d9104dbf3890b1938b2dd76bb054eac36cd0c26779954cff6cba"
+        },
+        {
+          "bytes": 3964,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-snapshot-256/batch-3.json",
+          "sha256": "c61c5dd3b5da0068515acc2f13e942ae6b6ae6723f24e8249868cb8f06c6faab"
+        },
+        {
+          "bytes": 3966,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-snapshot-256/batch-4.json",
+          "sha256": "574ce4105701386d52b42bb9b3ff3345294040b8c8e750b467d116d52868d4a3"
+        },
+        {
+          "bytes": 4294,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-snapshot-256/batch-5.json",
+          "sha256": "58092fefeaf9987c2489edfb3287e0d6b4e00157a72a32f68ff62ed50c453dbe"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5434432,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement-o0",
+        "sha256": "16a77066c0c4dedae42ae80cab8b0cd65456fd30a851a7801f11f1805d0ab68c"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00007222395833203125,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 1441792,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00007222395833203125,
+        0.00007405078124804688,
+        0.00006866145833789063,
+        0.00008227018229296875,
+        0.000071516796871875
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3970,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-snapshot-512/batch-1.json",
+          "sha256": "24701d28eb59db01ed0239bbb01e79fb729048014548f0057788dafb5acb8866"
+        },
+        {
+          "bytes": 3963,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-snapshot-512/batch-2.json",
+          "sha256": "c2e56da7fd6a26f73bbe15685b5d795fd681a6276c01992a65b26c3e7720e7c0"
+        },
+        {
+          "bytes": 3970,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-snapshot-512/batch-3.json",
+          "sha256": "d6e1eb585127ac0238bc5dc4c06cdeeea10ee30176132753c61baeccd3acfec3"
+        },
+        {
+          "bytes": 3972,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-snapshot-512/batch-4.json",
+          "sha256": "7e1c05662056dcd18862c895bbcf241f9f5e273aa20f4e6140af61aaecf310b9"
+        },
+        {
+          "bytes": 3970,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-snapshot-512/batch-5.json",
+          "sha256": "ea293bcb117d9a46ffaeec7e681fc5dae08b200a71c2b609ba24511e78f5f321"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 2.066074132888622,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5434432,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement-o0",
+        "sha256": "16a77066c0c4dedae42ae80cab8b0cd65456fd30a851a7801f11f1805d0ab68c"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00014922005208463542,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 1556480,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00015254687500390626,
+        0.0001381523437486979,
+        0.00015826953124869792,
+        0.00013514160156542968,
+        0.00014922005208463542
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3973,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-snapshot-1024/batch-1.json",
+          "sha256": "fa662758e0ccb5b4ae79ca2a3f453a0a1cdc45d93507b52d795037e81017b1f7"
+        },
+        {
+          "bytes": 3957,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-snapshot-1024/batch-2.json",
+          "sha256": "ea1c85481a91caf208a8c443dd5591ede8e6f7ada6af85b382dd10fe7aae082b"
+        },
+        {
+          "bytes": 3973,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-snapshot-1024/batch-3.json",
+          "sha256": "52ecd0de5115b597087741b5d708454ad5fc81764c221db0e9f22f6ea84ac80d"
+        },
+        {
+          "bytes": 3979,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-snapshot-1024/batch-4.json",
+          "sha256": "3822b2734054d466f7ccc3eb30835edee8b3516bb1291254ff28cf351983ddc8"
+        },
+        {
+          "bytes": 3972,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-snapshot-1024/batch-5.json",
+          "sha256": "1f63db0b1d868bb158605bc6bccb134ad044df42cead371f14f32c5a8eb33ab8"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 1.9215015575743535,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5434432,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement-o0",
+        "sha256": "16a77066c0c4dedae42ae80cab8b0cd65456fd30a851a7801f11f1805d0ab68c"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.0002867265625019531,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 2260992,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0002745292968730469,
+        0.000277826171875,
+        0.00028772070312304686,
+        0.0002867265625019531,
+        0.0003004980468769531
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3883,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-get-256/batch-1.json",
+          "sha256": "a316cb4461c97ba74c528915ea04175e874ce66b57e0d26c70721a25815e0b26"
+        },
+        {
+          "bytes": 3887,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-get-256/batch-2.json",
+          "sha256": "6b9c25699c874f7f6e960355b988803b2dc64f9e2809f9940e803347037ad942"
+        },
+        {
+          "bytes": 3888,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-get-256/batch-3.json",
+          "sha256": "c4c511c244d33878f22681a928a8207c0f3e81ec7e45674cf50fb8d093a31dbe"
+        },
+        {
+          "bytes": 3883,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-get-256/batch-4.json",
+          "sha256": "b6c8fd864d7c405f0a8d2cb50f5337854eadf84f14a4b23d51d23d4f817d1b0a"
+        },
+        {
+          "bytes": 3881,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-get-256/batch-5.json",
+          "sha256": "e04a0d73cceaba87aa4fbb72dfd1e1877f31b033320c52da8aefed72ba1abbac"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5434432,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement-o0",
+        "sha256": "16a77066c0c4dedae42ae80cab8b0cd65456fd30a851a7801f11f1805d0ab68c"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00009901039296874999,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 1441792,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.000103885919921875,
+        0.0001104009169921875,
+        0.00009901039296874999,
+        0.000098581153125,
+        0.0000937687015625
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 4204,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-get-512/batch-1.json",
+          "sha256": "8434003e08579c99a6223c33ba6ee417f4c4b5ed3873479b6c058e23d74ea48e"
+        },
+        {
+          "bytes": 3882,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-get-512/batch-2.json",
+          "sha256": "1ff99d37cf091b796ba392342e487c7e401f56da1b3101c372c0308404ba7a60"
+        },
+        {
+          "bytes": 3886,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-get-512/batch-3.json",
+          "sha256": "c601b9184c75765e0d033e32a71f4c5a6e3a6296aaea3817bf09f7f6488eed1c"
+        },
+        {
+          "bytes": 3880,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-get-512/batch-4.json",
+          "sha256": "24367a2d9b375d59b7b3729406da299158fc4c6449a1e243f9090630c405037b"
+        },
+        {
+          "bytes": 3884,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-get-512/batch-5.json",
+          "sha256": "18c0890f32c3e095321bed597410fbb5939446692d4e46fbee812bbbab8cb64a"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 0.9235078722756875,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5434432,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement-o0",
+        "sha256": "16a77066c0c4dedae42ae80cab8b0cd65456fd30a851a7801f11f1805d0ab68c"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00009143687734375,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 1572864,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0001024596171875,
+        0.0000891389421875,
+        0.00009198501406249999,
+        0.00009143687734375,
+        0.0000905329078125
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3890,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-get-1024/batch-1.json",
+          "sha256": "06842b2d99c3579571c71519b33816421cd4d76a48b91d180974e09914687a04"
+        },
+        {
+          "bytes": 3891,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-get-1024/batch-2.json",
+          "sha256": "95fb0057361f7a25d024fb19ee101a3c05b37749b8829b4cf388f40cec31a58c"
+        },
+        {
+          "bytes": 3886,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-get-1024/batch-3.json",
+          "sha256": "fc93667a07706e4d7bf88adde1e73291ac68d4b347fae8543ca38a802db503f9"
+        },
+        {
+          "bytes": 3887,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-get-1024/batch-4.json",
+          "sha256": "858b4c93d39b9cefeecb535f5b5dcf016c41456fc7fb8661110ea9f6fda372a9"
+        },
+        {
+          "bytes": 4213,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-get-1024/batch-5.json",
+          "sha256": "86517a081157229f8776279b56e143eca59fb025063a1a250ed4e1b0f6bc9b3c"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 1.0800605332215052,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5434432,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement-o0",
+        "sha256": "16a77066c0c4dedae42ae80cab8b0cd65456fd30a851a7801f11f1805d0ab68c"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00009875736249999999,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 2342912,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00009875736249999999,
+        0.0001033531455078125,
+        0.00010003530390625,
+        0.000090079834375,
+        0.00009197152001953125
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3889,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-set-256/batch-1.json",
+          "sha256": "55f72459f5de253abc9d14380d5a432e81b5e35dd903226c07fec424b2e28266"
+        },
+        {
+          "bytes": 3886,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-set-256/batch-2.json",
+          "sha256": "fc3cd7496aa78b5349a4cac57ea5b6826748c9adc672c3f0257cb3a7a17bfe89"
+        },
+        {
+          "bytes": 4206,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-set-256/batch-3.json",
+          "sha256": "0eda4cebb0dae1ce38a98c37a7e864a527e42146c9ef7080b3286f028a9e2f1c"
+        },
+        {
+          "bytes": 3888,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-set-256/batch-4.json",
+          "sha256": "3f6fee4aaff6a04b29fb23cdb57fe53ef26f1ec1dbed14ec7673a228b01fe751"
+        },
+        {
+          "bytes": 3886,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-set-256/batch-5.json",
+          "sha256": "5f45e8aae21e6d3551faeeab55f4426b876ea9cc3015b32deacef6d82c89e535"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5434432,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement-o0",
+        "sha256": "ad767043a733ad192a1e698cf52cb6023bea575a1dd5e550e0e1541f899c1edc"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.000041974705078124996,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 1474560,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.000041974705078124996,
+        0.00004497739149305556,
+        0.000040907167751736106,
+        0.00004551967100694444,
+        0.0000365324130859375
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 4209,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-set-512/batch-1.json",
+          "sha256": "241863280553aa6808c8a6723a7de509d0d4399742ba31c100f4f7aee17fe60d"
+        },
+        {
+          "bytes": 3889,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-set-512/batch-2.json",
+          "sha256": "8de93f79a24010f868f85da811a2a1ccebf21ace809f5afe6b81b2e22d2f5a88"
+        },
+        {
+          "bytes": 4210,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-set-512/batch-3.json",
+          "sha256": "b652f5118dee1d5099fbe064441a04b5a431d150890ab28f0cbe1dedea2e0df1"
+        },
+        {
+          "bytes": 3882,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-set-512/batch-4.json",
+          "sha256": "b3d04383c51dc6daccfbde4f8973190588b1c43f7c5e60e516e7906b44e3a461"
+        },
+        {
+          "bytes": 3888,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-set-512/batch-5.json",
+          "sha256": "cfa9be69b578e6b614533a569ff8536314cc842374a38a2e6653d266bc503229"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 1.0275642477945122,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5434432,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement-o0",
+        "sha256": "ad767043a733ad192a1e698cf52cb6023bea575a1dd5e550e0e1541f899c1edc"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00004313170625,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 1622016,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00004487946440972222,
+        0.000046973934895833335,
+        0.000040032051513671874,
+        0.00004313170625,
+        0.000042304724283854165
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3889,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-set-1024/batch-1.json",
+          "sha256": "eea588292d09f8f92ba2ec1538f393eb6cd4d35a88ebe068181897f6fb9f2826"
+        },
+        {
+          "bytes": 3891,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-set-1024/batch-2.json",
+          "sha256": "719e125041060ac8c569d9f236a9f46de3935055752c9b7c4938bf30a5c464fc"
+        },
+        {
+          "bytes": 3893,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-set-1024/batch-3.json",
+          "sha256": "2e06fbbab59a4eb02ce720bab9581ecff1057f7256b70687e04ca06474305eae"
+        },
+        {
+          "bytes": 3889,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-set-1024/batch-4.json",
+          "sha256": "b2425f79a0b23f33d55facb239f7cd57bf80c04d8d04553aa4cd72cde683d087"
+        },
+        {
+          "bytes": 3890,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-set-1024/batch-5.json",
+          "sha256": "35a505dbd5e84ac8ad6272c7ca2c666fad9bc8e17c5d069f07f6afbbfbdda2a1"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 1.0325143258318106,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5434432,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement-o0",
+        "sha256": "ad767043a733ad192a1e698cf52cb6023bea575a1dd5e550e0e1541f899c1edc"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00004453410460069444,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 2375680,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00004453410460069444,
+        0.00004742991102430556,
+        0.000044054937499999996,
+        0.000041144123828125,
+        0.00004811569566761363
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3923,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-unset-256/batch-1.json",
+          "sha256": "c36b85b1925fe5e3b0a8bb205d3d413d7e328448862e5bb03bc111d46b080be8"
+        },
+        {
+          "bytes": 3925,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-unset-256/batch-2.json",
+          "sha256": "119bc6197af7171dd0b7d0c2d22c21be02c8f569b4594066c7eacbeadbe07ae4"
+        },
+        {
+          "bytes": 3921,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-unset-256/batch-3.json",
+          "sha256": "dae1a9108d295ae91226c8916ac22a140eaf368eb564e047ed4aa3b32e282105"
+        },
+        {
+          "bytes": 3922,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-unset-256/batch-4.json",
+          "sha256": "0de56cebde67d7b60a4a9db653304ee0c58d07f14e9b958c210711db94ff10d0"
+        },
+        {
+          "bytes": 3921,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-unset-256/batch-5.json",
+          "sha256": "22c98bfa8a10300da8382a054d9457cc3b1662d6dfc8438ccaa54d5d3bba561d"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5434432,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement-o0",
+        "sha256": "5561143486eb32cb523a0acb58a157c1daa3ca8e5279e4e5247ad20094a6736e"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.000037952887369791666,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 1458176,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.000037952887369791666,
+        0.000044196022135416664,
+        0.00004387112421875,
+        0.00003542756901041667,
+        0.000037004634765625
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 4246,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-unset-512/batch-1.json",
+          "sha256": "3791b2cb8c4d894142c3710dc2367aaf7f7a788774e9fe62697eba0c8672bc6e"
+        },
+        {
+          "bytes": 3924,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-unset-512/batch-2.json",
+          "sha256": "7cd3246634406891cf79b5bcc2b50980c019ccfd00a875221fd745d9f68a5853"
+        },
+        {
+          "bytes": 4245,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-unset-512/batch-3.json",
+          "sha256": "1c4258cc48805c0509d2930eebf3d10b7ff49f2bf9f16e29d2a95d4c506ccd52"
+        },
+        {
+          "bytes": 4244,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-unset-512/batch-4.json",
+          "sha256": "98aa9ed8cd8ffe1740c3529f14571b91e5cbe45cd73da06d2922d140e5c79fdc"
+        },
+        {
+          "bytes": 3922,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-unset-512/batch-5.json",
+          "sha256": "c38bdb4cbdf1cc52343c30d5e5532d2d6ac4edf6f94a034a80aa1bd95ad04dda"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.453919376394378,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5434432,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement-o0",
+        "sha256": "5561143486eb32cb523a0acb58a157c1daa3ca8e5279e4e5247ad20094a6736e"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00005518043833705357,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 1605632,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.000052542721261160714,
+        0.00005597386572265625,
+        0.00005798238699776786,
+        0.00005518043833705357,
+        0.00005245121728515625
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3928,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-unset-1024/batch-1.json",
+          "sha256": "d90308304f9fe0345768e0a50fce56698ad2354b1c0be3fb2e0c0257c0eb7756"
+        },
+        {
+          "bytes": 3926,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-unset-1024/batch-2.json",
+          "sha256": "9e738e62062bb10a1e8eaf7372b8eeca97d6598e050b0c3a91846080b776a3d3"
+        },
+        {
+          "bytes": 3924,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-unset-1024/batch-3.json",
+          "sha256": "913ef0619f4f7b424b18f59fbdbd09133f7a9cda92508e316f7985cd2cc27f31"
+        },
+        {
+          "bytes": 4244,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-unset-1024/batch-4.json",
+          "sha256": "0513a34bc55605af4ad6050a9686cf3cafb4abdd4b9d245c5154a6a0eb5aaefe"
+        },
+        {
+          "bytes": 3926,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-unset-1024/batch-5.json",
+          "sha256": "18e775452c3ec22929bacbe8f87e07661c0757c423a6eec024ffae53771105ee"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.3649905938912636,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5434432,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement-o0",
+        "sha256": "5561143486eb32cb523a0acb58a157c1daa3ca8e5279e4e5247ad20094a6736e"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.000075320779296875,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 2375680,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00008407922200520834,
+        0.000072502185546875,
+        0.00008321766640624999,
+        0.000072530166796875,
+        0.000075320779296875
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 4378,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-full-replace-1024/batch-1.json",
+          "sha256": "dd555956f96b2aff40957f178aaab22e2dee27f126df0e0bde1d4c4b0456aed1"
+        },
+        {
+          "bytes": 4055,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-full-replace-1024/batch-2.json",
+          "sha256": "f5f8e37d694267efcdb637c3ed6b2c03059b67625ef2bfd7ffd038189479eb35"
+        },
+        {
+          "bytes": 4049,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-full-replace-1024/batch-3.json",
+          "sha256": "57f175b9f0ee3b6512a9018f98a89d8bda6d5351cb4eb48f94c779e042eb4d6d"
+        },
+        {
+          "bytes": 4054,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-full-replace-1024/batch-4.json",
+          "sha256": "3caf6bc89b9c79f7278aa652b735d274912db457c7be030e8d318dccbf8ed06c"
+        },
+        {
+          "bytes": 4378,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-full-replace-1024/batch-5.json",
+          "sha256": "d8758ea6787917e570a26ad0f0b42932cc28c3589fcc9463fefcb9e8dcded0b4"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18572,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/full-replace/measurement.xiaoc",
+        "sha256": "41b3ce0fe042aaa08002e366f65f261413f9a082ae56cd9d71937c3c13811c8e"
+      },
+      "case": "full-replace",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5434416,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/full-replace/measurement-o0",
+        "sha256": "c5af0c19ed1ff1543009b18781eec95afee5aa9f302fb77f6d8b833af2dea064"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.00004379807641601562,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 6438912,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00004379807641601562,
+        0.000052975553515625,
+        0.000043476387109375,
+        0.000044667738671875,
+        0.000041196485107421874
+      ],
+      "source": {
+        "bytes": 3016,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/full-replace/measurement.xiao",
+        "sha256": "0c8eb78116619c71030e909170c35457e0d219a8a8db6ba15946752a68df3c4c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o0",
+      "batches": [
+        {
+          "bytes": 3986,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-overflow-1024/batch-1.json",
+          "sha256": "d8a8095e0bc992b30ead18c1a8ee5e5589c29845603ee6f6eed10bc5ed6d8710"
+        },
+        {
+          "bytes": 3985,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-overflow-1024/batch-2.json",
+          "sha256": "9e2885d0c0ab280e28fa2ad981b6232dfaf065bded50b3c3f71216fb0117b04a"
+        },
+        {
+          "bytes": 3985,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-overflow-1024/batch-3.json",
+          "sha256": "c4f109bb228d790bfc4c72c38a33d42bf35a1c460a130140eea517171741fa65"
+        },
+        {
+          "bytes": 3978,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-overflow-1024/batch-4.json",
+          "sha256": "533885ed71b2f88c48ef65e5d372c2447c152b5a37cf4091d1a0fc432f03271e"
+        },
+        {
+          "bytes": 3987,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o0-overflow-1024/batch-5.json",
+          "sha256": "e0987af70c738524b6ccb19bda16bc52e19dd47215b3287343f5eae3e2957d7a"
+        }
+      ],
+      "bytecode": {
+        "bytes": 26444,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/overflow/measurement.xiaoc",
+        "sha256": "9fe8cbe3ac8cdabd8b4f5896a484f66be03ef8011851901d12735d560ae6c7f1"
+      },
+      "case": "overflow",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5434448,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/overflow/measurement-o0",
+        "sha256": "336caec8b15befc3d95e3e9792b2df224ec45666843a0f8fb48e88a7ef7c7252"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.0001440815,
+      "memory_limit_bytes": 67108864,
+      "optimization": 0,
+      "resident_increment_upper_bytes": 6553600,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00015522613541666668,
+        0.00015602008723958333,
+        0.00013557273958333333,
+        0.0001440815,
+        0.0001284761455078125
+      ],
+      "source": {
+        "bytes": 4455,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/overflow/measurement.xiao",
+        "sha256": "b851b65d790ce89cc99e9db1e13c4d00343e8901ebceb5ce70f441f1da79206a"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3972,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-snapshot-256/batch-1.json",
+          "sha256": "757f90219ab6cca06e6c667054d44bd24b92b1bf4c75381c712d00ccc1dd5b40"
+        },
+        {
+          "bytes": 3972,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-snapshot-256/batch-2.json",
+          "sha256": "b97550845db7aae3c408d28e55ccc5bcc24d41d6159bce4c5b84fd74ac01c5ec"
+        },
+        {
+          "bytes": 4296,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-snapshot-256/batch-3.json",
+          "sha256": "54342d953954862233f01be668b8ae745db68b83a6f9b300a682cf311c82b337"
+        },
+        {
+          "bytes": 3978,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-snapshot-256/batch-4.json",
+          "sha256": "443c5b38b12e6c8c8fbebb87fa503b4eb37a44a62b2f640725dad773bd6b193c"
+        },
+        {
+          "bytes": 3972,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-snapshot-256/batch-5.json",
+          "sha256": "8e4f401a742af8415be15f09f0fae168cd64ecf4dd9560a1b2f6a8fc99e01495"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5417856,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement-o3",
+        "sha256": "afaf2996e546b9f02739227907933fea1f6fdf3587fbc437545a41b19d6fdd22"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00006855524553962053,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 1507328,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00006855524553962053,
+        0.00006975585937369792,
+        0.00006083281250195313,
+        0.00006653348214564732,
+        0.00006855989583789062
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3966,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-snapshot-512/batch-1.json",
+          "sha256": "2cce5571abce4544c18193ad1f9b8856de857e13b6b84eef5592e290ca915d0a"
+        },
+        {
+          "bytes": 3972,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-snapshot-512/batch-2.json",
+          "sha256": "106c4645333a784a5b2fb3e6d5ab01c0995e3803960f500a290b8ded0458094a"
+        },
+        {
+          "bytes": 3978,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-snapshot-512/batch-3.json",
+          "sha256": "0a0fa7998cfb2158d63b4cc02efd9f276a3547fc232703b26d4750ab420cf748"
+        },
+        {
+          "bytes": 3958,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-snapshot-512/batch-4.json",
+          "sha256": "3aefe3bef7223f2c5cb169359ad9516576da5f6c2d991e2f36f790e113b3f49e"
+        },
+        {
+          "bytes": 4299,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-snapshot-512/batch-5.json",
+          "sha256": "ebd32b96b82717ab8e0c9af0745f12f8efb4c02475ee87a8a30c0b1f4d6dca6f"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 1.9914177878301904,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5417856,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement-o3",
+        "sha256": "afaf2996e546b9f02739227907933fea1f6fdf3587fbc437545a41b19d6fdd22"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00013652213541666665,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 1622016,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00012660937500195312,
+        0.00012617089843945312,
+        0.00013681152343652343,
+        0.00013652213541666665,
+        0.00015453710937597657
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3957,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-snapshot-1024/batch-1.json",
+          "sha256": "762246314516d251ff5cf566cf54d36c2c5daa1d46599fa768250b3f60572c67"
+        },
+        {
+          "bytes": 3974,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-snapshot-1024/batch-2.json",
+          "sha256": "2bd7372f8ac4b5e86c0a31a1dedd0afe092fb343cad99d21ab7cb1677329dceb"
+        },
+        {
+          "bytes": 3973,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-snapshot-1024/batch-3.json",
+          "sha256": "2ae219c89d42ef011fb4988e535c66980e078f2d6f4c5bee5aa3c09e0c681b1c"
+        },
+        {
+          "bytes": 3956,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-snapshot-1024/batch-4.json",
+          "sha256": "5b39656a982c340bf783efba800e04b2312177753267471259e0c6d05cbb0627"
+        },
+        {
+          "bytes": 3973,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-snapshot-1024/batch-5.json",
+          "sha256": "fec80b289db75537454692cbd939ba7e347fbb8ea3823bd1f8125e097fc4b567"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "snapshot",
+      "doubling_ratio": 2.2037120048832133,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5417856,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement-o3",
+        "sha256": "afaf2996e546b9f02739227907933fea1f6fdf3587fbc437545a41b19d6fdd22"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00030085546875,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 2392064,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.000341423828125,
+        0.00028884765624804685,
+        0.00029138867187890625,
+        0.00030085546875,
+        0.0003657167968710938
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 4205,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-get-256/batch-1.json",
+          "sha256": "1e0ab689d816fc227f8e2c800b8bbdd70ca60492019b8497587f53174d118de5"
+        },
+        {
+          "bytes": 3887,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-get-256/batch-2.json",
+          "sha256": "fbc000899728a5a26cc483d750486dff5e647176e0014c9a861d32cf4cfcb951"
+        },
+        {
+          "bytes": 4208,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-get-256/batch-3.json",
+          "sha256": "982294b17822f722ff054aff4ebfdbe4ffc5efea7a091f1dee4af2e3603499ca"
+        },
+        {
+          "bytes": 3885,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-get-256/batch-4.json",
+          "sha256": "754bb61b41d7faa1c3df07977d01b56b0ef78beebc14ad2a0ff8a58889dbbf79"
+        },
+        {
+          "bytes": 3886,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-get-256/batch-5.json",
+          "sha256": "48bdbc18edcb771a262ea717cfdc94f4e1a6b53d23fc0f6ec9fbd6169d58e9fc"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5417856,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement-o3",
+        "sha256": "afaf2996e546b9f02739227907933fea1f6fdf3587fbc437545a41b19d6fdd22"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00009641128125000001,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 1507328,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00010778266992187499,
+        0.0001255234365234375,
+        0.00008939067431640624,
+        0.00009568040078125,
+        0.00009641128125000001
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 4208,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-get-512/batch-1.json",
+          "sha256": "5153abd2df8e0efd89a0299f04b9ab9986e27c21f66e4bc14df9851f6270816f"
+        },
+        {
+          "bytes": 3884,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-get-512/batch-2.json",
+          "sha256": "8a296e33e57d594ca34f235be0db9f9ba4df5c48dac395a1870ca6cd21d1f509"
+        },
+        {
+          "bytes": 3888,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-get-512/batch-3.json",
+          "sha256": "49b1e0d8cc8a4534641e5ccaafd346dd4c47bb462f1a6d949d8f0f8bcab4c9b2"
+        },
+        {
+          "bytes": 3882,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-get-512/batch-4.json",
+          "sha256": "a62ba7e5139254ee92a7037f9daa3eeaf9cfdf07a27ec28bee7bd37f0d3f6de8"
+        },
+        {
+          "bytes": 3886,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-get-512/batch-5.json",
+          "sha256": "6d40f98b550f86a6f860433c06f53bf7d18c28e2cd8e17c3f793f2305d1c8c3e"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 0.965181557785801,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5417856,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement-o3",
+        "sha256": "afaf2996e546b9f02739227907933fea1f6fdf3587fbc437545a41b19d6fdd22"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00009305439062499999,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 1654784,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00009305439062499999,
+        0.0000956722203125,
+        0.00008934162265624999,
+        0.0000868497109375,
+        0.00009660504296874999
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 4210,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-get-1024/batch-1.json",
+          "sha256": "971e2be6e82060c9cf016bdf72285193bb549a183d2e50d4d1069214f47b8755"
+        },
+        {
+          "bytes": 3891,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-get-1024/batch-2.json",
+          "sha256": "688a3b7f043db539b196e5d6bbe33b01d975f7b511c658c0932fdf73d4d2df57"
+        },
+        {
+          "bytes": 3887,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-get-1024/batch-3.json",
+          "sha256": "710e432a5a7005f0b0238e1903884630737f17446922b151a2d240ec217a31d3"
+        },
+        {
+          "bytes": 3885,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-get-1024/batch-4.json",
+          "sha256": "fab3b99364b8c6f79d26f51eea6048a62f6ef786b1d6b200ec066ef0b2a21c24"
+        },
+        {
+          "bytes": 4213,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-get-1024/batch-5.json",
+          "sha256": "1cd7c349760d3512b43982c77edc6d74d9a5c1d09291ddfe562f462dda6ff03e"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18052,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiaoc",
+        "sha256": "8681384c588588beaaffbb9a796b93b20238969d6571c094f8dd181f03a3f7a1"
+      },
+      "case": "get",
+      "doubling_ratio": 1.119541671990894,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5417856,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement-o3",
+        "sha256": "afaf2996e546b9f02739227907933fea1f6fdf3587fbc437545a41b19d6fdd22"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00010417826806640625,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 2375680,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00012581430989583333,
+        0.0001114819599609375,
+        0.0001018370421875,
+        0.0001024458734375,
+        0.00010417826806640625
+      ],
+      "source": {
+        "bytes": 2048,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/get/measurement.xiao",
+        "sha256": "818a5cf5add7d07b9efc01dbdcd71dbb3a0fc459ae7397eeccfd1a27a5696452"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 4207,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-set-256/batch-1.json",
+          "sha256": "85db0957e9e0c9d33a6347d37cd1c8e01a7a129612fcaa80dfac6b6d763f51e8"
+        },
+        {
+          "bytes": 4206,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-set-256/batch-2.json",
+          "sha256": "c85c92c2f740470e02a999186b679656941b0f292ae220b0755e497d3462b50d"
+        },
+        {
+          "bytes": 3888,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-set-256/batch-3.json",
+          "sha256": "a5af02da6b16aca24bda2cc16f4d931173e24f817072821c7de2afcaa386a852"
+        },
+        {
+          "bytes": 3886,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-set-256/batch-4.json",
+          "sha256": "a39f5e9c16812d4b2db22fb71925aca4cf7beccd6520c95134eeef8e0d05f16b"
+        },
+        {
+          "bytes": 3884,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-set-256/batch-5.json",
+          "sha256": "73f86051d0fd3c83fd8b32f3806ef34eb718945af3df36d5c2270eec6df6704a"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5417856,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement-o3",
+        "sha256": "14cb23a781be0ee3174543b58f1947f09be2dfe3850e478f413bcfa3b4bfdf3e"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.000040776012109375,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 1540096,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00004144791427951389,
+        0.000034362724609375,
+        0.00004172355989583333,
+        0.000039350010546875,
+        0.000040776012109375
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 4207,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-set-512/batch-1.json",
+          "sha256": "9662b1cd08f1fbabc1a8f91d248b7478066504f66e6edabb64a1611e95ea5c9c"
+        },
+        {
+          "bytes": 4208,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-set-512/batch-2.json",
+          "sha256": "1b56610531cf84578dd782c35a2f3a50c8639e78e3bc6a72b50a1c11909d1796"
+        },
+        {
+          "bytes": 3886,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-set-512/batch-3.json",
+          "sha256": "29ba32d1e8387a62dcf4e803b67eb6f7ce46137220c151ed39f77a19596cec8b"
+        },
+        {
+          "bytes": 3888,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-set-512/batch-4.json",
+          "sha256": "9e8066798269fb6e1a11ed383e0ca7a6f8f0097444f7fe6c051567a01ef2a428"
+        },
+        {
+          "bytes": 3887,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-set-512/batch-5.json",
+          "sha256": "32c0d0ffd1276dc2e8fa19a95e009b96011f0bbe1f26da888992444ff66376d8"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 1.0071881393620408,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5417856,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement-o3",
+        "sha256": "14cb23a781be0ee3174543b58f1947f09be2dfe3850e478f413bcfa3b4bfdf3e"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.000041069115767045455,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 1687552,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0000424890685546875,
+        0.00004007091276041666,
+        0.00004043002130681818,
+        0.00005006167708333334,
+        0.000041069115767045455
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 4212,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-set-1024/batch-1.json",
+          "sha256": "a20a15b4b4003de3957fdb72599721f5be7e1b3d0df65e4bbe542fbce3d45bbd"
+        },
+        {
+          "bytes": 3891,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-set-1024/batch-2.json",
+          "sha256": "c701a80cfb4a4345751747acecef6df92864bac9c05987fc07aef5b8da554cf3"
+        },
+        {
+          "bytes": 3890,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-set-1024/batch-3.json",
+          "sha256": "ed1e690d2f8bcda6d4d3329a3b460f66a95f1cc1703f3448985142c5bf984e88"
+        },
+        {
+          "bytes": 3892,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-set-1024/batch-4.json",
+          "sha256": "fb4c8b8568412d9d89208b02def318fd300f4c852c13e4ce1c3b8741cc7f7464"
+        },
+        {
+          "bytes": 3891,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-set-1024/batch-5.json",
+          "sha256": "dc5822a1ff5ef81b9f9992ebfc2d0ddb3f5107e7e95eeb9a60e6a3f52c304451"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18880,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiaoc",
+        "sha256": "8b8b56a007e91f4fa00d2f73265ebb7fc2996d52f8c553df0d81b322f7599935"
+      },
+      "case": "set",
+      "doubling_ratio": 1.0240192120008338,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5417856,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement-o3",
+        "sha256": "14cb23a781be0ee3174543b58f1947f09be2dfe3850e478f413bcfa3b4bfdf3e"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00004205556356534091,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 2424832,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.000038433210286458334,
+        0.00004205556356534091,
+        0.00003723713778409091,
+        0.00004379010112847222,
+        0.000049950399305555554
+      ],
+      "source": {
+        "bytes": 2101,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/set/measurement.xiao",
+        "sha256": "a9e3735691540966fd497622a7963a3e531633f8b9f956216d68cd815a9a473c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 4244,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-unset-256/batch-1.json",
+          "sha256": "4106975a9ad73698def4b18ef149f676f67b40e5816f407f13ab8bca9fc6dc36"
+        },
+        {
+          "bytes": 3921,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-unset-256/batch-2.json",
+          "sha256": "dab2d9492d0c4434f3dc1b7db5643ca9a61d6ad02d316c4258338c65455e4002"
+        },
+        {
+          "bytes": 4244,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-unset-256/batch-3.json",
+          "sha256": "286ef9ab268d31be786af6d2df37c25552490f255581b31b450504eb8c7c5c89"
+        },
+        {
+          "bytes": 3923,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-unset-256/batch-4.json",
+          "sha256": "abdb1887fe4b6dd46c222a53d28f9c54c41de441ff42852adc09de9b0fdce108"
+        },
+        {
+          "bytes": 3922,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-unset-256/batch-5.json",
+          "sha256": "f29c9f027795595ddc851370890876b037c30413d72ba0bf1fc5155d8a9da152"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5417856,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement-o3",
+        "sha256": "af86011f95b1d5c38a3b466beb4261b8ce70a925aaa90a02dc5f21e874304fbf"
+      },
+      "input": {
+        "json_bytes": 14593,
+        "logical_bytes": 12544,
+        "pairs": 256,
+        "sha256": "9223f88872a3b51fdf93d6b7765cc61a32157ba1231ba81d7ba729ecc71ed5e8",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00004998815087890625,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 1490944,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00005235727287946429,
+        0.00004445734296875,
+        0.00004383609235491072,
+        0.0000543749814453125,
+        0.00004998815087890625
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3923,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-unset-512/batch-1.json",
+          "sha256": "cebde107966950aac9aef1656e9837a0da1fb1065401043910ffc531565aa964"
+        },
+        {
+          "bytes": 3924,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-unset-512/batch-2.json",
+          "sha256": "36879946ada9d8ca4c79c1abc05c43e38f2a8250aacf39464892fc1453e6abbf"
+        },
+        {
+          "bytes": 4243,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-unset-512/batch-3.json",
+          "sha256": "700451505cc995c4bf61e8738174a2d5f11a9589228fce81528f597035aeec28"
+        },
+        {
+          "bytes": 3924,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-unset-512/batch-4.json",
+          "sha256": "1f21487d045f3a10c0f857d4902513f46ba298da5460f2f8f5d8fbe74dedf893"
+        },
+        {
+          "bytes": 3924,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-unset-512/batch-5.json",
+          "sha256": "8608019413b6d3a48fc831206019b3ace47b8d28551d7c14c708be1e96154bc7"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.3712160738977728,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5417856,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement-o3",
+        "sha256": "af86011f95b1d5c38a3b466beb4261b8ce70a925aaa90a02dc5f21e874304fbf"
+      },
+      "input": {
+        "json_bytes": 29185,
+        "logical_bytes": 25088,
+        "pairs": 512,
+        "sha256": "7584332899afd983a26726557f6a972a9febb7a2a61c8b2512ea37a9708cb2eb",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00006854455598958332,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 1654784,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.00006826292578124999,
+        0.00006854455598958332,
+        0.000073069151171875,
+        0.00007290428580729167,
+        0.00006082279799107143
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3922,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-unset-1024/batch-1.json",
+          "sha256": "0e8092c60d71bafa384372ab3dcddf4c26f934754f8b86dab746f932261e734c"
+        },
+        {
+          "bytes": 3923,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-unset-1024/batch-2.json",
+          "sha256": "249fbd062912d1a97cada70e5a2241faee611ff2118bc1c81d04cecf09a04118"
+        },
+        {
+          "bytes": 3922,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-unset-1024/batch-3.json",
+          "sha256": "018d1ae46a3a5da22116bc57ff7fb44af1296f950ded35901c86e6ad6a1a200a"
+        },
+        {
+          "bytes": 4246,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-unset-1024/batch-4.json",
+          "sha256": "cfe585724398354ee2a37b8d6969edd2b5bc8dc5338f62ae86998f494a992e26"
+        },
+        {
+          "bytes": 3927,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-unset-1024/batch-5.json",
+          "sha256": "b3424fc5b916832096e54c70b2af66f3e3d07b6fa42516292aeb2b6b27b94c2a"
+        }
+      ],
+      "bytecode": {
+        "bytes": 19404,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiaoc",
+        "sha256": "7870be573d74de9051c737a69ba8a299ae11fd44cb7d5a73ac3430902599e1f6"
+      },
+      "case": "unset",
+      "doubling_ratio": 1.2609423512333324,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5417856,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement-o3",
+        "sha256": "af86011f95b1d5c38a3b466beb4261b8ce70a925aaa90a02dc5f21e874304fbf"
+      },
+      "input": {
+        "json_bytes": 58369,
+        "logical_bytes": 50176,
+        "pairs": 1024,
+        "sha256": "be13e7614d0d0d98afc93458c7b836836d48c2668b5e8faa13223fc846669586",
+        "value_bytes": 32
+      },
+      "median_seconds": 0.00008643073359375,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 2408448,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0001012426953125,
+        0.00008643073359375,
+        0.00009256461875,
+        0.00007656703359375,
+        0.00008641369661458333
+      ],
+      "source": {
+        "bytes": 2106,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/unset/measurement.xiao",
+        "sha256": "dbabb21bed8e9e95e728256b01f05113663c8561402e25d397ac27bf97bb3979"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 4057,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-full-replace-1024/batch-1.json",
+          "sha256": "148900e4c43952dddc69cc8184f068d57e9cc7c785458349fadbf473d230c7e0"
+        },
+        {
+          "bytes": 4054,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-full-replace-1024/batch-2.json",
+          "sha256": "b52e85785f1c75f70c8d044d0ef13303b1bb3baf41a8f6a5ed8ac6edef401a0e"
+        },
+        {
+          "bytes": 4056,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-full-replace-1024/batch-3.json",
+          "sha256": "0b484b58dc680328825c98816b7fe9c7b9bdc8641c56fc77a62bfce3241c0623"
+        },
+        {
+          "bytes": 4051,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-full-replace-1024/batch-4.json",
+          "sha256": "f52b2e7c3817297b5a08479cbcdd772eae7ba49a668dead2d94cb69a9c2aab0b"
+        },
+        {
+          "bytes": 4379,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-full-replace-1024/batch-5.json",
+          "sha256": "7efa8c402cfed9e796f8531eb7d654bc842f2d55a83bd6fd573f06bef8aa9006"
+        }
+      ],
+      "bytecode": {
+        "bytes": 18572,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/full-replace/measurement.xiaoc",
+        "sha256": "41b3ce0fe042aaa08002e366f65f261413f9a082ae56cd9d71937c3c13811c8e"
+      },
+      "case": "full-replace",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5417840,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/full-replace/measurement-o3",
+        "sha256": "07e55d126e5dbafb247045ca3dc965a7c2e6909effc45fc3bd6f9734d736a814"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.00003936163984375,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 7487488,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.000037922467684659094,
+        0.00003936163984375,
+        0.00003764918181818182,
+        0.00004531547265625,
+        0.000041604141210937505
+      ],
+      "source": {
+        "bytes": 3016,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/full-replace/measurement.xiao",
+        "sha256": "0c8eb78116619c71030e909170c35457e0d219a8a8db6ba15946752a68df3c4c"
+      },
+      "status": "pass"
+    },
+    {
+      "backend": "native-o3",
+      "batches": [
+        {
+          "bytes": 3987,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-overflow-1024/batch-1.json",
+          "sha256": "5b6e589befbd5902ebf066544a96dcbe87170da71644375ade265b4374e72868"
+        },
+        {
+          "bytes": 3987,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-overflow-1024/batch-2.json",
+          "sha256": "a5811c72aaa35c28e4cae602fafb05b97f1875f2edc35a56016242d50779b861"
+        },
+        {
+          "bytes": 4303,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-overflow-1024/batch-3.json",
+          "sha256": "6d647433e1f7c7fde6db5432dd2d541b74d37aa8240a600b42c2180dbbecfccc"
+        },
+        {
+          "bytes": 3986,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-overflow-1024/batch-4.json",
+          "sha256": "594f5c686f4dc6af671933cff7482e6c516af7bbfea796d8a0a953e9570c8292"
+        },
+        {
+          "bytes": 3985,
+          "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/output/batches/native-o3-overflow-1024/batch-5.json",
+          "sha256": "d442454ae9758625a6d43e7d2324dc41aebb2d8f58684b9eef5d53a5d2e73cec"
+        }
+      ],
+      "bytecode": {
+        "bytes": 26444,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/overflow/measurement.xiaoc",
+        "sha256": "9fe8cbe3ac8cdabd8b4f5896a484f66be03ef8011851901d12735d560ae6c7f1"
+      },
+      "case": "overflow",
+      "doubling_ratio": null,
+      "doubling_ratio_limit": 3.0,
+      "executable": {
+        "bytes": 5417856,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/overflow/measurement-o3",
+        "sha256": "2cdba4cdaa7348df76a45736aa381682dd604791f9f2f345dccec8c6ecaffd98"
+      },
+      "input": {
+        "json_bytes": 1056769,
+        "logical_bytes": 1048576,
+        "pairs": 1024,
+        "sha256": "9aa5fe7975622b6f7c654b62ab202a59e4c8cd3fa8a4df7361f49a1d52c1d72d",
+        "value_bytes": 1007
+      },
+      "median_seconds": 0.00013236325325520834,
+      "memory_limit_bytes": 67108864,
+      "optimization": 3,
+      "resident_increment_upper_bytes": 6602752,
+      "seconds_limit": 2.0,
+      "seconds_per_workload": [
+        0.0001175957080078125,
+        0.0001207424677734375,
+        0.00013236325325520834,
+        0.000139110427734375,
+        0.0001345571689453125
+      ],
+      "source": {
+        "bytes": 4455,
+        "path": "/Users/runner/work/_temp/b3-env-perf-46093774527-2/artifacts/overflow/measurement.xiao",
+        "sha256": "b851b65d790ce89cc99e9db1e13c4d00343e8901ebceb5ce70f441f1da79206a"
+      },
+      "status": "pass"
+    }
+  ],
+  "runtime": {
+    "bytes": 25889960,
+    "path": "/Users/runner/work/Xiao/Xiao/core/rust/target/release/libxiao_runtime.a",
+    "sha256": "996cbda5187f810522efcb89edec8e6da52f6a03b711ca6fa2aa824139cbee5c"
+  },
+  "runtime_abi": 65556,
+  "runtime_unchanged": true,
+  "schema": 1,
+  "stdlib_interface": 1,
+  "target": "aarch64-apple-darwin"
+}
