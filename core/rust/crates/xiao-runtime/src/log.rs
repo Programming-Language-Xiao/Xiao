@@ -17,7 +17,7 @@ const UTC_MILLIS_BYTES: usize = 24;
 /// 单条消息的 UTF-8 字节上限。
 const MAX_MESSAGE_BYTES: usize = 4_096;
 /// 含时间、级别、分隔符与 LF 的单条编码上限。
-const MAX_RECORD_BYTES: usize = 4_128;
+pub(crate) const MAX_RECORD_BYTES: usize = 4_128;
 /// 同次运行开始交付的最多记录数。
 const MAX_ATTEMPTS: usize = 1_024;
 /// 同次运行按完整编码累计的上限。
@@ -34,6 +34,11 @@ const POLL_INTERVAL: Duration = Duration::from_millis(5);
 pub trait LogOutput: Write {
     /// 接纳下一条记录及其完整编码长度。
     fn admit(&mut self, bytes: usize) -> io::Result<()>;
+
+    /// 报告能否立即开始下一次写入。同步内存端可沿用默认的直接写入。
+    fn write_ready(&mut self) -> Option<io::Result<bool>> {
+        None
+    }
 }
 
 /// 日志错误保留 Runtime 可恢复错误和调用方的运行控制身份。
@@ -176,6 +181,7 @@ impl<O: LogOutput> LogState<O> {
         control.check(deadline)?;
         accepted.map_err(|error| output_failure("接纳", error))?;
 
+        control.wait_for_write(&mut *output, deadline, "接纳")?;
         *self.usage.lock().expect("日志配额锁未中毒") = charged;
         let mut remaining = record.as_bytes();
         while !remaining.is_empty() {
@@ -188,6 +194,9 @@ impl<O: LogOutput> LogState<O> {
             remaining = remaining
                 .get(count..)
                 .ok_or_else(|| output_failure("写入", io::ErrorKind::InvalidData.into()))?;
+            if !remaining.is_empty() {
+                control.wait_for_write(&mut *output, deadline, "写入")?;
+            }
         }
         let flushed = output.flush();
         control.check(deadline)?;
@@ -204,6 +213,28 @@ struct Control<N, F> {
 }
 
 impl<N: Fn() -> Instant, F> Control<N, F> {
+    /// 只轮询就绪状态，等待期间沿同一截止及控制回调退出。
+    fn wait_for_write<C>(
+        &mut self,
+        output: &mut impl LogOutput,
+        deadline: Instant,
+        stage: &str,
+    ) -> Result<(), Failure<C>>
+    where
+        F: FnMut() -> Result<(), C>,
+    {
+        while let Some(ready) = output.write_ready() {
+            let now = self.check(deadline)?;
+            if ready.map_err(|error| output_failure(stage, error))? {
+                break;
+            }
+            let stop = self.run_deadline.map_or(deadline, |end| end.min(deadline));
+            std::thread::sleep(stop.saturating_duration_since(now).min(POLL_INTERVAL));
+            self.check(deadline)?;
+        }
+        Ok(())
+    }
+
     /// 先交付调用者的运行中断，再判断独立日志期限。
     fn check<C>(&mut self, deadline: Instant) -> Result<Instant, Failure<C>>
     where

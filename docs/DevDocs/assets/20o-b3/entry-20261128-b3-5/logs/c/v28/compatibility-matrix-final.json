@@ -1,0 +1,31 @@
+{
+  "argv": [
+    "D:/Programs/Python/Python312/python.exe",
+    "D:/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/v28/verify_matrix.py",
+    "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28",
+    "compatibility",
+    "-final"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao\\core\\rust",
+  "environment": {
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib"
+  },
+  "started_utc": "2026-11-28T10:46:58.783068+00:00",
+  "elapsed_seconds": 2.759189,
+  "exit": 1,
+  "stdout": {
+    "path": "compatibility-matrix-final.stdout.log",
+    "bytes": 348,
+    "sha256": "d8b4f4acc4c3b14e7434b3a2e79d96b660659aa639b846993760507ad9957c78"
+  },
+  "stderr": {
+    "path": "compatibility-matrix-final.stderr.log",
+    "bytes": 782,
+    "sha256": "cd4c69372ddceefd957f6b2ed65b2806efb5175479adc0dc44c13f9c02f5bb00"
+  }
+}

@@ -673,6 +673,7 @@ fn write_archive(path: &Path, xiaoc: Vec<u8>) {
     let index = ArchiveIndex {
         schema_major: INDEX_SCHEMA_MAJOR,
         schema_minor: INDEX_SCHEMA_MINOR,
+        generator_version: None,
         entry: "main.xiaoc".to_owned(),
         entries: vec![ArchiveEntry {
             logical_path: "main.xiaoc".to_owned(),

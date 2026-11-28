@@ -1,0 +1,33 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu-26.04",
+    "--exec",
+    "bash",
+    "-lc",
+    "bash /mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/linux-probe.sh"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "environment": {
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "XIAO_TARGET_TRIPLE": "x86_64-unknown-linux-gnu",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe"
+  },
+  "started_utc": "2026-11-28T07:03:35.079469+00:00",
+  "elapsed_seconds": 34.721724,
+  "exit": 0,
+  "stdout": {
+    "path": "linux-wsl-c-slot-final.stdout.log",
+    "bytes": 1062,
+    "sha256": "ff9c7fb89905e8aaaa54fbd9f908559cb2fe801999ab00c9f2a44963b04f367a"
+  },
+  "stderr": {
+    "path": "linux-wsl-c-slot-final.stderr.log",
+    "bytes": 515,
+    "sha256": "b0ede7474cabe9be943adf4ec5b02a6eb3df11557dd4055ba25751e0fe46a099"
+  }
+}

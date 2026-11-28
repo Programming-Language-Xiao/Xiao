@@ -1,0 +1,3 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized] target(s) in 2.31s
+     Running tests\20o_b3_log_vm.rs (D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-native\debug\deps\20o_b3_log_vm-53b2568e4e2dd40e.exe)

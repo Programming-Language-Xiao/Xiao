@@ -1,0 +1,10 @@
+
+running 5 tests
+test abi::abi_env::log_tests::native_log_checks_both_capabilities_before_admission ... ok
+test abi::abi_env::log_tests::native_log_faults_preserve_bytes_and_attempts ... ok
+test abi::abi_env::log_tests::native_log_operation_timeout_keeps_written_bytes ... ok
+test abi::abi_env::log_tests::native_log_run_cancellation_precedes_deadline ... ok
+test abi::abi_env::log_tests::native_log_task_cancellation_keeps_run_quota ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 318 filtered out; finished in 10.06s
+

@@ -1,0 +1,90 @@
+[
+  {
+    "path": "core/rust/crates/xiao-codegen-llvm/src/artifact.rs",
+    "sha256": "1d11bbd5b2b83d425c8dd8931eb8d28380a1fc7067cc57466382cef95efd0785"
+  },
+  {
+    "path": "core/rust/crates/xiao-codegen-llvm/src/build.rs",
+    "sha256": "4237ecf0f6e7847a4c3c6113c85e11dee62db01511e303a384b374e2937d0c11"
+  },
+  {
+    "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic.rs",
+    "sha256": "aa82e3d1ffc6955c5e66f3bb42ddbea81408332ab000b3b47455e4e384fdd9b6"
+  },
+  {
+    "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/cmath.rs",
+    "sha256": "e3ec899198ea882943c687fc9bf09002499b0d7ebecb357fc1fc9a02ccfa6e71"
+  },
+  {
+    "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/entry.rs",
+    "sha256": "9698c85f77625c5395b4c9a8e0b77a0369b6701826589e57c1772d635c86de5e"
+  },
+  {
+    "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/expression.rs",
+    "sha256": "70be1cb5e2d203ad936b868b23cd28691ec795c11f705da7f44b84ff8826ce6d"
+  },
+  {
+    "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/predicate.rs",
+    "sha256": "8bc1c0663cf0bd1e24565c1b2e0a519959e7af5747cb321a219e447e0938a36e"
+  },
+  {
+    "path": "core/rust/crates/xiao-codegen-llvm/src/lib.rs",
+    "sha256": "297ac8036afcb801370ffbbad52f4fdc15a32dc07a99bdff97ebe43637ed6ef8"
+  },
+  {
+    "path": "core/rust/crates/xiao-driver/src/native.rs",
+    "sha256": "f92a9ab37a15e445617819d20e92710a99f7a936178925ed63d8ac6140111e6f"
+  },
+  {
+    "path": "core/rust/crates/xiao-driver/tests/20o_b3_log_native.rs",
+    "sha256": "a6e1e7f668c433471142096e9d92be2f8a290f241b100d54177a05fce7cfcd5c"
+  },
+  {
+    "path": "core/rust/crates/xiao-intrinsics/build.rs",
+    "sha256": "d27657826100d548e02cae9039441d175aaf799215c39717989bc06980fdd76a"
+  },
+  {
+    "path": "core/rust/crates/xiao-intrinsics/intrinsics.json",
+    "sha256": "460f5722acc328dcc61e4f0e5d275af16ecb52f646b6cf265ce151e5a87a8c43"
+  },
+  {
+    "path": "core/rust/crates/xiao-intrinsics/src/lib.rs",
+    "sha256": "ab7ad36ca1bc75e4c9aabf1113cecb80f1cb3ba9dfe0026032bc437d4988e82e"
+  },
+  {
+    "path": "core/rust/crates/xiao-runtime/src/abi_env_tests.rs",
+    "sha256": "0b383df16bf84665954304b73a09ba570896cd7599c472a8923f411925f98e5b"
+  },
+  {
+    "path": "core/rust/crates/xiao-runtime/src/abi_env.rs",
+    "sha256": "93abc9983d5f033cfaa9de0233a80facbe049692c77c0535175cad69b42bf9de"
+  },
+  {
+    "path": "core/rust/crates/xiao-runtime/src/abi_io.rs",
+    "sha256": "f55319f4cdb49a159c109dbfc271885a8f08ed79f1744bbd8dc1cff9fe9a8d45"
+  },
+  {
+    "path": "core/rust/crates/xiao-runtime/src/abi_log_stdout.rs",
+    "sha256": "c75221b2894f7396988c3354cbc973ca7e7a071c133e8de77754b0ce7452b35d"
+  },
+  {
+    "path": "core/rust/crates/xiao-runtime/src/abi_log_tests.rs",
+    "sha256": "cbcaab9c57660fb7a495eabbef5511cd69cf5403429b3ce0a27b0fcf37c5e45f"
+  },
+  {
+    "path": "core/rust/crates/xiao-runtime/src/abi_log.rs",
+    "sha256": "02d6dadf6b9baa11f8d3545592942a2dd3abced657855b60165bc513ab93ed81"
+  },
+  {
+    "path": "core/rust/crates/xiao-runtime/src/abi_time.rs",
+    "sha256": "f3e706aacd43bd76d6110d901a522379203eada40a902065345bf5e95e8d9314"
+  },
+  {
+    "path": "core/rust/crates/xiao-runtime/src/abi.rs",
+    "sha256": "9ed451ce435133503d7b012d4a7206fd9469671b0146ab92380fa50aff3d2ca8"
+  },
+  {
+    "path": "core/rust/crates/xiao-runtime/src/log.rs",
+    "sha256": "e82bffece41d6ebedbc5190e500d8347c67ceebbba921619ab93650fd648c521"
+  }
+]

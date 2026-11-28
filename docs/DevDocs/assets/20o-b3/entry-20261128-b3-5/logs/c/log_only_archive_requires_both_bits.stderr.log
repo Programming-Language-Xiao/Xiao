@@ -1,0 +1,7 @@
+    Finished `test` profile [unoptimized] target(s) in 0.28s
+     Running tests\20o_b3_log_native.rs (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5c/target-special\debug\deps\20o_b3_log_native-8a1a66fd9a5f74a4.exe)
+
+thread 'log_only_archive_requires_both_bits' (7912) panicked at crates\xiao-driver\tests\20o_b3_log_native.rs:339:48:
+no entry found for key
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b3_log_native`

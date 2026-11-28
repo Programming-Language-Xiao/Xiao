@@ -1,0 +1,12 @@
+compat-archive-27-miss-final: 0
+compat-archive-28-miss-final: 0
+archive-28-hit-final: 0
+archive-28-log-final: 0
+native-27-on-27-o0-final: 0
+native-28-on-27-o0-final: 0
+native-28-on-28-o0-final: 0
+native-27-on-28-o0-final: 2
+native-27-on-27-o3-final: 0
+native-28-on-27-o3-final: 0
+native-28-on-28-o3-final: 0
+native-27-on-28-o3-final: 2

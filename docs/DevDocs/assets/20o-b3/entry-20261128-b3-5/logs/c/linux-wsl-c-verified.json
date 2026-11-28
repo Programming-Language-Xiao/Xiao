@@ -1,0 +1,34 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu-26.04",
+    "--",
+    "bash",
+    "-lc",
+    "set -e\ntask=/mnt/d/project/Xiao/.xiao-orchestrator/worktrees/b3-5c\nmkdir -p \"$task/cases/linux\"\ncd /mnt/d/project/Xiao/Xiao/core/rust\nexport CARGO_TARGET_DIR=\"$HOME/.cache/xiao-b3-5c-target\"\ncargo build --locked --release --target x86_64-unknown-linux-gnu -p xiao-runtime\nruntime=\"$CARGO_TARGET_DIR/x86_64-unknown-linux-gnu/release/libxiao_runtime.a\"\nsha256sum \"$runtime\"\nclang -target x86_64-unknown-linux-gnu -std=c11 -Wall -Wextra -Werror ../../docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/probe.c \"$runtime\" -ldl -lpthread -lm -o \"$task/cases/linux/probe\"\n\"$task/cases/linux/probe\" > \"$task/cases/linux/probe.stdout\" 2> \"$task/cases/linux/probe.stderr\"\n\"$task/cases/linux/probe\" closed > \"$task/cases/linux/closed.stdout\" 2> \"$task/cases/linux/closed.stderr\"\nsha256sum \"$task/cases/linux/\"*\ncat \"$task/cases/linux/probe.stderr\" \"$task/cases/linux/closed.stderr\""
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "environment": {
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib"
+  },
+  "started_utc": "2026-11-28T06:54:35.009864+00:00",
+  "elapsed_seconds": 10.227949,
+  "exit": 1,
+  "stdout": {
+    "path": "linux-wsl-c-verified.stdout.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr": {
+    "path": "linux-wsl-c-verified.stderr.log",
+    "bytes": 387,
+    "sha256": "9bb741167e96778fd8741e61fef7b6334a7df83282bce751c8909f7ee8231009"
+  }
+}

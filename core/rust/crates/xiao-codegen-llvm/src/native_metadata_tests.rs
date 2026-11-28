@@ -50,6 +50,12 @@ fn native_metadata_requirements_reject_incompatible_inputs() {
     metadata
         .validate(&target, &support, metadata.required_features)
         .unwrap();
+    assert_eq!(support.generator_version, CODEGEN_VERSION);
+    let mut previous = metadata.clone();
+    previous.generator_version -= 1;
+    previous
+        .validate(&target, &support, metadata.required_features)
+        .unwrap();
     for abi in [
         xiao_runtime_abi::encoded_abi_version(1, 16),
         xiao_runtime_abi::encoded_abi_version(1, 17),

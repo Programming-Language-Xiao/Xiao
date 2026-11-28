@@ -1,0 +1,6 @@
+
+running 1 test
+test log_native_tasks_share_run_quota ... ignored, 需要显式 LLVM 工具链和启用 test-failpoints 的发布 Runtime
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 4 filtered out; finished in 0.00s
+

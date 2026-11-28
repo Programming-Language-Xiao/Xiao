@@ -1,0 +1,13 @@
+
+Algorithm : SHA256
+Hash      : 7689E7BF2C782359D536327B11D27FBAA3AC61C69DEB2B332AFEA0D11343F111
+Path      : D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5c-28\old27\core\rust\crates\xiao-codegen-llvm\src\lib.rs
+
+Algorithm : SHA256
+Hash      : 28D38451BA0490B70D2D136BC3268ACAD8DE02B5658BF826F842069019161C53
+Path      : D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5c-28\old27\core\rust\Cargo.lock
+
+Algorithm : SHA256
+Hash      : 28D38451BA0490B70D2D136BC3268ACAD8DE02B5658BF826F842069019161C53
+Path      : D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5c-28\before28\core\rust\Cargo.lock
+

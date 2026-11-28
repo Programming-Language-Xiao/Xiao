@@ -1,0 +1,84 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling proc-macro2 v1.0.107
+   Compiling cfg-if v1.0.5
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.24
+   Compiling serde_core v1.0.229
+   Compiling itoa v1.0.18
+   Compiling zmij v1.0.23
+   Compiling serde v1.0.229
+   Compiling syn v3.0.5
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling memchr v2.8.3
+   Compiling typenum v1.20.1
+   Compiling serde_json v1.0.151
+   Compiling xiao-runtime-abi v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime-abi)
+   Compiling cpufeatures v0.2.17
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling digest v0.10.7
+   Compiling xiao-source v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-source)
+   Compiling sha2 v0.10.9
+   Compiling serde_derive v1.0.229
+   Compiling autocfg v1.5.1
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling num-traits v0.2.19
+   Compiling getrandom v0.2.17
+   Compiling cc v1.5.1
+   Compiling zeroize v1.9.0
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling libm v0.2.16
+   Compiling num-integer v0.1.47
+   Compiling rustls-pki-types v1.15.1
+   Compiling bigdecimal v0.4.11
+   Compiling ring v0.17.14
+   Compiling httparse v1.10.1
+   Compiling untrusted v0.9.0
+   Compiling libc v0.2.189
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-i18n)
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-intrinsics)
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-syntax)
+   Compiling xiao-standard-library v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-standard-library)
+   Compiling num-bigint v0.4.8
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-modules)
+   Compiling rustls v0.23.45
+   Compiling bytes v1.12.1
+   Compiling crc32fast v1.5.2
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+   Compiling log v0.4.34
+   Compiling rustls-webpki v0.103.15
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-ir)
+   Compiling http v1.5.0
+   Compiling windows-targets v0.52.6
+   Compiling xiao-lock v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lock)
+   Compiling simd-adler32 v0.3.10
+   Compiling subtle v2.6.1
+   Compiling adler2 v2.0.1
+   Compiling once_cell v1.21.4
+   Compiling base64 v0.23.1
+   Compiling ureq-proto v0.6.4
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+   Compiling miniz_oxide v0.9.1
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+   Compiling windows-sys v0.52.0
+   Compiling xiao-config v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-config)
+   Compiling webpki-roots v1.0.9
+   Compiling filetime v0.2.29
+   Compiling percent-encoding v2.3.2
+   Compiling utf8-zero v0.8.1
+   Compiling tar v0.4.46
+   Compiling ureq v3.4.2
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+   Compiling flate2 v1.1.10
+   Compiling xiao-artifacts v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-artifacts)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `dev` profile [unoptimized] target(s) in 50.62s

@@ -229,7 +229,7 @@ fn main() {
                     assert_eq!(row.parameter_type, "three_strings");
                     assert_eq!(row.return_type, "none");
                     assert_eq!(row.vm_binding, "log_write");
-                    assert_eq!(row.abi_binding, "none");
+                    assert_eq!(row.abi_binding, "log_write");
                     assert_eq!(row.effect, "reads_clock_and_writes_stdout");
                     assert_eq!(row.capability, "clock_and_stdout");
                     assert_eq!(row.error, "runtime.type_mismatch");

@@ -1,0 +1,37 @@
+{
+  "argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b3_log_vm"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao\\core\\rust",
+  "environment": {
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/target-special",
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/target-runtime-final/x86_64-pc-windows-msvc/release/xiao_runtime.lib",
+    "XIAO_B3_LOG_TEST_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-slot-final",
+    "CC_PRINT_OPTIONS_FILE": "D:\\project\\Xiao\\Xiao/docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/log_native_control_reaches_generated_code-slot-final-link.log"
+  },
+  "started_utc": "2026-11-28T07:09:36.516706+00:00",
+  "elapsed_seconds": 4.820384,
+  "exit": 0,
+  "stdout": {
+    "path": "vm-non-regression-slot-final.stdout.log",
+    "bytes": 595,
+    "sha256": "ee3965e972b10f4e27aca9441b155d212e36e1a6bccc9166a698eb8e9cb5b39e"
+  },
+  "stderr": {
+    "path": "vm-non-regression-slot-final.stderr.log",
+    "bytes": 295,
+    "sha256": "2b1b74241e337cc3145536e7a33376bd6d69d349b010cfcb77c8ece2d1441975"
+  }
+}

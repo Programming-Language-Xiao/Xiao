@@ -1,0 +1,4 @@
+
+thread 'main' (53972) panicked at crates\xiao-driver\examples\verify_archive_build.rs:15:68:
+called `Result::unwrap()` on an `Err` value: ArchiveBuildError { code: "X11-PROTOCOL-007", message: "X05-MODULE-002: 文件不能映射为模块名称: generator-control.xiao" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

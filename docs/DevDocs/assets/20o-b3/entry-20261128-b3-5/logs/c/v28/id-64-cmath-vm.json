@@ -1,0 +1,37 @@
+{
+  "argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b2_b4_cmath_vm",
+    "vm_rejects_invalid_shapes_types_and_unknown_ids",
+    "--",
+    "--exact"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao\\core\\rust",
+  "environment": {
+    "CARGO_TARGET_DIR": "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-native",
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe"
+  },
+  "started_utc": "2026-11-28T10:47:27.348867+00:00",
+  "elapsed_seconds": 3.506432,
+  "exit": 0,
+  "stdout": {
+    "path": "id-64-cmath-vm.stdout.log",
+    "bytes": 172,
+    "sha256": "03bb2edfa38b18028b0d401a221ad021e29ee75145267d6ff5fbaee0748c0c37"
+  },
+  "stderr": {
+    "path": "id-64-cmath-vm.stderr.log",
+    "bytes": 307,
+    "sha256": "ff031b7e2f60d8ee73c8997089178bf41f08fca484a8f1e72c6a0da5d237237a"
+  }
+}

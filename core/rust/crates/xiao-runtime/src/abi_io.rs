@@ -173,8 +173,8 @@ fn require_capability(capabilities: u64, capability: Capability) -> Result<(), i
         let error = RuntimeError::invalid_value("能力掩码包含未知位");
         return Err(status_from_error(&error));
     }
-    if capability.bit().is_some_and(|bit| capabilities & bit == 0) {
-        let error = RuntimeError::capability_unavailable(capability.as_str());
+    if let Some(missing) = capability.missing_from(capabilities) {
+        let error = RuntimeError::capability_unavailable(missing.as_str());
         return Err(status_from_error(&error));
     }
     Ok(())

@@ -1,0 +1,3 @@
+[error] A0-DOCS-001 docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/REPORT-C.md docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/REPORT-C.md
+  链接目标不存在：logs/c/v28/gate-docs.json
+  修复：更新文档索引、页面元数据或模块登记后重新运行检查。

@@ -1,0 +1,21 @@
+## codex/b1-imp-seven-libraries...origin/codex/b1-imp-seven-libraries
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/
+commit b794e2f289c263e611eb92198652fdb1d1847c37
+Author:     xiaoCZX <xiaochengzhixue@outlook.com>
+AuthorDate: Sat Nov 28 14:06:39 2026 +0800
+Commit:     xiaoCZX <xiaochengzhixue@outlook.com>
+CommitDate: Sat Nov 28 14:06:39 2026 +0800
+
+    feat: 接通 B3-5B 日志 Runtime 与 VM
+    
+    激活 63 os_log_write：三字符串、clock+stdout 联合能力 0x22、UTC 毫秒
+    记录、4,096/4,128 字节、1,024 条/1 MiB 运行配额、串行刷新、10 秒期限
+    以及 LOG_LIMIT_EXCEEDED/LOG_OUTPUT_FAILED/LOG_TIMEOUT。
+    
+    接通 VM/TAC/字节码、stdlib.log 薄包装与 std.log 双导入，新增 Runtime/VM/
+    驱动专项；五处旧负例改用未知号 64，保留 100 墓碑。未接原生/C ABI，
+    未升 ABI 1.20、生成器 27、标准库接口 1。
+    
+    50 项专项通过/1 忽略；workspace 1,849 通过/64 忽略/0 失败（含 fmt 后
+    最终树），clippy、fmt、docs、layout、coverage 与 git diff --check 通过。
+ca17956fea9153c0235eecdd68b2b37f662b0c5b

@@ -1,0 +1,3 @@
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+    Finished `test` profile [unoptimized] target(s) in 11.34s
+     Running unittests src\lib.rs (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5c/target-special\debug\deps\xiao_runtime-cd78464e7ea5dfec.exe)

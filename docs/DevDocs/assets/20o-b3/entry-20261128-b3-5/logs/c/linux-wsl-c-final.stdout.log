@@ -1,0 +1,11 @@
+9754dec885b8a833fda86458b4e5c3cc7e7176d088d474d6da14974e671861be  /home/xiaoczx/.cache/xiao-b3-5c-target/x86_64-unknown-linux-gnu/release/libxiao_runtime.a
+1ea1dcbe89bba89e3c9b6fb4adf951e4eeafcce0c33c26a18cec3262b835e8c2  /home/xiaoczx/.cache/xiao-b3-5c-probe/broken.stderr
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  /home/xiaoczx/.cache/xiao-b3-5c-probe/broken.stdout
+1ea1dcbe89bba89e3c9b6fb4adf951e4eeafcce0c33c26a18cec3262b835e8c2  /home/xiaoczx/.cache/xiao-b3-5c-probe/closed.stderr
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  /home/xiaoczx/.cache/xiao-b3-5c-probe/closed.stdout
+058c0910400aecc91b98e987b12acf88e14097d58ce0cd80e6620e9caa0c4623  /home/xiaoczx/.cache/xiao-b3-5c-probe/probe
+3bd2dd72d32b39c82da7816bad71e172dd6054a0aec5e47ff2dd3a455eea9bfa  /home/xiaoczx/.cache/xiao-b3-5c-probe/probe.stderr
+03bdc3c5a4012f313b09a9d1d33c1f62b6b20396d90342d54f3c2ac0e872618c  /home/xiaoczx/.cache/xiao-b3-5c-probe/probe.stdout
+C ABI: 0/1/2/6/8, pending, borrowed slots and release
+LOG_OUTPUT_FAILED
+LOG_OUTPUT_FAILED

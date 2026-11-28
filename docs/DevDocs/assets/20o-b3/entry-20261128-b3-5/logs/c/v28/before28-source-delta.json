@@ -1,0 +1,14 @@
+{
+  "commit": "b794e2f289c263e611eb92198652fdb1d1847c37",
+  "before27": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\old27\\core\\rust\\crates\\xiao-codegen-llvm\\src\\lib.rs",
+    "bytes": 9563,
+    "sha256": "7689e7bf2c782359d536327b11d27fbaa3ac61c69deb2b332afea0d11343f111"
+  },
+  "before28": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\before28\\core\\rust\\crates\\xiao-codegen-llvm\\src\\lib.rs",
+    "bytes": 9563,
+    "sha256": "3d6801f15a4b977fc3dfdd94be0816253c395fc431aed2226e7b996f6ef2b8ad"
+  },
+  "changed_line": "CODEGEN_VERSION 27 → 28"
+}

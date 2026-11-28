@@ -1,0 +1,15 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on build directory
+    Finished `test` profile [unoptimized] target(s) in 2.07s
+     Running tests\20o_b3_log_native.rs (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5c/target-special\debug\deps\20o_b3_log_native-8a1a66fd9a5f74a4.exe)
+
+thread 'log_native_enforces_each_bit_and_releases_inputs' (33612) panicked at crates\xiao-driver\tests\20o_b3_log_native.rs:256:13:
+xiao-error class=recoverable code=X06-RUNTIME-026 message_id=runtime.capability_unavailable params={} span=58..94 exit_code=3
+error [X06-RUNTIME-026]: 当前能力上下文不允许此外部操作
+at bytes 58..94
+at stdlib.log::write (User)
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b3_log_native`

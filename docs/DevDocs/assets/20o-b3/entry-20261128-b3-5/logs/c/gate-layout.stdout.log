@@ -1,0 +1,145 @@
+[error] A0-SIZE-001 core/rust/crates/xiao-codegen-llvm/src/artifact.rs 2503 行 / 上限 2500
+  单文件共 2503 行，超过上限 2500 行。 最大顶层节点 module tests 起于第 1757 行，占 747 行。
+  module coff_link [第 16-16 行，共 1 行] mod
+  constant ELF_MAGIC [第 23-23 行，共 1 行] const : &[u8
+  constant MACHO_FAT_MAGIC [第 25-25 行，共 1 行] const : u32 = 0xcafebabe
+  constant MACHO_FAT_MAGIC_64 [第 27-27 行，共 1 行] const : u32 = 0xcafebabf
+  constant MACHO_MAGIC_32 [第 29-29 行，共 1 行] const : u32 = 0xfeedface
+  constant MACHO_MAGIC_64 [第 31-31 行，共 1 行] const : u32 = 0xfeedfacf
+  constant MACHO_CIGAM_32 [第 33-33 行，共 1 行] const : u32 = 0xcefaedfe
+  constant MACHO_CIGAM_64 [第 35-35 行，共 1 行] const : u32 = 0xcffaedfe
+  constant PE_SIGNATURE [第 37-37 行，共 1 行] const : &[u8
+  constant RUNTIME_SYMBOL_PREFIX [第 40-40 行，共 1 行] const : &str = "xiao_runtime_"
+  constant DEBUG_START_SYMBOL [第 42-42 行，共 1 行] const : &str = "xiao_native_debug_start"
+  constant DIAGNOSTIC_SYMBOL_PREFIX [第 44-44 行，共 1 行] const : &str = "xiao_runtime_diagnostic_"
+  constant DEBUG_ACTIVATION_SYMBOLS [第 46-51 行，共 6 行] const : &[&str] = &[
+  struct ArtifactInspection [第 55-66 行，共 12 行] pub struct
+    field object_format [第 57-57 行，共 1 行] pub : ObjectFormat
+    field symbols [第 59-59 行，共 1 行] pub : Vec<String>
+    field symbol_order [第 61-61 行，共 1 行] pub : Vec<String>
+    field symbol_table_readable [第 63-63 行，共 1 行] pub : bool
+    field dependencies [第 65-65 行，共 1 行] pub : Vec<String>
+  impl ArtifactInspection [第 68-82 行，共 15 行] impl
+    method has_symbol [第 71-73 行，共 3 行] pub fn(&self, symbol: &str) -> bool
+    method normalized_symbol_order [第 77-81 行，共 5 行] pub fn(&self) -> Vec<String>
+  enum SymbolTableStatus [第 86-91 行，共 6 行] pub enum
+    variant Readable [第 88-88 行，共 1 行] Readable,
+    variant Unavailable [第 90-90 行，共 1 行] Unavailable,
+  enum SymbolTableComparison [第 95-102 行，共 8 行] pub enum
+    variant Identical [第 97-97 行，共 1 行] Identical,
+    variant Different [第 99-99 行，共 1 行] Different,
+    variant Unavailable [第 101-101 行，共 1 行] Unavailable,
+  enum ArtifactAcceptanceMode [第 106-113 行，共 8 行] pub enum
+    variant Release [第 108-108 行，共 1 行] Release,
+    variant Debug [第 110-110 行，共 1 行] Debug,
+    variant Stripped [第 112-112 行，共 1 行] Stripped,
+  struct ArtifactModeReport [第 117-128 行，共 12 行] pub struct
+    field mode [第 119-119 行，共 1 行] pub : ArtifactAcceptanceMode
+    field symbol_table [第 121-121 行，共 1 行] pub : SymbolTableStatus
+    field diagnostic_symbols_present [第 123-123 行，共 1 行] pub : bool
+    field accepted [第 125-125 行，共 1 行] pub : bool
+    field diagnostic [第 127-127 行，共 1 行] pub : Option<String>
+  struct SymbolTableReport [第 132-141 行，共 10 行] pub struct
+    field object_format [第 134-134 行，共 1 行] pub : ObjectFormat
+    field status [第 136-136 行，共 1 行] pub : SymbolTableStatus
+    field original_order [第 138-138 行，共 1 行] pub : Vec<String>
+    field normalized_order [第 140-140 行，共 1 行] pub : Vec<String>
+  function inspect_symbol_table [第 144-159 行，共 16 行] pub fn(
+  function compare_symbol_table_reports [第 166-180 行，共 15 行] pub fn(
+  function verify_artifact_mode [第 186-251 行，共 66 行] pub fn(
+  struct ArtifactRuntimeComposition [第 255-274 行，共 20 行] pub struct
+    field object_format [第 257-257 行，共 1 行] pub : ObjectFormat
+    field declared_components [第 259-259 行，共 1 行] pub : Vec<String>
+    field observed_components [第 261-261 行，共 1 行] pub : Vec<String>
+    field runtime_symbols [第 263-263 行，共 1 行] pub : Vec<String>
+    field unclassified_runtime_symbols [第 265-265 行，共 1 行] pub : Vec<String>
+    field dependencies [第 267-267 行，共 1 行] pub : Vec<String>
+    field diagnostic_symbols [第 269-269 行，共 1 行] pub : Vec<String>
+    field verification [第 271-271 行，共 1 行] pub : ArtifactVerification
+    field coff_link_identity [第 273-273 行，共 1 行] pub : Option<CoffLinkIdentity>
+  enum ArtifactVerification [第 278-283 行，共 6 行] pub enum
+    variant Complete [第 280-280 行，共 1 行] Complete,
+    variant UnverifiedCoffExports [第 282-282 行，共 1 行] UnverifiedCoffExports,
+  impl ArtifactVerification [第 285-294 行，共 10 行] impl
+    method as_str [第 288-293 行，共 6 行] pub const fn(self) -> &'static str
+  function inspect_artifact [第 297-304 行，共 8 行] pub fn(
+  function read_artifact_bytes [第 307-312 行，共 6 行] fn(path: &Path) -> Result<Vec<u8>>
+  function verify_artifact [第 315-328 行，共 14 行] pub fn(
+  function verify_artifact_with_link_evidence [第 331-473 行，共 143 行] pub(crate) fn(
+  function parse_artifact [第 476-487 行，共 12 行] fn(
+  function parse_elf [第 490-735 行，共 246 行] fn(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<ArtifactInspection>
+  struct ElfSection [第 739-745 行，共 7 行] struct
+    field section_type [第 740-740 行，共 1 行] : u32
+    field offset [第 741-741 行，共 1 行] : u64
+    field size [第 742-742 行，共 1 行] : u64
+    field link [第 743-743 行，共 1 行] : u64
+    field entry_size [第 744-744 行，共 1 行] : u64
+  function parse_macho [第 748-764 行，共 17 行] fn(
+  function macho_fat_slice [第 767-818 行，共 52 行] fn <'a>(
+  function macho_thin_endian [第 821-827 行，共 7 行] fn(path: &Path, bytes: &[u8]) -> Result<Endian>
+  function parse_macho_thin [第 830-951 行，共 122 行] fn(
+  function parse_pe [第 954-1287 行，共 334 行] fn(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<ArtifactInspection>
+  struct PeSection [第 1291-1295 行，共 5 行] struct
+    field virtual_address [第 1292-1292 行，共 1 行] : u32
+    field raw_offset [第 1293-1293 行，共 1 行] : u32
+    field raw_size [第 1294-1294 行，共 1 行] : u32
+  function rva_to_offset [第 1298-1313 行，共 16 行] fn(rva: u64, sections: &[PeSection], header_size: u64, path: &Path) -> Result<u64>
+  function c_string_at_rva [第 1316-1326 行，共 11 行] fn <'a>(
+  function coff_symbol_name [第 1329-1341 行，共 13 行] fn <'a>(entry: &'a [u8], strings: &'a [u8], path: &Path) -> Result<&'a str>
+  function normalized_components [第 1344-1353 行，共 10 行] fn(components: &[String]) -> Vec<String>
+  function components_for_symbols [第 1356-1362 行，共 7 行] pub(crate) fn(symbols: &[String]) -> Vec<String>
+  function reachable_runtime_components [第 1365-1438 行，共 74 行] pub(crate) fn(text: &str) -> Vec<String>
+  function runtime_link_dependencies [第 1441-1515 行，共 75 行] fn(symbol: &str) -> &'static [&'static str]
+  module link_tests [第 1519-1519 行，共 1 行] mod
+  function add_components_for_symbol [第 1522-1615 行，共 94 行] fn(symbol: &str, components: &mut BTreeSet<String>)
+  function unclassified_runtime_symbols [第 1618-1630 行，共 13 行] fn(symbols: &[String]) -> Vec<String>
+  function is_runtime_dependency [第 1633-1638 行，共 6 行] fn(dependency: &str) -> bool
+  function macho_cpu_type [第 1641-1648 行，共 8 行] fn(target: &TargetDescription) -> Option<u32>
+  function normalize_symbol [第 1651-1657 行，共 7 行] fn(symbol: &str) -> String
+  function artifact_error [第 1660-1665 行，共 6 行] fn(path: &Path, message: String) -> CodegenError
+  function byte_at [第 1668-1675 行，共 8 行] fn(bytes: &[u8], offset: u64, path: &Path, context: &str) -> Result<u8>
+  function checked_range [第 1678-1692 行，共 15 行] fn <'a>(
+  function c_string [第 1695-1708 行，共 14 行] fn <'a>(bytes: &'a [u8], offset: u64, path: &Path, context: &str) -> Result<&'a str>
+  function read_u16 [第 1711-1717 行，共 7 行] fn(bytes: &[u8], offset: u64, endian: Endian, path: &Path, context: &str) -> Result<u16>
+  function read_u32 [第 1720-1726 行，共 7 行] fn(bytes: &[u8], offset: u64, endian: Endian, path: &Path, context: &str) -> Result<u32>
+  function read_u64 [第 1729-1739 行，共 11 行] fn(bytes: &[u8], offset: u64, endian: Endian, path: &Path, context: &str) -> Result<u64>
+  function read_le_u32 [第 1742-1746 行，共 5 行] fn(bytes: &[u8], offset: usize) -> Option<u32>
+  function read_be_u32 [第 1749-1753 行，共 5 行] fn(bytes: &[u8], offset: usize) -> Option<u32>
+  module tests [第 1757-2503 行，共 747 行] mod
+    function normalizes_macho_leading_underscore_without_touching_other_symbols [第 1772-1782 行，共 11 行] fn()
+    function maps_runtime_symbols_to_declared_component_names [第 1786-1796 行，共 11 行] fn()
+    function derives_reachable_runtime_components_from_llvm_control_flow [第 1800-1840 行，共 41 行] fn()
+    function declares_link_dependencies_of_reachable_runtime_symbols [第 1844-1879 行，共 36 行] fn()
+    function keeps_unclassified_runtime_symbols_visible [第 1883-1892 行，共 10 行] fn()
+    function rejects_byte_offset_that_cannot_fit_usize [第 1896-1904 行，共 9 行] fn()
+    function composition_keeps_declared_and_observed_components_separate [第 1908-1924 行，共 17 行] fn()
+    function parses_controlled_elf_symbols [第 1928-1938 行，共 11 行] fn()
+    function skips_elf_file_records_without_hiding_runtime_functions [第 1942-1959 行，共 18 行] fn()
+    function parses_controlled_macho_symbols_and_normalizes_prefix [第 1963-1973 行，共 11 行] fn()
+    function parses_controlled_pe_coff_symbols [第 1977-1987 行，共 11 行] fn()
+    function readable_coff_rejects_unclassified_runtime_symbol [第 1990-2005 行，共 16 行] fn()
+    function bound_coff_map_rejects_unclassified_runtime_symbol [第 2008-2052 行，共 45 行] fn()
+    function static_artifact_with_runtime_symbol_is_rejected [第 2056-2064 行，共 9 行] fn()
+    function static_artifact_with_runtime_dependency_is_rejected [第 2068-2078 行，共 11 行] fn()
+    function dynamic_artifact_reports_runtime_dependency_fact [第 2082-2092 行，共 11 行] fn()
+    function declared_runtime_component_is_observable_for_each_format [第 2096-2121 行，共 26 行] fn()
+    function debug_symbol_is_required_only_for_debug_artifacts [第 2125-2140 行，共 16 行] fn()
+    function verifies_release_debug_and_stripped_modes_independently [第 2144-2179 行，共 36 行] fn()
+    function symbol_table_comparison_never_equates_unavailable_reports [第 2183-2205 行，共 23 行] fn()
+    function pe_symbol_table_status_reflects_actual_coff_table [第 2209-2229 行，共 21 行] fn()
+    function stripped_symbol_tables_are_not_accepted_as_trimming_evidence [第 2233-2258 行，共 26 行] fn()
+    function parses_fat_macho_slice_with_independent_endianness [第 2262-2278 行，共 17 行] fn()
+    function parses_arm64_slice_from_fat_macho [第 2282-2307 行，共 26 行] fn()
+    function verify_fixture [第 2310-2331 行，共 22 行] fn(
+    function verify_fixture_mode [第 2334-2346 行，共 13 行] fn(
+    function inspect_fixture_symbol_table [第 2349-2360 行，共 12 行] fn(
+    function elf_fixture [第 2363-2387 行，共 25 行] fn(symbol: &str) -> Vec<u8>
+    function elf_fixture_with_dependency [第 2390-2423 行，共 34 行] fn(symbol: &str, dependency: &str) -> Vec<u8>
+    function macho_fixture [第 2426-2428 行，共 3 行] fn(symbol: &str) -> Vec<u8>
+    function macho_fixture_with_cpu [第 2431-2447 行，共 17 行] fn(symbol: &str, cpu: u32) -> Vec<u8>
+    function pe_fixture [第 2450-2482 行，共 33 行] fn(symbols: &[&str]) -> Vec<u8>
+    function put_u16 [第 2485-2487 行，共 3 行] fn(bytes: &mut [u8], offset: usize, value: u16)
+    function put_u32 [第 2490-2492 行，共 3 行] fn(bytes: &mut [u8], offset: usize, value: u32)
+    function put_be_u32 [第 2495-2497 行，共 3 行] fn(bytes: &mut [u8], offset: usize, value: u32)
+    function put_u64 [第 2500-2502 行，共 3 行] fn(bytes: &mut [u8], offset: usize, value: u64)
+  修复：拆分文件或记录经过审核且四段完整的硬耦合豁免说明。

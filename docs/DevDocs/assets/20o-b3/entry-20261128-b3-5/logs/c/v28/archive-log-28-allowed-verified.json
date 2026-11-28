@@ -1,0 +1,293 @@
+{
+  "command": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-tools\\debug\\xiao-core.exe"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao\\core\\rust",
+  "core": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-tools\\debug\\xiao-core.exe",
+    "bytes": 28295680,
+    "sha256": "58e1828d414e58f89a1ae9bfd741d9169bd7ef59d71d4279ce6bf0213469155d"
+  },
+  "artifact": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\log-28.xar",
+    "bytes": 1407,
+    "sha256": "f816d154fd43060a8a989a8b2939c0cf959c93e12d462c9310d8a89e14ea5c77"
+  },
+  "process_exit": 0,
+  "validation_exit": 0,
+  "request_frame": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\archive-log-28-allowed-verified.request.bin",
+    "bytes": 409,
+    "sha256": "31ab58da13f9681c891bf1d36b7609809567535ff6db46aac1b1eebed0e3e7ae"
+  },
+  "response_frame": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\archive-log-28-allowed-verified.response.bin",
+    "bytes": 2938,
+    "sha256": "6058d92d4e5f1aac8751ecc2c86f2631550c246f6a82a2ce661dd013a66da23e"
+  },
+  "stderr": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\archive-log-28-allowed-verified.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "hello": {
+    "type": "hello",
+    "request_id": "identity",
+    "accepted": true,
+    "protocol_version": 1,
+    "core_version": 1,
+    "versions": {
+      "protocol": 1,
+      "core": 1,
+      "language": "0.1.0",
+      "runtime_abi": 65556,
+      "frontend": 1,
+      "driver": 1,
+      "bytecode_format": 4,
+      "codegen": 28
+    },
+    "capabilities": [
+      "run",
+      "run_archive",
+      "run_xiaoc",
+      "arguments",
+      "verify",
+      "cache",
+      "test",
+      "build",
+      "build_archive",
+      "environment",
+      "package",
+      "repl_packages",
+      "cancel"
+    ],
+    "error": null
+  },
+  "response": {
+    "type": "result",
+    "request_id": "archive-log-28-allowed-verified",
+    "operation": "run_archive",
+    "exit_code": 0,
+    "exit_name": "success",
+    "diagnostics": [],
+    "report": null,
+    "events": [
+      {
+        "kind": "module_loaded",
+        "data": {
+          "module": "portable"
+        }
+      },
+      {
+        "kind": "function_entered",
+        "data": {
+          "depth": 1,
+          "function": ""
+        }
+      },
+      {
+        "kind": "stack_frame",
+        "data": {
+          "depth": 1,
+          "function": "",
+          "return_to": null
+        }
+      },
+      {
+        "kind": "scope_entered",
+        "data": {
+          "scope": 0
+        }
+      },
+      {
+        "kind": "function_entered",
+        "data": {
+          "depth": 2,
+          "function": ""
+        }
+      },
+      {
+        "kind": "stack_frame",
+        "data": {
+          "depth": 2,
+          "function": "",
+          "return_to": null
+        }
+      },
+      {
+        "kind": "scope_entered",
+        "data": {
+          "scope": 0
+        }
+      },
+      {
+        "kind": "scope_entered",
+        "data": {
+          "scope": 1
+        }
+      },
+      {
+        "kind": "scope_exited",
+        "data": {
+          "exit": "normal",
+          "scope": 1
+        }
+      },
+      {
+        "kind": "scope_exited",
+        "data": {
+          "exit": "normal",
+          "scope": 0
+        }
+      },
+      {
+        "kind": "function_returned",
+        "data": {
+          "depth": 2,
+          "function": ""
+        }
+      },
+      {
+        "kind": "module_loaded",
+        "data": {
+          "module": "stdlib.log"
+        }
+      },
+      {
+        "kind": "function_entered",
+        "data": {
+          "depth": 2,
+          "function": "write"
+        }
+      },
+      {
+        "kind": "stack_frame",
+        "data": {
+          "depth": 2,
+          "function": "write",
+          "return_to": 5
+        }
+      },
+      {
+        "kind": "scope_entered",
+        "data": {
+          "scope": 0
+        }
+      },
+      {
+        "kind": "scope_entered",
+        "data": {
+          "scope": 1
+        }
+      },
+      {
+        "kind": "intrinsic_output",
+        "data": {
+          "text": "2026-11-28T10:49:27.173Z INFO B3-5C\n"
+        }
+      },
+      {
+        "kind": "value_released",
+        "data": {
+          "exit": "normal",
+          "kind": "strong",
+          "scope": 1,
+          "value": 3
+        }
+      },
+      {
+        "kind": "value_released",
+        "data": {
+          "exit": "normal",
+          "kind": "strong",
+          "scope": 1,
+          "value": 2
+        }
+      },
+      {
+        "kind": "value_released",
+        "data": {
+          "exit": "normal",
+          "kind": "strong",
+          "scope": 1,
+          "value": 1
+        }
+      },
+      {
+        "kind": "scope_exited",
+        "data": {
+          "exit": "normal",
+          "scope": 1
+        }
+      },
+      {
+        "kind": "scope_exited",
+        "data": {
+          "exit": "normal",
+          "scope": 0
+        }
+      },
+      {
+        "kind": "function_returned",
+        "data": {
+          "depth": 2,
+          "function": "write"
+        }
+      },
+      {
+        "kind": "scope_exited",
+        "data": {
+          "exit": "normal",
+          "scope": 0
+        }
+      },
+      {
+        "kind": "function_returned",
+        "data": {
+          "depth": 1,
+          "function": ""
+        }
+      },
+      {
+        "kind": "metrics",
+        "data": {
+          "call_save_count": 0,
+          "dropped_events": 0,
+          "instructions": 30,
+          "max_call_depth": 2,
+          "max_stack_depth": 6,
+          "releases": 6,
+          "spill_count": 0,
+          "stack_map_entries": 0
+        }
+      }
+    ],
+    "metrics": {
+      "instructions": 30,
+      "peak_live_bytes": 519,
+      "max_call_depth": 2,
+      "max_stack_depth": 6,
+      "releases": 6,
+      "spill_count": 0,
+      "stack_map_entries": 0,
+      "call_save_count": 0,
+      "dropped_events": 0
+    },
+    "value": null,
+    "artifact": null,
+    "audit": {
+      "archive_digest": "f816d154fd43060a8a989a8b2939c0cf959c93e12d462c9310d8a89e14ea5c77",
+      "index_schema_major": 1,
+      "index_schema_minor": 1,
+      "verified_member_count": 2,
+      "archive_platform": "portable",
+      "host_platform": "x86_64-pc-windows-msvc",
+      "runtime_abi_compatible": true,
+      "platform_compatible": true,
+      "debug_activation": false,
+      "language_requested": "zh-CN",
+      "language_effective": "zh-CN",
+      "language_fallback": false
+    }
+  }
+}

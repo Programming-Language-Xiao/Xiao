@@ -1,0 +1,18 @@
+
+running 1 test
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-verified\\xiao-b3-log-16024-capabilities\\missing-0-o0.verification.json" SHA-256 452b27f247d8fee35839a104f3ca278e075c91e03afaa1a1c8d0da8d5bd000e6 退出 Some(3)
+释放 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-verified\\xiao-b3-log-16024-capabilities\\missing-0-o0.release.tsv" 的 3 个对象各销毁一次
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-verified\\xiao-b3-log-16024-capabilities\\missing-2-o0.verification.json" SHA-256 2a49a1672557987cb88077be59d3d005db7d743b66a08c1caffdbbe917f9b25a 退出 Some(3)
+释放 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-verified\\xiao-b3-log-16024-capabilities\\missing-2-o0.release.tsv" 的 3 个对象各销毁一次
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-verified\\xiao-b3-log-16024-capabilities\\missing-32-o0.verification.json" SHA-256 270737b36d43b3d61f5ad9f9de03833afc7346b24434c495f7118716e742f995 退出 Some(3)
+释放 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-verified\\xiao-b3-log-16024-capabilities\\missing-32-o0.release.tsv" 的 3 个对象各销毁一次
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-verified\\xiao-b3-log-16024-capabilities\\missing-0-o3.verification.json" SHA-256 f53e02df16495a6f00803cefdb7d7615bcc3cdfc7a69af7f2b34d7acddb1f89c 退出 Some(3)
+释放 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-verified\\xiao-b3-log-16024-capabilities\\missing-0-o3.release.tsv" 的 3 个对象各销毁一次
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-verified\\xiao-b3-log-16024-capabilities\\missing-2-o3.verification.json" SHA-256 224ba00dfb8040f39f948d2e6de48b943b1bd26775e75298bfff922b774bde93 退出 Some(3)
+释放 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-verified\\xiao-b3-log-16024-capabilities\\missing-2-o3.release.tsv" 的 3 个对象各销毁一次
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-verified\\xiao-b3-log-16024-capabilities\\missing-32-o3.verification.json" SHA-256 f7ac3c2a06434770ca26d512c3ea7f8f4d194a374f8ae1e4f2fc32569b9d7c02 退出 Some(3)
+释放 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-verified\\xiao-b3-log-16024-capabilities\\missing-32-o3.release.tsv" 的 3 个对象各销毁一次
+test log_native_enforces_each_bit_and_releases_inputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 19.28s
+

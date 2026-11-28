@@ -1,0 +1,14 @@
+
+running 1 test
+验证 "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/cases/native\\xiao-b3-log-57076-tutorial\\std-o0.verification.json" SHA-256 0294f1e07b0078188ad3b312a1d7e720733727842cc5c051a2ed6689dcb0c027 退出 Some(0)
+释放 "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/cases/native\\xiao-b3-log-57076-tutorial\\std-o0.release.tsv" 的 10 个对象各销毁一次
+验证 "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/cases/native\\xiao-b3-log-57076-tutorial\\std-o3.verification.json" SHA-256 9d01bb100c7cf414dbf4d8fcb885893dd5a05d12c45552210f10cdefbb89db97 退出 Some(0)
+释放 "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/cases/native\\xiao-b3-log-57076-tutorial\\std-o3.release.tsv" 的 10 个对象各销毁一次
+验证 "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/cases/native\\xiao-b3-log-57076-tutorial\\stdlib-o0.verification.json" SHA-256 86ef0d446204c8f8732b564f1a23a472fb86f53fd659002b7257a0c0b2142c5e 退出 Some(0)
+释放 "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/cases/native\\xiao-b3-log-57076-tutorial\\stdlib-o0.release.tsv" 的 10 个对象各销毁一次
+验证 "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/cases/native\\xiao-b3-log-57076-tutorial\\stdlib-o3.verification.json" SHA-256 dd0d8496f2dcb9633fb4f1cbf6369f16d75030a9acbf8cb0075ffa80d2b89274 退出 Some(0)
+释放 "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/cases/native\\xiao-b3-log-57076-tutorial\\stdlib-o3.release.tsv" 的 10 个对象各销毁一次
+test log_tutorial_matches_native_golden ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 9.67s
+

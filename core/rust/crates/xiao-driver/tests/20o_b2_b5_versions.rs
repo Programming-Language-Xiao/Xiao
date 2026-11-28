@@ -51,10 +51,10 @@ fn frozen_abi18_baselines_are_rejected_before_entry() {
 }
 
 #[test]
-/// 新头、指令流、归档索引和原生元数据使用同一个精确版本，schema保持既有常量。
+/// 新头、指令流和原生元数据沿用精确 ABI，归档索引记录当前生成器。
 fn current_artifacts_bind_exact_abi_and_codegen() {
     assert_eq!(ABI_MINOR_VERSION, 20);
-    assert_eq!(CODEGEN_VERSION, 27);
+    assert_eq!(CODEGEN_VERSION, 28);
     let source = "print(\"B5-current\")\n";
     let product = FrontendCompiler::new()
         .compile(&FrontendRequest::from_text(source))
@@ -84,11 +84,12 @@ fn current_artifacts_bind_exact_abi_and_codegen() {
     let built = xiao_driver::build_archive(&request, &CancellationToken::new()).unwrap();
     assert_eq!(built.index.runtime_abi_min, ABI_ENCODED_VERSION);
     assert_eq!(built.index.runtime_abi_max, ABI_ENCODED_VERSION);
+    assert_eq!(built.index.generator_version, Some(CODEGEN_VERSION));
     assert_eq!(
         (built.index.schema_major, built.index.schema_minor),
         (
             xiao_artifacts::INDEX_SCHEMA_MAJOR,
-            xiao_artifacts::INDEX_SCHEMA_MINOR
+            xiao_artifacts::ARCHIVE_INDEX_SCHEMA_MINOR
         )
     );
     assert!(

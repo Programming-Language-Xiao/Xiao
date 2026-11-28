@@ -1,0 +1,82 @@
+{
+  "command": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-tools\\debug\\xiao-core.exe"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao\\core\\rust",
+  "core": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-tools\\debug\\xiao-core.exe",
+    "bytes": 28295680,
+    "sha256": "58e1828d414e58f89a1ae9bfd741d9169bd7ef59d71d4279ce6bf0213469155d"
+  },
+  "artifact": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\old27-control-o0\\program.exe",
+    "bytes": 860672,
+    "sha256": "cfaa8b60f2c8435567f63be8a7a4770d4ea1057af1fe9add1ceb55ba3e5e0ff6"
+  },
+  "process_exit": 0,
+  "validation_exit": 0,
+  "request_frame": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\native-28-on-27-o0-final.request.bin",
+    "bytes": 327,
+    "sha256": "c216ecc6c54b5f496d191fcd2f94da25903d775850ea543f421de44311964dd9"
+  },
+  "response_frame": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\native-28-on-27-o0-final.response.bin",
+    "bytes": 4488,
+    "sha256": "506d528167ac197f75df2ffd9d2efe2b593f197b2846ac55a2ab2d598a764b62"
+  },
+  "stderr": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\native-28-on-27-o0-final.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "hello": {
+    "type": "hello",
+    "request_id": "identity",
+    "accepted": true,
+    "protocol_version": 1,
+    "core_version": 1,
+    "versions": {
+      "protocol": 1,
+      "core": 1,
+      "language": "0.1.0",
+      "runtime_abi": 65556,
+      "frontend": 1,
+      "driver": 1,
+      "bytecode_format": 4,
+      "codegen": 28
+    },
+    "capabilities": [
+      "run",
+      "run_archive",
+      "run_xiaoc",
+      "arguments",
+      "verify",
+      "cache",
+      "test",
+      "build",
+      "build_archive",
+      "environment",
+      "package",
+      "repl_packages",
+      "cancel"
+    ],
+    "error": null
+  },
+  "response": {
+    "type": "result",
+    "request_id": "native-28-on-27-o0-final",
+    "operation": "verify",
+    "exit_code": 0,
+    "exit_name": "success",
+    "diagnostics": [],
+    "report": null,
+    "events": [],
+    "metrics": null,
+    "value": {
+      "kind": "verification",
+      "value": "{\"bytes\":860672,\"kind\":\"native\",\"native_metadata\":{\"generator_version\":27,\"pointer_width\":64,\"required_features\":0,\"runtime_abi_max\":65556,\"runtime_abi_min\":65556,\"stdlib\":{\"language_version\":\"0.1.0\",\"runtime_abi_major\":1,\"runtime_abi_minor\":20,\"stdlib_interface_version\":1,\"target\":\"portable\"},\"target\":\"x86_64-pc-windows-msvc\",\"version\":1},\"release_report\":{\"artifact_sha256\":\"cfaa8b60f2c8435567f63be8a7a4770d4ea1057af1fe9add1ceb55ba3e5e0ff6\",\"concurrency_matrix\":[{\"action\":{\"Reject\":{\"code\":\"XIAOC-005\"}},\"artifact\":\".xiaoc/concurrency/abi=1.20\",\"axis\":\"ConcurrentXiaoc\",\"evidence\":\"Verified\",\"runtime\":\"1.16\",\"status\":\"Current\"},{\"action\":{\"Reject\":{\"code\":\"XIAOC-005\"}},\"artifact\":\".xiaoc/concurrency/abi=1.20\",\"axis\":\"ConcurrentXiaoc\",\"evidence\":\"Verified\",\"runtime\":\"1.17\",\"status\":\"Current\"},{\"action\":{\"Reject\":{\"code\":\"XIAOC-005\"}},\"artifact\":\".xiaoc/concurrency/abi=1.20\",\"axis\":\"ConcurrentXiaoc\",\"evidence\":\"Verified\",\"runtime\":\"1.18\",\"status\":\"Current\"},{\"action\":{\"Reject\":{\"code\":\"XIAOC-005\"}},\"artifact\":\".xiaoc/concurrency/abi=1.20\",\"axis\":\"ConcurrentXiaoc\",\"evidence\":\"Verified\",\"runtime\":\"1.19\",\"status\":\"Current\"},{\"action\":\"Direct\",\"artifact\":\".xiaoc/concurrency/abi=1.20\",\"axis\":\"ConcurrentXiaoc\",\"evidence\":\"Verified\",\"runtime\":\"1.20\",\"status\":\"Current\"},{\"action\":{\"Reject\":{\"code\":\"X17-XAR-007\"}},\"artifact\":\".xar/concurrency/abi=1.20\",\"axis\":\"ConcurrentArchive\",\"evidence\":\"Verified\",\"runtime\":\"1.16\",\"status\":\"Current\"},{\"action\":{\"Reject\":{\"code\":\"X17-XAR-007\"}},\"artifact\":\".xar/concurrency/abi=1.20\",\"axis\":\"ConcurrentArchive\",\"evidence\":\"Verified\",\"runtime\":\"1.17\",\"status\":\"Current\"},{\"action\":{\"Reject\":{\"code\":\"X17-XAR-007\"}},\"artifact\":\".xar/concurrency/abi=1.20\",\"axis\":\"ConcurrentArchive\",\"evidence\":\"Verified\",\"runtime\":\"1.18\",\"status\":\"Current\"},{\"action\":{\"Reject\":{\"code\":\"X17-XAR-007\"}},\"artifact\":\".xar/concurrency/abi=1.20\",\"axis\":\"ConcurrentArchive\",\"evidence\":\"Verified\",\"runtime\":\"1.19\",\"status\":\"Current\"},{\"action\":\"Direct\",\"artifact\":\".xar/concurrency/abi=1.20\",\"axis\":\"ConcurrentArchive\",\"evidence\":\"Verified\",\"runtime\":\"1.20\",\"status\":\"Current\"},{\"action\":{\"Reject\":{\"code\":\"X17-XAR-007\"}},\"artifact\":\"native/concurrency/abi=1.20\",\"axis\":\"ConcurrentNative\",\"evidence\":\"Verified\",\"runtime\":\"1.16\",\"status\":\"Current\"},{\"action\":{\"Reject\":{\"code\":\"X17-XAR-007\"}},\"artifact\":\"native/concurrency/abi=1.20\",\"axis\":\"ConcurrentNative\",\"evidence\":\"Verified\",\"runtime\":\"1.17\",\"status\":\"Current\"},{\"action\":{\"Reject\":{\"code\":\"X17-XAR-007\"}},\"artifact\":\"native/concurrency/abi=1.20\",\"axis\":\"ConcurrentNative\",\"evidence\":\"Verified\",\"runtime\":\"1.18\",\"status\":\"Current\"},{\"action\":{\"Reject\":{\"code\":\"X17-XAR-007\"}},\"artifact\":\"native/concurrency/abi=1.20\",\"axis\":\"ConcurrentNative\",\"evidence\":\"Verified\",\"runtime\":\"1.19\",\"status\":\"Current\"},{\"action\":\"Direct\",\"artifact\":\"native/concurrency/abi=1.20\",\"axis\":\"ConcurrentNative\",\"evidence\":\"Verified\",\"runtime\":\"1.20\",\"status\":\"Current\"}],\"generator_version\":27,\"metadata_validation\":\"verified\",\"reproducibility\":{\"status\":\"not-measured\"},\"required_features\":0,\"runtime_abi\":{\"max\":65556,\"min\":65556},\"schema_version\":1,\"signature\":{\"status\":\"unsigned\"},\"standard_library\":{\"language_version\":\"0.1.0\",\"runtime_abi_major\":1,\"runtime_abi_minor\":20,\"stdlib_interface_version\":1,\"target\":\"portable\"},\"target_platform\":\"x86_64-pc-windows-msvc\"},\"valid\":true}"
+    },
+    "artifact": null
+  }
+}

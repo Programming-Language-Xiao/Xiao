@@ -1,0 +1,12 @@
+
+running 1 test
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-slot-final\\xiao-b3-log-43256-control\\control-o0.verification.json" SHA-256 c2989b03203d44368ad6884ef0520f1d90830d46125f85a466f603d06d3d3742 退出 Some(2)
+运行控制 control-o0 X09-DRIVER-001 退出 2，stdout 2850 字节
+运行控制 control-o0 X09-DRIVER-002 退出 2，stdout 2887 字节
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-slot-final\\xiao-b3-log-43256-control\\control-o3.verification.json" SHA-256 52a184bde861fbebd0c3d4d6efbc9640d72c2c826d66a892a5c294223e259403 退出 Some(2)
+运行控制 control-o3 X09-DRIVER-001 退出 2，stdout 2850 字节
+运行控制 control-o3 X09-DRIVER-002 退出 2，stdout 2887 字节
+test log_native_control_reaches_generated_code ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 17.62s
+

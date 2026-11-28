@@ -591,6 +591,9 @@ impl<'a> DynamicGenerator<'a> {
         if declaration.kind == xiao_intrinsics::IntrinsicKind::Env {
             return self.emit_host_intrinsic(declaration, arguments, span, "env");
         }
+        if declaration.kind == xiao_intrinsics::IntrinsicKind::Log {
+            return self.emit_host_intrinsic(declaration, arguments, span, "log");
+        }
         if declaration.kind == xiao_intrinsics::IntrinsicKind::Args {
             return self.emit_args(declaration, arguments, span);
         }

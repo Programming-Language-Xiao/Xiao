@@ -1,0 +1,3 @@
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+    Finished `test` profile [unoptimized] target(s) in 1.96s
+     Running tests\b4_cmath_tac.rs (D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-native\debug\deps\b4_cmath_tac-844c2dd1d0a50417.exe)

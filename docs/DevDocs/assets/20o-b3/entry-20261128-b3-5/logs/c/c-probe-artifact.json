@@ -1,0 +1,96 @@
+{
+  "artifacts": [
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\c-probe-final\\product.exe",
+      "sha256": "33a55cbcbdefe58fb63c3b2f775e853490640d5d4d4bff2f537dcf492cb61260",
+      "bytes": 745472
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\c-probe-final\\product.map",
+      "sha256": "1d9ef3e85779af33d6c535836c347345376aa14af128a6db250a34d31ac65f0b",
+      "bytes": 1546561
+    },
+    {
+      "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\c-probe-slot-final.ll",
+      "sha256": "1f751bf10775f75335d291e5b94c6a9b4607e8c512ee5e45269196d69a33b7aa",
+      "bytes": 102290
+    },
+    {
+      "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\c-probe-slot-final-link.log",
+      "sha256": "84d38c80dd4ddc08ae2f524ccfc420f7381799d52d3565f3d8523a8d4e6103e5",
+      "bytes": 4493
+    },
+    {
+      "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\probe.c",
+      "sha256": "49dcc211c69f457c1144a3b7e2b265155dc464ea7b7aa39d8808689368bdb5e0",
+      "bytes": 8509
+    }
+  ],
+  "symbol": "xiao_runtime_log_write",
+  "runs": [
+    {
+      "case": "valid",
+      "exit": 0,
+      "objects_destroyed": 12,
+      "stdout": {
+        "path": "c-probe-slot-final-valid.stdout.log",
+        "bytes": 4170,
+        "sha256": "911453e4421d08d91f39dfa135315270ff583a3e2867c644e8be22370a7a6fa1"
+      },
+      "stderr": {
+        "path": "c-probe-slot-final-valid.stderr.log",
+        "bytes": 55,
+        "sha256": "2c96aeb695868e40c80ed3684ed4ae088ef274df2fd79d8dafff0d114a1fb96c"
+      },
+      "trace": "9ff2c077ec4118ec1b90efcb031389d9715cee8f98267db1ec81c389ca0f028b"
+    },
+    {
+      "case": "closed",
+      "exit": 0,
+      "objects_destroyed": 3,
+      "stdout": {
+        "path": "c-probe-slot-final-closed.stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "c-probe-slot-final-closed.stderr.log",
+        "bytes": 19,
+        "sha256": "aa174f244bd15c9cc16730253aa5282e7d208379ddeb15fae35c41e6867ea245"
+      },
+      "trace": "0489b712aa4cc31b388fe0a178f7c3e581fe6a444a732e9982d3e8f4fef5bf81"
+    },
+    {
+      "case": "broken",
+      "exit": 0,
+      "objects_destroyed": 3,
+      "stdout": {
+        "path": "c-probe-slot-final-broken.stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "c-probe-slot-final-broken.stderr.log",
+        "bytes": 19,
+        "sha256": "aa174f244bd15c9cc16730253aa5282e7d208379ddeb15fae35c41e6867ea245"
+      },
+      "trace": "0489b712aa4cc31b388fe0a178f7c3e581fe6a444a732e9982d3e8f4fef5bf81"
+    },
+    {
+      "case": "saturated",
+      "exit": 0,
+      "objects_destroyed": 3,
+      "stdout": {
+        "path": "c-probe-slot-final-saturated.stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "c-probe-slot-final-saturated.stderr.log",
+        "bytes": 55,
+        "sha256": "63d1d84a49e42d9dc3665ee7ed6f99c8eb991b971961991f4249fc7832452474"
+      },
+      "trace": "0489b712aa4cc31b388fe0a178f7c3e581fe6a444a732e9982d3e8f4fef5bf81"
+    }
+  ]
+}

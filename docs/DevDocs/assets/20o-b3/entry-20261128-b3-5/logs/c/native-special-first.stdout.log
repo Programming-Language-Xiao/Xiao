@@ -1,0 +1,31 @@
+
+running 4 tests
+test log_native_control_reaches_generated_code ... 运行控制 control-o0 X09-DRIVER-001 退出 2，stdout 2517 字节
+运行控制 control-o0 X09-DRIVER-002 退出 2，stdout 2887 字节
+运行控制 control-o3 X09-DRIVER-001 退出 2，stdout 2813 字节
+运行控制 control-o3 X09-DRIVER-002 退出 2，stdout 2887 字节
+ok
+test log_native_enforces_each_bit_and_releases_inputs ... 验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native\\xiao-b3-log-22196-capabilities\\missing-0-o0.verification.json" SHA-256 e334e1fad1fea60359d4a33cf19670cbd847c81be257866ffae3fbdf65a998d4 stdout=0 stderr=241
+FAILED
+test log_native_tasks_share_run_quota ... 验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native\\xiao-b3-log-22196-quota\\quota-o0.verification.json" SHA-256 28e3060b40848dbe0014a95912064489f180330f33e6d24ddbb0b9cba5b0a9d7 stdout=35842 stderr=266
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native\\xiao-b3-log-22196-quota\\quota-o0.verification.json" SHA-256 28e3060b40848dbe0014a95912064489f180330f33e6d24ddbb0b9cba5b0a9d7 stdout=35842 stderr=266
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native\\xiao-b3-log-22196-quota\\quota-o3.verification.json" SHA-256 cafaca6e8a952e39407c69ea7fdbfd6ed248e38e64445cd46653db00fdd05bcf stdout=35842 stderr=266
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native\\xiao-b3-log-22196-quota\\quota-o3.verification.json" SHA-256 cafaca6e8a952e39407c69ea7fdbfd6ed248e38e64445cd46653db00fdd05bcf stdout=35842 stderr=266
+ok
+test log_tutorial_matches_native_golden ... 验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native\\xiao-b3-log-22196-tutorial\\std-o0.verification.json" SHA-256 fccd129c7988238e4c94c9b004feb036fd81dcf8c362872245c1dac01209baaf stdout=103 stderr=0
+释放 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native\\xiao-b3-log-22196-tutorial\\std-o0.release.tsv" 的 10 个对象各销毁一次
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native\\xiao-b3-log-22196-tutorial\\std-o3.verification.json" SHA-256 b2cee141699574784c2ed0d267de6d24d3695e082757b7e69e2534bb3d8885f8 stdout=103 stderr=0
+释放 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native\\xiao-b3-log-22196-tutorial\\std-o3.release.tsv" 的 10 个对象各销毁一次
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native\\xiao-b3-log-22196-tutorial\\stdlib-o0.verification.json" SHA-256 c00b1b9327c4b8b35b33427e914acea8fdead49044bddae3da761721bd0f08f3 stdout=103 stderr=0
+释放 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native\\xiao-b3-log-22196-tutorial\\stdlib-o0.release.tsv" 的 10 个对象各销毁一次
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native\\xiao-b3-log-22196-tutorial\\stdlib-o3.verification.json" SHA-256 b6442c74f107c50f23aee65b990b7aa44afd9a73053c3623afa54cbde787f8bb stdout=103 stderr=0
+释放 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native\\xiao-b3-log-22196-tutorial\\stdlib-o3.release.tsv" 的 10 个对象各销毁一次
+ok
+
+failures:
+
+failures:
+    log_native_enforces_each_bit_and_releases_inputs
+
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 52.09s
+

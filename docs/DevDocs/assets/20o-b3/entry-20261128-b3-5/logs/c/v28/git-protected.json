@@ -1,0 +1,41 @@
+{
+  "argv": [
+    "cmd",
+    "/c",
+    "git",
+    "diff",
+    "--exit-code",
+    "HEAD",
+    "--",
+    "core/rust/crates/xiao-runtime-abi",
+    "core/rust/crates/xiao-standard-library",
+    "core/rust/crates/xiao-vm",
+    "stdlib",
+    "docs/module-registry.json",
+    "docs/DevDocs/assets/20o-b3/entry-20261127-b3-4",
+    "D:/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/../REPORT-B.md",
+    "D:/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/../baseline.json",
+    "D:/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/../logs/b"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "environment": {
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe"
+  },
+  "started_utc": "2026-11-28T11:00:31.700293+00:00",
+  "elapsed_seconds": 0.133381,
+  "exit": 0,
+  "stdout": {
+    "path": "git-protected.stdout.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr": {
+    "path": "git-protected.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

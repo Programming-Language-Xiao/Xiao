@@ -1,0 +1,42 @@
+{
+  "argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b3_log_native",
+    "--",
+    "log_native_enforces_each_bit_and_releases_inputs",
+    "--exact",
+    "--nocapture",
+    "--ignored"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao\\core\\rust",
+  "environment": {
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/target-special",
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib",
+    "XIAO_B3_LOG_TEST_ROOT": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-verified",
+    "CC_PRINT_OPTIONS_FILE": "D:\\project\\Xiao\\Xiao/docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/log_native_enforces_each_bit_and_releases_inputs-verified-link.log"
+  },
+  "started_utc": "2026-11-28T06:50:29.335106+00:00",
+  "elapsed_seconds": 23.092944,
+  "exit": 0,
+  "stdout": {
+    "path": "log_native_enforces_each_bit_and_releases_inputs-verified.stdout.log",
+    "bytes": 2668,
+    "sha256": "f59822b1f3b9dfbcace237e1d09251b5439154723bafc327d3de88cf78ede658"
+  },
+  "stderr": {
+    "path": "log_native_enforces_each_bit_and_releases_inputs-verified.stderr.log",
+    "bytes": 303,
+    "sha256": "ad912d9f5a75beecf5d09d49184468d0b1a7e6cf08068f55c2fe9b06fc01c917"
+  }
+}

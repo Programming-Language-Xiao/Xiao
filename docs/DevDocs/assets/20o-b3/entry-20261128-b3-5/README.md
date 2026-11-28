@@ -149,3 +149,5 @@ B1 七库 20 入口、18 项资源、VM/原生双精确入口及 28 守卫（4 �
 新实现的 Runtime 应以其源码重新构建并单独登记摘要。[B3-5 实施规划](../../../20o-b3-5-log-implementation-plan.md) · [日志冻结契约](../entry-20261123-b3-0c/contract-draft.md)
 
 [B3-5B Runtime 与 VM 回执](REPORT-B.md)
+
+[B3-5C LLVM、C ABI 与原生回执](REPORT-C.md)

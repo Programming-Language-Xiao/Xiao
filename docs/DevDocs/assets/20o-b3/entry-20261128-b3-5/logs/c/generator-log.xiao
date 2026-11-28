@@ -1,0 +1,2 @@
+from std.log import write
+write(target = "stdout", message = "B3-5C", level = "info")

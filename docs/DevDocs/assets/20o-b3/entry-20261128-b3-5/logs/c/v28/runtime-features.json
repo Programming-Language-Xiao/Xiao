@@ -1,0 +1,74 @@
+[
+  {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///D:/project/Xiao/Xiao/core/rust/crates/xiao-runtime#0.1.0",
+    "manifest_path": "D:\\project\\Xiao\\Xiao\\core\\rust\\crates\\xiao-runtime\\Cargo.toml",
+    "target": {
+      "kind": [
+        "rlib",
+        "staticlib"
+      ],
+      "crate_types": [
+        "rlib",
+        "staticlib"
+      ],
+      "name": "xiao_runtime",
+      "src_path": "D:\\project\\Xiao\\Xiao\\core\\rust\\crates\\xiao-runtime\\src\\lib.rs",
+      "edition": "2024",
+      "doc": true,
+      "doctest": true,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "3",
+      "debuginfo": 0,
+      "debug_assertions": false,
+      "overflow_checks": false,
+      "test": false
+    },
+    "features": [],
+    "filenames": [
+      "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-runtime\\x86_64-pc-windows-msvc\\release\\libxiao_runtime.rlib",
+      "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-runtime\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib"
+    ],
+    "executable": null,
+    "fresh": false
+  },
+  {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///D:/project/Xiao/Xiao/core/rust/crates/xiao-runtime#0.1.0",
+    "manifest_path": "D:\\project\\Xiao\\Xiao\\core\\rust\\crates\\xiao-runtime\\Cargo.toml",
+    "target": {
+      "kind": [
+        "rlib",
+        "staticlib"
+      ],
+      "crate_types": [
+        "rlib",
+        "staticlib"
+      ],
+      "name": "xiao_runtime",
+      "src_path": "D:\\project\\Xiao\\Xiao\\core\\rust\\crates\\xiao-runtime\\src\\lib.rs",
+      "edition": "2024",
+      "doc": true,
+      "doctest": true,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "3",
+      "debuginfo": 0,
+      "debug_assertions": false,
+      "overflow_checks": false,
+      "test": false
+    },
+    "features": [
+      "test-failpoints"
+    ],
+    "filenames": [
+      "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-runtime-fixed\\x86_64-pc-windows-msvc\\release\\libxiao_runtime.rlib",
+      "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-runtime-fixed\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib"
+    ],
+    "executable": null,
+    "fresh": false
+  }
+]

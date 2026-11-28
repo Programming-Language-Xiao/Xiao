@@ -370,6 +370,7 @@ fn error_code_portable_artifacts_require_current_runtime() {
     let index = xiao_artifacts::ArchiveIndex {
         schema_major: xiao_artifacts::INDEX_SCHEMA_MAJOR,
         schema_minor: xiao_artifacts::INDEX_SCHEMA_MINOR,
+        generator_version: None,
         entry: "main.xiaoc".to_owned(),
         entries: Vec::new(),
         dependency_lock_digest: "0".repeat(64),

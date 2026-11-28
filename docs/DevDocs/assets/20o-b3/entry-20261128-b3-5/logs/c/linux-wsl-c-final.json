@@ -1,0 +1,34 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu-26.04",
+    "--exec",
+    "bash",
+    "-lc",
+    "bash /mnt/d/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/linux-probe.sh"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "environment": {
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib"
+  },
+  "started_utc": "2026-11-28T06:57:14.773552+00:00",
+  "elapsed_seconds": 59.779029,
+  "exit": 0,
+  "stdout": {
+    "path": "linux-wsl-c-final.stdout.log",
+    "bytes": 1062,
+    "sha256": "228cdbdeed185e5885fa3c4ca771920930d796b21aeeb6b5b070c84bdaeb26ab"
+  },
+  "stderr": {
+    "path": "linux-wsl-c-final.stderr.log",
+    "bytes": 2062,
+    "sha256": "c1b439870e0e83a0316f77ff0774bbb6c8b6af940633475e56241e783cf7a179"
+  }
+}

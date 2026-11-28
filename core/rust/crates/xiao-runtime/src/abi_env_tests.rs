@@ -40,6 +40,7 @@ fn environment(snapshot: EnvironmentSnapshot) -> Arc<NativeEnvironment> {
         snapshot,
         capabilities: ENV,
         control: NativeControl::default(),
+        log: LogState::new(NativeStdout::default()),
     })
 }
 
@@ -299,6 +300,7 @@ fn env_abi_runtime_deadline_preserves_value_entries_and_bytes() {
             deadline_ns: Some(0),
             cancellation: None,
         },
+        log: LogState::new(NativeStdout::default()),
     });
     let _entry = enter_environment(Some(Arc::clone(&environment)));
     let name = Value::text("Name");

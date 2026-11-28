@@ -191,13 +191,20 @@ impl FrontendNativeDriver {
         let cancellation_check = control
             .cancellation()
             .map(|_| &cancelled as &dyn Fn() -> bool);
-        NativeRun::new(&artifact?.native)
+        let artifact = artifact?.native;
+        let control_entry = env_entry
+            || artifact
+                .module
+                .runtime_components
+                .iter()
+                .any(|name| name == "log");
+        NativeRun::new(&artifact)
             .run_with_control(
                 args,
                 payload.as_deref(),
                 window.deadline,
                 cancellation_check,
-                env_entry,
+                control_entry,
             )
             .map_err(NativeDriverError::Backend)
     }

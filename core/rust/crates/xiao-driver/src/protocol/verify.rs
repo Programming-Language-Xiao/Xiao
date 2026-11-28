@@ -143,6 +143,7 @@ pub(super) fn verify_response(
                     "members": archive.members().len(),
                     "index_schema_major": archive.index().schema_major,
                     "index_schema_minor": archive.index().schema_minor,
+                    "generator_version": archive.index().generator_version,
                     "entry": archive.index().entry,
                     "detail": detail,
                     "details": details,
@@ -150,12 +151,18 @@ pub(super) fn verify_response(
                 })
             }
             Err(error) => {
-                return verification_error(
-                    request_id,
-                    &path,
-                    "X11-VERIFY-003",
-                    format!("`.xar` 校验失败：{error}"),
-                );
+                let detail = format!("`.xar` 校验失败：{error}");
+                if let xiao_xar::XarRunError::VersionIncompatible(message) =
+                    xiao_xar::XarRunError::from(error)
+                {
+                    return verification_error(
+                        request_id,
+                        &path,
+                        xiao_xar::ARCHIVE_VERSION_INCOMPATIBLE_CODE,
+                        message,
+                    );
+                }
+                return verification_error(request_id, &path, "X11-VERIFY-003", detail);
             }
         },
         _ if bytes.starts_with(b"MZ")
@@ -287,6 +294,7 @@ fn xar_release_report(archive: &xiao_xar::XarArchive, bytes: &[u8]) -> Value {
         .collect::<Vec<_>>();
     json!({
         "required_features": index.required_features,
+        "generator_version": index.generator_version,
         "concurrency_matrix": crate::concurrency_compatibility_matrix(),
         "schema_version": 1,
         "artifact_sha256": Digest256::of_bytes(bytes).as_hex(),

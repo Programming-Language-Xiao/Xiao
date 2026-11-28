@@ -1,0 +1,49 @@
+{
+  "argv": [
+    "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "-v",
+    "-target",
+    "x86_64-pc-windows-msvc",
+    "-O0",
+    "-Wno-override-module",
+    "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/after-log-o0-product/program.ll",
+    "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5b/target/release/xiao_runtime.lib",
+    "-Xlinker",
+    "kernel32.lib",
+    "-Xlinker",
+    "ntdll.lib",
+    "-Xlinker",
+    "userenv.lib",
+    "-Xlinker",
+    "ws2_32.lib",
+    "-Xlinker",
+    "dbghelp.lib",
+    "-Xlinker",
+    "/NODEFAULTLIB:msvcrt",
+    "-o",
+    "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/cache-old-runtime-log-o0/expected-failure.exe"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "environment": {
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib"
+  },
+  "started_utc": "2026-11-28T06:57:14.773552+00:00",
+  "elapsed_seconds": 0.877219,
+  "exit": 1120,
+  "stdout": {
+    "path": "cache-old-runtime-unresolved.stdout.log",
+    "bytes": 282,
+    "sha256": "99c91e5dad130ce543767e0beb43087f061b35888f691f5f6a331922651b1005"
+  },
+  "stderr": {
+    "path": "cache-old-runtime-unresolved.stderr.log",
+    "bytes": 2259,
+    "sha256": "26eceef544306d72073f4ca400c20a260d8db4b13dbed46a3cc4ed258fcd4e4a"
+  }
+}

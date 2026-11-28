@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "bun",
+    "run",
+    "check:coverage"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "environment": {
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUST_DOC_ADAPTER": "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c/target-doc-adapter/debug/xiao-doc-coverage-rust.exe"
+  },
+  "started_utc": "2026-11-28T10:50:27.091551+00:00",
+  "elapsed_seconds": 18.346154,
+  "exit": 0,
+  "stdout": {
+    "path": "gate-coverage.stdout.log",
+    "bytes": 193761,
+    "sha256": "ad3d316da7cc6a27b01be30064801a27d52956dd58fa2f8c6297df55d891cbce"
+  },
+  "stderr": {
+    "path": "gate-coverage.stderr.log",
+    "bytes": 36,
+    "sha256": "38a2b8c294a7b893e480723a43969e5a9140857972e95fe5414b1cc4684afab0"
+  }
+}

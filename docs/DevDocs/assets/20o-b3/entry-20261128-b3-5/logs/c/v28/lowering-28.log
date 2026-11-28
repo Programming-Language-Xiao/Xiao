@@ -1,0 +1,13 @@
+O0 接线前 28
+原生后端不支持 动态 intrinsic os_log_write（58..94）
+O0 接线后 28
+declare i32 @xiao_runtime_log_write(ptr, ptr, ptr, i64)
+  %t24 = call i32 @xiao_runtime_log_write(ptr %t9, ptr %t10, ptr %t11, i64 34)
+无日志对照 SHA-256 84dece0083e9c8613b9cbb5a17983cf51eda9041bf302ff965ba934c9fdd78c6
+
+O3 接线前 28
+原生后端不支持 动态 intrinsic os_log_write（58..94）
+O3 接线后 28
+declare i32 @xiao_runtime_log_write(ptr, ptr, ptr, i64)
+  %t24 = call i32 @xiao_runtime_log_write(ptr %t9, ptr %t10, ptr %t11, i64 34)
+无日志对照 SHA-256 84dece0083e9c8613b9cbb5a17983cf51eda9041bf302ff965ba934c9fdd78c6

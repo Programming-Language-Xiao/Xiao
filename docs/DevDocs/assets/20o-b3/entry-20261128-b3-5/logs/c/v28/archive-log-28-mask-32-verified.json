@@ -1,0 +1,97 @@
+{
+  "command": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-tools\\debug\\xiao-core.exe"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao\\core\\rust",
+  "core": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-tools\\debug\\xiao-core.exe",
+    "bytes": 28295680,
+    "sha256": "58e1828d414e58f89a1ae9bfd741d9169bd7ef59d71d4279ce6bf0213469155d"
+  },
+  "artifact": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\log-28.xar",
+    "bytes": 1407,
+    "sha256": "f816d154fd43060a8a989a8b2939c0cf959c93e12d462c9310d8a89e14ea5c77"
+  },
+  "process_exit": 0,
+  "validation_exit": 2,
+  "request_frame": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\archive-log-28-mask-32-verified.request.bin",
+    "bytes": 409,
+    "sha256": "9b097791c51f6ae57debe7cea94efd4df82f257a65d2e3d186280b4f1bffe7a9"
+  },
+  "response_frame": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\archive-log-28-mask-32-verified.response.bin",
+    "bytes": 1284,
+    "sha256": "9f05c098e8ebf4adeafd90823a18532e86ecff66c54273f881bef03ad669479b"
+  },
+  "stderr": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\archive-log-28-mask-32-verified.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "hello": {
+    "type": "hello",
+    "request_id": "identity",
+    "accepted": true,
+    "protocol_version": 1,
+    "core_version": 1,
+    "versions": {
+      "protocol": 1,
+      "core": 1,
+      "language": "0.1.0",
+      "runtime_abi": 65556,
+      "frontend": 1,
+      "driver": 1,
+      "bytecode_format": 4,
+      "codegen": 28
+    },
+    "capabilities": [
+      "run",
+      "run_archive",
+      "run_xiaoc",
+      "arguments",
+      "verify",
+      "cache",
+      "test",
+      "build",
+      "build_archive",
+      "environment",
+      "package",
+      "repl_packages",
+      "cancel"
+    ],
+    "error": null
+  },
+  "response": {
+    "type": "error",
+    "request_id": "archive-log-28-mask-32-verified",
+    "error": {
+      "code": "X06-RUNTIME-026",
+      "message_id": "x17.xar.archive_capability_unavailable",
+      "message": "归档缺少能力：clock",
+      "text": "归档缺少能力：clock",
+      "phase": "archive_validation",
+      "next_step": "检查归档、Runtime 和目标平台后重试",
+      "details": {
+        "audit": {
+          "archive_digest": "f816d154fd43060a8a989a8b2939c0cf959c93e12d462c9310d8a89e14ea5c77",
+          "archive_platform": "portable",
+          "debug_activation": false,
+          "host_platform": "x86_64-pc-windows-msvc",
+          "index_schema_major": 1,
+          "index_schema_minor": 1,
+          "language_effective": "zh-CN",
+          "language_fallback": false,
+          "language_requested": "zh-CN",
+          "platform_compatible": true,
+          "runtime_abi_compatible": true,
+          "verified_member_count": 1
+        },
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\log-28.xar"
+      }
+    },
+    "report": null,
+    "exit_code": 2
+  }
+}

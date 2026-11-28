@@ -1,0 +1,21 @@
+O0 接线前退出 1
+原生后端不支持 动态 intrinsic os_log_write（58..94）
+O0 接线后退出 0
+declare i32 @xiao_runtime_log_write(ptr, ptr, ptr, i64)
+  %t24 = call i32 @xiao_runtime_log_write(ptr %t9, ptr %t10, ptr %t11, i64 34)
+  call void @xiao_runtime_value_release_strong(ptr %t11)
+  call void @xiao_runtime_value_release_strong(ptr %t10)
+  call void @xiao_runtime_value_release_strong(ptr %t9)
+  switch i32 %t24, label %log.abi.failure16 [ i32 0, label %log.ok14 i32 6, label %log.error15 i32 8, label %log.error15 ]
+无日志 IR SHA-256 983a68da9b5d036488e0c32de9be04e5ac3a373c78846633b886a67a35d72548
+
+O3 接线前退出 1
+原生后端不支持 动态 intrinsic os_log_write（58..94）
+O3 接线后退出 0
+declare i32 @xiao_runtime_log_write(ptr, ptr, ptr, i64)
+  %t24 = call i32 @xiao_runtime_log_write(ptr %t9, ptr %t10, ptr %t11, i64 34)
+  call void @xiao_runtime_value_release_strong(ptr %t11)
+  call void @xiao_runtime_value_release_strong(ptr %t10)
+  call void @xiao_runtime_value_release_strong(ptr %t9)
+  switch i32 %t24, label %log.abi.failure16 [ i32 0, label %log.ok14 i32 6, label %log.error15 i32 8, label %log.error15 ]
+无日志 IR SHA-256 983a68da9b5d036488e0c32de9be04e5ac3a373c78846633b886a67a35d72548

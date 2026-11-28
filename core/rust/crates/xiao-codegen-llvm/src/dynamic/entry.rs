@@ -5,8 +5,8 @@ use xiao_ir::IrType;
 use xiao_runtime_abi::{ABI_MAJOR_VERSION, ABI_MINOR_VERSION};
 
 impl<'a> DynamicGenerator<'a> {
-    /// 发射入口函数和 C `main` 适配器。
-    pub(super) fn emit_entry(&mut self, capture_arguments: bool) -> crate::error::Result<()> {
+    /// 发射持有语言运行状态的入口函数。
+    pub(super) fn emit_entry(&mut self) -> crate::error::Result<()> {
         let observed = self.observation_slot.is_some();
         let entry_return = if observed { "i64" } else { "void" };
         self.emit(format!("define {entry_return} @xiao_entry() {{"));
@@ -105,28 +105,39 @@ impl<'a> DynamicGenerator<'a> {
         self.emit("  unreachable".to_owned());
         self.emit("}".to_owned());
         self.emit(String::new());
-        if self.options.capabilities & xiao_intrinsics::CAPABILITY_ENVIRONMENT != 0 {
+        self.finalize_frame_storage();
+        Ok(())
+    }
+
+    /// 等函数和回调都已发射后，为使用日志的应用安装共享运行入口。
+    pub(super) fn emit_main_adapter(&mut self, capture_arguments: bool) {
+        let run_context = self.options.capabilities & xiao_intrinsics::CAPABILITY_ENVIRONMENT != 0
+            || self
+                .declarations
+                .iter()
+                .any(|declaration| declaration.starts_with("declare i32 @xiao_runtime_log_write("));
+        if run_context {
             self.declarations
                 .insert(crate::NATIVE_ENV_ENTRY_DECLARATION.to_owned());
         } else if capture_arguments {
             self.declarations
                 .insert("declare i32 @xiao_runtime_args_run_native(ptr)".to_owned());
         }
-        self.emit(self.main_adapter(observed, capture_arguments));
-        self.finalize_frame_storage();
-        Ok(())
+        self.emit(self.main_adapter(
+            self.observation_slot.is_some(),
+            capture_arguments,
+            run_context,
+        ));
     }
 
     /// 发射带可选调试启动检查的 C `main` 适配器。
-    fn main_adapter(&self, observed: bool, capture_arguments: bool) -> String {
+    fn main_adapter(&self, observed: bool, capture_arguments: bool, run_context: bool) -> String {
         let entry = if observed {
             "  %xiao_exit = call i64 @xiao_entry()\n  %xiao_exit_code = trunc i64 %xiao_exit to i32\n"
         } else {
             "  call void @xiao_entry()\n  %xiao_exit_code = call i32 @xiao_runtime_error_exit_code()\n"
         };
-        let capture_environment =
-            self.options.capabilities & xiao_intrinsics::CAPABILITY_ENVIRONMENT != 0;
-        let signature = if capture_arguments || capture_environment {
+        let signature = if capture_arguments || run_context {
             "define internal i32 @xiao_application_main()"
         } else {
             "define i32 @main()"
@@ -138,7 +149,7 @@ impl<'a> DynamicGenerator<'a> {
                 "{signature} {{\nentry:\n  %xiao_debug_prepare = call i32 @xiao_runtime_diagnostic_prepare()\n  %xiao_debug_prepare_ok = icmp eq i32 %xiao_debug_prepare, 0\n  br i1 %xiao_debug_prepare_ok, label %xiao.debug.start, label %xiao.debug.prepare.fail\nxiao.debug.prepare.fail:\n  ret i32 %xiao_debug_prepare\nxiao.debug.start:\n  %xiao_debug_status = call i32 @xiao_native_debug_start()\n  %xiao_debug_ok = icmp eq i32 %xiao_debug_status, 0\n  br i1 %xiao_debug_ok, label %xiao.debug.ready, label %xiao.debug.fail\nxiao.debug.fail:\n  call void @xiao_runtime_diagnostic_finish()\n  ret i32 %xiao_debug_status\nxiao.debug.ready:\n  %xiao_debug_ready = call i32 @xiao_runtime_diagnostic_ready()\n  %xiao_debug_ready_ok = icmp eq i32 %xiao_debug_ready, 0\n  br i1 %xiao_debug_ready_ok, label %xiao.user, label %xiao.debug.ready.fail\nxiao.debug.ready.fail:\n  call void @xiao_runtime_diagnostic_finish()\n  ret i32 %xiao_debug_ready\nxiao.user:\n{entry}  call void @xiao_runtime_diagnostic_finish()\n  ret i32 %xiao_exit_code\n}}\n"
             )
         };
-        if capture_environment {
+        if run_context {
             adapter.push_str(&crate::native_env_main(
                 self.options.capabilities,
                 capture_arguments,

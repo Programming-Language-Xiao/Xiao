@@ -1,0 +1,846 @@
+[
+  {
+    "optimization": 0,
+    "old27_control": {
+      "binary": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\old27-control-o0\\program.exe",
+        "sha256": "cfaa8b60f2c8435567f63be8a7a4770d4ea1057af1fe9add1ceb55ba3e5e0ff6"
+      },
+      "capabilities": 34,
+      "declared_components": [
+        "rc",
+        "time",
+        "value",
+        "weak"
+      ],
+      "exit": 0,
+      "fingerprints": {
+        "codegen": "xiao-codegen-27-ea25704cd79ebd6b",
+        "toolchain": "xiao-fnv1a64-f2520a2a4bb35340"
+      },
+      "generator": 27,
+      "ir": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\old27-control-o0\\program.ll",
+        "sha256": "983a68da9b5d036488e0c32de9be04e5ac3a373c78846633b886a67a35d72548"
+      },
+      "map": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\old27-control-o0\\program.exe.map",
+        "sha256": "18f4429d6eff1802ee76be3d28e93944461936c34f4bbe998e92b9afaa0fdd06"
+      },
+      "observed_components": [
+        "rc",
+        "time",
+        "value",
+        "weak"
+      ],
+      "optimization": 0,
+      "runtime": {
+        "abi": 65556,
+        "path": "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib",
+        "sha256": "0110ac28d86b484ed8a3814878093b49bf7be927ebdf98b32f36e15a57b280d3"
+      },
+      "runtime_symbols": [
+        "xiao_runtime_abi_is_compatible",
+        "xiao_runtime_error_attach_span",
+        "xiao_runtime_error_checkpoint_reset",
+        "xiao_runtime_error_class",
+        "xiao_runtime_error_clear",
+        "xiao_runtime_error_exit_code",
+        "xiao_runtime_error_report",
+        "xiao_runtime_fatal_abi",
+        "xiao_runtime_language_context_set",
+        "xiao_runtime_print_values_with_capabilities",
+        "xiao_runtime_release",
+        "xiao_runtime_release_trace_begin",
+        "xiao_runtime_release_trace_flush",
+        "xiao_runtime_retain",
+        "xiao_runtime_string_new",
+        "xiao_runtime_time_format_utc",
+        "xiao_runtime_value_copy",
+        "xiao_runtime_value_int",
+        "xiao_runtime_value_none",
+        "xiao_runtime_value_release_strong",
+        "xiao_runtime_value_str_owned",
+        "xiao_runtime_weak_release",
+        "xiao_runtime_weak_retain"
+      ],
+      "source": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\generator-control.xiao",
+        "sha256": "52274f2cffcb77e6f66c4518d50086d77683b14600929412ebf7d5794f0f1c1f"
+      },
+      "stdlib": "StandardLibraryIdentity { language_version: \"0.1.0\", stdlib_interface_version: 1, runtime_abi_major: 1, runtime_abi_minor: 20, target: \"portable\" }",
+      "stdlib_interface": 1,
+      "target": "x86_64-pc-windows-msvc",
+      "unclassified_runtime_symbols": [],
+      "verification": "complete",
+      "metadata": {
+        "generator": 27,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\old27-control-o0\\program.meta",
+        "bytes": 107,
+        "sha256": "f47421b38778e4f981bda131a9a32464161acbabe3044ca2e568da4b64e4d45d"
+      },
+      "verification_receipt": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\old27-control-o0\\verification.json",
+        "bytes": 2738,
+        "sha256": "484826319fc7f9670367529608b1654c7ecd1abec5a1609a479e6afbfe063fa9"
+      },
+      "probe": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-old27\\debug\\examples\\generator_probe.exe",
+        "bytes": 11400192,
+        "sha256": "67387f6cce52913d7a893e69f868bd30ca2f38e71b8264e20dc6c0caf0c58770"
+      },
+      "receipt": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\old27-control-o0.json",
+        "bytes": 1571,
+        "sha256": "0b9a759d467d9c3fe7aa218766e0d9182c4503c77b1fdb1c610233a74cfabe64"
+      },
+      "link": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\old27-control-o0-link.log",
+        "bytes": 2341,
+        "sha256": "f9c5cfe2ab0f05400ad0897ed221dd73a285a460a10180a7abd9319427acbea6"
+      }
+    },
+    "before28_log": {
+      "exit": 1,
+      "diagnostic": "原生后端不支持 动态 intrinsic os_log_write（58..94）",
+      "source": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\generator-log.xiao",
+        "bytes": 86,
+        "sha256": "85f8adf1c1372c5a1d14290ac0697eb837f65fa1b7346510cfa119937495eb0e"
+      },
+      "probe": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-before28\\debug\\examples\\generator_probe.exe",
+        "bytes": 11400192,
+        "sha256": "1259e1c2729a37a0b2133f2d7dd55b3468da22387c5666edd72e4e7d32a53897"
+      },
+      "receipt": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\before28-log-o0.json",
+        "bytes": 1564,
+        "sha256": "d4cdc4456475acec0fa487450caabc1f9f81322c2829a5d8cdd2b35dcdb74b27"
+      }
+    },
+    "before28_control": {
+      "binary": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\before28-control-o0\\program.exe",
+        "sha256": "2b66d56eabbf5e78b3f7388b5cecca4235d4b30d1c6ac497b0f10bdf9534ff37"
+      },
+      "capabilities": 34,
+      "declared_components": [
+        "rc",
+        "time",
+        "value",
+        "weak"
+      ],
+      "exit": 0,
+      "fingerprints": {
+        "codegen": "xiao-codegen-28-ed6666689f575124",
+        "toolchain": "xiao-fnv1a64-912e4242051653ed"
+      },
+      "generator": 28,
+      "ir": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\before28-control-o0\\program.ll",
+        "sha256": "84dece0083e9c8613b9cbb5a17983cf51eda9041bf302ff965ba934c9fdd78c6"
+      },
+      "map": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\before28-control-o0\\program.exe.map",
+        "sha256": "b108b825a7627adcbc6f116036bad327b013883205b9e10909525f78edaee6a8"
+      },
+      "observed_components": [
+        "rc",
+        "time",
+        "value",
+        "weak"
+      ],
+      "optimization": 0,
+      "runtime": {
+        "abi": 65556,
+        "path": "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib",
+        "sha256": "0110ac28d86b484ed8a3814878093b49bf7be927ebdf98b32f36e15a57b280d3"
+      },
+      "runtime_symbols": [
+        "xiao_runtime_abi_is_compatible",
+        "xiao_runtime_error_attach_span",
+        "xiao_runtime_error_checkpoint_reset",
+        "xiao_runtime_error_class",
+        "xiao_runtime_error_clear",
+        "xiao_runtime_error_exit_code",
+        "xiao_runtime_error_report",
+        "xiao_runtime_fatal_abi",
+        "xiao_runtime_language_context_set",
+        "xiao_runtime_print_values_with_capabilities",
+        "xiao_runtime_release",
+        "xiao_runtime_release_trace_begin",
+        "xiao_runtime_release_trace_flush",
+        "xiao_runtime_retain",
+        "xiao_runtime_string_new",
+        "xiao_runtime_time_format_utc",
+        "xiao_runtime_value_copy",
+        "xiao_runtime_value_int",
+        "xiao_runtime_value_none",
+        "xiao_runtime_value_release_strong",
+        "xiao_runtime_value_str_owned",
+        "xiao_runtime_weak_release",
+        "xiao_runtime_weak_retain"
+      ],
+      "source": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\generator-control.xiao",
+        "sha256": "52274f2cffcb77e6f66c4518d50086d77683b14600929412ebf7d5794f0f1c1f"
+      },
+      "stdlib": "StandardLibraryIdentity { language_version: \"0.1.0\", stdlib_interface_version: 1, runtime_abi_major: 1, runtime_abi_minor: 20, target: \"portable\" }",
+      "stdlib_interface": 1,
+      "target": "x86_64-pc-windows-msvc",
+      "unclassified_runtime_symbols": [],
+      "verification": "complete",
+      "metadata": {
+        "generator": 28,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\before28-control-o0\\program.meta",
+        "bytes": 107,
+        "sha256": "4d1c5f92c1b81e7bd8b8ecd026d22f63a43c0a3da6d4a423a9f2b9127b0894dc"
+      },
+      "verification_receipt": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\before28-control-o0\\verification.json",
+        "bytes": 2747,
+        "sha256": "7eceafad22ae53e063a17cc48988bf55b16632a8f9f18787531ac2bc3315c6df"
+      },
+      "probe": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-before28\\debug\\examples\\generator_probe.exe",
+        "bytes": 11400192,
+        "sha256": "1259e1c2729a37a0b2133f2d7dd55b3468da22387c5666edd72e4e7d32a53897"
+      },
+      "receipt": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\before28-control-o0.json",
+        "bytes": 1586,
+        "sha256": "e1b80a0eec50254e1cb71e262f83a974061e9832cd6e3201eee69921c3576c62"
+      },
+      "link": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\before28-control-o0-link.log",
+        "bytes": 2347,
+        "sha256": "dad27f7b9700226690eda59e36ab69d09486c8965f149bb92d8198a7448c942c"
+      }
+    },
+    "after28_control": {
+      "binary": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-control-o0\\program.exe",
+        "sha256": "4d9eeafe3f860b1005af3b3600d6b9e33a10880b4ecca5fb4636be1b21a0f3d3"
+      },
+      "capabilities": 34,
+      "declared_components": [
+        "rc",
+        "time",
+        "value",
+        "weak"
+      ],
+      "exit": 0,
+      "fingerprints": {
+        "codegen": "xiao-codegen-28-ed6666689f575124",
+        "toolchain": "xiao-fnv1a64-912e4242051653ed"
+      },
+      "generator": 28,
+      "ir": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-control-o0\\program.ll",
+        "sha256": "84dece0083e9c8613b9cbb5a17983cf51eda9041bf302ff965ba934c9fdd78c6"
+      },
+      "map": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-control-o0\\program.exe.map",
+        "sha256": "f4bace05c88c2b0c753d87be678da0c5f9f47fcb22491153b2dde75355cb354b"
+      },
+      "observed_components": [
+        "rc",
+        "time",
+        "value",
+        "weak"
+      ],
+      "optimization": 0,
+      "runtime": {
+        "abi": 65556,
+        "path": "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib",
+        "sha256": "0110ac28d86b484ed8a3814878093b49bf7be927ebdf98b32f36e15a57b280d3"
+      },
+      "runtime_symbols": [
+        "xiao_runtime_abi_is_compatible",
+        "xiao_runtime_error_attach_span",
+        "xiao_runtime_error_checkpoint_reset",
+        "xiao_runtime_error_class",
+        "xiao_runtime_error_clear",
+        "xiao_runtime_error_exit_code",
+        "xiao_runtime_error_report",
+        "xiao_runtime_fatal_abi",
+        "xiao_runtime_language_context_set",
+        "xiao_runtime_print_values_with_capabilities",
+        "xiao_runtime_release",
+        "xiao_runtime_release_trace_begin",
+        "xiao_runtime_release_trace_flush",
+        "xiao_runtime_retain",
+        "xiao_runtime_string_new",
+        "xiao_runtime_time_format_utc",
+        "xiao_runtime_value_copy",
+        "xiao_runtime_value_int",
+        "xiao_runtime_value_none",
+        "xiao_runtime_value_release_strong",
+        "xiao_runtime_value_str_owned",
+        "xiao_runtime_weak_release",
+        "xiao_runtime_weak_retain"
+      ],
+      "source": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\generator-control.xiao",
+        "sha256": "52274f2cffcb77e6f66c4518d50086d77683b14600929412ebf7d5794f0f1c1f"
+      },
+      "stdlib": "StandardLibraryIdentity { language_version: \"0.1.0\", stdlib_interface_version: 1, runtime_abi_major: 1, runtime_abi_minor: 20, target: \"portable\" }",
+      "stdlib_interface": 1,
+      "target": "x86_64-pc-windows-msvc",
+      "unclassified_runtime_symbols": [],
+      "verification": "complete",
+      "metadata": {
+        "generator": 28,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-control-o0\\program.meta",
+        "bytes": 107,
+        "sha256": "4d1c5f92c1b81e7bd8b8ecd026d22f63a43c0a3da6d4a423a9f2b9127b0894dc"
+      },
+      "verification_receipt": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-control-o0\\verification.json",
+        "bytes": 2744,
+        "sha256": "acb7e153976e973db6f0de513015c25676ca6db6c4d5708085a97dd038c60560"
+      },
+      "probe": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-tools\\debug\\examples\\generator_probe.exe",
+        "bytes": 11386368,
+        "sha256": "09d42d50fcbb25f0f636bf75670de0009a1ac683aebb067861c263b2aa4aedfb"
+      },
+      "receipt": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\after28-control-o0.json",
+        "bytes": 1579,
+        "sha256": "583079e290d8c84351e57ac33497d1e131003bed57b1797e8b55e1548074aa1a"
+      },
+      "link": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\after28-control-o0-link.log",
+        "bytes": 2345,
+        "sha256": "b13579b2afeb8154357a1eda254de2631571a2ab608eb53439b2138ce244c3d7"
+      }
+    },
+    "after28_log": {
+      "binary": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-log-o0\\program.exe",
+        "sha256": "7a8633e33d7bb98ddb8dde07434bfc08507537536b37209303bfb7e36c396600"
+      },
+      "capabilities": 34,
+      "declared_components": [
+        "env",
+        "log",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "exit": 0,
+      "fingerprints": {
+        "codegen": "xiao-codegen-28-ed6666689f575124",
+        "toolchain": "xiao-fnv1a64-912e4242051653ed"
+      },
+      "generator": 28,
+      "ir": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-log-o0\\program.ll",
+        "sha256": "ad6f0bd7e0a725410a57ca50f248e9760debdb417bf6cd64b862cb88cb9e2a8d"
+      },
+      "map": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-log-o0\\program.exe.map",
+        "sha256": "24679f10a8e117c1ecf3142fe099fac68880367bb300d32a646a68e7695644c7"
+      },
+      "observed_components": [
+        "env",
+        "log",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "optimization": 0,
+      "runtime": {
+        "abi": 65556,
+        "path": "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib",
+        "sha256": "0110ac28d86b484ed8a3814878093b49bf7be927ebdf98b32f36e15a57b280d3"
+      },
+      "runtime_symbols": [
+        "xiao_runtime_abi_is_compatible",
+        "xiao_runtime_env_run_native",
+        "xiao_runtime_error_attach_span",
+        "xiao_runtime_error_checkpoint_reset",
+        "xiao_runtime_error_class",
+        "xiao_runtime_error_clear",
+        "xiao_runtime_error_exit_code",
+        "xiao_runtime_error_push_native_frame",
+        "xiao_runtime_error_report",
+        "xiao_runtime_fatal_abi",
+        "xiao_runtime_language_context_set",
+        "xiao_runtime_log_write",
+        "xiao_runtime_release",
+        "xiao_runtime_release_trace_begin",
+        "xiao_runtime_release_trace_flush",
+        "xiao_runtime_retain",
+        "xiao_runtime_string_new",
+        "xiao_runtime_value_copy",
+        "xiao_runtime_value_none",
+        "xiao_runtime_value_release_strong",
+        "xiao_runtime_value_str_owned",
+        "xiao_runtime_weak_release",
+        "xiao_runtime_weak_retain"
+      ],
+      "source": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\generator-log.xiao",
+        "sha256": "85f8adf1c1372c5a1d14290ac0697eb837f65fa1b7346510cfa119937495eb0e"
+      },
+      "stdlib": "StandardLibraryIdentity { language_version: \"0.1.0\", stdlib_interface_version: 1, runtime_abi_major: 1, runtime_abi_minor: 20, target: \"portable\" }",
+      "stdlib_interface": 1,
+      "target": "x86_64-pc-windows-msvc",
+      "unclassified_runtime_symbols": [],
+      "verification": "complete",
+      "metadata": {
+        "generator": 28,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-log-o0\\program.meta",
+        "bytes": 107,
+        "sha256": "4d1c5f92c1b81e7bd8b8ecd026d22f63a43c0a3da6d4a423a9f2b9127b0894dc"
+      },
+      "verification_receipt": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-log-o0\\verification.json",
+        "bytes": 2740,
+        "sha256": "f5fb29c4962ef2590a30cf5692b2bbfe6e93b1c0dbe5eecb0e973a7cd1d3a62a"
+      },
+      "probe": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-tools\\debug\\examples\\generator_probe.exe",
+        "bytes": 11386368,
+        "sha256": "09d42d50fcbb25f0f636bf75670de0009a1ac683aebb067861c263b2aa4aedfb"
+      },
+      "receipt": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\after28-log-o0.json",
+        "bytes": 1559,
+        "sha256": "38aa0004141bfe57a09240f2d46f4aaf66ba1d128439975c5f3bac3077767316"
+      },
+      "link": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\after28-log-o0-link.log",
+        "bytes": 2337,
+        "sha256": "9c58f1cba0b6b1067799b492f3dbcc58f6e48e72bd88754f7c1b08cee49a287b"
+      }
+    },
+    "control_ir_equal": true,
+    "version_only_changed_native_metadata": true
+  },
+  {
+    "optimization": 3,
+    "old27_control": {
+      "binary": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\old27-control-o3\\program.exe",
+        "sha256": "1c60e85bf9c28b7416a6b744eca94a9564c9b0bb9e39c089a1d6f5af2f01b39c"
+      },
+      "capabilities": 34,
+      "declared_components": [
+        "rc",
+        "time",
+        "value",
+        "weak"
+      ],
+      "exit": 0,
+      "fingerprints": {
+        "codegen": "xiao-codegen-27-32e17518a398d8aa",
+        "toolchain": "xiao-fnv1a64-aea102153902cf3f"
+      },
+      "generator": 27,
+      "ir": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\old27-control-o3\\program.ll",
+        "sha256": "983a68da9b5d036488e0c32de9be04e5ac3a373c78846633b886a67a35d72548"
+      },
+      "map": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\old27-control-o3\\program.exe.map",
+        "sha256": "62e7c943b9169df774e9275434d1e58a97ef6b190bf7a006229b529cba450cc2"
+      },
+      "observed_components": [
+        "rc",
+        "time",
+        "value",
+        "weak"
+      ],
+      "optimization": 3,
+      "runtime": {
+        "abi": 65556,
+        "path": "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib",
+        "sha256": "0110ac28d86b484ed8a3814878093b49bf7be927ebdf98b32f36e15a57b280d3"
+      },
+      "runtime_symbols": [
+        "xiao_runtime_abi_is_compatible",
+        "xiao_runtime_error_attach_span",
+        "xiao_runtime_error_checkpoint_reset",
+        "xiao_runtime_error_class",
+        "xiao_runtime_error_clear",
+        "xiao_runtime_error_exit_code",
+        "xiao_runtime_error_report",
+        "xiao_runtime_fatal_abi",
+        "xiao_runtime_language_context_set",
+        "xiao_runtime_print_values_with_capabilities",
+        "xiao_runtime_release",
+        "xiao_runtime_release_trace_begin",
+        "xiao_runtime_release_trace_flush",
+        "xiao_runtime_retain",
+        "xiao_runtime_string_new",
+        "xiao_runtime_time_format_utc",
+        "xiao_runtime_value_copy",
+        "xiao_runtime_value_int",
+        "xiao_runtime_value_none",
+        "xiao_runtime_value_release_strong",
+        "xiao_runtime_value_str_owned",
+        "xiao_runtime_weak_release",
+        "xiao_runtime_weak_retain"
+      ],
+      "source": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\generator-control.xiao",
+        "sha256": "52274f2cffcb77e6f66c4518d50086d77683b14600929412ebf7d5794f0f1c1f"
+      },
+      "stdlib": "StandardLibraryIdentity { language_version: \"0.1.0\", stdlib_interface_version: 1, runtime_abi_major: 1, runtime_abi_minor: 20, target: \"portable\" }",
+      "stdlib_interface": 1,
+      "target": "x86_64-pc-windows-msvc",
+      "unclassified_runtime_symbols": [],
+      "verification": "complete",
+      "metadata": {
+        "generator": 27,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\old27-control-o3\\program.meta",
+        "bytes": 107,
+        "sha256": "f47421b38778e4f981bda131a9a32464161acbabe3044ca2e568da4b64e4d45d"
+      },
+      "verification_receipt": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\old27-control-o3\\verification.json",
+        "bytes": 2738,
+        "sha256": "2f7f3028ead51311e0290bf24c3739efe57a88de5e116f11ed0a46952f59f144"
+      },
+      "probe": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-old27\\debug\\examples\\generator_probe.exe",
+        "bytes": 11400192,
+        "sha256": "67387f6cce52913d7a893e69f868bd30ca2f38e71b8264e20dc6c0caf0c58770"
+      },
+      "receipt": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\old27-control-o3.json",
+        "bytes": 1571,
+        "sha256": "dd74d58ef53c72c9eeda2c7ca28823972ab567fb9ac8365240451a5d1f6f14bc"
+      },
+      "link": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\old27-control-o3-link.log",
+        "bytes": 2377,
+        "sha256": "9293374456d1a0be6b4c92a0c15ee53f85b1e98ac28e9584493cead6676a3786"
+      }
+    },
+    "before28_log": {
+      "exit": 1,
+      "diagnostic": "原生后端不支持 动态 intrinsic os_log_write（58..94）",
+      "source": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\generator-log.xiao",
+        "bytes": 86,
+        "sha256": "85f8adf1c1372c5a1d14290ac0697eb837f65fa1b7346510cfa119937495eb0e"
+      },
+      "probe": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-before28\\debug\\examples\\generator_probe.exe",
+        "bytes": 11400192,
+        "sha256": "1259e1c2729a37a0b2133f2d7dd55b3468da22387c5666edd72e4e7d32a53897"
+      },
+      "receipt": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\before28-log-o3.json",
+        "bytes": 1564,
+        "sha256": "8e5a476d9d39fa0005d093be73711c33e20351ecbe0c89946a6829fc98f293b1"
+      }
+    },
+    "before28_control": {
+      "binary": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\before28-control-o3\\program.exe",
+        "sha256": "dab0e0707305fca281d23ef050ea043cb52768e41f6fef363445dbc09c5518cd"
+      },
+      "capabilities": 34,
+      "declared_components": [
+        "rc",
+        "time",
+        "value",
+        "weak"
+      ],
+      "exit": 0,
+      "fingerprints": {
+        "codegen": "xiao-codegen-28-d518085d312d0079",
+        "toolchain": "xiao-fnv1a64-ad0523bc83dd765a"
+      },
+      "generator": 28,
+      "ir": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\before28-control-o3\\program.ll",
+        "sha256": "84dece0083e9c8613b9cbb5a17983cf51eda9041bf302ff965ba934c9fdd78c6"
+      },
+      "map": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\before28-control-o3\\program.exe.map",
+        "sha256": "c0a9998c6dbeedd85fffe4cf61cf5b70a5bd4d9fe92ca1b9eb21e2ea32f998d3"
+      },
+      "observed_components": [
+        "rc",
+        "time",
+        "value",
+        "weak"
+      ],
+      "optimization": 3,
+      "runtime": {
+        "abi": 65556,
+        "path": "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib",
+        "sha256": "0110ac28d86b484ed8a3814878093b49bf7be927ebdf98b32f36e15a57b280d3"
+      },
+      "runtime_symbols": [
+        "xiao_runtime_abi_is_compatible",
+        "xiao_runtime_error_attach_span",
+        "xiao_runtime_error_checkpoint_reset",
+        "xiao_runtime_error_class",
+        "xiao_runtime_error_clear",
+        "xiao_runtime_error_exit_code",
+        "xiao_runtime_error_report",
+        "xiao_runtime_fatal_abi",
+        "xiao_runtime_language_context_set",
+        "xiao_runtime_print_values_with_capabilities",
+        "xiao_runtime_release",
+        "xiao_runtime_release_trace_begin",
+        "xiao_runtime_release_trace_flush",
+        "xiao_runtime_retain",
+        "xiao_runtime_string_new",
+        "xiao_runtime_time_format_utc",
+        "xiao_runtime_value_copy",
+        "xiao_runtime_value_int",
+        "xiao_runtime_value_none",
+        "xiao_runtime_value_release_strong",
+        "xiao_runtime_value_str_owned",
+        "xiao_runtime_weak_release",
+        "xiao_runtime_weak_retain"
+      ],
+      "source": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\generator-control.xiao",
+        "sha256": "52274f2cffcb77e6f66c4518d50086d77683b14600929412ebf7d5794f0f1c1f"
+      },
+      "stdlib": "StandardLibraryIdentity { language_version: \"0.1.0\", stdlib_interface_version: 1, runtime_abi_major: 1, runtime_abi_minor: 20, target: \"portable\" }",
+      "stdlib_interface": 1,
+      "target": "x86_64-pc-windows-msvc",
+      "unclassified_runtime_symbols": [],
+      "verification": "complete",
+      "metadata": {
+        "generator": 28,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\before28-control-o3\\program.meta",
+        "bytes": 107,
+        "sha256": "4d1c5f92c1b81e7bd8b8ecd026d22f63a43c0a3da6d4a423a9f2b9127b0894dc"
+      },
+      "verification_receipt": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\before28-control-o3\\verification.json",
+        "bytes": 2747,
+        "sha256": "80d3e19ea73db3a7458e1b0a992350428016a4903f491cf2f6bd648d8353e49a"
+      },
+      "probe": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-before28\\debug\\examples\\generator_probe.exe",
+        "bytes": 11400192,
+        "sha256": "1259e1c2729a37a0b2133f2d7dd55b3468da22387c5666edd72e4e7d32a53897"
+      },
+      "receipt": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\before28-control-o3.json",
+        "bytes": 1586,
+        "sha256": "0ffb08afe650a258be827b3f6ebf1fa154026fd27dd0ff634197a67e827b1aa8"
+      },
+      "link": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\before28-control-o3-link.log",
+        "bytes": 2383,
+        "sha256": "b32ba90f0f59c10d3e4bf8a73a923512d917303cbd775906af7ecc8248e59b11"
+      }
+    },
+    "after28_control": {
+      "binary": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-control-o3\\program.exe",
+        "sha256": "80c83ab91fd7bcfa4ba9064fad89e0589ccaaf9d7e265845f75238d02afa8665"
+      },
+      "capabilities": 34,
+      "declared_components": [
+        "rc",
+        "time",
+        "value",
+        "weak"
+      ],
+      "exit": 0,
+      "fingerprints": {
+        "codegen": "xiao-codegen-28-d518085d312d0079",
+        "toolchain": "xiao-fnv1a64-ad0523bc83dd765a"
+      },
+      "generator": 28,
+      "ir": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-control-o3\\program.ll",
+        "sha256": "84dece0083e9c8613b9cbb5a17983cf51eda9041bf302ff965ba934c9fdd78c6"
+      },
+      "map": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-control-o3\\program.exe.map",
+        "sha256": "b1a85e23c51e910652079d3bea3641ddda726b101a0f35a8b64abbb79253b5ad"
+      },
+      "observed_components": [
+        "rc",
+        "time",
+        "value",
+        "weak"
+      ],
+      "optimization": 3,
+      "runtime": {
+        "abi": 65556,
+        "path": "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib",
+        "sha256": "0110ac28d86b484ed8a3814878093b49bf7be927ebdf98b32f36e15a57b280d3"
+      },
+      "runtime_symbols": [
+        "xiao_runtime_abi_is_compatible",
+        "xiao_runtime_error_attach_span",
+        "xiao_runtime_error_checkpoint_reset",
+        "xiao_runtime_error_class",
+        "xiao_runtime_error_clear",
+        "xiao_runtime_error_exit_code",
+        "xiao_runtime_error_report",
+        "xiao_runtime_fatal_abi",
+        "xiao_runtime_language_context_set",
+        "xiao_runtime_print_values_with_capabilities",
+        "xiao_runtime_release",
+        "xiao_runtime_release_trace_begin",
+        "xiao_runtime_release_trace_flush",
+        "xiao_runtime_retain",
+        "xiao_runtime_string_new",
+        "xiao_runtime_time_format_utc",
+        "xiao_runtime_value_copy",
+        "xiao_runtime_value_int",
+        "xiao_runtime_value_none",
+        "xiao_runtime_value_release_strong",
+        "xiao_runtime_value_str_owned",
+        "xiao_runtime_weak_release",
+        "xiao_runtime_weak_retain"
+      ],
+      "source": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\generator-control.xiao",
+        "sha256": "52274f2cffcb77e6f66c4518d50086d77683b14600929412ebf7d5794f0f1c1f"
+      },
+      "stdlib": "StandardLibraryIdentity { language_version: \"0.1.0\", stdlib_interface_version: 1, runtime_abi_major: 1, runtime_abi_minor: 20, target: \"portable\" }",
+      "stdlib_interface": 1,
+      "target": "x86_64-pc-windows-msvc",
+      "unclassified_runtime_symbols": [],
+      "verification": "complete",
+      "metadata": {
+        "generator": 28,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-control-o3\\program.meta",
+        "bytes": 107,
+        "sha256": "4d1c5f92c1b81e7bd8b8ecd026d22f63a43c0a3da6d4a423a9f2b9127b0894dc"
+      },
+      "verification_receipt": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-control-o3\\verification.json",
+        "bytes": 2744,
+        "sha256": "5278d8a230af475d5dd033e438b8aa81d1cff5be80a18ec9880ef8acb8fb99c9"
+      },
+      "probe": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-tools\\debug\\examples\\generator_probe.exe",
+        "bytes": 11386368,
+        "sha256": "09d42d50fcbb25f0f636bf75670de0009a1ac683aebb067861c263b2aa4aedfb"
+      },
+      "receipt": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\after28-control-o3.json",
+        "bytes": 1579,
+        "sha256": "272bc27ba719a958646965ff1aa6d37b71f8129e01d77c746397ad6038a6f388"
+      },
+      "link": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\after28-control-o3-link.log",
+        "bytes": 2381,
+        "sha256": "3966768c0224c6171d5cca065b92e394763625128b88b9ddf0dc248700c10b71"
+      }
+    },
+    "after28_log": {
+      "binary": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-log-o3\\program.exe",
+        "sha256": "a0145af4bbf3ddcb63652ef014fd4902fbf42d93e96fe6466a934a72c1cd27f7"
+      },
+      "capabilities": 34,
+      "declared_components": [
+        "env",
+        "log",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "exit": 0,
+      "fingerprints": {
+        "codegen": "xiao-codegen-28-d518085d312d0079",
+        "toolchain": "xiao-fnv1a64-ad0523bc83dd765a"
+      },
+      "generator": 28,
+      "ir": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-log-o3\\program.ll",
+        "sha256": "ad6f0bd7e0a725410a57ca50f248e9760debdb417bf6cd64b862cb88cb9e2a8d"
+      },
+      "map": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-log-o3\\program.exe.map",
+        "sha256": "b2bfb371294b9521ae0c015f04f5ef9660845d54d8342fd4fdd895c69fc722f6"
+      },
+      "observed_components": [
+        "env",
+        "log",
+        "rc",
+        "value",
+        "weak"
+      ],
+      "optimization": 3,
+      "runtime": {
+        "abi": 65556,
+        "path": "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib",
+        "sha256": "0110ac28d86b484ed8a3814878093b49bf7be927ebdf98b32f36e15a57b280d3"
+      },
+      "runtime_symbols": [
+        "xiao_runtime_abi_is_compatible",
+        "xiao_runtime_env_run_native",
+        "xiao_runtime_error_attach_span",
+        "xiao_runtime_error_checkpoint_reset",
+        "xiao_runtime_error_class",
+        "xiao_runtime_error_clear",
+        "xiao_runtime_error_exit_code",
+        "xiao_runtime_error_push_native_frame",
+        "xiao_runtime_error_report",
+        "xiao_runtime_fatal_abi",
+        "xiao_runtime_language_context_set",
+        "xiao_runtime_log_write",
+        "xiao_runtime_release",
+        "xiao_runtime_release_trace_begin",
+        "xiao_runtime_release_trace_flush",
+        "xiao_runtime_retain",
+        "xiao_runtime_string_new",
+        "xiao_runtime_value_copy",
+        "xiao_runtime_value_none",
+        "xiao_runtime_value_release_strong",
+        "xiao_runtime_value_str_owned",
+        "xiao_runtime_weak_release",
+        "xiao_runtime_weak_retain"
+      ],
+      "source": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\generator-log.xiao",
+        "sha256": "85f8adf1c1372c5a1d14290ac0697eb837f65fa1b7346510cfa119937495eb0e"
+      },
+      "stdlib": "StandardLibraryIdentity { language_version: \"0.1.0\", stdlib_interface_version: 1, runtime_abi_major: 1, runtime_abi_minor: 20, target: \"portable\" }",
+      "stdlib_interface": 1,
+      "target": "x86_64-pc-windows-msvc",
+      "unclassified_runtime_symbols": [],
+      "verification": "complete",
+      "metadata": {
+        "generator": 28,
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-log-o3\\program.meta",
+        "bytes": 107,
+        "sha256": "4d1c5f92c1b81e7bd8b8ecd026d22f63a43c0a3da6d4a423a9f2b9127b0894dc"
+      },
+      "verification_receipt": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-log-o3\\verification.json",
+        "bytes": 2740,
+        "sha256": "93fb2a0c25ac5610093db81e40c3bff1d00d6986691705f3cfbb8fafbea75717"
+      },
+      "probe": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-tools\\debug\\examples\\generator_probe.exe",
+        "bytes": 11386368,
+        "sha256": "09d42d50fcbb25f0f636bf75670de0009a1ac683aebb067861c263b2aa4aedfb"
+      },
+      "receipt": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\after28-log-o3.json",
+        "bytes": 1559,
+        "sha256": "55b3f6163c6f61bc81e13651d06af32ae84614f42406631785592956206a6e58"
+      },
+      "link": {
+        "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\after28-log-o3-link.log",
+        "bytes": 2373,
+        "sha256": "002ad2a1f23bb7a29ba175260af0e88de3a2b17c96775ca155fda5b8a9df01f3"
+      }
+    },
+    "control_ir_equal": true,
+    "version_only_changed_native_metadata": true
+  }
+]

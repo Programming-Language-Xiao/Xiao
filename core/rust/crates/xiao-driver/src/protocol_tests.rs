@@ -466,6 +466,7 @@ fn cache_clean_protocol_reads_archive_references() {
         let index = ArchiveIndex {
             schema_major: INDEX_SCHEMA_MAJOR,
             schema_minor: INDEX_SCHEMA_MINOR,
+            generator_version: None,
             entry: logical_path.clone(),
             entries: vec![ArchiveEntry {
                 logical_path,

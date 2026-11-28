@@ -20,6 +20,8 @@ use std::os::unix::fs::PermissionsExt;
 pub const INDEX_SCHEMA_MAJOR: u32 = 1;
 /// 首版索引次版本。
 pub const INDEX_SCHEMA_MINOR: u32 = 0;
+/// 归档索引次版本 1 增加必需的生成器身份。其他索引沿用各自版本。
+pub const ARCHIVE_INDEX_SCHEMA_MINOR: u32 = 1;
 /// 首版索引没有额外必需能力位。
 pub const INDEX_REQUIRED_FEATURES: u64 = 0;
 /// 归档必须声明标准库身份及运行能力要求；不用于全局缓存索引。
@@ -1247,6 +1249,8 @@ pub struct ArchiveIndex {
     pub schema_major: u32,
     /// Schema 次版本。
     pub schema_minor: u32,
+    /// 构建生成器版本。只有旧的 1.0 索引省略此字段。
+    pub generator_version: Option<u32>,
     /// 入口逻辑路径。
     pub entry: String,
     /// 按规范键排序的对象条目。
@@ -1359,6 +1363,9 @@ impl ArchiveIndex {
         }
         // 零能力也显式编码，以便区分未声明能力要求的旧归档。
         put_varint_field(&mut output, 16, self.required_capabilities);
+        if let Some(version) = self.generator_version {
+            put_varint_field(&mut output, 17, u64::from(version));
+        }
         Ok(output)
     }
 
@@ -1368,6 +1375,7 @@ impl ArchiveIndex {
         let mut index = Self {
             schema_major: 0,
             schema_minor: 0,
+            generator_version: None,
             entry: String::new(),
             entries: Vec::new(),
             dependency_lock_digest: String::new(),
@@ -1412,6 +1420,18 @@ impl ArchiveIndex {
                 16 => {
                     index.required_capabilities = reader.varint(wire)?;
                     has_capabilities = true;
+                }
+                17 => {
+                    let version = u32::try_from(reader.varint(wire)?).map_err(|_| {
+                        ArtifactError::InvalidArchiveRequirements(
+                            "归档生成器版本超出 u32 范围".to_owned(),
+                        )
+                    })?;
+                    if index.generator_version.replace(version).is_some() {
+                        return Err(ArtifactError::InvalidArchiveRequirements(
+                            "归档索引重复声明生成器版本".to_owned(),
+                        ));
+                    }
                 }
                 5 => record_type = Some(reader.varint(wire)? as u32),
                 6 => required_features = reader.varint(wire)?,
@@ -1583,6 +1603,20 @@ fn encode_archive_entry(entry: &ArchiveEntry) -> Result<Vec<u8>, ArtifactError> 
 }
 
 fn validate_archive_index(index: &ArchiveIndex) -> Result<(), ArtifactError> {
+    if index.schema_minor > ARCHIVE_INDEX_SCHEMA_MINOR {
+        return Err(ArtifactError::ArchiveVersionIncompatible(format!(
+            "归档索引版本 1.{} 超出支持上限 1.{ARCHIVE_INDEX_SCHEMA_MINOR}",
+            index.schema_minor
+        )));
+    }
+    match (index.schema_minor, index.generator_version) {
+        (0, None) | (1, Some(1..)) => {}
+        _ => {
+            return Err(ArtifactError::InvalidArchiveRequirements(
+                "归档索引 1.1 需要一个有效的生成器版本，索引 1.0 省略该字段".to_owned(),
+            ));
+        }
+    }
     if index.stdlib_interface_version == 0 || index.language_version.is_empty() {
         return Err(ArtifactError::ArchiveVersionIncompatible(
             "归档缺少标准库接口版本或语言版本".to_owned(),

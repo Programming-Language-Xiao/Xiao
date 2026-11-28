@@ -1,0 +1,125 @@
+
+running 26 tests
+test tests::archive_index_entry_validation_is_symmetric ... ok
+test tests::archive_index_extended_metadata_round_trips_without_changing_old_fields ... ok
+test tests::archive_index_rejects_unknown_required_features ... ok
+test tests::archive_index_generator_follows_its_schema_version ... ok
+test tests::archive_rejects_unknown_capabilities_and_overflowing_interface_version ... ok
+test tests::archive_requirements_round_trip_is_canonical ... ok
+test tests::archive_requires_new_feature_and_version_fields ... ok
+test tests::cleanup_plan_defers_invalid_object_isolation_until_apply ... ok
+test tests::cleanup_rechecks_references_added_after_plan_creation ... ok
+test tests::cleanup_reference_source_failure_is_conservative ... ok
+test tests::cleanup_archive_reference_protects_its_object ... ok
+test tests::cleanup_plan_protects_project_lock_references_and_apply_is_explicit ... ok
+test tests::cleanup_revalidates_and_quarantines_object_changed_after_plan ... ok
+test tests::conservative_reference_set_protects_objects_when_sources_are_unavailable ... ok
+test tests::corrupt_object_is_quarantined ... ok
+test tests::digest_and_sharded_xiaoc_object_are_deterministic ... ok
+test tests::indexes_round_trip_deterministically_and_reject_unknown_major ... ok
+test tests::index_store_commits_global_snapshot_atomically ... ok
+test tests::new_archive_feature_rejects_legacy_reader_without_changing_global_index ... ok
+test tests::interrupted_object_write_cleans_temporary_input ... ok
+test tests::global_index_can_rebuild_from_verified_objects_and_query_both_directions ... ok
+test tests::seeded_index_mutations_never_panic_and_are_rejected_without_io_errors ... ok
+test tests::xiaoc_validation_comes_from_authoritative_codec ... ok
+test tests::indexes_remain_readable_while_their_write_locks_are_held ... ok
+test tests::scan_quarantines_objects_with_invalid_names_or_shards ... ok
+test tests::objects_are_read_only_and_hash_collisions_quarantine_both_inputs ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+
+running 61 tests
+test artifact::tests::composition_keeps_declared_and_observed_components_separate ... ok
+test artifact::tests::declares_link_dependencies_of_reachable_runtime_symbols ... ok
+test artifact::tests::derives_reachable_runtime_components_from_llvm_control_flow ... ok
+test artifact::tests::bound_coff_map_rejects_unclassified_runtime_symbol ... ok
+test artifact::tests::dynamic_artifact_reports_runtime_dependency_fact ... ok
+test artifact::tests::keeps_unclassified_runtime_symbols_visible ... ok
+test artifact::tests::maps_runtime_symbols_to_declared_component_names ... ok
+test artifact::tests::normalizes_macho_leading_underscore_without_touching_other_symbols ... ok
+test artifact::tests::parses_arm64_slice_from_fat_macho ... ok
+test artifact::tests::parses_controlled_elf_symbols ... ok
+test artifact::tests::parses_controlled_macho_symbols_and_normalizes_prefix ... ok
+test artifact::tests::parses_controlled_pe_coff_symbols ... ok
+test artifact::tests::parses_fat_macho_slice_with_independent_endianness ... ok
+test artifact::tests::debug_symbol_is_required_only_for_debug_artifacts ... ok
+test artifact::tests::rejects_byte_offset_that_cannot_fit_usize ... ok
+test artifact::tests::readable_coff_rejects_unclassified_runtime_symbol ... ok
+test artifact::tests::skips_elf_file_records_without_hiding_runtime_functions ... ok
+test artifact::tests::declared_runtime_component_is_observable_for_each_format ... ok
+test artifact::tests::stripped_symbol_tables_are_not_accepted_as_trimming_evidence ... ok
+test artifact::tests::symbol_table_comparison_never_equates_unavailable_reports ... ok
+test artifact::tests::pe_symbol_table_status_reflects_actual_coff_table ... ok
+test baseline::tests::median_and_noise_are_stable ... ok
+test baseline::tests::rejects_non_finite_samples_and_exposes_noise_gate ... ok
+test baseline::tests::rejects_uncontrolled_sample_shapes ... ok
+test artifact::tests::static_artifact_with_runtime_dependency_is_rejected ... ok
+test dynamic::imports::tests::namespace_selection_does_not_expand_unselected_siblings ... ok
+test dynamic::release::storage_tests::only_literal_alloca_counts_can_move_to_entry ... ok
+test artifact::tests::static_artifact_with_runtime_symbol_is_rejected ... ok
+test native_concurrency::tests::duplicate_spans_are_rejected ... ok
+test native_concurrency::tests::metadata_must_match_one_typed_call_and_cannot_intercept_another_module ... ok
+test native_concurrency::tests::module_concurrency_is_rejected_structurally ... ok
+test native_concurrency::tests::orphan_concurrency_facts_are_rejected ... ok
+test native_concurrency::tests::plan_indexes_ir_calls_without_name_resolution ... ok
+test native_concurrency::tests::unknown_operation_is_fail_closed ... ok
+test native_metadata::tests::native_metadata_codec_is_bounded_and_exact ... ok
+test native_metadata::tests::native_metadata_does_not_scan_for_magic ... ok
+test native_metadata::tests::native_metadata_requirements_reject_incompatible_inputs ... ok
+test native_metadata::tests::native_metadata_emission_uses_the_declared_target ... ok
+test optimization::tests::extension_switches_are_explicitly_rejected_until_frozen ... ok
+test optimization::tests::plan_keeps_extensions_off_and_fingerprint_stable ... ok
+test optimization::tests::runtime_report_explains_retained_and_removed_components ... ok
+test reproducible::tests::binary_layout_whitelist_is_explicit ... ok
+test reproducible::tests::normalizes_debug_paths_in_place_and_records_offsets ... ok
+test reproducible::tests::normalizes_elf_gnu_build_id ... ok
+test reproducible::tests::normalizes_paths_times_and_symbol_order ... ok
+test reproducible::tests::normalizes_pe_debug_directory_timestamp ... ok
+test reproducible::tests::normalizes_pe_timestamp_and_records_the_field ... ok
+test reproducible::tests::records_unix_and_windows_path_fields_separately ... ok
+test target::tests::controlled_targets_validate_equally ... ok
+test target::tests::host_target_architecture_matches_compile_time_target ... ok
+test target::tests::invalid_fixed_width_and_format_are_rejected ... ok
+test toolchain::tests::native_library_list_is_fingerprinted ... ok
+test toolchain::tests::normalizes_case_insensitive_windows_tokens ... ok
+test toolchain::tests::parses_windows_native_static_libraries ... ok
+test toolchain::tests::preserves_unix_native_static_libraries ... ok
+test toolchain::tests::posix_startup_shim_waits_for_readiness ... ok
+test artifact::tests::verifies_release_debug_and_stripped_modes_independently ... ok
+test toolchain::tests::rejects_missing_native_static_library_marker ... ok
+test toolchain::tests::startup_shim_embeds_only_diagnostics_basename ... ok
+test toolchain::tests::windows_startup_shim_opens_console_and_waits_for_readiness ... ok
+test dynamic::architecture_tests::module_dependency_direction_is_acyclic ... ok
+
+test result: ok. 61 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.71s
+
+
+running 23 tests
+test tests::archive_language_resolution_obeys_default_override_and_fallback ... ok
+test tests::archive_runner_rejects_missing_runtime_features_before_entry_execution ... ok
+test tests::archive_runner_checks_runtime_before_entry_execution ... ok
+test tests::archive_requirements_fail_before_entry_resolution_or_vm_events ... ok
+test tests::debug_and_source_objects_are_independent_and_standard_xiaoc_is_trimmed ... ok
+test tests::identical_resources_share_one_physical_object_and_keep_two_mappings ... ok
+test tests::deterministic_round_trip_and_index_store ... ok
+test tests::rejects_all_index_logical_path_boundary_forms ... ok
+test tests::rejects_encryption_and_multi_volume_flags ... ok
+test tests::config_resource_bridge_preserves_source_span ... ok
+test tests::rejects_missing_and_duplicate_index_headers ... ok
+test tests::rejects_out_of_bounds_member_lengths_and_unknown_required_versions ... ok
+test tests::explicit_resources_are_content_addressed_and_never_scanned ... ok
+test tests::resource_diagnostics_cover_duplicate_digest_and_undeclared_access ... ok
+test tests::review_index_entry_contract_is_symmetric ... ok
+test tests::review_payload_debug_contract_is_symmetric ... ok
+test tests::rejects_path_traversal_and_truncation ... ok
+test tests::review_payload_language_matches_archive_index ... ok
+test tests::review_requirements_precede_payload_decoding ... ok
+test tests::resource_collection_side_effect_probe_excludes_credentials_and_environment_marker ... ok
+test tests::zip64_round_trip_and_equal_compression_uses_store ... ok
+test tests::standard_and_debug_packages_have_identical_runtime_observations ... ok
+test tests::rejects_duplicate_objects_absolute_paths_and_zip_bombs ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s
+

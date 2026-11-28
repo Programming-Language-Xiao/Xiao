@@ -1,0 +1,6 @@
+
+running 1 test
+test log_native_enforces_each_bit_and_releases_inputs ... ignored, 需要显式 LLVM 工具链和发布 Runtime
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 4 filtered out; finished in 0.00s
+

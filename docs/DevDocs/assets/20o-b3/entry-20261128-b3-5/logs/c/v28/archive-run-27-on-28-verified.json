@@ -1,0 +1,82 @@
+{
+  "command": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-old27\\debug\\xiao-core.exe"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao\\core\\rust",
+  "core": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-old27\\debug\\xiao-core.exe",
+    "bytes": 28311040,
+    "sha256": "15dafe0b5905a026350d5d5b009062e02ecc5ce80a7d28e082b58e5d503881d2"
+  },
+  "artifact": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\control-28.xar",
+    "bytes": 1329,
+    "sha256": "df6333db65d3744d7ff669cb31313296f0ca7e2d1f4aa400fc00120423f7c0df"
+  },
+  "process_exit": 0,
+  "validation_exit": 2,
+  "request_frame": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\archive-run-27-on-28-verified.request.bin",
+    "bytes": 411,
+    "sha256": "97cb0e60e8aafd654e3abd635ce5beec77564d280e33f7bfbd1aabdf5d3b23d6"
+  },
+  "response_frame": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\archive-run-27-on-28-verified.response.bin",
+    "bytes": 845,
+    "sha256": "26afa5e33b1a5297f744d112b3dfea7253417e8da76b3c67a2e386e176bb721d"
+  },
+  "stderr": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\archive-run-27-on-28-verified.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "hello": {
+    "type": "hello",
+    "request_id": "identity",
+    "accepted": true,
+    "protocol_version": 1,
+    "core_version": 1,
+    "versions": {
+      "protocol": 1,
+      "core": 1,
+      "language": "0.1.0",
+      "runtime_abi": 65556,
+      "frontend": 1,
+      "driver": 1,
+      "bytecode_format": 4,
+      "codegen": 27
+    },
+    "capabilities": [
+      "run",
+      "run_archive",
+      "run_xiaoc",
+      "arguments",
+      "verify",
+      "cache",
+      "test",
+      "build",
+      "build_archive",
+      "environment",
+      "package",
+      "repl_packages",
+      "cancel"
+    ],
+    "error": null
+  },
+  "response": {
+    "type": "error",
+    "request_id": "archive-run-27-on-28-verified",
+    "error": {
+      "code": "X17-XAR-007",
+      "message_id": "x17.xar.archive_version_incompatible",
+      "message": "归档索引版本不受支持",
+      "phase": "archive_validation",
+      "next_step": "检查归档、Runtime 和目标平台后重试",
+      "details": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\control-28.xar"
+      }
+    },
+    "report": null,
+    "exit_code": 2
+  }
+}

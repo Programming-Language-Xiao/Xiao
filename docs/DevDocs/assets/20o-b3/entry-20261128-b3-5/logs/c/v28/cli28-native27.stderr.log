@@ -1,0 +1,5 @@
+产物验证通过：native
+发布摘要  cfaa8b60f2c8435567f63be8a7a4770d4ea1057af1fe9add1ceb55ba3e5e0ff6
+发布报告  平台 x86_64-pc-windows-msvc  Runtime ABI 65556..65556  工具链 unknown
+可复现性  not-measured
+未签名：SHA-256 只保证完整性，不代表发布者可信

@@ -1,0 +1,82 @@
+{
+  "command": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-old27\\debug\\xiao-core.exe"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao\\core\\rust",
+  "core": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\target-old27\\debug\\xiao-core.exe",
+    "bytes": 28311040,
+    "sha256": "15dafe0b5905a026350d5d5b009062e02ecc5ce80a7d28e082b58e5d503881d2"
+  },
+  "artifact": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-log-o3\\program.exe",
+    "bytes": 947712,
+    "sha256": "a0145af4bbf3ddcb63652ef014fd4902fbf42d93e96fe6466a934a72c1cd27f7"
+  },
+  "process_exit": 0,
+  "validation_exit": 2,
+  "request_frame": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\native-27-on-28-o3-verified.request.bin",
+    "bytes": 328,
+    "sha256": "80a1083e5eda28369d210585ad2b7109bfc933594cfafec6e7a0f60a0d637aac"
+  },
+  "response_frame": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\native-27-on-28-o3-verified.response.bin",
+    "bytes": 847,
+    "sha256": "73570950eac69c30d2705fd1eac2a0a18044863f4ec14969128dc2b7f4118f59"
+  },
+  "stderr": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\v28\\native-27-on-28-o3-verified.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "hello": {
+    "type": "hello",
+    "request_id": "identity",
+    "accepted": true,
+    "protocol_version": 1,
+    "core_version": 1,
+    "versions": {
+      "protocol": 1,
+      "core": 1,
+      "language": "0.1.0",
+      "runtime_abi": 65556,
+      "frontend": 1,
+      "driver": 1,
+      "bytecode_format": 4,
+      "codegen": 27
+    },
+    "capabilities": [
+      "run",
+      "run_archive",
+      "run_xiaoc",
+      "arguments",
+      "verify",
+      "cache",
+      "test",
+      "build",
+      "build_archive",
+      "environment",
+      "package",
+      "repl_packages",
+      "cancel"
+    ],
+    "error": null
+  },
+  "response": {
+    "type": "error",
+    "request_id": "native-27-on-28-o3-verified",
+    "error": {
+      "code": "X17-XAR-007",
+      "message_id": "x11.verify.failed",
+      "message": "原生产物的版本、特性要求、目标或标准库身份不满足",
+      "phase": "verification",
+      "next_step": "检查输入路径和产物完整性后重试",
+      "details": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\after28-log-o3\\program.exe"
+      }
+    },
+    "report": null,
+    "exit_code": 2
+  }
+}

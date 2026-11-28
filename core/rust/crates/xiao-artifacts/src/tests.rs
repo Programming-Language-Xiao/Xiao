@@ -194,6 +194,7 @@ fn seeded_index_mutations_never_panic_and_are_rejected_without_io_errors() {
     let archive = ArchiveIndex {
         schema_major: INDEX_SCHEMA_MAJOR,
         schema_minor: INDEX_SCHEMA_MINOR,
+        generator_version: None,
         entry: "main.xiaoc".to_owned(),
         entries: vec![ArchiveEntry {
             logical_path: "main.xiaoc".to_owned(),
@@ -322,6 +323,7 @@ fn indexes_round_trip_deterministically_and_reject_unknown_major() {
     let archive = ArchiveIndex {
         schema_major: INDEX_SCHEMA_MAJOR,
         schema_minor: INDEX_SCHEMA_MINOR,
+        generator_version: None,
         entry: "main.xiaoc".to_owned(),
         entries: vec![ArchiveEntry {
             logical_path: "objects/xiaoc/main.xiaoc".to_owned(),
@@ -380,6 +382,7 @@ fn archive_index_rejects_unknown_required_features() {
     let index = ArchiveIndex {
         schema_major: INDEX_SCHEMA_MAJOR,
         schema_minor: INDEX_SCHEMA_MINOR,
+        generator_version: None,
         entry: "main.xiaoc".to_owned(),
         entries: Vec::new(),
         dependency_lock_digest: String::new(),
@@ -407,6 +410,7 @@ fn archive_index_extended_metadata_round_trips_without_changing_old_fields() {
     let index = ArchiveIndex {
         schema_major: INDEX_SCHEMA_MAJOR,
         schema_minor: INDEX_SCHEMA_MINOR,
+        generator_version: None,
         entry: "main.xiaoc".to_owned(),
         entries: Vec::new(),
         dependency_lock_digest: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
@@ -433,6 +437,7 @@ fn requirements_index() -> ArchiveIndex {
     ArchiveIndex {
         schema_major: INDEX_SCHEMA_MAJOR,
         schema_minor: INDEX_SCHEMA_MINOR,
+        generator_version: None,
         entry: "main.xiaoc".to_owned(),
         entries: Vec::new(),
         dependency_lock_digest: String::new(),
@@ -447,6 +452,48 @@ fn requirements_index() -> ArchiveIndex {
         required_capabilities: 0,
         required_features: 0,
     }
+}
+
+#[test]
+/// 旧索引保持原形状，新索引要求唯一的非零生成器身份。
+fn archive_index_generator_follows_its_schema_version() {
+    let legacy = requirements_index();
+    let old_bytes = legacy.encode().unwrap();
+    assert_eq!(ArchiveIndex::decode(&old_bytes).unwrap(), legacy);
+
+    let current = ArchiveIndex {
+        schema_minor: ARCHIVE_INDEX_SCHEMA_MINOR,
+        generator_version: Some(28),
+        ..legacy.clone()
+    };
+    let bytes = current.encode().unwrap();
+    assert_eq!(ArchiveIndex::decode(&bytes).unwrap(), current);
+    assert!(
+        ArchiveIndex {
+            generator_version: Some(28),
+            ..legacy
+        }
+        .encode()
+        .is_err()
+    );
+    assert!(
+        ArchiveIndex {
+            generator_version: None,
+            ..current
+        }
+        .encode()
+        .is_err()
+    );
+    let mut duplicate = bytes.clone();
+    put_varint_field(&mut duplicate, 17, 28);
+    assert!(matches!(
+        ArchiveIndex::decode(&duplicate),
+        Err(ArtifactError::InvalidArchiveRequirements(_))
+    ));
+    assert!(matches!(
+        ArchiveIndex::decode(&without_archive_field(&bytes, 17)),
+        Err(ArtifactError::InvalidArchiveRequirements(_))
+    ));
 }
 
 /// 删除指定 protobuf 字段，其余原始字节保持不变，用于缺字段负例。
@@ -633,6 +680,7 @@ fn indexes_remain_readable_while_their_write_locks_are_held() {
     let archive = ArchiveIndex {
         schema_major: INDEX_SCHEMA_MAJOR,
         schema_minor: INDEX_SCHEMA_MINOR,
+        generator_version: None,
         entry: "main.xiaoc".to_owned(),
         entries: Vec::new(),
         dependency_lock_digest: String::new(),
@@ -830,6 +878,7 @@ fn cleanup_archive_reference_protects_its_object() {
     let archive = ArchiveIndex {
         schema_major: INDEX_SCHEMA_MAJOR,
         schema_minor: INDEX_SCHEMA_MINOR,
+        generator_version: None,
         entry: "main.xiaoc".to_owned(),
         entries: vec![ArchiveEntry {
             logical_path: "objects/xiaoc/main.xiaoc".to_owned(),

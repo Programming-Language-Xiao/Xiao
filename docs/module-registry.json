@@ -9,16 +9,21 @@
       "code": [
         "stdlib/log.xiao",
         "core/rust/crates/xiao-runtime/src/log.rs",
-        "core/rust/crates/xiao-vm/src/semantics/log_intrinsics.rs"
+        "core/rust/crates/xiao-vm/src/semantics/log_intrinsics.rs",
+        "core/rust/crates/xiao-runtime/src/abi_log.rs",
+        "core/rust/crates/xiao-runtime/src/abi_log_stdout.rs"
       ],
       "tests": [
         "core/rust/crates/xiao-runtime/src/log_tests.rs",
         "core/rust/crates/xiao-vm/src/semantics/log_intrinsics_tests.rs",
-        "core/rust/crates/xiao-driver/tests/20o_b3_log_vm.rs"
+        "core/rust/crates/xiao-driver/tests/20o_b3_log_vm.rs",
+        "core/rust/crates/xiao-runtime/src/abi_log_tests.rs",
+        "core/rust/crates/xiao-driver/tests/20o_b3_log_native.rs"
       ],
       "usedocs": [
         "docs/DevDocs/20o-b3-5-log-implementation-plan.md",
-        "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials/log.md"
+        "docs/DevDocs/assets/20o-b3/entry-20261124-b3-0e/tutorials/log.md",
+        "docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/REPORT-C.md"
       ]
     },
     {

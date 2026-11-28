@@ -1,0 +1,53 @@
+## codex/b1-imp-seven-libraries...origin/codex/b1-imp-seven-libraries
+ M core/rust/Cargo.lock
+ M core/rust/crates/xiao-artifacts/src/lib.rs
+ M core/rust/crates/xiao-artifacts/src/tests.rs
+ M core/rust/crates/xiao-codegen-llvm/src/artifact.rs
+ M core/rust/crates/xiao-codegen-llvm/src/build.rs
+ M core/rust/crates/xiao-codegen-llvm/src/dynamic.rs
+ M core/rust/crates/xiao-codegen-llvm/src/dynamic/cmath.rs
+ M core/rust/crates/xiao-codegen-llvm/src/dynamic/entry.rs
+ M core/rust/crates/xiao-codegen-llvm/src/dynamic/expression.rs
+ M core/rust/crates/xiao-codegen-llvm/src/dynamic/predicate.rs
+ M core/rust/crates/xiao-codegen-llvm/src/lib.rs
+ M core/rust/crates/xiao-codegen-llvm/src/native_metadata_tests.rs
+ M core/rust/crates/xiao-driver/src/archive.rs
+ M core/rust/crates/xiao-driver/src/native.rs
+ M core/rust/crates/xiao-driver/src/protocol/verify.rs
+ M core/rust/crates/xiao-driver/src/protocol_tests.rs
+ M core/rust/crates/xiao-driver/tests/20e_archive_wiring.rs
+ M core/rust/crates/xiao-driver/tests/20o_b1_probe.rs
+ M core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_llvm.rs
+ M core/rust/crates/xiao-driver/tests/20o_b2_b4_cmath_vm.rs
+ M core/rust/crates/xiao-driver/tests/20o_b2_b4_frontend.rs
+ M core/rust/crates/xiao-driver/tests/20o_b2_b5_versions.rs
+ M core/rust/crates/xiao-driver/tests/20o_static_float_equality.rs
+ M core/rust/crates/xiao-driver/tests/22c_runtime_gates.rs
+ M core/rust/crates/xiao-driver/tests/22e_release.rs
+ M core/rust/crates/xiao-driver/tests/artifact_size_regression.rs
+ M core/rust/crates/xiao-driver/tests/compatibility_matrix.rs
+ M core/rust/crates/xiao-driver/tests/d17c_archive.rs
+ M core/rust/crates/xiao-driver/tests/d19a_differential.rs
+ M core/rust/crates/xiao-driver/tests/release_report.rs
+ M core/rust/crates/xiao-intrinsics/build.rs
+ M core/rust/crates/xiao-intrinsics/intrinsics.json
+ M core/rust/crates/xiao-intrinsics/src/lib.rs
+ M core/rust/crates/xiao-runtime/src/abi.rs
+ M core/rust/crates/xiao-runtime/src/abi_env.rs
+ M core/rust/crates/xiao-runtime/src/abi_env_tests.rs
+ M core/rust/crates/xiao-runtime/src/abi_io.rs
+ M core/rust/crates/xiao-runtime/src/abi_time.rs
+ M core/rust/crates/xiao-runtime/src/log.rs
+ M core/rust/crates/xiao-xar/Cargo.toml
+ M core/rust/crates/xiao-xar/src/lib.rs
+ M core/rust/crates/xiao-xar/src/tests.rs
+ M core/rust/crates/xiao-xar/tests/fuzz_archive.rs
+ M docs/DevDocs/20o-b3-5-log-implementation-plan.md
+ M docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/README.md
+ M tests/benchmarks/Cargo.lock
+?? core/rust/crates/xiao-driver/tests/20o_b3_log_native.rs
+?? core/rust/crates/xiao-runtime/src/abi_log.rs
+?? core/rust/crates/xiao-runtime/src/abi_log_stdout.rs
+?? core/rust/crates/xiao-runtime/src/abi_log_tests.rs
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/REPORT-C.md
+?? docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/

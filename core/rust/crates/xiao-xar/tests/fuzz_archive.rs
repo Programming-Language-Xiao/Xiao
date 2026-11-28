@@ -45,6 +45,7 @@ fn seed_archive() -> Vec<u8> {
     let index = ArchiveIndex {
         schema_major: INDEX_SCHEMA_MAJOR,
         schema_minor: INDEX_SCHEMA_MINOR,
+        generator_version: None,
         entry: "asset.bin".to_owned(),
         entries: vec![ArchiveEntry {
             logical_path: "asset.bin".to_owned(),

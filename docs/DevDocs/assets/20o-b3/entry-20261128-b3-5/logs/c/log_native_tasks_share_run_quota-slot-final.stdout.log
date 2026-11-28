@@ -1,0 +1,10 @@
+
+running 1 test
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-slot-final\\xiao-b3-log-55628-quota\\quota-o0.verification.json" SHA-256 73dbf5d702793eb588449ca107e0814f1d29af2529a0dc289d6ba6c9655127b8 退出 Some(3)
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-slot-final\\xiao-b3-log-55628-quota\\quota-o0.verification.json" SHA-256 73dbf5d702793eb588449ca107e0814f1d29af2529a0dc289d6ba6c9655127b8 退出 Some(3)
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-slot-final\\xiao-b3-log-55628-quota\\quota-o3.verification.json" SHA-256 a60762cfd620fc85d0a2953371ce809d34c5cd6548e3d133b79cd7abe809e007 退出 Some(3)
+验证 "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/native-slot-final\\xiao-b3-log-55628-quota\\quota-o3.verification.json" SHA-256 a60762cfd620fc85d0a2953371ce809d34c5cd6548e3d133b79cd7abe809e007 退出 Some(3)
+test log_native_tasks_share_run_quota ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 27.35s
+

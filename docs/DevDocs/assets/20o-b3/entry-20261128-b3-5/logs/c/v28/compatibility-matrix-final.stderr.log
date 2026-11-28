@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b3\entry-20261128-b3-5\logs\c\v28\verify_matrix.py", line 300, in <module>
+    compatibility()
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b3\entry-20261128-b3-5\logs\c\v28\verify_matrix.py", line 277, in compatibility
+    result = protocol_case(cores[consumer], consumer, f"archive-run-{consumer}-on-{producer}", "run_archive",
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b3\entry-20261128-b3-5\logs\c\v28\verify_matrix.py", line 197, in protocol_case
+    assert result.returncode == 0, result.stderr
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b''

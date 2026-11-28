@@ -47,6 +47,7 @@ fn source_features_are_shifted_into_xar_concurrency_bits() {
     let index = ArchiveIndex {
         schema_major: INDEX_SCHEMA_MAJOR,
         schema_minor: INDEX_SCHEMA_MINOR,
+        generator_version: None,
         entry: "main.xiaoc".to_owned(),
         entries: Vec::new(),
         dependency_lock_digest: "0".repeat(64),

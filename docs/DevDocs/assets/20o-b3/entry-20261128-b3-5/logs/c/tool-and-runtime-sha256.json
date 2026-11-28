@@ -1,0 +1,62 @@
+[
+  {
+    "Path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5b\\target\\release\\xiao_runtime.lib",
+    "Hash": "EE0C887A737FC796450A53D88398C04D5EF95DFA25D816D91B8AAE71BA663065"
+  },
+  {
+    "Path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\target-runtime-fixed\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+    "Hash": "82E5A01DD1B97AE964F5B1B3F6CFEFE7A078D5E34A77A6FC9CCE1DB425613A35"
+  },
+  {
+    "Path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\target-runtime\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+    "Hash": "2A55D9778AFBECF30F19AB6F7D4F17601D297C3661134DC2196E3ECC62DFB843"
+  },
+  {
+    "Path": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "Hash": "574047F1B98D62BEA1DA8AE9340FEA1EF06D262C3186E1D72D87E5401166C833"
+  },
+  {
+    "Path": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "Hash": "63F559DB3D87798FA4F26923C4CD5839DDC41B40905D884EE341C74A8BD858E9"
+  },
+  {
+    "Path": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "Hash": "DF1409FABACDC625B2C2FEFE50712DE4BA140E07BF2BB4192101189498152869"
+  },
+  {
+    "Path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+    "Hash": "ACB138286BBE20C6CF3EC39A7E0A68C3FAB0CD949BAA2912CF466514D0D531AB"
+  },
+  {
+    "Path": "D:\\msys64\\ucrt64\\bin\\llvm-nm.exe",
+    "Hash": "297B4FA9E633E861F6BE676F6923E13729C977BAB6337D6DD78F47BABC0003E3"
+  },
+  {
+    "Path": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "Hash": "3EF8FCF80D409FAB22DDD89EE19249F31A26AD9914D3E3E48573C30998FA24DE"
+  },
+  {
+    "Path": "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "Hash": "86478E53F769379D7F0EBFA7C9AA97CB76CA92233F79AA2CC0DBEE2EFAAC73C7"
+  },
+  {
+    "Path": "D:\\project\\Xiao\\Xiao\\stdlib\\log.xiao",
+    "Hash": "59545FB45A0FC9FCFEF8AA9882A676B3D0F1E68818B4186088E97B139CA8E047"
+  },
+  {
+    "Path": "D:\\project\\Xiao\\Xiao\\core\\rust\\Cargo.lock",
+    "Hash": "28D38451BA0490B70D2D136BC3268ACAD8DE02B5658BF826F842069019161C53"
+  },
+  {
+    "Path": "D:\\project\\Xiao\\Xiao\\tests\\benchmarks\\Cargo.lock",
+    "Hash": "8AC4F16AF6E8BAF5B71E0E0B5D89397EB5AE7BF2E3CC5A96053683C6E8B4B577"
+  },
+  {
+    "Path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\target-before\\debug\\examples\\generator_probe.exe",
+    "Hash": "106965FA5A0F56B6B100C9592AF88FE6B23EC0A39218B933A61DE686357A1D11"
+  },
+  {
+    "Path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\target-special\\debug\\examples\\generator_probe.exe",
+    "Hash": "4DA09FFF5416CCD87BC5D2B38660B4946BE28F19A00EFF2B8C2B8C23344EA2C7"
+  }
+]

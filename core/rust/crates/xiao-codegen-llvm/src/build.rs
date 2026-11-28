@@ -368,7 +368,7 @@ impl NativeRun {
         environment: Option<&[u8]>,
         deadline: Option<Instant>,
         cancelled: Option<&dyn Fn() -> bool>,
-        env_entry: bool,
+        control_entry: bool,
     ) -> Result<NativeRunResult>
     where
         I: IntoIterator<Item = S>,
@@ -405,7 +405,7 @@ impl NativeRun {
             None
         };
         let mut signal = None;
-        if environment.is_some() || (controlled && env_entry) {
+        if environment.is_some() || (controlled && control_entry) {
             let nonce = nonce.as_deref().unwrap();
             let prefix = if environment.is_some() {
                 NATIVE_ENVIRONMENT_STDIN_PREFIX

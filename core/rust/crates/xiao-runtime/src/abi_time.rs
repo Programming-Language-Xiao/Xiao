@@ -44,7 +44,7 @@ pub(super) fn enter_clock(clock: Option<Arc<TimeContext>>) -> ClockGuard {
 }
 
 /// 直接使用 C ABI 的嵌入调用首次读取时建立起点。
-fn current_clock() -> Arc<TimeContext> {
+pub(super) fn current_clock() -> Arc<TimeContext> {
     ENTRY_CLOCK.with_borrow_mut(|clock| {
         clock
             .get_or_insert_with(|| Arc::new(TimeContext::host()))

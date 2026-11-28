@@ -34,7 +34,7 @@
 | --- | --- |
 | intrinsic 63 | `os_log_write(str level, str message, str target) -> none`。三个字符串按序借读，无返回值。登记可观察的读时钟、写标准输出效果及两项能力，贯通类型、IR、TAC、VM、LLVM 和归档。现有 intrinsic 声明只表达单项能力，实施时须让 63 的声明及消费端准确表达两位联合要求，沿用既有能力位和既有原语语义。[B3-0D 规划](20o-b3-0d-version-intrinsic-abi-coff-plan.md) §5.1 · [B3-0F 联合冻结表](assets/20o-b3/entry-20261124-b3-0f/freeze-table.json) · [声明类型](../../core/rust/crates/xiao-intrinsics/src/lib.rs) |
 | C ABI | `extern "C"` 返回 `i32`，三个指针在调用期间借读并由调用方强引用覆盖，末尾传入 `u64 capabilities`。按无结果入口省略 `out`。成功 0，既有结构错误 1（空指针或形状）、2（未知标签或无效参数）、3（无效句柄），可恢复运行错误 6，Fatal 8。取消沿现有通道，保留诊断与释放行为。[冻结 C ABI 表](assets/20o-b3/entry-20261124-b3-0d/c-abi.json) · [B3-0D 规划](20o-b3-0d-version-intrinsic-abi-coff-plan.md) §5.4 |
-| ABI 与格式 | ABI 1.20 已覆盖 B3-0D 联合增量及 63 的冻结 C 签名。标准库接口 1，`.xiaoc`、`.xar`、索引格式 1.0，IR 与原生元数据格式 1。回归从源码重建，旧 1.19/22 公共产物按冻结规则执行前拒绝。[B3-0D 规划](20o-b3-0d-version-intrinsic-abi-coff-plan.md) §5.3 |
+| ABI 与格式 | ABI 1.20 已覆盖 B3-0D 联合增量及 63 的冻结 C 签名。标准库接口 1，`.xiaoc` 和 `.xar` 容器为 1.0，IR 与原生元数据格式为 1。生成器 28 的归档索引采用 1.1，新增必需的生成器字段，读取器兼容 1.0 索引。全局缓存索引为 1.0。旧 1.19/22 公共产物按冻结规则执行前拒绝。[B3-0D 规划](20o-b3-0d-version-intrinsic-abi-coff-plan.md) §5.3 · [版本复核](assets/20o-b3/entry-20261128-b3-5/REPORT-C.md) |
 
 ```c
 int32_t xiao_runtime_log_write(
@@ -48,8 +48,8 @@ int32_t xiao_runtime_log_write(
 ### 生成器 27→28 的判据
 
 1. A、B 使用入口生成器 27。C 固定同一 Runtime、工具链、目标和输入，在 O0/O3 记录 27 下 log lowering 接线前后的 LLVM IR、C 调用声明与参数、实际链接符号和退出码。如接线前拒绝 63，保留拒绝原文，另用同一份可生成的无 log 对照记录前后 IR 与摘要。将候选生成文本与更换生成器版本本身造成的差异分开取证。[B3-4C 生成器裁定与回执](assets/20o-b3/entry-20261127-b3-4/REPORT-1B.md)
-2. 新的 `xiao_runtime_log_write` 调用或启动接线改变生成文本时，以实际差分申请 27→28，经星崽裁定后采用 28。确认生成文本无变化时采用 27。规划阶段使用 27，28 待 C 批差分和裁定。
-3. 记录批准来源、前后工具与生成指纹、缓存失配和重建。采用 28 时，用候选校验器接纳合法的真实 27 对照产物，并用上限为 27 的实际校验器执行前拒绝 28 归档和原生元数据，保留版本诊断及退出码。继续用 27 时也要以实际 Runtime、标准库或能力等静态身份变化核对缓存重建，不能只检查版本号。缓存按 ABI、生成器、Runtime 内容、目标、能力和标准库身份核对。墙钟样本、配额和流状态只随运行存在。[B3-0D 规划](20o-b3-0d-version-intrinsic-abi-coff-plan.md) §5.3 · [原生元数据校验](../../core/rust/crates/xiao-codegen-llvm/src/native_metadata.rs)
+2. O0/O3 实际差分确认新增 `xiao_runtime_log_write` 调用和启动接线，且无日志对照前后逐字一致。星崽于 2026-11-28 经 Claude 调度中枢批准 27→28，C 批采用 28。[B3-5C 回执](assets/20o-b3/entry-20261128-b3-5/REPORT-C.md)
+3. 记录批准来源、前后工具与生成指纹、缓存失配和重建。用实际 28 校验器接纳真实 27 对照产物，并用实际 27 校验器执行前拒绝 28 归档和原生元数据，保留版本诊断及退出码。缓存按 ABI、生成器、Runtime 内容、目标、能力和标准库身份核对。墙钟样本、配额和流状态只随运行存在。[B3-0D 规划](20o-b3-0d-version-intrinsic-abi-coff-plan.md) §5.3 · [原生元数据校验](../../core/rust/crates/xiao-codegen-llvm/src/native_metadata.rs)
 
 ## 四、分批实施
 
@@ -75,11 +75,12 @@ int32_t xiao_runtime_log_write(
 - **范围**　实现冻结 C 符号和 LLVM lowering，向原生应用及任务传递同一运行的输出、配额及控制上下文。按既有入口和调用约定承载 C ABI，实际消费能力掩码。在双路径下验证类型、IR、TAC、`.xiaoc`、原生元数据、导出、移除及普通包隔离。用仅调用 `log.write` 的用例验证归档对 `0x22` 的需求，排除其他输出语句贡献的能力位。按 §三完成版本取证和裁定。
 - **验证与产出**　保留 O0/O3 的 IR、符号、链接命令和实际调用回执。独立 C 探针直接链接本批 Runtime，核对参数顺序、借读、无输出槽、实际状态码与待处理错误。对照 VM 与原生的字节、诊断、运行控制和释放行为，归档版本裁定及兼容、缓存回执。
 - **禁止**　新增隐式全开包装、单独一套原生日志语义、公共固定时钟选项或未经裁定的版本、ABI 布局与协议变化。
+- [B3-5C LLVM、C ABI 与原生回执](assets/20o-b3/entry-20261128-b3-5/REPORT-C.md)
 
 ### B3-5D　教程、边界与平台
 
 - **必读**　B3-0E 教程规划与夹具表，B3-3D/E 的逐字验收及产品验证口径，B3-4D 复跑与 B3-4E 三平台记录。[B3-0E 教程规划](20o-b3-0e-tutorials-fixtures-plan.md) · [log 夹具矩阵](assets/20o-b3/entry-20261124-b3-0e/tutorials.json) · [B3-3 实施规划](20o-b3-3-fs-implementation-plan.md) · [B3-3 三平台收口](assets/20o-b3/entry-20261125-b3-3-final/README.md) · [B3-4D 复跑](assets/20o-b3/entry-20261127-b3-4/REPORT-1C-RERUN2.md) · [B3-4E CI](assets/20o-b3/entry-20261127-b3-4/REPORT-1E-CI.md)
-- **范围**　按冻结 SHA-256 迁入 `tests/fixtures/docs/log/tutorial.xiao`、`tutorial.input.json`、`tutorial.stdout`，核对别名源码摘要。以 `wall_clock_unix_ms=946684800000` 和掩码 `0x22`，使用隔离捕获和受控时钟。教程目标为 `20o_b3_log_tutorial`，精确入口为 `log_tutorial_matches_vm_golden` 与 `log_tutorial_matches_native_golden`。
+- **范围**　以 28 固定产品身份。按冻结 SHA-256 迁入 `tests/fixtures/docs/log/tutorial.xiao`、`tutorial.input.json`、`tutorial.stdout`，核对别名源码摘要。以 `wall_clock_unix_ms=946684800000` 和掩码 `0x22`，使用隔离捕获和受控时钟。教程目标为 `20o_b3_log_tutorial`，精确入口为 `log_tutorial_matches_vm_golden` 与 `log_tutorial_matches_native_golden`。
 - **验证与产出**　三平台实跑 §五，精确筛选须各命中 1 项并通过，程序退出 0，双导入在 VM/O0/O3 都逐字匹配独立的 103 字节 UTF-8/LF 黄金。Windows 逐件绑定双导入 O0/O3 教程产物及两种单缺位的 O0/O3 权限产物，保存二进制、链接图和产品验证回执。记录发布运行与固定时钟、故障注入用构建的特性及各自证据。
 - **禁止**　改写冻结黄金、依赖用户环境或真实终端、提前升教程/registry 为 `verified`、把未执行或未验证的平台记为通过。
 

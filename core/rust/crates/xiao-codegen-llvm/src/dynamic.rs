@@ -288,7 +288,7 @@ impl<'a> DynamicGenerator<'a> {
                     .insert((module.name.clone(), name.text.clone()), statement);
             }
         }
-        self.emit_entry(capture_arguments)?;
+        self.emit_entry()?;
         // 导入语句在入口发射期间才会把别名函数登记到
         // `function_definitions`。trampoline 必须在这之后准备，否则函数表的
         // BTreeMap 位置会因别名插入而改变，生成的目标符号会与实际定义脱节。
@@ -309,6 +309,7 @@ impl<'a> DynamicGenerator<'a> {
             self.emit_function_definition(statement)?;
         }
         self.emit_table_callbacks()?;
+        self.emit_main_adapter(capture_arguments);
         let mut text = String::new();
         text.push_str("; Xiao N0-B LLVM dynamic module\n");
         text.push_str(&format!("; target = {}\n", self.options.target.triple));
@@ -741,6 +742,7 @@ impl<'a> DynamicGenerator<'a> {
                         || declaration.starts_with("declare i32 @xiao_runtime_args_")
                         || declaration.starts_with("declare i32 @xiao_runtime_fs_")
                         || declaration.starts_with("declare i32 @xiao_runtime_env_")
+                        || declaration.starts_with("declare i32 @xiao_runtime_log_write(")
                 })
                 .cloned(),
         );

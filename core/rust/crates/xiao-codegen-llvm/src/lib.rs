@@ -104,10 +104,11 @@ pub use xiao_optimizer::OptimizationReport;
 /// 版本 25 接通 fs，并为其 Windows 产物验证完整 COFF 组件。
 /// 版本 26 让原生并发调用的取消和求值错误归还已经拥有的实参。
 /// 版本 27 接通 env 借读原语与授权后的原生快照入口。
+/// 版本 28 接通日志借读原语与共享原生运行入口。
 /// 当前版本进入工具链/产物指纹。
-pub const CODEGEN_VERSION: u32 = 27;
+pub const CODEGEN_VERSION: u32 = 28;
 
-/// 两种降低器用同一个启动适配器安装进程环境快照。
+/// 两种降低器用同一个启动适配器安装原生运行上下文。
 const NATIVE_ENV_ENTRY_DECLARATION: &str =
     "declare i32 @xiao_runtime_env_run_native(ptr, i64, i32)";
 
@@ -123,7 +124,7 @@ fn requires_b3_native_evidence(module: &LlvmModule) -> bool {
     module
         .runtime_components
         .iter()
-        .any(|component| matches!(component.as_str(), "time" | "args" | "fs" | "env"))
+        .any(|component| matches!(component.as_str(), "time" | "args" | "fs" | "env" | "log"))
 }
 
 /// 将同一份类型化 IR 降低为静态标量或 Runtime ABI LLVM 模块。

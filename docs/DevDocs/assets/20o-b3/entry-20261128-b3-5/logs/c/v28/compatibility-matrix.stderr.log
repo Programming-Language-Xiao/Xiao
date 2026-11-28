@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b3\entry-20261128-b3-5\logs\c\v28\verify_matrix.py", line 291, in <module>
+    compatibility()
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b3\entry-20261128-b3-5\logs\c\v28\verify_matrix.py", line 236, in compatibility
+    result = archive_build(builders[version], version, f"archive-{version}-miss", source,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b3\entry-20261128-b3-5\logs\c\v28\verify_matrix.py", line 212, in archive_build
+    run_recorded(name, [tool, source, archive, cache])
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b3\entry-20261128-b3-5\logs\c\v28\verify_matrix.py", line 39, in run_recorded
+    assert capture(LOGS, name, [str(item) for item in command]) == expected, name
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: archive-27-miss

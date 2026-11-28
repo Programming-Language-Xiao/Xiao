@@ -1,0 +1,1119 @@
+{
+  "archive": {
+    "path": "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b3\\entry-20261128-b3-5\\logs\\c\\windows-artifacts.zip",
+    "bytes": 16137935,
+    "sha256": "01620fcce1be515483b7a4deb8a31719bf262f0529ba2a5bf56e7af8a17a1327"
+  },
+  "files": [
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-control-o0-product-final\\program.exe",
+      "zip_member": "after-control-o0-product-final/program.exe",
+      "bytes": 860672,
+      "sha256": "acea34dd1e2b944b7da1e66a883a523fee4c52957148214f6d2e6b910ba1ae73"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-control-o0-product-final\\program.exe.map",
+      "zip_member": "after-control-o0-product-final/program.exe.map",
+      "bytes": 1865618,
+      "sha256": "34d1768cb537b77844a2f17582549078ed7c47a2d1a1ce93466b67cd617bebdf"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-control-o0-product-final\\program.ll",
+      "zip_member": "after-control-o0-product-final/program.ll",
+      "bytes": 13317,
+      "sha256": "983a68da9b5d036488e0c32de9be04e5ac3a373c78846633b886a67a35d72548"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-control-o0-product-final\\stderr",
+      "zip_member": "after-control-o0-product-final/stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-control-o0-product-final\\stdout",
+      "zip_member": "after-control-o0-product-final/stdout",
+      "bytes": 25,
+      "sha256": "86a5e9280904d797d672200f6952caa46c0f9bdc6e910cf30b441afdf9ff1446"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-control-o0-product-final\\verification.json",
+      "zip_member": "after-control-o0-product-final/verification.json",
+      "bytes": 2765,
+      "sha256": "aaf96f0d9fc61aa9235b54bd63aa55edf2f00c6bc3348c379d796f6c86afe3e4"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-control-o3-product-final\\program.exe",
+      "zip_member": "after-control-o3-product-final/program.exe",
+      "bytes": 860672,
+      "sha256": "c837cd8c8ed43ecdcea560b58bf55d0f84b7f69525e72fc23001c5d2635d91aa"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-control-o3-product-final\\program.exe.map",
+      "zip_member": "after-control-o3-product-final/program.exe.map",
+      "bytes": 1865618,
+      "sha256": "793a4829a5f438a7ad4bd788962a03f0a6ad61ed729dc22cd598cf6ba7114a10"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-control-o3-product-final\\program.ll",
+      "zip_member": "after-control-o3-product-final/program.ll",
+      "bytes": 13317,
+      "sha256": "983a68da9b5d036488e0c32de9be04e5ac3a373c78846633b886a67a35d72548"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-control-o3-product-final\\stderr",
+      "zip_member": "after-control-o3-product-final/stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-control-o3-product-final\\stdout",
+      "zip_member": "after-control-o3-product-final/stdout",
+      "bytes": 25,
+      "sha256": "86a5e9280904d797d672200f6952caa46c0f9bdc6e910cf30b441afdf9ff1446"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-control-o3-product-final\\verification.json",
+      "zip_member": "after-control-o3-product-final/verification.json",
+      "bytes": 2765,
+      "sha256": "f05046c5daba0490e75545b6f496e6b07a4c02c8ca9f26f7e75954516b355d71"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-log-o0-product-final\\program.exe",
+      "zip_member": "after-log-o0-product-final/program.exe",
+      "bytes": 948224,
+      "sha256": "78fd1d0162a2a840da89573638a07666ad327739e09b6ccf56c5a2fa6bb82643"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-log-o0-product-final\\program.exe.map",
+      "zip_member": "after-log-o0-product-final/program.exe.map",
+      "bytes": 1942795,
+      "sha256": "d2cca99fa5902659cb46b3023fb7a345c166d03f3ada5869ae810ba942a1936f"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-log-o0-product-final\\program.ll",
+      "zip_member": "after-log-o0-product-final/program.ll",
+      "bytes": 21773,
+      "sha256": "2f5ba4d9e15c53787b1f67e8f90eef9d623a4b44d24f5fccfbc03da0b1bc155c"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-log-o0-product-final\\stderr",
+      "zip_member": "after-log-o0-product-final/stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-log-o0-product-final\\stdout",
+      "zip_member": "after-log-o0-product-final/stdout",
+      "bytes": 36,
+      "sha256": "a2fe5ef4b1da77f1e19ecd7818dac94fe9e9252f0c91f2e229db4e1bb1e2a686"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-log-o0-product-final\\verification.json",
+      "zip_member": "after-log-o0-product-final/verification.json",
+      "bytes": 2761,
+      "sha256": "c499d7e8d6814e69dc939bf902a5de6c673a2f88b52a7065630a1dcff3026eee"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-log-o3-product-final\\program.exe",
+      "zip_member": "after-log-o3-product-final/program.exe",
+      "bytes": 947712,
+      "sha256": "28738169cb672b64c69212523f2da6d019596342a44a35be61ae290524e413f2"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-log-o3-product-final\\program.exe.map",
+      "zip_member": "after-log-o3-product-final/program.exe.map",
+      "bytes": 1942806,
+      "sha256": "c100db32f291cdabeb6336c1e8396e8f1fc6f36c897069917824e4b98a770e98"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-log-o3-product-final\\program.ll",
+      "zip_member": "after-log-o3-product-final/program.ll",
+      "bytes": 21773,
+      "sha256": "2f5ba4d9e15c53787b1f67e8f90eef9d623a4b44d24f5fccfbc03da0b1bc155c"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-log-o3-product-final\\stderr",
+      "zip_member": "after-log-o3-product-final/stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-log-o3-product-final\\stdout",
+      "zip_member": "after-log-o3-product-final/stdout",
+      "bytes": 36,
+      "sha256": "700e95833b4edaca4c1f561eb87165104a3f3fdb2c619ddcdfb315d82d590ab0"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\after-log-o3-product-final\\verification.json",
+      "zip_member": "after-log-o3-product-final/verification.json",
+      "bytes": 2761,
+      "sha256": "da48c87a3046e77e65b4671b461d4b82dfc2d62ac6900a9dd83f3b95607cf5cf"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\before-control-o0-product-final\\program.exe",
+      "zip_member": "before-control-o0-product-final/program.exe",
+      "bytes": 860672,
+      "sha256": "1b395f5043522809d7d889bb7283deb5834cd272589a790fa47bb48e3e8be264"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\before-control-o0-product-final\\program.exe.map",
+      "zip_member": "before-control-o0-product-final/program.exe.map",
+      "bytes": 1865618,
+      "sha256": "cacfff3bdfbe0f933f3215e5ede39bd04d859b26f911471857750115ca070328"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\before-control-o0-product-final\\program.ll",
+      "zip_member": "before-control-o0-product-final/program.ll",
+      "bytes": 13317,
+      "sha256": "983a68da9b5d036488e0c32de9be04e5ac3a373c78846633b886a67a35d72548"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\before-control-o0-product-final\\stderr",
+      "zip_member": "before-control-o0-product-final/stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\before-control-o0-product-final\\stdout",
+      "zip_member": "before-control-o0-product-final/stdout",
+      "bytes": 25,
+      "sha256": "86a5e9280904d797d672200f6952caa46c0f9bdc6e910cf30b441afdf9ff1446"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\before-control-o0-product-final\\verification.json",
+      "zip_member": "before-control-o0-product-final/verification.json",
+      "bytes": 2768,
+      "sha256": "2d229613aa3ff65e1e94aa7b9584dc693b2b61cbb5b8d9f6afc369af50b34eea"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\before-control-o3-product-final\\program.exe",
+      "zip_member": "before-control-o3-product-final/program.exe",
+      "bytes": 860672,
+      "sha256": "00bfa8b9a8e65c1b9679e4e615c293a80c3757285d7b8504e9dd3a6aeecd8497"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\before-control-o3-product-final\\program.exe.map",
+      "zip_member": "before-control-o3-product-final/program.exe.map",
+      "bytes": 1865618,
+      "sha256": "83540d336d73705771685e9fa916e199eec7b9b6ea2d6c0c9a8224958e7089c5"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\before-control-o3-product-final\\program.ll",
+      "zip_member": "before-control-o3-product-final/program.ll",
+      "bytes": 13317,
+      "sha256": "983a68da9b5d036488e0c32de9be04e5ac3a373c78846633b886a67a35d72548"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\before-control-o3-product-final\\stderr",
+      "zip_member": "before-control-o3-product-final/stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\before-control-o3-product-final\\stdout",
+      "zip_member": "before-control-o3-product-final/stdout",
+      "bytes": 25,
+      "sha256": "86a5e9280904d797d672200f6952caa46c0f9bdc6e910cf30b441afdf9ff1446"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\before-control-o3-product-final\\verification.json",
+      "zip_member": "before-control-o3-product-final/verification.json",
+      "bytes": 2768,
+      "sha256": "53a4d01c2c17f61251fe6360dda1a6aa5ce9302fa0f5f22ac9c22accc924d27a"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\c-probe-final\\product.exe",
+      "zip_member": "c-probe-final/product.exe",
+      "bytes": 745472,
+      "sha256": "33a55cbcbdefe58fb63c3b2f775e853490640d5d4d4bff2f537dcf492cb61260"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\c-probe-final\\product.map",
+      "zip_member": "c-probe-final/product.map",
+      "bytes": 1546561,
+      "sha256": "1d9ef3e85779af33d6c535836c347345376aa14af128a6db250a34d31ac65f0b"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\cache-changed-mask-log-o0-final\\program.exe",
+      "zip_member": "cache-changed-mask-log-o0-final/program.exe",
+      "bytes": 948224,
+      "sha256": "4b1e7e6629a3d5d3e7f2834eec9596abb2d01e7f454c5f8dc01af7319f3de4e5"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\cache-changed-mask-log-o0-final\\program.exe.map",
+      "zip_member": "cache-changed-mask-log-o0-final/program.exe.map",
+      "bytes": 1942806,
+      "sha256": "64754172c070b28fd7aa9f7ddd45a5e3371722b1b3ac01a3b8d13899cf8ee560"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\cache-changed-mask-log-o0-final\\program.ll",
+      "zip_member": "cache-changed-mask-log-o0-final/program.ll",
+      "bytes": 21771,
+      "sha256": "1fa9ae8b6c3c298c4243be1dd9836b51b9ce8eb9f270da60be7cee0cbb513cbc"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\cache-changed-mask-log-o0-final\\stderr",
+      "zip_member": "cache-changed-mask-log-o0-final/stderr",
+      "bytes": 241,
+      "sha256": "495ece836602f59b1541861c1d7188a7de2d9998b642210b4988af1eabac873e"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\cache-changed-mask-log-o0-final\\stdout",
+      "zip_member": "cache-changed-mask-log-o0-final/stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\cache-changed-mask-log-o0-final\\verification.json",
+      "zip_member": "cache-changed-mask-log-o0-final/verification.json",
+      "bytes": 2775,
+      "sha256": "63f57f2371c0095ec90e1833e08d2a7e229ba4bd842fca2a9411a2e722155f9d"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\cache-old-runtime-control-o0\\program.exe",
+      "zip_member": "cache-old-runtime-control-o0/program.exe",
+      "bytes": 845312,
+      "sha256": "30ea0ab7af8eb65bc8cff53991b7620f2cad535fca9df773a74f84c738fbad85"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\cache-old-runtime-control-o0\\program.exe.map",
+      "zip_member": "cache-old-runtime-control-o0/program.exe.map",
+      "bytes": 1830408,
+      "sha256": "f9ecabd53f8399709b6584239c3bd6b3b721769776b7e6abd2c704d15a011afd"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\cache-old-runtime-control-o0\\program.ll",
+      "zip_member": "cache-old-runtime-control-o0/program.ll",
+      "bytes": 13317,
+      "sha256": "983a68da9b5d036488e0c32de9be04e5ac3a373c78846633b886a67a35d72548"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\cache-old-runtime-control-o0\\stderr",
+      "zip_member": "cache-old-runtime-control-o0/stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\cache-old-runtime-control-o0\\stdout",
+      "zip_member": "cache-old-runtime-control-o0/stdout",
+      "bytes": 25,
+      "sha256": "86a5e9280904d797d672200f6952caa46c0f9bdc6e910cf30b441afdf9ff1446"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\cache-old-runtime-control-o0\\verification.json",
+      "zip_member": "cache-old-runtime-control-o0/verification.json",
+      "bytes": 2717,
+      "sha256": "fd777c66849875bdeaba83fefc11194cb76e234fd7a764fd7bd4fd8422d3fcd8"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o0-driver.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o0-driver.exe",
+      "bytes": 952320,
+      "sha256": "68b57dcf55f1168bcc4496d05191a9004e81c49d3f3b236cb46733d464cff9be"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o0-driver.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o0-driver.exe.map",
+      "bytes": 1942650,
+      "sha256": "0b92f35f62a24946396c85a5348ca887bce8ce0cd9a89f53033b9161f99a6bb1"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o0-driver.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o0-driver.ll",
+      "bytes": 25634,
+      "sha256": "eceff6e791637606b9b493af29d4771d39dc6536f351afb516f6cd80c1d25031"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o0-driver.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o0-driver.stderr",
+      "bytes": 172,
+      "sha256": "03dccae437e40d6cb83c3dbadc4de3050bf6539938abfe89d041b264bc73b00d"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o0-driver.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o0-driver.stdout",
+      "bytes": 2702,
+      "sha256": "35274876917a9670983fef9a8e35daf52404afd81edba76bb6bebaf50bc45912"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o0-driver.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o0-driver.xiao",
+      "bytes": 126,
+      "sha256": "1fc0e744880f5e054af27b4e796d028124fb3d060042d6a4eb0c1dfe0654201b"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o0-X09-DRIVER-001.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o0-X09-DRIVER-001.stderr",
+      "bytes": 172,
+      "sha256": "03dccae437e40d6cb83c3dbadc4de3050bf6539938abfe89d041b264bc73b00d"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o0-X09-DRIVER-001.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o0-X09-DRIVER-001.stdout",
+      "bytes": 2850,
+      "sha256": "18e3d5820db925e399b519ab1f948c356a3efa7380d5f39f73a51a7888b0e69d"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o0-X09-DRIVER-002.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o0-X09-DRIVER-002.stderr",
+      "bytes": 181,
+      "sha256": "3eb0babf81c8d4452d587d82dc5d9b9770383d4e23879803e7476e4b18a0efc0"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o0-X09-DRIVER-002.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o0-X09-DRIVER-002.stdout",
+      "bytes": 2887,
+      "sha256": "22c1fc7547b5f1c2ba65723fdf34f46f69a62b56ee6d59431df3c0b6506bd863"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o0.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o0.exe",
+      "bytes": 952320,
+      "sha256": "2e17430c593ddd7313fe58ceb7994b19b29726faf75f3a4b735f9d940ebf27df"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o0.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o0.exe.map",
+      "bytes": 1942643,
+      "sha256": "dc0cd5ce2908a15328c1e0db59475d474ef10c0a1faf1de9fd3704c72b1ef5a4"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o0.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o0.ll",
+      "bytes": 25634,
+      "sha256": "eceff6e791637606b9b493af29d4771d39dc6536f351afb516f6cd80c1d25031"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o0.verification.json",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o0.verification.json",
+      "bytes": 2031,
+      "sha256": "c2989b03203d44368ad6884ef0520f1d90830d46125f85a466f603d06d3d3742"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o0.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o0.xiao",
+      "bytes": 126,
+      "sha256": "1fc0e744880f5e054af27b4e796d028124fb3d060042d6a4eb0c1dfe0654201b"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o3-driver.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o3-driver.exe",
+      "bytes": 951808,
+      "sha256": "eda6c258fe7ab00ac39b741c972ed478bd7b04e2dde852ee3d13384c5f245974"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o3-driver.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o3-driver.exe.map",
+      "bytes": 1942424,
+      "sha256": "762bdce0e174b200e277dd812b33983afd6c2ef75e94e289cc1aecb527711dad"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o3-driver.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o3-driver.ll",
+      "bytes": 25634,
+      "sha256": "eceff6e791637606b9b493af29d4771d39dc6536f351afb516f6cd80c1d25031"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o3-driver.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o3-driver.stderr",
+      "bytes": 172,
+      "sha256": "03dccae437e40d6cb83c3dbadc4de3050bf6539938abfe89d041b264bc73b00d"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o3-driver.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o3-driver.stdout",
+      "bytes": 2850,
+      "sha256": "7433013d6e3c8ef46fdeac108b475c00ef6309142bbff3536cf255f22924f718"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o3-driver.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o3-driver.xiao",
+      "bytes": 126,
+      "sha256": "1fc0e744880f5e054af27b4e796d028124fb3d060042d6a4eb0c1dfe0654201b"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o3-X09-DRIVER-001.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o3-X09-DRIVER-001.stderr",
+      "bytes": 172,
+      "sha256": "03dccae437e40d6cb83c3dbadc4de3050bf6539938abfe89d041b264bc73b00d"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o3-X09-DRIVER-001.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o3-X09-DRIVER-001.stdout",
+      "bytes": 2850,
+      "sha256": "6dde3c60f021a737ebe428370062c591ca564946728faa68bc73935066d9e9b6"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o3-X09-DRIVER-002.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o3-X09-DRIVER-002.stderr",
+      "bytes": 181,
+      "sha256": "3eb0babf81c8d4452d587d82dc5d9b9770383d4e23879803e7476e4b18a0efc0"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o3-X09-DRIVER-002.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o3-X09-DRIVER-002.stdout",
+      "bytes": 2887,
+      "sha256": "52b71479bba518ffa9fd22f1990f95a51263ba8b1db777cd9918cc42c4dd7017"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o3.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o3.exe",
+      "bytes": 951808,
+      "sha256": "7b325902b0b61cbd296acabff64245a46c8785c903cc4ec6b3d54cd6b6d3068f"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o3.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o3.exe.map",
+      "bytes": 1942417,
+      "sha256": "15bd71e7188e8e34a75a8c7c90bdab7a1599ca4eab9611e5530b53a3ccdd558b"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o3.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o3.ll",
+      "bytes": 25634,
+      "sha256": "eceff6e791637606b9b493af29d4771d39dc6536f351afb516f6cd80c1d25031"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o3.verification.json",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o3.verification.json",
+      "bytes": 2031,
+      "sha256": "52a184bde861fbebd0c3d4d6efbc9640d72c2c826d66a892a5c294223e259403"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-43256-control\\control-o3.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-43256-control/control-o3.xiao",
+      "bytes": 126,
+      "sha256": "1fc0e744880f5e054af27b4e796d028124fb3d060042d6a4eb0c1dfe0654201b"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o0.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o0.exe",
+      "bytes": 948224,
+      "sha256": "5da5e5c56c37a6d3121c8ac6d38b7b8b4964349a4a45158c9e4357d45e3a63df"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o0.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o0.exe.map",
+      "bytes": 1942811,
+      "sha256": "85c943678d42a2807f41d9de6e3b665b53dbde34943ad05575ce1cf5cd9f5a34"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o0.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o0.ll",
+      "bytes": 21805,
+      "sha256": "15f50c6ef720959f6c7e0a4fc7f78615ea6dcbf996ff5580c561776fde77c3e9"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o0.release.tsv",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o0.release.tsv",
+      "bytes": 329,
+      "sha256": "e0db0261107ef2f691d1a6bf17c60a7bbe3f56ca8bea5aa15a9dbd6468fd8fb5"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o0.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o0.stderr",
+      "bytes": 241,
+      "sha256": "495ece836602f59b1541861c1d7188a7de2d9998b642210b4988af1eabac873e"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o0.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o0.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o0.verification.json",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o0.verification.json",
+      "bytes": 2010,
+      "sha256": "8ec49bb30e13b675a74f782a1946f8f713eec41706ef8135eaf1c2d8c86b1e7d"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o0.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o0.xiao",
+      "bytes": 93,
+      "sha256": "55b50b869bfcd5e6d3c939c604ee9af4eec84c539fb7f4249eb27de8b695f082"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o3.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o3.exe",
+      "bytes": 947712,
+      "sha256": "b4efbae25578006097e4f640703c64f24f361257a874683c7d4f37cc54dd0f00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o3.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o3.exe.map",
+      "bytes": 1942822,
+      "sha256": "38f8a0eb6e72325b1574518fca6995e15d043a33d433ada0c3fdc41ea3fa47cc"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o3.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o3.ll",
+      "bytes": 21805,
+      "sha256": "15f50c6ef720959f6c7e0a4fc7f78615ea6dcbf996ff5580c561776fde77c3e9"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o3.release.tsv",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o3.release.tsv",
+      "bytes": 329,
+      "sha256": "e0db0261107ef2f691d1a6bf17c60a7bbe3f56ca8bea5aa15a9dbd6468fd8fb5"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o3.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o3.stderr",
+      "bytes": 241,
+      "sha256": "495ece836602f59b1541861c1d7188a7de2d9998b642210b4988af1eabac873e"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o3.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o3.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o3.verification.json",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o3.verification.json",
+      "bytes": 2010,
+      "sha256": "3d9182c517c06f7b43ddd76ad02afb0c5f52a9522f53f7075a949d52a22c2d5a"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-0-o3.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-0-o3.xiao",
+      "bytes": 93,
+      "sha256": "55b50b869bfcd5e6d3c939c604ee9af4eec84c539fb7f4249eb27de8b695f082"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o0.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o0.exe",
+      "bytes": 948224,
+      "sha256": "27a341028f05f9a2d74478a39668e82be2724725e7cad02723dbd8f523313885"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o0.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o0.exe.map",
+      "bytes": 1942811,
+      "sha256": "26876b93d6a626c1860b49fba5e3160d22bd74512fd1349c25f46c259679e373"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o0.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o0.ll",
+      "bytes": 21805,
+      "sha256": "04cca0049785c4977fd289e89813c0ac7a1304b89531f1cbdd25737aa5cc1d29"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o0.release.tsv",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o0.release.tsv",
+      "bytes": 329,
+      "sha256": "e0db0261107ef2f691d1a6bf17c60a7bbe3f56ca8bea5aa15a9dbd6468fd8fb5"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o0.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o0.stderr",
+      "bytes": 241,
+      "sha256": "495ece836602f59b1541861c1d7188a7de2d9998b642210b4988af1eabac873e"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o0.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o0.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o0.verification.json",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o0.verification.json",
+      "bytes": 2010,
+      "sha256": "ec9b08b3e40d46ebbaca0e3d53f1bbf9fe1259e3ff6fc5f4477503ee70b81aa5"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o0.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o0.xiao",
+      "bytes": 93,
+      "sha256": "55b50b869bfcd5e6d3c939c604ee9af4eec84c539fb7f4249eb27de8b695f082"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o3.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o3.exe",
+      "bytes": 947712,
+      "sha256": "ae3dc6ea6ac2abc45d872fc3d6c5d21ee4ff78373c474f33a1f1c0bd5a5031ac"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o3.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o3.exe.map",
+      "bytes": 1942822,
+      "sha256": "6f4e01a1c4a0e01f5930575312a0421638347ba85bd6d18094a1892347811067"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o3.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o3.ll",
+      "bytes": 21805,
+      "sha256": "04cca0049785c4977fd289e89813c0ac7a1304b89531f1cbdd25737aa5cc1d29"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o3.release.tsv",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o3.release.tsv",
+      "bytes": 329,
+      "sha256": "e0db0261107ef2f691d1a6bf17c60a7bbe3f56ca8bea5aa15a9dbd6468fd8fb5"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o3.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o3.stderr",
+      "bytes": 241,
+      "sha256": "495ece836602f59b1541861c1d7188a7de2d9998b642210b4988af1eabac873e"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o3.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o3.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o3.verification.json",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o3.verification.json",
+      "bytes": 2010,
+      "sha256": "b18921cb4e490ecf82012abe2d22a339d188e910f0d423412f64bd00ca54c4bd"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-2-o3.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-2-o3.xiao",
+      "bytes": 93,
+      "sha256": "55b50b869bfcd5e6d3c939c604ee9af4eec84c539fb7f4249eb27de8b695f082"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o0.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o0.exe",
+      "bytes": 948224,
+      "sha256": "807040d3b037ab0601a457bc1d103620291bb30cefe95f79a9e8625c706a83ab"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o0.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o0.exe.map",
+      "bytes": 1942823,
+      "sha256": "d58bb0e7a15e2f79969964bdee3d7773c2a08f6b1ebe1b50fd12d93f72186646"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o0.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o0.ll",
+      "bytes": 21807,
+      "sha256": "9d7091f0b694c23548930af44a80fba42a2aae1cda2ddd48e9e11c245d103c09"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o0.release.tsv",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o0.release.tsv",
+      "bytes": 329,
+      "sha256": "e0db0261107ef2f691d1a6bf17c60a7bbe3f56ca8bea5aa15a9dbd6468fd8fb5"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o0.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o0.stderr",
+      "bytes": 241,
+      "sha256": "495ece836602f59b1541861c1d7188a7de2d9998b642210b4988af1eabac873e"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o0.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o0.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o0.verification.json",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o0.verification.json",
+      "bytes": 2014,
+      "sha256": "205c039f988c3cb835eb519a973d1b209aba75a43bf3f16328963219174e13d3"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o0.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o0.xiao",
+      "bytes": 93,
+      "sha256": "55b50b869bfcd5e6d3c939c604ee9af4eec84c539fb7f4249eb27de8b695f082"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o3.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o3.exe",
+      "bytes": 947712,
+      "sha256": "fe59a08d139890d312ae9b527d758f4e18fa9ead8b67e4606e007aa8fe59685f"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o3.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o3.exe.map",
+      "bytes": 1942823,
+      "sha256": "fdcdda6feb3f5b15ca6810fce40504abd6587895a6a6d5fcd23340c9903512bd"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o3.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o3.ll",
+      "bytes": 21807,
+      "sha256": "9d7091f0b694c23548930af44a80fba42a2aae1cda2ddd48e9e11c245d103c09"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o3.release.tsv",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o3.release.tsv",
+      "bytes": 329,
+      "sha256": "e0db0261107ef2f691d1a6bf17c60a7bbe3f56ca8bea5aa15a9dbd6468fd8fb5"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o3.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o3.stderr",
+      "bytes": 241,
+      "sha256": "495ece836602f59b1541861c1d7188a7de2d9998b642210b4988af1eabac873e"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o3.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o3.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o3.verification.json",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o3.verification.json",
+      "bytes": 2014,
+      "sha256": "db9542fa1de2801024c3e19e9828a57fb65d0190c321db0188f689167a3f53b9"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50736-capabilities\\missing-32-o3.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-50736-capabilities/missing-32-o3.xiao",
+      "bytes": 93,
+      "sha256": "55b50b869bfcd5e6d3c939c604ee9af4eec84c539fb7f4249eb27de8b695f082"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50868-archive\\main.xar",
+      "zip_member": "native-slot-final/xiao-b3-log-50868-archive/main.xar",
+      "bytes": 1428,
+      "sha256": "8769cf62614a1a8377df7a8596ae814f38582808763f62ddcdeff2bc51065eb3"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50868-archive\\main.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-50868-archive/main.xiao",
+      "bytes": 93,
+      "sha256": "55b50b869bfcd5e6d3c939c604ee9af4eec84c539fb7f4249eb27de8b695f082"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-50868-archive\\ordinary.xar",
+      "zip_member": "native-slot-final/xiao-b3-log-50868-archive/ordinary.xar",
+      "bytes": 1242,
+      "sha256": "9a7919baece5dc245fd6662610bf53093a767db55de9119c2f52f0d094feb626"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o0-1.release.tsv",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o0-1.release.tsv",
+      "bytes": 282984,
+      "sha256": "a5e5d2fc84708cf56dbd0bceedf018198702762bcfae7548bf8ae30a5a48995f"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o0-2.release.tsv",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o0-2.release.tsv",
+      "bytes": 282984,
+      "sha256": "a5e5d2fc84708cf56dbd0bceedf018198702762bcfae7548bf8ae30a5a48995f"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o0.1.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o0.1.stderr",
+      "bytes": 266,
+      "sha256": "9caccf0e5e56a53430be6f3c5e5f86b30f842ca347c5d94357da5cc03d8a7120"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o0.1.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o0.1.stdout",
+      "bytes": 35842,
+      "sha256": "13a97955ef51000549f2dbf41910288f8c43b45b7bf678797ce6cdb5bcf8b97c"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o0.2.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o0.2.stderr",
+      "bytes": 266,
+      "sha256": "9caccf0e5e56a53430be6f3c5e5f86b30f842ca347c5d94357da5cc03d8a7120"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o0.2.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o0.2.stdout",
+      "bytes": 35842,
+      "sha256": "13a97955ef51000549f2dbf41910288f8c43b45b7bf678797ce6cdb5bcf8b97c"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o0.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o0.exe",
+      "bytes": 1562624,
+      "sha256": "00bfa6484576b6184ffa6c4507b941173409298644c2cc065f8d90486f128e63"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o0.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o0.exe.map",
+      "bytes": 2873233,
+      "sha256": "5d4428f2f1832d6382a8419f3a4f30c10d5433ed0c9bd5ab2ac1b5d72480387e"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o0.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o0.ll",
+      "bytes": 45580,
+      "sha256": "702d9482467f06bf15c6ea73e756decf4ed1f5feebf663594b8fa76cfa4760aa"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o0.verification.json",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o0.verification.json",
+      "bytes": 2301,
+      "sha256": "73dbf5d702793eb588449ca107e0814f1d29af2529a0dc289d6ba6c9655127b8"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o0.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o0.xiao",
+      "bytes": 351,
+      "sha256": "82cdb6ecaf60c30fc4ad5c1051064a3ff1beaed23270b6edc40062e42e836c3d"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o3-1.release.tsv",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o3-1.release.tsv",
+      "bytes": 282984,
+      "sha256": "a5e5d2fc84708cf56dbd0bceedf018198702762bcfae7548bf8ae30a5a48995f"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o3-2.release.tsv",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o3-2.release.tsv",
+      "bytes": 282984,
+      "sha256": "a5e5d2fc84708cf56dbd0bceedf018198702762bcfae7548bf8ae30a5a48995f"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o3.1.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o3.1.stderr",
+      "bytes": 266,
+      "sha256": "9caccf0e5e56a53430be6f3c5e5f86b30f842ca347c5d94357da5cc03d8a7120"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o3.1.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o3.1.stdout",
+      "bytes": 35842,
+      "sha256": "13a97955ef51000549f2dbf41910288f8c43b45b7bf678797ce6cdb5bcf8b97c"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o3.2.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o3.2.stderr",
+      "bytes": 266,
+      "sha256": "9caccf0e5e56a53430be6f3c5e5f86b30f842ca347c5d94357da5cc03d8a7120"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o3.2.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o3.2.stdout",
+      "bytes": 35842,
+      "sha256": "13a97955ef51000549f2dbf41910288f8c43b45b7bf678797ce6cdb5bcf8b97c"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o3.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o3.exe",
+      "bytes": 1561088,
+      "sha256": "3850189e748bc3853b5974ba8d902a715036a6022ec9e2bd9613b1a3621ab8d2"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o3.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o3.exe.map",
+      "bytes": 2872643,
+      "sha256": "673b75303379f423d6e970dc6093128a78d56c13ce5e78171ae4d50b7ceb97b8"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o3.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o3.ll",
+      "bytes": 45580,
+      "sha256": "702d9482467f06bf15c6ea73e756decf4ed1f5feebf663594b8fa76cfa4760aa"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o3.verification.json",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o3.verification.json",
+      "bytes": 2301,
+      "sha256": "a60762cfd620fc85d0a2953371ce809d34c5cd6548e3d133b79cd7abe809e007"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-55628-quota\\quota-o3.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-55628-quota/quota-o3.xiao",
+      "bytes": 351,
+      "sha256": "82cdb6ecaf60c30fc4ad5c1051064a3ff1beaed23270b6edc40062e42e836c3d"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o0.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o0.exe",
+      "bytes": 1193984,
+      "sha256": "163bbd486cae8825a1f728678ea4d1d321891071871f87feead2e5883d6d7e20"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o0.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o0.exe.map",
+      "bytes": 2290508,
+      "sha256": "fe771a58d01d371866a1794261e7642156da841a1ded6759af015a9ac5e962ee"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o0.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o0.ll",
+      "bytes": 43145,
+      "sha256": "1c62e44758c2e83dc2b19393f1d171b5ad518e22e92fc3ef300441d08d1591da"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o0.release.tsv",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o0.release.tsv",
+      "bytes": 1066,
+      "sha256": "5e35797084c6054cb29d60d70c0c84c08e17c50567c667664a47aea0d80bc16a"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o0.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o0.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o0.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o0.stdout",
+      "bytes": 103,
+      "sha256": "267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o0.verification.json",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o0.verification.json",
+      "bytes": 2264,
+      "sha256": "53f88cfd5abde98f24f9ccc5312bd0ec5bc016e72efc6d11327d2a52ec0f8149"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o0.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o0.xiao",
+      "bytes": 264,
+      "sha256": "d7ec578f5f0177355a04f054831a5d1aac1b7ab0c24757e05f494992eedf5a8b"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o3.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o3.exe",
+      "bytes": 1192448,
+      "sha256": "7824c7a30b8bc7368b894a75efd82f4feac8f540b1a7bceb5ad0b6d835324d8d"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o3.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o3.exe.map",
+      "bytes": 2290274,
+      "sha256": "2362b01817efe68c61a5ddf6cec1a0dc9e8d3342837dc410fb999f8c51bcfef2"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o3.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o3.ll",
+      "bytes": 43145,
+      "sha256": "1c62e44758c2e83dc2b19393f1d171b5ad518e22e92fc3ef300441d08d1591da"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o3.release.tsv",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o3.release.tsv",
+      "bytes": 1066,
+      "sha256": "5e35797084c6054cb29d60d70c0c84c08e17c50567c667664a47aea0d80bc16a"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o3.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o3.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o3.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o3.stdout",
+      "bytes": 103,
+      "sha256": "267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o3.verification.json",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o3.verification.json",
+      "bytes": 2264,
+      "sha256": "a50711aec16b7ab25face8ef96387fc64b317f1d34a8ed3ed4a931eb1f41e21b"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\std-o3.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/std-o3.xiao",
+      "bytes": 264,
+      "sha256": "d7ec578f5f0177355a04f054831a5d1aac1b7ab0c24757e05f494992eedf5a8b"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o0.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o0.exe",
+      "bytes": 1193984,
+      "sha256": "5d590b0fad574de65a851662dcced21285542cf92758649fb9680ccd689ee2d0"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o0.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o0.exe.map",
+      "bytes": 2290532,
+      "sha256": "ccb09b9686aa234152567e73a977712ac5d7bc09fb7d2825d600ea88cb7d4914"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o0.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o0.ll",
+      "bytes": 43145,
+      "sha256": "b102447729ae3d61d43baee8cc04701955516ca21216442531e9850662bbb72b"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o0.release.tsv",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o0.release.tsv",
+      "bytes": 1066,
+      "sha256": "5e35797084c6054cb29d60d70c0c84c08e17c50567c667664a47aea0d80bc16a"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o0.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o0.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o0.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o0.stdout",
+      "bytes": 103,
+      "sha256": "267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o0.verification.json",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o0.verification.json",
+      "bytes": 2273,
+      "sha256": "d3be35202ab58fcf5f8331c18d290316ee76bbd5ff89c72406b9d0cd455d7f90"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o0.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o0.xiao",
+      "bytes": 267,
+      "sha256": "8e8097c106c0719b7cc568e6afc09c40c3dae0facc539a8f596dae6a02f01195"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o3.exe",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o3.exe",
+      "bytes": 1192448,
+      "sha256": "d98f18ab46f6020100fef186fca6c1e76b4b4c2a17d90ee870eaf6a9d02c61da"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o3.exe.map",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o3.exe.map",
+      "bytes": 2290296,
+      "sha256": "623340fc38db2dd66fb631e70ec5a0a38827fadd4d08c85a2599c28baf306381"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o3.ll",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o3.ll",
+      "bytes": 43145,
+      "sha256": "b102447729ae3d61d43baee8cc04701955516ca21216442531e9850662bbb72b"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o3.release.tsv",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o3.release.tsv",
+      "bytes": 1066,
+      "sha256": "5e35797084c6054cb29d60d70c0c84c08e17c50567c667664a47aea0d80bc16a"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o3.stderr",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o3.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o3.stdout",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o3.stdout",
+      "bytes": 103,
+      "sha256": "267d7726181b9bd4d38d57e4edd26f853ba09ed8aa400db46b589b3c73c27146"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o3.verification.json",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o3.verification.json",
+      "bytes": 2273,
+      "sha256": "38ff55f4fa7847337e1e51ad03661f60ac7ac034c942e02c9362072e1b535c5c"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\native-slot-final\\xiao-b3-log-9372-tutorial\\stdlib-o3.xiao",
+      "zip_member": "native-slot-final/xiao-b3-log-9372-tutorial/stdlib-o3.xiao",
+      "bytes": 267,
+      "sha256": "8e8097c106c0719b7cc568e6afc09c40c3dae0facc539a8f596dae6a02f01195"
+    }
+  ]
+}

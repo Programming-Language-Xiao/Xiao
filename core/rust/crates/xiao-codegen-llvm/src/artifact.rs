@@ -1535,6 +1535,9 @@ fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
     {
         components.insert("fs".to_owned());
     }
+    if xiao_intrinsics::AbiBinding::LogWrite.log_symbol() == Some(symbol) {
+        components.insert("log".to_owned());
+    }
     if matches!(
         symbol,
         "xiao_runtime_args_program_name"
@@ -1543,13 +1546,10 @@ fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
     ) {
         components.insert("args".to_owned());
     }
-    if matches!(
-        symbol,
-        "xiao_runtime_time_utc_now"
-            | "xiao_runtime_time_monotonic"
-            | "xiao_runtime_time_format_utc"
-            | "xiao_runtime_time_sleep"
-    ) {
+    if xiao_intrinsics::declarations()
+        .iter()
+        .any(|declaration| declaration.abi_binding.time_symbol() == Some(symbol))
+    {
         components.insert("time".to_owned());
     }
     if symbol.starts_with("xiao_runtime_value_")

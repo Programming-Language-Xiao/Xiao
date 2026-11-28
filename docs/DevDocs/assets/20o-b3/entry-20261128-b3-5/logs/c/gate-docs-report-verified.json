@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "bun",
+    "tools/repo-check/src/cli.ts",
+    "docs"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "environment": {
+    "XIAO_RUST_DOC_ADAPTER": "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c/target-doc-adapter/debug/xiao-doc-coverage-rust.exe"
+  },
+  "started_utc": "2026-11-28T07:22:41.329031+00:00",
+  "elapsed_seconds": 8.393957,
+  "exit": 0,
+  "stdout": {
+    "path": "gate-docs-report-verified.stdout.log",
+    "bytes": 38,
+    "sha256": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
+  },
+  "stderr": {
+    "path": "gate-docs-report-verified.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

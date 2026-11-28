@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "D:/Programs/Python/Python312/python.exe",
+    "D:\\project\\Xiao\\Xiao/docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/audit.py",
+    "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "environment": {
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib"
+  },
+  "started_utc": "2026-11-28T07:11:33.438994+00:00",
+  "elapsed_seconds": 5.444135,
+  "exit": 0,
+  "stdout": {
+    "path": "audit-artifacts-final.stdout.log",
+    "bytes": 112,
+    "sha256": "62faf8408d358bc08e63b0f3ab7c12c5e73d4c03041b78be38010db913a22551"
+  },
+  "stderr": {
+    "path": "audit-artifacts-final.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

@@ -3,6 +3,7 @@
 use super::*;
 use std::sync::atomic::AtomicU64;
 use xiao_artifacts::ArchiveEntry;
+use xiao_artifacts::INDEX_SCHEMA_MINOR;
 use xiao_bytecode::{
     TAC_BYTECODE_ABI_VERSION, TAC_RUNTIME_ABI_VERSION, TAC_VERSION, TacAbi, TacProgram,
     XiaocMetadata, XiaocOptions,
@@ -17,6 +18,7 @@ fn index_for(bytes: &[u8]) -> (ArchiveIndex, XarObject) {
     let index = ArchiveIndex {
         schema_major: INDEX_SCHEMA_MAJOR,
         schema_minor: INDEX_SCHEMA_MINOR,
+        generator_version: None,
         entry: "main.xiao".to_owned(),
         entries: vec![ArchiveEntry {
             logical_path: "main.xiao".to_owned(),

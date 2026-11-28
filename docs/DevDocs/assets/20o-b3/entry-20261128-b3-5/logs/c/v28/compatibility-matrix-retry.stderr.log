@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b3\entry-20261128-b3-5\logs\c\v28\verify_matrix.py", line 297, in <module>
+    compatibility()
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b3\entry-20261128-b3-5\logs\c\v28\verify_matrix.py", line 265, in compatibility
+    result = protocol_case(cores[consumer], consumer, f"native-{consumer}-on-{producer}-o{level}",
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b3\entry-20261128-b3-5\logs\c\v28\verify_matrix.py", line 197, in protocol_case
+    actual = response["error"]["exit_code"] if response["type"] == "error" else response["exit_code"]
+             ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+KeyError: 'exit_code'

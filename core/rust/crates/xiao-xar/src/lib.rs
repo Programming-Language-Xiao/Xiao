@@ -17,8 +17,8 @@ use flate2::Compression;
 use flate2::read::DeflateDecoder;
 use flate2::write::DeflateEncoder;
 use xiao_artifacts::{
-    ArchiveEntry, ArchiveIndex, ArtifactError, Digest256, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR,
-    ObjectKind,
+    ARCHIVE_INDEX_SCHEMA_MINOR, ArchiveEntry, ArchiveIndex, ArtifactError, Digest256,
+    INDEX_SCHEMA_MAJOR, ObjectKind,
 };
 use xiao_diagnostics::{Diagnostic, DiagnosticParam};
 use xiao_source::SourceSpan;
@@ -1219,8 +1219,17 @@ fn encode_with_options(
 }
 
 fn validate_archive_index(index: &ArchiveIndex) -> Result<(), XarError> {
-    if index.schema_major != INDEX_SCHEMA_MAJOR || index.schema_minor > INDEX_SCHEMA_MINOR {
+    if index.schema_major != INDEX_SCHEMA_MAJOR || index.schema_minor > ARCHIVE_INDEX_SCHEMA_MINOR {
         return Err(XarError::InvalidIndex("归档索引版本不受支持".to_owned()));
+    }
+    if let Some(version) = index.generator_version
+        && version > xiao_codegen_llvm::CODEGEN_VERSION
+    {
+        return Err(ArtifactError::ArchiveVersionIncompatible(format!(
+            "归档生成器版本 {version} 超出支持上限 {}",
+            xiao_codegen_llvm::CODEGEN_VERSION
+        ))
+        .into());
     }
     validate_logical_path(&index.entry)?;
     if index.dependency_lock_digest.is_empty() {

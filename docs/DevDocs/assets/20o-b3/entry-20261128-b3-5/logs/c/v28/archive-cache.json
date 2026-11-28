@@ -1,0 +1,131 @@
+{
+  "source": {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\control\\main.xiao",
+    "bytes": 35,
+    "sha256": "52274f2cffcb77e6f66c4518d50086d77683b14600929412ebf7d5794f0f1c1f"
+  },
+  "versions": {
+    "27": {
+      "artifact": {
+        "archive_path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\control-27.xar",
+        "archive_sha256": "8e56944540c5044db7f572089294733e2316ab84bb0c031b061049f7eb03849a",
+        "capabilities": 32,
+        "modules": [
+          {
+            "hit": false,
+            "module": "entry",
+            "sha256": "fdc7826d7a663c81a4342e5327aee62e5a3c9356812889e9ba9adb5c4dc03515"
+          }
+        ],
+        "producer_generator": 27,
+        "runtime_abi": [
+          65556,
+          65556
+        ],
+        "schema": [
+          1,
+          0
+        ],
+        "stdlib_interface": 1,
+        "index": {
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\control-27.index.pb",
+          "bytes": 227,
+          "sha256": "94de3a77f81500b276f398bafa99a35b31e61f17fc94c8961be390582d6f11f7"
+        }
+      },
+      "cache_index": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\cache-27.index.pb",
+        "bytes": 162,
+        "sha256": "10a4d8e5ca536323dafb77c45b52e7514774052fd349a0b1592ec6a4b392fc72"
+      }
+    },
+    "28": {
+      "artifact": {
+        "archive_path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\control-28.xar",
+        "archive_sha256": "df6333db65d3744d7ff669cb31313296f0ca7e2d1f4aa400fc00120423f7c0df",
+        "capabilities": 32,
+        "modules": [
+          {
+            "hit": false,
+            "module": "entry",
+            "sha256": "fdc7826d7a663c81a4342e5327aee62e5a3c9356812889e9ba9adb5c4dc03515"
+          }
+        ],
+        "producer_generator": 28,
+        "runtime_abi": [
+          65556,
+          65556
+        ],
+        "schema": [
+          1,
+          1
+        ],
+        "stdlib_interface": 1,
+        "index": {
+          "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\control-28.index.pb",
+          "bytes": 230,
+          "sha256": "30e35337051a09bb57981ce62a56394ae167b3b6319c637b8f491b8aa9a44f59"
+        }
+      },
+      "cache_index": {
+        "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\cache-28.index.pb",
+        "bytes": 316,
+        "sha256": "fdf4273d717a4017058bedb7a285c7706cab9a7b83b5f2fdfdb3a820f5b16c61"
+      }
+    }
+  },
+  "verified_hit": {
+    "archive_path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\control-28-repeat.xar",
+    "archive_sha256": "df6333db65d3744d7ff669cb31313296f0ca7e2d1f4aa400fc00120423f7c0df",
+    "capabilities": 32,
+    "modules": [
+      {
+        "hit": true,
+        "module": "entry",
+        "sha256": "fdc7826d7a663c81a4342e5327aee62e5a3c9356812889e9ba9adb5c4dc03515"
+      }
+    ],
+    "producer_generator": 28,
+    "runtime_abi": [
+      65556,
+      65556
+    ],
+    "schema": [
+      1,
+      1
+    ],
+    "stdlib_interface": 1,
+    "index": {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\control-28-repeat.index.pb",
+      "bytes": 230,
+      "sha256": "30e35337051a09bb57981ce62a56394ae167b3b6319c637b8f491b8aa9a44f59"
+    }
+  },
+  "log_archive": {
+    "archive_path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\log-28.xar",
+    "archive_sha256": "f816d154fd43060a8a989a8b2939c0cf959c93e12d462c9310d8a89e14ea5c77",
+    "capabilities": 34,
+    "modules": [
+      {
+        "hit": false,
+        "module": "entry",
+        "sha256": "aed01afc21291739add1bc64c9e303b70e3a884efc607be4d5f48946fa0c6a80"
+      }
+    ],
+    "producer_generator": 28,
+    "runtime_abi": [
+      65556,
+      65556
+    ],
+    "schema": [
+      1,
+      1
+    ],
+    "stdlib_interface": 1,
+    "index": {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\compatibility-verified\\log-28.index.pb",
+      "bytes": 242,
+      "sha256": "d1d74792091b0a006b9db67da859dfa47657912d99ed43cd773a0be4b20c4522"
+    }
+  }
+}

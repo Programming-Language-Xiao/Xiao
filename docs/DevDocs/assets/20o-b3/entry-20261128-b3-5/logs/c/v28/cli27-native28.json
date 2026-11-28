@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "bun",
+    "cli/ts/src/main.ts",
+    "verify",
+    "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/cases/after28-log-o0/program.exe"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "environment": {
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_CORE_PATH": "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-old27/debug/xiao-core.exe"
+  },
+  "started_utc": "2026-11-28T10:55:15.057399+00:00",
+  "elapsed_seconds": 10.255949,
+  "exit": 2,
+  "stdout": {
+    "path": "cli27-native28.stdout.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr": {
+    "path": "cli27-native28.stderr.log",
+    "bytes": 82,
+    "sha256": "4c426b46476556f9cb599b2055c2944413d427c96771910ca04be1c1198558c3"
+  }
+}

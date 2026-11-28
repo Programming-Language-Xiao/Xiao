@@ -1,0 +1,33 @@
+{
+  "argv": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/target-special/debug/examples/generator_probe.exe",
+    "D:\\project\\Xiao\\Xiao/docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/generator-control.xiao",
+    "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/cache-old-runtime-control-o0",
+    "0",
+    "34"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "environment": {
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5b/target/release/xiao_runtime.lib",
+    "CC_PRINT_OPTIONS_FILE": "D:\\project\\Xiao\\Xiao/docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/cache-old-runtime-control-o0-link.log"
+  },
+  "started_utc": "2026-11-28T06:50:29.314549+00:00",
+  "elapsed_seconds": 2.759458,
+  "exit": 0,
+  "stdout": {
+    "path": "cache-old-runtime-control-o0.stdout.log",
+    "bytes": 2366,
+    "sha256": "afcca2aac982c5d692cf377c51d183edb0b9c638a9859c3f5fff7caba9f6bad1"
+  },
+  "stderr": {
+    "path": "cache-old-runtime-control-o0.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

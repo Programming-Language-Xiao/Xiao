@@ -1,0 +1,34 @@
+{
+  "argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--workspace"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao\\core\\rust",
+  "environment": {
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/target-workspace",
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_PROFILE_TEST_OPT_LEVEL": "1",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib"
+  },
+  "started_utc": "2026-11-28T06:52:33.451950+00:00",
+  "elapsed_seconds": 723.721375,
+  "exit": 0,
+  "stdout": {
+    "path": "workspace-test.stdout.log",
+    "bytes": 155039,
+    "sha256": "b336273fea11216a20080e693160d5493396a7c5f0b1e2a29fc280bcafde3e62"
+  },
+  "stderr": {
+    "path": "workspace-test.stderr.log",
+    "bytes": 32381,
+    "sha256": "003bd6bc23381a578b396e054caf9875705508bb074e38e597e57a371034b9b0"
+  }
+}

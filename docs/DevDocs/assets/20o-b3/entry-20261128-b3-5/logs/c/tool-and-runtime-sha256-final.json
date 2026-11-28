@@ -1,0 +1,77 @@
+[
+  {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5b\\target\\release\\xiao_runtime.lib",
+    "sha256": "ee0c887a737fc796450a53d88398c04d5ef95dfa25d816d91b8aae71ba663065",
+    "bytes": 27882502
+  },
+  {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\target-runtime-fixed-final\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+    "sha256": "8a457d3af4bb25502dfdaa5717c8286d737533b2ff2c5471c44adf6f252115ea",
+    "bytes": 27979672
+  },
+  {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\target-runtime-final\\x86_64-pc-windows-msvc\\release\\xiao_runtime.lib",
+    "sha256": "0110ac28d86b484ed8a3814878093b49bf7be927ebdf98b32f36e15a57b280d3",
+    "bytes": 27988572
+  },
+  {
+    "path": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "sha256": "574047f1b98d62bea1da8ae9340fea1ef06d262c3186e1d72d87e5401166c833",
+    "bytes": 157296
+  },
+  {
+    "path": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "sha256": "63f559db3d87798fa4f26923c4cd5839ddc41b40905d884ee341c74a8bd858e9",
+    "bytes": 40741
+  },
+  {
+    "path": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "sha256": "df1409fabacdc625b2c2fefe50712de4ba140e07bf2bb4192101189498152869",
+    "bytes": 211961
+  },
+  {
+    "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+    "sha256": "acb138286bbe20c6cf3ec39a7e0a68c3fab0cd949baa2912cf466514d0d531ab",
+    "bytes": 111104
+  },
+  {
+    "path": "D:\\msys64\\ucrt64\\bin\\llvm-nm.exe",
+    "sha256": "297b4fa9e633e861f6be676f6923e13729c977bab6337d6dd78f47babc0003e3",
+    "bytes": 187169
+  },
+  {
+    "path": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "sha256": "3ef8fcf80d409fab22ddd89ee19249f31a26ad9914d3e3e48573c30998fa24de",
+    "bytes": 3701088
+  },
+  {
+    "path": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+    "sha256": "122f18d28a63fa358f3db266abee1ff1d8aabf0ab7f2dd9ac38a38da99977ae5",
+    "bytes": 31347200
+  },
+  {
+    "path": "D:\\project\\Xiao\\Xiao\\stdlib\\log.xiao",
+    "sha256": "59545fb45a0fc9fcfef8aa9882a676b3d0f1e68818b4186088e97b139ca8e047",
+    "bytes": 95
+  },
+  {
+    "path": "D:\\project\\Xiao\\Xiao\\core\\rust\\Cargo.lock",
+    "sha256": "28d38451ba0490b70d2d136bc3268acad8de02b5658bf826f842069019161c53",
+    "bytes": 19660
+  },
+  {
+    "path": "D:\\project\\Xiao\\Xiao\\tests\\benchmarks\\Cargo.lock",
+    "sha256": "8ac4f16af6e8baf5b71e0e0b5d89397eb5ae7bf2e3cc5a96053683c6e8b4b577",
+    "bytes": 19264
+  },
+  {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\target-before\\debug\\examples\\generator_probe.exe",
+    "sha256": "bab40b4f1903ff1d84dbfc75ef0a316b592949c02caed001fb5574ab1deaaf22",
+    "bytes": 11383808
+  },
+  {
+    "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\target-special\\debug\\examples\\generator_probe.exe",
+    "sha256": "4e3bafc22443815f00922249e270dc78bdb9db78cf0661cb153a5014903346ff",
+    "bytes": 11386368
+  }
+]

@@ -5,8 +5,8 @@ use std::path::{Path, PathBuf};
 
 use serde_json::json;
 use xiao_artifacts::{
-    ArchiveIndex, ArtifactStore, Digest256, GlobalRecord, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR,
-    IndexStore, ObjectKind,
+    ARCHIVE_INDEX_SCHEMA_MINOR, ArchiveIndex, ArtifactStore, Digest256, GlobalRecord,
+    INDEX_SCHEMA_MAJOR, IndexStore, ObjectKind,
 };
 use xiao_bytecode::{
     XiaocMetadata, XiaocOptions, decode_xiaoc, encode_xiaoc_with_options, optimize_bytecode_checked,
@@ -272,7 +272,8 @@ pub fn build_archive(
     let identity = xiao_standard_library::current_standard_library_identity();
     let mut builder = XarBuilder::new(ArchiveIndex {
         schema_major: INDEX_SCHEMA_MAJOR,
-        schema_minor: INDEX_SCHEMA_MINOR,
+        schema_minor: ARCHIVE_INDEX_SCHEMA_MINOR,
+        generator_version: Some(xiao_codegen_llvm::CODEGEN_VERSION),
         entry: "entry.xiaoc".to_owned(),
         entries: Vec::new(),
         dependency_lock_digest: lock_digest.clone(),
@@ -406,17 +407,21 @@ fn cached_module(
     let source_digest = Digest256::of_bytes(compiled.request.source.text().as_bytes()).as_hex();
     let request_key = Digest256::of_bytes(
         &serde_json::to_vec(&json!({
-            "archive_cache_version": 1, "ir": compiled.artifact.ir, "module": module,
+            "archive_cache_version": 1, "generator": xiao_codegen_llvm::CODEGEN_VERSION,
+            "runtime_abi": xiao_runtime_abi::ABI_ENCODED_VERSION,
+            "stdlib": xiao_standard_library::STDLIB_INTERFACE_VERSION,
+            "ir": compiled.artifact.ir, "module": module,
             "source": source_digest, "optimization": fingerprint, "lock": lock_digest,
             "debug": request.debug, "toolchain": xiao_xar::toolchain_fingerprint(),
         }))
         .map_err(failure)?,
     )
     .as_hex();
-    if let Some(record) = cached
-        .iter()
-        .find(|record| record.request_key == request_key && record.object_kind == ObjectKind::Xiaoc)
-    {
+    if let Some(record) = cached.iter().find(|record| {
+        record.request_key == request_key
+            && record.object_kind == ObjectKind::Xiaoc
+            && record.codegen_version == xiao_codegen_llvm::CODEGEN_VERSION
+    }) {
         let bytes = store
             .read_checked(ObjectKind::Xiaoc, record.digest, Some(record.length))
             .map_err(failure)?;
@@ -469,7 +474,7 @@ fn cached_module(
             digest: reference.digest,
             target: "portable".to_owned(),
             optimization_level: request.optimization_level.as_u8() as u32,
-            codegen_version: 1,
+            codegen_version: xiao_codegen_llvm::CODEGEN_VERSION,
             length: reference.length,
         },
         false,

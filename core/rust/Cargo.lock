@@ -855,6 +855,7 @@ dependencies = [
  "serde_json",
  "xiao-artifacts",
  "xiao-bytecode",
+ "xiao-codegen-llvm",
  "xiao-config",
  "xiao-diagnostics",
  "xiao-i18n",

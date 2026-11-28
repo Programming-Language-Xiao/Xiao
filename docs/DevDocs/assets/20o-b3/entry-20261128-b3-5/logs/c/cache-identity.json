@@ -1,0 +1,102 @@
+{
+  "old_runtime": {
+    "identity": {
+      "abi": 65556,
+      "generator": 27,
+      "target": "x86_64-pc-windows-msvc",
+      "runtime": "ee0c887a737fc796450a53d88398c04d5ef95dfa25d816d91b8aae71ba663065",
+      "stdlib_interface": 1,
+      "stdlib": "StandardLibraryIdentity { language_version: \"0.1.0\", stdlib_interface_version: 1, runtime_abi_major: 1, runtime_abi_minor: 20, target: \"portable\" }",
+      "stdlib_log_source_sha256": "59545fb45a0fc9fcfef8aa9882a676b3d0f1e68818b4186088e97b139ca8e047",
+      "capabilities": 34,
+      "toolchain_fingerprint": "xiao-fnv1a64-e2baa5879899bb32",
+      "codegen_fingerprint": "xiao-codegen-27-ea25704cd79ebd6b",
+      "source": "52274f2cffcb77e6f66c4518d50086d77683b14600929412ebf7d5794f0f1c1f"
+    },
+    "identity_sha256": "aa5173352b046adf9875e32aa40defdfda88034f15017fd3f6ce2f77ae5d5691",
+    "binary": {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/cache-old-runtime-control-o0\\program.exe",
+      "sha256": "30ea0ab7af8eb65bc8cff53991b7620f2cad535fca9df773a74f84c738fbad85"
+    },
+    "ir": {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/cache-old-runtime-control-o0\\program.ll",
+      "sha256": "983a68da9b5d036488e0c32de9be04e5ac3a373c78846633b886a67a35d72548"
+    },
+    "exit": 0
+  },
+  "rebuilt_runtime": {
+    "identity": {
+      "abi": 65556,
+      "generator": 27,
+      "target": "x86_64-pc-windows-msvc",
+      "runtime": "0110ac28d86b484ed8a3814878093b49bf7be927ebdf98b32f36e15a57b280d3",
+      "stdlib_interface": 1,
+      "stdlib": "StandardLibraryIdentity { language_version: \"0.1.0\", stdlib_interface_version: 1, runtime_abi_major: 1, runtime_abi_minor: 20, target: \"portable\" }",
+      "stdlib_log_source_sha256": "59545fb45a0fc9fcfef8aa9882a676b3d0f1e68818b4186088e97b139ca8e047",
+      "capabilities": 34,
+      "toolchain_fingerprint": "xiao-fnv1a64-f2520a2a4bb35340",
+      "codegen_fingerprint": "xiao-codegen-27-ea25704cd79ebd6b",
+      "source": "52274f2cffcb77e6f66c4518d50086d77683b14600929412ebf7d5794f0f1c1f"
+    },
+    "identity_sha256": "f872d171ac59b954b9ff2bf390f0f30ff2e37a3ef0a117b3f687ab4ec218936f",
+    "binary": {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/after-control-o0-product-final\\program.exe",
+      "sha256": "acea34dd1e2b944b7da1e66a883a523fee4c52957148214f6d2e6b910ba1ae73"
+    },
+    "ir": {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/after-control-o0-product-final\\program.ll",
+      "sha256": "983a68da9b5d036488e0c32de9be04e5ac3a373c78846633b886a67a35d72548"
+    },
+    "exit": 0
+  },
+  "log": {
+    "identity": {
+      "abi": 65556,
+      "generator": 27,
+      "target": "x86_64-pc-windows-msvc",
+      "runtime": "0110ac28d86b484ed8a3814878093b49bf7be927ebdf98b32f36e15a57b280d3",
+      "stdlib_interface": 1,
+      "stdlib": "StandardLibraryIdentity { language_version: \"0.1.0\", stdlib_interface_version: 1, runtime_abi_major: 1, runtime_abi_minor: 20, target: \"portable\" }",
+      "stdlib_log_source_sha256": "59545fb45a0fc9fcfef8aa9882a676b3d0f1e68818b4186088e97b139ca8e047",
+      "capabilities": 34,
+      "toolchain_fingerprint": "xiao-fnv1a64-f2520a2a4bb35340",
+      "codegen_fingerprint": "xiao-codegen-27-ea25704cd79ebd6b",
+      "source": "85f8adf1c1372c5a1d14290ac0697eb837f65fa1b7346510cfa119937495eb0e"
+    },
+    "identity_sha256": "ec7c81991dc9056ee94bb836316a9b19908dbf7dda521017dfbbb6e222c74c02",
+    "binary": {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/after-log-o0-product-final\\program.exe",
+      "sha256": "78fd1d0162a2a840da89573638a07666ad327739e09b6ccf56c5a2fa6bb82643"
+    },
+    "ir": {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/after-log-o0-product-final\\program.ll",
+      "sha256": "2f5ba4d9e15c53787b1f67e8f90eef9d623a4b44d24f5fccfbc03da0b1bc155c"
+    },
+    "exit": 0
+  },
+  "log_missing_stdout": {
+    "identity": {
+      "abi": 65556,
+      "generator": 27,
+      "target": "x86_64-pc-windows-msvc",
+      "runtime": "0110ac28d86b484ed8a3814878093b49bf7be927ebdf98b32f36e15a57b280d3",
+      "stdlib_interface": 1,
+      "stdlib": "StandardLibraryIdentity { language_version: \"0.1.0\", stdlib_interface_version: 1, runtime_abi_major: 1, runtime_abi_minor: 20, target: \"portable\" }",
+      "stdlib_log_source_sha256": "59545fb45a0fc9fcfef8aa9882a676b3d0f1e68818b4186088e97b139ca8e047",
+      "capabilities": 2,
+      "toolchain_fingerprint": "xiao-fnv1a64-f2520a2a4bb35340",
+      "codegen_fingerprint": "xiao-codegen-27-6c13f87b264e92ad",
+      "source": "85f8adf1c1372c5a1d14290ac0697eb837f65fa1b7346510cfa119937495eb0e"
+    },
+    "identity_sha256": "b2d247ea57100d8027cf1c4111284fb4beef2e1b30627f1ea81c2341211fe869",
+    "binary": {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/cache-changed-mask-log-o0-final\\program.exe",
+      "sha256": "4b1e7e6629a3d5d3e7f2834eec9596abb2d01e7f454c5f8dc01af7319f3de4e5"
+    },
+    "ir": {
+      "path": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/cache-changed-mask-log-o0-final\\program.ll",
+      "sha256": "1fa9ae8b6c3c298c4243be1dd9836b51b9ce8eb9f270da60be7cee0cbb513cbc"
+    },
+    "exit": 3
+  }
+}

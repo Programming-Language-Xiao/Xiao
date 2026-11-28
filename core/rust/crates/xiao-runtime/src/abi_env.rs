@@ -3,11 +3,14 @@
 use std::io::BufRead;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::time::{Duration, Instant};
 
+use super::abi_log::NativeStdout;
 use super::{abi_value_validation::validate_structure, *};
 use crate::environment::{
     EnvironmentSnapshot, Failure, MAX_INJECTED_BYTES, Operation, SnapshotError,
 };
+use crate::log::LogState;
 use xiao_intrinsics::{CAPABILITY_ENVIRONMENT, validate_capability_mask};
 use xiao_runtime_abi::native_control::{
     CANCEL_ENV, CONTROL_PREFIX, DEADLINE_ENV, INTERRUPTED_EXIT, Interruption, monotonic_ns,
@@ -21,8 +24,9 @@ thread_local! {
 /// 启动入口固定的快照和授权，在线程之间一起传递。
 pub(super) struct NativeEnvironment {
     snapshot: EnvironmentSnapshot,
-    capabilities: u64,
+    pub(super) capabilities: u64,
     control: NativeControl,
+    pub(super) log: LogState<NativeStdout>,
 }
 
 /// 从私有启动握手读取的运行级截止和取消通知。
@@ -63,8 +67,16 @@ impl NativeControl {
 }
 
 impl NativeEnvironment {
-    /// 在 env 提交前检查运行中断和独立任务取消。
-    fn checkpoint(&self) -> Result<(), i32> {
+    /// 为日志的等待间隔提供与宿主截止对应的本地单调时钟值。
+    pub(super) fn deadline(&self) -> Option<Instant> {
+        let deadline = self.control.deadline_ns?;
+        let now = Instant::now();
+        let remaining = deadline.saturating_sub(monotonic_ns().ok()?);
+        now.checked_add(Duration::from_nanos(u64::try_from(remaining).ok()?))
+    }
+
+    /// 在宿主操作的安全点检查运行中断和独立任务取消。
+    pub(super) fn checkpoint(&self) -> Result<(), i32> {
         if let Some(interruption) = self.control.interruption() {
             // 运行级中断沿已冻结的不可捕获错误通道传播，退出码仍为 2。
             set_pending_error(PendingError::Fatal(FatalError::new(
@@ -117,6 +129,7 @@ fn run_entry(
                 snapshot,
                 capabilities,
                 control,
+                log: LogState::new(NativeStdout::default()),
             });
             let _environment = enter_environment(Some(Arc::clone(&environment)));
             entry(&environment.control)
@@ -143,11 +156,7 @@ pub extern "C" fn xiao_runtime_env_run_native(
         let _ = writeln!(std::io::stderr().lock(), "{}: {error}", error.code());
         return 2;
     }
-    let handshake = if capabilities & CAPABILITY_ENVIRONMENT != 0 {
-        environment_handshake()
-    } else {
-        None
-    };
+    let handshake = environment_handshake(capabilities & CAPABILITY_ENVIRONMENT != 0);
     let control = if handshake.is_some() {
         let Ok(control) = NativeControl::from_launch() else {
             let _ = writeln!(
@@ -229,10 +238,13 @@ enum LaunchEnvironment {
 }
 
 /// 仅消费与子进程私有环境变量匹配的握手参数。
-fn environment_handshake() -> Option<LaunchEnvironment> {
+fn environment_handshake(allow_environment: bool) -> Option<LaunchEnvironment> {
     let arg = std::env::args_os().nth(1)?;
     let arg = arg.to_str()?;
     let (nonce, source) = if let Some(nonce) = arg.strip_prefix(NATIVE_ENVIRONMENT_STDIN_PREFIX) {
+        if !allow_environment {
+            return None;
+        }
         (nonce, LaunchEnvironment::Stdin)
     } else {
         (arg.strip_prefix(CONTROL_PREFIX)?, LaunchEnvironment::Host)
@@ -416,3 +428,8 @@ pub extern "C" fn xiao_runtime_env_unset(
 #[cfg(test)]
 #[path = "abi_env_tests.rs"]
 mod tests;
+
+/// 日志 ABI 经过原生运行状态和宿主边界的回归。
+#[cfg(test)]
+#[path = "abi_log_tests.rs"]
+mod log_tests;

@@ -341,6 +341,7 @@ pub enum AbiBinding {
     EnvGet,
     EnvSet,
     EnvUnset,
+    LogWrite,
     SetAdd,
     SetRemove,
     ArrayPush,
@@ -493,6 +494,15 @@ impl AbiBinding {
             _ => None,
         }
     }
+
+    /// 返回 log 的固定 C ABI 符号。
+    #[must_use]
+    pub const fn log_symbol(self) -> Option<&'static str> {
+        match self {
+            Self::LogWrite => Some("xiao_runtime_log_write"),
+            _ => None,
+        }
+    }
 }
 
 /// 签名的后端无关部分。
@@ -532,7 +542,7 @@ pub struct IntrinsicDecl {
 
 include!(concat!(env!("OUT_DIR"), "/intrinsics_generated.rs"));
 
-/// 63 的冻结 VM 声明，供运行期表核对和反例使用。
+/// 63 的冻结声明，供运行期表核对和反例使用。
 const LOG_DECLARATION: IntrinsicDecl = IntrinsicDecl {
     id: IntrinsicId::new_unchecked(63),
     public_name: "os_log_write",
@@ -546,7 +556,7 @@ const LOG_DECLARATION: IntrinsicDecl = IntrinsicDecl {
     capability: Capability::ClockAndStdout,
     error_code: "runtime.type_mismatch",
     vm_binding: VmBinding::LogWrite,
-    abi_binding: AbiBinding::None,
+    abi_binding: AbiBinding::LogWrite,
     status: DeclarationStatus::Active,
 };
 

@@ -1,0 +1,12 @@
+
+running 7 tests
+test driver_control_uses_cancellation_before_an_expired_run ... ok
+test log_id_round_trips_through_both_widths_and_xiaoc ... ok
+test production_vm_checks_both_bits_and_keeps_the_intrinsic_call_span ... ok
+test table_drop_uses_the_same_log_output_and_catch_finally_keep_release_order ... ok
+test protocol_process_keeps_stdout_capture_apart_from_stderr ... ok
+test child_writes_use_one_run_quota_and_capture_even_with_one_debug_event ... ok
+test log_tutorial_matches_vm_golden ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.58s
+

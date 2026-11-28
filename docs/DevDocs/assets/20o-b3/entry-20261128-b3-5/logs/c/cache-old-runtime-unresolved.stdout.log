@@ -1,0 +1,2 @@
+program-69232b.o : error LNK2019: 无法解析的外部符号 xiao_runtime_log_write，函数 main 中引用了该符号
+D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5c\cases\cache-old-runtime-log-o0\expected-failure.exe : fatal error LNK1120: 1 个无法解析的外部命令

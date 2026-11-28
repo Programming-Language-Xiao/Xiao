@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/cases/c-probe-final/product.exe"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c\\cases\\c-probe-final",
+  "environment": {
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c/target-runtime-final/x86_64-pc-windows-msvc/release/xiao_runtime.lib",
+    "CC_PRINT_OPTIONS_FILE": "D:\\project\\Xiao\\Xiao/docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/c-probe-slot-final-link.log",
+    "XIAO_RUNTIME_RELEASE_TRACE_PATH": "D:\\project\\Xiao\\Xiao/docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/c-probe-slot-final-valid.release.tsv"
+  },
+  "started_utc": "2026-11-28T07:06:52.543615+00:00",
+  "elapsed_seconds": 0.061694,
+  "exit": 0,
+  "stdout": {
+    "path": "c-probe-slot-final-valid.stdout.log",
+    "bytes": 4170,
+    "sha256": "911453e4421d08d91f39dfa135315270ff583a3e2867c644e8be22370a7a6fa1"
+  },
+  "stderr": {
+    "path": "c-probe-slot-final-valid.stderr.log",
+    "bytes": 55,
+    "sha256": "2c96aeb695868e40c80ed3684ed4ae088ef274df2fd79d8dafff0d114a1fb96c"
+  }
+}

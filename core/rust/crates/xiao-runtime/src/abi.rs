@@ -63,6 +63,8 @@ mod abi_io;
 /// B2 四参除法只读输入与拥有输出边界。
 #[path = "abi_lfloat_divide.rs"]
 mod abi_lfloat_divide;
+#[path = "abi_log.rs"]
+mod abi_log;
 #[path = "abi_numeric.rs"]
 mod abi_numeric;
 #[path = "abi_resource.rs"]

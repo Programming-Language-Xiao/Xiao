@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/cases/c-probe/probe.exe"
+  ],
+  "cwd": "D:\\project\\Xiao\\.xiao-orchestrator\\worktrees\\b3-5c-28\\cases\\c-probe",
+  "environment": {
+    "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:/project/Xiao/.xiao-orchestrator/worktrees/b3-5c-28/target-runtime/x86_64-pc-windows-msvc/release/xiao_runtime.lib",
+    "CC_PRINT_OPTIONS_FILE": "D:/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/v28/c-probe-link.log",
+    "XIAO_RUNTIME_RELEASE_TRACE_PATH": "D:/project/Xiao/Xiao/docs/DevDocs/assets/20o-b3/entry-20261128-b3-5/logs/c/v28/c-probe-valid.release.tsv"
+  },
+  "started_utc": "2026-11-28T10:42:29.727747+00:00",
+  "elapsed_seconds": 0.089359,
+  "exit": 0,
+  "stdout": {
+    "path": "c-probe-valid.stdout.log",
+    "bytes": 4170,
+    "sha256": "e6ed605e92aa42d199e20f03c230cd985b58f22589dbe35add0123a62096dcfd"
+  },
+  "stderr": {
+    "path": "c-probe-valid.stderr.log",
+    "bytes": 55,
+    "sha256": "2c96aeb695868e40c80ed3684ed4ae088ef274df2fd79d8dafff0d114a1fb96c"
+  }
+}

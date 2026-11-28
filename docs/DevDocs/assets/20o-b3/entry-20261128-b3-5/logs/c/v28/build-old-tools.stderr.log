@@ -1,0 +1,6 @@
+    Blocking waiting for file lock on package cache
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5c-28\old27\core\rust\crates\xiao-runtime)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5c-28\old27\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5c-28\old27\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.xiao-orchestrator\worktrees\b3-5c-28\old27\core\rust\crates\xiao-driver)
+    Finished `dev` profile [unoptimized] target(s) in 24.05s
